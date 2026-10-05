@@ -8,7 +8,7 @@ Locked identity enforced here:
 - healthy 23-year-old adult impression
 - red-brown low partial tie with loose hair
 - warm off-white long-sleeve base + short muted-red work vest
-- left-handed identity; sword remains on anatomical RIGHT hip
+- LOCK: sword is always anatomical RIGHT hip; Karen remains left-handed
 - 48x48 source cell on the existing 32px logical world
 """
 
