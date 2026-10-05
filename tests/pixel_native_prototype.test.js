@@ -117,7 +117,8 @@ test('SceneRunner preserves a pre-existing state lock and clears transient actor
  assert.equal(ok,true);
  assert.equal(h.GC.State.get().locked,true,'pre-existing lock must be restored');
  assert.equal(h.GC.Cinematic.actor('karen'),null,'transient actors must not survive scene completion');
- assert.equal(h.GC.Dialogue.isInputLocked(),false,'cinematic input lock must be released');
+ assert.equal(h.GC.Dialogue.INPUT_LOCKS.has('cinematic'),false,'cinematic input lock must be released');
+ assert.equal(h.GC.Dialogue.isInputLocked(),true,'pre-existing state lock must still count as input locked');
 });
 
 test('SceneRunner cancellation stops in-flight dialogue and restores clean state',async()=>{
