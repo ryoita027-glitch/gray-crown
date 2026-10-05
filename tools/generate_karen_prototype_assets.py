@@ -1,284 +1,155 @@
 #!/usr/bin/env python3
-"""Generate PROTOTYPE TEMPORARY Karen 48px pixel animation sheets.
+"""Generate Karen 48px prototype sheets — Visual Redesign v3.
 
-Visual refinement pass for Karen B — VILLAGE RUNNER.
-Deterministic and integer-grid native.
-Locked identity enforced here:
-- Stage A village-life continuity
-- healthy 23-year-old adult impression
-- red-brown low partial tie with loose hair
+This pass translates the appeal of the provisional 32px Karen into the existing
+48x48 source architecture without copying the old pixels.
+
+Locked invariants:
+- Karen B — VILLAGE RUNNER
+- 23-year-old healthy adult impression
+- red-brown hair, low partial tie, loose hair
 - warm off-white long-sleeve base + short muted-red work vest
-- LOCK: sword is always anatomical RIGHT hip; Karen remains left-handed
-- 48x48 source cell on the existing 32px logical world
+- left-handed
+- LOCK: sword is always anatomical RIGHT hip
+- exactly the existing 8 animation categories
+- integer-grid native; source cell remains 48x48
 """
-
-from __future__ import annotations
-import argparse
-from pathlib import Path
 from PIL import Image, ImageDraw
-
+from pathlib import Path
+import argparse
 CELL=48
-DIRS=("down","left","right","up")
-FRAMES={"idle":4,"walk":6,"turn":3,"talk":4,"surprise":4,"approach":4,"laugh":6,"run":6}
+DIRS=('down','left','right','up')
+FRAMES={'idle':4,'walk':6,'turn':3,'talk':4,'surprise':4,'approach':4,'laugh':6,'run':6}
 P={
-"outline":(54,38,34,255),
-"outline_soft":(72,48,40,255),
-"skin":(204,151,116,255),
-"skin_shadow":(177,122,94,255),
-"skin_light":(224,174,134,255),
-"hair":(154,72,52,255),
-"hair_mid":(127,57,47,255),
-"hair_dark":(91,42,39,255),
-"hair_hi":(193,97,67,255),
-"shirt":(232,218,185,255),
-"shirt_shadow":(198,180,147,255),
-"shirt_light":(245,232,204,255),
-"vest":(151,65,59,255),
-"vest_mid":(128,52,51,255),
-"vest_dark":(100,43,43,255),
-"pants":(92,81,70,255),
-"pants_light":(112,98,82,255),
-"pants_dark":(64,58,53,255),
-"leather":(111,76,48,255),
-"leather_mid":(86,59,42,255),
-"leather_dark":(60,45,36,255),
-"metal":(177,181,177,255),
-"metal_hi":(212,214,204,255),
-"metal_dark":(103,108,108,255),
-"eye":(54,42,37,255),
-"cheek":(192,103,88,255),
+'o':(60,39,35,255),'o2':(82,50,42,255),'skin':(211,160,121,255),'skin2':(185,130,99,255),'skinhi':(230,181,139,255),'cheek':(192,101,83,255),
+'hair':(174,76,52,255),'hair2':(132,54,45,255),'hair3':(91,38,36,255),'hairhi':(224,122,76,255),
+'shirt':(236,222,192,255),'shirt2':(200,182,153,255),'shirthi':(249,237,211,255),
+'vest':(157,67,59,255),'vest2':(118,47,47,255),'vesthi':(184,82,66,255),
+'pants':(92,83,74,255),'pants2':(63,58,55,255),'pantshi':(119,105,90,255),
+'leather':(113,76,49,255),'leather2':(71,51,39,255),'leatherhi':(141,95,58,255),
+'metal':(172,177,172,255),'metal2':(95,101,101,255),'eye':(51,38,34,255)
 }
 
-def motion(anim,i):
-    p={"bob":0,"lean":0,"arm":0,"stride":0,"head":0,"hair":0,"dy":0,"mouth":False,"wide":False}
-    if anim=="idle":
-        p["bob"]=(0,0,1,0)[i]; p["hair"]=(0,1,0,-1)[i]
-    elif anim=="walk":
-        p["bob"]=(0,1,0,1,0,1)[i]; p["stride"]=(-2,-1,0,2,1,0)[i]
-        p["arm"]=-p["stride"]; p["hair"]=(2,1,0,-2,-1,0)[i]
-    elif anim=="run":
-        p["bob"]=(1,0,1,0,1,0)[i]; p["stride"]=(-4,-2,1,4,2,-1)[i]
-        p["arm"]=-p["stride"]; p["lean"]=2; p["hair"]=(4,3,1,-3,-4,-1)[i]
-    elif anim=="turn":
-        p["head"]=(0,1,0)[i]; p["hair"]=(1,0,-1)[i]
-    elif anim=="talk":
-        p["arm"]=(0,2,3,1)[i]; p["hair"]=(0,1,0,0)[i]; p["mouth"]=i in (1,2)
-    elif anim=="surprise":
-        p["dy"]=(0,-1,-2,-1)[i]; p["arm"]=(0,2,4,2)[i]
-        p["hair"]=(0,1,2,1)[i]; p["mouth"]=i in (1,2,3); p["wide"]=i in (1,2)
-    elif anim=="approach":
-        p["lean"]=(0,1,2,2)[i]; p["stride"]=(0,1,2,1)[i]
-        p["arm"]=(0,1,2,1)[i]; p["hair"]=(0,-1,-2,-1)[i]
-    elif anim=="laugh":
-        p["dy"]=(0,0,1,2,1,0)[i]; p["lean"]=(0,1,2,3,2,0)[i]
-        p["arm"]=(0,1,2,3,2,0)[i]; p["hair"]=(0,1,2,3,1,0)[i]
-        p["mouth"]=i in (1,2,3,4)
-    return p
+def q(v): return int(round(v))
+def rect(d,b,c,outline=None): d.rectangle(tuple(q(x) for x in b),fill=c,outline=outline)
+def poly(d,pts,c,outline=None):
+    pts=[(q(x),q(y)) for x,y in pts]; d.polygon(pts,fill=c)
+    if outline:d.line(pts+[pts[0]],fill=outline,width=1)
+def pt(d,x,y,c): d.point((q(x),q(y)),fill=c)
+def line(d,pts,c): d.line([(q(x),q(y)) for x,y in pts],fill=c,width=1)
 
-def poly(d, pts, fill, outline=None):
-    pts=[(int(x),int(y)) for x,y in pts]
-    d.polygon(pts, fill=fill)
-    if outline:
-        d.line(pts+[pts[0]], fill=outline, width=1)
+def motion(a,i):
+    m=dict(bob=0,lean=0,stride=0,arm=0,hair=0,dy=0,mouth=False,wide=False,open=False)
+    if a=='idle':m['bob']=(0,0,1,0)[i];m['hair']=(0,1,0,-1)[i]
+    elif a=='walk':m['bob']=(0,1,0,1,0,1)[i];m['stride']=(-2,-1,0,2,1,0)[i];m['arm']=-m['stride'];m['hair']=(1,1,0,-2,-1,0)[i]
+    elif a=='run':m['bob']=(1,0,1,0,1,0)[i];m['stride']=(-4,-2,1,4,2,-1)[i];m['arm']=-m['stride'];m['lean']=1;m['hair']=(3,2,1,-3,-2,-1)[i]
+    elif a=='turn':m['hair']=(1,0,-1)[i]
+    elif a=='talk':m['arm']=(0,1,2,1)[i];m['mouth']=i in (1,2);m['hair']=(0,1,0,0)[i]
+    elif a=='surprise':m['dy']=(0,-1,-2,-1)[i];m['arm']=(0,2,3,2)[i];m['wide']=i in (1,2);m['mouth']=i in (1,2,3);m['hair']=(0,1,2,1)[i]
+    elif a=='approach':m['lean']=(0,1,1,1)[i];m['stride']=(0,1,2,1)[i];m['arm']=(0,1,2,1)[i];m['hair']=(0,-1,-2,-1)[i]
+    elif a=='laugh':m['dy']=(0,0,1,2,1,0)[i];m['lean']=(0,0,1,1,1,0)[i];m['arm']=(0,1,2,3,2,0)[i];m['hair']=(0,1,2,2,1,0)[i];m['mouth']=i in (1,2,3,4);m['open']=i in (2,3)
+    return m
 
-def rect(d,xy,fill,outline=None):
-    xy=tuple(int(v) for v in xy)
-    d.rectangle(xy, fill=fill, outline=outline)
-
-def px(d,x,y,c):
-    d.point((int(x),int(y)),fill=c)
-
-def draw_side(anim,i,direction):
-    m=motion(anim,i)
-    im=Image.new("RGBA",(CELL,CELL),(0,0,0,0)); d=ImageDraw.Draw(im)
-    face=1 if direction=="right" else -1
-    cy=m["dy"]-m["bob"]
-    lean=m["lean"]*face
-    stride=m["stride"]
-    arm=m["arm"]
-    cx=24+lean
-
-    fx = cx-3 + (stride//2)*face
-    poly(d, [(fx-2,30+cy),(fx+2,30+cy),(fx+1,40+cy),(fx-2,40+cy)], P["pants_dark"], P["outline"])
-    poly(d, [(fx-2,39+cy),(fx+1,39+cy),(fx+2,44+cy),(fx-3,44+cy)], P["leather_mid"], P["outline"])
-    nx = cx+2 - (stride//2)*face
-    poly(d, [(nx-2,29+cy),(nx+3,29+cy),(nx+3,40+cy),(nx-1,40+cy)], P["pants"], P["outline"])
-    rect(d,(nx+1,30+cy,nx+2,36+cy),P["pants_light"])
-    poly(d, [(nx-1,39+cy),(nx+3,39+cy),(nx+5*face,44+cy),(nx-2,44+cy)], P["leather"], P["outline"])
-    d.line([(min(nx-2,nx+5*face),44+cy),(max(nx-2,nx+5*face),44+cy)],fill=P["outline"],width=1)
-
-    poly(d,[(cx-6,18+cy),(cx+5,18+cy),(cx+7*face,29+cy),(cx-6*face,30+cy)],P["shirt"],P["outline"])
-    if face==1:
-        poly(d,[(cx-5,18+cy),(cx+3,18+cy),(cx+5,26+cy),(cx-4,27+cy)],P["vest"],P["outline_soft"])
-        rect(d,(cx-4,24+cy,cx+4,27+cy),P["vest_mid"])
-        px(d,cx+3,20+cy,P["shirt_light"])
+def front(a,i,back=False):
+    m=motion(a,i); im=Image.new('RGBA',(48,48),(0,0,0,0)); d=ImageDraw.Draw(im)
+    cy=m['dy']-m['bob']; cx=24+m['lean']; s=m['stride']; arm=m['arm']; hm=m['hair']
+    if not back:
+        poly(d,[(19,10+cy),(21,7+cy),(24,6+cy),(27,7+cy),(30,10+cy),(30,16+cy),(28,20+cy),(26,21+cy),(24,19+cy),(22,21+cy),(19,20+cy),(18,16+cy)],P['hair2'],P['o'])
+        rect(d,(18+hm,16+cy,20+hm,18+cy),P['leather2'])
+        poly(d,[(19+hm,18+cy),(16+hm,19+cy),(14+hm,22+cy),(16+hm,23+cy),(19+hm,21+cy)],P['hair'],P['o2']);pt(d,16+hm,20+cy,P['hairhi'])
     else:
-        poly(d,[(cx-3,18+cy),(cx+5,18+cy),(cx+4,27+cy),(cx-5,26+cy)],P["vest"],P["outline_soft"])
-        rect(d,(cx-4,24+cy,cx+4,27+cy),P["vest_mid"])
-    rect(d,(cx-7,28+cy,cx+7,30+cy),P["leather_dark"],P["outline"])
-    rect(d,(cx-1,28+cy,cx+1,30+cy),P["metal_dark"])
+        poly(d,[(18,10+cy),(20,7+cy),(24,6+cy),(28,7+cy),(30,10+cy),(30,17+cy),(28,21+cy),(25,22+cy),(23,20+cy),(20,22+cy),(18,19+cy)],P['hair'],P['o'])
+        rect(d,(27+hm,16+cy,29+hm,18+cy),P['leather2'])
+        poly(d,[(28+hm,18+cy),(31+hm,19+cy),(33+hm,22+cy),(31+hm,23+cy),(28+hm,21+cy)],P['hair2'],P['o2']);pt(d,31+hm,20+cy,P['hairhi'])
 
-    back_x=cx-5*face
-    if anim in ("talk","surprise","approach","laugh"):
-        elbow_y=23+cy-int(arm*0.3)
-        hand_y=26+cy-int(arm*0.55)
-        pts=[(back_x,20+cy),(back_x-3*face,21+cy),(back_x-4*face,elbow_y),(back_x-2*face,27+cy)]
-        poly(d,pts,P["shirt_shadow"],P["outline"])
-        rect(d,(min(back_x-5*face,back_x-3*face),hand_y,max(back_x-5*face,back_x-3*face),hand_y+2),P["skin_shadow"],P["outline"])
+    lx=cx-2+s//3; rx=cx+2-s//3
+    poly(d,[(lx-2,30+cy),(lx+1,30+cy),(lx,39+cy),(lx-2,41+cy)],P['pants'],P['o2'])
+    poly(d,[(rx-1,30+cy),(rx+2,30+cy),(rx+2,40+cy),(rx,41+cy)],P['pants2'],P['o2'])
+    pt(d,lx,33+cy,P['pantshi']);pt(d,rx+1,34+cy,P['pants'])
+    poly(d,[(lx-2,39+cy),(lx+1,39+cy),(lx+2,44+cy),(lx-3,44+cy)],P['leather'],P['o'])
+    poly(d,[(rx,39+cy),(rx+3,39+cy),(rx+4,44+cy),(rx-1,44+cy)],P['leather2'],P['o'])
+    pt(d,lx-1,40+cy,P['leatherhi']);pt(d,rx+1,40+cy,P['leather'])
+
+    poly(d,[(20+cx-24,19+cy),(22+cx-24,18+cy),(26+cx-24,18+cy),(28+cx-24,19+cy),(29+cx-24,24+cy),(27+cx-24,29+cy),(21+cx-24,29+cy),(19+cx-24,24+cy)],P['shirt'],P['o2'])
+    if not back:
+        poly(d,[(20+cx-24,19+cy),(22+cx-24,19+cy),(22+cx-24,27+cy),(20+cx-24,26+cy)],P['vest'],P['o2'])
+        poly(d,[(26+cx-24,19+cy),(28+cx-24,19+cy),(28+cx-24,26+cy),(26+cx-24,27+cy)],P['vest'],P['o2'])
+        pt(d,21+cx-24,20+cy,P['vesthi']);pt(d,27+cx-24,25+cy,P['vest2']);pt(d,24+cx-24,20+cy,P['shirthi'])
     else:
-        poly(d,[(back_x,20+cy),(back_x-3*face,21+cy),(back_x-2*face,29+cy),(back_x,29+cy)],P["shirt_shadow"],P["outline"])
-        rect(d,(min(back_x-2*face,back_x),28+cy,max(back_x-2*face,back_x),31+cy),P["skin_shadow"])
+        poly(d,[(20+cx-24,20+cy),(28+cx-24,20+cy),(27+cx-24,27+cy),(21+cx-24,27+cy)],P['vest'],P['o2']);line(d,[(22+cx-24,25+cy),(26+cx-24,25+cy)],P['vesthi'])
+    line(d,[(21+cx-24,29+cy),(27+cx-24,29+cy)],P['leather2']);rect(d,(23+cx-24,28+cy,25+cx-24,30+cy),P['leatherhi'])
 
-    front_x=cx+5*face
-    if anim in ("talk","surprise","approach","laugh"):
-        ex=front_x+2*face+int(arm*0.55)*face
-        ey=22+cy-int(abs(arm)*0.25)
-        hx=ex+2*face+int(arm*0.35)*face
-        hy=25+cy-int(arm*0.45)
-        poly(d,[(front_x,20+cy),(front_x+3*face,21+cy),(ex,ey),(ex-face,ey+3)],P["shirt"],P["outline"])
-        poly(d,[(ex,ey),(hx,hy),(hx-face,hy+2),(ex-face,ey+3)],P["skin"],P["outline"])
-        px(d,hx+face,hy+1,P["skin_light"])
+    if a in ('talk','surprise','approach','laugh'):
+        poly(d,[(20+cx-24,20+cy),(18+cx-24,21+cy),(17+cx-24-arm*.4,26+cy-arm*.2),(19+cx-24-arm*.3,27+cy)],P['shirt2'],P['o2'])
+        rect(d,(16+cx-24-arm*.4,26+cy-arm*.2,18+cx-24-arm*.4,28+cy-arm*.2),P['skin2'],P['o2'])
+        poly(d,[(28+cx-24,20+cy),(30+cx-24,21+cy),(31+cx-24+arm,25+cy-arm*.3),(29+cx-24+arm,27+cy-arm*.2)],P['shirt'],P['o2'])
+        rect(d,(30+cx-24+arm,25+cy-arm*.3,32+cx-24+arm,27+cy-arm*.3),P['skin'],P['o2'])
     else:
-        ex=front_x+2*face-int(stride*0.25)*face
-        poly(d,[(front_x,20+cy),(front_x+3*face,21+cy),(ex,29+cy),(ex-2*face,29+cy)],P["shirt"],P["outline"])
-        rect(d,(min(ex-2*face,ex),28+cy,max(ex-2*face,ex),31+cy),P["skin"],P["outline"])
+        poly(d,[(20+cx-24,20+cy),(18+cx-24,21+cy),(18+cx-24,28+cy),(20+cx-24,28+cy)],P['shirt2'],P['o2']);rect(d,(17+cx-24,27+cy,19+cx-24,30+cy),P['skin2'],P['o2'])
+        poly(d,[(28+cx-24,20+cy),(30+cx-24,21+cy),(30+cx-24,28+cy),(28+cx-24,28+cy)],P['shirt'],P['o2']);rect(d,(29+cx-24,27+cy,31+cx-24,30+cy),P['skin'],P['o2'])
 
-    pouch_x=cx-7*face
-    rect(d,(min(pouch_x,pouch_x+3*face),29+cy,max(pouch_x,pouch_x+3*face),33+cy),P["leather_mid"],P["outline"])
-    px(d,pouch_x+face,30+cy,P["leather"])
+    rect(d,(28+cx-24,29+cy,31+cx-24,33+cy),P['leather'],P['o2']);pt(d,29+cx-24,30+cy,P['leatherhi'])
+    sx=(19+cx-24) if not back else (29+cx-24); sign=-1 if not back else 1
+    rect(d,(min(sx,sx+2*sign),29+cy,max(sx,sx+2*sign),31+cy),P['leatherhi'],P['o2'])
+    poly(d,[(sx,31+cy),(sx+2*sign,31+cy),(sx+4*sign,41+cy),(sx+2*sign,42+cy)],P['leather2'],P['o2']);pt(d,sx+sign,31+cy,P['metal'])
 
-    sword_side = -face
-    hipx = cx + 7*sword_side
-    rect(d,(min(hipx,hipx+2*sword_side),28+cy,max(hipx,hipx+2*sword_side),31+cy),P["leather"],P["outline"])
-    poly(d,[(hipx,31+cy),(hipx+2*sword_side,31+cy),(hipx-2*sword_side,42+cy),(hipx-4*sword_side,42+cy)],P["leather_dark"],P["outline"])
-    px(d,hipx+sword_side,31+cy,P["metal"])
-
-    rect(d,(cx-2,15+cy,cx+2,19+cy),P["skin_shadow"],P["outline_soft"])
-
-    trail=m["hair"]*(-face)
-    poly(d,[(cx-5*face+trail//2,9+cy),(cx-8*face+trail,13+cy),(cx-7*face+trail,22+cy),
-            (cx-4*face+trail,25+cy),(cx-2*face,19+cy)],P["hair_dark"],P["outline"])
-    tiex=cx-7*face+trail
-    rect(d,(min(tiex,tiex+2*face),16+cy,max(tiex,tiex+2*face),18+cy),P["leather_dark"])
-    poly(d,[(tiex,18+cy),(tiex-3*face,20+cy),(tiex-4*face,25+cy),(tiex-1*face,23+cy)],P["hair"],P["outline"])
-    px(d,tiex-2*face,20+cy,P["hair_hi"])
-
-    hx=cx+m["head"]*face
-    poly(d,[(hx-4,7+cy),(hx+3,7+cy),(hx+5*face,10+cy),(hx+5*face,15+cy),
-            (hx+3*face,17+cy),(hx-2*face,17+cy),(hx-4*face,14+cy)],P["skin"],P["outline"])
-    if face==1:
-        rect(d,(hx+1,9+cy,hx+3,12+cy),P["skin_light"])
-        px(d,hx+3,15+cy,P["cheek"])
+    rect(d,(22+cx-24,16+cy,26+cx-24,19+cy),P['skin2'],P['o2'])
+    if not back:
+        poly(d,[(21+cx-24,10+cy),(22+cx-24,8+cy),(26+cx-24,8+cy),(28+cx-24,10+cy),(28+cx-24,13+cy),(27+cx-24,15+cy),(25+cx-24,17+cy),(23+cx-24,17+cy),(21+cx-24,15+cy),(20+cx-24,13+cy),(20+cx-24,11+cy)],P['skin'],P['o2'])
+        poly(d,[(19+cx-24,10+cy),(20+cx-24,8+cy),(22+cx-24,6+cy),(25+cx-24,6+cy),(28+cx-24,7+cy),(30+cx-24,10+cy),(29+cx-24,12+cy),(27+cx-24,10+cy),(26+cx-24,13+cy),(24+cx-24,11+cy),(22+cx-24,13+cy),(20+cx-24,12+cy),(20+cx-24,15+cy)],P['hair'],P['o'])
+        line(d,[(22+cx-24,7+cy),(25+cx-24,7+cy),(28+cx-24,9+cy)],P['hairhi'])
+        pt(d,22+cx-24,12+cy,P['eye']);pt(d,26+cx-24,12+cy,P['eye'])
+        if m['wide']:pt(d,22+cx-24,11+cy,P['eye']);pt(d,26+cx-24,11+cy,P['eye'])
+        pt(d,21+cx-24,14+cy,P['cheek']);pt(d,27+cx-24,13+cy,P['cheek'])
+        if m['mouth']:
+            line(d,[(23+cx-24,15+cy),(25+cx-24,15+cy)],P['o2'])
+            if m['open']:pt(d,24+cx-24,16+cy,P['skin2'])
+        else:pt(d,24+cx-24,15+cy,P['o2'])
     else:
-        rect(d,(hx-3,9+cy,hx-1,12+cy),P["skin_light"])
-        px(d,hx-3,15+cy,P["cheek"])
-
-    if face==1:
-        poly(d,[(hx-5,8+cy),(hx-3,5+cy),(hx+2,5+cy),(hx+4,7+cy),(hx+3,10+cy),(hx+1,8+cy),(hx-1,10+cy),(hx-3,9+cy),(hx-4,13+cy)],P["hair"],P["outline"])
-        rect(d,(hx-3,6+cy,hx,7+cy),P["hair_hi"])
-        px(d,hx+2,10+cy,P["outline_soft"]); px(d,hx+3,11+cy,P["eye"])
-        if m["wide"]: px(d,hx+3,10+cy,P["eye"])
-        px(d,hx+5,13+cy,P["skin_shadow"])
-        if m["mouth"]:
-            d.line([(hx+4,15+cy),(hx+6,15+cy)],fill=P["outline"],width=1)
-            px(d,hx+5,16+cy,P["skin_shadow"])
-        else:
-            px(d,hx+5,15+cy,P["outline_soft"])
-    else:
-        poly(d,[(hx+5,8+cy),(hx+3,5+cy),(hx-2,5+cy),(hx-4,7+cy),(hx-3,10+cy),(hx-1,8+cy),(hx+1,10+cy),(hx+3,9+cy),(hx+4,13+cy)],P["hair"],P["outline"])
-        rect(d,(hx,6+cy,hx+3,7+cy),P["hair_hi"])
-        px(d,hx-2,10+cy,P["outline_soft"]); px(d,hx-3,11+cy,P["eye"])
-        if m["wide"]: px(d,hx-3,10+cy,P["eye"])
-        px(d,hx-5,13+cy,P["skin_shadow"])
-        if m["mouth"]:
-            d.line([(hx-6,15+cy),(hx-4,15+cy)],fill=P["outline"],width=1)
-            px(d,hx-5,16+cy,P["skin_shadow"])
-        else:
-            px(d,hx-5,15+cy,P["outline_soft"])
+        poly(d,[(19+cx-24,10+cy),(20+cx-24,8+cy),(22+cx-24,6+cy),(25+cx-24,6+cy),(28+cx-24,7+cy),(30+cx-24,10+cy),(29+cx-24,17+cy),(27+cx-24,20+cy),(24+cx-24,19+cy),(21+cx-24,20+cy),(19+cx-24,17+cy)],P['hair'],P['o']);line(d,[(22+cx-24,7+cy),(25+cx-24,7+cy),(28+cx-24,9+cy)],P['hairhi'])
     return im
 
-def draw_front_back(anim,i,direction):
-    m=motion(anim,i)
-    im=Image.new("RGBA",(CELL,CELL),(0,0,0,0)); d=ImageDraw.Draw(im)
-    cy=m["dy"]-m["bob"]; lean=m["lean"]; stride=m["stride"]; arm=m["arm"]; hair=m["hair"]
-    cx=24+lean
+def side(a,i,right=True):
+    m=motion(a,i); im=Image.new('RGBA',(48,48),(0,0,0,0));d=ImageDraw.Draw(im)
+    face=1 if right else -1;cy=m['dy']-m['bob'];cx=24+m['lean']*face;s=m['stride'];arm=m['arm'];hm=m['hair']
+    poly(d,[(cx-2*face,7+cy),(cx-5*face,8+cy),(cx-7*face,11+cy),(cx-7*face,17+cy),(cx-5*face,21+cy),(cx-2*face,22+cy),(cx-1*face,18+cy)],P['hair2'],P['o'])
+    tx=cx-6*face+hm*face;rect(d,(min(tx,tx+2*face),16+cy,max(tx,tx+2*face),18+cy),P['leather2']);poly(d,[(tx,18+cy),(tx-3*face,19+cy),(tx-5*face,22+cy),(tx-3*face,23+cy),(tx,21+cy)],P['hair'],P['o2']);pt(d,tx-3*face,20+cy,P['hairhi'])
 
-    lx=cx-4+stride//3; rx=cx+4-stride//3
-    poly(d,[(lx-2,30+cy),(lx+2,30+cy),(lx+1,40+cy),(lx-2,40+cy)],P["pants"],P["outline"])
-    poly(d,[(rx-2,30+cy),(rx+2,30+cy),(rx+2,40+cy),(rx-1,40+cy)],P["pants_dark"],P["outline"])
-    poly(d,[(lx-2,39+cy),(lx+1,39+cy),(lx+2,44+cy),(lx-3,44+cy)],P["leather"],P["outline"])
-    poly(d,[(rx-1,39+cy),(rx+2,39+cy),(rx+3,44+cy),(rx-2,44+cy)],P["leather_mid"],P["outline"])
+    rear=cx-2*face+int(s*.25)*face;frontx=cx+2*face-int(s*.25)*face
+    poly(d,[(rear-1,30+cy),(rear+1,30+cy),(rear,40+cy),(rear-2,41+cy)],P['pants2'],P['o2']);poly(d,[(frontx-1,30+cy),(frontx+2,30+cy),(frontx+2*face,40+cy),(frontx,41+cy)],P['pants'],P['o2'])
+    poly(d,[(rear-2,39+cy),(rear+1,39+cy),(rear+2*face,44+cy),(rear-3*face,44+cy)],P['leather2'],P['o']);poly(d,[(frontx,39+cy),(frontx+3*face,39+cy),(frontx+4*face,44+cy),(frontx-1*face,44+cy)],P['leather'],P['o'])
 
-    poly(d,[(cx-7,18+cy),(cx+7,18+cy),(cx+8,29+cy),(cx-8,29+cy)],P["shirt"],P["outline"])
-    rect(d,(cx-6,18+cy,cx+6,27+cy),P["vest"],P["outline_soft"])
-    if direction=="down":
-        rect(d,(cx-1,18+cy,cx+1,27+cy),P["shirt"])
-        px(d,cx+4,20+cy,P["vest_mid"])
-        px(d,cx-4,25+cy,P["vest_dark"])
+    poly(d,[(cx-4,19+cy),(cx+3,18+cy),(cx+5*face,22+cy),(cx+3*face,29+cy),(cx-3*face,29+cy),(cx-5*face,23+cy)],P['shirt'],P['o2'])
+    poly(d,[(cx-3,19+cy),(cx+2,19+cy),(cx+4*face,22+cy),(cx+3*face,27+cy),(cx-2*face,28+cy)],P['vest'],P['o2']);pt(d,cx+1*face,20+cy,P['vesthi'])
+    line(d,[(cx-3,29+cy),(cx+3,29+cy)],P['leather2'])
+
+    bx=cx-3*face;fx=cx+4*face
+    poly(d,[(bx,20+cy),(bx-2*face,21+cy),(bx-2*face,28+cy),(bx,28+cy)],P['shirt2'],P['o2']);rect(d,(min(bx-2*face,bx),27+cy,max(bx-2*face,bx),30+cy),P['skin2'],P['o2'])
+    if a in ('talk','surprise','approach','laugh'):
+        ex=fx+(2+arm)*face;ey=22+cy-int(arm*.3);poly(d,[(fx,20+cy),(fx+2*face,21+cy),(ex,ey),(ex-face,ey+2)],P['shirt'],P['o2']);rect(d,(min(ex,ex+2*face),ey-1,max(ex,ex+2*face),ey+1),P['skin'],P['o2'])
     else:
-        rect(d,(cx-5,24+cy,cx+5,27+cy),P["vest_mid"])
-    rect(d,(cx-8,28+cy,cx+8,30+cy),P["leather_dark"],P["outline"])
-    rect(d,(cx-1,28+cy,cx+1,30+cy),P["metal_dark"])
-    rect(d,(cx+5 if direction=="down" else cx-8,30+cy,cx+8 if direction=="down" else cx-5,34+cy),P["leather_mid"],P["outline"])
+        ex=fx+2*face-int(s*.2)*face;poly(d,[(fx,20+cy),(fx+2*face,21+cy),(ex,28+cy),(ex-face,29+cy)],P['shirt'],P['o2']);rect(d,(min(ex-face,ex+face),28+cy,max(ex-face,ex+face),30+cy),P['skin'],P['o2'])
 
-    if anim in ("talk","surprise","approach","laugh"):
-        g=arm
-        poly(d,[(cx+6,20+cy),(cx+9,21+cy),(cx+10+g,25+cy-g//2),(cx+8+g,28+cy-g//2)],P["shirt"],P["outline"])
-        rect(d,(cx+8+g,26+cy-g//2,cx+11+g,29+cy-g//2),P["skin"],P["outline"])
-        poly(d,[(cx-6,20+cy),(cx-9,21+cy),(cx-10-g//2,26+cy),(cx-8-g//2,29+cy)],P["shirt_shadow"],P["outline"])
-        rect(d,(cx-11-g//2,27+cy,cx-8-g//2,29+cy),P["skin_shadow"],P["outline"])
+    px0=cx+5*face;rect(d,(min(px0,px0+3*face),29+cy,max(px0,px0+3*face),33+cy),P['leather'],P['o2']);pt(d,px0+face,30+cy,P['leatherhi'])
+    ss=-face;sx=cx+5*ss;rect(d,(min(sx,sx+2*ss),29+cy,max(sx,sx+2*ss),31+cy),P['leatherhi'],P['o2']);poly(d,[(sx,31+cy),(sx+2*ss,31+cy),(sx-1*ss,41+cy),(sx-3*ss,42+cy)],P['leather2'],P['o2']);pt(d,sx+ss,31+cy,P['metal'])
+
+    rect(d,(cx-1,16+cy,cx+2,19+cy),P['skin2'],P['o2']);hx=cx
+    if right:
+        poly(d,[(hx-2,9+cy),(hx,8+cy),(hx+3,9+cy),(hx+4,11+cy),(hx+4,14+cy),(hx+2,17+cy),(hx-1,17+cy),(hx-3,14+cy),(hx-3,11+cy)],P['skin'],P['o2']);poly(d,[(hx-4,10+cy),(hx-3,7+cy),(hx,6+cy),(hx+3,7+cy),(hx+5,9+cy),(hx+4,11+cy),(hx+2,10+cy),(hx+1,12+cy),(hx-1,10+cy),(hx-3,13+cy)],P['hair'],P['o']);line(d,[(hx-2,7+cy),(hx+1,7+cy),(hx+3,8+cy)],P['hairhi']);pt(d,hx+2,11+cy,P['eye']);pt(d,hx+3,14+cy,P['cheek']);pt(d,hx+3,15+cy,P['o2'])
     else:
-        poly(d,[(cx-6,20+cy),(cx-9,21+cy),(cx-8,29+cy),(cx-6,29+cy)],P["shirt_shadow"],P["outline"])
-        poly(d,[(cx+6,20+cy),(cx+9,21+cy),(cx+8,29+cy),(cx+6,29+cy)],P["shirt"],P["outline"])
-        rect(d,(cx-9,28+cy,cx-7,31+cy),P["skin_shadow"],P["outline"])
-        rect(d,(cx+7,28+cy,cx+9,31+cy),P["skin"],P["outline"])
-
-    sx=cx-9 if direction=="down" else cx+9
-    sign=-1 if direction=="down" else 1
-    rect(d,(min(sx,sx+2*sign),29+cy,max(sx,sx+2*sign),32+cy),P["leather"],P["outline"])
-    poly(d,[(sx,31+cy),(sx+2*sign,31+cy),(sx+5*sign,42+cy),(sx+2*sign,43+cy)],P["leather_dark"],P["outline"])
-
-    rect(d,(cx-2,15+cy,cx+2,19+cy),P["skin_shadow"],P["outline_soft"])
-    if direction=="down":
-        poly(d,[(cx-6,7+cy),(cx+6,7+cy),(cx+7,15+cy),(cx+4,19+cy),(cx-5,19+cy),(cx-7,15+cy)],P["hair_dark"],P["outline"])
-        poly(d,[(cx-5+hair//2,14+cy),(cx-8+hair,18+cy),(cx-7+hair,25+cy),(cx-4+hair,23+cy)],P["hair"],P["outline"])
-        rect(d,(cx-7+hair,17+cy,cx-5+hair,19+cy),P["leather_dark"])
-        poly(d,[(cx-5,7+cy),(cx+5,7+cy),(cx+6,10+cy),(cx+5,16+cy),(cx+2,18+cy),(cx-2,18+cy),(cx-5,16+cy),(cx-6,10+cy)],P["skin"],P["outline"])
-        poly(d,[(cx-6,8+cy),(cx-4,5+cy),(cx+4,5+cy),(cx+6,8+cy),(cx+4,10+cy),(cx+2,8+cy),(cx,10+cy),(cx-2,8+cy),(cx-4,11+cy)],P["hair"],P["outline"])
-        rect(d,(cx-2,6+cy,cx+2,7+cy),P["hair_hi"])
-        px(d,cx-3,11+cy,P["outline_soft"]); px(d,cx+3,11+cy,P["outline_soft"])
-        px(d,cx-3,12+cy,P["eye"]); px(d,cx+3,12+cy,P["eye"])
-        if m["wide"]:
-            px(d,cx-3,11+cy,P["eye"]); px(d,cx+3,11+cy,P["eye"])
-        px(d,cx+4,14+cy,P["cheek"]); px(d,cx-4,14+cy,P["cheek"])
-        if m["mouth"]:
-            d.line([(cx-2,16+cy),(cx+2,16+cy)],fill=P["outline"],width=1)
-            px(d,cx,17+cy,P["skin_shadow"])
-        else:
-            d.line([(cx-1,16+cy),(cx+1,16+cy)],fill=P["outline_soft"],width=1)
-    else:
-        poly(d,[(cx-6,6+cy),(cx+6,6+cy),(cx+7,14+cy),(cx+5,21+cy),(cx+2,24+cy),(cx-3,23+cy),(cx-6,20+cy),(cx-7,13+cy)],P["hair"],P["outline"])
-        rect(d,(cx-3,7+cy,cx+2,8+cy),P["hair_hi"])
-        rect(d,(cx-3,17+cy,cx+3,19+cy),P["leather_dark"])
-        poly(d,[(cx+1+hair//2,18+cy),(cx+5+hair,20+cy),(cx+6+hair,26+cy),(cx+2+hair,24+cy)],P["hair_dark"],P["outline"])
+        poly(d,[(hx+2,9+cy),(hx,8+cy),(hx-3,9+cy),(hx-4,11+cy),(hx-4,14+cy),(hx-2,17+cy),(hx+1,17+cy),(hx+3,14+cy),(hx+3,11+cy)],P['skin'],P['o2']);poly(d,[(hx+4,10+cy),(hx+3,7+cy),(hx,6+cy),(hx-3,7+cy),(hx-5,9+cy),(hx-4,11+cy),(hx-2,10+cy),(hx-1,12+cy),(hx+1,10+cy),(hx+3,13+cy)],P['hair'],P['o']);line(d,[(hx+2,7+cy),(hx-1,7+cy),(hx-3,8+cy)],P['hairhi']);pt(d,hx-2,11+cy,P['eye']);pt(d,hx-3,14+cy,P['cheek']);pt(d,hx-3,15+cy,P['o2'])
     return im
 
-def frame(anim,i,direction):
-    return draw_side(anim,i,direction) if direction in ("left","right") else draw_front_back(anim,i,direction)
+def frame(a,i,dir):
+    if dir=='down':return front(a,i,False)
+    if dir=='up':return front(a,i,True)
+    return side(a,i,dir=='right')
 
 def main():
-    ap=argparse.ArgumentParser()
-    ap.add_argument("--out",default="assets/characters/karen")
-    args=ap.parse_args()
-    out=Path(args.out)
-    out.mkdir(parents=True,exist_ok=True)
-    for anim,n in FRAMES.items():
-        sheet=Image.new("RGBA",(CELL*n,CELL*len(DIRS)),(0,0,0,0))
-        for row,direction in enumerate(DIRS):
-            for i in range(n):
-                sheet.alpha_composite(frame(anim,i,direction),(CELL*i,CELL*row))
-        sheet.save(out/f"karen_{anim}.png",optimize=False)
-        print(f"{anim}: {sheet.size[0]}x{sheet.size[1]}")
-
-if __name__=="__main__":
-    main()
+    ap=argparse.ArgumentParser();ap.add_argument('--out',default='assets/characters/karen');args=ap.parse_args();out=Path(args.out);out.mkdir(parents=True,exist_ok=True)
+    for a,n in FRAMES.items():
+        sh=Image.new('RGBA',(48*n,192),(0,0,0,0))
+        for row,dr in enumerate(DIRS):
+            for i in range(n):sh.alpha_composite(frame(a,i,dr),(48*i,48*row))
+        sh.save(out/f'karen_{a}.png');print(a,sh.size)
+if __name__=='__main__':main()
