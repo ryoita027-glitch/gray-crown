@@ -71,8 +71,8 @@ def draw_down(anim,i):
     m=motion(anim,i); im=Image.new('RGBA',(CELL,CELL),(0,0,0,0)); d=ImageDraw.Draw(im)
     cy=-m['bob']-m['lift']; stride=m['stride']; arm=m['arm']; hair=m['hair']
     poly(d,[(18,9+cy),(20,6+cy),(28,6+cy),(30,9+cy),(31,15+cy),(29,20+cy),(27,22+cy),(21,22+cy),(18,19+cy),(17,14+cy)],P['hair_dark'])
-    rect(d,28+hair,16+cy,30+hair,18+cy,P['belt'])
-    poly(d,[(29+hair,18+cy),(32+hair,19+cy),(31+hair,25+cy),(28+hair,24+cy)],P['hair'])
+    rect(d,29+hair,17+cy,30+hair,18+cy,P['belt'])
+    poly(d,[(30+hair,19+cy),(32+hair,20+cy),(31+hair,24+cy),(29+hair,23+cy)],P['hair'])
     px(d,31+hair,20+cy,P['hair_hi'])
     lx=21+stride//2; rx=27-stride//2
     poly(d,[(lx-2,30+cy),(lx+1,30+cy),(lx+1,38+cy),(lx-2,38+cy)],P['pants'])
@@ -98,12 +98,14 @@ def draw_down(anim,i):
     rect(d,22,18+cy,26,21+cy,P['skin_shadow'])
     poly(d,[(20,9+cy),(22,8+cy),(27,8+cy),(29,10+cy),(29,15+cy),(27,18+cy),(22,18+cy),(20,16+cy),(19,12+cy)],P['skin'])
     poly(d,[(19,10+cy),(20,7+cy),(23,6+cy),(28,7+cy),(30,9+cy),(29,12+cy),(27,11+cy),(26,13+cy),(23,11+cy),(22,13+cy),(20,12+cy)],P['hair'])
-    rect(d,22,7+cy,26,8+cy,P['hair_hi'])
+    rect(d,22,7+cy,25,7+cy,P['hair_hi']); rect(d,24,8+cy,27,8+cy,P['hair_hi'])
     px(d,22,13+cy,P['eye']); px(d,27,13+cy,P['eye'])
     if m['wide']: px(d,22,12+cy,P['eye']); px(d,27,12+cy,P['eye'])
     px(d,21,15+cy,P['cheek']); px(d,28,15+cy,P['cheek'])
-    if m['mouth']: rect(d,23,16+cy,26,16+cy,P['outline'])
-    else: px(d,25,16+cy,P['outline2'])
+    if m['mouth']:
+        rect(d,23,16+cy,25,16+cy,P['outline2']); px(d,24,17+cy,P['skin_hi'])
+    else:
+        px(d,24,16+cy,P['outline2']); px(d,25,16+cy,P['outline2'])
     return im
 
 def draw_up(anim,i):
@@ -117,10 +119,10 @@ def draw_up(anim,i):
     rect(d,20,29+cy,28,30+cy,P['belt']); px(d,24,29+cy,P['metal'])
     rect(d,29,28+cy,32,31+cy,P['belt']); poly(d,[(30,31+cy),(32,31+cy),(35,41+cy),(33,42+cy)],P['boots']); px(d,31,31+cy,P['metal'])
     poly(d,[(19,21+cy),(17,22+cy),(17,29+cy),(19,30+cy)],P['shirt_shadow']); poly(d,[(29,21+cy),(31,22+cy),(31,29+cy),(29,30+cy)],P['shirt'])
-    poly(d,[(19,9+cy),(20,7+cy),(23,6+cy),(28,7+cy),(30,9+cy),(31,15+cy),(30,20+cy),(28,23+cy),(21,23+cy),(18,20+cy),(18,14+cy)],P['hair'])
-    rect(d,23+hair,18+cy,26+hair,20+cy,P['belt'])
-    poly(d,[(24+hair,20+cy),(28+hair,21+cy),(28+hair,26+cy),(24+hair,25+cy)],P['hair_dark'])
-    rect(d,22,7+cy,26,8+cy,P['hair_hi'])
+    poly(d,[(20,9+cy),(21,7+cy),(24,6+cy),(28,7+cy),(30,9+cy),(31,15+cy),(29,20+cy),(28,22+cy),(21,22+cy),(19,20+cy),(18,14+cy)],P['hair'])
+    rect(d,24+hair,18+cy,26+hair,19+cy,P['belt'])
+    poly(d,[(25+hair,20+cy),(28+hair,21+cy),(27+hair,25+cy),(24+hair,24+cy)],P['hair_dark'])
+    rect(d,22,7+cy,25,7+cy,P['hair_hi']); rect(d,24,8+cy,27,8+cy,P['hair_hi'])
     return im
 
 def draw_side(anim,i,direction):
@@ -150,21 +152,21 @@ def draw_side(anim,i,direction):
     rect(d,cx-2,18+cy,cx+2,21+cy,P['skin_shadow'])
     poly(d,[(cx-4*face,9+cy),(cx-5*face,7+cy),(cx+1*face,6+cy),(cx+4*face,8+cy),(cx+5*face,13+cy),(cx+3*face,19+cy),(cx-2*face,22+cy),(cx-5*face,19+cy)],P['hair_dark'])
     tiex=cx-5*face+hair
-    rect(d,min(tiex,tiex+2*face),17+cy,max(tiex,tiex+2*face),19+cy,P['belt'])
-    poly(d,[(tiex,19+cy),(tiex-3*face,20+cy),(tiex-3*face,25+cy),(tiex-1*face,24+cy)],P['hair'])
+    rect(d,min(tiex,tiex+1*face),18+cy,max(tiex,tiex+1*face),19+cy,P['belt'])
+    poly(d,[(tiex,20+cy),(tiex-2*face,20+cy),(tiex-2*face,24+cy),(tiex-1*face,23+cy)],P['hair'])
     hx=cx
     if face==1:
-        poly(d,[(hx-3,9+cy),(hx+2,8+cy),(hx+4,10+cy),(hx+4,15+cy),(hx+3,17+cy),(hx-2,18+cy),(hx-3,16+cy)],P['skin'])
+        poly(d,[(hx-3,9+cy),(hx+2,8+cy),(hx+3,10+cy),(hx+3,15+cy),(hx+2,17+cy),(hx-2,18+cy),(hx-3,16+cy)],P['skin'])
         poly(d,[(hx-4,10+cy),(hx-3,7+cy),(hx+2,6+cy),(hx+4,8+cy),(hx+3,11+cy),(hx+1,10+cy),(hx,12+cy),(hx-2,11+cy),(hx-3,15+cy)],P['hair'])
-        rect(d,hx-2,7+cy,hx+1,8+cy,P['hair_hi'])
-        px(d,hx+2,12+cy,P['eye']); px(d,hx+4,14+cy,P['skin_shadow'])
-        if m['mouth']: px(d,hx+4,16+cy,P['outline'])
+        rect(d,hx-2,7+cy,hx+1,7+cy,P['hair_hi']); px(d,hx+1,8+cy,P['hair_hi'])
+        px(d,hx+1,12+cy,P['eye']); px(d,hx+4,14+cy,P['skin_shadow'])
+        if m['mouth']: px(d,hx+3,16+cy,P['outline2'])
     else:
-        poly(d,[(hx+3,9+cy),(hx-2,8+cy),(hx-4,10+cy),(hx-4,15+cy),(hx-3,17+cy),(hx+2,18+cy),(hx+3,16+cy)],P['skin'])
+        poly(d,[(hx+3,9+cy),(hx-2,8+cy),(hx-3,10+cy),(hx-3,15+cy),(hx-2,17+cy),(hx+2,18+cy),(hx+3,16+cy)],P['skin'])
         poly(d,[(hx+4,10+cy),(hx+3,7+cy),(hx-2,6+cy),(hx-4,8+cy),(hx-3,11+cy),(hx-1,10+cy),(hx,12+cy),(hx+2,11+cy),(hx+3,15+cy)],P['hair'])
-        rect(d,hx-1,7+cy,hx+2,8+cy,P['hair_hi'])
-        px(d,hx-2,12+cy,P['eye']); px(d,hx-4,14+cy,P['skin_shadow'])
-        if m['mouth']: px(d,hx-4,16+cy,P['outline'])
+        rect(d,hx-1,7+cy,hx+2,7+cy,P['hair_hi']); px(d,hx-1,8+cy,P['hair_hi'])
+        px(d,hx-1,12+cy,P['eye']); px(d,hx-4,14+cy,P['skin_shadow'])
+        if m['mouth']: px(d,hx-3,16+cy,P['outline2'])
     return im
 
 def frame(anim,i,direction):
