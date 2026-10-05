@@ -1,13 +1,15 @@
 'use strict';
 (function(){
- const CINEMATIC={active:false,name:null,actors:new Map(),camera:null,commandIndex:-1,currentCommand:null,mode:null,renderMode:'pixel48',cancelled:false,previousLocked:false};
+ const CINEMATIC={active:false,name:null,actors:new Map(),camera:null,commandIndex:-1,currentCommand:null,mode:null,renderMode:'pixel48-full',cancelled:false,previousLocked:false};
+ const PROTOTYPE_RENDER_SCALES=Object.freeze({'pixel48':1,'pixel48-full':1,'pixel48-medium':44/48,'pixel48-compact':41/48,'legacy32':1});
+ function renderScaleForMode(mode){return PROTOTYPE_RENDER_SCALES[mode]??1}
  const CANCEL_WAITERS=new Set();
  function isActive(){return CINEMATIC.active}
  function cameraTarget(){return CINEMATIC.active?CINEMATIC.camera:null}
  function controlledNpcIds(){return CINEMATIC.active?[...CINEMATIC.actors.values()].filter(a=>a.controlNpc).map(a=>a.id):[]}
  function getRenderActors(){return CINEMATIC.active?[...CINEMATIC.actors.values()].filter(a=>a.visible!==false).sort((a,b)=>(a.layer||0)-(b.layer||0)):[]}
  function actor(id){return CINEMATIC.actors.get(id)||null}
- function addActor(spec){const a=GC.Animation.createActor(spec.character||spec.id,spec);a.controlNpc=!!spec.controlNpc;a.renderMode=spec.renderMode||'pixel48';a.styleId=spec.styleId||spec.id;CINEMATIC.actors.set(a.id,a);return a}
+ function addActor(spec){const renderMode=spec.renderMode||'pixel48-full',a=GC.Animation.createActor(spec.character||spec.id,{...spec,renderMode,renderScale:spec.renderScale??renderScaleForMode(renderMode)});a.controlNpc=!!spec.controlNpc;a.renderMode=renderMode;a.renderScale=spec.renderScale??renderScaleForMode(renderMode);a.styleId=spec.styleId||spec.id;CINEMATIC.actors.set(a.id,a);return a}
  function resetTransient(){CINEMATIC.active=false;CINEMATIC.name=null;CINEMATIC.actors.clear();CINEMATIC.camera=null;CINEMATIC.commandIndex=-1;CINEMATIC.currentCommand=null;CINEMATIC.mode=null;CINEMATIC.cancelled=false;CINEMATIC.previousLocked=false;CANCEL_WAITERS.clear()}
  function signalCancel(){for(const cancelWaiter of [...CANCEL_WAITERS])cancelWaiter();CANCEL_WAITERS.clear()}
  function wait(ms){return new Promise(resolve=>{let settled=false;const finish=value=>{if(settled)return;settled=true;CANCEL_WAITERS.delete(onCancel);resolve(value)},timer=setTimeout(()=>finish(true),Math.max(0,Number(ms)||0)),onCancel=()=>{clearTimeout(timer);finish(false)};CANCEL_WAITERS.add(onCancel)})}
@@ -15,7 +17,7 @@
  function tweenActor(a,toX,toY,duration=400){if(!a)return Promise.resolve(false);const sx=a.x,sy=a.y,dx=toX-sx,dy=toY-sy,d=Math.max(1,Number(duration)||1);return new Promise(resolve=>{let start=null;const step=ts=>{if(!CINEMATIC.active||CINEMATIC.cancelled){resolve(false);return}if(start===null)start=ts;const t=Math.min(1,(ts-start)/d),ease=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;a.x=sx+dx*ease;a.y=sy+dy*ease;draw();if(t>=1)resolve(true);else requestAnimationFrame(step)};requestAnimationFrame(step)})}
  function directionToward(a,b){if(!a||!b)return'down';const dx=b.x-a.x,dy=b.y-a.y;if(Math.abs(dx)>Math.abs(dy))return dx<0?'left':'right';return dy<0?'up':'down'}
  function focusActors(ids,scale=null,offsetX=0,offsetY=0){const list=(ids||[]).map(actor).filter(Boolean);if(!list.length){CINEMATIC.camera=null;return}const x=list.reduce((s,a)=>s+a.x,0)/list.length,y=list.reduce((s,a)=>s+a.y,0)/list.length;CINEMATIC.camera={active:true,x:x+offsetX,y:y+offsetY,scale:scale||viewScale()};draw()}
- function drawActors(c,helpers={}){for(const a of getRenderActors()){if(a.renderMode==='pixel48'&&GC.Animation.drawActor(c,a))continue;const motion=['walk','run','approach','react','laugh'].includes(a.animation)?Date.now()/82:0;if(a.renderMode==='legacy32'&&helpers.drawHeroSpriteSheet){helpers.drawHeroSpriteSheet(a.x,a.y,'karen',false,a.facing,motion);continue}if(helpers.drawCharacterSprite){const style=GC.Data?.NPCs?.NPC_STYLE?.[a.styleId]||GC.Data?.NPCs?.PARTY_STYLE?.[a.styleId]||{},bob=a.animation==='react'?-.10*Math.abs(Math.sin(Date.now()/95)):0;helpers.drawCharacterSprite(a.x,a.y+bob,style,false,a.facing,motion)}}}
+ function drawActors(c,helpers={}){for(const a of getRenderActors()){if(a.renderMode.startsWith('pixel48')&&GC.Animation.drawActor(c,a))continue;const motion=['walk','run','approach','react','laugh'].includes(a.animation)?Date.now()/82:0;if(a.renderMode==='legacy32'&&helpers.drawHeroSpriteSheet){helpers.drawHeroSpriteSheet(a.x,a.y,'karen',false,a.facing,motion);continue}if(helpers.drawCharacterSprite){const style=GC.Data?.NPCs?.NPC_STYLE?.[a.styleId]||GC.Data?.NPCs?.PARTY_STYLE?.[a.styleId]||{},bob=a.animation==='react'?-.10*Math.abs(Math.sin(Date.now()/95)):0;helpers.drawCharacterSprite(a.x,a.y+bob,style,false,a.facing,motion)}}}
  async function runCommand(cmd,scene){
   if(!cmd)return true;
   if(cmd.type==='wait')return await wait(cmd.ms);
@@ -30,7 +32,7 @@
  }
  async function startScene(scene,opts={}){
   if(CINEMATIC.active||!scene)return false;
-  CINEMATIC.actors.clear();CINEMATIC.previousLocked=!!state.locked;CINEMATIC.active=true;CINEMATIC.name=scene.id||'scene';CINEMATIC.mode=opts.mode||'portraitOn';CINEMATIC.renderMode=opts.renderMode||'pixel48';CINEMATIC.cancelled=false;
+  CINEMATIC.actors.clear();CINEMATIC.previousLocked=!!state.locked;CINEMATIC.active=true;CINEMATIC.name=scene.id||'scene';CINEMATIC.mode=opts.mode||'portraitOn';CINEMATIC.renderMode=opts.renderMode||'pixel48-full';CINEMATIC.cancelled=false;
   for(const spec of scene.actors||[])addActor({...spec,renderMode:spec.id==='karen'?CINEMATIC.renderMode:spec.renderMode});
   acquireInputLock('cinematic');state.locked=true;draw();
   try{
@@ -82,7 +84,7 @@
  ]
 });
 function validateScene(scene=KAREN_PIXEL_PROTOTYPE){const errors=[],allowed=new Set(['wait','move','turn','animate','say','camera','sound','music','fade']),ids=new Set((scene?.actors||[]).map(a=>a.id));for(const [idx,cmd] of (scene?.commands||[]).entries()){if(!allowed.has(cmd.type))errors.push('command '+idx+': unknown '+cmd.type);if(cmd.actor&&!ids.has(cmd.actor))errors.push('command '+idx+': missing actor '+cmd.actor);if(cmd.target&&!ids.has(cmd.target))errors.push('command '+idx+': missing target '+cmd.target)}return{ok:errors.length===0,errors}}
-async function startKarenPrototype(opts={}){if(CINEMATIC.active)return false;const mode=opts.mode||'portraitOn',renderMode=opts.renderMode||'pixel48';if(!['portraitOn','portraitOff','motionOnly'].includes(mode))throw new Error('Unknown Karen prototype mode: '+mode);if(!['pixel48','legacy32'].includes(renderMode))throw new Error('Unknown Karen prototype render mode: '+renderMode);const prev={map:state.map,x:state.x,y:state.y,dir:state.dir,trail:(state.trail||[]).map(p=>[p[0],p[1]])};setMap('village',12,10,'up',[[12,11],[11,11],[10,11]]);try{return await startScene(KAREN_PIXEL_PROTOTYPE,{mode,renderMode})}finally{setMap(prev.map,prev.x,prev.y,prev.dir,prev.trail);VISUAL.map=null;draw()}}
+async function startKarenPrototype(opts={}){if(CINEMATIC.active)return false;const mode=opts.mode||'portraitOn',renderMode=opts.renderMode||'pixel48-full';if(!['portraitOn','portraitOff','motionOnly'].includes(mode))throw new Error('Unknown Karen prototype mode: '+mode);if(!['pixel48','pixel48-full','pixel48-medium','pixel48-compact','legacy32'].includes(renderMode))throw new Error('Unknown Karen prototype render mode: '+renderMode);const prev={map:state.map,x:state.x,y:state.y,dir:state.dir,trail:(state.trail||[]).map(p=>[p[0],p[1]])};setMap('village',12,10,'up',[[12,11],[11,11],[10,11]]);try{return await startScene(KAREN_PIXEL_PROTOTYPE,{mode,renderMode})}finally{setMap(prev.map,prev.x,prev.y,prev.dir,prev.trail);VISUAL.map=null;draw()}}
 
-GC.Cinematic={state:CINEMATIC,isActive,cameraTarget,controlledNpcIds,getRenderActors,actor,addActor,drawActors,startScene,startKarenPrototype,KAREN_PIXEL_PROTOTYPE,validateScene,cancel,wait,tweenActor,directionToward,focusActors,resetTransient};
+GC.Cinematic={state:CINEMATIC,PROTOTYPE_RENDER_SCALES,renderScaleForMode,isActive,cameraTarget,controlledNpcIds,getRenderActors,actor,addActor,drawActors,startScene,startKarenPrototype,KAREN_PIXEL_PROTOTYPE,validateScene,cancel,wait,tweenActor,directionToward,focusActors,resetTransient};
 })();
