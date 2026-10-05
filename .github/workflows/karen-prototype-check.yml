@@ -1,7 +1,7 @@
 name: Karen Pixel Prototype Check
 on:
   push:
-    branches: [pixel-karen-acting-prototype]
+    branches: [pixel-karen-acting-prototype, pixel-karen-visual-redesign-v3]
   workflow_dispatch:
 permissions:
   contents: read
@@ -27,6 +27,8 @@ jobs:
           PY
           )"
           sudo ln -sf "$CHROMIUM" /usr/bin/chromium
+      - name: Generate Karen visual-redesign prototype assets
+        run: python tools/generate_karen_prototype_assets.py
       - name: Syntax and Node regression
         run: |
           node tests/check-syntax.js
