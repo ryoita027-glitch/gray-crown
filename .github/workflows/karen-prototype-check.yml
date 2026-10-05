@@ -1,7 +1,7 @@
 name: Karen Pixel Prototype Check
 on:
   push:
-    branches: [pixel-karen-acting-prototype]
+    branches: [pixel-karen-acting-prototype, pixel-karen-scale-integration]
   workflow_dispatch:
 permissions:
   contents: read
