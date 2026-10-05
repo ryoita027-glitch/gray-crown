@@ -60,17 +60,38 @@ with sync_playwright() as p:
     assert page.evaluate('GC.State.get().map')=='village'
     start_pos=page.evaluate('({map:GC.State.get().map,x:GC.State.get().x,y:GC.State.get().y,dir:GC.State.get().dir})')
 
-    # 48px Motion Only: visual acting without dialogue text or portrait.
+    # Evidence 1: four-direction Idle using the real runtime renderer.
+    page.evaluate("""()=>{void GC.Cinematic.startScene({
+        id:'evidence.karen.chibi.idle',
+        actors:[{id:'karen',character:'karen',x:14.5,y:7,facing:'down',animation:'idle',layer:2}],
+        commands:[{type:'camera',actors:['karen'],scale:1.30},{type:'wait',ms:5000},{type:'camera',action:'return'}]
+    },{mode:'motionOnly',renderMode:'pixel48'});return true}""")
+    page.wait_for_function("()=>GC.Cinematic.isActive() && GC.Cinematic.actor('karen')",timeout=5000)
+    for facing in ['down','left','right','up']:
+        page.evaluate("(f)=>GC.Animation.setFacing(GC.Cinematic.actor('karen'),f)",facing)
+        page.wait_for_timeout(100)
+        page.locator('.game-stage').screenshot(path=str(OUT/f'karen_chibi_idle_{facing}.png'))
+    page.evaluate("GC.Cinematic.cancel()")
+    page.wait_for_timeout(50)
+    assert page.evaluate('GC.Cinematic.isActive()') is False
+    assert page.evaluate('GC.State.get().locked') is False
+
+    # Motion Only: capture Walk -> Talk -> Laugh in the unchanged Karen + Mika scene.
     open_dev(page);page.locator('#devKaren48Motion').click()
+    page.wait_for_function("()=>GC.Cinematic.state.currentCommand && GC.Cinematic.state.currentCommand.animation==='walk'",timeout=12000)
+    page.locator('.game-stage').screenshot(path=str(OUT/'karen_chibi_walk.png'))
+    page.wait_for_function("()=>GC.Cinematic.state.currentCommand && GC.Cinematic.state.currentCommand.animation==='talk'",timeout=15000)
+    page.locator('.game-stage').screenshot(path=str(OUT/'karen_chibi_talk.png'))
     page.wait_for_function("()=>GC.Cinematic.state.currentCommand && GC.Cinematic.state.currentCommand.animation==='laugh'",timeout=15000)
-    page.locator('#game').screenshot(path=str(OUT/'karen_48_laugh.png'))
+    page.locator('#game').screenshot(path=str(OUT/'karen_chibi_laugh.png'))
+    page.locator('.game-stage').screenshot(path=str(OUT/'karen_chibi_motion_only.png'))
     finish_scene(page)
     assert page.evaluate('GC.Cinematic.isActive()') is False
     assert page.evaluate('GC.State.get().locked') is False
     assert page.evaluate('GC.Dialogue.isInputLocked()') is False
     assert page.evaluate('({map:GC.State.get().map,x:GC.State.get().x,y:GC.State.get().y,dir:GC.State.get().dir})')==start_pos
 
-    # Same scene/camera using current 32px baseline.
+    # Existing 32px baseline stays available as a non-destructive comparison.
     open_dev(page);page.locator('#devKaren32Baseline').click()
     page.wait_for_function("()=>GC.Cinematic.state.currentCommand && GC.Cinematic.state.currentCommand.animation==='laugh'",timeout=15000)
     page.locator('#game').screenshot(path=str(OUT/'karen_32_baseline_laugh.png'))
@@ -81,20 +102,22 @@ with sync_playwright() as p:
     page.wait_for_function("()=>GC.Cinematic.isActive() && !document.getElementById('dialogueBox').classList.contains('hidden')",timeout=12000)
     assert page.locator('#dialogueBox').evaluate("el=>el.classList.contains('no-portrait')") is True
     assert page.locator('#speakerPortrait').inner_html()==''
-    page.locator('.game-stage').screenshot(path=str(OUT/'karen_48_portrait_off.png'))
+    page.locator('.game-stage').screenshot(path=str(OUT/'karen_chibi_portrait_off.png'))
     finish_scene(page)
 
-    # Portrait ON, same content/timing/animation path.
+    # Portrait ON, same dialogue and scene path.
     open_dev(page);page.locator('#devKaren48Portrait').click()
     page.wait_for_function("()=>GC.Cinematic.isActive() && !document.getElementById('dialogueBox').classList.contains('hidden')",timeout=12000)
     assert page.locator('#dialogueBox').evaluate("el=>el.classList.contains('no-portrait')") is False
     assert 'hero-portrait-svg' in page.locator('#speakerPortrait').inner_html()
-    page.locator('.game-stage').screenshot(path=str(OUT/'karen_48_portrait_on.png'))
+    page.locator('.game-stage').screenshot(path=str(OUT/'karen_chibi_portrait_on.png'))
     finish_scene(page)
 
     assert page.evaluate('GC.State.get().locked') is False
     assert page.evaluate('GC.Dialogue.isInputLocked()') is False
-    assert not errors,f'page errors during Karen prototype: {errors}'
+    assert page.evaluate('GC.Save.SAVE_SCHEMA')==23
+    assert page.evaluate('({map:GC.State.get().map,x:GC.State.get().x,y:GC.State.get().y,dir:GC.State.get().dir})')==start_pos
+    assert not errors,f'page errors during Karen Chibi integration: {errors}'
     browser.close()
 
-print('KAREN PIXEL PROTOTYPE E2E PASS: 48 motion -> 32 baseline -> portrait OFF -> portrait ON -> control restored')
+print('KAREN CHIBI INTEGRATION E2E PASS: idle 4-dir -> walk -> talk -> laugh -> 32 baseline -> portrait OFF/ON -> control restored')
