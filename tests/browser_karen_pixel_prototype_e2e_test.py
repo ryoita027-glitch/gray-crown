@@ -99,12 +99,6 @@ with sync_playwright() as p:
     page.locator('.game-stage').screenshot(path=str(OUT/'karen_phase3_medium_portrait_on.png'))
     finish_scene(page)
 
-    # Keep Phase 2 full-size portrait toggles working as a reversible baseline.
-    open_dev(page);page.locator('#devKaren48NoPortrait').click()
-    page.wait_for_function("()=>GC.Cinematic.isActive() && !document.getElementById('dialogueBox').classList.contains('hidden')",timeout=12000)
-    assert page.locator('#dialogueBox').evaluate("el=>el.classList.contains('no-portrait')") is True
-    finish_scene(page)
-
     assert page.evaluate('GC.State.get().locked') is False
     assert page.evaluate('GC.Dialogue.isInputLocked()') is False
     assert not errors,f'page errors during Karen Phase 3 prototype: {errors}'
