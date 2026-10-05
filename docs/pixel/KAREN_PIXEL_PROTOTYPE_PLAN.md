@@ -2,7 +2,7 @@
 
 ## Gray Crown — First Pixel Acting Prototype
 
-**Status:** PHASE 2 VISUAL REVISION GENERATED — **A/B EVALUATION PENDING**  
+**Status:** PHASE 2 COMPLETE — **VERDICT: REVISE AGAIN / PIXEL-NATIVE NOT FORMALLY ADOPTED**  
 **Duration target:** 10〜20 seconds  
 **Location:** Existing Rynne Village  
 **Canon impact:** None. Prototype-only presentation test.
@@ -241,7 +241,7 @@ Technical Prototypeは成立している。
 
 詳細評価は `docs/pixel/KAREN_PIXEL_PROTOTYPE_RESULT.md` を参照。
 
-Phase 2では、Phase 1のREVISE指摘に従いKaren 48pxのVisual constructionを再設計し、同一Scene・同一Camera条件で再評価する。
+Phase 2では、Phase 1のREVISE指摘に従いKaren 48pxのVisual constructionを再設計し、同一Scene・同一Camera条件で再評価した。結果は **REVISE AGAIN**。詳細は `docs/pixel/KAREN_PIXEL_PROTOTYPE_PHASE2_RESULT.md` を参照。
 
 ---
 
