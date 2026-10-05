@@ -5,7 +5,7 @@
 **Branch:** `pixel-karen-visual-anchor-redesign`  
 **Evaluated visual:** first 32px-anchor redesign at HEAD `5efa63a58d4790ba9e120686c985b5aaeb27b84a`  
 **Technical architecture:** GO  
-**Visual verdict:** **VISUAL REVISE**  
+**Visual verdict:** **VISUAL PASS (SECOND REVIEW) — CURRENT-HEAD CI PENDING**  
 **Scale Integration:** NOT STARTED  
 **Triton:** NOT STARTED  
 **main merge:** PROHIBITED
@@ -210,5 +210,159 @@ Fix only:
 Then rerun the same Visual Acceptance Gate.
 
 Do not begin Scale Integration until the revised 48px passes.
+
+Do not begin Triton.
+
+
+---
+
+# 11. Second visual review — minimal revision
+
+**Re-evaluated HEAD:** `af6dc894cb43914d2ea52e7a18904d8d0f4bab34`
+
+Only the issues identified by the first VISUAL REVISE were changed:
+
+- Laugh / open-mouth weight reduced
+- low partial tie reduced and integrated into the hair silhouette
+- side-profile nose / mouth projection reduced
+- hair highlight changed from a flat rectangular stripe to a stepped highlight
+
+No change was made to:
+
+- body / costume structure
+- 48×48 source architecture
+- animation category count
+- SceneRunner
+- map / collision / Story / Save
+- Portrait system
+- Triton / Sophie / Margaret
+
+## Face — SECOND REVIEW
+
+The face now stays compact in normal and Laugh frames.
+
+- neutral mouth is small
+- Laugh mouth no longer dominates the lower face
+- side profile no longer reads as a protruding snout
+- front face preserves adult/cute balance
+
+**Face result: PASS.**
+
+## Hair — SECOND REVIEW
+
+- main red-hair mass remains clean
+- the partial tie is now a small hook rather than a block
+- loose hair remains readable
+- highlight contributes direction without flattening the head
+
+**Hair result: PASS.**
+
+## Body / color — SECOND REVIEW
+
+No reopening was necessary.
+
+The previously passing items remain passing:
+
+- short muted-red vest
+- visible warm off-white shirt
+- separated legs
+- separated pants / boots
+- healthy middle build
+- secondary equipment mass
+
+**Body result: PASS.**  
+**Color result: PASS.**
+
+## 32px anchor comparison — SECOND REVIEW
+
+At equal visible-height inspection, the revised 48px now retains the old 32px strengths while adding a materially stronger identity:
+
+- compact face
+- readable red-hair silhouette
+- clearer Stage A color mass
+- stronger adult protagonist read
+- low partial tie
+- more expressive limbs
+- more room for whole-body acting
+
+The 32px version remains lighter and simpler, but no longer has a clear attractiveness advantage.
+
+Current visual judgement:
+
+> **48px appeal >= 32px appeal**
+
+while the existing animation space continues to provide:
+
+> **48px acting capacity > 32px acting capacity**
+
+**Anchor comparison result: PASS.**
+
+## Acting — SECOND REVIEW
+
+Direct frame-sequence inspection confirms that the revised visual remains stable through:
+
+- Walk
+- Approach
+- Laugh
+- Run
+- Surprise
+
+The face, hair mass, tie, torso and lower-body separation remain recognizable through the tested frames.
+
+Laugh now reads as a larger Karen-specific body reaction without the previous mouth-weight problem.
+
+**Acting visual result: PASS.**
+
+## World context
+
+At full 48px display, Karen still occupies more screen space than the 32px village NPCs.
+
+That is **not treated as solved by this Visual Gate**.
+
+It is the next independent question for World Scale Integration.
+
+The current visual design is accepted before deciding whether Full / 44 / 41 display occupancy best fits Rynne Village.
+
+## Portrait — SECOND REVIEW
+
+Portrait OFF remains the stronger Pixel-native candidate because the eye stays on the actor.
+
+Portrait ON remains available and is not deleted.
+
+**Portrait policy remains provisional.**
+
+---
+
+# 12. Second verdict
+
+# **VISUAL PASS**
+
+The Karen visual redesign itself is now strong enough to proceed to the next gate.
+
+However this does **not** authorize an immediate merge yet.
+
+Current technical status for this exact HEAD:
+
+- parent runtime baseline `5b772ba6...`: full CI PASS
+- current redesign modifies the deterministic pixel generator / generated pixel appearance and documents
+- local regenerated assets pass structural checks:
+  - all 8 animation categories present
+  - 48×48 source cells
+  - correct sheet dimensions
+  - four directions
+  - no empty frames
+  - binary alpha / no anti-alias alpha noise
+- GitHub Actions for `af6dc894...`: currently queued
+
+Therefore:
+
+> **Visual Acceptance = PASS**  
+> **PR #12 merge eligibility = HOLD until current-HEAD regression CI completes successfully**
+
+Do not merge to `pixel-karen-acting-prototype` until the current HEAD is green.
+
+Do not merge to `main`.
+
+Do not begin Scale Integration on the prototype branch until the CI prerequisite is satisfied.
 
 Do not begin Triton.
