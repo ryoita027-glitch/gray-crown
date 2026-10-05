@@ -10,3 +10,11 @@ Gray Crown v23.1 Character Visual Patch
 - Margaret hair color corrected to WHITE / silver-white shading.
 - Existing world renderer and battle sprite CSS continue to use assets/hero_party_walk.png without code-path changes.
 - Original v23 sprite preserved as assets/hero_party_walk_v23_original.png for rollback.
+
+--- Visual Foundation status note ---
+Game Baseline: v23
+Character Visual Patch: rev 23.1
+Current hero_party_walk.png runtime status: ACTIVE / PROVISIONAL DESIGN.
+The 96x512 technical sprite contract is retained, but the current sprite is NOT the formal Character Design or Character Reference.
+Mandatory future order: Character Design -> Character Reference -> Pixel Sprite.
+Do not infer final face shape, eye color, hairstyle, body proportions, costume, or weapon details from the current sprite.
