@@ -1,4 +1,5 @@
 name: Karen Pixel Prototype CI
+# Karen Chibi integration gate
 
 on:
   push:
