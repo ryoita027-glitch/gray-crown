@@ -1,3 +1,4 @@
+from browser_launch import launch_chromium
 from pathlib import Path
 import re,sys,base64
 from playwright.sync_api import sync_playwright
@@ -52,7 +53,7 @@ def fight(page):
     raise AssertionError('battle stuck')
 def dump(page):return page.evaluate('Object.fromEntries(Array.from({length:localStorage.length},(_,i)=>localStorage.key(i)).map(k=>[k,localStorage.getItem(k)]))')
 with sync_playwright() as p:
-    browser=p.chromium.launch(headless=True,executable_path='/usr/bin/chromium',args=['--no-sandbox'])
+    browser=launch_chromium(p)
     p1=browser.new_page(viewport={'width':1365,'height':900});err1=[];p1.on('pageerror',lambda e:err1.append(str(e)));load_runtime(p1);p1.locator('#titleNewGame').click();dismiss(p1)
     p1.evaluate("()=>{const s=GC.State.get();GC.Story.applyCanonicalAlphaStage(s,GC.Story.STORY_STAGES.FRONTIER_COMPLETE);s.story.chapter='第二章 — セラド前線';GC.Movement.setMap('frontier',9,8,'up',[[10,8],[11,8],[12,8]]);renderHud();draw()}")
     assert p1.evaluate('GC.Save.save(true)');stage15=dump(p1)
