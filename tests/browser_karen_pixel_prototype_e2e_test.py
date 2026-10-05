@@ -59,41 +59,55 @@ with sync_playwright() as p:
     assert page.evaluate('GC.State.get().map')=='village'
     start_pos=page.evaluate('({map:GC.State.get().map,x:GC.State.get().x,y:GC.State.get().y,dir:GC.State.get().dir})')
 
-    # 48px Motion Only: visual acting without dialogue text or portrait.
-    open_dev(page);page.locator('#devKaren48Motion').click()
-    page.wait_for_function("()=>GC.Cinematic.state.currentCommand && GC.Cinematic.state.currentCommand.animation==='laugh'",timeout=15000)
-    page.locator('#game').screenshot(path=str(OUT/'karen_48_laugh.png'))
-    finish_scene(page)
-    assert page.evaluate('GC.Cinematic.isActive()') is False
-    assert page.evaluate('GC.State.get().locked') is False
-    assert page.evaluate('GC.Dialogue.isInputLocked()') is False
-    assert page.evaluate('({map:GC.State.get().map,x:GC.State.get().x,y:GC.State.get().y,dir:GC.State.get().dir})')==start_pos
+    def capture_motion(button,filename,expected_mode,expected_scale=None):
+        open_dev(page);page.locator(button).click()
+        page.wait_for_function("()=>GC.Cinematic.state.currentCommand && GC.Cinematic.state.currentCommand.animation==='laugh'",timeout=15000)
+        assert page.evaluate('GC.Cinematic.actor("karen").renderMode')==expected_mode
+        if expected_scale is not None:
+            scale=page.evaluate('GC.Cinematic.actor("karen").renderScale')
+            assert abs(scale-expected_scale)<0.0001,(expected_mode,scale)
+        page.wait_for_timeout(180)
+        page.locator('.game-stage').screenshot(path=str(OUT/filename))
+        finish_scene(page)
+        assert page.evaluate('GC.Cinematic.isActive()') is False
+        assert page.evaluate('GC.State.get().locked') is False
+        assert page.evaluate('GC.Dialogue.isInputLocked()') is False
+        assert page.evaluate('({map:GC.State.get().map,x:GC.State.get().x,y:GC.State.get().y,dir:GC.State.get().dir})')==start_pos
 
-    # Same scene/camera using current 32px baseline.
-    open_dev(page);page.locator('#devKaren32Baseline').click()
-    page.wait_for_function("()=>GC.Cinematic.state.currentCommand && GC.Cinematic.state.currentCommand.animation==='laugh'",timeout=15000)
-    page.locator('#game').screenshot(path=str(OUT/'karen_32_baseline_laugh.png'))
+    # Phase 3 scale integration: same scene, camera and laugh timing.
+    capture_motion('#devKaren48Motion','karen_phase3_full_laugh.png','pixel48-full',1.0)
+    capture_motion('#devKaren44Motion','karen_phase3_medium_laugh.png','pixel48-medium',44/48)
+    capture_motion('#devKaren41Motion','karen_phase3_compact_laugh.png','pixel48-compact',41/48)
+    capture_motion('#devKaren32Baseline','karen_phase3_32_baseline_laugh.png','legacy32',1.0)
+
+    # Medium is the primary integration candidate: compare dialogue presentation without changing scene/timing.
+    open_dev(page);page.locator('#devKaren44NoPortrait').click()
+    page.wait_for_function("()=>GC.Cinematic.isActive() && !document.getElementById('dialogueBox').classList.contains('hidden')",timeout=12000)
+    assert page.evaluate('GC.Cinematic.actor("karen").renderMode')=='pixel48-medium'
+    assert abs(page.evaluate('GC.Cinematic.actor("karen").renderScale')-(44/48))<0.0001
+    assert page.locator('#dialogueBox').evaluate("el=>el.classList.contains('no-portrait')") is True
+    assert page.locator('#speakerPortrait').inner_html()==''
+    page.locator('.game-stage').screenshot(path=str(OUT/'karen_phase3_medium_portrait_off.png'))
     finish_scene(page)
 
-    # Portrait OFF.
+    open_dev(page);page.locator('#devKaren44Portrait').click()
+    page.wait_for_function("()=>GC.Cinematic.isActive() && !document.getElementById('dialogueBox').classList.contains('hidden')",timeout=12000)
+    assert page.evaluate('GC.Cinematic.actor("karen").renderMode')=='pixel48-medium'
+    assert abs(page.evaluate('GC.Cinematic.actor("karen").renderScale')-(44/48))<0.0001
+    assert page.locator('#dialogueBox').evaluate("el=>el.classList.contains('no-portrait')") is False
+    assert 'hero-portrait-svg' in page.locator('#speakerPortrait').inner_html()
+    page.locator('.game-stage').screenshot(path=str(OUT/'karen_phase3_medium_portrait_on.png'))
+    finish_scene(page)
+
+    # Keep Phase 2 full-size portrait toggles working as a reversible baseline.
     open_dev(page);page.locator('#devKaren48NoPortrait').click()
     page.wait_for_function("()=>GC.Cinematic.isActive() && !document.getElementById('dialogueBox').classList.contains('hidden')",timeout=12000)
     assert page.locator('#dialogueBox').evaluate("el=>el.classList.contains('no-portrait')") is True
-    assert page.locator('#speakerPortrait').inner_html()==''
-    page.locator('.game-stage').screenshot(path=str(OUT/'karen_48_portrait_off.png'))
-    finish_scene(page)
-
-    # Portrait ON, same content/timing/animation path.
-    open_dev(page);page.locator('#devKaren48Portrait').click()
-    page.wait_for_function("()=>GC.Cinematic.isActive() && !document.getElementById('dialogueBox').classList.contains('hidden')",timeout=12000)
-    assert page.locator('#dialogueBox').evaluate("el=>el.classList.contains('no-portrait')") is False
-    assert 'hero-portrait-svg' in page.locator('#speakerPortrait').inner_html()
-    page.locator('.game-stage').screenshot(path=str(OUT/'karen_48_portrait_on.png'))
     finish_scene(page)
 
     assert page.evaluate('GC.State.get().locked') is False
     assert page.evaluate('GC.Dialogue.isInputLocked()') is False
-    assert not errors,f'page errors during Karen prototype: {errors}'
+    assert not errors,f'page errors during Karen Phase 3 prototype: {errors}'
     browser.close()
 
-print('KAREN PIXEL PROTOTYPE E2E PASS: 48 motion -> 32 baseline -> portrait OFF -> portrait ON -> control restored')
+print('KAREN PIXEL PROTOTYPE PHASE 3 E2E PASS: full -> medium -> compact -> 32 baseline -> medium portrait OFF/ON -> control restored')
