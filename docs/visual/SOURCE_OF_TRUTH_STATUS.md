@@ -4,21 +4,22 @@
 **Canonical branch:** main  
 **Game baseline:** v23  
 **Character Visual Patch:** rev 23.1  
-**Visual Identity phase:** **FOUR HEROES LOCKED**  
-**Status:** READY FOR ART BIBLE v2 PROVISIONAL
+**Visual Identity phase:** FOUR HEROES LOCKED  
+**Art Bible v2:** **PROVISIONAL / COMPLETE FOR FIRST ART TEST**  
+**Status:** READY FOR KAREN STAGE A FIRST ART TEST
 
 ## GitHub rule
 
-Before every task, inspect the current GitHub main / working branch / diff. Do not overwrite newer GitHub work with an older ZIP.
+Before every task, inspect current GitHub main / active branch / diff. Do not overwrite newer GitHub work with an older ZIP.
 
 ## Current authoritative visual documents
 
 - docs/characters/CHARACTER_VISUAL_IDENTITY.md — **LOCKED / PHASE 1 COMPLETE**
 - docs/characters/KAREN_COSTUME_DESIGN_v1.md — **LOCKED**
-- docs/visual/VISUAL_ASSET_MANIFEST.md — current runtime/provisional asset policy
-- docs/audit/VISUAL_FOUNDATION_AUDIT.md — audit reference
-- docs/audit/VISUAL_STATUS_MATRIX.md — current status matrix
-- docs/audit/NEXT_WORK_ORDER.md — current execution order
+- docs/art/GRAY_CROWN_ART_BIBLE_v2.md — **PROVISIONAL**
+- docs/visual/VISUAL_ASSET_MANIFEST.md — runtime/provisional asset policy
+- docs/audit/VISUAL_STATUS_MATRIX.md — current status
+- docs/audit/NEXT_WORK_ORDER.md — current production order
 - docs/audit/NEXT_AI_MASTER_INSTRUCTION.md — current AI handoff
 
 ## Locked hero Visual Identities
@@ -28,12 +29,26 @@ Before every task, inspect the current GitHub main / working branch / diff. Do n
 - Sophie — **STEADY HANDS**
 - Margaret — **MEASURED LINE**
 
-Margaret hair color is **white / silver-white**.
+Margaret hair color: **white / silver-white**.
+
+## Art Bible v2 provisional principle
+
+Gray Crown combines:
+
+> **classic-JRPG character appeal**
+
+with:
+
+> **the credibility of people who visibly live in this world**
+
+Attractiveness is allowed and required. Beautiful faces, attractive eyes, strong designed hair highlights, clear cel shading, memorable color and dramatic composition may be used intentionally.
+
+The quality condition is selection and reproducibility, not dullness.
 
 ## Still unresolved / do not invent
 
 - exact eye colors for all four heroes
-- surnames for all four heroes
+- surnames
 - final weapon designs / names
 - final Stage B hero costumes
 - Kingdom / Empire emblems
@@ -41,25 +56,15 @@ Margaret hair color is **white / silver-white**.
 - religious emblem / official religious color
 - Shion crown
 - Kingdom / Empire rank insignia
-- new keepsakes, scars, family gifts, or other backstory additions
+- new keepsakes, scars, or backstory additions
 
 ## Recovery gap
 
-These original authoritative source files are still not present in the repository and must not be reconstructed from memory unless the user explicitly asks for a reconstruction pass:
+The original Canon / Character Bible / Culture / Shape Language / Costume Rules / old Art Bible source files are still not present in the repository. Do not silently reconstruct them from memory.
 
-- GRAY_CROWN_CANON_v1.md
-- CHARACTER_BIBLE_v1.md
-- KINGDOM_CULTURE_v1.md
-- EMPIRE_CULTURE_v1.md
-- GRAY_CROWN_CULTURE_LOCK_v1.md
-- CHARACTER_SHAPE_LANGUAGE.md
-- COSTUME_RULES.md
-- GRAY_CROWN_ART_BIBLE.md
-- GRAY_CROWN_ART_BIBLE_v2.md
+The new Art Bible v2 is a new provisional production document based on the current locked visual decisions; it does not pretend to be a recovered old file.
 
-The current four-hero Visual Identity lock uses already confirmed project decisions and does not fill the unresolved items above.
-
-## Current sprite contract
+## Runtime sprite
 
 assets/hero_party_walk.png
 
@@ -73,18 +78,18 @@ assets/hero_party_walk.png
 - Row 2 Sophie
 - Row 3 Margaret
 
-Technical format: **KEEP**  
-Runtime status: **ACTIVE**  
-Design status: **PROVISIONAL**
+Technical format: KEEP  
+Runtime status: ACTIVE  
+Design status: PROVISIONAL
 
-Never derive final anatomy, face, costume, weapon, or hairstyle from the runtime sprite.
+Never derive final Character Design from the runtime sprite.
 
 ## Mandatory production order
 
-**Character Visual Identity (DONE) → Art Bible v2 PROVISIONAL → Karen Stage A single-image test → Karen reproduction test → Provisional Style Anchor → second-character validation → final Style Anchor → Character Reference → Pixel Sprite**
+**Character Visual Identity (DONE) → Art Bible v2 PROVISIONAL (DONE) → Karen Stage A single-image test → Karen reproduction test → Provisional Style Anchor → second-character validation → final Style Anchor → Character Reference → Pixel Sprite**
 
 ## Next action
 
-Create **GRAY_CROWN_ART_BIBLE_v2.md** as **PROVISIONAL**.
+Generate **Karen Stage A only, one image**.
 
-Do not generate Karen until that provisional Art Bible exists.
+Do not generate all four heroes. Do not create a formal Style Anchor from one Karen image.
