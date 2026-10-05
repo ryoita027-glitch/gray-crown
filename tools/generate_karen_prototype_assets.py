@@ -118,7 +118,7 @@ def front_back(anim,i,direction):
         rect(d,(20+lean+m["head"],5+cy,24+lean+m["head"],7+cy),P["hair_hi"])
         rect(d,(20+lean+m["head"],11+cy,21+lean+m["head"],12+cy),P["eye"])
         rect(d,(27+lean+m["head"],11+cy,28+lean+m["head"],12+cy),P["eye"])
-        rect(d,(23+lean+m["head"],14+cy,25+lean+m["head"],15 if m["mouth"] else 14),P["outline"] if m["mouth"] else P["skin_shadow"])
+        rect(d,(23+lean+m["head"],14+cy,25+lean+m["head"],(15+cy) if m["mouth"] else (14+cy)),P["outline"] if m["mouth"] else P["skin_shadow"])
     else:
         rect(d,(17+lean,6+cy,31+lean,17+cy),P["hair"])
         rect(d,(16+lean,9+cy,20+lean,18+cy),P["hair_dark"])
@@ -157,11 +157,11 @@ def side(anim,i,direction):
     if direction=="right":
         rect(d,(hx-4,7+cy,hx+5,16+cy),P["skin"]); rect(d,(hx-3,6+cy,hx+3,9+cy),P["hair"])
         rect(d,(hx-5,7+cy,hx-2,15+cy),P["hair_dark"]); rect(d,(hx+3,10+cy,hx+4,11+cy),P["eye"])
-        rect(d,(hx+5,14+cy,hx+6,15 if m["mouth"] else 14),P["outline"] if m["mouth"] else P["skin_shadow"])
+        rect(d,(hx+5,14+cy,hx+6,(15+cy) if m["mouth"] else (14+cy)),P["outline"] if m["mouth"] else P["skin_shadow"])
     else:
         rect(d,(hx-5,7+cy,hx+4,16+cy),P["skin"]); rect(d,(hx-3,6+cy,hx+3,9+cy),P["hair"])
         rect(d,(hx+2,7+cy,hx+5,15+cy),P["hair_dark"]); rect(d,(hx-4,10+cy,hx-3,11+cy),P["eye"])
-        rect(d,(hx-6,14+cy,hx-5,15 if m["mouth"] else 14),P["outline"] if m["mouth"] else P["skin_shadow"])
+        rect(d,(hx-6,14+cy,hx-5,(15+cy) if m["mouth"] else (14+cy)),P["outline"] if m["mouth"] else P["skin_shadow"])
     rect(d,(hx-2,6+cy,hx,7+cy),P["hair_hi"])
     rect(d,(hx-4+trail//2,16+cy,hx-1+trail//2,18+cy),P["leather_dark"])
     return im
