@@ -3,61 +3,40 @@
 ## Gray Crown v23 — Current Visual / Implementation Status Matrix
 
 **Repository:** ryoita027-glitch/gray-crown  
-**Baseline:** Game v23 / Character Visual Patch rev 23.1  
-**Status vocabulary:** LOCKED / PROVISIONAL / DRAFT / UNRESOLVED / OBSOLETE / NON-CANON
+**Baseline:** Game v23 / Character Visual Patch rev 23.1
 
-| Item | Status | Evidence / current decision | Next action |
+| Item | Status | Current basis | Next action |
 |---|---|---|---|
-| Game story 00→19 | LOCKED | v23 story / regression baseline | Do not expand during Visual phase. |
-| Save / Load schema 23 | LOCKED | v23 stable baseline | Keep regression. |
-| Battle / map transition | LOCKED | stable v23 systems | No redesign without blocker. |
-| Ash Road | LOCKED | v23 playable content | No content expansion now. |
-| Serad Frontier Section 1 | LOCKED | v23 playable content | No content expansion now. |
-| Serad Frontier Section 2 | LOCKED | v23 playable content | No content expansion now. |
-| borderland and later skeleton | NON-CANON | old future skeleton | Do not use as Visual Canon. |
-| hero_party_walk.png technical format | LOCKED | 96×512 / 32×32 / 3 frames / 4 dirs / 4 heroes | Keep format. |
-| hero_party_walk.png design | PROVISIONAL | runtime asset only | Rebuild only after Character Reference. |
-| Hero dialogue portraits | PROVISIONAL | current SVG/runtime placeholders | Replace only after Character Reference. |
-| Margaret runtime hair | LOCKED | white / silver-white sync + regression test | Keep. |
-| Karen Visual Identity | LOCKED | **VILLAGE RUNNER** | Do not reopen without explicit decision. |
-| Triton Visual Identity | LOCKED | **GROUND ANCHOR** | Do not reopen without explicit decision. |
-| Sophie Visual Identity | LOCKED | **STEADY HANDS** | Do not reopen without explicit decision. |
-| Margaret Visual Identity | LOCKED | **MEASURED LINE** | Keep white/silver-white hair. |
-| Four-hero silhouette logic | LOCKED | Karen forward / Triton horizontal-stable / Sophie soft-small / Margaret vertical | Use in Art Bible and references. |
-| Four-hero color-mass logic | LOCKED | red upper / low blue horizontal / off-white+hand green / white vertical+dark center | Keep. |
-| Karen Costume Design v1 | LOCKED | B direction / Stage A+B development logic | Use as Karen reference input. |
-| GRAY_CROWN_ART_BIBLE_v2.md | UNRESOLVED / MISSING | not yet created | **NEXT: create PROVISIONAL.** |
-| Style Anchor | UNRESOLVED | no formal art test | After Karen reproduction + second-character validation. |
-| Character Reference | UNRESOLVED | no formal final images | After style validation. |
+| Game story 00→19 | LOCKED | stable v23 baseline | Do not expand during Visual phase. |
+| Save / battle / map systems | LOCKED | stable v23 regression baseline | Do not redesign without blocker. |
+| borderland+ old skeleton | NON-CANON | future skeleton | Never use as Visual Canon. |
+| hero_party_walk.png format | LOCKED | 96×512 / 32×32 / 3 frames / 4 dirs / 4 heroes | Keep technical contract. |
+| hero_party_walk.png design | PROVISIONAL | runtime placeholder | Rebuild only after Character Reference. |
+| Hero dialogue portraits | PROVISIONAL | runtime placeholder | Replace after Character Reference. |
+| Margaret hair | LOCKED | white / silver-white runtime + identity lock | Keep. |
+| Karen Visual Identity | LOCKED | VILLAGE RUNNER | Use in first Art Test. |
+| Triton Visual Identity | LOCKED | GROUND ANCHOR | Hold until later test. |
+| Sophie Visual Identity | LOCKED | STEADY HANDS | Hold until later test. |
+| Margaret Visual Identity | LOCKED | MEASURED LINE | Hold until later test. |
+| Karen Costume Design v1 | LOCKED | Stage A/B development logic | Use for Karen test. |
+| GRAY_CROWN_ART_BIBLE_v2.md | **PROVISIONAL** | new production document | Use for first Karen image. |
+| Karen Stage A first image | UNRESOLVED | not generated yet | **NEXT. One image only.** |
+| Karen reproduction | UNRESOLVED | first image not evaluated | After first-image pass. |
+| Provisional Style Anchor | UNRESOLVED | reproduction not complete | After Karen consistency. |
+| Second-character style validation | UNRESOLVED | no second test | After Karen. |
+| Final Style Anchor | UNRESOLVED | requires at least two successful characters | Not yet. |
+| Formal Character Reference | UNRESOLVED | style not finalized | After final Style Anchor. |
 | Formal Pixel Sprite | UNRESOLVED | current sprite provisional | After Character Reference. |
-| Stage A/B runtime visual switch | UNRESOLVED | formal reference not ready | Not yet. |
-| Exact hero eye colors | UNRESOLVED | intentionally not set | DO NOT INVENT. |
-| Hero surnames | UNRESOLVED | intentionally not set | DO NOT INVENT. |
-| Final weapon designs | UNRESOLVED | intentionally not set | DO NOT INVENT. |
-| Final Stage B hero costumes | UNRESOLVED | intentionally not set | DO NOT INVENT. |
-| Kingdom emblem | UNRESOLVED | no formal source | DO NOT INVENT. |
-| Empire emblem | UNRESOLVED | no formal source | DO NOT INVENT. |
-| Hero certification insignia | UNRESOLVED | no formal source | DO NOT INVENT. |
-| Religious emblem / official color | UNRESOLVED | no formal source | DO NOT INVENT. |
-| Shion crown | UNRESOLVED | no formal source | DO NOT INVENT. |
-| Kingdom / Empire rank insignia | UNRESOLVED | no formal source | DO NOT INVENT. |
-| Original Canon / Character Bible / Culture / Shape / Costume source docs | UNRESOLVED / MISSING | original files still absent from repo | Recover originals if found; do not reconstruct silently. |
-| hero_party_walk_v23_original.png | OBSOLETE / ROLLBACK | pre-patch asset | Archive. |
-| hero_party_walk_replacement.png | OBSOLETE / ARCHIVE | intermediate asset | Keep as archive unless cleanup approved. |
-| hero_party_walk_whitehair.png | OBSOLETE DUPLICATE | duplicate runtime asset at audit time | Removal candidate only. |
-| v24 / north old checkpoint | NOT CURRENT PHASE | user visual-production order | Do not implement. |
-
-## Current hero lock
-
-| Character | Locked direction | Core silhouette |
-|---|---|---|
-| Karen | VILLAGE RUNNER | rounded / forward / compact upper body |
-| Triton | GROUND ANCHOR | broad / low / horizontal stability |
-| Sophie | STEADY HANDS | small / soft / hands as focus |
-| Margaret | MEASURED LINE | slender / vertical / organized |
+| exact hero eye colors | UNRESOLVED | intentionally not set | DO NOT INVENT. |
+| hero surnames | UNRESOLVED | intentionally not set | DO NOT INVENT. |
+| final weapons | UNRESOLVED | intentionally not set | DO NOT INVENT. |
+| final Stage B costumes | UNRESOLVED | intentionally not set | DO NOT INVENT. |
+| emblems / insignia / religious color | UNRESOLVED | no formal source | DO NOT INVENT. |
+| Shion crown / military rank insignia | UNRESOLVED | no formal source | DO NOT INVENT. |
+| original Canon / Character Bible / Culture / Shape / Costume source docs | UNRESOLVED / MISSING | originals absent | Recover if found; do not silently reconstruct. |
 
 ## Next gate
 
-**Create GRAY_CROWN_ART_BIBLE_v2.md as PROVISIONAL.**
+**Karen Stage A first single-image Art Test.**
 
-No image generation before that file is complete.
+Stop after the first image and evaluate before generating another.

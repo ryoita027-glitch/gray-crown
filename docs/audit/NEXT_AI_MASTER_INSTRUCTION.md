@@ -2,8 +2,6 @@
 
 ## Gray Crown v23 — Visual Production Handoff
 
-This is the current handoff for an AI continuing Gray Crown without the prior chat.
-
 ---
 
 # 0. Repository first
@@ -16,139 +14,142 @@ Canonical branch:
 
 **main**
 
-Before doing work:
+Before any work:
 
-1. inspect the current main head
-2. inspect active branches / relevant PRs
-3. inspect the current diff
-4. never overwrite newer GitHub work with an old ZIP
+1. inspect main head
+2. inspect active branches / PRs
+3. inspect relevant diff
+4. never overwrite newer GitHub work with an older ZIP
 
-Game baseline remains **v23**.
+Game baseline remains v23.
 
-Do not start v24 unless the user explicitly changes phase.
+Do not start v24 unless explicitly requested.
 
 ---
 
-# 1. Current visual phase
+# 1. Current phase
 
-The four protagonist Visual Identities are now **LOCKED**.
+Four protagonist Visual Identities are **LOCKED**.
 
-Authoritative file:
+Art Bible v2 exists and is **PROVISIONAL**.
 
-**docs/characters/CHARACTER_VISUAL_IDENTITY.md**
+Authoritative visual files:
 
-Locks:
+- docs/characters/CHARACTER_VISUAL_IDENTITY.md
+- docs/characters/KAREN_COSTUME_DESIGN_v1.md
+- docs/art/GRAY_CROWN_ART_BIBLE_v2.md
+- docs/visual/SOURCE_OF_TRUTH_STATUS.md
+- docs/audit/NEXT_WORK_ORDER.md
+
+Locked directions:
 
 - Karen — **VILLAGE RUNNER**
 - Triton — **GROUND ANCHOR**
 - Sophie — **STEADY HANDS**
 - Margaret — **MEASURED LINE**
 
-This lock defines the major identity: face/body direction, posture, hair structure direction, color-mass logic, silhouette, personal visual hook and Stage A→B development logic.
+---
 
-It does **not** define every costume or weapon detail.
+# 2. Art Bible v2 meaning
+
+The Art Bible is **PROVISIONAL**, not a final Style Anchor.
+
+Core statement:
+
+> Gray Crown combines classic-JRPG character appeal with the credibility of people who visibly live in the world.
+
+Do not solve AI-feeling by making the art dull.
+
+Allowed when intentional:
+
+- beautiful faces
+- attractive eyes
+- strong designed hair highlights
+- clear cel shading
+- memorable color
+- dramatic composition
+
+The problem is unselected, uniform luxury.
+
+The primary quality rule is:
+
+> the same character must look like the same person across repeated images, while different characters remain clearly different people.
 
 ---
 
-# 2. Core hero differentiation
+# 3. Next task
 
-## Karen
+Generate **Karen Stage A only — one image**.
 
-- 23F / 165cm
-- healthy middle build
+Do not generate a group.
+
+Do not generate a reference sheet yet.
+
+Do not generate Stage B.
+
+## Karen locked identity
+
+- 23F
+- 165cm
+- healthy adult build
 - round expressive eyes
 - arched brows
+- clean nose bridge
 - red hair
 - naturally sun-touched skin
 - left-handed
 - forward center of gravity
 - low partial hair tie
-- red concentrated in a short upper garment
-- identity: approachable, active, moves toward people
+- warm off-white base clothing
+- short muted-red practical upper garment
+- village-life continuity
+- right-hip sword carry structure
 
-## Triton
+## First-image evaluation order
 
-- 23F / 171cm
-- most trained / athletic
-- sharper face
-- narrow eyes
-- straight brows
-- broader mouth
-- dark shoulder-length hair
-- right-handed
-- low stable center of gravity
-- blue concentrated as a low horizontal mass around waist / side
-- identity: grounded physical confidence, reliable friend, sharp eyes + broad laugh
+1. attractive as a character
+2. specifically Karen
+3. specifically Gray Crown
+4. absence of AI-like inconsistency
 
-## Sophie
-
-- 23F / 158cm
-- soft standard build
-- rounded face
-- slightly drooping eyes
-- honey / light brown-gold hair
-- right-handed
-- small movements
-- one low soft hair bundle / braid
-- off-white / white major field + green concentrated near the hands
-- identity: comforting, practical helper, gentle but immovable where life is concerned
-
-## Margaret
-
-- 23F / 167cm
-- slender but healthy
-- narrower oval face
-- observant narrow eyes
-- small mouth
-- right-handed
-- vertical organized posture
-- **long white / silver-white hair**
-- one side intentionally opened / tidied
-- white vertical outer field + thin dark center line
-- identity: orderly, observant, intellectual; her white hair is not the entire design
+“Not AI-looking” but unattractive / generic is a failure.
 
 ---
 
-# 3. DO NOT INVENT
+# 4. DO NOT INVENT
 
-The following remain unresolved:
+Still unresolved:
 
 - exact eye colors
 - surnames
 - final weapon designs / names
 - final Stage B hero costumes
-- Kingdom emblem
-- Empire emblem
+- Kingdom / Empire emblems
 - hero certification insignia
-- religious emblem
-- official religious color
+- religious emblem / official religious color
 - Shion crown
-- Kingdom / Empire rank insignia
-- new keepsakes, scars, family gifts, romances, or backstory additions
+- military rank insignia
+- new keepsakes, scars, or family gifts
 
-Do not let an image model decide these.
+Do not let image generation canonize these.
 
 ---
 
-# 4. Current runtime sprite
+# 5. Current runtime sprite
 
 assets/hero_party_walk.png
 
 - 96×512
-- 32×32 cells
+- 32×32
 - 3 frames
 - 4 directions
-- 4 characters
-- Row 0 Karen
-- Row 1 Triton
-- Row 2 Sophie
-- Row 3 Margaret
+- 4 heroes
 
-Technical format is stable.
+Technical format = stable.
 
-**Design is PROVISIONAL.**
+Design = **PROVISIONAL**.
 
-Never reverse-engineer final Character Design from the sprite.
+Do not reverse-engineer Character Design from the sprite.
 
 Mandatory order:
 
@@ -156,68 +157,13 @@ Mandatory order:
 
 ---
 
-# 5. Next task
+# 6. After the first Karen image
 
-Create:
+Stop and evaluate.
 
-**GRAY_CROWN_ART_BIBLE_v2.md**
+If successful, continue with Karen reproduction tests:
 
-Status:
-
-**PROVISIONAL**
-
-Do not generate images before this provisional Art Bible exists.
-
-The new Art Bible is not a prohibition list. It must answer:
-
-> How does the Gray Crown illustrator draw?
-
-Define:
-
-- line
-- face
-- eyes
-- hair
-- skin
-- cel shading
-- shadows
-- color
-- cloth
-- leather
-- metal
-- light
-- background density
-- composition
-- standing art
-- daily-life art
-- event CG
-
-Core visual statement:
-
-> classic-JRPG character appeal + real people who visibly live in this world
-
-Beautiful and striking is allowed.
-
-Do not solve AI-feeling by reducing attractiveness or saturation indiscriminately.
-
----
-
-# 6. After provisional Art Bible
-
-Generate **Karen Stage A only**, one image.
-
-Evaluation order:
-
-1. attractive as a character
-2. attractive in a Karen-specific way
-3. Gray Crown identity
-4. absence of AI-like inconsistency
-
-If successful, do not batch produce.
-
-Run Karen reproduction tests:
-
-- normal standing
+- standing
 - conversation
 - walking
 - sitting
@@ -225,85 +171,69 @@ Run Karen reproduction tests:
 - serious
 - battle-ready
 
-The same Karen must remain the same person.
+The same Karen must retain the same:
+
+- face
+- eyes
+- brows
+- nose
+- mouth
+- hair
+- body
+- clothing construction
+- color mass
+- sword carry
+- adult age impression
+
+If she drifts, return to Art Bible / Character Identity.
 
 ---
 
-# 7. Style Anchor rule
+# 7. Style Anchor
 
-Karen reproduction success allows a **Provisional Style Anchor** only.
+After Karen reproduction succeeds:
+
+- create a **Provisional Style Anchor**
 
 Then test Triton or Sophie.
 
-The second person must be:
+Second character must be:
 
-> clearly different
+> clearly a different person
 
-and:
+and simultaneously:
 
 > same game / same illustrator
 
-Only after two characters succeed may a final multi-character Style Anchor be locked.
+Only after two characters succeed may a final Style Anchor be locked.
 
-Copy illustrator technique, not Karen anatomy.
-
-Technique may transfer:
-
-- line treatment
-- cel-shadow logic
-- eye rendering density
-- hair rendering technique
-- skin
-- cloth
-- leather
-- metal
-- lighting
-- background density
-
-Do not transfer:
-
-- face proportions
-- eye shape
-- brows
-- nose
-- jaw
-- body proportions
-- hairstyle
-- pose
-- expression
-- color-mass layout
+Transfer illustrator technique, not Karen anatomy.
 
 ---
 
-# 8. Vertical Slice later
+# 8. Not yet
 
-After the Character Foundation is stable, polish one short early-game Vertical Slice to near-final quality across:
+Do not do:
 
-- character art
-- background
-- UI
-- combat presentation
-- event presentation
-- BGM / SE
-
-Do not expand content breadth before proving final-quality depth.
+- v24
+- new story maps / bosses
+- formal Four Generals / Shion art
+- final Stage B hero costumes
+- final weapons
+- emblems / rank insignia
+- mass image generation
+- event CG batch
+- background batch
+- formal Pixel Sprite remake
 
 ---
 
-# 9. Missing historical source files
+# 9. Historical source gap
 
-The original Canon / Character Bible / Culture / Shape Language / Costume Rules / old Art Bible source files are still not present in the repository.
+Original Canon / Character Bible / Culture / Shape Language / Costume Rules / old Art Bible source files are still absent from the repository.
 
 Do not silently reconstruct them from memory.
 
-The current locked Visual Identity uses already confirmed project decisions only.
+The current Visual Identity and Art Bible v2 are new production documents built from already confirmed current project decisions.
 
-If a recovered original contradicts a current lock, report the conflict instead of silently rewriting either side.
-
----
-
-# 10. Stop rule
-
-For the next task, stop after **GRAY_CROWN_ART_BIBLE_v2.md PROVISIONAL** is complete.
-
-Do not jump directly into image generation in the same step unless the user explicitly requests continuing beyond the Art Bible.
+If a recovered original later conflicts, report the conflict.
