@@ -1,49 +1,67 @@
 # Gray Crown Visual Source of Truth Status
 
 **Repository:** ryoita027-glitch/gray-crown  
-**Canonical branch:** main  
+**Canonical production branch:** main  
 **Game baseline:** v23  
 **Character Visual Patch:** rev 23.1  
-**Visual Identity phase:** FOUR HEROES LOCKED  
-**Art Bible v2:** **PROVISIONAL / COMPLETE FOR FIRST ART TEST**  
-**Status:** READY FOR KAREN STAGE A FIRST ART TEST
+**Four Hero Visual Identity:** LOCKED  
+**Art Bible v2:** PROVISIONAL  
+**Pixel-native technical prototype:** GO FOR CONTINUED PROTOTYPING  
+**Pixel-native formal adoption:** NOT DECIDED  
+**Current visual direction:** CUTE CHIBI PIXEL RPG — KAREN FRONT IDLE GATE
 
-## GitHub rule
+## Primary current-state document
 
-Before every task, inspect current GitHub main / active branch / diff. Do not overwrite newer GitHub work with an older ZIP.
+For the complete current project status and branch policy, read:
 
-## Current authoritative visual documents
+`docs/audit/CURRENT_PROJECT_STATE.md`
 
-- docs/characters/CHARACTER_VISUAL_IDENTITY.md — **LOCKED / PHASE 1 COMPLETE**
-- docs/characters/KAREN_COSTUME_DESIGN_v1.md — **LOCKED**
-- docs/art/GRAY_CROWN_ART_BIBLE_v2.md — **PROVISIONAL**
-- docs/visual/VISUAL_ASSET_MANIFEST.md — runtime/provisional asset policy
-- docs/audit/VISUAL_STATUS_MATRIX.md — current status
-- docs/audit/NEXT_WORK_ORDER.md — current production order
-- docs/audit/NEXT_AI_MASTER_INSTRUCTION.md — current AI handoff
+This file is the short visual-status pointer. Older audit / phase documents are historical context and must not override the current-state document.
 
-## Locked hero Visual Identities
+## Production truth
 
-- Karen — **VILLAGE RUNNER**
-- Triton — **GROUND ANCHOR**
-- Sophie — **STEADY HANDS**
-- Margaret — **MEASURED LINE**
+`main` remains v23 production truth.
 
-Margaret hair color: **white / silver-white**.
+The current `assets/hero_party_walk.png` remains:
 
-## Art Bible v2 provisional principle
+- ACTIVE runtime
+- PROVISIONAL design
 
-Gray Crown combines:
+Do not derive final Character Design from the current runtime sprite.
 
-> **classic-JRPG character appeal**
+## Locked protagonist Visual Identities
 
-with:
+- Karen — VILLAGE RUNNER
+- Triton — GROUND ANCHOR
+- Sophie — STEADY HANDS
+- Margaret — MEASURED LINE
 
-> **the credibility of people who visibly live in this world**
+Margaret hair remains white / silver-white.
 
-Attractiveness is allowed and required. Beautiful faces, attractive eyes, strong designed hair highlights, clear cel shading, memorable color and dramatic composition may be used intentionally.
+## Karen current visual decision
 
-The quality condition is selection and reproducibility, not dullness.
+Earlier realistic / adult-proportion 48px Karen experiments are not the final direction.
+
+The next approved exploration is a cute Chibi Pixel RPG direction with:
+
+- larger head
+- compact body
+- readable expressive face
+- strong red-hair silhouette
+- low partial tie
+- warm off-white + muted-red Stage A color mass
+
+Karen remains a 23-year-old adult woman. Adult identity should come from design, clothing, posture and behavior rather than realistic proportions.
+
+## Next action
+
+Create a new Chibi Karen visual branch from the proven technical prototype.
+
+First gate:
+
+> Front-facing Idle only.
+
+Do not expand to additional directions, all eight animations, Scale Integration, Triton, Portrait removal, or main merge until that front Idle is visually approved.
 
 ## Still unresolved / do not invent
 
@@ -57,39 +75,3 @@ The quality condition is selection and reproducibility, not dullness.
 - Shion crown
 - Kingdom / Empire rank insignia
 - new keepsakes, scars, or backstory additions
-
-## Recovery gap
-
-The original Canon / Character Bible / Culture / Shape Language / Costume Rules / old Art Bible source files are still not present in the repository. Do not silently reconstruct them from memory.
-
-The new Art Bible v2 is a new provisional production document based on the current locked visual decisions; it does not pretend to be a recovered old file.
-
-## Runtime sprite
-
-assets/hero_party_walk.png
-
-- 96×512
-- 32×32 cells
-- 3 walk frames
-- 4 directions
-- 4 characters
-- Row 0 Karen
-- Row 1 Triton
-- Row 2 Sophie
-- Row 3 Margaret
-
-Technical format: KEEP  
-Runtime status: ACTIVE  
-Design status: PROVISIONAL
-
-Never derive final Character Design from the runtime sprite.
-
-## Mandatory production order
-
-**Character Visual Identity (DONE) → Art Bible v2 PROVISIONAL (DONE) → Karen Stage A single-image test → Karen reproduction test → Provisional Style Anchor → second-character validation → final Style Anchor → Character Reference → Pixel Sprite**
-
-## Next action
-
-Generate **Karen Stage A only, one image**.
-
-Do not generate all four heroes. Do not create a formal Style Anchor from one Karen image.

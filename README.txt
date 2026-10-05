@@ -57,3 +57,7 @@ Visual Foundation note:
 - Current hero sprite is ACTIVE runtime / PROVISIONAL design.
 - Visual workflow and audit status are under docs/visual/ and docs/audit/.
 - Karen Visual Identity is locked to B — VILLAGE RUNNER in docs/characters/.
+
+Current project status:
+- Authoritative current-state summary: docs/audit/CURRENT_PROJECT_STATE.md
+- Production remains main / v23; Pixel-native work remains experimental until explicitly adopted.

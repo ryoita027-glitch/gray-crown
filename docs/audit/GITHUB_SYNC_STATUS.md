@@ -1,68 +1,40 @@
 # GITHUB_SYNC_STATUS.md
 
-## Repository
+## Status
 
-**ryoita027-glitch/gray-crown**
+This file records repository synchronization history.
 
-Canonical integration target: **main**
+For the authoritative **current** project state, use:
 
-## Sync history
+`docs/audit/CURRENT_PROJECT_STATE.md`
 
-### Visual Foundation Sync
+Do not use older phase descriptions in this file to infer the next task.
 
-The repository originally contained the v23 game import plus some rev 23.1 sprite assets, but not the later Visual Foundation documentation.
+## Canonical production target
 
-The Visual Foundation sync added:
+`main`
 
-- Visual audit / status / work-order / handoff documents
-- Karen Visual Identity B lock
-- Karen costume design document
-- current runtime sprite = ACTIVE / PROVISIONAL policy
-- Margaret white / silver-white runtime portrait synchronization
-- Margaret visual regression tests
-- GitHub-first source-of-truth workflow
+## Current experimental technical base
 
-That sync was merged to main.
+`pixel-karen-acting-prototype`
 
-### Four Hero Visual Identity Lock
+## Current repository direction
 
-Current phase adds the completed four-hero Visual Identity document:
+- main stays v23.
+- Pixel-native technical architecture is proven for continued prototyping.
+- Formal Pixel-native adoption is not decided.
+- Old Karen realistic/adult-proportion Pixel visuals are superseded.
+- The next visual gate is a Cute Chibi Pixel Karen front-facing Idle.
+- Scale-only experiment is reference material until rerun with an accepted Karen visual.
 
-- Karen — **VILLAGE RUNNER**
-- Triton — **GROUND ANCHOR**
-- Sophie — **STEADY HANDS**
-- Margaret — **MEASURED LINE**
+## Historical sync milestones
 
-It also updates the work order so the next task is:
+- Visual Foundation sync merged.
+- Four Hero Visual Identity lock merged.
+- Art Bible v2 provisional merged.
+- Karen Pixel Acting prototype developed on an experimental branch.
+- Phase 2 / Scale / Visual-redesign experiments remain outside main.
 
-**GRAY_CROWN_ART_BIBLE_v2.md — PROVISIONAL**
+## Concurrency rule
 
-No character image is generated in this phase.
-
-## Current unresolved visual items
-
-Still intentionally unresolved:
-
-- exact hero eye colors
-- hero surnames
-- final weapon designs
-- final Stage B hero costumes
-- Kingdom / Empire emblems
-- hero certification insignia
-- religious emblem / official religious color
-- Shion crown
-- military rank insignia
-
-Original Canon / Character Bible / Culture / Shape Language / Costume Rules / old Art Bible source files are still not present in the repository and are not silently reconstructed.
-
-## Stable technical baseline
-
-Latest verified Visual Foundation packaged state:
-
-- JavaScript syntax: PASS
-- Node regression: **43 / 43 PASS**
-- Browser v21 Gate: PASS
-- Serad Frontier Section 1 E2E: PASS
-- Serad Frontier Section 2 E2E: PASS
-
-The current Four Hero Visual Identity change is documentation-only and does not modify runtime code.
+Before any GitHub write, inspect the current target-branch HEAD and file SHA. Never overwrite newer PC-side work using stale commit data.
