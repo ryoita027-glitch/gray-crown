@@ -1,3 +1,4 @@
+from browser_launch import launch_chromium
 from pathlib import Path
 import re, sys, base64
 try:
@@ -52,7 +53,7 @@ def finish_scene(page,limit=1000):
     raise AssertionError('prototype scene did not finish')
 
 with sync_playwright() as p:
-    browser=p.chromium.launch(headless=True,executable_path='/usr/bin/chromium',args=['--no-sandbox'])
+    browser=launch_chromium(p)
     page=browser.new_page(viewport={'width':1440,'height':960});errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
     load_runtime(page)
     page.locator('#titleNewGame').click();page.wait_for_timeout(30);dismiss_dialogue(page)
