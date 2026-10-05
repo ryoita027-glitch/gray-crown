@@ -10,6 +10,26 @@
 
 ---
 
+# 0. Supersession note
+
+Concurrent work on `pixel-karen-scale-integration` produced a historical result document at HEAD `81a9cb1f...` with verdict **GO TO SECOND CHARACTER** based on shrinking the Phase 2 Karen to approximately 41px-class screen occupancy.
+
+That verdict is **explicitly superseded by the user's later visual review**.
+
+Current decision is:
+
+> **Technical GO / Visual FAIL / REDESIGN REQUIRED**
+
+Therefore:
+
+- the scale-integration branch is retained as comparison evidence only
+- its screenshots and technical foot-anchor findings may be referenced
+- its **GO TO SECOND CHARACTER** decision must NOT drive current production
+- it must NOT be merged to main as a formal Pixel-native adoption decision
+- Triton must NOT begin until the new 48px Karen visual redesign succeeds and scale integration is rerun afterward
+
+---
+
 # 1. Current decision
 
 Phase 2の48px Karenは、情報量とAnimation空間は増えたが、現在の比較では旧32px Karenより
