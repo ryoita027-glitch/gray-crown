@@ -80,7 +80,7 @@ with sync_playwright() as p:
     open_dev(page);page.locator('#devKaren48Motion').click()
     page.wait_for_function("()=>GC.Cinematic.state.currentCommand && GC.Cinematic.state.currentCommand.animation==='walk'",timeout=12000)
     page.locator('.game-stage').screenshot(path=str(OUT/'karen_chibi_walk.png'))
-    page.wait_for_function("()=>GC.Cinematic.state.currentCommand && GC.Cinematic.state.currentCommand.animation==='talk'",timeout=15000)
+    page.wait_for_function("()=>GC.Cinematic.isActive() && GC.Cinematic.actor('karen') && GC.Cinematic.actor('karen').animation==='talk'",timeout=15000)
     page.locator('.game-stage').screenshot(path=str(OUT/'karen_chibi_talk.png'))
     page.wait_for_function("()=>GC.Cinematic.state.currentCommand && GC.Cinematic.state.currentCommand.animation==='laugh'",timeout=15000)
     page.locator('#game').screenshot(path=str(OUT/'karen_chibi_laugh.png'))
