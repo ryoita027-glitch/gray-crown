@@ -21,11 +21,11 @@ CELL=48
 DIRS=('down','left','right','up')
 FRAMES={'idle':4,'walk':6,'turn':3,'talk':4,'surprise':4,'approach':4,'laugh':6,'run':6}
 P={
-'o':(60,39,35,255),'o2':(82,50,42,255),'skin':(211,160,121,255),'skin2':(185,130,99,255),'skinhi':(230,181,139,255),'cheek':(192,101,83,255),
-'hair':(174,76,52,255),'hair2':(132,54,45,255),'hair3':(91,38,36,255),'hairhi':(224,122,76,255),
+'o':(68,43,38,255),'o2':(92,57,47,255),'skin':(211,160,121,255),'skin2':(185,130,99,255),'skinhi':(230,181,139,255),'cheek':(192,101,83,255),
+'hair':(184,79,53,255),'hair2':(143,58,47,255),'hair3':(96,40,37,255),'hairhi':(236,134,82,255),
 'shirt':(236,222,192,255),'shirt2':(200,182,153,255),'shirthi':(249,237,211,255),
 'vest':(157,67,59,255),'vest2':(118,47,47,255),'vesthi':(184,82,66,255),
-'pants':(92,83,74,255),'pants2':(63,58,55,255),'pantshi':(119,105,90,255),
+'pants':(105,92,80,255),'pants2':(72,64,59,255),'pantshi':(137,117,96,255),
 'leather':(113,76,49,255),'leather2':(71,51,39,255),'leatherhi':(141,95,58,255),
 'metal':(172,177,172,255),'metal2':(95,101,101,255),'eye':(51,38,34,255)
 }
@@ -54,30 +54,30 @@ def front(a,i,back=False):
     m=motion(a,i); im=Image.new('RGBA',(48,48),(0,0,0,0)); d=ImageDraw.Draw(im)
     cy=m['dy']-m['bob']; cx=24+m['lean']; s=m['stride']; arm=m['arm']; hm=m['hair']
     if not back:
-        poly(d,[(19,10+cy),(21,7+cy),(24,6+cy),(27,7+cy),(30,10+cy),(30,16+cy),(28,20+cy),(26,21+cy),(24,19+cy),(22,21+cy),(19,20+cy),(18,16+cy)],P['hair2'],P['o'])
-        rect(d,(18+hm,16+cy,20+hm,18+cy),P['leather2'])
-        poly(d,[(19+hm,18+cy),(16+hm,19+cy),(14+hm,22+cy),(16+hm,23+cy),(19+hm,21+cy)],P['hair'],P['o2']);pt(d,16+hm,20+cy,P['hairhi'])
+        poly(d,[(18,10+cy),(20,7+cy),(23,5+cy),(27,6+cy),(30,8+cy),(31,11+cy),(31,16+cy),(29,20+cy),(26,22+cy),(24,20+cy),(21,22+cy),(18,20+cy),(17,16+cy)],P['hair2'],P['o'])
+        rect(d,(17+hm,16+cy,19+hm,18+cy),P['leather2'])
+        poly(d,[(18+hm,18+cy),(15+hm,19+cy),(13+hm,22+cy),(15+hm,24+cy),(18+hm,21+cy)],P['hair'],P['o2']);pt(d,15+hm,20+cy,P['hairhi'])
     else:
-        poly(d,[(18,10+cy),(20,7+cy),(24,6+cy),(28,7+cy),(30,10+cy),(30,17+cy),(28,21+cy),(25,22+cy),(23,20+cy),(20,22+cy),(18,19+cy)],P['hair'],P['o'])
+        poly(d,[(17,10+cy),(19,7+cy),(23,5+cy),(27,6+cy),(30,8+cy),(31,11+cy),(31,17+cy),(29,21+cy),(26,23+cy),(23,21+cy),(20,23+cy),(17,20+cy)],P['hair'],P['o'])
         rect(d,(27+hm,16+cy,29+hm,18+cy),P['leather2'])
         poly(d,[(28+hm,18+cy),(31+hm,19+cy),(33+hm,22+cy),(31+hm,23+cy),(28+hm,21+cy)],P['hair2'],P['o2']);pt(d,31+hm,20+cy,P['hairhi'])
 
     lx=cx-2+s//3; rx=cx+2-s//3
-    poly(d,[(lx-2,30+cy),(lx+1,30+cy),(lx,39+cy),(lx-2,41+cy)],P['pants'],P['o2'])
-    poly(d,[(rx-1,30+cy),(rx+2,30+cy),(rx+2,40+cy),(rx,41+cy)],P['pants2'],P['o2'])
+    poly(d,[(lx-2,29+cy),(lx+1,29+cy),(lx,38+cy),(lx-2,40+cy)],P['pants'],P['o2'])
+    poly(d,[(rx-1,29+cy),(rx+2,29+cy),(rx+2,39+cy),(rx,40+cy)],P['pants2'],P['o2'])
     pt(d,lx,33+cy,P['pantshi']);pt(d,rx+1,34+cy,P['pants'])
-    poly(d,[(lx-2,39+cy),(lx+1,39+cy),(lx+2,44+cy),(lx-3,44+cy)],P['leather'],P['o'])
-    poly(d,[(rx,39+cy),(rx+3,39+cy),(rx+4,44+cy),(rx-1,44+cy)],P['leather2'],P['o'])
-    pt(d,lx-1,40+cy,P['leatherhi']);pt(d,rx+1,40+cy,P['leather'])
+    poly(d,[(lx-2,38+cy),(lx+1,38+cy),(lx+2,44+cy),(lx-3,44+cy)],P['leather'],P['o'])
+    poly(d,[(rx,38+cy),(rx+3,38+cy),(rx+4,44+cy),(rx-1,44+cy)],P['leather2'],P['o'])
+    pt(d,lx-1,39+cy,P['leatherhi']);pt(d,rx+1,39+cy,P['leather'])
 
-    poly(d,[(20+cx-24,19+cy),(22+cx-24,18+cy),(26+cx-24,18+cy),(28+cx-24,19+cy),(29+cx-24,24+cy),(27+cx-24,29+cy),(21+cx-24,29+cy),(19+cx-24,24+cy)],P['shirt'],P['o2'])
+    poly(d,[(19+cx-24,20+cy),(21+cx-24,18+cy),(27+cx-24,18+cy),(29+cx-24,20+cy),(29+cx-24,23+cy),(27+cx-24,28+cy),(21+cx-24,28+cy),(19+cx-24,23+cy)],P['shirt'],P['o2'])
     if not back:
-        poly(d,[(20+cx-24,19+cy),(22+cx-24,19+cy),(22+cx-24,27+cy),(20+cx-24,26+cy)],P['vest'],P['o2'])
-        poly(d,[(26+cx-24,19+cy),(28+cx-24,19+cy),(28+cx-24,26+cy),(26+cx-24,27+cy)],P['vest'],P['o2'])
+        poly(d,[(20+cx-24,19+cy),(22+cx-24,19+cy),(22+cx-24,26+cy),(20+cx-24,25+cy)],P['vest'],P['o2'])
+        poly(d,[(26+cx-24,19+cy),(28+cx-24,19+cy),(28+cx-24,25+cy),(26+cx-24,26+cy)],P['vest'],P['o2'])
         pt(d,21+cx-24,20+cy,P['vesthi']);pt(d,27+cx-24,25+cy,P['vest2']);pt(d,24+cx-24,20+cy,P['shirthi'])
     else:
         poly(d,[(20+cx-24,20+cy),(28+cx-24,20+cy),(27+cx-24,27+cy),(21+cx-24,27+cy)],P['vest'],P['o2']);line(d,[(22+cx-24,25+cy),(26+cx-24,25+cy)],P['vesthi'])
-    line(d,[(21+cx-24,29+cy),(27+cx-24,29+cy)],P['leather2']);rect(d,(23+cx-24,28+cy,25+cx-24,30+cy),P['leatherhi'])
+    line(d,[(21+cx-24,28+cy),(27+cx-24,28+cy)],P['leather2']);rect(d,(23+cx-24,27+cy,25+cx-24,29+cy),P['leatherhi'])
 
     if a in ('talk','surprise','approach','laugh'):
         poly(d,[(20+cx-24,20+cy),(18+cx-24,21+cy),(17+cx-24-arm*.4,26+cy-arm*.2),(19+cx-24-arm*.3,27+cy)],P['shirt2'],P['o2'])
@@ -96,8 +96,8 @@ def front(a,i,back=False):
     rect(d,(22+cx-24,16+cy,26+cx-24,19+cy),P['skin2'],P['o2'])
     if not back:
         poly(d,[(21+cx-24,10+cy),(22+cx-24,8+cy),(26+cx-24,8+cy),(28+cx-24,10+cy),(28+cx-24,13+cy),(27+cx-24,15+cy),(25+cx-24,17+cy),(23+cx-24,17+cy),(21+cx-24,15+cy),(20+cx-24,13+cy),(20+cx-24,11+cy)],P['skin'],P['o2'])
-        poly(d,[(19+cx-24,10+cy),(20+cx-24,8+cy),(22+cx-24,6+cy),(25+cx-24,6+cy),(28+cx-24,7+cy),(30+cx-24,10+cy),(29+cx-24,12+cy),(27+cx-24,10+cy),(26+cx-24,13+cy),(24+cx-24,11+cy),(22+cx-24,13+cy),(20+cx-24,12+cy),(20+cx-24,15+cy)],P['hair'],P['o'])
-        line(d,[(22+cx-24,7+cy),(25+cx-24,7+cy),(28+cx-24,9+cy)],P['hairhi'])
+        poly(d,[(18+cx-24,10+cy),(20+cx-24,7+cy),(23+cx-24,5+cy),(26+cx-24,6+cy),(29+cx-24,7+cy),(31+cx-24,10+cy),(30+cx-24,13+cy),(28+cx-24,10+cy),(27+cx-24,13+cy),(24+cx-24,11+cy),(22+cx-24,14+cy),(20+cx-24,12+cy),(19+cx-24,15+cy)],P['hair'],P['o'])
+        line(d,[(21+cx-24,7+cy),(24+cx-24,6+cy),(28+cx-24,8+cy)],P['hairhi'])
         pt(d,22+cx-24,12+cy,P['eye']);pt(d,26+cx-24,12+cy,P['eye'])
         if m['wide']:pt(d,22+cx-24,11+cy,P['eye']);pt(d,26+cx-24,11+cy,P['eye'])
         pt(d,21+cx-24,14+cy,P['cheek']);pt(d,27+cx-24,13+cy,P['cheek'])
@@ -112,16 +112,16 @@ def front(a,i,back=False):
 def side(a,i,right=True):
     m=motion(a,i); im=Image.new('RGBA',(48,48),(0,0,0,0));d=ImageDraw.Draw(im)
     face=1 if right else -1;cy=m['dy']-m['bob'];cx=24+m['lean']*face;s=m['stride'];arm=m['arm'];hm=m['hair']
-    poly(d,[(cx-2*face,7+cy),(cx-5*face,8+cy),(cx-7*face,11+cy),(cx-7*face,17+cy),(cx-5*face,21+cy),(cx-2*face,22+cy),(cx-1*face,18+cy)],P['hair2'],P['o'])
+    poly(d,[(cx-1*face,6+cy),(cx-4*face,7+cy),(cx-7*face,10+cy),(cx-8*face,14+cy),(cx-7*face,19+cy),(cx-5*face,22+cy),(cx-2*face,23+cy),(cx-1*face,18+cy)],P['hair2'],P['o'])
     tx=cx-6*face+hm*face;rect(d,(min(tx,tx+2*face),16+cy,max(tx,tx+2*face),18+cy),P['leather2']);poly(d,[(tx,18+cy),(tx-3*face,19+cy),(tx-5*face,22+cy),(tx-3*face,23+cy),(tx,21+cy)],P['hair'],P['o2']);pt(d,tx-3*face,20+cy,P['hairhi'])
 
     rear=cx-2*face+int(s*.25)*face;frontx=cx+2*face-int(s*.25)*face
-    poly(d,[(rear-1,30+cy),(rear+1,30+cy),(rear,40+cy),(rear-2,41+cy)],P['pants2'],P['o2']);poly(d,[(frontx-1,30+cy),(frontx+2,30+cy),(frontx+2*face,40+cy),(frontx,41+cy)],P['pants'],P['o2'])
-    poly(d,[(rear-2,39+cy),(rear+1,39+cy),(rear+2*face,44+cy),(rear-3*face,44+cy)],P['leather2'],P['o']);poly(d,[(frontx,39+cy),(frontx+3*face,39+cy),(frontx+4*face,44+cy),(frontx-1*face,44+cy)],P['leather'],P['o'])
+    poly(d,[(rear-1,29+cy),(rear+1,29+cy),(rear,39+cy),(rear-2,40+cy)],P['pants2'],P['o2']);poly(d,[(frontx-1,29+cy),(frontx+2,29+cy),(frontx+2*face,39+cy),(frontx,40+cy)],P['pants'],P['o2'])
+    poly(d,[(rear-2,38+cy),(rear+1,38+cy),(rear+2*face,44+cy),(rear-3*face,44+cy)],P['leather2'],P['o']);poly(d,[(frontx,38+cy),(frontx+3*face,38+cy),(frontx+4*face,44+cy),(frontx-1*face,44+cy)],P['leather'],P['o'])
 
-    poly(d,[(cx-4,19+cy),(cx+3,18+cy),(cx+5*face,22+cy),(cx+3*face,29+cy),(cx-3*face,29+cy),(cx-5*face,23+cy)],P['shirt'],P['o2'])
+    poly(d,[(cx-4,19+cy),(cx+3,18+cy),(cx+5*face,21+cy),(cx+3*face,28+cy),(cx-3*face,28+cy),(cx-5*face,22+cy)],P['shirt'],P['o2'])
     poly(d,[(cx-3,19+cy),(cx+2,19+cy),(cx+4*face,22+cy),(cx+3*face,27+cy),(cx-2*face,28+cy)],P['vest'],P['o2']);pt(d,cx+1*face,20+cy,P['vesthi'])
-    line(d,[(cx-3,29+cy),(cx+3,29+cy)],P['leather2'])
+    line(d,[(cx-3,28+cy),(cx+3,28+cy)],P['leather2'])
 
     bx=cx-3*face;fx=cx+4*face
     poly(d,[(bx,20+cy),(bx-2*face,21+cy),(bx-2*face,28+cy),(bx,28+cy)],P['shirt2'],P['o2']);rect(d,(min(bx-2*face,bx),27+cy,max(bx-2*face,bx),30+cy),P['skin2'],P['o2'])
@@ -133,7 +133,7 @@ def side(a,i,right=True):
     px0=cx+5*face;rect(d,(min(px0,px0+3*face),29+cy,max(px0,px0+3*face),33+cy),P['leather'],P['o2']);pt(d,px0+face,30+cy,P['leatherhi'])
     ss=-face;sx=cx+5*ss;rect(d,(min(sx,sx+2*ss),29+cy,max(sx,sx+2*ss),31+cy),P['leatherhi'],P['o2']);poly(d,[(sx,31+cy),(sx+2*ss,31+cy),(sx-1*ss,41+cy),(sx-3*ss,42+cy)],P['leather2'],P['o2']);pt(d,sx+ss,31+cy,P['metal'])
 
-    rect(d,(cx-1,16+cy,cx+2,19+cy),P['skin2'],P['o2']);hx=cx
+    rect(d,(cx-1,16+cy,cx+2,19+cy),P['skin2'],P['o2']);hx=cx+face
     if right:
         poly(d,[(hx-2,9+cy),(hx,8+cy),(hx+3,9+cy),(hx+4,11+cy),(hx+4,14+cy),(hx+2,17+cy),(hx-1,17+cy),(hx-3,14+cy),(hx-3,11+cy)],P['skin'],P['o2']);poly(d,[(hx-4,10+cy),(hx-3,7+cy),(hx,6+cy),(hx+3,7+cy),(hx+5,9+cy),(hx+4,11+cy),(hx+2,10+cy),(hx+1,12+cy),(hx-1,10+cy),(hx-3,13+cy)],P['hair'],P['o']);line(d,[(hx-2,7+cy),(hx+1,7+cy),(hx+3,8+cy)],P['hairhi']);pt(d,hx+2,11+cy,P['eye']);pt(d,hx+3,14+cy,P['cheek']);pt(d,hx+3,15+cy,P['o2'])
     else:
