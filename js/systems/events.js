@@ -1,0 +1,367 @@
+'use strict';
+function eventConditionPass(c,context={}){
+ if(c.eventComplete)return isEventComplete(c.eventComplete);
+ if(c.eventIncomplete)return !isEventComplete(c.eventIncomplete);
+ if(c.storyIs)return state.story.stage===c.storyIs;
+ if(c.storyAtLeast)return storyAtLeast(c.storyAtLeast);
+ if(c.worldSwitchTruthy)return !!state.world.switches[c.worldSwitchTruthy];
+ if(c.worldSwitchFalsy)return !state.world.switches[c.worldSwitchFalsy];
+ if(c.visited)return hasVisited(c.visited);
+ if(c.notVisited)return !hasVisited(c.notVisited);
+ if(c.defeated)return isDefeated(c.defeated);
+ if(c.notDefeated)return !isDefeated(c.notDefeated);
+ if(c.contextEquals)return context[c.contextEquals.key]===c.contextEquals.value;
+ return true
+}
+function findTriggeredEvent(type,target,context={}){const map=context.map??state.map;return EVENT_DEFS.filter(e=>e.trigger.type===type&&e.trigger.target===target&&(!e.trigger.map||e.trigger.map===map)&&(e.when||[]).every(c=>eventConditionPass(c,context))).sort((a,b)=>(b.priority||0)-(a.priority||0))[0]||null}
+function applyEventEffect(effect,context={}){
+ switch(effect.type){
+  case'completeEvent':return completeEvent(effect.id,effect.value!==false);
+  case'advanceStory':return advanceStory(effect.stage,null,effect.objective);
+  case'setChapter':state.story.chapter=effect.value;renderHud();return effect.value;
+  case'setObjective':state.story.objective=effect.value;renderHud();return effect.value;
+  case'journal':return addJournal(effect.text);
+  case'worldSwitch':return setWorldSwitch(effect.id,effect.value??true);
+  case'visit':return markVisited(effect.map,effect.value??true);
+  case'defeatSymbol':return markDefeated(effect.id,effect.value??true);
+  case'recoverParty':return recoverParty(effect.mode||'full');
+  case'startBattle':return startBattle(effect.id,!!effect.fromSymbol);
+  case'openTreasure':return openTreasure(effect.id);
+  case'quest':state.quests.active[effect.id]={...(state.quests.active[effect.id]||{}),...(effect.patch||{})};return state.quests.active[effect.id];
+  default:throw new Error('Unknown event effect: '+effect.type)
+ }
+}
+function applyEventEffects(def,context={}){for(const effect of def?.effects||[])applyEventEffect(effect,context);if(def?.id)GC.Log?.info('Story Event Effects',{id:def.id,stage:state.story.stage,context});GC.Dev?.noteEvent?.(def?.id||null);GC.Dev?.refresh?.();return def}
+function playEventDialogue(def,after=null){if(!def){after?.();return false}const finish=()=>{if(def.postLines?.length)saySequence(def.postLines,after);else after?.()};if(def.lines?.length)saySequence(def.lines,finish);else finish();return true}
+function runTriggeredEvent(type,target,context={}){const def=findTriggeredEvent(type,target,context);if(!def)return false;GC.Log?.info('Story Event Start',{id:def.id,type,target,map:context.map??state.map});GC.Dev?.noteEvent?.(def.id);playEventDialogue(def,()=>{applyEventEffects(def,context);if(def.postLines?.length===0&&typeof canvas!=='undefined')canvas.focus()});return true}
+function inlineNpcEvent(id){
+ if(state.map==='village'){
+  if(id==='father'){setStructuredCondition('father',true);addJournal('トリトンの父は「勝つより帰ってこい」と教えてきた。');return say('トリトンの父','「剣を持つなら、勝つことより帰ってくることを覚えろ。トリトンにも昔からそう教えてきた。……カレン、お前もだぞ」')}
+  if(id==='orphan'){setStructuredCondition('orphan',true);addJournal('孤児院では食料が不足している。');return saySequence([{speaker:'孤児院の子',text:'「ソフィお姉ちゃん、今日のご飯も薄いスープ？」'},{speaker:'ソフィ',text:'「……今日は私が何か探してきますね」'}])}
+  if(id==='mayor'){setStructuredCondition('mayor',true);addJournal('王都から来る食料輸送は以前の半分ほど。');return say('村長','「このまま戦争が続けば冬が厳しい。マーガレット、お前たち若い者まで巻き込まれなければいいが……」')}
+  if(id==='messenger'){
+   if(structuredCondition('appointed'))return say('王国使者','「支度が済んだら北門から王都へ向かってくれ。……無理に笑う必要はない。任命式では嫌でも笑わされるだろうからな」');
+   return saySequence([
+    {speaker:'王国使者',text:'「国王陛下の命により、カレン、トリトン、ソフィ、マーガレット。|以上四名を、新たな[[勇者一行]]として任命する」'},
+    {speaker:'カレン',text:'「……ちょっと待ってください。私たち、応募した覚えないんですけど」'},
+    {speaker:'トリトン',text:'「人違いじゃないのか。勇者って、もっとこう……王都の騎士とかがやるもんだろ」'},
+    {speaker:'王国使者',text:'「選定は軍が行った。戦闘能力、年齢、健康状態、それから――国民が“信じやすい”人物像かどうか」'},
+    {speaker:'マーガレット',text:'「最後の条件、もう一度言って」'},
+    {speaker:'王国使者',text:'「任務中、リュネ村の租税を軽減する。さらに各家庭へ米一俵。ソフィ殿の分は孤児院へ送る」'},
+    {speaker:'ソフィ',text:'「……孤児院にも？」'},
+    {speaker:'王国使者',text:'「そうだ。今夜中に返答を。断る権利はある」'},
+    {speaker:'ナレーション',text:'使者が去ったあと、広場は妙に静かになった。誰も「行ってくれ」とは言わない。けれど、共同食料庫の軽い扉が風で鳴る音だけが、四人の耳に残った。'},
+    {speaker:'マーガレット',text:'「私は反対。何と戦うのかも、どこまで行くのかも説明されてない。米をぶら下げて、今日中に決めろなんてまともじゃない」'},
+    {speaker:'トリトン',text:'「じゃあ断ればいい。村のためって言われても、死んだら終わりだ」'},
+    {speaker:'ソフィ',text:'「……私の一俵で、孤児院の子たちはしばらくちゃんと食べられます」'},
+    {speaker:'マーガレット',text:'「ソフィ。それとあなたが死ぬことは釣り合わない」'},
+    {speaker:'ソフィ',text:'「分かってます。分かってますけど……今日、テオに“兵隊になれば毎日パンが出るの”って聞かれたんです」'},
+    {speaker:'カレン',text:'「私たちが行くだけで……|みんなが少し楽になるんだよね」'},
+    {speaker:'マーガレット',text:'「カレン。あなた一人で四人分を決めないで」'},
+    {speaker:'カレン',text:'「……ごめん。そうだよね。私、また先に走った」'},
+    {speaker:'トリトン',text:'「でも、カレンが行くって言うなら一人では行かせない。昔からそれで痛い目見てる」'},
+    {speaker:'ソフィ',text:'「私も行きます。村のためだけじゃなくて……三人が怪我した時、治せるのは私だから」'},
+    {speaker:'マーガレット',text:'「私は最後まで納得しないと思う。でも、納得してない人間が一人くらいいないと、あなたたち三人は本当に何も考えず突っ込むから」'},
+    {speaker:'カレン',text:'「……じゃあ決まり。四人で行く。四人で帰る。勇者とか魔王とか、その辺はまだよく分かんないけど」'},
+    {speaker:'トリトン',text:'「それでいい。分かんないままなら、見てから決めよう」'}
+   ],()=>{state.chapter='第一章 — 白い旗';advanceStory(STORY_STAGES.APPOINTED,{talkedWithKaren:true,appointed:true},'北門から街道へ出る');addJournal('カレンを中心に4人で話し合い、村への減税と食料支援を受けるため勇者任務を引き受けた。')})
+  }
+  if(id==='mika')return saySequence([{speaker:'ミカ',text:'「カレン姉ちゃん、勇者って王都のお菓子食べ放題なの？」'},{speaker:'カレン',text:'「たぶん、そういう仕事じゃないかな……」'}])
+  if(id==='ren')return saySequence([{speaker:'レン',text:'「トリトン姉ちゃんがいなくなったら、剣の稽古は誰が見てくれるの？」'},{speaker:'トリトン',text:'「父ちゃんに頼め。私より百倍怖いぞ」'}])
+  if(id==='lulu')return saySequence([{speaker:'ルル',text:'「ソフィお姉ちゃん、ちゃんと帰ってくる？」'},{speaker:'ソフィ',text:'「もちろん。約束します」'}])
+  if(id==='baker')return say('パン屋のエダ','「今朝は小麦が足りなくてね。いつもの半分しか焼けなかったよ。子どもらには黙って大きい方を渡したけどさ」')
+  if(id==='farmer')return say('農夫のボル','「畑はある。働く手もある。なのに荷車も肥料も軍に持っていかれちまう。戦場だけが戦争じゃねえんだな」')
+  if(id==='oldwoman')return say('老婆ナナ','「勇者さま、なんて呼ばれたって腹は減るし、怪我もする。偉い名前より、帰ってくる方が大事だよ」')
+  if(id==='veteran')return say('帰還兵ガルド','「前線は英雄譚みたいな場所じゃない。音がうるさくて、泥だらけで、誰が勝ったかなんてその場じゃ分からん。……覚えておけ」')
+ }
+ if(state.map==='karenhome'){
+  if(id==='karenMother')return say('カレンの母','「勇者なんて立派な名前をもらっても、あなたは私の娘よ。ご飯を抜かない。怪我を隠さない。それだけは守りなさい」')
+  if(id==='karenFather')return say('カレンの父','「村のために行くと言うなら止めはしない。だが国の都合まで、お前が背負う必要はないからな」')
+  if(id==='karenBrother')return saySequence([{speaker:'リオ',text:'「姉ちゃん、本当に魔王を倒しに行くの？」'},{speaker:'カレン',text:'「……まだ分かんない。でも、ちゃんと帰ってくるよ」'},{speaker:'リオ',text:'「じゃあ剣、錆びさせるなよ。帰ってきたら見せてもらうから」'}])
+ }
+ if(state.map==='orphanage'){
+  if(id==='caretaker')return say('世話役マルタ','「ソフィが送ってくれる米はありがたい。でもね、それを理由にあなたたちが死んでいいなんて、誰も思っていないよ」')
+  if(id==='theo')return say('テオ','「兵隊さんになるとパンを毎日もらえるって本当？」')
+  if(id==='noa')return saySequence([{speaker:'ノア',text:'「勇者って、怪我しないの？」'},{speaker:'ソフィ',text:'「しますよ。だから治して、休んで、また歩くんです」'}])
+  if(id==='emi')return say('エミ','「ソフィお姉ちゃんのベッド、帰ってくるまで使わないでおくね」')
+ }
+ if(state.map==='mayorhouse'){
+  if(id==='margaretMother')return saySequence([{speaker:'マーガレットの母',text:'「あなた、本ばかり読んでいたのに……まさか勇者として村を出るなんてね」'},{speaker:'マーガレット',text:'「私だって予定外よ。でも、知らないまま行くよりは調べてから行きたい」'}])
+  if(id==='clerk')return say('村役場の書記','「減税の書類はもう届いています。王都は仕事が早い……こういう時だけは、ですが」')
+ }
+ if(state.map==='cottage'){
+  if(id==='soldierMother')return say('兵士の母','「うちの息子も前線よ。帝国兵を憎めって皆は言うけど……私はただ、息子が帰ってきてほしいだけなの」')
+  if(id==='soldierSister')return say('兵士の妹・ユナ','「兄さんからの手紙、三か月来てないの。でも母さんの前では心配してないふりしてる」')
+ }
+ if(state.map==='capitalinn'){
+  if(id==='capitalInnHost')return structuredCondition('capitalFirstNight')?say('白鹿亭の女将','「二度目からは普通のお客だよ。休むなら帳場で24G。勇者だからって宿の薪が無料になるわけじゃないからね」'):saySequence([{speaker:'白鹿亭の女将',text:'「勇者様でも宿代は取るよ。……と言いたいところだけど、今夜だけは軍持ちだそうだ」'},{speaker:'トリトン',text:'「勇者って初めて得したかも」'},{speaker:'白鹿亭の女将',text:'「前線から戻れたら、その時は自分の金で泊まりな。帰ってきた客から取る金が一番うれしいんだ」'}])
+  if(id==='offDutySoldier')return say('非番の王国兵','「明日また灰の街道へ戻る。勇者様を見たら安心すると思ってたけど……あんたらも緊張してるんだな。少し安心したよ」')
+ }
+ if(state.map==='capitalarmory'){
+  if(id==='capitalSmith')return saySequence([{speaker:'王都の鍛冶師',text:'「勇者用の剣だからって折れないわけじゃない。刃が欠けたら戻ってこい」'},{speaker:'カレン',text:'「勇者専用の特別な剣とかは？」'},{speaker:'王都の鍛冶師',text:'「そんな便利なものがあったら、とっくに戦争は終わってる。金を払えば、今ある道具を少しマシにはできる」'}],()=>armoryService())
+  if(id==='armoryApprentice')return say('鍛冶見習い','「最近は新品を作るより、前線から戻った武器を直す方が多いです。持ち主が戻らない剣も……あります」')
+ }
+ if(state.map==='imperialinn'){
+  if(id==='imperialInnHost')return say('水鳥亭の主人','「運河が生きてる限り町は食える。だから橋と船着き場は、戦争になると最初に狙われるんだ」')
+  if(id==='canalBoatman')return say('運河の船頭','「西の国の歌も東の国の歌も、舟歌にすると似たようなもんだ。水の上じゃ国境線なんて見えないからな」')
+ }
+ if(state.map==='imperialbooks'){
+  if(id==='bookSeller')return saySequence([{speaker:'古書店主',text:'「千年前の地図？ 王国式も帝国式もあるよ。ただし、どっちも“自分たちに都合のいい境界線”を引いてる」'},{speaker:'マーガレット',text:'「……地図そのものが主張なんですね」'},{speaker:'古書店主',text:'「地図は嘘をつかない、なんてのが一番危ない嘘さ」'}])
+  if(id==='studentReader')return say('帝国の学生','「戦争が終わったら王国の大学にも行ってみたいんです。……今それ言うと、先生にすごく嫌な顔されるけど」')
+ }
+ if(state.map==='road'&&id==='merchant'){addJournal('王都への近道として古砦跡の抜け道を教わった。');return say('行商人','「王都へ行くならこのまま北だ。東の古砦跡は今は使われてないが、旅人が残した物資があるって噂もある。余裕があれば寄ってみるといい。<br><br>ただし獣の声がする。寄り道するかは自分で決めな」')}
+ if(state.map==='northroad'&&id==='scout'){return say('王国軍の斥候','「勇者一行か。古砦を抜けてきたのか？ 王都まではもう遠くない。北へ進めば城門だ」')}
+ if(state.map==='capital'){
+  if(id==='capitalOfficial'){
+   if(structuredCondition('returnedKingdom'))return say('王都係官','「……勇者殿。今は総司令部へ。任命式の頃とは、街の空気も変わりました」');
+   if(structuredCondition('capitalCeremony'))return say('王都係官','「任命式は済んでいます。今夜は白鹿亭に部屋が用意されています。街を見たら休んでください」');
+   advanceStory(STORY_STAGES.CEREMONY,{capitalCeremony:true},'王都を見て回り、白鹿亭で今夜休む');addJournal('王都で「美しい勇者一行」として大々的に任命された。');
+   return saySequence([
+    {speaker:'王都係官',text:'「もう少し中央へ。カレン殿は剣を右に。ソフィ殿、髪飾りを。……はい、笑ってください。民衆が見ています」'},
+    {speaker:'トリトン',text:'「戦いに来たんじゃなかったっけ、私たち」'},
+    {speaker:'マーガレット',text:'「今のところ、衣装替えと立ち位置の調整しかしてないわね」'},
+    {speaker:'王都係官',text:'「国王陛下の名において――|[[魔王シオンを討つ勇者一行]]を、ここに宣する！」'},
+    {speaker:'ナレーション',text:'鐘が鳴り、赤と白の花びらが降る。四人の名前を呼ぶ声が広場を埋めた。誰かが泣きながら「これで勝てる」と叫んでいる。'},
+    {speaker:'ソフィ',text:'「……あの人、子どもを抱いてます。ずっと泣いてる」'},
+    {speaker:'カレン',text:'「期待されるって、もっと嬉しいものだと思ってた」'},
+    {speaker:'王都係官',text:'「昨年の大勝利――|[[四天王ユウキ討伐]]に続く希望が、今度はあなた方です！」'},
+    {speaker:'カレン',text:'「ユウキ……四天王の一人だった人？」'},
+    {speaker:'マーガレット',text:'「壁のポスター。“英雄たちの意思を継げ”……でも、その英雄たちの名前がどこにもない」'},
+    {speaker:'トリトン',text:'「村では誰も“英雄になれ”なんて言わなかったのにな」'},
+    {speaker:'カレン',text:'「うん。だから忘れないでいよう。私たちが来た理由」'}
+   ])
+  }
+  if(id==='capitalCitizen')return say('王都市民',structuredCondition('returnedKingdom')?'「勇者様……前よりずっと疲れた顔をしてる。戦争は、まだ終わらないんですか？」':'「勇者様！ 魔王を倒して、聖地を取り戻してください！」')
+  if(id==='capitalFlowerGirl')return say('花売りの少女',structuredCondition('returnedKingdom')?'「前は勇者様の花飾りが一番売れたの。今は、お墓に供える白い花ばっかり」':'「勇者様！ 任命式の日は赤と白の花が飛ぶんだよ。王城の前、すっごくきれい！」')
+  if(id==='capitalRecruit')return say('新兵',structuredCondition('returnedKingdom')?'「次の総攻撃、俺たちも出るそうです。勇者様……勝てば、本当に終わるんでしょうか」':'「勇者様と同じ前線に行けるなら光栄です。俺も聖地を取り戻してみせます！」')
+  if(id==='capitalVendor')return capitalShop()
+  if(id==='rationMother')return saySequence([{speaker:'配給待ちの母親',text:structuredCondition('returnedKingdom')?'「勇者様。息子は前線から戻りました。片腕を失ったけど、生きてます。……それでも私は、勝ってよかったって言うべきなんでしょうか」':'「配給は一人パン二つまで。王都でこれなら、地方はもっとひどいんでしょうね」'},{speaker:'ソフィ',text:structuredCondition('returnedKingdom')?'「生きて帰ったことを喜んでいいと思います。それと戦争を喜ぶことは、同じじゃありません」':'「私たちの村では、小麦そのものが足りません」'},{speaker:'配給待ちの母親',text:structuredCondition('returnedKingdom')?'「……そうね。そう言ってもらえると、少し楽です」':'「なのに任命式にはあんなに花を使う。王都って、不思議なところね」'}])
+  if(id==='granz'){
+   if(!structuredCondition('returnedKingdom')){
+    if(!structuredCondition('capitalCeremony'))return say('総司令グランツ','「先に任命式を終えろ。国民に顔を見せることも、今のお前たちの任務だ」');
+    if(!structuredCondition('capitalFirstNight'))return say('総司令グランツ','「今日はもう人に見られすぎた顔だ。白鹿亭に部屋を取らせてある。街を自分の足で見て、一晩寝てから来い」');
+    if(structuredCondition('warBriefing'))return say('総司令グランツ','「任務は前線拠点セラドへ向かい、兵と民に勇者が到着したと示すことだ。敵将と無理に決戦する必要はない。生きて到着しろ」');
+    setStructuredCondition('warBriefing',true);state.objective='王都北門から灰の街道へ向かう';addJournal('グランツから「勇者の存在そのものが士気を支える」と説明され、前線拠点セラドへ向かう任務を受けた。');renderHud();
+    return saySequence([{speaker:'総司令グランツ',text:'「勘違いするな。今すぐシオンを斬れとは言わん。まず前線拠点セラドへ行け。生きて着け」'},{speaker:'トリトン',text:'「勇者なのに、やることは顔見せか？」'},{speaker:'総司令グランツ',text:'「前線では昨日まで隣にいた兵が、朝には死ぬ。“勇者が来た”という噂だけで踏みとどまれる者もいる」'},{speaker:'ソフィ',text:'「それは……嘘でも？」'},{speaker:'総司令グランツ',text:'「希望が事実かどうかを、死にかけた兵は確認しない」'},{speaker:'マーガレット',text:'「私たちは戦力である前に、宣伝なんですね」'},{speaker:'総司令グランツ',text:'「そうだ」'},{speaker:'カレン',text:'「村への米も、その宣伝の代金？」'},{speaker:'総司令グランツ',text:'「言い方は好きにしろ。私は君たちを騙しているつもりはない。国全体と四人を比べれば、国を取る。それが私の仕事だ」'},{speaker:'トリトン',text:'「最初から気に食わないな、この人」'},{speaker:'総司令グランツ',text:'「結構。嫌われても命令は変わらん。だが――死ぬな。死なれると困るし、できれば私も寝覚めが悪い」'}])
+   }
+   if(!structuredCondition('heroRecordsFound'))return say('総司令グランツ','「何を問いに来た。噂だけで私を責めるなら帰れ。軍務街の記録を見てから来い」');
+   if(structuredCondition('heroTruth'))return say('総司令グランツ','「知った上で、それでも進むか。なら私は止めない。国を守るためなら君たちを捨てる。それが私の立場だ」');
+   setStructuredCondition('heroTruth',true);state.objective='王都北門から総攻撃前線へ向かう';addJournal('歴代勇者は戦況悪化のたびに選ばれ、死亡後は静かに次の勇者へ置き換えられていた。');renderHud();return saySequence([{speaker:'総司令グランツ',text:'「……台帳を見たのだな」'},{speaker:'カレン',text:'「私たちの前にも、何人もいた。死んだことすら、ほとんど知らされてない」'},{speaker:'総司令グランツ',text:'「そうだ」'},{speaker:'トリトン',text:'「それだけか？」'},{speaker:'総司令グランツ',text:'「何を言えば満足する。謝れば死者が戻るか。私が泣けば制度が無かったことになるか」'},{speaker:'ソフィ',text:'「せめて、あの人たちの家族に本当のことを」'},{speaker:'総司令グランツ',text:'「“あなたの娘は国民の希望として使い潰されました”と？ 国がそれを公表すれば、次に前線へ立つ兵の家族は何を信じる」'},{speaker:'カレン',text:'「だから嘘を続けるの？」'},{speaker:'総司令グランツ',text:'「続ける。四人を犠牲にして数万人が希望を持つなら、私は四人を選ぶ」'},{speaker:'マーガレット',text:'「私たちを嫌いだからじゃない」'},{speaker:'総司令グランツ',text:'「むしろ逆だ。君たちには生きて帰ってほしい。……それでも必要なら捨てる。そこだけは嘘をつかない」'},{speaker:'カレン',text:'「最悪だね」'},{speaker:'総司令グランツ',text:'「ああ」'},{speaker:'カレン',text:'「でも、やっとあなたが何を守ってるのか分かった」'},{speaker:'総司令グランツ',text:'「なら次は、君が何を守るか決めろ。総攻撃が始まる」'}])
+  } }
+ if(state.map==='borderland'){
+  if(id==='borderScout'){
+   if(structuredCondition('borderBriefed'))return say('王国の偵察兵','「商人の荷車が直って、日が落ちたら宿場で休め。明朝ベルド砦へ向かうのが一番安全だ」');
+   setStructuredCondition('borderBriefed',true);state.objective='東の荷車を調べ、足止めされた商人を助ける';addJournal('ハルム国境地帯は旧関所・荒野・宿場が一つの道でつながっている。日没後の移動は危険だと聞いた。');renderHud();
+   return saySequence([{speaker:'王国の偵察兵',text:'「ここからベルド砦まで、昔は商人が一日で抜けた。今は関所跡も道標も壊れて、夜は両軍の哨戒が出る」'},{speaker:'マーガレット',text:'「帝国の村は、砦を越えてすぐ？」'},{speaker:'王国の偵察兵',text:'「いや。砦の北にラゼル峡谷がある。橋を越えて、さらに歩いてようやく最初の村だ」'},{speaker:'カレン',text:'「地図だと、本当に隣に見えたのに」'},{speaker:'王国の偵察兵',text:'「地図は腹も減らないし、足も痛くならんからな。……東で商人が立ち往生してる。余裕があるなら見てやってくれ」'}])
+  }
+  if(id==='lostMerchant'){
+   if(structuredCondition('borderMerchantHelped'))return say('足止めされた商人','「助かったよ。日が落ちる前に宿場へ荷を運べる。戦争になっても、道が完全に死んだわけじゃないんだな」');
+   if(!structuredCondition('borderSparePin')){setStructuredCondition('borderMerchantAsked',true);state.objective='西の旧関所で荷車に使える鉄杭を探す';renderHud();return saySequence([{speaker:'足止めされた商人',text:'「車軸の留め具が折れた。昔の関所に、太い鉄杭が一本残ってるはずなんだ」'},{speaker:'トリトン',text:'「西の崩れた門か。見てくる」'}])};
+   setStructuredCondition('borderMerchantHelped',true);state.objective='北の宿場で女将に話し、日が落ちるまで休む';addJournal('旧関所の鉄杭を使って商人の荷車を直した。戦争前は王国の麦と帝国の塩を運んでいた商人だった。');renderHud();
+   return saySequence([{speaker:'足止めされた商人',text:'「それだ！ ちょっと車体を持ち上げてくれ。……よし、入った」'},{speaker:'トリトン',text:'「こういう仕事なら父ちゃんに仕込まれてる」'},{speaker:'足止めされた商人',text:'「勇者が荷車直してくれるとは思わなかったよ」'},{speaker:'カレン',text:'「私たちも、勇者になる前は普通に村で働いてたから」'},{speaker:'足止めされた商人',text:'「そうか。……戦争前は、この荷車で帝国の塩を王国へ運んでた。道ってのは、本当は兵隊より商人が使うものなんだ」'}])
+  }
+  if(id==='relayHost'){
+   if(!structuredCondition('borderMerchantHelped'))return say('ハルム宿場の女将','「東の商人がまだ戻ってない。暗くなる前に帰ってくればいいけどね」');
+   if(structuredCondition('borderRested'))return say('ハルム宿場の女将','「朝飯は包んでおいた。ベルド砦までなら昼前には着くよ」');
+   return say('ハルム宿場の女将','「今日はここまでにしな。峡谷へ夜に入る馬鹿はいないよ」',[{label:'日が落ちるまで休む',fn:()=>objectEvent('borderCampfire')},{label:'まだ周辺を見る',fn:()=>say('カレン','「もう少しだけ見て回ろう」')}])
+  }
+  if(id==='relayChild')return saySequence([{speaker:'宿場の子ども',text:'「昔は帝国の子もここに泊まったって、おばあちゃんが言ってた」'},{speaker:'ソフィ',text:'「今は？」'},{speaker:'宿場の子ども',text:'「兵隊さんばっかり。大人は“向こう側”って言うけど、僕は橋の向こうを見たことない」'}])
+ }
+ if(state.map==='relayvillage'){
+  if(id==='relayHost'||id==='relayChild')return say('ナレーション','この場所はv11でハルム国境地帯へ統合された。北か南へ進むと新しいルートへ戻れる。')
+ }
+ if(state.map==='watchfort'){
+  if(id==='fortCommander'){
+   if(structuredCondition('fortGateOpen'))return say('監視砦長','「北門は開けた。橋に帝国四将クラインテッドがいる。戦う命令は出していない。自分の目で状況を見ろ」');
+   if(!structuredCondition('fortBriefed')){setStructuredCondition('fortBriefed',true);state.objective='西の作戦図を調べて、国境橋の位置を確認する';renderHud();return saySequence([{speaker:'監視砦長',text:'「ベルド砦へようこそ、とは言いにくいな。ここが王国最後の常設拠点だ」'},{speaker:'ナレーション',text:'砦長は机の北側を指す。その先の城門から、風の音だけが低く響いている。'},{speaker:'監視砦長',text:'「城門の向こうはそのままラゼル峡谷。橋の中央が国境だ。今日は帝国側の将が一人、橋に出ている」'},{speaker:'カレン',text:'「四天王？」'},{speaker:'監視砦長',text:'「王国ではそう呼ぶ。帝国名は四将。まず西の作戦図を見ろ。距離と地形を頭に入れてから門を開ける」'}])}
+   if(!structuredCondition('fortMapSeen'))return say('監視砦長','「先に西棟の作戦図を見てこい。橋の向こうへ出てから“知らなかった”では済まん」');
+   setStructuredCondition('fortGateOpen',true);state.objective='開いた北門を抜け、ラゼル峡谷橋へ出る';addJournal('ベルド砦で国境周辺の実距離を確認。ラゼル峡谷橋の中央が明確な国境になっている。');renderHud();draw();
+   return saySequence([{speaker:'監視砦長',text:'「よし。門を開ける」'},{speaker:'若い王国兵',text:'「砦長、帝国四将が橋にいるのに？」'},{speaker:'監視砦長',text:'「だからだ。ここで勇者を閉じ込めても戦況は変わらん。何を見て戻るかは、この四人に任せる」'},{speaker:'マーガレット',text:'「戻れる保証は？」'},{speaker:'監視砦長',text:'「ない。国境ってのは、門を一枚くぐれば別世界になる場所じゃない。戻れない可能性も含めて国境だ」'}])
+  }
+  if(id==='tiredGuard')return saySequence([{speaker:'若い王国兵',text:'「三週間ここにいます。でも帝国兵の顔をまともに見たのは二回だけです」'},{speaker:'トリトン',text:'「ずっと戦ってるわけじゃないんだな」'},{speaker:'若い王国兵',text:'「待つ時間の方が長いです。……待ってる間に、相手が怪物じゃなく人間だって考えちゃうのが一番怖い」'}])
+  if(id==='klein'){
+   if(structuredCondition('metKlein'))return say('クラインテッド','「もう言葉は交わした。橋が落ちる前に東へ行け」');
+   showEncounterCinematic('帝国四将','クラインテッド','「……赤白の外套。また勇者か」');
+   return saySequence([{speaker:'ナレーション',text:'砦を抜けると景色が突然途切れた。眼下はラゼル峡谷。石橋の中央、帝国側の青黒い外套が風にはためいている。'},{speaker:'クラインテッド',text:'「……赤白の外套。また勇者か」'},{speaker:'カレン',text:'「“また”って、どういう意味？」'},{speaker:'クラインテッド',text:'「一年前、ユウキを討った連中も同じ呼び名だった」'},{speaker:'マーガレット',text:'「王都では王国軍が討伐したとしか聞いてない」'},{speaker:'ナレーション',text:'クラインテッドの指が、剣の柄を強く握る。けれど抜かない。'},{speaker:'クラインテッド',text:'「……そうか。先任者の存在まで消したか」'},{speaker:'トリトン',text:'「ここで戦うの？」'},{speaker:'クラインテッド',text:'「今日は違う。俺の任務は橋の監視だ。勇者一組のために四将が決闘するほど、戦争は小さくない」'},{speaker:'カレン',text:'「じゃあ通して」'},{speaker:'クラインテッド',text:'「その目は嫌いじゃない。……ユウキも、考える前にそう言った」'},{speaker:'ナレーション',text:'遠くで砲声が響く。谷壁への着弾。石橋が大きく揺れ、王国側の橋脚に亀裂が走る。'},{speaker:'クラインテッド',text:'「走れ！」'},{speaker:'ナレーション',text:'四人が帝国側へ駆け抜けた直後、背後で橋の一部が崩れ落ちた。ベルド砦は、もう谷の向こうだ。'},{speaker:'クラインテッド',text:'「戻れなくなったな。なら見ていけ。お前たちの国が“魔王の国”と呼ぶ場所を」'}],()=>{setStructuredCondition('metKlein',true);setStructuredCondition('kleinBattleDone',true);state.objective='北側の道から帝国領へ進む';addJournal('ベルド砦を抜けたラゼル峡谷橋でクラインテッドと初対面。戦闘ではなく、橋の崩落によって帝国側へ取り残された。');renderHud()})
+  }
+ }
+ if(state.map==='ravine'){
+  if(id==='klein')return say('ナレーション','この場所はv11でベルド砦・ラゼル峡谷へ統合された。南へ戻ると新しいルートへ移れる。')
+ }
+ if(state.map==='empirevillage'){
+  if(id==='empireInnkeeper')return saySequence([{speaker:'帝国の宿主',text:'「旅人かい？ ひどい泥だね。西の橋が落ちたって聞いたけど、巻き込まれたのかい」'},{speaker:'カレン',text:'「えっと……はい。四人で、東へ向かう途中で」'},{speaker:'帝国の宿主',text:'「そう。なら今夜は空いてる。先に手を洗いな。スープは薄いけど温かいよ」'},{speaker:'ソフィ',text:'「……私たちが誰か、聞かないんですか？」'},{speaker:'帝国の宿主',text:'「聞いてほしい顔してないだろ」'},{speaker:'トリトン',text:'「もし私たちが王国人でも？」'},{speaker:'帝国の宿主',text:'「だったら何だい。腹減ってる人間に国境なんて書いてないよ。兵隊を連れてきたなら別だけどね」'},{speaker:'ナレーション',text:'四人は返事ができなかった。王国で何度も聞いた“魔王の国”という言葉が、湯気の向こうで急に薄っぺらく感じられた。'},{speaker:'マーガレット',text:'「……カレン。今、“ありがとう”だけ言って」'},{speaker:'カレン',text:'「うん。……ありがとうございます」'}])
+  if(id==='empireChild'){setStructuredCondition('empireYukiMention',true);addJournal('帝国の子どもたちはユウキを「皆を逃がした将軍」として英雄視している。');renderHud();return saySequence([{speaker:'帝国の子ども',text:'「見て！ ユウキ将軍ごっこ。ぼくが最後に残って、みんなを逃がす役！」'},{speaker:'カレン',text:'「ユウキ……？」'},{speaker:'帝国の子ども',text:'「知らないの？ 一年前にみんなを逃がして死んだ英雄だよ。クラインテッド将軍の大事な人だったんだって」'},{speaker:'マーガレット',text:'「王都のポスターと、同じ人の話……？」'}])}
+ }
+ if(state.map==='imperialcity'){
+  if(id==='imperialCitizen')return say('帝国市民','「王国軍がまた聖域を取りに来るって噂だ。四年前みたいになるのは御免だよ」')
+  if(id==='recordKeeper'){if(structuredCondition('heardYuki'))return say('記録係','「ユウキ将軍の記録なら北の旧戦場にも残っている。現地を見た方が分かるだろう」');setStructuredCondition('heardYuki',true);setStructuredCondition('yukiKleinLink',true);state.objective='北の旧戦場でユウキの記録を探す';addJournal('帝国公文書では、ユウキは撤退部隊を逃がすため殿を務めて戦死。クラインテッドとは私生活でも伴侶だったと記録されている。');renderHud();return saySequence([{speaker:'記録係',text:'「ユウキ・レイナード。帝国四将。享年二十一。昨年のラゼル撤退戦で、三個部隊を逃がすため殿を引き受け戦死」'},{speaker:'マーガレット',text:'「王国では“残虐な四天王を討伐した”としか……。勇者が関わった記録もない」'},{speaker:'記録係',text:'「王国の勇者に討たれた、というのが帝国側の記録だ。あと……クラインテッド将軍とは恋人だった」'},{speaker:'カレン',text:'「だから、あの人は私たちを見た時……」'},{speaker:'記録係',text:'「記録だけで人間は分からない。北の旧戦場へ行け。生き残った兵もいる」'}])}
+ }
+ if(state.map==='empirevillage'&&id==='empireFarmer')return say('果樹農家','「水路があるから、この辺りは戦争中でも果樹だけは何とか育つ。兵隊さんも子どもも、食べる実は同じさ」')
+ if(state.map==='imperialcity'&&id==='canalVendor')return say('運河商人','「川舟が止まると町は一日で困る。戦争ってのは剣より先に、荷物の流れを止めるんだよ」')
+ if(state.map==='yukiroad'){
+  if(id==='oldImperialSoldier'){setStructuredCondition('yukiWitness',true);renderHud();return saySequence([{speaker:'帝国の老兵',text:'「俺はユウキ将軍に逃がされた側だ。包囲が閉じる前に、あの人だけが残った」'},{speaker:'カレン',text:'「クラインテッドは？」'},{speaker:'帝国の老兵',text:'「残ると言って聞かなかった。ユウキ将軍が殴ってでも連れて行けと命じてな。俺たち三人で引きずって撤退させた」'},{speaker:'帝国の老兵',text:'「数日後、王国では“大勝利”の鐘が鳴ったそうだな。こっちでは、その日から和平を口にする奴が一気に減った」'}])}
+  if(id==='zester'){if(!(structuredCondition('yukiMemorial')&&structuredCondition('yukiLetter')&&structuredCondition('yukiWitness')))return say('ゼスター','「慰霊碑だけでなく、残された手紙と生き残りの証言も見ろ。英雄譚一つで人間を決めつけるな」');if(structuredCondition('metZester'))return say('ゼスター','「聖域へ行け。そこで千年前と今を、自分の目で比べるといい」');setStructuredCondition('metZester',true);state.objective='北のエルシア聖域へ向かう';addJournal('ゼスターから、王国が四年前にエルシアへ侵攻して現在の戦争が始まった経緯を聞いた。');renderHud();return saySequence([{speaker:'ゼスター',text:'「我々は侵略された。そして撃退した。そこで終わらせれば、十年後か二十年後にまた来る――この国はそう学んできた」'},{speaker:'カレン',text:'「だから王国の村まで焼いていいっていうの？」'},{speaker:'ゼスター',text:'「いいとは言わん。必要だと判断した。皇帝も、私も、その責任から逃げるつもりはない」'}])}
+ }
+ if(state.map==='elsia'){
+  if(id==='elsiaResident'){setStructuredCondition('elsiaResident',true);return saySequence([{speaker:'聖域の住民',text:'「祖父も、その祖父もここで生まれた。王国の人に“返せ”と言われても……私たちはどこへ帰ればいいんでしょう」'},{speaker:'ソフィ',text:'「……ここが、あなたたちの家なんですね」'}])}
+  if(id==='zenith'){if(!(structuredCondition('elsiaResident')&&structuredCondition('elsiaRecord')))return say('ゼニス','「王国の主張と、今ここに住む人間。その両方を見てから話そう」');if(structuredCondition('metZenith'))return say('ゼニス','「答えが出たとは思わない。ただ、知らなかった頃には戻れない。王国へ戻り、自分たちの答えを出せ」');return saySequence([{speaker:'ゼニス',text:'「王国の古文書は偽物ではない。千年前、この地が王国の前身国家に属した時代はある」'},{speaker:'マーガレット',text:'「でも、その後千年暮らしてきた人を追い出す根拠にはならない」'},{speaker:'ゼニス',text:'「同意する。だが私は帝国軍人だ。君たちを資料ごと王国へ帰せば、次の侵攻に使われる可能性もある」'},{speaker:'カレン',text:'「じゃあ、どうするの？」'},{speaker:'ゼニス',text:'「力ずくで止める。君たちが突破できたなら――その後は、私個人として道を開けよう」'}],()=>startBattle('zenithEncounter'))}
+ }
+ if(state.map==='elsia'&&id==='elsiaElder')return say('聖域の老人','「あの崩れた柱は王国より古い。こっちの家は帝国時代に建てた。ここは一つの時代だけの土地じゃないよ」')
+ if(state.map==='returnroad'&&id==='returnScout')return say('王国軍伝令','「勇者一行！？ 生きていたのか。王都ではもう……いや、総司令部へ急げ。君たちに見せられない記録を処分しているという噂がある」')
+ if(state.map==='finalfield'&&id==='decisionGuide'){
+  if(!(structuredCondition('finalKingdomPlan')&&structuredCondition('finalEmpirePlan')))return say('マーガレット','「決める前に両軍の作戦を確認しよう。王国側と帝国側、それぞれの前線を見ておきたい」');
+  return say('カレン','「王国が戦争を始めた。でも、帝国の反攻で今の王国民まで潰していいわけじゃない。逆に王国の総攻撃を通せば、聖域の人たちがまた戦場になる。……ここからは、私たちが誰を守るために剣を使うか決める」',[{label:'アルディナ王国側に立つ',fn:()=>{state.finalChoice='kingdom';state.objective='北へ進み、帝国本陣へ向かう';addJournal('最終局面で、故郷と王国民を守るためアルディナ王国側に立つと決めた。');renderHud();say('トリトン','「決めたなら行こう。誰かに決められた勇者じゃなく、私たちで選んだんだ」')}},{label:'レグノア帝国側に立つ',fn:()=>{state.finalChoice='empire';state.objective='北へ進み、王国軍総司令部へ向かう';addJournal('最終局面で、聖域侵攻と勇者制度を止めるためレグノア帝国側に協力すると決めた。');renderHud();say('マーガレット','「自分の国に剣を向けることになる。それでも、ここまで見てきたものを無かったことにはできない」')}}])
+ }
+ if(state.map==='imperialcamp'&&id==='shion')return saySequence([{speaker:'皇帝シオン',text:'「王国の勇者。ここまで来た以上、退けとは言わない」'},{speaker:'カレン',text:'「私たちは王国が正しかったからここにいるんじゃない。今、王国の人たちを守るために来た」'},{speaker:'皇帝シオン',text:'「ならば立場は明確だ」'}],()=>showWorldSkeletonEnding('kingdom'))
+ if(state.map==='royalcamp'&&id==='granzFinal')return saySequence([{speaker:'総司令グランツ',text:'「まさか君たちがこちらへ剣を向けるとはな」'},{speaker:'カレン',text:'「国を嫌いになったわけじゃない。だから、これ以上同じことを続けさせたくない」'},{speaker:'総司令グランツ',text:'「それもまた、君が選んだ勇者の形か」'}],()=>showWorldSkeletonEnding('empire'))
+
+}
+
+function inlineObjectEvent(id){
+ if(TREASURE_DEFS[id])return openTreasure(id);
+ if(state.map==='village'){
+  if(id==='store'){setStructuredCondition('store',true);addJournal('共同食料庫の備蓄は前年同期の半分以下。');return say('共同食料庫','棚の半分以上が空いている。帳簿では前年同期の半分以下まで備蓄が落ちていた。')}
+  if(id==='well')return say('村の井戸','何人もの桶が並んでいる。子どもたちの笑い声と、夕食の相談をする大人たちの声が聞こえる。')
+  if(id==='home')return enterInterior('karenhome',4,5)
+  if(id==='doorOrphanage')return enterInterior('orphanage',19,5)
+  if(id==='doorMayor')return enterInterior('mayorhouse',4,12)
+  if(id==='doorCottage')return enterInterior('cottage',19,12)
+  if(id==='gate'){if(!structuredCondition('talkedWithKaren'))return say('北門','カレンたち4人の話し合いを終えるまでは、村を離れられない。');leaveVillage();return}
+ }
+ if(state.map==='borderland'){
+  if(id==='borderGrave')return saySequence([{speaker:'名のない墓標',text:'王国語と帝国語、両方で短い祈りが刻まれている。名前は雨で読めない。'},{speaker:'ソフィ',text:'「どちらの国の人だったんでしょう」'},{speaker:'マーガレット',text:'「分からない。たぶん、ここではそれが一番正しいのかも」'}])
+  if(id==='oldCheckpoint'){
+   if(!structuredCondition('borderSparePin')){setStructuredCondition('borderSparePin',true);state.objective=structuredCondition('borderBriefed')?'東の商人へ鉄杭を届ける':'偵察兵に国境地帯の状況を聞く';renderHud();return saySequence([{speaker:'古い関所跡',text:'崩れた柵の根元に、まだ使えそうな太い鉄杭が一本残っている。戦争前の通行札も散らばっている。'},{speaker:'トリトン',text:'「これなら荷車の車軸を留められる」'},{speaker:'マーガレット',text:'「帝国の商人印と王国の税印が同じ板に押してある。ここ、本当に普通の国境だったのね」'}])}
+   return say('古い関所跡','戦争前の通行札が散らばっている。人の往来があった痕跡だけが残っている。')
+  }
+  if(id==='brokenWagon')return say('壊れた荷車',structuredCondition('borderMerchantHelped')?'応急修理された車軸。商人は北の宿場へ荷を運んでいった。':'片側の車輪が外れ、荷袋が道脇に積まれている。持ち主はすぐ近くにいる。')
+  if(id==='relayBoard')return say('ハルム宿場の掲示板','「国境便停止」「ベルド砦への荷役募集」「帝国産塩・入荷未定」。戦争で途切れたものが、短い紙切れだけでも分かる。')
+  if(id==='borderCampfire'){
+   if(!structuredCondition('borderMerchantHelped'))return say('宿場の焚き火','まだ日が高い。東で足止めされた商人も戻っていない。');
+   if(structuredCondition('borderRested'))return limitedRecovery('borderCampfire','宿場の焚き火','残った薪と保存食で、もう一度だけまともに休めそうだ。','field','焚き火のそばで短く休んだ。HPが全回復し、MPも少し戻った。');
+   setStructuredCondition('borderRested',true);spendRecovery('borderCampfire');recoverParty('full');state.objective='北の道からベルド国境砦へ向かう';addJournal('ハルム宿場で一晩休み、王都を出てから見たものを4人で整理した。');renderHud();
+   return saySequence([{speaker:'ナレーション',text:'日が落ちる。街道の音が消え、焚き火の向こうに旧関所の影だけが見える。王都を出てから、四人が何も急がず座ったのは初めてだった。'},{speaker:'トリトン',text:'「……思ってたより、遠いな」'},{speaker:'カレン',text:'「帝国が？」'},{speaker:'トリトン',text:'「全部。魔王も四天王も、王都じゃ“倒しに行く相手”って一言だった。でも歩いてると、その間に人が多すぎる」'},{speaker:'ソフィ',text:'「灰の街道の人も、前線の怪我人も、今日の商人さんも」'},{speaker:'マーガレット',text:'「私たちはまだ帝国にすら入ってない。それなのに、王都で聞いた説明だけじゃ足りないことがもう増えてる」'},{speaker:'カレン',text:'「怖い？」'},{speaker:'マーガレット',text:'「当然。あなたは？」'},{speaker:'カレン',text:'「怖い。でも……分からないまま魔王を倒して帰る方が、今はもっと嫌」'},{speaker:'トリトン',text:'「じゃあ明日も見る。それでいい」'},{speaker:'ソフィ',text:'「四人で、ですね」'},{speaker:'ナレーション',text:'翌朝。宿場の女将から黒パンを受け取り、四人はベルド砦へ向かった。'}])
+  }
+ }
+ if(state.map==='relayvillage'){
+  if(id==='relayWell'||id==='relayBoard')return say('ナレーション','旧版の宿場マップ。v11ではハルム国境地帯の北側へ統合されている。')
+ }
+ if(state.map==='watchfort'){
+  if(id==='fortRest')return limitedRecovery('fortRest','砦の休憩所','交代兵用の寝台と少量の医薬品が残っている。','field','砦の寝台で短く休んだ。HPが全回復し、MPも少し戻った。')
+  if(id==='signalFire')return say('狼煙台','高い塔の上で油の匂いがする。対岸の帝国側にも小さな狼煙台が見える。戦闘より先に、互いの動きを知らせるための場所だ。')
+  if(id==='fortMap'){
+   if(!structuredCondition('fortMapSeen')){setStructuredCondition('fortMapSeen',true);state.objective='砦長へ戻り、北門を開けてもらう';renderHud()}
+   return saySequence([{speaker:'ベルド砦作戦図',text:'王都、灰の街道、前線、ハルム、ベルド砦。ここまで歩いてきた道が一本につながっている。橋を越えた先の帝国村までは、さらに半日以上。'},{speaker:'マーガレット',text:'「地図の縮尺で見ると近い。でも、私たちが歩いた時間を書き込むと全然違う」'},{speaker:'カレン',text:'「やっと“隣の国”って言葉の意味が分かった気がする」'}])
+  }
+  if(['fortGate','fortGateRight'].includes(id))return say('ベルド砦北門',structuredCondition('fortGateOpen')?'重い格子門は上がっている。冷たい谷風が砦の中まで吹き込んでくる。':'閉じた格子門。砦長の許可なしでは開けられない。')
+  if(id==='ravineLookout')return saySequence([{speaker:'砦の見張り台',text:'城壁の向こうで地面が大きく裂けている。ラゼル峡谷。その中央を、一本の石橋だけが渡っている。'},{speaker:'トリトン',text:'「これなら国境線を間違えようがないな」'},{speaker:'マーガレット',text:'「線じゃなくて谷そのもの、か」'}])
+  if(id==='bridgeMarker')return say('国境標','橋の西面にはアルディナ王国紋章、東面にはレグノア帝国紋章。人が作った境界と、谷という地形が同じ場所に重なっている。')
+ }
+ if(state.map==='ravine'){
+  if(id==='ravineLookout'||id==='bridgeMarker')return say('ナレーション','旧版の渓谷マップ。v11ではベルド砦の北側へ統合されている。')
+ }
+ if(state.map==='capital'){
+  if(id==='capitalInnDoor')return enterInterior('capitalinn',6,12)
+  if(id==='capitalArmoryDoor')return enterInterior('capitalarmory',18,12)
+ }
+ if(state.map==='imperialcity'){
+  if(id==='imperialInnDoor')return enterInterior('imperialinn',7,12)
+  if(id==='imperialBookDoor')return enterInterior('imperialbooks',16,12)
+ }
+ if(INTERIOR_MAPS.includes(state.map)){
+  if(id==='indoorExit')return leaveInterior()
+  if(id==='restBed'){return say('カレン','「少し休んでいこうか」',[{label:'休む（無料・全回復）',fn:()=>{recoverParty('full');say('ナレーション','自宅でしっかり休んだ。HPとMPが全回復した。')}},{label:'まだ休まない',fn:()=>say('カレン','「もう少し村を見て回ろう」')}])}
+  if(id==='innRest'){
+   if(structuredCondition('capitalCeremony')&&!structuredCondition('capitalFirstNight')&&!structuredCondition('returnedKingdom')){return saySequence([{speaker:'ナレーション',text:'任命式の夜。窓の外ではまだ「勇者万歳」の声が遠く聞こえる。部屋に戻ると、四人とも昼間ほど喋らなくなった。'},{speaker:'トリトン',text:'「……|疲れた。||戦ってないのに」'},{speaker:'マーガレット',text:'「一日中、知らない人に“希望”って呼ばれてたものね」'},{speaker:'ソフィ',text:'「広場で、息子さんを前線から帰してって手を握られました。私、何も約束できなかった」'},{speaker:'カレン',text:'「私は少し嬉しかった。花が降って、みんな名前を呼んでくれて。……嬉しいって思った自分が、あとから嫌になった」'},{speaker:'トリトン',text:'「別にいいだろ。嬉しかったのまで嘘にする必要ない」'},{speaker:'マーガレット',text:'「問題は、私たちが何もしてないのに“勝てる証拠”みたいに扱われてること。市場では配給の列ができてたのに、任命式には花を山ほど使ってた」'},{speaker:'ソフィ',text:'「王都にも苦しい人はいる。でも、リュネ村とは苦しみ方が違うんですね」'},{speaker:'カレン',text:'「明日グランツに聞こう。|私たちが何をさせられるのか。[[ちゃんと聞いて]]、それから前へ行く」'},{speaker:'トリトン',text:'「四人で聞く。誰か一人が丸め込まれそうになったら、残り三人で止める」'},{speaker:'マーガレット',text:'「主にカレンをね」'},{speaker:'カレン',text:'「そこは否定できない……」'},{speaker:'ナレーション',text:'笑い声は小さかった。それでも、その夜初めて四人は「勇者一行」ではなく、いつもの幼馴染として眠った。'}],()=>{advanceStory(STORY_STAGES.ALPHA_COMPLETE,{capitalFirstNight:true,alphaHourComplete:true},'α1.0区間完了：翌朝、グランツへ会いに行く');recoverParty('full');addJournal('任命式の夜、白鹿亭で4人が王都の熱狂と自分たちの立場について初めて本音を交わした。');say('ナレーション','翌朝。|四人は[[自分たちの意思でグランツに会う]]ため、白鹿亭を出る支度をした。')})}
+   return offerPaidRest('白鹿亭の女将','白鹿亭',24)
+  }
+  if(id==='imperialInnRest')return offerPaidRest('水鳥亭の主人','水鳥亭',28)
+  if(id==='familyTable')return say('ナレーション','四人家族で使っている食卓。今は皿が四枚ではなく、少し小さな器が並ぶ日も増えた。')
+  if(id==='orphanPantry')return say('世話役マルタ','「見ての通り、棚はだいぶ軽いよ。でも子どもたちの前では“まだ大丈夫”って顔をしてる」')
+  if(id==='toyChest')return say('ナレーション','木片で作った兵士と勇者の人形が入っている。帝国兵役の人形だけ、真っ黒に塗られていた。')
+  if(id==='mayorBooks')return say('マーガレット','「村の記録、租税台帳、古い地図……子どもの頃はここが私の図書館だったの」')
+  if(id==='warMap')return say('マーガレット','「補給路に赤い印が増えてる。前線が近づいたんじゃなくて、戦争が生活の方へ伸びてきてるんだ」')
+  if(id==='soldierLetter')return say('兵士の妹・ユナ','「最後の手紙には“次は雪が降る前に帰れるかも”って。……もう春になったけど」')
+  if(id==='emptyBed')return say('兵士の母','「息子の寝床よ。帰った時にそのまま眠れるよう、毎週シーツだけは替えてるの」')
+  if(id==='innCounter')return say('白鹿亭の帳場','兵士、商人、避難民。宿帳には王都の外から来た名前がびっしり並んでいる。')
+  if(id==='innNotice')return say('宿の掲示板','「前線方面の荷馬車、護衛募集」「北部からの避難家族、空き部屋求む」――戦争が宿の壁まで来ている。')
+  if(id==='weaponRack')return say('武器棚','磨かれた新品より、修理待ちの剣や槍の方が多い。')
+  if(id==='repairBench')return say('修理台','欠けた刃、曲がった留め具、乾いた血。道具には持ち主より正直な戦場の痕が残る。')
+  if(id==='canalMenu')return say('水鳥亭の献立','川魚の煮込み、豆のスープ、黒パン。王国の宿と違う料理名が並ぶ。')
+  if(id==='travelMap')return say('運河案内図','帝国の町同士を結ぶ水路が細かく描かれている。軍道ではなく、商人と農民のための地図だ。')
+  if(id==='oldMaps')return say('古地図の棚','年代ごとに国境線の位置が違う。エルシアの色も、地図によって何度も塗り替えられている。')
+  if(id==='civilHistory')return say('地方史の棚','戦争ではなく、洪水、疫病、収穫祭、橋の建設。人々の歴史の大半は戦争以外でできている。')
+ }
+ if(state.map==='road'){
+  if(id==='wolf'&&!structuredCondition('roadWolf'))return startSymbolEncounter('wolf','wolves');
+  if(id==='bandit'&&!structuredCondition('roadBandit'))return say('街道のならず者','「荷物と金を置いていけ。こっちも腹が減ってるんだ」',[{label:'戦う',fn:()=>startSymbolEncounter('bandit','roadBandit')},{label:'離れる',fn:()=>say('マーガレット','「本道は通れる。無理に相手をする必要はないわ」')}]);
+  if(id==='cave')return enterCave();
+  if(id==='roadSign')return say('古い道標','「王都　北」「旧砦　東」<br><br>東を示す矢印だけが、新しく塗り直されている。')
+ }
+ if(state.map==='cave'){
+  if(id==='caveRest')return limitedRecovery('caveRest','古砦の兵舎跡','使えそうな毛布と薬包が一組だけ残っている。','field','兵舎跡で短く休んだ。HPが全回復し、MPも少し戻った。')
+  if(id==='exit')return leaveCave();
+  if(id==='northExit'){if(!structuredCondition('bossDead'))return say('ナレーション','鉄柵の向こうから低い唸り声が聞こえる。');return enterNorthRoad()}
+  if(id==='chest1'&&!structuredCondition('chest1')){setStructuredCondition('chest1',true);state.inventory['薬草']=(state.inventory['薬草']||0)+2;say('宝箱','薬草を2個手に入れた。');draw();return}
+  if(id==='chest2'&&!structuredCondition('chest2')){setStructuredCondition('chest2',true);state.inventory['魔力草']=(state.inventory['魔力草']||0)+2;say('宝箱','魔力草を2個手に入れた。');draw();return}
+  if(id==='bats'&&!structuredCondition('caveBats'))return startBattle('bats');
+  if(id==='crawler'&&!structuredCondition('caveCrawler'))return startBattle('crawler');
+  if(id==='leverWest'){if(!structuredCondition('caveBats'))return say('カレン','「機構の周りにコウモリが群がってる。先に追い払おう」');if(structuredCondition('leverWest'))return say('西側の開閉機構','重いレバーはすでに下がっている。');setStructuredCondition('leverWest',true);state.objective=structuredCondition('leverEast')?'中央の鉄格子へ戻る':'東側の開閉機構も探す';renderHud();draw();return say('西側の開閉機構','四人で力を合わせて錆びたレバーを下ろした。<br><br>砦の奥から「ガコン」と大きな音が響く。')}
+  if(id==='leverEast'){if(!structuredCondition('caveCrawler'))return say('マーガレット','「あの石殻ムカデが機構の前に居座ってる。動かすなら先に何とかしないと」');if(structuredCondition('leverEast'))return say('東側の開閉機構','歯車はゆっくり回り続けている。');setStructuredCondition('leverEast',true);state.objective=structuredCondition('leverWest')?'中央の鉄格子へ戻る':'西側の開閉機構も探す';renderHud();draw();return say('東側の開閉機構','錆びた歯車が軋みながら回り始めた。<br><br>マーガレット「これで中央の鉄格子が開くはず」')}
+  if(id==='innerGate'){if(structuredCondition('leverWest')&&structuredCondition('leverEast'))return say('ナレーション','二つの機構が作動し、中央の鉄格子は開いている。');return say('マーガレット','「左右に二つの錠前機構がつながってる。西側と東側、両方を動かさないと開かないみたい」')}
+  if(id==='banner'){setStructuredCondition('banner',true);addJournal('古砦跡には、戦争以前の王国軍旗が残されていた。');return say('マーガレット','「これ、今の戦争で使われた物じゃない。ずっと前に放棄された砦みたい」<br><br>カレン「誰も使わなくなった道だから、獣が住み着いたんだね」')}
+  if(id==='rations'){setStructuredCondition('rations',true);return say('トリトン','「空の保存食箱だ。新しい足跡はない。兵士が潜んでるって感じじゃなさそうだな」')}
+  if(id==='boss'&&!structuredCondition('bossDead')){if(!(structuredCondition('leverWest')&&structuredCondition('leverEast')))return say('マーガレット','「中央の鉄格子が閉じてる。左右の開閉機構を両方動かさないと奥へ行けないわ」');return say('カレン','「こいつが北の通路を塞いでる……！」',[{label:'戦う',fn:()=>startBattle('boss')},{label:'いったん下がる',fn:()=>say('マーガレット','「先に宝箱や脇道を調べてもいいわ」')}]);}
+ }
+ if(state.map==='northroad'){
+  if(id==='southExit')return returnCaveNorth();
+  if(id==='milestone')return say('石の道標','苔を払うと「アルディナ王都まで三里」と刻まれている。')
+ }
+ if(state.map==='capital'){
+  if(id==='royalCastle')return say('アルディナ王城','白い石壁の奥に王家の居城がそびえている。広場から見上げるだけでも、リュネ村とは規模がまるで違う。')
+  if(id==='capitalMarket')return capitalShop()
+  if(id==='capitalFountain')return say('王都の大噴水','聖地エルシアの泉を模したという噴水。観光客向けの説明板には「奪われた故郷を忘れるな」と刻まれている。')
+  if(id==='capitalBarracks')return say('王国軍兵舎','整列した新兵たちの掛け声が聞こえる。壁には「聖地奪還」「勇者と共に」の標語が貼られている。')
+  if(id==='victoryPoster'){setStructuredCondition('capitalYukiPropaganda',true);addJournal('王都では一年前のユウキ戦死を「四天王ユウキ討伐・王国大勝利」と宣伝している。');renderHud();return saySequence([{speaker:'戦勝ポスター',text:'「一年前の大勝利――四天王ユウキ討伐！ 英雄たちの意思を継ぎ、聖地奪還へ！」'},{speaker:'カレン',text:'「この人がユウキ……。敵の大将だったんだね」'},{speaker:'マーガレット',text:'「“英雄たち”って誰のことか、名前が書いてないのが少し変ね」'}])}
+  if(id==='heroLedger'){
+   if(!structuredCondition('returnedKingdom'))return say('王国軍・保管箱','封蝋に「軍務機密・勇者候補管理」とある。今の立場では勝手に開けられない。');
+   if(structuredCondition('heroRecordsFound'))return say('歴代勇者台帳','名前の横に「戦死」「消息不明」「宣伝終了」。同じ言葉が何度も並んでいる。');
+   setStructuredCondition('heroRecordsFound',true);state.objective='王城前でグランツを問い詰める';addJournal('軍務街の廃棄予定台帳から、カレンたち以前にも複数の「勇者一行」が存在し、戦死後は公表されず次の候補へ置き換えられていた事実を発見した。');renderHud();
+   return saySequence([{speaker:'歴代勇者台帳',text:'「第七次勇者候補――全滅。国民向け発表不要」「第八次――二名消息不明。新規選定へ」……同じ形式の記録が何頁も続いている。'},{speaker:'カレン',text:'「“また勇者か”……クラインテッドが言ってたのは、これだったんだ」'},{speaker:'トリトン',text:'「候補って何だよ。私たち、人間だぞ」'},{speaker:'ナレーション',text:'トリトンが机を殴る。古い台帳から埃が舞った。いつもなら止めるマーガレットも、今日は何も言わなかった。'},{speaker:'ソフィ',text:'「この人……二十歳。私たちより年下です。家族への通知、“戦死ではなく長期任務中と説明”……」'},{speaker:'カレン',text:'「村のみんなも、私たちが死んだらそう言われるの？」'},{speaker:'マーガレット',text:'「たぶん新しい勇者が選ばれる。私たちの名前を使わなくなったら、それで終わり」'},{speaker:'カレン',text:'「……嫌だ」'},{speaker:'マーガレット',text:'「カレン？」'},{speaker:'カレン',text:'「死ぬのが嫌なんじゃない。私たちがいなかったことにされるのが嫌。前の人たちも、そんなふうに消していいわけない」'},{speaker:'ソフィ',text:'「消させません。名前、全部覚えて帰りましょう」'},{speaker:'マーガレット',text:'「グランツに聞く。今度は“知らなかった”では済ませない」'}])
+  }
+
+ }
+ if(state.map==='empirevillage'){
+  if(id==='waterMill')return say('水車小屋','細い水路が村中の畑と果樹園へ水を運んでいる。王国で聞いていた「魔王の国」とは結びつかない、ごく普通の農村設備だ。')
+  if(id==='empireShrine')return say('村の小祠','戦死者の名前と、収穫への感謝が同じ板に書かれている。')
+  if(id==='yukiRibbon'){setStructuredCondition('empireYukiMention',true);addJournal('帝国の村ではユウキの一周忌を示す青い喪章が今も残っている。');renderHud();return say('青い喪章','小さな札に「ユウキ将軍一周忌。帰れた命を忘れない」とある。王都の“討伐記念”と、同じ死を指している。')}
+  if(id==='empireCache'&&!structuredCondition('empireCache')){setStructuredCondition('empireCache',true);state.inventory['薬草']=(state.inventory['薬草']||0)+1;draw();return say('果樹籠','落ちた果実の下に薬草が束ねてあった。薬草を1個手に入れた。')}
+ }
+ if(state.map==='imperialcity'){
+  if(id==='imperialArchive')return say('地方公文書館','軍報だけでなく、税、出生、河川工事の記録まで棚いっぱいに並ぶ。帝国もまた、戦争以外の仕事で成り立つ国家だ。')
+  if(id==='canalMonument')return say('運河の記念碑','「第三運河完成・皇暦二百八年」。戦争とは無関係な、町の歴史が刻まれている。')
+  if(id==='imperialMarket')return imperialShop()
+  if(id==='imperialCache'&&!structuredCondition('imperialCache')){setStructuredCondition('imperialCache',true);state.inventory['魔力草']=(state.inventory['魔力草']||0)+1;draw();return say('運河脇の木箱','古い木箱から魔力草を1個見つけた。')}
+ }
+ if(state.map==='yukiroad'&&id==='yukiMemorial'){setStructuredCondition('yukiMemorial',true);addJournal('ユウキの戦死地点に、部下たちが建てた小さな碑が残されていた。');renderHud();return saySequence([{speaker:'ユウキ慰霊碑',text:'「第十二・第十四・第十九隊、計四百十八名の撤退完了を確認。ユウキ将軍、帰還せず」'},{speaker:'ナレーション',text:'碑の下には「娘を抱けた」「弟が帰った」「あの日の借りを忘れない」と、兵士や家族の短い言葉が刻まれている。'},{speaker:'マーガレット',text:'「王国の“大勝利”と、帝国の“四百十八人が帰った日”……同じ戦闘の記録なのね」'}])}
+ if(state.map==='yukiroad'){
+  if(id==='tornLetter'){setStructuredCondition('yukiLetter',true);renderHud();return saySequence([{speaker:'泥に汚れた手紙',text:'「クラインへ。次の休暇こそ二人で帰省しよう。あなたは働きすぎるから、私が先に予定を決めます。――ユウキ」'},{speaker:'ソフィ',text:'「……将軍の手紙じゃない。普通の、恋人への手紙です」'},{speaker:'カレン',text:'「王都のポスターには、こういう顔は一つもなかった」'}])}
+  if(id==='brokenStandard')return say('折れた帝国軍旗','柄の根元に何人もの手形が残っている。ユウキ隊が撤退した時、この旗を誰かが最後まで運んだらしい。')
+  if(id==='yukiCache'&&!structuredCondition('yukiCache')){setStructuredCondition('yukiCache',true);state.inventory['薬草']=(state.inventory['薬草']||0)+2;draw();return say('旧陣地の救急箱','風化した救急箱から、まだ使える薬草を2個回収した。')}
+ }
+ if(state.map==='elsia'){
+  if(id==='oldSanctum')return say('古い祭祀遺構','王国の前身国家よりさらに古い石材も混じっている。土地の歴史は、一枚の国境線よりずっと重なっている。')
+  if(id==='sacredSpring')return limitedRecovery('sacredSpring','エルシアの泉','泉そのものは尽きないが、長く留まれば巡回兵に見つかる。安全に休める機会は多くない。','full','泉のそばで休んだ。HPとMPが全回復した。')
+  if(id==='elsiaCache'&&!structuredCondition('elsiaCache')){setStructuredCondition('elsiaCache',true);state.inventory['魔力草']=(state.inventory['魔力草']||0)+2;draw();return say('旅人の供物箱','使われていない供物箱から魔力草を2個見つけた。')}
+ }
+ if(state.map==='returnroad'&&id==='mountainOverlook')return say('崖上の見晴らし','西には王国の平野、東には帝国の山地、その間にエルシアが小さく見える。地図の線より、実際の土地はずっと連続している。')
+ if(state.map==='finalfield'&&id==='kingdomLine'){setStructuredCondition('finalKingdomPlan',true);renderHud();return saySequence([{speaker:'王国軍・総攻撃命令',text:'「勇者を先鋒とし、エルシア聖域を再占領。帝国軍を東岸まで押し戻す。聖域住民の退避は作戦完了後に実施」'},{speaker:'ソフィ',text:'「作戦完了後……今住んでいる人たちは、戦闘中ずっとそこにいるんですか」'},{speaker:'トリトン',text:'「でもこの軍が崩れたら、そのまま帝国軍が王国側へ来る」'}])}
+ if(state.map==='finalfield'&&id==='empireLine'){setStructuredCondition('finalEmpirePlan',true);renderHud();return saySequence([{speaker:'帝国軍・反攻命令',text:'「王国軍の再侵攻能力を完全に喪失させる。必要なら国境を越えて補給拠点・軍都まで追撃を継続」'},{speaker:'カレン',text:'「“完全に”って……灰の街道より先まで行くつもりなんだ」'},{speaker:'マーガレット',text:'「シオンの理屈は分かる。でも、それを最後まで実行すれば新しい恨みも残る」'}])}
+ if(state.map==='elsia'&&id==='elsiaTablet'){setStructuredCondition('elsiaRecord',true);renderHud();return say('古い碑文','王国の前身国家がこの地を祭祀の中心としていた記録が残っている。同時に、後世の帝国期に増築された痕跡も明確だった。')}
+
+}
+
+
+function npcEvent(id){if(runTriggeredEvent('npc',id,{map:state.map}))return true;GC.Log?.info('Inline NPC interaction',{id,map:state.map});GC.Dev?.noteEvent?.('inline:npc:'+id);return inlineNpcEvent(id)}
+function objectEvent(id){if(runTriggeredEvent('object',id,{map:state.map}))return true;GC.Log?.info('Inline object interaction',{id,map:state.map});GC.Dev?.noteEvent?.('inline:object:'+id);return inlineObjectEvent(id)}
+GC.Events={findTriggeredEvent,runTriggeredEvent,applyEventEffects,applyEventEffect,playEventDialogue,eventConditionPass,npcEvent,objectEvent,inlineNpcEvent,inlineObjectEvent};

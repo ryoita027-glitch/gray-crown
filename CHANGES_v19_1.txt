@@ -1,0 +1,18 @@
+Architecture Refactor v19.1 — Startup Fix
+
+重大回帰の原因
+- v19の分割時、js/game.jsから実ゲーム起動に必要なイベント登録と初期描画呼び出しが欠落した。
+- 各モジュール自体はVMでロードできたため従来の12本のテストはPASSしていたが、タイトルの「はじめから」を押しても何も起きない状態だった。
+
+修正
+- keydown登録を復元。
+- titleNewGame / titleContinueクリック登録を復元。
+- モバイル操作、SOUND、Save/Load/Restart、Modal、Canvas focus登録を復元。
+- boot()を追加し、bindAppControls() → renderHud() → draw() → updateTitleContinue()を起動時に実行。
+
+テスト
+- 既存Node回帰: 12/12 PASS。
+- 実Chromium起動テスト追加。
+- title → New Game → intro → village → ArrowUp移動 → pageerror 0件: PASS。
+
+新ストーリー / 新システム追加: なし。

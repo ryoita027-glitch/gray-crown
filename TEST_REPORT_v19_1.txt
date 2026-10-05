@@ -1,0 +1,40 @@
+灰冠の勇者たち — TEST REPORT v19.1
+
+対象: Architecture Refactor v19.1 — Startup Fix
+正式コマンド: npm run check
+
+結果
+- JavaScript syntax check: PASS
+- Node regression tests: 12 / 12 PASS
+- Real Chromium startup test: PASS
+
+実Chromium起動テスト
+PASS: タイトル画面表示
+PASS: 「はじめから」ボタン有効
+PASS: クリック後タイトル非表示
+PASS: 序章イントロ表示
+PASS: Enter 1回目でタイプライター全文表示
+PASS: Enter 2回目でイントロ終了
+PASS: state.map === village
+PASS: state.locked === false
+PASS: ArrowUpで (12,12) → (12,11) に移動
+PASS: pageerror 0件
+
+既存回帰
+- Story State 00→08
+- save/reset/load
+- v18 flat flags移行
+- symbol battle元座標/向き復帰
+- one-shot再発防止
+- map transition
+- level up
+- data-driven event completion
+- legacy以外state.flags直接参照0件
+すべてPASS。
+
+環境注記
+Playwrightからfile://およびlocalhostへ直接navigateする操作はコンテナ管理者ポリシーでERR_BLOCKED_BY_ADMINISTRATORになる。
+そのためbrowser_startup_test.pyは実Chromiumページへindex.htmlをset_contentし、index.htmlに宣言されたscript srcを同じ順番で実ブラウザへ注入する。DOM、Canvas、クリック、KeyboardEvent、requestAnimationFrameはChromium実装を使用。opaque originでlocalStorageのみ利用不可のため、起動テスト内だけメモリ実装へ差し替える。Save/LoadはNode回帰テストで別途検証。
+
+Architecture Phase完成条件
+npm run check が全PASSして初めて完成扱い。

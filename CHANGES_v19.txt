@@ -1,0 +1,14 @@
+Architecture Refactor v19
+
+・252KB級の旧monolithic game.jsを責務別のclassic scriptへ分割。
+・game.jsはタイトル/入力/起動だけのbootstrapへ縮小。
+・Stateを story / quests / world / events に分離。
+・旧 state.flags はv18移行と旧スケルトン互換Proxyに限定。新セーブへは保存しない。
+・legacy/events-legacy.js 以外から state.flags 直接参照を除去。
+・Alpha 1.0の任命、王都任命式、白鹿亭、初戦勝利を data/events.js へ移行。
+・systems/events.js に条件判定、会話再生、effects適用のイベントエンジンを追加。
+・戦闘勝利イベントをデータ駆動イベントへ接続。
+・セーブschemaを19へ更新し、v18 flat flagsを構造化Stateへ移行。
+・Node built-in test runnerによる正式回帰テストを追加。
+・npm test / npm run check で毎回実行可能。
+・Alpha 2.0の新規シナリオ追加は行っていない。

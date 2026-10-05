@@ -1,0 +1,27 @@
+Phase 3 基本仕様 v15
+
+1. 戦闘・成長
+- MAX_LEVEL = 30
+- EXP_TABLE: 累積経験値方式。expThreshold()はこの表のみを参照。
+- LEVEL_GROWTH: キャラごとの1レベル上昇量。
+- calculateBaseStatsAtLevel(id, level): 装備補正前の基準能力を再現する。
+- RPG_RULES.damage: 最低ダメージ、乱数幅、防御倍率。
+- SKILLS: id / owner / label / kind / power / mp / 追加効果。
+- BATTLE_LOADOUTS: キャラが戦闘UIに出す基本スキルID。
+
+2. 探索
+- TREASURE_DEFS: 宝箱ID、マップ、アイテム、個数、表示名。
+- state.treasures: 開封済みフラグ。セーブ対象。
+- openTreasure(id): 共通開封処理。二重取得不可。
+- state.shortcuts: 今後のショートカット開閉用セーブ領域。
+
+3. マップ移動
+- MAP_TRANSITIONS: from / to / x / y / dir を保持。
+- useMapTransition(id): 座標・向きをまとめて適用。
+- 室内は interiorReturn で入った位置へ戻る既存仕様を維持。
+
+4. マップ設計ルール
+- MAP_FEATURES: NPC / treasure / optional / shortcut をマップ単位で宣言。
+- validateMapDesign(mapId): 寸法と任意探索要素数を検証。
+- auditBenchmarkMaps(): リュネ村、街道、王都、カレン家を一括監査。
+- Phase 4以降、新しい主要マップは最低1つの任意探索要素を登録する。

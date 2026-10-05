@@ -1,0 +1,7 @@
+Gray Crown v22 KNOWN ISSUES
+
+- v22の完成範囲はセラド前線・第1区間まで。北の国境地帯以降は正式本実装ではないため、v22では進行を止める。
+- セラドの地形は既存前線マップを整備して使用しており、専用アート全面刷新は未実施。
+- 将来章のimperative interactionはsystems/events.jsに残る。今回使用するfrontier分だけdata-drivenへ移した。
+- BGM/SEは既存仮実装を継続。専用前線音源は未制作。
+- Chromium E2Eは実ブラウザDOM/keyboard/localStorageを使うが、OS上のindex.htmlダブルクリック操作そのものは自動化していない。

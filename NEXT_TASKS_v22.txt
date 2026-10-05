@@ -1,0 +1,21 @@
+Gray Crown v22 NEXT TASKS
+
+S — 最優先
+- ユーザー環境でv22を11_ash_road_completeから15_frontier_completeまで実プレイし、導線・会話量・戦闘難度・Save/Continueを確認。
+- 進行不能や入力漏れが出た場合は第2区間を止め、再現テスト追加→修正。
+
+A — v23候補: セラド前線・第2区間
+- 15_frontier_completeから開始。
+- 前線再編後に何を調査・防衛するかを一区間だけ設計する。
+- 既存設定を確認し、国境地帯へ出る理由をプレイヤーが理解できるところまでを目標にする。
+- 使用する旧interactionだけdata-driven化し、専用E2Eで固定。
+
+B — 保守
+- reachability validationを、静的に確実なstory stage/event producer関係に限って少しずつ強化。
+- E2E helper重複の共通化は、本編追加を妨げない範囲で行う。
+
+C — ポリッシュ
+- セラド専用背景装飾、担架・天幕・防壁の視認性、前線SE/BGMを製品品質へ更新。
+
+禁止
+- 第2区間の確認前に国境章全体を一括実装しない。

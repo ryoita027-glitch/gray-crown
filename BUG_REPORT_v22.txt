@@ -1,0 +1,18 @@
+Gray Crown v22 BUG REPORT
+
+1. travelSceneへ到着callbackを追加した際、say()の第3引数にcallbackを渡すとchoices扱いされ既存遷移が壊れる
+- 再現: 灰の街道enterAshRoadで TypeError: choices is not iterable。
+- 原因: say(speaker,text,choices,next)のsignatureを誤認。
+- 修正: travelSceneはsay(..., [], finish)を使用。
+- Regression: 既存Ash Road Node/E2Eを再実行。
+
+2. Frontier MAP_FEATURESでvanguardCaptain NPCをoptional objectへ誤登録
+- 再現: Validation FEATURE_BAD_OBJECT。
+- 修正: NPCをoptional object一覧から除外。
+- Regression: Validation 0 hard errors。
+
+3. Frontierの旧imperative処理と新data-driven処理が共存すると二重発火する危険
+- 修正: systems/events.jsから今回使用するfrontierOfficer/frontierMedic/vanguardCaptain/Frontier object処理を撤去しdata/events.jsへ一本化。battle.jsのvanguardCaptain専用戦後処理も撤去。
+
+4. v21では灰の街道北端が区間終了メッセージのみでセラドへ遷移しなかった
+- v22ではalpha2.ashroad.complete後の再進入でenterFrontier()へ接続。未完了時の必須条件ロックは維持。

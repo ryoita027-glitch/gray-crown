@@ -1,0 +1,48 @@
+Gray Crown — Developer Mode v1
+
+開閉
+F2。
+開閉だけではGame Stateを変更しない。
+
+通常Save保護
+Map Warp、Story/Flag/Player/Item変更、Event/Battle launcher等でGame Stateを変更すると `DEV TAINTED` になる。
+DEV TAINTED中は通常Saveを拒否する。
+通常LoadまたはNew Gameでtaintは解除される。
+
+Story Inspector
+各EVENT_DEFSについて、現在Map/Story/Event/World条件のPASS/FAILを表示。
+条件付きEvent LauncherはBLOCKEDイベントを実行しない。
+強制Event Launcherは条件を無視するためtaintされる。
+
+Story State 安全適用
+Alpha 1.0 milestoneを対象Stageに合わせて作り直し、対応Mapのsafe tileへ移動する。
+単純なstage数値書換えではない。
+
+Flag Inspector
+Story/World compatibility flags、World switches、One-shot Eventの現在true/falseを一覧表示。
+互換Flag/World switchは選択して変更可能。
+
+Map Warp
+任意MapへnearestSafeTileで移動。
+Story prerequisiteは自動変更しないため、StoryとMapが不整合になる場合がある。これはValidationで検出され、normal Saveは禁止される。
+
+Battle / Event Launcher
+Storyを最初から進めなくても直接テスト可能。
+
+Player Debug
+HeroごとにLv/EXP/HP/MP、共通Gold、Item数量を変更。
+
+Gameplay Options
+Encounter ON/OFF / Invincible / Instant Victory / Move delay / Collision / NPC coords / Player coords / Map ID。
+
+Debug Snapshot
+通常Saveとは別の `gray-crown-dev-snapshots-v1` に保存。
+最大20件。
+特定地点を繰り返しテストするための機能で、製品Saveではない。
+
+Validation
+clean gameplayではok=trueであることが基準。
+raw Warp等で意図的な不整合を作った場合は、エラーを隠さず表示する。
+
+Log
+Error / Warning / Event / Map Transition / Battle / Save / Load / Developer操作を確認可能。

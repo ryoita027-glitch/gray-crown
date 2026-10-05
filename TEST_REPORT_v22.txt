@@ -1,0 +1,40 @@
+Gray Crown v22 TEST REPORT
+
+開始前baseline
+- 添付v21で npm run check 実行。Node 32/32 PASS、V21 Chromium Gate PASS。
+
+v22 Node
+- npm test: 36/36 PASS。
+- v21既存32本を維持。
+- Frontier 11→15、途中Save/Load、data-driven/Story State検査を追加。
+- conservative required-event producer reachability checkをValidationへ追加。
+
+既存Browser Regression
+- python tests/browser_v21_gate.py: PASS。
+  Startup / Alpha1 / input stress / Save-Continue / Developer Mode / Ash Roadを確認。
+- python tests/browser_alpha2_ashroad_e2e_test.py: PASS（v22変更後に再実行）。
+
+Frontier専用Browser E2E
+- npm run frontier-e2e: PASS。
+- 11_ash_road_complete saveからContinue。
+- 灰の街道北端→frontier。
+- 12_frontier_arrival到達とarrival Event。
+- 前線将校、見張り台、応急防壁、衛生兵。
+- 13_frontier_crisisで途中Save。
+- 新Browser page/context相当へlocalStorageを移してContinue。
+- Map/座標/Story/Event進捗復元。
+- vanguardCaptain戦を実操作で完走。
+- battle後frontierへ復帰。
+- 14_frontier_battle_won。
+- 前線将校へ報告。
+- 15_frontier_complete。
+- Validation ok。
+- Developer Mode Story Inspectorにfrontier Event表示。
+- pageerror 0。
+
+正式コマンド
+- npm run check: syntax + Node 36/36 + v21 regression Chromium Gate PASS。
+- npm run frontier-e2e: Frontier専用Chromium E2E PASS。
+
+注記
+- 複数の長時間Chromiumスクリプトを一つのshell commandで連続起動すると、このsandboxではプロセス終了待ちにより総タイムアウトする場合がある。そのため既存Regression GateとFrontier専用E2Eは別コマンドとして実行・確認した。テスト本体の失敗とは区別している。
