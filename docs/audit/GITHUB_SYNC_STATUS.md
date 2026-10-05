@@ -1,30 +1,63 @@
 # GITHUB_SYNC_STATUS.md
 
-## Repository state
+## Repository
 
-Repository: ryoita027-glitch/gray-crown
+**ryoita027-glitch/gray-crown**
 
-The repository was checked before synchronization. main was still based on the initial Gray Crown v23 import. Some rev 23.1 sprite assets were already present, but the later Visual Foundation documentation, Margaret runtime portrait synchronization, and visual regression tests were not yet present.
+Canonical integration target: **main**
 
-## Integration branch
+## Sync history
 
-Current update branch:
+### Visual Foundation Sync
 
-**visual-foundation-sync**
+The repository originally contained the v23 game import plus some rev 23.1 sprite assets, but not the later Visual Foundation documentation.
 
-## Synchronized progress
+The Visual Foundation sync added:
 
-- Karen Visual Identity: **B — VILLAGE RUNNER / LOCKED**
-- Karen costume design document added
-- Current hero sprite explicitly marked **ACTIVE / PROVISIONAL**
-- Margaret white/silver-white hair synchronized in runtime portrait/fallback data
-- Margaret hair regression tests added
-- Visual Foundation audit/status/work-order/handoff documents added
-- GitHub-first source-of-truth workflow documented
+- Visual audit / status / work-order / handoff documents
+- Karen Visual Identity B lock
+- Karen costume design document
+- current runtime sprite = ACTIVE / PROVISIONAL policy
+- Margaret white / silver-white runtime portrait synchronization
+- Margaret visual regression tests
+- GitHub-first source-of-truth workflow
 
-## Verified before GitHub synchronization
+That sync was merged to main.
 
-Latest packaged Visual Foundation build had:
+### Four Hero Visual Identity Lock
+
+Current phase adds the completed four-hero Visual Identity document:
+
+- Karen — **VILLAGE RUNNER**
+- Triton — **GROUND ANCHOR**
+- Sophie — **STEADY HANDS**
+- Margaret — **MEASURED LINE**
+
+It also updates the work order so the next task is:
+
+**GRAY_CROWN_ART_BIBLE_v2.md — PROVISIONAL**
+
+No character image is generated in this phase.
+
+## Current unresolved visual items
+
+Still intentionally unresolved:
+
+- exact hero eye colors
+- hero surnames
+- final weapon designs
+- final Stage B hero costumes
+- Kingdom / Empire emblems
+- hero certification insignia
+- religious emblem / official religious color
+- Shion crown
+- military rank insignia
+
+Original Canon / Character Bible / Culture / Shape Language / Costume Rules / old Art Bible source files are still not present in the repository and are not silently reconstructed.
+
+## Stable technical baseline
+
+Latest verified Visual Foundation packaged state:
 
 - JavaScript syntax: PASS
 - Node regression: **43 / 43 PASS**
@@ -32,8 +65,4 @@ Latest packaged Visual Foundation build had:
 - Serad Frontier Section 1 E2E: PASS
 - Serad Frontier Section 2 E2E: PASS
 
-These results describe the synchronized packaged state. GitHub Actions status should be checked separately after a PR/merge if workflows are configured.
-
-## Still unresolved
-
-The original authoritative Canon / Character Bible / Culture / Shape Language / Costume Rules / Art Bible files are not present in the current repository and are not reconstructed from memory.
+The current Four Hero Visual Identity change is documentation-only and does not modify runtime code.
