@@ -1,3 +1,4 @@
+from browser_launch import launch_chromium
 from pathlib import Path
 import re,base64,sys
 try:
@@ -58,7 +59,7 @@ def dump(page):return page.evaluate('Object.fromEntries(Array.from({length:local
 def new_page(browser,preload=None):
     pg=browser.new_page(viewport={'width':1365,'height':900});errs=[];pg.on('pageerror',lambda e:errs.append(str(e)));load(pg,preload);return pg,errs
 with sync_playwright() as p:
-    browser=p.chromium.launch(headless=True,executable_path='/usr/bin/chromium',args=['--no-sandbox'])
+    browser=launch_chromium(p)
     # Gate 1: real startup + Alpha 1 with irregular input and Save/Continue.
     a,e1=new_page(browser);assert a.locator('#titleScreen').is_visible();a.locator('#titleNewGame').click();a.wait_for_timeout(15)
     start=a.evaluate('({x:GC.State.get().x,y:GC.State.get().y,stage:GC.State.get().story.stage})')

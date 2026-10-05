@@ -1,3 +1,4 @@
+from browser_launch import launch_chromium
 from pathlib import Path
 import re, sys, base64
 try:
@@ -77,7 +78,7 @@ def local_storage_dump(page):
     return page.evaluate('Object.fromEntries(Array.from({length:localStorage.length},(_,i)=>localStorage.key(i)).map(k=>[k,localStorage.getItem(k)]))')
 
 with sync_playwright() as p:
-    browser=p.chromium.launch(headless=True,executable_path='/usr/bin/chromium',args=['--no-sandbox'])
+    browser=launch_chromium(p)
     page=browser.new_page(viewport={'width':1365,'height':900});errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
     load_runtime(page)
     assert page.locator('#titleScreen').is_visible();assert page.locator('#titleNewGame').is_enabled()

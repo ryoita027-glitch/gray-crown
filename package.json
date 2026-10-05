@@ -7,6 +7,10 @@
     "check": "node tests/check-syntax.js && npm test && npm run browser-test",
     "browser-test": "python tests/browser_v21_gate.py && python tests/browser_alpha2_frontier_e2e_test.py && python tests/browser_alpha2_frontier_second_e2e_test.py",
     "frontier-e2e": "python tests/browser_alpha2_frontier_e2e_test.py",
-    "frontier2-e2e": "python tests/browser_alpha2_frontier_second_e2e_test.py"
+    "frontier2-e2e": "python tests/browser_alpha2_frontier_second_e2e_test.py",
+    "generate-karen-assets": "python tools/generate_karen_prototype_assets.py --out assets/characters/karen",
+    "verify-karen-assets": "python tools/verify_karen_prototype_assets.py",
+    "prototype-browser-test": "python tests/browser_v21_gate.py && python tests/browser_alpha2_frontier_e2e_test.py && python tests/browser_alpha2_frontier_second_e2e_test.py && python tests/browser_devmode_test.py && python tests/browser_karen_pixel_prototype_e2e_test.py",
+    "prototype-check": "npm run verify-karen-assets && node tests/check-syntax.js && npm test && npm run prototype-browser-test"
   }
 }

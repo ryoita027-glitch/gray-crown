@@ -1,21 +1,43 @@
-name: Karen Pixel Prototype Check
+name: Karen Pixel Prototype CI
+
 on:
   push:
-    branches: [pixel-karen-acting-prototype]
+    branches:
+      - pixel-karen-acting-prototype
+      - pixel-karen-chibi-direction
+      - repo-actions-consolidation
+    paths-ignore:
+      - "docs/**"
+      - "README.txt"
+      - "*.txt"
+      - ".gitignore"
   workflow_dispatch:
+
+concurrency:
+  group: karen-pixel-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - name: Install prototype asset dependencies
+        run: python -m pip install --disable-pip-version-check pillow
+
       - name: Install Playwright Chromium
         run: |
           python -m pip install --disable-pip-version-check playwright
@@ -27,18 +49,10 @@ jobs:
           PY
           )"
           sudo ln -sf "$CHROMIUM" /usr/bin/chromium
-      - name: Syntax and Node regression
-        run: |
-          node tests/check-syntax.js
-          npm test
-      - name: Existing browser regression
-        run: |
-          python tests/browser_v21_gate.py
-          python tests/browser_alpha2_frontier_e2e_test.py
-          python tests/browser_alpha2_frontier_second_e2e_test.py
-          python tests/browser_devmode_test.py
-      - name: Karen Pixel Acting browser test
-        run: python tests/browser_karen_pixel_prototype_e2e_test.py
+
+      - name: Full prototype regression
+        run: npm run prototype-check
+
       - name: Upload visual A-B evidence
         if: always()
         uses: actions/upload-artifact@v4
