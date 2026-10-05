@@ -6,6 +6,11 @@ on:
       - pixel-karen-acting-prototype
       - pixel-karen-chibi-direction
       - repo-actions-consolidation
+    paths-ignore:
+      - "docs/**"
+      - "README.txt"
+      - "*.txt"
+      - ".gitignore"
   workflow_dispatch:
 
 concurrency:
@@ -18,6 +23,7 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -59,20 +65,8 @@ jobs:
           )"
           sudo ln -sf "$CHROMIUM" /usr/bin/chromium
 
-      - name: Syntax and Node regression
-        run: |
-          node tests/check-syntax.js
-          npm test
-
-      - name: Existing browser regression
-        run: |
-          python tests/browser_v21_gate.py
-          python tests/browser_alpha2_frontier_e2e_test.py
-          python tests/browser_alpha2_frontier_second_e2e_test.py
-          python tests/browser_devmode_test.py
-
-      - name: Karen Pixel Acting browser test
-        run: python tests/browser_karen_pixel_prototype_e2e_test.py
+      - name: Full prototype regression
+        run: npm run prototype-check
 
       - name: Upload visual A-B evidence
         if: always()
