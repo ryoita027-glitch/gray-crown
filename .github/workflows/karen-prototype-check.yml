@@ -1,7 +1,7 @@
 name: Karen Pixel Prototype Check
 on:
   push:
-    branches: [pixel-karen-acting-prototype]
+    branches: [pixel-karen-acting-prototype, pixel-karen-visual-anchor-redesign]
   workflow_dispatch:
 permissions:
   contents: read
@@ -27,6 +27,11 @@ jobs:
           PY
           )"
           sudo ln -sf "$CHROMIUM" /usr/bin/chromium
+      - name: Generate Karen visual-anchor redesign assets
+        if: github.ref_name == 'pixel-karen-visual-anchor-redesign'
+        run: |
+          python -m pip install --disable-pip-version-check pillow
+          python tools/generate_karen_prototype_assets.py --out assets/characters/karen
       - name: Syntax and Node regression
         run: |
           node tests/check-syntax.js
