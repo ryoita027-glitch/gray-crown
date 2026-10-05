@@ -72,9 +72,38 @@ with sync_playwright() as p:
     start_pos=page.evaluate('({map:GC.State.get().map,x:GC.State.get().x,y:GC.State.get().y,dir:GC.State.get().dir})')
 
     capture(page,'#devKaren48Motion','karen_chibi_scale_full_laugh.png','pixel48-full',1.0)
-    capture(page,'#devKaren44Motion','karen_chibi_scale_medium_laugh.png','pixel48-medium',44/48)
+    # Medium is the strongest world-integration candidate. Capture the acting path as well.
+    open_dev(page);page.locator('#devKaren44Motion').click()
+    page.wait_for_function("()=>GC.Cinematic.state.currentCommand && GC.Cinematic.state.currentCommand.animation==='walk'",timeout=15000)
+    assert page.evaluate("GC.Cinematic.actor('karen').renderMode")=='pixel48-medium'
+    assert abs(page.evaluate("GC.Cinematic.actor('karen').renderScale")-(44/48))<0.0001
+    page.locator('.game-stage').screenshot(path=str(OUT/'karen_chibi_scale_medium_walk.png'))
+    page.wait_for_function("()=>GC.Cinematic.isActive() && GC.Cinematic.actor('karen') && GC.Cinematic.actor('karen').animation==='talk'",timeout=15000)
+    page.locator('.game-stage').screenshot(path=str(OUT/'karen_chibi_scale_medium_talk.png'))
+    page.wait_for_function("()=>GC.Cinematic.state.currentCommand && GC.Cinematic.state.currentCommand.animation==='laugh'",timeout=15000)
+    page.locator('.game-stage').screenshot(path=str(OUT/'karen_chibi_scale_medium_laugh.png'))
+    page.wait_for_function("()=>GC.Cinematic.state.currentCommand && GC.Cinematic.state.currentCommand.animation==='run'",timeout=15000)
+    page.locator('.game-stage').screenshot(path=str(OUT/'karen_chibi_scale_medium_run.png'))
+    finish_scene(page)
     capture(page,'#devKaren41Motion','karen_chibi_scale_compact_laugh.png','pixel48-compact',41/48)
     capture(page,'#devKaren32Baseline','karen_chibi_scale_32_baseline_laugh.png','legacy32',1.0)
+
+    # Dialogue comparison on the selected 44px candidate.
+    open_dev(page);page.locator('#devKaren44NoPortrait').click()
+    page.wait_for_function("()=>GC.Cinematic.isActive() && !document.getElementById('dialogueBox').classList.contains('hidden')",timeout=12000)
+    assert page.evaluate("GC.Cinematic.actor('karen').renderMode")=='pixel48-medium'
+    assert page.locator('#dialogueBox').evaluate("el=>el.classList.contains('no-portrait')") is True
+    assert page.locator('#speakerPortrait').inner_html()==''
+    page.locator('.game-stage').screenshot(path=str(OUT/'karen_chibi_scale_medium_portrait_off.png'))
+    finish_scene(page)
+
+    open_dev(page);page.locator('#devKaren44Portrait').click()
+    page.wait_for_function("()=>GC.Cinematic.isActive() && !document.getElementById('dialogueBox').classList.contains('hidden')",timeout=12000)
+    assert page.evaluate("GC.Cinematic.actor('karen').renderMode")=='pixel48-medium'
+    assert page.locator('#dialogueBox').evaluate("el=>el.classList.contains('no-portrait')") is False
+    assert 'hero-portrait-svg' in page.locator('#speakerPortrait').inner_html()
+    page.locator('.game-stage').screenshot(path=str(OUT/'karen_chibi_scale_medium_portrait_on.png'))
+    finish_scene(page)
 
     assert page.evaluate('GC.Cinematic.isActive()') is False
     assert page.evaluate('GC.State.get().locked') is False
@@ -84,4 +113,4 @@ with sync_playwright() as p:
     assert not errors,f'page errors during Karen Chibi scale integration: {errors}'
     browser.close()
 
-print('KAREN CHIBI SCALE E2E PASS: 48 full -> 44 medium -> 41 compact -> 32 baseline -> control restored')
+print('KAREN CHIBI SCALE E2E PASS: 48 full -> 44 medium acting -> 41 compact -> 32 baseline -> medium portrait OFF/ON -> control restored')
