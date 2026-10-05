@@ -51,3 +51,9 @@ npm run check
   JavaScript構文 + Node回帰 + 全Browser Gate。
 
 詳細は FRONTIER_SECTION2_DESIGN_v23.txt / CHANGELOG_v23.txt / TEST_REPORT_v23.txt / BUG_REPORT_v23.txt / KNOWN_ISSUES_v23.txt / NEXT_TASKS_v23.txt を参照してください。
+Visual Foundation note:
+- Game baseline: v23
+- Character Visual Patch: rev 23.1
+- Current hero sprite is ACTIVE runtime / PROVISIONAL design.
+- Visual workflow and audit status are under docs/visual/ and docs/audit/.
+- Karen Visual Identity is locked to B — VILLAGE RUNNER in docs/characters/.
