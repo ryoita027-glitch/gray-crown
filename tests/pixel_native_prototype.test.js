@@ -109,3 +109,31 @@ test('minimal SceneRunner restores input after a transient scene and does not re
  assert.equal(schema,23);
  assert.equal(h.GC.Save.canPersistNow('save'),true);
 });
+
+test('SceneRunner preserves a pre-existing state lock and clears transient actors',async()=>{
+ const h=createHarness();
+ h.GC.State.get().locked=true;
+ const ok=await h.GC.Cinematic.startScene({id:'test.locked',actors:[{id:'karen',character:'karen'}],commands:[]},{mode:'motionOnly'});
+ assert.equal(ok,true);
+ assert.equal(h.GC.State.get().locked,true,'pre-existing lock must be restored');
+ assert.equal(h.GC.Cinematic.actor('karen'),null,'transient actors must not survive scene completion');
+ assert.equal(h.GC.Dialogue.isInputLocked(),false,'cinematic input lock must be released');
+});
+
+test('SceneRunner cancellation stops in-flight dialogue and restores clean state',async()=>{
+ const h=createHarness();
+ const scene={id:'test.cancel',actors:[{id:'karen',character:'karen'}],commands:[
+  {type:'say',speaker:'カレン',text:'cancel me'},
+  {type:'wait',ms:9999}
+ ]};
+ const running=h.GC.Cinematic.startScene(scene,{mode:'portraitOff'});
+ assert.equal(h.GC.Cinematic.isActive(),true);
+ assert.equal(h.GC.Cinematic.cancel(),true);
+ const completed=await running;
+ assert.equal(completed,false,'cancelled scenes must report incomplete');
+ assert.equal(h.GC.Cinematic.isActive(),false);
+ assert.equal(h.GC.Cinematic.actor('karen'),null);
+ assert.equal(h.GC.State.get().locked,false);
+ assert.equal(h.GC.Dialogue.isInputLocked(),false);
+ assert.equal(h.getElement('dialogueBox').classList.contains('hidden'),true,'cinematic dialogue must close on cancel');
+});
