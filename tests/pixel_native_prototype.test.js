@@ -138,3 +138,30 @@ test('SceneRunner cancellation stops in-flight dialogue and restores clean state
  assert.equal(h.GC.Dialogue.isInputLocked(),false);
  assert.equal(h.getElement('dialogueBox').classList.contains('hidden'),true,'cinematic dialogue must close on cancel');
 });
+
+
+test('Phase 3 render modes keep one 48px source and scale from the foot anchor',()=>{
+ const h=createHarness();
+ const scales=h.GC.Cinematic.PROTOTYPE_RENDER_SCALES;
+ assert.equal(scales['pixel48-full'],1);
+ assert.equal(scales['pixel48-medium'],44/48);
+ assert.equal(scales['pixel48-compact'],41/48);
+ const def=h.GC.Animation.getAnimation('karen','idle');
+ for(const mode of ['pixel48-full','pixel48-medium','pixel48-compact']){
+  const a=h.GC.Animation.createActor('karen',{x:15.5,y:7,renderMode:mode,renderScale:h.GC.Cinematic.renderScaleForMode(mode)});
+  const g=h.GC.Animation.renderGeometry(a,def);
+  assert.equal(g.frameW,48);
+  assert.equal(g.frameH,48);
+  assert.equal(g.scale,scales[mode]);
+  assert.ok(Math.abs((g.dx+g.anchor[0]*g.scale)-g.footX)<=0.51,mode+' horizontal foot anchor drift');
+  assert.ok(Math.abs((g.dy+g.anchor[1]*g.scale)-g.footY)<=0.51,mode+' vertical foot anchor drift');
+ }
+});
+
+test('Phase 3 does not add animation categories or change logical tile/save schema',()=>{
+ const h=createHarness();
+ const defs=h.GC.Data.Animations.definitions.karen;
+ assert.deepEqual(Object.keys(defs).sort(),['approach','idle','laugh','run','surprise','talk','turn','walk']);
+ assert.equal(h.GC.Save.SAVE_SCHEMA,23);
+ assert.equal(h.GC.Data.Animations.visualRules.logicalTile,32);
+});
