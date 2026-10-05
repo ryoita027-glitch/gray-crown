@@ -1,88 +1,141 @@
 # NEXT_AI_MASTER_INSTRUCTION.md
 
-## Gray Crown v23 — Visual Foundation / Character Identity 継続用マスター指示書
+## Gray Crown v23 — Visual Production Handoff
 
-このファイルは、過去の長い会話を知らない次のAIへ渡すことを目的とする。
+This is the current handoff for an AI continuing Gray Crown without the prior chat.
 
 ---
 
-# 0. 現在地
+# 0. Repository first
 
-基準Repository:
+Repository:
 
 **ryoita027-glitch/gray-crown**
 
-GitHub運用:
-- main: ユーザーがimportしたv23基準
-- visual-foundation-sync: Visual Foundation最新同期ブランチ
-- 作業開始時に最新branch / commit / diffを確認する
-- 古いZIPでGitHubを上書きしない
+Canonical branch:
 
-現在の正式本編完成範囲:
+**main**
 
-`00_village` → `19_frontier_second_complete`
+Before doing work:
 
-ゲーム技術基盤は安定している。監査時:
+1. inspect the current main head
+2. inspect active branches / relevant PRs
+3. inspect the current diff
+4. never overwrite newer GitHub work with an old ZIP
 
-- JavaScript Syntax: PASS
-- Node Regression: **43/43 PASS**
-- Browser v21 Gate: PASS
-- Serad Frontier Section 1 E2E: PASS
-- Serad Frontier Section 2 E2E: PASS出力を確認（監査toolではPASS表示後のrunner teardownがtimeout。既存TEST_REPORT_v23もPASS）
+Game baseline remains **v23**.
 
-**技術基盤を理由なく改修するな。v24へ進むな。**
+Do not start v24 unless the user explicitly changes phase.
 
 ---
 
-# 1. 今の目的
+# 1. Current visual phase
 
-今はStory Content制作ではない。
+The four protagonist Visual Identities are now **LOCKED**.
 
-目的は:
+Authoritative file:
 
-> **主人公4人の正式Character Visual Foundationを、ゲーム内仮Spriteから独立して確定すること。**
+**docs/characters/CHARACTER_VISUAL_IDENTITY.md**
 
-順序:
+Locks:
 
-**Canon → Character Bible → Culture → Culture Lock → Shape Language → Costume Rules → Character Visual Identity → Art Bible v2 provisional → Style Test → Character Reference → Pixel Sprite**
+- Karen — **VILLAGE RUNNER**
+- Triton — **GROUND ANCHOR**
+- Sophie — **STEADY HANDS**
+- Margaret — **MEASURED LINE**
 
-Pixel SpriteからCharacter Designを逆算してはいけない。
+This lock defines the major identity: face/body direction, posture, hair structure direction, color-mass logic, silhouette, personal visual hook and Stage A→B development logic.
 
----
-
-# 2. 監査で判明した重大事項
-
-## 2-1. Visual Foundation資料がゲームZIPに入っていない
-
-今回のZIPには以下が存在しない:
-
-- `GRAY_CROWN_CANON_v1.md`
-- `CHARACTER_BIBLE_v1.md`
-- `KINGDOM_CULTURE_v1.md`
-- `EMPIRE_CULTURE_v1.md`
-- `GRAY_CROWN_CULTURE_LOCK_v1.md`
-- `CHARACTER_SHAPE_LANGUAGE.md`
-- `COSTUME_RULES.md`
-- `CHARACTER_VISUAL_IDENTITY.md`
-- `GRAY_CROWN_ART_BIBLE.md`
-- `GRAY_CROWN_ART_BIBLE_v2.md`
-
-したがって、**次に新設定を考える前に、既存のauthoritative filesを回収しproject内部へ同期すること。**
-
-見つからない設定を記憶や推測で再Canon化するな。
+It does **not** define every costume or weapon detail.
 
 ---
 
-# 3. 現行Spriteの扱い
+# 2. Core hero differentiation
 
-Active:
+## Karen
 
-`assets/hero_party_walk.png`
+- 23F / 165cm
+- healthy middle build
+- round expressive eyes
+- arched brows
+- red hair
+- naturally sun-touched skin
+- left-handed
+- forward center of gravity
+- low partial hair tie
+- red concentrated in a short upper garment
+- identity: approachable, active, moves toward people
 
-規格:
+## Triton
+
+- 23F / 171cm
+- most trained / athletic
+- sharper face
+- narrow eyes
+- straight brows
+- broader mouth
+- dark shoulder-length hair
+- right-handed
+- low stable center of gravity
+- blue concentrated as a low horizontal mass around waist / side
+- identity: grounded physical confidence, reliable friend, sharp eyes + broad laugh
+
+## Sophie
+
+- 23F / 158cm
+- soft standard build
+- rounded face
+- slightly drooping eyes
+- honey / light brown-gold hair
+- right-handed
+- small movements
+- one low soft hair bundle / braid
+- off-white / white major field + green concentrated near the hands
+- identity: comforting, practical helper, gentle but immovable where life is concerned
+
+## Margaret
+
+- 23F / 167cm
+- slender but healthy
+- narrower oval face
+- observant narrow eyes
+- small mouth
+- right-handed
+- vertical organized posture
+- **long white / silver-white hair**
+- one side intentionally opened / tidied
+- white vertical outer field + thin dark center line
+- identity: orderly, observant, intellectual; her white hair is not the entire design
+
+---
+
+# 3. DO NOT INVENT
+
+The following remain unresolved:
+
+- exact eye colors
+- surnames
+- final weapon designs / names
+- final Stage B hero costumes
+- Kingdom emblem
+- Empire emblem
+- hero certification insignia
+- religious emblem
+- official religious color
+- Shion crown
+- Kingdom / Empire rank insignia
+- new keepsakes, scars, family gifts, romances, or backstory additions
+
+Do not let an image model decide these.
+
+---
+
+# 4. Current runtime sprite
+
+assets/hero_party_walk.png
 
 - 96×512
-- 32×32
+- 32×32 cells
 - 3 frames
 - 4 directions
 - 4 characters
@@ -91,283 +144,166 @@ Active:
 - Row 2 Sophie
 - Row 3 Margaret
 
-**規格は維持してよい。デザインはPROVISIONAL。**
+Technical format is stable.
 
-正式順序は:
+**Design is PROVISIONAL.**
+
+Never reverse-engineer final Character Design from the sprite.
+
+Mandatory order:
 
 **Character Design → Character Reference → Pixel Sprite**
 
-Current Spriteから:
+---
 
-- 顔型
-- 目色
-- 正式髪型
-- 体格
-- 衣装
-- 武器
+# 5. Next task
 
-を決めてはいけない。
+Create:
+
+**GRAY_CROWN_ART_BIBLE_v2.md**
+
+Status:
+
+**PROVISIONAL**
+
+Do not generate images before this provisional Art Bible exists.
+
+The new Art Bible is not a prohibition list. It must answer:
+
+> How does the Gray Crown illustrator draw?
+
+Define:
+
+- line
+- face
+- eyes
+- hair
+- skin
+- cel shading
+- shadows
+- color
+- cloth
+- leather
+- metal
+- light
+- background density
+- composition
+- standing art
+- daily-life art
+- event CG
+
+Core visual statement:
+
+> classic-JRPG character appeal + real people who visibly live in this world
+
+Beautiful and striking is allowed.
+
+Do not solve AI-feeling by reducing attractiveness or saturation indiscriminately.
 
 ---
 
-# 4. Margaretについて
+# 6. After provisional Art Bible
 
-Visual patch recordは:
+Generate **Karen Stage A only**, one image.
 
-> Margaret hair = WHITE / silver-white shading
+Evaluation order:
 
-Active walking spriteも白髪。
+1. attractive as a character
+2. attractive in a Karen-specific way
+3. Gray Crown identity
+4. absence of AI-like inconsistency
 
-visual-foundation-sync では PARTY_STYLE.margaret / PORTRAITS['マーガレット'] / heroPortraitMarkup('マーガレット') を **white / silver-white** へ同期済み。tests/visual_identity.test.js で回帰防止済み。
+If successful, do not batch produce.
 
-**正式髪型・目色・衣装は依然未決定。新しく発明するな。**
+Run Karen reproduction tests:
 
----
+- normal standing
+- conversation
+- walking
+- sitting
+- smile
+- serious
+- battle-ready
 
-# 5. Karenについて
-
-監査ワークスペースにはZIP外で:
-
-`CHARACTER_VISUAL_IDENTITY.md`
-
-があり、以下を固定条件としている:
-
-- 23歳
-- 女性
-- 165cm
-- 健康的な女性体型
-- 丸目
-- アーチ眉
-- 綺麗な鼻筋
-- 赤髪
-- 自然な日焼け肌
-- 左利き
-- 背筋が伸びる
-- 前向きな重心
-- 明るい
-- 元気
-- 勇気がある
-- 正義感が強い
-- 向こう見ず
-- 人との距離が近い
-- 幼馴染4人を非常に大切にする
-
-現在の docs/characters/CHARACTER_VISUAL_IDENTITY.md は:
-
-**LOCKED — B VILLAGE RUNNER**
-
-一方、ZIP外の:
-
-`KAREN_COSTUME_DESIGN_v1.md`
-
-は:
-
-**DESIGN LOCK v1 / B — VILLAGE RUNNER**
-
-となっている。
-
-過去会話ではユーザーがBを選択しているため、その決定をauthoritative project fileへ同期するのが自然だが、**次AIは勝手に再解釈せず、現在利用可能なauthoritative source / user confirmationを優先すること。**
-
-Bが正式確認できた場合、3案を作り直さない。Visual Identity fileのStatusをB Lockへ同期する。
+The same Karen must remain the same person.
 
 ---
 
-# 6. 主人公4人 runtime codeで確実に分かるもの
+# 7. Style Anchor rule
 
-`js/data/items.js`:
+Karen reproduction success allows a **Provisional Style Anchor** only.
 
-- `karen` = カレン / 勇者
-- `triton` = トリトン / 戦士
-- `sophie` = ソフィ / 僧侶
-- `margaret` = マーガレット / 魔法使い
+Then test Triton or Sophie.
 
-これ以上の正式Character anatomyや年齢を、runtime Spriteから推測しない。
+The second person must be:
 
----
+> clearly different
 
-# 7. DO NOT INVENT
+and:
 
-最低限、以下を勝手に決めるな。
+> same game / same illustrator
 
-- 王国紋章
-- 帝国紋章
-- 勇者認定標章
-- 宗教紋章
-- 宗教正式色
-- 主人公4人の具体的目色
-- 主人公4人の姓
-- 正式武器デザイン
-- 最終勇者装束
-- シオンの王冠
-- 王国軍階級章
-- 帝国軍階級章
+Only after two characters succeed may a final multi-character Style Anchor be locked.
 
-また、`borderland`以降の旧Skeletonに書かれた将来設定をCanonへ昇格するな。
+Copy illustrator technique, not Karen anatomy.
 
----
+Technique may transfer:
 
-# 8. Future Skeletonの扱い
+- line treatment
+- cel-shadow logic
+- eye rendering density
+- hair rendering technique
+- skin
+- cloth
+- leather
+- metal
+- lighting
+- background density
 
-v23正式完成地点は:
+Do not transfer:
 
-**`19_frontier_second_complete`**
-
-`borderland`、`watchfort`、`empirevillage`、`imperialcity`、`yukiroad`、`elsia`、`finalfield`等は旧全体構造Skeleton。
-
-`systems/events.js`にクラインテッド、ユウキ、ゼスター、ゼニス、シオン関連の旧会話があっても、**Visual Canonや正式Storyの根拠に使用禁止。**
-
-特に旧Skeleton内の姓・過去・台詞を自動採用しない。
+- face proportions
+- eye shape
+- brows
+- nose
+- jaw
+- body proportions
+- hairstyle
+- pose
+- expression
+- color-mass layout
 
 ---
 
-# 9. 今すぐやること — NOW
+# 8. Vertical Slice later
 
-次AIの最初の仕事は新しい絵を作ることではない。
+After the Character Foundation is stable, polish one short early-game Vertical Slice to near-final quality across:
 
-1. **Visual Foundation資料をproject内部へ回収・同期する。**
-2. **Karen Visual IdentityのStatus（未選択 vs B Lock）をauthoritative decisionに合わせて一本化する。**
-3. **Margaretの白髪をwalking sprite / dialogue portrait / fallbackで一致させる。**
-4. current spriteをPROVISIONALと明文化する。
-5. duplicate docs/assetsは削除せず、archive/removal candidateとして整理する。
-6. Visual runtime修正後、syntax + 41 Node tests + Browser regressionを再実行する。
+- character art
+- background
+- UI
+- combat presentation
+- event presentation
+- BGM / SE
 
-ここまで終わるまで画像生成へ進むな。
-
----
-
-# 10. Karen lock後
-
-KarenのB directionがproject内で正式にLOCKされたら:
-
-**Triton → Sophie → Margaret**
-
-の順にVisual Identityを作る。
-
-各人物:
-
-- 画像生成前に文章3案
-- 微差ではなく魅力の見せ方を変える
-- 比較評価
-- ユーザー選択
-- 選択時点で停止
-
-4人を一度に決めない。
+Do not expand content breadth before proving final-quality depth.
 
 ---
 
-# 11. 4人lock後
+# 9. Missing historical source files
 
-初めて:
+The original Canon / Character Bible / Culture / Shape Language / Costume Rules / old Art Bible source files are still not present in the repository.
 
-`GRAY_CROWN_ART_BIBLE_v2.md`
+Do not silently reconstruct them from memory.
 
-を**PROVISIONAL**で作る。
+The current locked Visual Identity uses already confirmed project decisions only.
 
-v2の中心は:
-
-> 「何を禁止するか」ではなく「Gray Crownの絵師ならどう描くか」
-
-王道JRPGの華と、生活する人間の現実感を両立する。
-
-その後、Karen Stage Aを1枚だけ生成してStyle Test。
-
-一枚成功だけで量産しない。
+If a recovered original contradicts a current lock, report the conflict instead of silently rewriting either side.
 
 ---
 
-# 12. Art Test後
+# 10. Stop rule
 
-Karenで:
+For the next task, stop after **GRAY_CROWN_ART_BIBLE_v2.md PROVISIONAL** is complete.
 
-- 通常立ち
-- 会話
-- 歩行
-- 座る
-- 笑顔
-- 真剣
-- 戦闘準備
-
-を再現性テスト。
-
-Karenだけで正式Style Anchorにしない。
-
-2人目を描き、
-
-- 明確に別人
-- 同じゲーム・同じイラストレーター
-
-を両立できた後に正式Style Anchorを確定する。
-
-Style Anchorから継承するのは絵師の技法だけ。
-
-- 線
-- セル塗り
-- 影
-- 瞳処理
-- 髪処理
-- 肌
-- 布
-- 革
-- 金属
-- 光
-- 背景密度
-
-顔比率・目型・鼻・体型・髪型・ポーズなどKaren本人の造形を他キャラへコピーしない。
-
----
-
-# 13. NOT YET
-
-絶対に今やらない:
-
-- v24
-- 北の旧関所
-- 新Map
-- 新Boss
-- 四将正式デザイン
-- シオン正式デザイン
-- 最終勇者装束
-- 正式武器
-- 紋章
-- 軍階級章
-- Event CG
-- 背景大量制作
-- Hero画像一括生成
-- 正式Pixel Sprite再制作
-- Architecture全面改修
-
----
-
-# 14. Stop rule
-
-Visual Foundation syncの途中で不足情報を見つけたら:
-
-**UNRESOLVED**
-
-と書く。
-
-推測で埋めない。
-
-ユーザーに確認が必要なら、何が欠けているかと影響だけを提示する。
-
----
-
-# 15. 基本原則
-
-Gray CrownのVisual開発では:
-
-> **「そこそこ良い仮デザイン」を正式版にしない。**
-
-目標:
-
-- 見た瞬間に興味を持てる
-- 人物を知るとさらに好きになる
-- 別の場面でも同じ人物に見える
-- 4人並べても全員違う
-- 同じゲーム、同じ絵師に見える
-
-そして、ゲーム側へ実装する順番は:
-
-**Character Design → Reference → Runtime Assets**
-
-を崩さない。
+Do not jump directly into image generation in the same step unless the user explicitly requests continuing beyond the Art Bible.
