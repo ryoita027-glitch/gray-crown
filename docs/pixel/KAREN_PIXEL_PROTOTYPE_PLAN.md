@@ -2,7 +2,7 @@
 
 ## Gray Crown — First Pixel Acting Prototype
 
-**Status:** READY FOR USER APPROVAL — NOT IMPLEMENTED  
+**Status:** IMPLEMENTED TECHNICAL PROTOTYPE — VISUAL VERDICT PENDING  
 **Duration target:** 10〜20 seconds  
 **Location:** Existing Rynne Village  
 **Canon impact:** None. Prototype-only presentation test.
@@ -187,17 +187,21 @@ Production:
 
 ---
 
-# 11. Approved implementation scope
+# 11. Implemented prototype scope
 
-承認後のみ:
-- Karen Prototype pixel assets
-- animation metadata
+現在Prototype開発線で実装済み:
+- Karen Prototype 48×48 pixel assets
+- 8 animation metadata
 - minimal animation runtime
 - minimal scene runner
 - camera override
-- portrait mode toggle
+- Portrait ON / OFF toggle
+- Motion Only
+- current 32px baseline comparison
 - minimal audio cues
-- tests
+- Node regression / browser E2E / visual A-B evidence generation
+
+これは**正式採用ではない**。`main` の現行32px runtime、Story、Save、正式Visual production orderを置き換えない。
 
 変更しない:
 - Story 00–19
@@ -209,7 +213,35 @@ Production:
 
 ---
 
-# 12. Result Gate
+# 12. Current implementation result
+
+Technical Prototypeは成立している。
+
+確認済み:
+- 48×48 Karen actorを既存32px logical world上で描画できる
+- Walk / Turn / Talk / Surprise / Approach / Laugh / Run / Idleを実行できる
+- 既存NPCミカとの短いsceneを実行できる
+- cameraはscene終了後に復帰する
+- Portrait ON / OFF / Motion Only / legacy 32px baselineを同一sceneで比較できる
+- Story / Save schemaを変更しない
+- 既存browser regressionを維持できる
+- scene cancel時も会話待ちを中断し、transient actorとinput lockを後へ残さない
+- scene開始前から存在したstate lockを勝手に解除しない
+
+未判定:
+- 最終Pixel Art品質
+- 48px Karenのキャラクター魅力
+- 32pxに対する最終的な視覚優位
+- Portrait削除の正式判断
+- Pixel-native全面採用
+
+したがって現在判定は:
+
+> **TECHNICAL GO / VISUAL VERDICT PENDING**
+
+---
+
+# 13. Result Gate
 
 **GO** — 48px Pixel-nativeへ進む  
 **REVISE** — 32/48/portrait併用を調整  
