@@ -50,6 +50,9 @@ jobs:
       - name: Install prototype asset dependencies
         run: python -m pip install --disable-pip-version-check pillow
 
+      - name: Build source-faithful Karen Triton identity evidence
+        run: python tools/build_karen_triton_identity_evidence.py
+
       - name: Install Playwright Chromium
         run: |
           python -m pip install --disable-pip-version-check playwright
