@@ -1,0 +1,112 @@
+name: Gray Crown Environment Prototype CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+      - pixel-karen-triton-face-differentiation-fix
+    paths:
+      - "docs/pixel/environment/**"
+      - "docs/pixel/reference/environment/**"
+      - "assets/environment/prototype/**"
+      - "prototypes/environment/**"
+      - "tools/environment/**"
+      - "tests/environment/**"
+      - ".github/workflows/environment-prototype-check.yml"
+      - "package.json"
+  workflow_dispatch:
+
+concurrency:
+  group: gray-crown-environment-prototype-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-ci.txt
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install pinned dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements-ci.txt
+
+      - name: Fetch environment prototype base
+        run: git fetch origin pixel-karen-triton-face-differentiation-fix:refs/remotes/origin/pixel-karen-triton-face-differentiation-fix
+
+      - name: Verify Environment Phase scope
+        run: npm run environment-scope
+
+      - name: Verify Karen visual regression control before work
+        run: python tools/verify_karen_visual_regression_control.py
+
+      - name: Verify Triton Direction Lock before work
+        run: python tools/verify_triton_direction_lock.py
+
+      - name: Generate environment prototype assets
+        run: npm run environment-generate
+
+      - name: Verify environment prototype assets
+        run: |
+          mkdir -p prototype_artifacts/environment
+          npm run environment-verify | tee prototype_artifacts/environment/verifier_summary.txt
+
+      - name: Verify deterministic environment regeneration
+        run: git diff --exit-code -- assets/environment/prototype/
+
+      - name: Run Environment Node tests
+        run: node --test tests/environment/environment_prototype.test.js
+
+      - name: Build mechanical Karen Triton evidence
+        run: npm run environment-evidence
+
+      - name: Install Playwright Chromium
+        run: python -m playwright install --with-deps chromium
+
+      - name: Run Environment browser E2E
+        run: npm run environment-browser-test
+
+      - name: Verify Karen visual regression control after work
+        run: python tools/verify_karen_visual_regression_control.py
+
+      - name: Verify Triton Direction Lock after work
+        run: python tools/verify_triton_direction_lock.py
+
+      - name: Upload Environment Prototype evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gray-crown-environment-prototype-v1-evidence
+          path: prototype_artifacts/environment/**
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## Gray Crown Environment Prototype v1"
+            echo ""
+            echo "- Production map: unchanged"
+            echo "- Save schema: unchanged"
+            echo "- Karen: locked control"
+            echo "- Triton: locked control"
+            echo "- Sophie work: independent / not blocked"
+            echo "- Environment art: provisional only"
+            echo "- CI success means review-ready, not production adoption"
+          } >> "$GITHUB_STEP_SUMMARY"
