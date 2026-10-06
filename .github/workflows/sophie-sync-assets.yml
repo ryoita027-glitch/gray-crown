@@ -1,0 +1,50 @@
+name: Sync Sophie Runtime Assets
+
+on:
+  push:
+    branches:
+      - pixel-sophie-steady-hands-validation
+    paths:
+      - "docs/pixel/reference/sophie_chibi_direction_lock_v1_48.png"
+      - "tools/generate_sophie_prototype_assets.py"
+      - ".github/workflows/sophie-sync-assets.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gray-crown-sophie-runtime-sync
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Pillow
+        run: python -m pip install --disable-pip-version-check -r requirements-ci.txt
+
+      - name: Generate Sophie runtime sheets
+        run: python tools/generate_sophie_prototype_assets.py --out assets/characters/sophie
+
+      - name: Commit synchronized runtime sheets
+        run: |
+          git add assets/characters/sophie/
+          if git diff --cached --quiet; then
+            echo "Sophie runtime assets already synchronized"
+            exit 0
+          fi
+          git config user.name "gray-crown-ci"
+          git config user.email "gray-crown-ci@users.noreply.github.com"
+          git commit -m "Sync Sophie runtime animation assets"
+          git push origin HEAD:pixel-sophie-steady-hands-validation
