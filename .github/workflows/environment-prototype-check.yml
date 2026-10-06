@@ -63,6 +63,13 @@ jobs:
       - name: Generate environment prototype assets
         run: npm run environment-generate
 
+      - name: Preserve exact generated assets for deterministic diagnostics
+        run: |
+          mkdir -p prototype_artifacts/environment/generated-assets/tiles
+          mkdir -p prototype_artifacts/environment/generated-assets/scenes
+          cp assets/environment/prototype/tiles/environment_tiles_v1.png prototype_artifacts/environment/generated-assets/tiles/
+          cp assets/environment/prototype/scenes/*.png prototype_artifacts/environment/generated-assets/scenes/
+
       - name: Verify environment prototype assets
         run: |
           mkdir -p prototype_artifacts/environment
