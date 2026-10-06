@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Verify the approved Triton Chibi Direction Lock v1 completion state.
+"""Verify Triton remains a completed locked control after the active gate moves on.
 
-This is a technical gate only. It never approves main merge, formal Pixel-native
-adoption, Sophie design, or any new subjective visual direction.
+This is a technical integrity gate only. Triton no longer needs to be the active
+work order once Triton Second Character Validation PASS is recorded.
 """
 from pathlib import Path
 from PIL import Image
@@ -87,6 +87,7 @@ for marker in (
     if marker not in animations:
         errors.append(f"Triton runtime metadata missing current lock marker: {marker}")
 
+# Triton is now a completed control, not necessarily the active gate.
 for rel in (
     "docs/audit/CURRENT_PROJECT_STATE.md",
     "docs/audit/NEXT_WORK_ORDER.md",
@@ -94,9 +95,9 @@ for rel in (
 ):
     text=(ROOT/rel).read_text(encoding="utf-8")
     if "Triton Front v4" in text:
-        errors.append(f"stale v4 gate marker remains in active authority: {rel}")
-    if "Triton completion" not in text:
-        errors.append(f"active Triton completion marker missing: {rel}")
+        errors.append(f"stale v4 gate marker remains in authority: {rel}")
+    if "Triton Second Character Validation PASS" not in text:
+        errors.append(f"Triton PASS marker missing from authority: {rel}")
 
 OUT.mkdir(exist_ok=True)
 (OUT/"triton_completion_integrity.json").write_text(
@@ -106,9 +107,11 @@ OUT.mkdir(exist_ok=True)
 
 if errors:
     print("TRITON COMPLETION INTEGRITY FAIL",file=sys.stderr)
-    for e in errors: print(" -",e,file=sys.stderr)
+    for e in errors:
+        print(" -",e,file=sys.stderr)
     sys.exit(1)
 
 print("TRITON COMPLETION INTEGRITY PASS")
+print("Triton remains a completed locked control after active work moved to Sophie")
 print("Approved lock, compatibility atlas, runtime metadata and 8 committed sheets are synchronized")
 print("All eight runtime sheets match deterministic regeneration")
