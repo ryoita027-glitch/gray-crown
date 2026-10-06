@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
-"""Build source-faithful Karen/Triton identity comparison evidence.
+"""Build deterministic, source-faithful Karen/Triton identity evidence.
 
-IMPORTANT:
-- Reads committed repository PNGs directly.
-- Does not redraw, recolor, beautify, interpolate, or generate either locked character.
-- Nearest-neighbor scaling only.
-- A repair candidate may be compared, but it never replaces the locked source until user Visual PASS.
+Comparison-board image generation is forbidden.
+This script ONLY composes real repository PNG pixels using crop, grayscale,
+silhouette/difference transforms, and nearest-neighbor enlargement.
 """
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
-import json
+import hashlib, json
 
 ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT/"prototype_artifacts"
@@ -17,37 +15,31 @@ OUT.mkdir(exist_ok=True)
 
 KAREN=ROOT/"docs/pixel/reference/karen_chibi_direction_v1.png"
 TRITON=ROOT/"docs/pixel/reference/triton_idle_4dir_v1.png"
-CANDIDATE=ROOT/"docs/pixel/reference/triton_idle_front_repair_candidate_v2_48.png"
+V2=ROOT/"docs/pixel/reference/triton_idle_front_repair_candidate_v2_48.png"
+V3=ROOT/"docs/pixel/reference/triton_idle_front_repair_candidate_v3_48.png"
 CELL=48
-SCALE=10
 
 def load_atlas(path):
     im=Image.open(path).convert("RGBA")
-    if im.size!=(192,48):
-        raise ValueError(f"{path} must be 192x48, got {im.size}")
+    if im.size!=(192,48): raise ValueError(f"{path} must be 192x48, got {im.size}")
     return im
 
 def load_cell(path):
     im=Image.open(path).convert("RGBA")
-    if im.size!=(48,48):
-        raise ValueError(f"{path} must be 48x48, got {im.size}")
+    if im.size!=(48,48): raise ValueError(f"{path} must be 48x48, got {im.size}")
     return im
 
-def front(atlas):
-    return atlas.crop((0,0,CELL,CELL))
+def front(atlas): return atlas.crop((0,0,CELL,CELL))
+def nearest(im,factor): return im.resize((im.width*factor,im.height*factor),Image.Resampling.NEAREST)
+def raw_hash(im): return hashlib.sha256(im.tobytes()).hexdigest()
 
-def nearest(im,factor=SCALE):
-    return im.resize((im.width*factor,im.height*factor),Image.Resampling.NEAREST)
-
-def gray_rgba(im):
-    out=Image.new("RGBA",im.size,(0,0,0,0))
-    src=im.load(); dst=out.load()
+def gray(im):
+    out=Image.new("RGBA",im.size,(0,0,0,0));s=im.load();d=out.load()
     for y in range(im.height):
         for x in range(im.width):
-            r,g,b,a=src[x,y]
+            r,g,b,a=s[x,y]
             if a:
-                v=round(0.299*r+0.587*g+0.114*b)
-                dst[x,y]=(v,v,v,a)
+                v=round(.299*r+.587*g+.114*b);d[x,y]=(v,v,v,a)
     return out
 
 def silhouette(im):
@@ -55,123 +47,57 @@ def silhouette(im):
     out.paste(Image.new("RGBA",im.size,(20,20,20,255)),(0,0),im.getchannel("A"))
     return out
 
-def alpha_diff(a,b):
-    out=Image.new("RGBA",a.size,(0,0,0,0))
-    aa=a.getchannel("A"); bb=b.getchannel("A"); dst=out.load()
-    for y in range(a.height):
-        for x in range(a.width):
-            av=aa.getpixel((x,y))>0
-            bv=bb.getpixel((x,y))>0
-            if av and bv: dst[x,y]=(90,90,90,255)
-            elif av: dst[x,y]=(190,55,45,255)
-            elif bv: dst[x,y]=(45,95,190,255)
-    return out
-
 def rgba_diff(a,b):
-    out=Image.new("RGBA",a.size,(0,0,0,0))
-    pa=a.load(); pb=b.load(); dst=out.load()
+    out=Image.new("RGBA",a.size,(0,0,0,0));pa=a.load();pb=b.load();d=out.load()
     for y in range(a.height):
         for x in range(a.width):
-            ar,ag,ab,aa=pa[x,y]; br,bg,bb,ba=pb[x,y]
+            ar,ag,ab,aa=pa[x,y];br,bg,bb,ba=pb[x,y]
             if aa==0 and ba==0: continue
-            dst[x,y]=(abs(ar-br),abs(ag-bg),abs(ab-bb),max(aa,ba))
+            d[x,y]=(abs(ar-br),abs(ag-bg),abs(ab-bb),max(aa,ba))
     return out
 
-def panel(left,right,filename,title_left="KAREN",title_right="TRITON"):
-    margin=24; gap=36; label_h=44; bg=(232,226,214,255)
-    W=left.width+right.width+gap+margin*2
-    H=max(left.height,right.height)+label_h+margin*2
-    canvas=Image.new("RGBA",(W,H),bg)
-    draw=ImageDraw.Draw(canvas); font=ImageFont.load_default()
-    x1=margin; x2=margin+left.width+gap; y=margin+label_h
-    canvas.alpha_composite(left,(x1,y)); canvas.alpha_composite(right,(x2,y))
-    draw.text((x1,margin+8),title_left,fill=(20,20,20,255),font=font)
-    draw.text((x2,margin+8),title_right,fill=(20,20,20,255),font=font)
-    canvas.save(OUT/filename,optimize=False)
+def panel(images,titles,name,factor=10):
+    ims=[nearest(i,factor) for i in images]
+    margin=24;gap=28;label=34;bg=(232,226,214,255)
+    w=sum(i.width for i in ims)+gap*(len(ims)-1)+2*margin
+    h=max(i.height for i in ims)+label+2*margin
+    c=Image.new("RGBA",(w,h),bg);dr=ImageDraw.Draw(c);font=ImageFont.load_default()
+    x=margin
+    for im,title in zip(ims,titles):
+        dr.text((x,margin+7),title,fill=(20,20,20,255),font=font)
+        c.alpha_composite(im,(x,margin+label));x+=im.width+gap
+    c.save(OUT/name,optimize=False)
 
-def triple_panel(a,b,c,filename,titles=("KAREN","TRITON CURRENT","TRITON REPAIR V2")):
-    margin=24; gap=28; label_h=44; bg=(232,226,214,255)
-    W=a.width+b.width+c.width+gap*2+margin*2
-    H=max(a.height,b.height,c.height)+label_h+margin*2
-    canvas=Image.new("RGBA",(W,H),bg)
-    draw=ImageDraw.Draw(canvas); font=ImageFont.load_default()
-    xs=[margin,margin+a.width+gap,margin+a.width+gap+b.width+gap]
-    y=margin+label_h
-    for im,x,title in zip((a,b,c),xs,titles):
-        canvas.alpha_composite(im,(x,y))
-        draw.text((x,margin+8),title,fill=(20,20,20,255),font=font)
-    canvas.save(OUT/filename,optimize=False)
+def single(im,title,name,factor=10):
+    panel([im],[title],name,factor)
 
-def single_panel(im,filename,title):
-    margin=24; label_h=44; bg=(232,226,214,255)
-    canvas=Image.new("RGBA",(im.width+margin*2,im.height+label_h+margin*2),bg)
-    draw=ImageDraw.Draw(canvas); font=ImageFont.load_default()
-    draw.text((margin,margin+8),title,fill=(20,20,20,255),font=font)
-    canvas.alpha_composite(im,(margin,margin+label_h))
-    canvas.save(OUT/filename,optimize=False)
+k_atlas=load_atlas(KAREN);t_atlas=load_atlas(TRITON)
+k=front(k_atlas);t=front(t_atlas);v2=load_cell(V2);v3=load_cell(V3)
+face=(8,3,40,26)
+kf=k.crop(face);tf=t.crop(face);v2f=v2.crop(face);v3f=v3.crop(face)
 
-def alpha_bbox(im):
-    return im.getchannel("A").getbbox()
+# Real-PNG mechanical comparisons only.
+panel([k,t,v3],["KAREN LOCKED","TRITON CURRENT","TRITON V3"],"karen_triton_v3_front_mechanical_x10.png")
+panel([gray(k),gray(t),gray(v3)],["KAREN LOCKED","TRITON CURRENT","TRITON V3"],"karen_triton_v3_grayscale_mechanical_x10.png")
+panel([silhouette(k),silhouette(t),silhouette(v3)],["KAREN LOCKED","TRITON CURRENT","TRITON V3"],"karen_triton_v3_silhouette_mechanical_x10.png")
+panel([kf,tf,v3f],["KAREN FACE","TRITON CURRENT FACE","TRITON V3 FACE"],"karen_triton_v3_face_mechanical_x10.png")
+panel([gray(kf),gray(tf),gray(v3f)],["KAREN FACE","TRITON CURRENT FACE","TRITON V3 FACE"],"karen_triton_v3_face_grayscale_mechanical_x10.png")
+panel([v2,v3],["TRITON V2","TRITON V3"],"triton_v2_v3_mechanical_x10.png")
+panel([gray(v2f),gray(v3f)],["TRITON V2 FACE","TRITON V3 FACE"],"triton_v2_v3_face_grayscale_mechanical_x10.png")
+single(rgba_diff(v2,v3),"TRITON V2 -> V3 RAW PIXEL DIFFERENCE","triton_v2_v3_rgba_difference_x10.png")
+panel([k_atlas,t_atlas],["KAREN LOCKED 4-DIR","TRITON CURRENT 4-DIR"],"karen_triton_source_atlas_mechanical_x6.png",6)
 
-def alpha_iou(a,b):
-    aa=a.getchannel("A"); bb=b.getchannel("A")
-    inter=union=0
-    for va,vb in zip(aa.getdata(),bb.getdata()):
-        av=va>0; bv=vb>0
-        inter+=1 if av and bv else 0
-        union+=1 if av or bv else 0
-    return inter/union if union else 1.0
-
-def main():
-    k_atlas=load_atlas(KAREN)
-    t_atlas=load_atlas(TRITON)
-    k=front(k_atlas); t=front(t_atlas)
-    c=load_cell(CANDIDATE)
-    face_box=(8,3,40,26)
-    kf=k.crop(face_box); tf=t.crop(face_box); cf=c.crop(face_box)
-
-    # Current committed-source evidence.
-    panel(nearest(k),nearest(t),"karen_triton_source_front_x10.png")
-    panel(nearest(gray_rgba(k)),nearest(gray_rgba(t)),"karen_triton_source_front_grayscale_x10.png")
-    panel(nearest(silhouette(k)),nearest(silhouette(t)),"karen_triton_source_front_silhouette_x10.png")
-    panel(nearest(kf),nearest(tf),"karen_triton_source_face_region_x10.png")
-    panel(nearest(gray_rgba(kf)),nearest(gray_rgba(tf)),"karen_triton_source_face_region_grayscale_x10.png")
-    panel(nearest(k_atlas,6),nearest(t_atlas,6),"karen_triton_source_atlas_x6.png","KAREN SOURCE ATLAS","TRITON SOURCE ATLAS")
-    single_panel(nearest(alpha_diff(k,t)),"karen_triton_source_alpha_difference_x10.png","ALPHA DIFFERENCE: red=Karen only / blue=Triton only / gray=shared")
-    single_panel(nearest(rgba_diff(k,t)),"karen_triton_source_rgba_difference_x10.png","RAW RGBA DIFFERENCE")
-
-    # Repair-candidate evidence. Karen is still the exact same committed control.
-    triple_panel(nearest(k),nearest(t),nearest(c),"karen_triton_repair_front_x10.png")
-    triple_panel(nearest(gray_rgba(k)),nearest(gray_rgba(t)),nearest(gray_rgba(c)),"karen_triton_repair_grayscale_x10.png")
-    triple_panel(nearest(silhouette(k)),nearest(silhouette(t)),nearest(silhouette(c)),"karen_triton_repair_silhouette_x10.png")
-    triple_panel(nearest(kf),nearest(tf),nearest(cf),"karen_triton_repair_face_region_x10.png")
-    triple_panel(nearest(gray_rgba(kf)),nearest(gray_rgba(tf)),nearest(gray_rgba(cf)),"karen_triton_repair_face_region_grayscale_x10.png")
-    panel(nearest(t),nearest(c),"triton_current_vs_repair_v2_x10.png","TRITON CURRENT","TRITON REPAIR V2")
-    panel(nearest(gray_rgba(tf)),nearest(gray_rgba(cf)),"triton_current_vs_repair_face_grayscale_x10.png","CURRENT FACE","REPAIR V2 FACE")
-    single_panel(nearest(rgba_diff(t,c)),"triton_current_vs_repair_rgba_difference_x10.png","TRITON CURRENT vs REPAIR V2 RAW RGBA DIFFERENCE")
-
-    metrics={
-      "karen_source":str(KAREN.relative_to(ROOT)),
-      "triton_source":str(TRITON.relative_to(ROOT)),
-      "repair_candidate":str(CANDIDATE.relative_to(ROOT)),
-      "source_size":[192,48],
-      "front_cell":[48,48],
-      "face_box":list(face_box),
-      "karen_front_alpha_bbox":alpha_bbox(k),
-      "triton_front_alpha_bbox":alpha_bbox(t),
-      "candidate_front_alpha_bbox":alpha_bbox(c),
-      "current_front_alpha_iou_vs_karen":round(alpha_iou(k,t),6),
-      "candidate_front_alpha_iou_vs_karen":round(alpha_iou(k,c),6),
-      "current_face_alpha_iou_vs_karen":round(alpha_iou(kf,tf),6),
-      "candidate_face_alpha_iou_vs_karen":round(alpha_iou(kf,cf),6),
-      "candidate_exactly_equals_karen":list(k.getdata())==list(c.getdata()),
-      "candidate_exactly_equals_current_triton":list(t.getdata())==list(c.getdata()),
-      "comparison_method":"committed PNG only; crop/grayscale/silhouette/diff; nearest-neighbor only",
-      "visual_status":"USER REVIEW REQUIRED — candidate does not become source until explicit Visual PASS",
-      "note":"Technical metrics never approve visual identity."
-    }
-    (OUT/"karen_triton_identity_metrics.json").write_text(json.dumps(metrics,indent=2),encoding="utf-8")
-    print(json.dumps(metrics,indent=2))
-
-if __name__=="__main__":
-    main()
+metrics={
+  "method":"real repository PNG mechanical composition only; no image-generation model",
+  "nearest_neighbor_only":True,
+  "karen_front_rgba_sha256":raw_hash(k),
+  "triton_current_front_rgba_sha256":raw_hash(t),
+  "triton_v2_rgba_sha256":raw_hash(v2),
+  "triton_v3_rgba_sha256":raw_hash(v3),
+  "face_box":list(face),
+  "v3_exactly_equals_karen":v3.tobytes()==k.tobytes(),
+  "v3_exactly_equals_v2":v3.tobytes()==v2.tobytes(),
+  "visual_status":"USER REVIEW REQUIRED; technical evidence cannot approve design"
+}
+(OUT/"karen_triton_v3_identity_metrics.json").write_text(json.dumps(metrics,indent=2),encoding="utf-8")
+print(json.dumps(metrics,indent=2))

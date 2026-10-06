@@ -53,7 +53,10 @@ jobs:
       - name: Verify Karen visual regression control before work
         run: python tools/verify_karen_visual_regression_control.py
 
-      - name: Build source-faithful Karen Triton identity evidence
+      - name: Verify Triton v3 face-only pixel scope
+        run: python tools/verify_triton_front_v3_pixel_scope.py
+
+      - name: Build real-PNG mechanical Karen Triton evidence
         run: python tools/build_karen_triton_identity_evidence.py
 
       - name: Install Playwright Chromium
