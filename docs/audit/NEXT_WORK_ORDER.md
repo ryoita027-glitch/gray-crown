@@ -1,132 +1,77 @@
 # Gray Crown — Next Work Order
 
 Production remains **main / v23 / Save schema 23 / Story 00–19**.
-Pixel-native remains experimental and is not merged to main.
 
-## Current priority
+## Current blocker
 
-> **Triton Front Repair v3 — User Visual Gate**
+The project is not blocked by runtime architecture.
 
-Branch:
+The active blocker is:
 
-`pixel-karen-triton-face-differentiation-fix`
+> **Triton Front v4 Visual Gate**
 
-Draft PR:
+Karen is fixed and must not change.
 
-**#22 — Repair Karen Triton visual differentiation gate**
+## What is already complete
 
-## Karen — LOCKED
+- Karen Chibi visual direction: approved and locked.
+- Karen source + eight runtime PNGs: hash-pinned.
+- 48×48 Pixel Actor architecture: validated.
+- 44px Medium prototype occupancy: validated technically.
+- Triton GROUND ANCHOR body / low center / broad shoulders / heavy dark hair / faded-blue waist mass: retained.
+- Triton 8-animation technical structure: validated.
+- Real-PNG mechanical comparison policy: enforced.
+- AI-generated comparison boards: banned.
+- Technical PASS and Visual PASS: separated.
 
-Karen is the permanent Visual Regression Control.
+## Current task
 
-Do not change Karen to solve Triton/Sophie/Margaret problems.
+Evaluate:
 
-The source atlas and all eight runtime PNG Git blobs are pinned and CI-verified before/after regression.
+`docs/pixel/reference/triton_idle_front_repair_candidate_v4_48.png`
 
-## Triton v3 candidate
+with the mechanically generated:
 
-Candidate:
-
-`docs/pixel/reference/triton_idle_front_repair_candidate_v3_48.png`
-
-Git blob:
-
-`ab99446bcfc4fe2d7c21e86894e725c07b122491`
-
-Status:
-
-**front-only candidate / not official source / not propagated**
-
-v3 changes only 29 face pixels relative to v2.
-
-Pixel-perfect scope:
-
-- actual diff bbox: `[20,9,29,15]`
-- outside allowed face patch: 0 changed pixels
-- alpha silhouette change: 0
-- body / stance / costume / outer hair silhouette remain unchanged
-
-## Comparison policy
-
-Comparison-board image generation is **BANNED**.
-
-Use only actual PNGs and deterministic mechanical composition.
-
-Allowed:
-
-- crop
-- nearest-neighbor
-- grayscale
+- front comparison
+- grayscale comparison
+- face crop
+- face grayscale
 - silhouette
-- raw pixel difference
-- labels outside sprite pixels
-
-The earlier AI-generated v3 comparison board is discarded and cannot be cited as evidence.
-
-## Latest technical gate
-
-Workflow run:
-
-**37421248534 — SUCCESS after same-head rerun**
-
-Head:
-
-`03eedebfb1976903ea4aae388ab676e77bffd067`
-
-Artifact:
-
-**11393042711 — karen-pixel-prototype-evidence**
-
-Artifact digest:
-
-`sha256:2cbff9ec8fce5566fa2d8aca48fd9d892367062fe9b03954a3b6ba499955a91f`
-
-Verified:
-
-- Karen unchanged
-- Triton v3 face-only pixel scope
-- real-PNG mechanical evidence
-- Node 58 / 58
-- full browser regression
-- Karen unchanged after regression
-- Save schema 23
-
-Technical PASS does not equal Visual PASS.
+- v3→v4 raw difference
 
 ## Mandatory stop
 
-The next required decision is:
+The next human decision remains:
 
-> **Triton Front v3 — PASS / REVISE / FAIL**
+**PASS / REVISE / FAIL**
 
-Do not propagate v3 to left/right/back until the user decides PASS.
+for Triton Front v4.
 
 ## If PASS
 
-Proceed autonomously:
+Proceed without further micro-confirmations:
 
-front v3 accepted  
-→ left / right / back translation  
-→ four-direction mechanical Evidence  
-→ eight-animation regeneration  
-→ Karen hash verification  
-→ animation personality verification  
+v4 front accepted  
+→ left/right/back translation  
+→ four-direction source atlas  
+→ mechanical four-direction Karen comparison  
+→ regenerate Triton eight animation sheets  
+→ preserve grounded motion personality  
+→ Karen hash check  
 → matched gameplay comparison  
-→ 48 / 44 / 41 scale confirmation  
+→ 48 / 44 / 41 scale re-check  
 → full CI  
 → Standard update  
-→ Sophie may resume
+→ Sophie resumes
 
 ## If REVISE
 
-Continue front only.
+Continue Triton front only.
 
-Do not touch Karen.
+## Paused until PASS
 
-## Paused
-
-- Sophie
-- Margaret
+- Sophie production
+- Margaret production
 - NPC migration
 - main merge
 - v24
