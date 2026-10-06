@@ -6,8 +6,8 @@
 **Draft PR:** #22 `Repair Karen Triton visual differentiation gate`  
 **Production main:** untouched  
 **Sophie / Margaret:** paused  
-**Technical status:** PASS  
-**Visual status:** **REVISE — FRONT FACE REPAIR REQUIRED**
+**Technical status:** **PASS**  
+**Visual status:** **TRITON FRONT REPAIR V2 READY FOR USER VISUAL GATE — NOT APPROVED**
 
 ## Source of Truth
 
@@ -15,19 +15,29 @@ Karen control source:
 
 `docs/pixel/reference/karen_chibi_direction_v1.png`
 
-Triton current source:
+Karen committed runtime PNGs remain the visual regression control.
+
+Triton current four-direction source:
 
 `docs/pixel/reference/triton_idle_4dir_v1.png`
 
-Generated presentation boards that redraw locked characters are non-authoritative and must not be used for identity approval.
+Triton front repair candidate:
+
+`docs/pixel/reference/triton_idle_front_repair_candidate_v2_48.png`
+
+Candidate Git blob:
+
+`436599e39171595a258f0b6ec7249f1b645cb7d7`
+
+The repair candidate is **not** the locked Triton source yet.
 
 ## Karen Visual Regression Control
 
 Karen is pinned and may not change as part of Triton repair.
 
-Start-of-repair Git blob IDs:
+Start-of-repair and current Git blob IDs are identical:
 
-| Asset | Git blob |
+| Asset | Locked Git blob |
 |---|---|
 | Karen source atlas | `d5aaf6029efaf246e9dc5afd75e1faa043870dbc` |
 | idle | `782785fd504a4baba92be4ff099a827dd1ecac81` |
@@ -39,50 +49,63 @@ Start-of-repair Git blob IDs:
 | laugh | `cc2846879fe90b696f958a1708906f1d9d8b8787` |
 | run | `d08632ecb9ceda11d900b8a0263790c92ebfef58` |
 
-CI now checks these exact blobs both **before** and **after** the full prototype regression.
+CI checks these exact blobs both before and after the full prototype regression.
 
-A Triton fix that changes any of them fails automatically.
+A Triton change that modifies any Karen control PNG fails automatically.
 
-## CI evidence
+## Latest CI
 
 Workflow run:
 
-**37416042278 — SUCCESS**
+**37417702972 — SUCCESS**
 
 Tested head:
 
-`454ce16a985d98ae76a6541c6f4f92372e79729e`
+`789bec76e53b2321e53da0a19d38845f6a21da3b`
 
 Artifact:
 
-- id: **11392070085**
-- digest: `sha256:7818a36d26ad4879855598c71b0407c512029e18029b24c7632d59f0f6ecac97`
+- id: **11391474329**
+- name: `karen-pixel-prototype-evidence`
+- digest: `sha256:34e87f42657edff92c7a9acde0cfcd3c59c680372418837384524a2182fed4ec`
 
 Verified:
 
-- Karen visual regression control before work: PASS
-- source-faithful comparison evidence: PASS
+- Karen regression control before work: PASS
+- deterministic source-faithful Evidence generation: PASS
 - full prototype regression: PASS
-- Karen visual regression control after work: PASS
-- evidence upload: PASS
+- Karen regression control after work: PASS
+- artifact upload: PASS
 
-## Evidence generation rules
+This is a **Technical PASS only**.
 
-The comparison script reads only the committed Karen / Triton 192×48 source atlases.
+## Evidence rules
 
-Allowed transforms used:
+Comparison evidence is assembled from committed repository PNGs.
+
+Allowed:
 
 - crop
 - nearest-neighbor enlargement
 - grayscale
 - alpha silhouette
 - fixed face-region crop
-- alpha difference
-- raw RGBA difference
+- alpha / RGBA difference
 
-No AI redraw, beautification, color reinterpretation, smoothing, or new pose generation is used.
+Not used:
 
-Generated evidence includes:
+- AI redraw
+- beautification
+- interpolation
+- color redesign
+- generated comparison poses
+- generated replacement Karen
+
+The repair candidate itself is a committed 48×48 Triton-only asset and is compared against the locked Karen control.
+
+## Evidence generated
+
+Current-source evidence:
 
 - `karen_triton_source_front_x10.png`
 - `karen_triton_source_front_grayscale_x10.png`
@@ -92,78 +115,99 @@ Generated evidence includes:
 - `karen_triton_source_atlas_x6.png`
 - `karen_triton_source_alpha_difference_x10.png`
 - `karen_triton_source_rgba_difference_x10.png`
-- `karen_triton_identity_metrics.json`
 
-## Current source metrics
+Repair-v2 evidence:
+
+- `karen_triton_repair_front_x10.png`
+- `karen_triton_repair_grayscale_x10.png`
+- `karen_triton_repair_silhouette_x10.png`
+- `karen_triton_repair_face_region_x10.png`
+- `karen_triton_repair_face_region_grayscale_x10.png`
+- `triton_current_vs_repair_v2_x10.png`
+- `triton_current_vs_repair_face_grayscale_x10.png`
+- `triton_current_vs_repair_rgba_difference_x10.png`
+
+## Metrics
 
 - Karen front alpha bbox: `[11,0,37,44]`
-- Triton front alpha bbox: `[12,2,36,45]`
-- front silhouette alpha IoU: `0.675978`
-- face-region alpha IoU: `0.726937`
-- exact front RGBA equal: false
-- exact face-region RGBA equal: false
+- current Triton front alpha bbox: `[12,2,36,45]`
+- repair-v2 Triton front alpha bbox: `[12,2,36,45]`
+- current front alpha IoU vs Karen: `0.675978`
+- repair-v2 front alpha IoU vs Karen: `0.675978`
+- current face alpha IoU vs Karen: `0.726937`
+- repair-v2 face alpha IoU vs Karen: `0.726937`
+- candidate exactly equals Karen: false
+- candidate exactly equals current Triton: false
 
-These metrics prove that the files are not identical.
+These metrics prove deterministic file difference only.
 
-They do **not** prove successful character design.
+They do **not** approve character design.
 
-## Visual review of current committed source
+## Visual review — repair v2
 
-### What already separates successfully
+The repair-v2 front candidate improves the specific facial identity problem without changing Karen.
 
-- Karen hair and Triton hair have clearly different mass / construction.
-- Karen has more forward visual activity.
-- Triton has a visibly broader / lower lower-body stance.
-- Triton's faded-blue waist mass reads separately from Karen's short red upper-body mass.
-- silhouette comparison remains distinguishable without color.
+### Clear improvement
 
-### What is still insufficient
+Compared with current Triton:
 
-The current Triton front face does not yet express the locked GROUND ANCHOR facial identity strongly enough at 48px.
+- the visible eye reads narrower;
+- the brow/upper-eye line is straighter and calmer;
+- the mouth is visibly broader;
+- the face reads more vertically than Karen's open round face;
+- the expression is less like Karen's large reactive-eye template.
 
-Specifically:
+The existing GROUND ANCHOR body read is preserved:
 
-- eyes are not clearly narrow / slit-like enough;
-- straight-brow identity is weak;
-- mouth is not visibly wider than Karen's;
-- face / jaw does not read sufficiently longer and sharper;
-- therefore the front face still risks reading as the same shared Chibi face technique with different hair.
+- wider shoulder/body mass than Karen;
+- planted separated feet;
+- low horizontal faded-blue waist mass;
+- heavy unbound dark shoulder-length hair;
+- no Karen-style partial tie;
+- no red short-upper color structure.
+
+### What remains a human judgment
+
+At 48px, the remaining question is not whether the files differ.
+
+The user must decide whether repair v2 is attractive and distinctive enough to count as **Triton herself** while still belonging to the same game.
+
+In particular:
+
+- are the narrow eyes strong enough without becoming a cold "cool swordswoman" stereotype?
+- does the broad mouth preserve the possibility of Triton's hearty approachable laugh?
+- does the face feel longer/sharper than Karen without becoming masculine caricature?
+- does the overall result read as reliable / grounded / strong / unexpectedly approachable?
 
 ## Current decision
 
-# **TECHNICAL PASS / VISUAL REVISE**
+# **TECHNICAL PASS / VISUAL USER GATE**
 
-Do not change Karen.
+No more Triton directional or animation production is authorized before user judgment.
 
-Revise **Triton front only** first.
+Required user choice:
 
-Priority:
+- **PASS** — accept Triton repair-v2 front identity.
+- **REVISE** — direction is correct but needs another front-only edit.
+- **FAIL** — front design still collapses into the wrong identity/template.
 
-1. face length / jaw direction
-2. narrow eye shape
-3. straight brows
-4. wider mouth
-5. maintain broad shoulder read
-6. maintain planted low center
-7. preserve heavy shoulder-length hair
-8. preserve off-white / gray + faded-blue low horizontal mass
+## After user PASS only
 
-Do not expand the repair to side / back or regenerate the eight animation sheets until the corrected front candidate receives user Visual PASS.
+1. propagate the accepted Triton identity to left / right / back;
+2. regenerate the existing eight Triton animation categories;
+3. preserve Triton's lower-bounce / heavy-hair / planted motion personality;
+4. confirm all Karen Git blobs remain byte-identical;
+5. rebuild Front / Grayscale / Silhouette / Face / Four-direction Evidence;
+6. run full technical regression;
+7. perform matched gameplay / 44px scale confirmation;
+8. update Pixel Character Standard;
+9. only then resume Sophie.
 
-## Final user gate
+Until user PASS:
 
-The next human decision is:
-
-> **Triton Front / Character Design Visual PASS**
-
-Only the user can approve this.
-
-After PASS:
-
-1. propagate the accepted facial / body language to left / right / back;
-2. regenerate Triton eight animations from the corrected source;
-3. confirm Karen remains byte-identical;
-4. rebuild source-faithful Evidence;
-5. re-run full technical regression;
-6. update Pixel Character Standard;
-7. only then resume Sophie.
+- do not replace `triton_idle_4dir_v1.png`;
+- do not regenerate Triton runtime sheets;
+- do not resume Sophie;
+- do not begin Margaret;
+- do not merge into main;
+- do not formally adopt Pixel-native.
