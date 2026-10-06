@@ -51,13 +51,20 @@ else:
         if package.get("version") != "23.0.0":
             errors.append(f"package version drifted from production v23: {package.get('version')!r}")
 
-# Locked/current runtime asset sets must remain complete.
+# Karen is approved runtime authority and must remain committed/complete.
 anims = ("idle", "walk", "turn", "talk", "surprise", "approach", "laugh", "run")
-for char in ("karen", "triton"):
-    for anim in anims:
-        rel = f"assets/characters/{char}/{char}_{anim}.png"
-        if rel not in tracked:
-            errors.append(f"missing tracked runtime asset: {rel}")
+for anim in anims:
+    rel = f"assets/characters/karen/karen_{anim}.png"
+    if rel not in tracked:
+        errors.append(f"missing tracked Karen runtime asset: {rel}")
+
+# Triton runtime PNGs are deliberately generated in CI while Front v4 is still
+# waiting on the user's visual decision. Do not silently promote them to
+# repository authority before PASS.
+for anim in anims:
+    rel = f"assets/characters/triton/triton_{anim}.png"
+    if rel in tracked:
+        errors.append(f"Triton review runtime asset was committed before USER VISUAL PASS: {rel}")
 
 required = {
     "docs/pixel/reference/karen_chibi_direction_v1.png",
@@ -72,8 +79,6 @@ for rel in sorted(required):
     if rel not in tracked:
         errors.append(f"missing required tracked project authority/control file: {rel}")
 
-# v4 is still a deterministic review candidate. Do not silently promote it to
-# committed visual authority before the user issues PASS.
 v4_committed = "docs/pixel/reference/triton_idle_front_repair_candidate_v4_48.png"
 if v4_committed in tracked:
     errors.append(
@@ -95,5 +100,6 @@ if errors:
 print("GRAY CROWN REPOSITORY HYGIENE PASS")
 print(f"Tracked files checked: {len(tracked)}")
 print("Production baseline remains v23 / Save schema 23")
+print("Karen runtime authority is committed and complete")
+print("Triton runtime assets remain generated review outputs until USER VISUAL PASS")
 print("Generated evidence remains untracked")
-print("Triton v4 remains a review candidate, not committed authority")

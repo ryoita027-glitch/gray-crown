@@ -20,6 +20,18 @@ def sha256(rel):
 def git(*args):
     return subprocess.check_output(["git", *args], cwd=ROOT, text=True).strip()
 
+def event_context():
+    path = os.environ.get("GITHUB_EVENT_PATH")
+    if not path or not Path(path).exists():
+        return {}
+    try:
+        return json.loads(Path(path).read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+event = event_context()
+pr = event.get("pull_request") or {}
+
 save_text = (ROOT / "js/core/save.js").read_text(encoding="utf-8")
 m = re.search(r"\bSAVE_SCHEMA\s*=\s*(\d+)\s*;", save_text)
 
@@ -37,7 +49,7 @@ for char in ("karen", "triton"):
         files.append(f"assets/characters/{char}/{char}_{anim}.png")
 
 status = subprocess.check_output(
-    ["git", "status", "--porcelain", "--untracked-files=no"],
+    ["git", "status", "--porcelain", "--untracked-files=all"],
     cwd=ROOT,
     text=True,
 ).splitlines()
@@ -56,16 +68,18 @@ data = {
         "formal_pixel_native_adoption_is_automatic": False,
     },
     "git": {
-        "head": git("rev-parse", "HEAD"),
-        "branch": os.environ.get("GITHUB_HEAD_REF") or os.environ.get("GITHUB_REF_NAME") or git("rev-parse", "--abbrev-ref", "HEAD"),
-        "base_ref": os.environ.get("GITHUB_BASE_REF") or None,
-        "tracked_changes_after_generation": status,
+        "checked_out_head": git("rev-parse", "HEAD"),
+        "pr_head_sha": ((pr.get("head") or {}).get("sha")),
+        "pr_head_ref": ((pr.get("head") or {}).get("ref")),
+        "pr_base_ref": ((pr.get("base") or {}).get("ref")),
+        "github_sha": os.environ.get("GITHUB_SHA"),
+        "ref_name": os.environ.get("GITHUB_REF_NAME"),
+        "working_tree_after_generation": status,
     },
     "github_actions": {
         "event": os.environ.get("GITHUB_EVENT_NAME"),
         "run_id": os.environ.get("GITHUB_RUN_ID"),
         "run_number": os.environ.get("GITHUB_RUN_NUMBER"),
-        "sha": os.environ.get("GITHUB_SHA"),
     },
     "sha256": {rel: sha256(rel) for rel in files},
 }
