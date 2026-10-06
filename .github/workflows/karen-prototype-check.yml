@@ -5,10 +5,13 @@ on:
   push:
     branches:
       - main
+      - pixel-karen-triton-face-differentiation-fix
     paths:
       - "**"
       - "!docs/**"
       - "docs/pixel/reference/**"
+      - "docs/audit/**"
+      - "docs/visual/SOURCE_OF_TRUTH_STATUS.md"
       - "!README.txt"
       - "!*.txt"
       - "!.gitignore"
@@ -40,18 +43,26 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Install prototype asset dependencies
-        run: python -m pip install --disable-pip-version-check pillow
+      - name: Verify repository hygiene and production baseline
+        run: npm run verify-hygiene
+
+      - name: Verify Python source syntax
+        run: npm run verify-python-syntax
 
       - name: Verify project authority and current work gate
         run: npm run verify-authority
+
+      - name: Install prototype asset dependencies
+        run: python -m pip install --disable-pip-version-check pillow
 
       - name: Verify Karen visual regression control before work
         run: python tools/verify_karen_visual_regression_control.py
@@ -74,10 +85,21 @@ jobs:
         run: npm run prototype-check
 
       - name: Verify deterministic Triton runtime assets are committed
-        run: git diff --exit-code -- assets/characters/triton
+        run: |
+          mkdir -p prototype_artifacts
+          git diff -- assets/characters/triton > prototype_artifacts/triton_generated_asset_diff.patch
+          if [ -s prototype_artifacts/triton_generated_asset_diff.patch ]; then
+            echo "Generated Triton runtime assets differ from committed assets."
+            cat prototype_artifacts/triton_generated_asset_diff.patch
+            exit 1
+          fi
 
       - name: Verify Karen visual regression control after work
         run: python tools/verify_karen_visual_regression_control.py
+
+      - name: Write machine-readable CI state manifest
+        if: always()
+        run: python tools/write_ci_state_manifest.py
 
       - name: Write CI gate summary
         if: always()
@@ -88,16 +110,20 @@ jobs:
             echo "- Event: \`${GITHUB_EVENT_NAME}\`"
             echo "- Commit: \`${GITHUB_SHA}\`"
             echo "- Job status: **${{ job.status }}**"
+            echo "- Automated: authority drift, repo hygiene, Python/JS/tests, deterministic assets, visual evidence."
             echo "- Authority: Triton Front v4 remains the active USER VISUAL gate."
             echo "- Karen: locked regression control; CI may not redesign her."
             echo "- main merge / formal Pixel-native adoption: not automated."
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload visual A-B evidence
+      - name: Upload CI and visual evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: karen-pixel-prototype-evidence
-          path: prototype_artifacts/
+          path: |
+            prototype_artifacts/
+            test-results/
+            playwright-report/
           if-no-files-found: warn
           retention-days: 14
