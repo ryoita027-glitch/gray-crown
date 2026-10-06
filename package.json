@@ -18,6 +18,12 @@
     "generate-triton-assets": "python tools/generate_triton_prototype_assets.py --out assets/characters/triton",
     "verify-triton-assets": "python tools/verify_triton_prototype_assets.py",
     "prototype-browser-test": "python tools/run_browser_suite.py",
-    "prototype-check": "npm run verify-hygiene && npm run verify-authority && npm run verify-python-syntax && npm run verify-karen-assets && npm run generate-triton-assets && npm run verify-triton-assets && npm run verify-triton-completion && node tests/check-syntax.js && npm test && npm run prototype-browser-test"
+    "prototype-check": "npm run verify-hygiene && npm run verify-authority && npm run verify-python-syntax && npm run verify-karen-assets && npm run generate-triton-assets && npm run verify-triton-assets && npm run verify-triton-completion && node tests/check-syntax.js && npm test && npm run prototype-browser-test",
+    "environment-generate": "python tools/environment/generate_environment_prototype_v1.py",
+    "environment-verify": "python tools/environment/verify_environment_prototype_v1.py",
+    "environment-scope": "python tools/environment/verify_environment_scope_v1.py",
+    "environment-evidence": "python tools/environment/build_environment_character_evidence_v1.py",
+    "environment-browser-test": "python tests/environment/browser_environment_prototype_e2e_test.py",
+    "environment-check": "npm run environment-scope && npm run environment-generate && npm run environment-verify && node --test tests/environment/environment_prototype.test.js && npm run environment-evidence && npm run environment-browser-test"
   }
 }
