@@ -18,6 +18,9 @@
     "generate-triton-assets": "python tools/generate_triton_prototype_assets.py --out assets/characters/triton",
     "verify-triton-assets": "python tools/verify_triton_prototype_assets.py",
     "prototype-browser-test": "python tools/run_browser_suite.py",
-    "prototype-check": "npm run verify-hygiene && npm run verify-authority && npm run verify-python-syntax && npm run verify-karen-assets && npm run generate-triton-assets && npm run verify-triton-assets && npm run verify-triton-completion && node tests/check-syntax.js && npm test && npm run prototype-browser-test"
+    "prototype-check": "npm run verify-hygiene && npm run verify-authority && npm run verify-python-syntax && npm run verify-karen-assets && npm run generate-triton-assets && npm run verify-triton-assets && npm run verify-triton-completion && npm run generate-sophie-assets && npm run verify-sophie-lock && npm run verify-sophie-assets && node tests/check-syntax.js && npm test && npm run prototype-browser-test",
+    "generate-sophie-assets": "python tools/generate_sophie_prototype_assets.py --out assets/characters/sophie",
+    "verify-sophie-assets": "python tools/verify_sophie_prototype_assets.py",
+    "verify-sophie-lock": "python tools/verify_sophie_direction_lock.py"
   }
 }
