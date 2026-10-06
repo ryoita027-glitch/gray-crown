@@ -19,39 +19,43 @@ Triton — GROUND ANCHOR remains complete.
 
 ## Sophie
 
-Sophie — STEADY HANDS has now passed the front visual-direction stage by explicit user approval.
+Sophie — STEADY HANDS visual direction is user-approved and locked.
 
-Current authority:
+Authority:
 
 - `docs/pixel/SOPHIE_CHIBI_DIRECTION_LOCK_v1.md`
 - `docs/pixel/SOPHIE_ACTING_REFERENCE_v1.md`
+- `docs/pixel/reference/sophie_chibi_direction_lock_v1_48.png`
 
-User reference hashes:
+Technical implementation is complete:
 
-- Direction / four-view sheet: `c3b796ec55b8a54bd413e17f326f256ce3e2869c99c70968f3b7523955a530bc`
-- Acting / eight-animation sheet: `b1bec435fbdfba0faa2212e66a965cbe2c492e7e4d7d20df608124c7e2366ec5`
+- 4-direction 48×48 source;
+- exactly eight runtime animation categories;
+- deterministic asset generation;
+- runtime animation metadata;
+- Karen / Triton / Sophie actual-game comparison;
+- Full48 / Medium44 / Compact41 validation;
+- control restoration;
+- Save schema 23 unchanged;
+- full regression CI green.
 
-Old Sophie v1 / v2 / v3 front candidates are historical only.
+Technical result:
 
-## Active phase
+# **SOPHIE TECHNICAL PASS**
 
-> **Sophie 4-direction + 8Animation technical implementation**
+Implementation result:
 
-Required sequence:
+`docs/pixel/SOPHIE_THIRD_CHARACTER_IMPLEMENTATION_RESULT.md`
 
-1. 48×48 four-direction translation from approved visual lock;
-2. eight runtime animation categories;
-3. Karen / Triton / Sophie actual-game comparison;
-4. Full48 / Medium44 / Compact41;
-5. control restoration / Save schema 23;
-6. full CI;
-7. Sophie Character Validation decision.
+## Active gate
 
-Karen and Triton remain locked controls.
+> **Sophie Character Validation — USER PASS / REVISE**
+
+Automation does not decide the final Sophie character verdict.
 
 ## Margaret
 
-Paused until Sophie Character Validation completes.
+Paused until user gives Sophie Character Validation PASS.
 
 ## Environment
 
@@ -59,7 +63,7 @@ Environment Pixel production remains paused until Karen, Triton, Sophie and Marg
 
 ## Still not authorized
 
-- Margaret production;
+- Margaret before Sophie PASS;
 - Environment Prototype;
 - main merge;
 - formal Pixel-native adoption;

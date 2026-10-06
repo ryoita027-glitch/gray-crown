@@ -4,86 +4,60 @@
 
 - Karen locked.
 - Triton Second Character Validation PASS.
-- Sophie visual direction approved.
-- **Sophie Chibi Direction Lock v1** established.
-- **Sophie Acting Reference v1** established.
+- Sophie Chibi Direction Lock v1 approved.
+- Sophie Acting Reference v1 approved.
+- Sophie 4-direction 48×48 source complete.
+- Sophie eight runtime animation categories complete.
+- Sophie runtime metadata complete.
+- Karen / Triton / Sophie actual-game comparison complete.
+- Full48 / Medium44 / Compact41 validation complete.
+- Save schema 23 / control restoration confirmed.
+- full regression CI green.
 
-## Active task
+## Current gate
 
-# **Sophie 4-direction + 8Animation implementation**
+# **Sophie Character Validation — PASS / REVISE**
 
-Do not redesign Sophie again.
+This is a human visual / character-quality decision.
 
-### Step 1 — 4-direction technical translation
+Technical result is already PASS.
 
-Translate the approved four-view reference into:
+### PASS means
 
-- 48×48 source cells;
-- down / left / right / up;
-- grounded foot anchor;
-- Medium44 readability.
+Sophie is accepted as the third validated protagonist.
 
-Verify:
+Then:
 
-- face remains attractive;
-- honey-hair silhouette survives;
-- small adult body remains distinct;
-- cream / green hierarchy survives;
-- hands remain readable.
+1. record Sophie Character Validation PASS;
+2. update Pixel Character Standard from Karen + Triton + Sophie evidence;
+3. start **Margaret — MEASURED LINE Front Idle only**;
+4. stop again for Margaret user Visual Review before her four-direction / animation production.
 
-### Step 2 — eight animation categories
+### REVISE means
 
-Implement:
+Keep work on Sophie.
 
-1. Idle
-2. Walk
-3. Turn
-4. Talk
-5. Surprise
-6. Approach
-7. Laugh
-8. Run
+Do not modify Karen or Triton.
 
-Use Sophie-specific acting from `SOPHIE_ACTING_REFERENCE_v1.md`.
+Do not start Margaret.
 
-### Step 3 — gameplay / scale
+## Evidence available
 
-Compare locked Karen + Triton + Sophie in actual game.
+Actual-game / scale evidence includes:
 
-Check:
-
-- separate identities;
-- Medium44;
-- Full48;
-- Compact41;
-- village/background readability;
-- Walk / Talk / Laugh especially;
-- control restoration;
-- Save schema 23.
-
-### Step 4 — CI
-
-Run:
-
-- asset existence / frame dimensions;
-- deterministic generation where applicable;
-- Karen hash;
-- Triton lock hash;
-- Sophie source/runtime consistency;
-- Node regression;
-- browser E2E;
-- scale validation.
-
-## Next human gate
-
-After technical evidence is complete:
-
-> **Sophie Character Validation — PASS / REVISE**
+- Sophie + Karen + Triton Medium44 Idle
+- Sophie Walk
+- Sophie Talk
+- Sophie Laugh
+- Sophie Run
+- Sophie Full48
+- Sophie Medium44
+- Sophie Compact41
 
 ## Paused
 
-- Margaret;
-- Environment Prototype;
+- Margaret until Sophie PASS;
+- Environment Prototype until all four protagonists pass;
 - main merge;
 - formal Pixel-native adoption;
 - Portrait deletion;

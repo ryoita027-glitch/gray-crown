@@ -18,12 +18,14 @@ source=FILES["source"].read_text(encoding="utf-8")
 checks=[
  ("current",current,"main / v23 / Save schema 23"),
  ("current",current,"Triton Second Character Validation PASS"),
- ("current",current,"Sophie 4-direction + 8Animation technical implementation"),
+ ("current",current,"SOPHIE TECHNICAL PASS"),
+ ("current",current,"Sophie Character Validation — USER PASS / REVISE"),
  ("current",current,"Environment Pixel production remains paused"),
- ("next",nxt,"Sophie 4-direction + 8Animation implementation"),
  ("next",nxt,"Sophie Character Validation — PASS / REVISE"),
+ ("next",nxt,"Margaret — MEASURED LINE Front Idle only"),
  ("source",source,"Sophie Chibi Direction Lock v1 — USER APPROVED"),
- ("source",source,"Sophie 4-direction + 8Animation technical implementation"),
+ ("source",source,"TECHNICAL PASS"),
+ ("source",source,"Sophie Character Validation — USER PASS / REVISE"),
  ("source",source,"Environment Pixel production remains paused"),
 ]
 for label,textv,needle in checks:
@@ -31,17 +33,17 @@ for label,textv,needle in checks:
 stale=[
  "Sophie v3: user Visual Review pending",
  "Sophie remains front-only until explicit PASS",
- "Sophie Front v3 — PASS / REVISE / FAIL",
+ "Sophie 4-direction + 8Animation technical implementation",
 ]
 for marker in stale:
     if marker in current or marker in nxt or marker in source:
-        errors.append(f"stale Sophie front-gate marker remains: {marker!r}")
+        errors.append(f"stale Sophie implementation marker remains: {marker!r}")
 if errors:
     print("GRAY CROWN AUTHORITY CONSISTENCY FAILED",file=sys.stderr)
     for e in errors: print(" -",e,file=sys.stderr)
     sys.exit(1)
 print("GRAY CROWN AUTHORITY CONSISTENCY PASS")
-print("Sophie Chibi Direction Lock v1 is authoritative")
-print("Active phase: Sophie 4-direction + 8Animation technical implementation")
+print("Sophie technical implementation is complete")
+print("Active gate: Sophie Character Validation — USER PASS / REVISE")
 print("Karen and Triton remain locked controls")
 print("Margaret and Environment remain paused")
