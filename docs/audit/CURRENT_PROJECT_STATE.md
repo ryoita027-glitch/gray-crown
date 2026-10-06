@@ -1,7 +1,7 @@
 # Gray Crown — Current Project State
 
 Status inspected: 2026-10-06 (JST). Repository: `ryoita027-glitch/gray-crown`.
-This document describes the experimental integration branch. It does not promote it to production.
+This document describes the experimental Pixel-native stack. It does not promote it to production.
 
 ## Source of Truth
 
@@ -9,64 +9,127 @@ This document describes the experimental integration branch. It does not promote
 |---|---|
 | Production game | `main`, v23, Save schema 23, Story 00–19 |
 | Locked character identity | `docs/characters/CHARACTER_VISUAL_IDENTITY.md` |
-| Karen costume | `docs/characters/KAREN_COSTUME_DESIGN_v1.md` |
 | Provisional art direction | `docs/art/GRAY_CROWN_ART_BIBLE_v2.md` |
-| Approved Karen Chibi source | `docs/pixel/reference/karen_chibi_direction_v1.png` |
-| Animation integration record | `docs/pixel/KAREN_CHIBI_INTEGRATION_RESULT.md`, PR #17 |
-| Chibi scale experiment record | `docs/pixel/KAREN_CHIBI_SCALE_INTEGRATION_RESULT.md`, PR #18 |
+| Karen Chibi source | `docs/pixel/reference/karen_chibi_direction_v1.png` |
+| Karen animation result | `docs/pixel/KAREN_CHIBI_INTEGRATION_RESULT.md` |
+| Karen scale result | `docs/pixel/KAREN_CHIBI_SCALE_INTEGRATION_RESULT.md` |
+| Triton validation plan | `docs/pixel/TRITON_SECOND_CHARACTER_VALIDATION_PLAN.md` |
+| Triton final result | `docs/pixel/TRITON_SECOND_CHARACTER_IMPLEMENTATION_RESULT.md` |
 | Current work order | `docs/audit/NEXT_WORK_ORDER.md` |
 
-The user confirms the Karen Chibi design is approved. Do not restart its front-Idle design gate.
-Earlier realistic-proportion Karen experiments and their scale verdicts are historical only.
-Original Canon / Character Bible / Culture / Shape Language / Costume Rules sources are still absent from this repository; do not reconstruct them from memory.
+## Production
 
-## Verified GitHub baseline
+`main` remains the v23 production baseline. Story 00–19, Save schema 23, battle foundation and logical 32px world geometry remain unchanged.
 
-| Branch | Observed HEAD | Role |
-|---|---|---|
-| `main` | `d689aabb5146c9f45466a4f74f397e664c08fb4f` | Production |
-| `pixel-karen-acting-prototype` | `3ced39795e9479198dc7116b36071740f948f212` | Technical foundation, draft PR #6 to main |
-| `pixel-karen-chibi-direction` | `22e10359c81a9cd7506ba1fca95b9dc54eee7496` | Completed Chibi animation integration, draft PR #17 |
-| `pixel-karen-chibi-scale-integration` | `5fcbcf2703acf7c228941ac386e7c5c958caa035` | Latest implemented experiment, draft PR #18 |
-| `pixel-triton-second-character-validation` | `5fcbcf2703acf7c228941ac386e7c5c958caa035` | Reserved branch only; no Triton implementation |
+No Pixel-native prototype branch has been merged into main.
 
-These are an audit snapshot, not a substitute for fetching fresh branch heads before writing.
+## Completed Karen prototype
 
-## Completed Karen work
+- Cute Chibi Pixel RPG heroine direction.
+- Four-direction 48×48 source.
+- Exactly eight animation categories: Idle, Walk, Turn, Talk, Surprise, Approach, Laugh, Run.
+- 32px logical world with foot anchor `[24,44]`.
+- Portrait ON / OFF and Motion Only comparisons.
+- Full 48 / Medium 44 / Compact 41 scale comparison.
+- **44 Medium** selected as Karen's prototype scale candidate.
+- Portrait OFF remains a provisional preference only.
 
-- Four directions and exactly eight animation categories: Idle, Walk, Turn, Talk, Surprise, Approach, Laugh, Run.
-- 48×48 source cells, 32px logical world, foot anchor `[24,44]`.
-- Karen + Mika scene; Motion Only and Portrait OFF / ON comparisons.
-- Legacy 32px baseline retained.
-- Chibi scale comparison: 48 Full / 44 Medium / 41 Compact.
-- PR #18 selects 44 Medium as an experimental candidate, not a final game-wide standard.
-- Portrait OFF is a provisional preference; the system remains available.
+## Completed Triton second-character validation
 
-## CI evidence and its exact scope
+Locked identity: **Triton A — GROUND ANCHOR**.
 
-| Stage | Successful run | Tested commit | Current HEAD difference |
-|---|---|---|---|
-| Animation | 37384493234 | `869ea25842cde6ed0c099fa94d0d56ba73c8744d` | One result document only |
-| Scale | 37386602760 | `4f12fb96c43ea7b46745d3e1db854eaea1f45c16` | One result document only |
+Implemented on `pixel-triton-second-character-validation`:
 
-The scale run reports 54 Node tests plus production, developer, animation and scale browser gates passing. Both HEAD differences were checked through GitHub compare. Do not describe the document-only HEADs as having separate successful CI runs.
+- front candidate translated into true 48px source language;
+- left / right references retained;
+- back view added;
+- four-direction Idle atlas;
+- exactly eight animation categories;
+- heavy-hair tip-only motion;
+- lower-bounce grounded walk;
+- broad planted laugh;
+- stable run;
+- Karen + Triton matched-framing comparison;
+- Full 48 / Medium 44 / Compact 41 scale comparison.
 
-## Active engineering work
+The system therefore has evidence from two characters with deliberately different silhouette, weight, posture, color placement and motion personality.
 
-`repo-karen-integration-handoff` branches from the observed scale HEAD. It synchronizes stale handoff documents and consolidates the read-only CI gate. Runtime code and approved PNGs remain unchanged.
+## CI evidence
 
-The new workflow runs on PR updates targeting any branch, production pushes after adoption, and manual dispatch. It includes the scale gate in `npm run prototype-check` and runs the animation gate once. Dedicated work must have a PR to receive automatic CI. Older branches keep their old workflows until this maintenance change is integrated.
+Triton implementation commit:
+
+`43ab43be257e7db144c3e4b76171488580b1ae9d`
+
+Draft PR:
+
+**#20 — Triton second-character pixel validation**
+
+GitHub Actions run:
+
+**37401209352 — SUCCESS on rerun of the same implementation head**
+
+The first attempt stopped in the existing Frontier Section 2 browser walk gate. No code change was made before rerun.
+
+Final successful scope:
+
+- Node regression: **58 / 58 PASS**
+- V21 Browser Gate: PASS
+- Frontier Section 1: PASS
+- Frontier Section 2: PASS
+- Developer Mode: PASS
+- Karen animation / scale gates: PASS
+- Triton Karen-comparison gate: PASS
+- Triton eight-animation sequence: PASS
+- Triton Full / Medium / Compact scale gate: PASS
+- control restoration: PASS
+- Save schema remains 23
+
+Evidence artifact:
+
+- id: **11385149436**
+- digest: `sha256:b384f11ba8fe998fb3e363025a0869dce711bb55aae3967c6795059629dc154a`
+
+## Current architecture verdict
+
+**GO for a provisional cross-character Pixel Character Standard.**
+
+Current evidence supports:
+
+- 48×48 source cells;
+- logical 32px world;
+- nearest-neighbor rendering;
+- foot-anchor-based scaling;
+- approximately 44px Medium as the current hero-scale starting point;
+- eight shared acting categories;
+- character-specific silhouette, body weight, center of gravity and hair motion.
+
+This is not yet formal game-wide adoption.
 
 ## Next development gate
 
-Triton Second Character Validation is the next experiment recorded by PR #18. Preparation may proceed from the locked GROUND ANCHOR identity. Final Triton design remains a user decision; use `docs/pixel/TRITON_SECOND_CHARACTER_VALIDATION_PLAN.md`.
+Prepare **Pixel Character Standard v1 — PROVISIONAL** from Karen + Triton evidence.
 
-Pixel-native formal adoption, game-wide scale, final Portrait policy and main integration remain undecided. No v24, new story chapters, NPC mass migration or Sophie / Margaret production is authorized by this handoff.
+Do not begin Sophie and Margaret together. After the standard is reviewed, Sophie should be the next single-character reproducibility test.
 
-## Unresolved canon
+## Unresolved / user decisions
 
-Do not invent exact eye colors, surnames, final weapons, final Stage B costumes, Kingdom / Empire / religious emblems, hero certification marks, Shion's crown, military insignia, new scars, keepsakes or backstory.
+Still undecided:
 
-## Write and approval policy
+- formal Pixel-native adoption;
+- final game-wide player-character scale;
+- final Portrait policy;
+- main integration strategy;
+- final Stage B costumes;
+- final weapons;
+- eye colors;
+- surnames;
+- Kingdom / Empire / religious emblems;
+- hero certification marks;
+- military insignia;
+- v24 story development.
 
-Fetch target HEAD and affected blobs before writing. Use dedicated branches and expected-SHA updates; never overwrite concurrent work. Continue reversible technical work autonomously. Ask the user for final character design, story canon, formal adoption and main merge decisions.
+Do not invent these as part of visual implementation.
+
+## Write policy
+
+Fetch current branch head and affected blob SHA before every write. Preserve reversible prototype work. Do not overwrite concurrent Work changes. Final main merge, formal adoption and canon changes require explicit user approval.
