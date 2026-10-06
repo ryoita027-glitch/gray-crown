@@ -794,3 +794,58 @@ before color is considered.
 If two heroes are distinguishable only by hair / costume color, the visual gate fails even if runtime tests pass.
 
 Technical GO and Visual Identity GO must be recorded separately.
+
+
+---
+
+# 25. Comparison Board Generation — HARD BAN
+
+For visual-identity validation, **image-generation models are prohibited from creating comparison boards**.
+
+This rule applies to:
+
+- Karen / Triton comparisons;
+- future Karen / Sophie comparisons;
+- future Triton / Sophie comparisons;
+- four-character comparison boards;
+- face-crop comparison boards;
+- grayscale / silhouette comparison boards.
+
+A comparison board must be mechanically composed from the actual PNG files being evaluated.
+
+Allowed operations:
+
+- exact PNG load;
+- crop;
+- nearest-neighbor integer enlargement;
+- same-scale placement;
+- grayscale conversion;
+- alpha/silhouette extraction;
+- raw pixel difference;
+- deterministic labels/background added outside the source sprite pixels.
+
+Forbidden operations:
+
+- AI redraw;
+- image-generation reconstruction;
+- beautification;
+- face correction during comparison;
+- pose regeneration;
+- interpolation / resampling that invents pixels;
+- color correction that changes character identity;
+- substituting presentation art for the runtime/source PNG.
+
+If the board does not contain the exact evaluated source pixels, it cannot be used as Visual Identity evidence.
+
+## Pixel-perfect control
+
+Karen is the permanent Visual Regression Control unless a separate Karen-specific change receives explicit user approval.
+
+For Triton/Sophie/Margaret work:
+
+- Karen source/runtime Git blobs must be checked before and after work;
+- character-repair scope must be checked pixel-by-pixel;
+- unchanged regions must remain byte/pixel-equivalent as defined by the repair gate;
+- Technical PASS and Visual PASS remain separate decisions.
+
+Any AI-generated comparison board is automatically **NON-AUTHORITATIVE / DISCARD**.
