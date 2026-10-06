@@ -1,5 +1,5 @@
 name: Karen Pixel Prototype CI
-# One read-only gate for each review update; assets are generated locally.
+# Read-only visual/control gate. Karen is the locked regression control.
 
 on:
   push:
@@ -50,6 +50,9 @@ jobs:
       - name: Install prototype asset dependencies
         run: python -m pip install --disable-pip-version-check pillow
 
+      - name: Verify Karen visual regression control before work
+        run: python tools/verify_karen_visual_regression_control.py
+
       - name: Build source-faithful Karen Triton identity evidence
         run: python tools/build_karen_triton_identity_evidence.py
 
@@ -60,6 +63,9 @@ jobs:
 
       - name: Full prototype regression
         run: npm run prototype-check
+
+      - name: Verify Karen visual regression control after work
+        run: python tools/verify_karen_visual_regression_control.py
 
       - name: Upload visual A-B evidence
         if: always()
