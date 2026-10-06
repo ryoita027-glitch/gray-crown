@@ -1,13 +1,17 @@
 name: Karen Pixel Prototype CI
-# Karen Chibi integration gate
+# One read-only gate for each review update; assets are generated locally.
 
 on:
   push:
     branches:
-      - pixel-karen-acting-prototype
-      - pixel-karen-chibi-direction
-      - pixel-karen-chibi-scale-integration
-      - repo-actions-consolidation
+      - main
+    paths-ignore:
+      - "docs/**"
+      - "README.txt"
+      - "*.txt"
+      - ".gitignore"
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     paths-ignore:
       - "docs/**"
       - "README.txt"
@@ -16,7 +20,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: karen-pixel-${{ github.ref }}
+  group: karen-pixel-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -28,6 +32,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-node@v4
         with:
@@ -44,19 +50,6 @@ jobs:
         run: |
           python -m pip install --disable-pip-version-check playwright
           python -m playwright install --with-deps chromium
-          CHROMIUM="$(python - <<'PY'
-          from playwright.sync_api import sync_playwright
-          with sync_playwright() as p:
-              print(p.chromium.executable_path)
-          PY
-          )"
-          sudo ln -sf "$CHROMIUM" /usr/bin/chromium
-
-      - name: Karen Chibi integration evidence gate
-        run: python tests/browser_karen_pixel_prototype_e2e_test.py
-
-      - name: Karen Chibi scale integration gate
-        run: python tests/browser_karen_chibi_scale_e2e_test.py
 
       - name: Full prototype regression
         run: npm run prototype-check
@@ -68,3 +61,4 @@ jobs:
           name: karen-pixel-prototype-evidence
           path: prototype_artifacts/
           if-no-files-found: warn
+          retention-days: 14
