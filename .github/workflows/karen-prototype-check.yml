@@ -5,18 +5,22 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      - "docs/**"
-      - "README.txt"
-      - "*.txt"
-      - ".gitignore"
+    paths:
+      - "**"
+      - "!docs/**"
+      - "docs/pixel/reference/**"
+      - "!README.txt"
+      - "!*.txt"
+      - "!.gitignore"
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
-    paths-ignore:
-      - "docs/**"
-      - "README.txt"
-      - "*.txt"
-      - ".gitignore"
+    paths:
+      - "**"
+      - "!docs/**"
+      - "docs/pixel/reference/**"
+      - "!README.txt"
+      - "!*.txt"
+      - "!.gitignore"
   workflow_dispatch:
 
 concurrency:
