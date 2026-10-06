@@ -4,38 +4,81 @@
 
 - Karen locked.
 - Triton Second Character Validation PASS.
+- Sophie visual direction approved.
+- **Sophie Chibi Direction Lock v1** established.
+- **Sophie Acting Reference v1** established.
 
-## Sophie review history
+## Active task
 
-- v1: VISUAL REVISE — quality tier too low.
-- v2: VISUAL REVISE — uncanny / frightening.
-- v3: **USER VISUAL REVIEW PENDING**.
+# **Sophie 4-direction + 8Animation implementation**
 
-## Active gate
+Do not redesign Sophie again.
 
-# **Sophie — STEADY HANDS Front Candidate v3**
+### Step 1 — 4-direction technical translation
 
-Candidate:
+Translate the approved four-view reference into:
 
-`docs/pixel/reference/sophie_steady_hands_front_candidate_v3_48.png`
+- 48×48 source cells;
+- down / left / right / up;
+- grounded foot anchor;
+- Medium44 readability.
 
-Required mechanical evidence:
+Verify:
 
-- Karen / Triton / Sophie v3 color front;
-- grayscale;
-- silhouette;
-- face crop;
-- face grayscale;
+- face remains attractive;
+- honey-hair silhouette survives;
+- small adult body remains distinct;
+- cream / green hierarchy survives;
+- hands remain readable.
+
+### Step 2 — eight animation categories
+
+Implement:
+
+1. Idle
+2. Walk
+3. Turn
+4. Talk
+5. Surprise
+6. Approach
+7. Laugh
+8. Run
+
+Use Sophie-specific acting from `SOPHIE_ACTING_REFERENCE_v1.md`.
+
+### Step 3 — gameplay / scale
+
+Compare locked Karen + Triton + Sophie in actual game.
+
+Check:
+
+- separate identities;
 - Medium44;
-- Sophie v2 vs v3.
+- Full48;
+- Compact41;
+- village/background readability;
+- Walk / Talk / Laugh especially;
+- control restoration;
+- Save schema 23.
 
-## Mandatory stop
+### Step 4 — CI
 
-The next user decision is:
+Run:
 
-> **Sophie Front v3 — PASS / REVISE / FAIL**
+- asset existence / frame dimensions;
+- deterministic generation where applicable;
+- Karen hash;
+- Triton lock hash;
+- Sophie source/runtime consistency;
+- Node regression;
+- browser E2E;
+- scale validation.
 
-Do not create side/back poses or animation before PASS.
+## Next human gate
+
+After technical evidence is complete:
+
+> **Sophie Character Validation — PASS / REVISE**
 
 ## Paused
 
