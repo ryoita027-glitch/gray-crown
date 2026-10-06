@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate Triton Chibi Direction Lock v1 animation sheets.
+"""Generate Triton Chibi Direction Lock v1 animation sheets.\n\nRuntime PNGs are deterministic generated outputs of the locked 4-direction source.
 
 Source: docs/pixel/reference/triton_chibi_direction_lock_v1.png
 48x48 cells, rows down/left/right/up. The eight category/frame budgets match
