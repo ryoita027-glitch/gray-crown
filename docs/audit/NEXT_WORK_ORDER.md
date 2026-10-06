@@ -4,56 +4,98 @@ Production remains **main / v23 / Save schema 23 / Story 00–19**.
 
 ## Development review
 
-The project is technically much further along than the current visual blocker suggests.
+The project is currently healthy technically.
 
-Completed:
+### Completed
 
-- Story 00–19 production baseline;
-- stable Save schema 23;
-- Karen approved Chibi Pixel Actor;
-- Karen 4-direction / 8-animation / scale validation;
-- Triton GROUND ANCHOR body and motion architecture;
-- 48×48 source / 44px Medium prototype architecture;
-- SceneRunner / camera / control restore;
-- regression suite;
-- Pixel Character Standard v1 provisional;
-- locked-character hash protection;
-- real-PNG comparison pipeline.
+- Story 00–19 production baseline
+- Save schema 23
+- Karen approved and locked
+- Karen 4-direction / 8-animation / scale validation
+- 48×48 Pixel Actor architecture
+- ~44px Medium render candidate
+- Triton GROUND ANCHOR body / low center / broad shoulders / dark heavy hair / blue waist mass
+- Triton 8-animation technical architecture
+- SceneRunner / camera / control restoration
+- full regression suite
+- Pixel Character Standard v1 provisional
+- Karen hash protection
+- real-PNG mechanical comparison pipeline
+- Triton v4 deterministic face candidate
+- Triton v4 technical CI PASS
 
-Not completed:
+### Not completed
 
-- Triton final front-face Visual PASS;
-- Triton repaired four directions;
-- repaired eight animations;
-- Sophie validation;
-- formal Pixel-native adoption.
+- Triton Front v4 Visual PASS
+- Triton repaired left / right / back
+- repaired Triton 8 animations
+- Sophie validation
+- Margaret validation
+- formal Pixel-native adoption
+- main merge
+
+## Current evidence
+
+CI run:
+
+**37429109104 — SUCCESS**
+
+Head:
+
+`ccc93fdbebc9f052c039ed0f4200a0d6b51c31ce`
+
+Artifact:
+
+**11395929455 — karen-pixel-prototype-evidence**
+
+Digest:
+
+`sha256:830ed71a23d32bce01274aa4cab5872116964f9860cee9201ffaf9a991714087`
 
 ## Correct next step
 
-Do **not** widen scope.
+Do not widen scope.
 
-The next step is:
+The next gate is:
 
-> Generate and review Triton front v4 through the deterministic pixel patch + real-PNG evidence pipeline.
+> **Triton Front v4 — USER VISUAL PASS / REVISE / FAIL**
 
-The binary candidate is generated in CI from committed v3 and a reviewable text pixel patch.
+Use the real-PNG evidence:
 
-## After Technical PASS
+- front
+- grayscale
+- face crop
+- face grayscale
+- silhouette
+- v3→v4 pixel difference
 
-Human gate:
+## If PASS
 
-**PASS / REVISE / FAIL**
-
-If PASS:
+Proceed autonomously:
 
 front v4 accepted  
-→ translate identity to left/right/back  
-→ four-direction evidence  
-→ regenerate eight animation sheets  
+→ left/right/back translation  
+→ four-direction atlas  
+→ four-direction mechanical Karen comparison  
+→ regenerate eight animations  
 → Karen hash verification  
-→ matched gameplay / 48-44-41 scale re-check  
+→ gameplay comparison  
+→ 48/44/41 scale confirmation  
 → full CI  
 → Standard update  
 → Sophie resumes
 
-Until then, Sophie/Margaret/main merge/v24 remain paused.
+## If REVISE
+
+Continue front-only.
+
+Karen remains untouched.
+
+## Paused
+
+- Sophie
+- Margaret
+- NPC migration
+- main merge
+- v24
+- formal Pixel-native adoption
