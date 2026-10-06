@@ -10,6 +10,7 @@ This document describes the experimental Pixel-native stack. It does not promote
 | Production game | `main`, v23, Save schema 23, Story 00–19 |
 | Locked character identity | `docs/characters/CHARACTER_VISUAL_IDENTITY.md` |
 | Provisional art direction | `docs/art/GRAY_CROWN_ART_BIBLE_v2.md` |
+| Pixel Character Standard | `docs/pixel/PIXEL_CHARACTER_STANDARD_v1_PROVISIONAL.md` |
 | Karen Chibi source | `docs/pixel/reference/karen_chibi_direction_v1.png` |
 | Karen animation result | `docs/pixel/KAREN_CHIBI_INTEGRATION_RESULT.md` |
 | Karen scale result | `docs/pixel/KAREN_CHIBI_SCALE_INTEGRATION_RESULT.md` |
@@ -19,44 +20,49 @@ This document describes the experimental Pixel-native stack. It does not promote
 
 ## Production
 
-`main` remains the v23 production baseline. Story 00–19, Save schema 23, battle foundation and logical 32px world geometry remain unchanged.
+`main` remains the v23 production baseline.
+
+Unchanged:
+
+- Story 00–19
+- Save schema 23
+- battle foundation
+- logical 32px maps and collision
 
 No Pixel-native prototype branch has been merged into main.
 
-## Completed Karen prototype
+## Karen prototype — completed evidence
 
-- Cute Chibi Pixel RPG heroine direction.
-- Four-direction 48×48 source.
-- Exactly eight animation categories: Idle, Walk, Turn, Talk, Surprise, Approach, Laugh, Run.
-- 32px logical world with foot anchor `[24,44]`.
-- Portrait ON / OFF and Motion Only comparisons.
-- Full 48 / Medium 44 / Compact 41 scale comparison.
-- **44 Medium** selected as Karen's prototype scale candidate.
-- Portrait OFF remains a provisional preference only.
+Karen VILLAGE RUNNER currently proves:
 
-## Completed Triton second-character validation
+- approved Chibi visual direction
+- four-direction 48×48 source
+- exactly eight animation categories
+- foot-anchor scaling
+- Portrait ON / OFF and Motion Only comparison
+- Full 48 / Medium 44 / Compact 41 scale comparison
+- Medium 44 as the selected prototype condition
+- distinct forward / light / active acting identity
 
-Locked identity: **Triton A — GROUND ANCHOR**.
+Portrait OFF remains a provisional preference only.
 
-Implemented on `pixel-triton-second-character-validation`:
+## Triton second-character validation — completed evidence
 
-- front candidate translated into true 48px source language;
-- left / right references retained;
-- back view added;
-- four-direction Idle atlas;
-- exactly eight animation categories;
-- heavy-hair tip-only motion;
-- lower-bounce grounded walk;
-- broad planted laugh;
-- stable run;
-- Karen + Triton matched-framing comparison;
-- Full 48 / Medium 44 / Compact 41 scale comparison.
+Triton GROUND ANCHOR proves that the same architecture can support a substantially different hero:
 
-The system therefore has evidence from two characters with deliberately different silhouette, weight, posture, color placement and motion personality.
+- broader shoulder / waist mass
+- lower center of gravity
+- heavy dark shoulder-length hair
+- low faded-blue horizontal color block
+- four-direction 48×48 source
+- exactly eight animation categories
+- reduced vertical bounce
+- heavy-hair tip-only motion
+- planted walk / laugh / run
+- Karen + Triton matched-framing comparison
+- Full 48 / Medium 44 / Compact 41 scale comparison
 
-## CI evidence
-
-Triton implementation commit:
+Implementation commit:
 
 `43ab43be257e7db144c3e4b76171488580b1ae9d`
 
@@ -64,13 +70,11 @@ Draft PR:
 
 **#20 — Triton second-character pixel validation**
 
-GitHub Actions run:
+Successful workflow:
 
 **37401209352 — SUCCESS on rerun of the same implementation head**
 
-The first attempt stopped in the existing Frontier Section 2 browser walk gate. No code change was made before rerun.
-
-Final successful scope:
+Final verified scope:
 
 - Node regression: **58 / 58 PASS**
 - V21 Browser Gate: PASS
@@ -78,9 +82,7 @@ Final successful scope:
 - Frontier Section 2: PASS
 - Developer Mode: PASS
 - Karen animation / scale gates: PASS
-- Triton Karen-comparison gate: PASS
-- Triton eight-animation sequence: PASS
-- Triton Full / Medium / Compact scale gate: PASS
+- Triton comparison / eight-animation / scale gates: PASS
 - control restoration: PASS
 - Save schema remains 23
 
@@ -89,27 +91,72 @@ Evidence artifact:
 - id: **11385149436**
 - digest: `sha256:b384f11ba8fe998fb3e363025a0869dce711bb55aae3967c6795059629dc154a`
 
-## Current architecture verdict
+## Pixel Character Standard v1 — PROVISIONAL
 
-**GO for a provisional cross-character Pixel Character Standard.**
+Created on:
 
-Current evidence supports:
+`pixel-character-standard-v1-provisional`
+
+Authority:
+
+`docs/pixel/PIXEL_CHARACTER_STANDARD_v1_PROVISIONAL.md`
+
+The standard separates:
+
+1. shared technical rules;
+2. character-specific identity rules;
+3. unresolved / user-decision rules.
+
+Current shared prototype rules include:
 
 - 48×48 source cells;
-- logical 32px world;
+- down / left / right / up directional order;
+- logical 32px world unchanged;
 - nearest-neighbor rendering;
 - foot-anchor-based scaling;
-- approximately 44px Medium as the current hero-scale starting point;
-- eight shared acting categories;
-- character-specific silhouette, body weight, center of gravity and hair motion.
+- current anchor `[24,44]` as validated default, not immutable anatomy law;
+- Full 48 / Medium 44 / Compact 41 comparison modes;
+- Medium 44 as the default starting condition;
+- exactly eight v1 prototype animation categories;
+- frame-budget contract 4 / 6 / 3 / 4 / 4 / 4 / 6 / 6;
+- character-specific motion inside shared category semantics;
+- high-resolution references must be translated, not blindly downsampled;
+- Karen is not an anatomy template;
+- Portrait and legacy 32px comparison remain available.
 
-This is not yet formal game-wide adoption.
+The Standard is **PROVISIONAL**. It is not formal game-wide Pixel-native adoption.
+
+## Current architecture verdict
+
+# **GO FOR THIRD CHARACTER VALIDATION**
+
+Two-character reproducibility is now established strongly enough to challenge the standard with a third visual problem.
+
+The next character is:
+
+> **Sophie — STEADY HANDS**
+
+Do not begin Margaret at the same time.
 
 ## Next development gate
 
-Prepare **Pixel Character Standard v1 — PROVISIONAL** from Karen + Triton evidence.
+Start Sophie with **one front-facing 48×48 Idle candidate only**.
 
-Do not begin Sophie and Margaret together. After the standard is reviewed, Sophie should be the next single-character reproducibility test.
+The Sophie gate must verify that the shared standard can support:
+
+- 23-year-old adult identity at 158cm;
+- the smallest hero without making her childlike;
+- softer standard body shape;
+- rounder face and gentler eyes;
+- honey-colored hair with one low soft bundle / braid;
+- off-white as the large body color mass;
+- green concentrated around the hands;
+- smaller steps;
+- hand-focused acting;
+- quiet support / practical care;
+- serious or angry stillness rather than exaggerated bounce.
+
+Do not expand to four directions or eight animations until that front design direction is accepted.
 
 ## Unresolved / user decisions
 
@@ -118,10 +165,12 @@ Still undecided:
 - formal Pixel-native adoption;
 - final game-wide player-character scale;
 - final Portrait policy;
+- final NPC migration / resolution policy;
+- battle sprite standard;
 - main integration strategy;
 - final Stage B costumes;
 - final weapons;
-- eye colors;
+- exact eye colors;
 - surnames;
 - Kingdom / Empire / religious emblems;
 - hero certification marks;
@@ -132,4 +181,7 @@ Do not invent these as part of visual implementation.
 
 ## Write policy
 
-Fetch current branch head and affected blob SHA before every write. Preserve reversible prototype work. Do not overwrite concurrent Work changes. Final main merge, formal adoption and canon changes require explicit user approval.
+Fetch current branch head and affected blob SHA before every write.
+Preserve reversible prototype work.
+Do not overwrite concurrent Work changes.
+Final main merge, formal adoption and canon changes require explicit user approval.
