@@ -2,125 +2,71 @@
 
 Production remains **main / v23 / Save schema 23 / Story 00–19**. Pixel-native remains experimental and is not merged to main.
 
-## Completed — do not repeat
+## Immediate correction
 
-- Karen Chibi direction approval.
-- Karen four-direction 48×48 source.
-- Karen eight-animation integration.
-- Karen scale integration: 48 Full / 44 Medium / 41 Compact.
-- Triton GROUND ANCHOR front gate.
-- Triton back view and four-direction Idle source.
-- Triton exactly eight animation categories.
-- Karen + Triton matched-framing comparison.
-- Triton 48 / 44 / 41 scale validation.
-- PR #20 implementation regression: **58 / 58 Node PASS + complete browser prototype gate PASS on rerun**.
-- **Pixel Character Standard v1 — PROVISIONAL** created from Karen + Triton evidence.
-- Save schema remains 23; logical world tile remains 32.
+Sophie validation is **PAUSED**.
 
-Do not restart Karen or Triton front-Idle work from older instructions.
+The next task is:
 
-## Current standard
+> **Karen / Triton Face Differentiation Repair Gate**
 
-Authority:
+Reason:
 
-`docs/pixel/PIXEL_CHARACTER_STANDARD_v1_PROVISIONAL.md`
+Recent generated comparison boards drifted away from the locked source designs and showed Karen / Triton with near-identical face templates.
 
-The current shared prototype contract is:
+Those generated boards are **non-authoritative failed visuals**.
 
-- 48×48 transparent RGBA source cells;
-- down / left / right / up direction order;
-- logical 32px world remains unchanged;
-- nearest-neighbor rendering;
-- world-space foot-anchor scaling;
-- current default anchor `[24,44]`, but per-character exceptions require evidence;
-- Full 48 / Medium 44 / Compact 41 comparison modes remain available;
-- Medium 44 is the default starting condition, **not a mandatory identical visible height**;
-- exactly eight v1 prototype categories: Idle / Walk / Turn / Talk / Surprise / Approach / Laugh / Run;
-- frame-budget contract: 4 / 6 / 3 / 4 / 4 / 4 / 6 / 6;
-- animation semantics are shared, motion personality is not;
-- high-resolution references must be translated for 48px readability, not simply downsampled;
-- Karen is not an anatomy template;
-- Portrait and legacy 32px comparison systems remain available;
-- field/event standard does not yet finalize battle sprites.
+Karen's canonical design has not been deleted.
 
-This standard is **PROVISIONAL** and is not formal Pixel-native adoption.
+## Authoritative assets
 
-## Next authorized phase
+Karen:
 
-> **Sophie — STEADY HANDS Third Character Validation**
+`docs/pixel/reference/karen_chibi_direction_v1.png`
 
-Do not start Margaret at the same time.
+Triton:
 
-### First deliverable
+`docs/pixel/reference/triton_idle_4dir_v1.png`
 
-Create **one front-facing Sophie 48×48 Idle candidate only**.
+Do not redraw Karen or Triton with image generation merely to make a comparison board.
 
-Do not immediately create four directions or all eight animations.
+## Required repair sequence
 
-The front gate must prove that the standard can support a substantially different problem from Karen and Triton:
+1. Use committed Karen and Triton source assets as the comparison source.
+2. Verify face / body differentiation:
+   - Karen: soft oval, round expressive eyes, arched brows, open face.
+   - Triton: longer / sharper face, narrow eyes, straight brows, wider mouth.
+3. Verify body difference:
+   - Karen: healthy middle build, slightly forward.
+   - Triton: broader shoulders, trained body, low planted center.
+4. Verify hair difference:
+   - Karen: red / red-brown, low partial tie + loose moving hair.
+   - Triton: dark, unbound shoulder-length heavy mass.
+5. Produce a source-faithful side-by-side validation.
+6. If Triton's current 48px face collapses into Karen's face template, revise Triton front Idle facial pixels before touching the other directions.
+7. Re-run matched comparison after repair.
+8. Only after visual distinction passes may Sophie resume.
 
-- 23-year-old adult woman;
-- 158cm, smallest of the four heroes;
-- softer standard body shape;
-- rounder face;
-- gentler / drooping eye shape;
-- honey-colored hair;
-- one low soft bundle / braid;
-- off-white as the major body color mass;
-- green concentrated around the hands / practical helping tools;
-- smaller steps and smaller spatial footprint;
-- hands as the main acting focus;
-- helpful / reassuring presence without becoming childlike or generic healer NPC;
-- anger / seriousness expressed by stillness rather than exaggerated motion.
+## Important status split
 
-### Sophie front gate questions
+Triton's previous **technical GO remains valid**:
+- 48px architecture
+- 44 Medium
+- animation system
+- regression
 
-1. Does she read as an adult 23-year-old despite being the smallest hero?
-2. Is she visibly different from Karen before color?
-3. Is she visibly different from Triton before color?
-4. Do her hands read as an identity focus at 44-class gameplay scale?
-5. Does the off-white + hand-focused green mass survive 48→44 rendering?
-6. Does she look like the same game / same pixel illustrator?
-7. Does she avoid becoming "small cute healer" shorthand?
-8. Can the body remain soft without becoming visually weak?
-9. Is the hair one readable soft mass rather than tiny strand noise?
-10. Does the front candidate leave room for careful, supportive acting?
+But the **visual differentiation verdict is reopened**.
 
-### After front acceptance
+Do not throw away the technical architecture just because the face translation needs correction.
 
-Only then proceed:
+## Do not proceed yet
 
-front accepted  
-→ four-direction Idle  
-→ Karen + Triton + Sophie matched-framing comparison  
-→ eight animation categories using Sophie-specific motion  
-→ Full 48 / Medium 44 / Compact 41 comparison  
-→ browser / regression evidence  
-→ third-character verdict: GO / REVISE / NO-GO
+Until this repair gate passes, do not:
 
-If Sophie exposes a true system-level problem, revise the provisional standard explicitly. Do not silently distort Sophie to fit it.
-
-## Must stay unchanged
-
-- Story 00–19
-- Save schema 23
-- logical 32px maps / collision
-- battle foundation
-- production `main`
-- unresolved canon
-- Portrait availability
-- legacy 32px comparison
-- Karen / Triton approved or validated identity rules
-
-## Still requires user decision
-
-- final Sophie character design approval
-- formal Pixel-native adoption
-- final game-wide scale policy
-- final Portrait policy
-- merge strategy into main
-- final character art approval
-- story canon changes
-- v24 start
-
-Do not start v24, NPC mass migration, Margaret production, final Stage B costumes, final weapons, emblems or insignia.
+- continue Sophie v2;
+- begin Margaret;
+- mass-produce NPCs;
+- merge Pixel-native into main;
+- start v24;
+- delete Portrait support;
+- invent unresolved canon.
