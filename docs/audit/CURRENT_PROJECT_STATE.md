@@ -1,187 +1,150 @@
 # Gray Crown — Current Project State
 
 Status inspected: 2026-10-06 (JST). Repository: `ryoita027-glitch/gray-crown`.
-This document describes the experimental Pixel-native stack. It does not promote it to production.
 
-## Source of Truth
+## Production source of truth
 
-| Scope | Authority |
-|---|---|
-| Production game | `main`, v23, Save schema 23, Story 00–19 |
-| Locked character identity | `docs/characters/CHARACTER_VISUAL_IDENTITY.md` |
-| Provisional art direction | `docs/art/GRAY_CROWN_ART_BIBLE_v2.md` |
-| Pixel Character Standard | `docs/pixel/PIXEL_CHARACTER_STANDARD_v1_PROVISIONAL.md` |
-| Karen Chibi source | `docs/pixel/reference/karen_chibi_direction_v1.png` |
-| Karen animation result | `docs/pixel/KAREN_CHIBI_INTEGRATION_RESULT.md` |
-| Karen scale result | `docs/pixel/KAREN_CHIBI_SCALE_INTEGRATION_RESULT.md` |
-| Triton validation plan | `docs/pixel/TRITON_SECOND_CHARACTER_VALIDATION_PLAN.md` |
-| Triton final result | `docs/pixel/TRITON_SECOND_CHARACTER_IMPLEMENTATION_RESULT.md` |
-| Current work order | `docs/audit/NEXT_WORK_ORDER.md` |
+Production remains:
 
-## Production
-
-`main` remains the v23 production baseline.
-
-Unchanged:
-
-- Story 00–19
+- `main`
+- v23
 - Save schema 23
-- battle foundation
-- logical 32px maps and collision
+- Story 00–19
+- logical 32px world
 
-No Pixel-native prototype branch has been merged into main.
+Pixel-native prototype work is not merged into production.
 
-## Karen prototype — completed evidence
+## Karen — approved control
 
-Karen VILLAGE RUNNER currently proves:
-
-- approved Chibi visual direction
-- four-direction 48×48 source
-- exactly eight animation categories
-- foot-anchor scaling
-- Portrait ON / OFF and Motion Only comparison
-- Full 48 / Medium 44 / Compact 41 scale comparison
-- Medium 44 as the selected prototype condition
-- distinct forward / light / active acting identity
-
-Portrait OFF remains a provisional preference only.
-
-## Triton second-character validation — completed evidence
-
-Triton GROUND ANCHOR proves that the same architecture can support a substantially different hero:
-
-- broader shoulder / waist mass
-- lower center of gravity
-- heavy dark shoulder-length hair
-- low faded-blue horizontal color block
-- four-direction 48×48 source
-- exactly eight animation categories
-- reduced vertical bounce
-- heavy-hair tip-only motion
-- planted walk / laugh / run
-- Karen + Triton matched-framing comparison
-- Full 48 / Medium 44 / Compact 41 scale comparison
-
-Implementation commit:
-
-`43ab43be257e7db144c3e4b76171488580b1ae9d`
-
-Draft PR:
-
-**#20 — Triton second-character pixel validation**
-
-Successful workflow:
-
-**37401209352 — SUCCESS on rerun of the same implementation head**
-
-Final verified scope:
-
-- Node regression: **58 / 58 PASS**
-- V21 Browser Gate: PASS
-- Frontier Section 1: PASS
-- Frontier Section 2: PASS
-- Developer Mode: PASS
-- Karen animation / scale gates: PASS
-- Triton comparison / eight-animation / scale gates: PASS
-- control restoration: PASS
-- Save schema remains 23
-
-Evidence artifact:
-
-- id: **11385149436**
-- digest: `sha256:b384f11ba8fe998fb3e363025a0869dce711bb55aae3967c6795059629dc154a`
-
-## Pixel Character Standard v1 — PROVISIONAL
-
-Created on:
-
-`pixel-character-standard-v1-provisional`
+Karen VILLAGE RUNNER is approved and frozen as the **Visual Regression Control**.
 
 Authority:
 
+`docs/pixel/reference/karen_chibi_direction_v1.png`
+
+plus the eight committed Karen runtime PNG sheets.
+
+Karen may not be modified to make Triton, Sophie or Margaret fit.
+
+CI pins and verifies all nine Karen visual blobs.
+
+## Triton — technical architecture vs visual identity
+
+Triton's technical architecture remains validated:
+
+- 48×48 source
+- approximately 44px Medium candidate
+- eight animation categories
+- grounded motion personality
+- SceneRunner / scale / control restoration
+- Save schema unaffected
+
+However, Technical GO and Visual GO are separate.
+
+The previous Triton front face was reopened because it remained too close to a shared Chibi face template.
+
+Current repair branch:
+
+`pixel-karen-triton-face-differentiation-fix`
+
+Draft PR:
+
+**#22 — Repair Karen Triton visual differentiation gate**
+
+Current front candidate:
+
+`docs/pixel/reference/triton_idle_front_repair_candidate_v3_48.png`
+
+v3 changes only the face patch relative to v2:
+
+- 29 changed pixels
+- zero changes outside the allowed face patch
+- zero alpha/silhouette changes
+
+Body, stance, broad shoulders, low center, heavy dark hair silhouette and faded-blue horizontal waist mass remain v2-identical.
+
+## Comparison evidence policy
+
+Image-generation comparison boards are now prohibited.
+
+Locked-character comparison evidence must use actual source/runtime PNGs with deterministic mechanical operations only.
+
+The earlier AI-generated v3 board is discarded.
+
+Permanent policy is recorded in:
+
 `docs/pixel/PIXEL_CHARACTER_STANDARD_v1_PROVISIONAL.md`
 
-The standard separates:
+## Latest technical evidence
 
-1. shared technical rules;
-2. character-specific identity rules;
-3. unresolved / user-decision rules.
+Run:
 
-Current shared prototype rules include:
+**37421248534 — SUCCESS after same-head failed-job rerun**
 
-- 48×48 source cells;
-- down / left / right / up directional order;
-- logical 32px world unchanged;
-- nearest-neighbor rendering;
-- foot-anchor-based scaling;
-- current anchor `[24,44]` as validated default, not immutable anatomy law;
-- Full 48 / Medium 44 / Compact 41 comparison modes;
-- Medium 44 as the default starting condition;
-- exactly eight v1 prototype animation categories;
-- frame-budget contract 4 / 6 / 3 / 4 / 4 / 4 / 6 / 6;
-- character-specific motion inside shared category semantics;
-- high-resolution references must be translated, not blindly downsampled;
-- Karen is not an anatomy template;
-- Portrait and legacy 32px comparison remain available.
+Tested head:
 
-The Standard is **PROVISIONAL**. It is not formal game-wide Pixel-native adoption.
+`03eedebfb1976903ea4aae388ab676e77bffd067`
 
-## Current architecture verdict
+Final successful rerun verified:
 
-# **GO FOR THIRD CHARACTER VALIDATION**
+- Karen lock before: PASS
+- Triton v3 pixel scope: PASS
+- mechanical Evidence: PASS
+- Node: 58 / 58 PASS
+- full prototype browser regression: PASS
+- Karen lock after: PASS
+- Save schema: 23
 
-Two-character reproducibility is now established strongly enough to challenge the standard with a third visual problem.
+Evidence artifact:
 
-The next character is:
+- id: **11393042711**
+- digest: `sha256:2cbff9ec8fce5566fa2d8aca48fd9d892367062fe9b03954a3b6ba499955a91f`
 
-> **Sophie — STEADY HANDS**
+## Current human gate
 
-Do not begin Margaret at the same time.
+# **TRITON FRONT V3 — USER VISUAL PASS REQUIRED**
 
-## Next development gate
+CI cannot approve:
 
-Start Sophie with **one front-facing 48×48 Idle candidate only**.
+- attractiveness
+- protagonist-level face quality
+- Triton-specific charm
+- whether the face is sufficiently separate from Karen while remaining same-game
 
-The Sophie gate must verify that the shared standard can support:
+Until the user chooses PASS:
 
-- 23-year-old adult identity at 158cm;
-- the smallest hero without making her childlike;
-- softer standard body shape;
-- rounder face and gentler eyes;
-- honey-colored hair with one low soft bundle / braid;
-- off-white as the large body color mass;
-- green concentrated around the hands;
-- smaller steps;
-- hand-focused acting;
-- quiet support / practical care;
-- serious or angry stillness rather than exaggerated bounce.
+- do not propagate v3 to other directions;
+- do not regenerate Triton animations;
+- do not resume Sophie;
+- do not begin Margaret.
 
-Do not expand to four directions or eight animations until that front design direction is accepted.
+## Sophie / Margaret
 
-## Unresolved / user decisions
+Paused.
 
-Still undecided:
+Sophie work already created remains preserved but is not active.
 
-- formal Pixel-native adoption;
-- final game-wide player-character scale;
-- final Portrait policy;
-- final NPC migration / resolution policy;
-- battle sprite standard;
-- main integration strategy;
-- final Stage B costumes;
-- final weapons;
-- exact eye colors;
-- surnames;
-- Kingdom / Empire / religious emblems;
-- hero certification marks;
-- military insignia;
-- v24 story development.
+## Pixel Character Standard
 
-Do not invent these as part of visual implementation.
+Status remains **PROVISIONAL**.
 
-## Write policy
+It now permanently requires:
 
-Fetch current branch head and affected blob SHA before every write.
-Preserve reversible prototype work.
-Do not overwrite concurrent Work changes.
-Final main merge, formal adoption and canon changes require explicit user approval.
+- Karen protection;
+- Technical PASS / Visual PASS separation;
+- real-PNG comparison evidence;
+- no AI-generated comparison boards;
+- pixel-perfect repair-scope validation where applicable.
+
+## Still unresolved
+
+- Triton v3 final visual approval
+- formal Pixel-native adoption
+- final game-wide hero scale
+- final Portrait policy
+- NPC migration policy
+- battle sprite standard
+- main merge strategy
+- v24
+
+Do not invent unresolved canon during this gate.
