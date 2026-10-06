@@ -29,7 +29,7 @@ Current production translation source:
 - dimensions: 192×48
 - cell: 48×48
 - order: down / left / right / up
-- SHA-256: `bd4d58ef0fe11c82308d355302dc52eeb1734df265e91bec2de8436893c41e43`
+- SHA-256: `3291a1331fb1a41d85bd023e2f9907e798926746c856c92c63c7eb5aa26c3e36`
 - derived mechanically from the approved four-view design
 
 This technical source may receive cleanup for pixel readability, but must not redesign Sophie.
