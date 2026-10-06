@@ -1,119 +1,98 @@
 #!/usr/bin/env python3
-"""Guard the current Gray Crown repository baseline against accidental drift.
-
-This script intentionally protects only objective, reversible constraints.
-Visual approval and production/main adoption remain user decisions.
-"""
+"""Guard Gray Crown's current Triton-completion repository state."""
 from pathlib import Path
 import json
 import re
 import subprocess
 import sys
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT=Path(__file__).resolve().parents[1]
+tracked=set(subprocess.check_output(["git","ls-files"],cwd=ROOT,text=True).splitlines())
+errors=[]
 
-def tracked_files():
-    raw = subprocess.check_output(["git", "ls-files", "-z"], cwd=ROOT)
-    return {p for p in raw.decode("utf-8").split("\0") if p}
-
-tracked = tracked_files()
-errors = []
-
-# Generated evidence and local/build junk must never become repository state.
 for path in sorted(tracked):
-    parts = Path(path).parts
+    parts=Path(path).parts
     if path.startswith("prototype_artifacts/"):
         errors.append(f"generated evidence is tracked: {path}")
-    if any(part in {"node_modules", "__pycache__", ".pytest_cache", "playwright-report", "test-results"} for part in parts):
+    if any(part in {"node_modules","__pycache__",".pytest_cache","playwright-report","test-results"} for part in parts):
         errors.append(f"local/build output is tracked: {path}")
-    if Path(path).name in {".DS_Store", "Thumbs.db"} or path.endswith((".pyc", ".pyo")):
+    if Path(path).name in {".DS_Store","Thumbs.db"} or path.endswith((".pyc",".pyo")):
         errors.append(f"junk file is tracked: {path}")
 
-# Current production baseline is intentionally v23 / Save schema 23.
-save_path = ROOT / "js/core/save.js"
-if not save_path.exists():
+save=ROOT/"js/core/save.js"
+if not save.exists():
     errors.append("missing js/core/save.js")
 else:
-    save_text = save_path.read_text(encoding="utf-8")
-    schemas = re.findall(r"\bSAVE_SCHEMA\s*=\s*(\d+)\s*;", save_text)
-    if schemas != ["23"]:
-        errors.append(f"SAVE_SCHEMA must be exactly one definition at 23, found {schemas!r}")
+    schemas=re.findall(r"\bSAVE_SCHEMA\s*=\s*(\d+)\s*;",save.read_text(encoding="utf-8"))
+    if schemas!=["23"]:
+        errors.append(f"SAVE_SCHEMA must remain exactly 23, found {schemas!r}")
 
-package_path = ROOT / "package.json"
-if not package_path.exists():
-    errors.append("missing package.json")
-else:
-    try:
-        package = json.loads(package_path.read_text(encoding="utf-8"))
-    except Exception as exc:
-        errors.append(f"package.json is invalid JSON: {exc}")
-    else:
-        if package.get("version") != "23.0.0":
-            errors.append(f"package version drifted from production v23: {package.get('version')!r}")
+package=ROOT/"package.json"
+try:
+    pdata=json.loads(package.read_text(encoding="utf-8"))
+    if pdata.get("version")!="23.0.0":
+        errors.append(f"package version drifted from v23: {pdata.get('version')!r}")
+except Exception as exc:
+    errors.append(f"invalid package.json: {exc}")
 
-# Karen is approved runtime authority and must remain committed/complete.
-anims = ("idle", "walk", "turn", "talk", "surprise", "approach", "laugh", "run")
-for anim in anims:
-    rel = f"assets/characters/karen/karen_{anim}.png"
-    if rel not in tracked:
-        errors.append(f"missing tracked Karen runtime asset: {rel}")
+anims=("idle","walk","turn","talk","surprise","approach","laugh","run")
+for char in ("karen","triton"):
+    for anim in anims:
+        rel=f"assets/characters/{char}/{char}_{anim}.png"
+        if rel not in tracked:
+            errors.append(f"missing committed runtime asset: {rel}")
 
-# Triton runtime PNGs are deliberately generated in CI while Front v4 is still
-# waiting on the user's visual decision. Do not silently promote them to
-# repository authority before PASS.
-for anim in anims:
-    rel = f"assets/characters/triton/triton_{anim}.png"
-    if rel in tracked:
-        errors.append(f"Triton review runtime asset was committed before USER VISUAL PASS: {rel}")
-
-required = {
+required={
     "docs/pixel/reference/karen_chibi_direction_v1.png",
+    "docs/pixel/reference/triton_chibi_direction_lock_v1.png",
     "docs/pixel/reference/triton_idle_4dir_v1.png",
-    "docs/pixel/reference/triton_idle_front_repair_candidate_v3_48.png",
+    "docs/pixel/TRITON_CHIBI_DIRECTION_LOCK_v1.md",
     "docs/audit/CURRENT_PROJECT_STATE.md",
     "docs/audit/NEXT_WORK_ORDER.md",
     "docs/visual/SOURCE_OF_TRUTH_STATUS.md",
+    "tools/verify_triton_direction_lock.py",
+    "tools/verify_triton_completion_state.py",
     ".github/workflows/karen-prototype-check.yml",
+    ".github/workflows/sync-triton-lock-assets.yml",
     "requirements-ci.txt",
 }
 for rel in sorted(required):
     if rel not in tracked:
-        errors.append(f"missing required tracked project authority/control file: {rel}")
+        errors.append(f"missing required project control file: {rel}")
 
-v4_committed = "docs/pixel/reference/triton_idle_front_repair_candidate_v4_48.png"
-if v4_committed in tracked:
-    errors.append(
-        "Triton front v4 is committed as a reference before the active USER VISUAL gate was resolved"
-    )
-
-
-# CI dependencies are intentionally pinned to versions from a successful run.
-requirements = ROOT / "requirements-ci.txt"
+requirements=ROOT/"requirements-ci.txt"
 if requirements.exists():
     for raw in requirements.read_text(encoding="utf-8").splitlines():
-        line = raw.strip()
-        if not line or line.startswith("#"):
-            continue
-        if "==" not in line:
+        line=raw.strip()
+        if line and not line.startswith("#") and "==" not in line:
             errors.append(f"CI dependency is not exactly pinned: {line}")
 else:
     errors.append("missing requirements-ci.txt")
 
-workflow = (ROOT / ".github/workflows/karen-prototype-check.yml").read_text(encoding="utf-8")
-if "contents: write" in workflow or "pull-requests: write" in workflow:
-    errors.append("CI gained repository write permission; keep validation read-only")
-if "contents: read" not in workflow:
-    errors.append("CI must explicitly keep contents: read")
+validation=(ROOT/".github/workflows/karen-prototype-check.yml").read_text(encoding="utf-8")
+if "contents: read" not in validation or "contents: write" in validation:
+    errors.append("validation CI must remain read-only")
+
+sync=(ROOT/".github/workflows/sync-triton-lock-assets.yml").read_text(encoding="utf-8")
+if "contents: write" not in sync:
+    errors.append("Triton generated-asset sync requires contents: write")
+if "pixel-karen-triton-face-differentiation-fix" not in sync:
+    errors.append("Triton generated-asset sync must stay scoped to the experimental branch")
+if "assets/characters/triton/" not in sync:
+    errors.append("Triton generated-asset sync must explicitly restrict committed output paths")
+
+for path in (ROOT/".github/workflows").glob("*.y*ml"):
+    text=path.read_text(encoding="utf-8")
+    if "contents: write" in text and path.name!="sync-triton-lock-assets.yml":
+        errors.append(f"unexpected workflow has repository write permission: {path.name}")
 
 if errors:
-    print("GRAY CROWN REPOSITORY HYGIENE FAILED", file=sys.stderr)
-    for error in errors:
-        print(f" - {error}", file=sys.stderr)
+    print("GRAY CROWN REPOSITORY HYGIENE FAILED",file=sys.stderr)
+    for e in errors: print(" -",e,file=sys.stderr)
     sys.exit(1)
 
 print("GRAY CROWN REPOSITORY HYGIENE PASS")
 print(f"Tracked files checked: {len(tracked)}")
-print("Production baseline remains v23 / Save schema 23")
-print("Karen runtime authority is committed and complete")
-print("Triton runtime assets remain generated review outputs until USER VISUAL PASS")
-print("Generated evidence remains untracked")
+print("Production remains main / v23 / Save schema 23")
+print("Karen and Triton approved/current runtime sheets are committed")
+print("Only the narrowly scoped Triton asset-sync workflow has contents: write")

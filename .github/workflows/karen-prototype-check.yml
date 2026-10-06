@@ -1,4 +1,4 @@
-name: Karen Pixel Prototype CI
+name: Gray Crown Triton Completion CI
 on:
   push:
     branches: [main]
@@ -22,14 +22,14 @@ on:
       - "!*.txt"
   workflow_dispatch:
 concurrency:
-  group: karen-pixel-${{ github.head_ref || github.ref_name }}
+  group: gray-crown-triton-completion-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 permissions:
   contents: read
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
         with:
@@ -40,29 +40,39 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-ci.txt
       - name: Verify repository hygiene and production baseline
         run: npm run verify-hygiene
       - name: Verify Python source syntax
         run: npm run verify-python-syntax
-      - name: Verify project authority and current work gate
+      - name: Verify current Source of Truth
         run: npm run verify-authority
       - name: Install pinned CI dependencies
         run: python -m pip install --disable-pip-version-check -r requirements-ci.txt
-      - name: Verify Karen visual regression control before work
+      - name: Verify Karen regression control before work
         run: python tools/verify_karen_visual_regression_control.py
-      - name: Verify Triton Chibi Direction Lock v1
+      - name: Verify approved Triton Direction Lock
         run: python tools/verify_triton_direction_lock.py
-      - name: Build committed-source Karen Triton evidence
-        run: python tools/build_karen_triton_identity_evidence.py
+      - name: Regenerate Triton runtime sheets from approved lock
+        run: npm run generate-triton-assets
+      - name: Verify Triton runtime sheet dimensions and categories
+        run: npm run verify-triton-assets
+      - name: Verify committed Triton runtime sheets match deterministic regeneration
+        run: npm run verify-triton-completion
+      - name: Verify generator produced no committed-file drift
+        run: git diff --exit-code -- assets/characters/triton/
+      - name: Build Karen/Triton completion evidence
+        run: npm run build-triton-completion-evidence
+      - name: Verify JavaScript syntax
+        run: node tests/check-syntax.js
+      - name: Run Node regression suite
+        run: npm test
       - name: Install Playwright Chromium
         run: python -m playwright install --with-deps chromium
-      - name: Full prototype regression
-        run: npm run prototype-check
-      - name: Verify Triton generated runtime sheets
-        run: python tools/verify_triton_prototype_assets.py
-      - name: Verify committed Triton runtime sheets match generator
-        run: git diff --exit-code -- assets/characters/triton/
-      - name: Verify Karen visual regression control after work
+      - name: Run all browser gates and preserve per-test logs
+        run: python tools/run_browser_suite.py
+      - name: Verify Karen regression control after work
         run: python tools/verify_karen_visual_regression_control.py
       - name: Write machine-readable CI state manifest
         if: always()
@@ -71,24 +81,21 @@ jobs:
         if: always()
         run: |
           {
-            echo "## Gray Crown Triton completion gate"
+            echo "## Gray Crown — Triton completion automation"
             echo ""
-            echo "- Commit: \${GITHUB_SHA}"
+            echo "- Commit: ${GITHUB_SHA}"
             echo "- Job status: **${{ job.status }}**"
-            echo "- Triton authority: user-approved Chibi Direction Lock v1."
-            echo "- Karen: locked regression control and unchanged by this pipeline."
-            echo "- Required: 8Animation + actual-game Medium44 + 48/44/41 + full regression."
-            echo "- Sophie remains paused until Triton PASS and Standard update."
-            echo "- main merge / formal Pixel-native adoption: not automated."
-          } >> "\${GITHUB_STEP_SUMMARY}"
-      - name: Upload CI and visual evidence
+            echo "- Approved source: Triton Chibi Direction Lock v1."
+            echo "- Automatic: lock integrity, 8-sheet regeneration, exact committed-source match, Node tests, all browser gates, failure logs, evidence, Karen hash."
+            echo "- Not automatic: main merge, formal Pixel-native adoption, Sophie visual approval."
+          } >> "${GITHUB_STEP_SUMMARY}"
+      - name: Upload CI, browser diagnostics and visual evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: karen-pixel-prototype-evidence
+          name: gray-crown-triton-completion-evidence
           path: |
             prototype_artifacts/
-            assets/characters/triton/*.png
             test-results/
             playwright-report/
           if-no-files-found: warn
