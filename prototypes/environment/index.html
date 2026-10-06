@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gray Crown Environment Prototype v1</title><link rel="stylesheet" href="environment-preview.css"></head>
+<body><main>
+<h1>Gray Crown Environment Prototype v1</h1>
+<div class="controls">
+<select id="scene"><option value="village">Village</option><option value="field">Grass field</option><option value="houseExterior">House exterior</option><option value="houseInterior">House interior</option></select>
+<select id="mode"><option value="pair">Karen + Triton</option><option value="karen">Karen only</option><option value="triton">Triton only</option><option value="environment">Environment only</option></select>
+<select id="scale"><option value="48">Full48</option><option value="44" selected>Medium44</option><option value="41">Compact41</option></select>
+</div>
+<canvas id="preview" width="512" height="320"></canvas>
+<p id="status"></p>
+</main><script src="environment-preview.js"></script></body></html>
