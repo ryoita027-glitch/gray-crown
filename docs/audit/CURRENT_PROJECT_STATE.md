@@ -5,105 +5,73 @@ Status: 2026-10-06 JST.
 ## Production
 
 Production remains **main / v23 / Save schema 23 / Story 00–19**.
-
 Pixel-native is not merged to main.
 
 ## Karen
 
-Karen — VILLAGE RUNNER is approved and frozen as the **Visual Regression Control**.
+Karen — VILLAGE RUNNER remains approved and frozen as Visual Regression Control.
 
 Authority:
 
 - `docs/pixel/reference/karen_chibi_direction_v1.png`
 - eight committed Karen runtime PNGs
 
-Karen must not be changed to accommodate another character.
+Karen is not modified for Sophie.
 
 ## Triton
 
-Triton — GROUND ANCHOR is now complete for the protagonist validation phase.
+Triton — GROUND ANCHOR remains complete.
 
-Visual authority:
+Authority:
 
 - **Triton Chibi Direction Lock v1**
-- `docs/pixel/TRITON_CHIBI_DIRECTION_LOCK_v1.md`
 - `docs/pixel/reference/triton_chibi_direction_lock_v1.png`
-
-Triton completion: **PASS**.
 
 # **Triton Second Character Validation PASS**
 
-Completed and verified:
-
-- 4-direction 48×48 source;
-- exactly eight runtime animation categories;
-- deterministic runtime regeneration;
-- Karen / Triton actual-game matched comparison;
-- Full48 / Medium44 / Compact41 scale comparison;
-- Medium44 selected;
-- all browser regression gates;
-- control restoration;
-- Save schema 23 unchanged;
-- all nine locked Karen visual blobs unchanged.
-
-Final completion CI:
-
-- run: **37436833623**
-- tested head: `69d01fba95d8f18b7d1eeacfb7f7a3de96f8a5e4`
-- artifact: **11398669794**
-- digest: `sha256:0e67a662aece3df4cf95a25a15b728b6eeefd9961f7de2c7acc9c4d731558d9c`
+Triton is not modified for Sophie.
 
 ## Pixel Character Standard
 
 `docs/pixel/PIXEL_CHARACTER_STANDARD_v1_PROVISIONAL.md`
 
-is updated from the completed Karen + Triton evidence.
+remains PROVISIONAL.
 
-It now explicitly prevents:
-
-- one shared face template;
-- one shared anatomy template;
-- color-only differentiation;
-- same standing pose;
-- same movement curves;
-- comparison-board AI redraws.
-
-The Standard remains PROVISIONAL until Sophie and Margaret pass.
+Karen + Triton establish the current technical and visual control pair.
 
 ## Active phase
 
-> **Sophie — STEADY HANDS front Idle validation**
+> **Sophie — STEADY HANDS Front Candidate v2 Visual Gate**
 
-Sophie starts with one front-facing visual candidate only.
+v1 is **VISUAL REVISE**.
 
-Required identity challenge:
+Current candidate:
 
-- 23-year-old adult woman;
-- 158cm / smallest hero;
-- softer body;
-- honey-colored hair;
-- gentle / slightly drooping eyes;
-- off-white + green;
-- hands as the main acting focus;
-- reassuring, practical presence;
-- stubborn stillness where life is concerned.
+`docs/pixel/reference/sophie_steady_hands_front_candidate_v2_48.png`
 
-Do not proceed to Sophie's four directions or eight animations until the user approves her front design.
+v2 is front-only and awaits user Visual Review.
 
-## Margaret
+Do not start Sophie side/back poses or animation before user PASS.
 
-Paused until Sophie passes.
-
-## Comparison policy
-
-Locked-character comparison boards use actual committed/source PNG mechanical composition only.
+Comparison Evidence must use locked real PNGs for Karen/Triton and the committed Sophie candidate.
 
 Image-generation comparison boards are prohibited.
 
+## Margaret
+
+Paused until Sophie completes her character validation.
+
+## Environment
+
+Environment Pixel production is not authorized until Karen, Triton, Sophie and Margaret are completed.
+
 ## Still not authorized
 
+- Sophie four-direction / 8Animation before front PASS;
+- Margaret production;
+- Environment Prototype;
 - main merge;
 - formal Pixel-native adoption;
 - Portrait deletion;
-- NPC mass migration / final NPC scale policy;
+- NPC mass migration;
 - v24.

@@ -3,204 +3,136 @@
 ## Status
 
 **Branch:** `pixel-sophie-steady-hands-validation`  
-**Baseline:** Triton PASS authority head `e3e627e5ae466be94d46181ef52863f1e9b558b7`  
 **Character:** Sophie — STEADY HANDS  
 **Phase:** front-facing visual design only  
-**Four-direction / animation production:** NOT AUTHORIZED YET
+**v1:** **VISUAL REVISE**  
+**v2:** **USER VISUAL REVIEW PENDING**  
+**Four-direction / animation production:** NOT AUTHORIZED
 
-## Purpose
+## Current candidate
 
-Sophie is the third protagonist reproducibility test.
+`docs/pixel/reference/sophie_steady_hands_front_candidate_v2_48.png`
 
-Karen proves a forward / active / socially approaching heroine.
-Triton proves a broad / planted / grounded heroine.
+The v2 candidate is a 48×48 RGBA front-only source candidate.
 
-Sophie must prove that the same Pixel Character system can support a third, opposite visual problem:
+It intentionally raises the visual-density and protagonist-quality bar over v1 while keeping Sophie's locked identity.
 
-> **small / soft / calm / hand-focused without becoming childlike or a generic healer.**
+Exact eye color remains unresolved canon. The neutral iris pixels in the candidate are provisional readability pixels only.
 
-The first gate is one front-facing Idle candidate only.
+## Why v1 was revised
 
-## Locked identity
+v1 preserved the broad identity but was too simple compared with locked Karen and Triton.
 
-Sophie is:
+The problem was not STEADY HANDS itself.
+
+The problem was:
+
+- face readability too low;
+- hair mass too simple;
+- costume hierarchy too plain;
+- protagonist-grade visual density below Karen / Triton;
+- hand-focus insufficiently attractive at gameplay scale.
+
+Therefore v1 must not be expanded to four directions or animation.
+
+## v2 target
+
+Sophie remains:
 
 - 23-year-old adult woman;
-- 158cm, smallest of the four heroes;
-- soft standard body shape;
-- rounded oval face;
-- slightly drooping / gentle eyes;
-- calm expression;
-- small movements;
-- honey to light golden-brown hair;
-- chest-length hair basis;
-- naturally lighter skin;
-- right-handed;
-- orphanage upbringing;
-- church / treatment work experience;
-- future sister aspiration;
-- kind, but extremely stubborn where life is concerned;
-- personal colors: off-white / white + green;
-- not a high-ranking cleric.
-
-Locked direction:
-
-# **B — STEADY HANDS**
-
-Official identity:
-
-> 柔らかく小柄だが、誰かを助ける時には身体も手も迷わず相手へ向く23歳女性。安心感の奥に、命のことだけは絶対に譲らない芯が見える。
-
-## Hair
-
-Front candidate must preserve:
-
+- 158cm, smallest hero;
+- soft standard body;
 - honey / light golden-brown hair;
-- soft off-center fringe;
-- gentle eyes remain visible;
-- side hair curves inward below the ears;
-- hair should not spread widely around the face;
-- one low loose braid / bundle begins near the base of the neck;
-- the low bundle may be only partly visible from front, but the design must leave a clear path for side/back translation;
-- motion concept later: calm body-lag, not Karen's active hair and not Triton's heavy shoulder mass.
-
-## Face
-
-Sophie must not reuse Karen or Triton's face template.
-
-Required read:
-
-- rounded / softer face than both;
 - gentle slightly drooping eyes;
-- calm, reassuring expression;
-- small natural mouth;
-- clearly adult 23-year-old;
-- soft does not mean infantile.
+- off-white / cream dominant clothing;
+- muted green concentrated around wrists / hands / practical treatment storage;
+- one low soft bundle / braid;
+- calm posture;
+- hands as the primary acting hook;
+- kind, reassuring, but immovable where life is concerned.
 
-FAIL if she reads as a teenager or child.
+## Quality rule
 
-## Body / stance
+Sophie must not be made visually simpler merely to differentiate her.
 
-Required:
+All protagonists must occupy the same **Visual Quality Tier**.
 
-- smallest spatial footprint of the current three heroes;
-- soft standard body, not thin / fragile;
-- narrower stance than Triton;
-- less forward energy than Karen;
-- calm stable posture;
-- shoulders relaxed, not collapsed;
-- hands visibly separate from the torso.
-
-The front pose should already imply:
-
-> "I can help you" rather than "I am posing as a healer."
-
-## Hands — primary hook
-
-The hands are the center of Sophie's identity.
-
-Front Idle must keep both hands readable.
-
-Preferred read:
-
-- one hand rests naturally near practical treatment storage;
-- the other is slightly available / forward enough to suggest it could reach another person;
-- not a prayer pose;
-- not fists;
-- not decorative symmetrical hand posing.
-
-Green must guide attention toward the hands.
-
-## Clothing / color mass
-
-Stage A only:
-
-- off-white / cream = dominant body mass;
-- practical clothing adapted from church / orphanage treatment work;
-- sleeves organized so they do not interfere with treatment;
-- green concentrated around forearms / wrists / small practical treatment storage;
-- simple washable construction;
-- hem short enough to crouch / work;
-- no high-cleric luxury.
-
-Forbidden:
-
-- religious emblem;
-- cross-like iconography;
-- halo;
-- healer staff;
-- magical medical glow;
-- giant green torso block;
-- ornate fantasy priest robes;
-- final weapon design.
+Difference must come from identity, not from lower detail or lower face quality.
 
 ## Required contrast
 
-### vs Karen
+### Karen — VILLAGE RUNNER
+- forward;
+- light;
+- active;
+- red-haired;
+- whole-body emotional energy.
 
-Sophie must be:
+### Triton — GROUND ANCHOR
+- broad;
+- planted;
+- low center;
+- dark heavy hair;
+- horizontal stability.
 
-- smaller;
-- softer;
-- calmer;
-- less forward;
-- less whole-body expressive;
-- hand-focused rather than whole-body-energy focused.
+### Sophie — STEADY HANDS
+- smallest footprint;
+- softer rounded body;
+- honey hair;
+- calm face;
+- hand-focused attention;
+- cream + restrained green.
 
-### vs Triton
+## Mechanical comparison rule
 
-Sophie must be:
+Karen and Triton must never be regenerated for comparison.
 
-- narrower;
-- softer;
-- less horizontally heavy;
-- gentler faced;
-- smaller in footprint;
-- less planted / muscular;
-- hand-focused rather than stance/weight focused.
+Evidence is built only from:
 
-## Same-game requirement
+- `docs/pixel/reference/karen_chibi_direction_v1.png`
+- `docs/pixel/reference/triton_chibi_direction_lock_v1.png`
+- `docs/pixel/reference/sophie_steady_hands_front_candidate_v2_48.png`
 
-Sophie must still look like the same game as the locked Karen and Triton:
+Allowed operations:
 
-- protagonist-grade cute Chibi face;
-- crisp Pixel RPG readability;
-- clear large masses;
-- controlled detail;
-- adult identity inside Chibi grammar;
-- practical Gray Crown clothing logic.
+- crop;
+- nearest-neighbor resize;
+- grayscale;
+- silhouette;
+- deterministic labels / layout.
 
-But same-game does not mean same face or anatomy.
+Image-generation comparison boards are prohibited.
 
-## Front Gate questions
+## Acceptance Gate
 
-1. Does she read as a 23-year-old adult?
-2. Is she visibly smaller without becoming childlike?
-3. Is her face distinct from Karen before hair color?
-4. Is her face distinct from Triton before hair color?
-5. Are both hands immediately readable?
-6. Does green lead the eye toward the hands?
-7. Does off-white remain the dominant body mass?
-8. Does she feel capable and reassuring, not weak?
-9. Does the hair support a future single low bundle / braid?
-10. Does she avoid generic healer / nun shorthand?
-11. Does the pose leave room for small, practical hand acting?
-12. Does she have protagonist-level appeal at the same quality bar as Karen and Triton?
+User reviews:
 
-## Mandatory stop
+1. face quality vs Karen / Triton;
+2. protagonist-grade cuteness at 48px;
+3. readability at Medium44;
+4. distinct face before hair color;
+5. honey-hair silhouette;
+6. small adult body without child read;
+7. cream + green hierarchy;
+8. both hands readable;
+9. STEADY HANDS identity;
+10. no generic healer / nun shorthand;
+11. same-game Pixel Artist feel;
+12. no quality-tier drop.
 
-After one front candidate is produced, stop for user judgment:
+Decision:
 
 # **Sophie Front — PASS / REVISE / FAIL**
 
 Only PASS authorizes:
 
 front lock  
-→ four-direction Idle  
-→ Karen / Triton / Sophie real-PNG and gameplay comparison  
-→ eight Sophie-specific animation categories  
+→ left / right / back  
+→ four-direction atlas  
+→ eight Sophie-specific animations  
+→ Karen / Triton / Sophie gameplay comparison  
 → Full48 / Medium44 / Compact41  
 → full CI  
-→ Pixel Character Standard update.
+→ Standard update.
 
-Margaret remains paused.
+Margaret and environment production remain paused.

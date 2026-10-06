@@ -1,0 +1,62 @@
+name: Gray Crown Sophie Front Gate CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - "docs/pixel/reference/sophie_steady_hands_front_candidate_v2_48.png"
+      - "docs/pixel/SOPHIE_STEADY_HANDS_FRONT_GATE.md"
+      - "docs/audit/**"
+      - "docs/visual/SOURCE_OF_TRUTH_STATUS.md"
+      - "tools/verify_sophie_front_v2.py"
+      - "tools/build_sophie_front_v2_evidence.py"
+      - ".github/workflows/sophie-front-validation.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: gray-crown-sophie-front-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  visual-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-ci.txt
+
+      - name: Verify Source of Truth
+        run: python tools/verify_project_authority.py
+
+      - name: Install pinned image dependency
+        run: python -m pip install --disable-pip-version-check -r requirements-ci.txt
+
+      - name: Verify Karen locked control
+        run: python tools/verify_karen_visual_regression_control.py
+
+      - name: Verify Triton locked control
+        run: python tools/verify_triton_direction_lock.py
+
+      - name: Verify Sophie v2 front-only candidate
+        run: python tools/verify_sophie_front_v2.py
+
+      - name: Build real-PNG Sophie comparison evidence
+        run: python tools/build_sophie_front_v2_evidence.py
+
+      - name: Upload Sophie visual evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: gray-crown-sophie-front-v2-evidence
+          path: prototype_artifacts/
+          if-no-files-found: error
+          retention-days: 14
