@@ -1,0 +1,48 @@
+name: Sync Triton Lock Runtime Assets
+on:
+  push:
+    branches: [pixel-karen-triton-face-differentiation-fix]
+    paths:
+      - docs/pixel/reference/triton_chibi_direction_lock_v1.png
+      - tools/generate_triton_prototype_assets.py
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-actions[bot]'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: pixel-karen-triton-face-differentiation-fix
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --disable-pip-version-check -r requirements-ci.txt
+      - name: Verify Karen before Triton generation
+        run: python tools/verify_karen_visual_regression_control.py
+      - name: Generate locked Triton runtime sheets
+        run: python tools/generate_triton_prototype_assets.py --out assets/characters/triton
+      - name: Verify generated Triton sheets
+        run: python tools/verify_triton_prototype_assets.py
+      - name: Verify Karen after Triton generation
+        run: python tools/verify_karen_visual_regression_control.py
+      - name: Commit Triton generated assets only
+        run: |
+          git add assets/characters/triton/*.png
+          if git diff --cached --quiet; then
+            echo "Triton runtime assets already synchronized."
+            exit 0
+          fi
+          changed="$(git diff --cached --name-only)"
+          bad="$(printf '%s\n' "$changed" | grep -Ev '^assets/characters/triton/triton_(idle|walk|turn|talk|surprise|approach|laugh|run)\.png$' || true)"
+          if [ -n "$bad" ]; then
+            echo "Unexpected file in generated-asset commit:"
+            echo "$bad"
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Sync Triton Chibi Direction Lock v1 runtime assets"
+          git push origin HEAD:pixel-karen-triton-face-differentiation-fix
