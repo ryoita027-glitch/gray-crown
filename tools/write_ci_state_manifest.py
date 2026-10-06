@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Write a machine-readable snapshot of the Triton-completion CI state."""
+"""Write a machine-readable snapshot of the current Gray Crown Pixel validation state."""
 from pathlib import Path
 import hashlib
 import importlib.metadata
@@ -34,8 +34,17 @@ if event_path and Path(event_path).exists():
     try:event=json.loads(Path(event_path).read_text(encoding="utf-8"))
     except Exception:pass
 pr=event.get("pull_request") or {}
+
 save_text=(ROOT/"js/core/save.js").read_text(encoding="utf-8")
 m=re.search(r"\bSAVE_SCHEMA\s*=\s*(\d+)\s*;",save_text)
+
+current=(ROOT/"docs/audit/CURRENT_PROJECT_STATE.md").read_text(encoding="utf-8")
+if "Sophie — STEADY HANDS Front Candidate v2 Visual Gate" in current:
+    active_gate="Sophie — STEADY HANDS Front Candidate v2"
+elif "Sophie — STEADY HANDS" in current:
+    active_gate="Sophie — STEADY HANDS"
+else:
+    active_gate="see docs/audit/CURRENT_PROJECT_STATE.md"
 
 files=[
     "docs/audit/CURRENT_PROJECT_STATE.md",
@@ -44,8 +53,10 @@ files=[
     "docs/pixel/reference/karen_chibi_direction_v1.png",
     "docs/pixel/reference/triton_chibi_direction_lock_v1.png",
     "docs/pixel/reference/triton_idle_4dir_v1.png",
+    "docs/pixel/reference/sophie_steady_hands_front_candidate_v2_48.png",
     "prototype_artifacts/triton_completion_integrity.json",
     "prototype_artifacts/karen_triton_completion_metrics.json",
+    "prototype_artifacts/sophie_front_v2_metrics.json",
     "prototype_artifacts/browser_suite_summary.json",
 ]
 for char in ("karen","triton"):
@@ -55,13 +66,25 @@ for char in ("karen","triton"):
 data={
     "project":"Gray Crown",
     "production_baseline":{"branch":"main","game_version":"v23","save_schema":int(m.group(1)) if m else None},
-    "active_gate":"Triton completion",
-    "approved_visual_source":"Triton Chibi Direction Lock v1",
+    "active_gate":active_gate,
+    "completed_character_gates":{
+        "karen":"LOCKED CONTROL",
+        "triton":"Triton Second Character Validation PASS",
+        "sophie":"FRONT v2 USER REVIEW PENDING",
+        "margaret":"PAUSED"
+    },
+    "approved_visual_sources":{
+        "karen":"docs/pixel/reference/karen_chibi_direction_v1.png",
+        "triton":"docs/pixel/reference/triton_chibi_direction_lock_v1.png",
+        "sophie_candidate":"docs/pixel/reference/sophie_steady_hands_front_candidate_v2_48.png"
+    },
     "automation_boundary":{
-        "technical_completion_checks_are_automatic":True,
+        "technical_integrity_checks_are_automatic":True,
         "main_merge_is_automatic":False,
         "formal_pixel_native_adoption_is_automatic":False,
         "sophie_visual_approval_is_automatic":False,
+        "margaret_start_is_automatic":False,
+        "environment_start_before_four_heroes_is_automatic":False
     },
     "git":{
         "checked_out_head":git("rev-parse","HEAD"),
@@ -72,12 +95,22 @@ data={
         "ref_name":os.environ.get("GITHUB_REF_NAME"),
         "working_tree":subprocess.check_output(["git","status","--porcelain","--untracked-files=all"],cwd=ROOT,text=True).splitlines(),
     },
-    "github_actions":{"event":os.environ.get("GITHUB_EVENT_NAME"),"run_id":os.environ.get("GITHUB_RUN_ID"),"run_number":os.environ.get("GITHUB_RUN_NUMBER")},
+    "github_actions":{
+        "event":os.environ.get("GITHUB_EVENT_NAME"),
+        "run_id":os.environ.get("GITHUB_RUN_ID"),
+        "run_number":os.environ.get("GITHUB_RUN_NUMBER")
+    },
     "environment":{
         "python":platform.python_version(),
         "node":command_version("node","--version"),
         "npm":command_version("npm","--version"),
-        "packages":{"pillow":installed("pillow"),"playwright":installed("playwright"),"greenlet":installed("greenlet"),"pyee":installed("pyee"),"typing-extensions":installed("typing-extensions")},
+        "packages":{
+            "pillow":installed("pillow"),
+            "playwright":installed("playwright"),
+            "greenlet":installed("greenlet"),
+            "pyee":installed("pyee"),
+            "typing-extensions":installed("typing-extensions")
+        },
     },
     "sha256":{rel:sha256(rel) for rel in files},
 }
