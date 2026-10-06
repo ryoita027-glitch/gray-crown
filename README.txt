@@ -61,3 +61,7 @@ Visual Foundation note:
 Current project status:
 - Authoritative current-state summary: docs/audit/CURRENT_PROJECT_STATE.md
 - Production remains main / v23; Pixel-native work remains experimental until explicitly adopted.
+- Karen Chibi animation is implemented in draft PR #17; the scale experiment is in draft PR #18.
+- Current engineering handoff: docs/audit/NEXT_WORK_ORDER.md; do not restart the approved front-Idle gate.
+- Full experimental gate: npm run prototype-check (includes animation and scale browser tests).
+- Generate sprites deliberately with npm run generate-karen-assets; CI only verifies committed assets.
