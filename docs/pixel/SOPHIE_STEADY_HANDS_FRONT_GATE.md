@@ -6,108 +6,103 @@
 **Character:** Sophie — STEADY HANDS  
 **Phase:** front-facing visual design only  
 **v1:** VISUAL REVISE  
-**v2:** **VISUAL REVISE — rejected as uncanny / frightening**  
-**Next:** **Front Candidate v3 only**  
+**v2:** VISUAL REVISE — rejected as uncanny / frightening  
+**v3:** **USER VISUAL REVIEW PENDING**  
 **Four-direction / animation production:** NOT AUTHORIZED
 
-## User verdict on v2
+## Current candidate
 
-The user rejected v2 because the design reads as frightening rather than gentle / cute.
+`docs/pixel/reference/sophie_steady_hands_front_candidate_v3_48.png`
 
-This is a visual-quality failure, not a failure of Sophie's canon or STEADY HANDS identity.
+v3 is a 48×48 RGBA front-only source candidate.
 
-### Why v2 failed
+SHA-256:
 
-The face became too doll-like:
+`c71f6f19b8dd50e1d53110f9a77c9ce434b544822f2ce4404221c226a6973074`
 
-- eye whites / dark outlines carry too much contrast;
-- the two eyes feel rigidly mirrored;
-- the gaze is too fixed;
-- the mouth reads like a fixed smile rather than a calm natural expression;
-- face-framing hair encloses the face too tightly;
-- the head/body relationship drifts toward childlike rather than adult Chibi;
-- the result is technically readable but emotionally uncanny.
+## v3 redesign intent
 
-The candidate therefore fails the protagonist appeal gate.
+v3 replaces the uncanny facial read of v2 while preserving Sophie's locked canon and STEADY HANDS identity.
 
-## v3 redesign target
+Primary corrections:
 
-Do not merely edit a few pixels around the v2 face.
+- less exposed white around the eyes;
+- softer, slightly drooping eye shape;
+- readable iris/pupil without a fixed stare;
+- relaxed brows;
+- small natural mouth rather than a fixed smile;
+- more open face-framing hair;
+- adult 23-year-old Chibi balance;
+- visible hands;
+- cream dominant clothing;
+- muted green concentrated around hand / wrist / practical storage areas.
 
-Rebuild Sophie's front facial read while preserving her canon:
+## Locked identity
 
-- 23-year-old adult woman;
-- 158cm / smallest hero;
+Sophie remains:
+
+- 23 years old;
+- 158cm, smallest hero;
 - soft standard body;
 - honey / light golden-brown hair;
-- off-white / cream dominant clothing;
-- muted green concentrated around wrists / hands / treatment storage;
+- gentle face;
 - one low soft bundle / braid;
-- hands as the primary acting hook.
+- off-white / cream as the dominant clothing mass;
+- green as a restrained hand-focused accent;
+- right-handed;
+- calm / reassuring;
+- stubborn and immovable where life is concerned.
 
-### Face
+## Comparison rules
 
-v3 must use:
+Karen and Triton remain unchanged controls.
 
-- large but softer Chibi eyes;
-- less exposed white area;
-- visible iris/pupil without staring effect;
-- gentle slightly-drooping outer eye shape;
-- softer upper-lid cluster;
-- small natural mouth;
-- no fixed grin;
-- adult softness rather than infant proportions.
-
-The emotional read should be:
-
-> calm, kind, attentive, reassuring.
-
-Not:
-
-> doll-like, staring, fragile, frightened, or eerie.
-
-### Hair around face
-
-Keep honey hair and practical low gathering, but open the face:
-
-- do not create a dark hair frame around both cheeks;
-- leave breathing room around eyes / brows / cheek area;
-- keep front strands controlled for treatment work;
-- preserve enough hair structure to remain protagonist-grade.
-
-### Body
-
-The body must stay visibly smaller than Karen / Triton, but the head/body connection must feel intentional.
-
-Small hero ≠ child.
-
-### Hands
-
-STEADY HANDS remains mandatory:
-
-- both hands visible;
-- sleeves do not swallow hands;
-- muted green guides attention toward wrist/hand function;
-- no healer-symbol shorthand.
-
-## Locked controls
-
-Karen and Triton remain untouched.
-
-Comparison after v3 must use the actual committed PNGs only:
+Mechanical evidence uses only:
 
 - `docs/pixel/reference/karen_chibi_direction_v1.png`
 - `docs/pixel/reference/triton_chibi_direction_lock_v1.png`
-- Sophie v3 actual PNG
+- `docs/pixel/reference/sophie_steady_hands_front_candidate_v3_48.png`
 
-Image-generated comparison boards remain prohibited.
+Allowed operations:
 
-## Mandatory stop
+- crop;
+- nearest-neighbor enlargement;
+- grayscale;
+- silhouette;
+- deterministic labels / layout.
 
-Create **Sophie Front Candidate v3 only**.
+Image-generated comparison boards are prohibited and non-authoritative.
 
-Then stop for:
+## Acceptance Gate
+
+User reviews:
+
+1. no frightening / doll-like read;
+2. protagonist-grade facial appeal;
+3. adult 23-year-old read;
+4. Sophie-specific gentle eye shape;
+5. distinct face from Karen;
+6. distinct face from Triton;
+7. honey-hair readability;
+8. small but non-childlike body;
+9. hands visible and identity-bearing;
+10. cream + green hierarchy;
+11. same-game quality tier;
+12. Medium44 readability.
+
+Decision:
 
 # **Sophie Front v3 — PASS / REVISE / FAIL**
 
-Do not create side/back poses, four-direction atlas, animation, Margaret, or Environment work before PASS.
+Only PASS authorizes:
+
+front lock  
+→ left / right / back  
+→ four-direction atlas  
+→ eight Sophie-specific animations  
+→ Karen / Triton / Sophie gameplay comparison  
+→ Full48 / Medium44 / Compact41  
+→ full CI  
+→ Standard update.
+
+Margaret and Environment remain paused.

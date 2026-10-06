@@ -22,14 +22,13 @@ source=FILES["source"].read_text(encoding="utf-8")
 checks=[
  ("current",current,"main / v23 / Save schema 23"),
  ("current",current,"Triton Second Character Validation PASS"),
- ("current",current,"Sophie — STEADY HANDS Front Candidate v3 redesign"),
+ ("current",current,"Sophie — STEADY HANDS Front Candidate v3 Visual Gate"),
  ("current",current,"Environment Pixel production is not authorized"),
  ("next",nxt,"Triton Second Character Validation PASS"),
  ("next",nxt,"Sophie — STEADY HANDS Front Candidate v3"),
  ("next",nxt,"Sophie Front v3 — PASS / REVISE / FAIL"),
  ("source",source,"Triton Second Character Validation PASS"),
- ("source",source,"Sophie — STEADY HANDS Front Candidate v3 redesign"),
- ("source",source,"Visual REVISE — rejected as frightening / uncanny"),
+ ("source",source,"Sophie — STEADY HANDS Front Candidate v3"),
  ("source",source,"Environment Pixel production remains paused"),
 ]
 for label,textv,needle in checks:
@@ -51,7 +50,7 @@ if errors:
     sys.exit(1)
 
 print("GRAY CROWN AUTHORITY CONSISTENCY PASS")
-print("Active gate: Sophie — STEADY HANDS Front Candidate v3 redesign")
-print("Sophie v2 is rejected; no directional expansion authorized")
+print("Active gate: Sophie — STEADY HANDS Front Candidate v3")
+print("Sophie remains front-only until user Visual PASS")
 print("Karen and Triton remain locked controls")
 print("Margaret and Environment remain paused")

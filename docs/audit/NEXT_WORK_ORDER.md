@@ -3,54 +3,42 @@
 ## Completed
 
 - Karen locked.
-- Triton Chibi Direction Lock v1.
-- Triton 4-direction / 8Animation / gameplay / Medium44 / CI.
-- **Triton Second Character Validation PASS**.
+- Triton Second Character Validation PASS.
 
 ## Sophie review history
 
 - v1: VISUAL REVISE — quality tier too low.
-- v2: **VISUAL REVISE — face reads frightening / uncanny.**
+- v2: VISUAL REVISE — uncanny / frightening.
+- v3: **USER VISUAL REVIEW PENDING**.
 
-Do not expand either candidate.
-
-## Active task
+## Active gate
 
 # **Sophie — STEADY HANDS Front Candidate v3**
 
-Create one new front-facing design only.
+Candidate:
 
-### v3 priority
+`docs/pixel/reference/sophie_steady_hands_front_candidate_v3_48.png`
 
-1. Remove the staring / doll-like eye read.
-2. Keep eyes large and attractive, but reduce exposed white and hard symmetry.
-3. Use a gentle slightly-drooping eye shape with readable iris/pupil.
-4. Use a small natural mouth; no fixed grin.
-5. Open the hair around eyes / brows / cheeks.
-6. Preserve adult 23-year-old read despite smallest body.
-7. Preserve honey hair.
-8. Preserve cream main mass + restrained green near hands.
-9. Preserve visible hands and STEADY HANDS.
-10. Keep protagonist-grade visual density equal to Karen / Triton.
+Required mechanical evidence:
 
-## Mandatory stop
-
-After v3 front is created, generate only mechanical real-PNG evidence:
-
-- Karen / Triton / Sophie v3 front;
+- Karen / Triton / Sophie v3 color front;
 - grayscale;
 - silhouette;
 - face crop;
-- Medium44.
+- face grayscale;
+- Medium44;
+- Sophie v2 vs v3.
 
-Then stop for:
+## Mandatory stop
+
+The next user decision is:
 
 > **Sophie Front v3 — PASS / REVISE / FAIL**
 
+Do not create side/back poses or animation before PASS.
+
 ## Paused
 
-- Sophie side/back;
-- Sophie 8Animation;
 - Margaret;
 - Environment Prototype;
 - main merge;

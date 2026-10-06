@@ -4,12 +4,12 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     paths:
-      - "docs/pixel/reference/sophie_steady_hands_front_candidate_v2_48.png"
+      - "docs/pixel/reference/sophie_steady_hands_front_candidate_v3_48.png"
       - "docs/pixel/SOPHIE_STEADY_HANDS_FRONT_GATE.md"
       - "docs/audit/**"
       - "docs/visual/SOURCE_OF_TRUTH_STATUS.md"
-      - "tools/verify_sophie_front_v2.py"
-      - "tools/build_sophie_front_v2_evidence.py"
+      - "tools/verify_sophie_front_v3.py"
+      - "tools/build_sophie_front_v3_evidence.py"
       - ".github/workflows/sophie-front-validation.yml"
   workflow_dispatch:
 
@@ -47,16 +47,16 @@ jobs:
       - name: Verify Triton locked control
         run: python tools/verify_triton_direction_lock.py
 
-      - name: Verify Sophie v2 front-only candidate
-        run: python tools/verify_sophie_front_v2.py
+      - name: Verify Sophie v3 front-only candidate
+        run: python tools/verify_sophie_front_v3.py
 
-      - name: Build real-PNG Sophie comparison evidence
-        run: python tools/build_sophie_front_v2_evidence.py
+      - name: Build real-PNG Sophie v3 comparison evidence
+        run: python tools/build_sophie_front_v3_evidence.py
 
-      - name: Upload Sophie visual evidence
+      - name: Upload Sophie v3 visual evidence
         uses: actions/upload-artifact@v4
         with:
-          name: gray-crown-sophie-front-v2-evidence
+          name: gray-crown-sophie-front-v3-evidence
           path: prototype_artifacts/
           if-no-files-found: error
           retention-days: 14

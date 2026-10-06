@@ -11,55 +11,33 @@ Pixel-native is not merged to main.
 
 Karen — VILLAGE RUNNER remains approved and frozen as Visual Regression Control.
 
-Authority:
-
-- `docs/pixel/reference/karen_chibi_direction_v1.png`
-- eight committed Karen runtime PNGs
-
-Karen is not modified for Sophie.
-
 ## Triton
 
 Triton — GROUND ANCHOR remains complete.
 
-Authority:
-
-- **Triton Chibi Direction Lock v1**
-- `docs/pixel/reference/triton_chibi_direction_lock_v1.png`
-
 # **Triton Second Character Validation PASS**
-
-Triton is not modified for Sophie.
-
-## Pixel Character Standard
-
-`docs/pixel/PIXEL_CHARACTER_STANDARD_v1_PROVISIONAL.md` remains PROVISIONAL.
-
-Karen + Triton remain the current locked control pair.
 
 ## Active phase
 
-> **Sophie — STEADY HANDS Front Candidate v3 redesign**
+> **Sophie — STEADY HANDS Front Candidate v3 Visual Gate**
 
 Sophie v1: Visual REVISE.  
-Sophie v2: **Visual REVISE — user rejected the face as frightening / uncanny.**
+Sophie v2: Visual REVISE — rejected as frightening / uncanny.  
+Sophie v3: **user Visual Review pending**.
 
-v2 must not be propagated.
+Current candidate:
 
-The next authorized deliverable is one front-facing v3 candidate only.
+`docs/pixel/reference/sophie_steady_hands_front_candidate_v3_48.png`
 
-Primary v3 correction:
+Do not start Sophie side/back poses or animation before user PASS.
 
-- softer readable eyes with less white / hard outline contrast;
-- no rigid mirrored stare;
-- natural small mouth instead of fixed smile;
-- more open face-framing hair;
-- adult 23-year-old Chibi balance;
-- preserve honey hair, cream + green, small soft body and visible hands.
+Karen and Triton remain untouched locked controls.
+
+Mechanical comparison Evidence must use actual repository PNGs only.
 
 ## Margaret
 
-Paused until Sophie passes full character validation.
+Paused until Sophie passes full validation.
 
 ## Environment
 
