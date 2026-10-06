@@ -756,3 +756,41 @@ This document becomes a stronger production standard only after:
 Until then:
 
 # **PIXEL CHARACTER STANDARD v1 = PROVISIONAL**
+
+
+---
+
+# 24. Mandatory locked-character comparison rule
+
+When evaluating identity differences between already locked characters, comparison art must use **committed repository assets** whenever possible.
+
+Do not regenerate a locked Karen, Triton, Sophie or Margaret merely to place them on a presentation board.
+
+A comparison that redraws both characters may accidentally normalize:
+
+- eye shape
+- eyebrows
+- jaw
+- mouth
+- shoulder width
+- body proportions
+- idle posture
+
+and therefore cannot be used as identity evidence.
+
+For every new protagonist validation, the comparison gate must explicitly check:
+
+- face shape
+- eye shape
+- brow shape
+- mouth width
+- shoulder width
+- stance width
+- hair mass
+- center of gravity
+
+before color is considered.
+
+If two heroes are distinguishable only by hair / costume color, the visual gate fails even if runtime tests pass.
+
+Technical GO and Visual Identity GO must be recorded separately.
