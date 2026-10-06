@@ -86,3 +86,25 @@ four-direction source
 After those pass:
 
 **Triton Second Character Validation PASS**
+
+
+## Runtime sheet synchronization
+
+The locked source now deterministically generates and tracks all eight Triton runtime sheets:
+
+- `triton_idle.png`
+- `triton_walk.png`
+- `triton_turn.png`
+- `triton_talk.png`
+- `triton_surprise.png`
+- `triton_approach.png`
+- `triton_laugh.png`
+- `triton_run.png`
+
+Generated-asset sync commit:
+
+`31af429637991183e7d106204e2bcd8b6366d8f2`
+
+Karen visual assets were not part of that generated commit and remain pinned by the Karen regression-control gate.
+
+This records asset synchronization only. The final Triton PASS still requires the gameplay/scale/regression completion gate below.
