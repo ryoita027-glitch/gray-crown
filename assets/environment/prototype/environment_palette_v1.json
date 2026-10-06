@@ -1,0 +1,19 @@
+{
+  "grass": "#7f9b63",
+  "grass_shadow": "#5f7950",
+  "grass_detail": "#9aae76",
+  "soil": "#967656",
+  "path": "#b39a73",
+  "stone": "#8d8a7f",
+  "wood_light": "#b28a5e",
+  "wood_mid": "#806245",
+  "wood_dark": "#574537",
+  "plaster": "#d6c9aa",
+  "roof": "#7d655a",
+  "roof_shadow": "#5e4d49",
+  "interior_floor": "#a98259",
+  "interior_wall": "#c3b18f",
+  "furniture": "#725741",
+  "shadow": "#474842",
+  "accent": "#9a8853"
+}
