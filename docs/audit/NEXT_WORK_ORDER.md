@@ -7,59 +7,54 @@
 - Triton 4-direction / 8Animation / gameplay / Medium44 / CI.
 - **Triton Second Character Validation PASS**.
 
-## Active gate
+## Sophie review history
 
-# **Sophie — STEADY HANDS Front Candidate v2**
+- v1: VISUAL REVISE — quality tier too low.
+- v2: **VISUAL REVISE — face reads frightening / uncanny.**
 
-v1 is Visual REVISE.
+Do not expand either candidate.
 
-v2 candidate:
+## Active task
 
-`docs/pixel/reference/sophie_steady_hands_front_candidate_v2_48.png`
+# **Sophie — STEADY HANDS Front Candidate v3**
 
-Required review evidence:
+Create one new front-facing design only.
 
-- Karen / Triton / Sophie color front comparison;
-- grayscale;
-- silhouette;
-- face crop;
-- face grayscale;
-- Medium44;
-- Sophie v1 vs v2.
+### v3 priority
 
-All comparison assets must be mechanical composites of repository PNGs.
+1. Remove the staring / doll-like eye read.
+2. Keep eyes large and attractive, but reduce exposed white and hard symmetry.
+3. Use a gentle slightly-drooping eye shape with readable iris/pupil.
+4. Use a small natural mouth; no fixed grin.
+5. Open the hair around eyes / brows / cheeks.
+6. Preserve adult 23-year-old read despite smallest body.
+7. Preserve honey hair.
+8. Preserve cream main mass + restrained green near hands.
+9. Preserve visible hands and STEADY HANDS.
+10. Keep protagonist-grade visual density equal to Karen / Triton.
 
 ## Mandatory stop
 
-The next user decision is:
+After v3 front is created, generate only mechanical real-PNG evidence:
 
-> **Sophie Front — PASS / REVISE / FAIL**
+- Karen / Triton / Sophie v3 front;
+- grayscale;
+- silhouette;
+- face crop;
+- Medium44.
 
-Do not create Sophie left/right/back or animation before PASS.
+Then stop for:
 
-## If PASS
-
-Sophie front lock  
-→ left / right / back  
-→ four-direction atlas  
-→ 8 Sophie-specific animations  
-→ Karen / Triton / Sophie gameplay comparison  
-→ Full48 / Medium44 / Compact41  
-→ full CI  
-→ Standard update.
-
-## If REVISE
-
-Modify Sophie front only.
-
-Karen and Triton remain locked controls.
+> **Sophie Front v3 — PASS / REVISE / FAIL**
 
 ## Paused
 
+- Sophie side/back;
+- Sophie 8Animation;
 - Margaret;
 - Environment Prototype;
 - main merge;
 - formal Pixel-native adoption;
-- Portrait deletion decision;
+- Portrait deletion;
 - NPC scale migration;
 - v24.

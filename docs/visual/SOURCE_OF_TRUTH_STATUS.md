@@ -7,10 +7,11 @@
 - Triton source: `docs/pixel/reference/triton_chibi_direction_lock_v1.png`.
 - **Triton Second Character Validation PASS**.
 - Pixel Character Standard v1 remains PROVISIONAL.
-- Active gate: **Sophie — STEADY HANDS Front Candidate v2**.
+- Active gate: **Sophie — STEADY HANDS Front Candidate v3 redesign**.
 - Sophie v1: Visual REVISE.
-- Sophie v2: user Visual Review pending.
-- Sophie remains front-only until PASS.
+- Sophie v2: **Visual REVISE — rejected as frightening / uncanny**.
+- Sophie remains front-only until explicit PASS.
+- Karen and Triton remain untouched controls.
 - Margaret remains paused.
 - Environment Pixel production remains paused until all four protagonists complete validation.
 - Locked-character comparisons use actual repository PNGs only.

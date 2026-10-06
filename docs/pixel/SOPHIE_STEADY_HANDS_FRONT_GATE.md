@@ -5,134 +5,109 @@
 **Branch:** `pixel-sophie-steady-hands-validation`  
 **Character:** Sophie — STEADY HANDS  
 **Phase:** front-facing visual design only  
-**v1:** **VISUAL REVISE**  
-**v2:** **USER VISUAL REVIEW PENDING**  
+**v1:** VISUAL REVISE  
+**v2:** **VISUAL REVISE — rejected as uncanny / frightening**  
+**Next:** **Front Candidate v3 only**  
 **Four-direction / animation production:** NOT AUTHORIZED
 
-## Current candidate
+## User verdict on v2
 
-`docs/pixel/reference/sophie_steady_hands_front_candidate_v2_48.png`
+The user rejected v2 because the design reads as frightening rather than gentle / cute.
 
-The v2 candidate is a 48×48 RGBA front-only source candidate.
+This is a visual-quality failure, not a failure of Sophie's canon or STEADY HANDS identity.
 
-It intentionally raises the visual-density and protagonist-quality bar over v1 while keeping Sophie's locked identity.
+### Why v2 failed
 
-Exact eye color remains unresolved canon. The neutral iris pixels in the candidate are provisional readability pixels only.
+The face became too doll-like:
 
-## Why v1 was revised
+- eye whites / dark outlines carry too much contrast;
+- the two eyes feel rigidly mirrored;
+- the gaze is too fixed;
+- the mouth reads like a fixed smile rather than a calm natural expression;
+- face-framing hair encloses the face too tightly;
+- the head/body relationship drifts toward childlike rather than adult Chibi;
+- the result is technically readable but emotionally uncanny.
 
-v1 preserved the broad identity but was too simple compared with locked Karen and Triton.
+The candidate therefore fails the protagonist appeal gate.
 
-The problem was not STEADY HANDS itself.
+## v3 redesign target
 
-The problem was:
+Do not merely edit a few pixels around the v2 face.
 
-- face readability too low;
-- hair mass too simple;
-- costume hierarchy too plain;
-- protagonist-grade visual density below Karen / Triton;
-- hand-focus insufficiently attractive at gameplay scale.
-
-Therefore v1 must not be expanded to four directions or animation.
-
-## v2 target
-
-Sophie remains:
+Rebuild Sophie's front facial read while preserving her canon:
 
 - 23-year-old adult woman;
-- 158cm, smallest hero;
+- 158cm / smallest hero;
 - soft standard body;
 - honey / light golden-brown hair;
-- gentle slightly drooping eyes;
 - off-white / cream dominant clothing;
-- muted green concentrated around wrists / hands / practical treatment storage;
+- muted green concentrated around wrists / hands / treatment storage;
 - one low soft bundle / braid;
-- calm posture;
-- hands as the primary acting hook;
-- kind, reassuring, but immovable where life is concerned.
+- hands as the primary acting hook.
 
-## Quality rule
+### Face
 
-Sophie must not be made visually simpler merely to differentiate her.
+v3 must use:
 
-All protagonists must occupy the same **Visual Quality Tier**.
+- large but softer Chibi eyes;
+- less exposed white area;
+- visible iris/pupil without staring effect;
+- gentle slightly-drooping outer eye shape;
+- softer upper-lid cluster;
+- small natural mouth;
+- no fixed grin;
+- adult softness rather than infant proportions.
 
-Difference must come from identity, not from lower detail or lower face quality.
+The emotional read should be:
 
-## Required contrast
+> calm, kind, attentive, reassuring.
 
-### Karen — VILLAGE RUNNER
-- forward;
-- light;
-- active;
-- red-haired;
-- whole-body emotional energy.
+Not:
 
-### Triton — GROUND ANCHOR
-- broad;
-- planted;
-- low center;
-- dark heavy hair;
-- horizontal stability.
+> doll-like, staring, fragile, frightened, or eerie.
 
-### Sophie — STEADY HANDS
-- smallest footprint;
-- softer rounded body;
-- honey hair;
-- calm face;
-- hand-focused attention;
-- cream + restrained green.
+### Hair around face
 
-## Mechanical comparison rule
+Keep honey hair and practical low gathering, but open the face:
 
-Karen and Triton must never be regenerated for comparison.
+- do not create a dark hair frame around both cheeks;
+- leave breathing room around eyes / brows / cheek area;
+- keep front strands controlled for treatment work;
+- preserve enough hair structure to remain protagonist-grade.
 
-Evidence is built only from:
+### Body
+
+The body must stay visibly smaller than Karen / Triton, but the head/body connection must feel intentional.
+
+Small hero ≠ child.
+
+### Hands
+
+STEADY HANDS remains mandatory:
+
+- both hands visible;
+- sleeves do not swallow hands;
+- muted green guides attention toward wrist/hand function;
+- no healer-symbol shorthand.
+
+## Locked controls
+
+Karen and Triton remain untouched.
+
+Comparison after v3 must use the actual committed PNGs only:
 
 - `docs/pixel/reference/karen_chibi_direction_v1.png`
 - `docs/pixel/reference/triton_chibi_direction_lock_v1.png`
-- `docs/pixel/reference/sophie_steady_hands_front_candidate_v2_48.png`
+- Sophie v3 actual PNG
 
-Allowed operations:
+Image-generated comparison boards remain prohibited.
 
-- crop;
-- nearest-neighbor resize;
-- grayscale;
-- silhouette;
-- deterministic labels / layout.
+## Mandatory stop
 
-Image-generation comparison boards are prohibited.
+Create **Sophie Front Candidate v3 only**.
 
-## Acceptance Gate
+Then stop for:
 
-User reviews:
+# **Sophie Front v3 — PASS / REVISE / FAIL**
 
-1. face quality vs Karen / Triton;
-2. protagonist-grade cuteness at 48px;
-3. readability at Medium44;
-4. distinct face before hair color;
-5. honey-hair silhouette;
-6. small adult body without child read;
-7. cream + green hierarchy;
-8. both hands readable;
-9. STEADY HANDS identity;
-10. no generic healer / nun shorthand;
-11. same-game Pixel Artist feel;
-12. no quality-tier drop.
-
-Decision:
-
-# **Sophie Front — PASS / REVISE / FAIL**
-
-Only PASS authorizes:
-
-front lock  
-→ left / right / back  
-→ four-direction atlas  
-→ eight Sophie-specific animations  
-→ Karen / Triton / Sophie gameplay comparison  
-→ Full48 / Medium44 / Compact41  
-→ full CI  
-→ Standard update.
-
-Margaret and environment production remain paused.
+Do not create side/back poses, four-direction atlas, animation, Margaret, or Environment work before PASS.

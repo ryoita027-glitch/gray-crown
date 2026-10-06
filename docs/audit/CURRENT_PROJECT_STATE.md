@@ -33,37 +33,37 @@ Triton is not modified for Sophie.
 
 ## Pixel Character Standard
 
-`docs/pixel/PIXEL_CHARACTER_STANDARD_v1_PROVISIONAL.md`
+`docs/pixel/PIXEL_CHARACTER_STANDARD_v1_PROVISIONAL.md` remains PROVISIONAL.
 
-remains PROVISIONAL.
-
-Karen + Triton establish the current technical and visual control pair.
+Karen + Triton remain the current locked control pair.
 
 ## Active phase
 
-> **Sophie — STEADY HANDS Front Candidate v2 Visual Gate**
+> **Sophie — STEADY HANDS Front Candidate v3 redesign**
 
-v1 is **VISUAL REVISE**.
+Sophie v1: Visual REVISE.  
+Sophie v2: **Visual REVISE — user rejected the face as frightening / uncanny.**
 
-Current candidate:
+v2 must not be propagated.
 
-`docs/pixel/reference/sophie_steady_hands_front_candidate_v2_48.png`
+The next authorized deliverable is one front-facing v3 candidate only.
 
-v2 is front-only and awaits user Visual Review.
+Primary v3 correction:
 
-Do not start Sophie side/back poses or animation before user PASS.
-
-Comparison Evidence must use locked real PNGs for Karen/Triton and the committed Sophie candidate.
-
-Image-generation comparison boards are prohibited.
+- softer readable eyes with less white / hard outline contrast;
+- no rigid mirrored stare;
+- natural small mouth instead of fixed smile;
+- more open face-framing hair;
+- adult 23-year-old Chibi balance;
+- preserve honey hair, cream + green, small soft body and visible hands.
 
 ## Margaret
 
-Paused until Sophie completes her character validation.
+Paused until Sophie passes full character validation.
 
 ## Environment
 
-Environment Pixel production is not authorized until Karen, Triton, Sophie and Margaret are completed.
+Environment Pixel production is not authorized until Karen, Triton, Sophie and Margaret complete validation.
 
 ## Still not authorized
 
