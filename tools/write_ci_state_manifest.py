@@ -2,8 +2,10 @@
 """Write a machine-readable snapshot of the current CI/handoff state."""
 from pathlib import Path
 import hashlib
+import importlib.metadata
 import json
 import os
+import platform
 import re
 import subprocess
 
@@ -19,6 +21,18 @@ def sha256(rel):
 
 def git(*args):
     return subprocess.check_output(["git", *args], cwd=ROOT, text=True).strip()
+
+def installed_version(name):
+    try:
+        return importlib.metadata.version(name)
+    except importlib.metadata.PackageNotFoundError:
+        return None
+
+def command_version(*args):
+    try:
+        return subprocess.check_output(list(args), text=True).strip()
+    except Exception:
+        return None
 
 def event_context():
     path = os.environ.get("GITHUB_EVENT_PATH")
@@ -80,6 +94,18 @@ data = {
         "event": os.environ.get("GITHUB_EVENT_NAME"),
         "run_id": os.environ.get("GITHUB_RUN_ID"),
         "run_number": os.environ.get("GITHUB_RUN_NUMBER"),
+    },
+    "environment": {
+        "python": platform.python_version(),
+        "node": command_version("node", "--version"),
+        "npm": command_version("npm", "--version"),
+        "packages": {
+            "pillow": installed_version("pillow"),
+            "playwright": installed_version("playwright"),
+            "greenlet": installed_version("greenlet"),
+            "pyee": installed_version("pyee"),
+            "typing-extensions": installed_version("typing-extensions"),
+        },
     },
     "sha256": {rel: sha256(rel) for rel in files},
 }

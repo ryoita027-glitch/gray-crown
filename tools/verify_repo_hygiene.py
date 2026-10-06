@@ -74,6 +74,7 @@ required = {
     "docs/audit/NEXT_WORK_ORDER.md",
     "docs/visual/SOURCE_OF_TRUTH_STATUS.md",
     ".github/workflows/karen-prototype-check.yml",
+    "requirements-ci.txt",
 }
 for rel in sorted(required):
     if rel not in tracked:
@@ -84,6 +85,19 @@ if v4_committed in tracked:
     errors.append(
         "Triton front v4 is committed as a reference before the active USER VISUAL gate was resolved"
     )
+
+
+# CI dependencies are intentionally pinned to versions from a successful run.
+requirements = ROOT / "requirements-ci.txt"
+if requirements.exists():
+    for raw in requirements.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        if "==" not in line:
+            errors.append(f"CI dependency is not exactly pinned: {line}")
+else:
+    errors.append("missing requirements-ci.txt")
 
 workflow = (ROOT / ".github/workflows/karen-prototype-check.yml").read_text(encoding="utf-8")
 if "contents: write" in workflow or "pull-requests: write" in workflow:

@@ -58,8 +58,8 @@ jobs:
       - name: Verify project authority and current work gate
         run: npm run verify-authority
 
-      - name: Install prototype asset dependencies
-        run: python -m pip install --disable-pip-version-check pillow
+      - name: Install pinned CI dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements-ci.txt
 
       - name: Verify Karen visual regression control before work
         run: python tools/verify_karen_visual_regression_control.py
@@ -74,9 +74,7 @@ jobs:
         run: python tools/build_karen_triton_identity_evidence.py
 
       - name: Install Playwright Chromium
-        run: |
-          python -m pip install --disable-pip-version-check playwright
-          python -m playwright install --with-deps chromium
+        run: python -m playwright install --with-deps chromium
 
       - name: Full prototype regression
         run: npm run prototype-check
