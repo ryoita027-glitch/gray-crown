@@ -25,6 +25,7 @@ Triton — GROUND ANCHOR is now complete for the protagonist validation phase.
 
 Visual authority:
 
+- **Triton Chibi Direction Lock v1**
 - `docs/pixel/TRITON_CHIBI_DIRECTION_LOCK_v1.md`
 - `docs/pixel/reference/triton_chibi_direction_lock_v1.png`
 
