@@ -1,101 +1,27 @@
 # Gray Crown — Next Work Order
 
-Production remains **main / v23 / Save schema 23 / Story 00–19**.
+## Active phase: Triton completion
 
-## Development review
+User-approved visual source: **Triton Chibi Direction Lock v1**.
 
-The project is currently healthy technically.
+Do not reopen old Triton v2/v3/v4 face directions.
 
-### Completed
+### Completion sequence
 
-- Story 00–19 production baseline
-- Save schema 23
-- Karen approved and locked
-- Karen 4-direction / 8-animation / scale validation
-- 48×48 Pixel Actor architecture
-- ~44px Medium render candidate
-- Triton GROUND ANCHOR body / low center / broad shoulders / dark heavy hair / blue waist mass
-- Triton 8-animation technical architecture
-- SceneRunner / camera / control restoration
-- full regression suite
-- Pixel Character Standard v1 provisional
-- Karen hash protection
-- real-PNG mechanical comparison pipeline
-- Triton v4 deterministic face candidate
-- Triton v4 technical CI PASS
+1. Finalize normalized 4-direction Idle from the approved Lock.
+2. Regenerate exactly eight Triton animation categories:
+   Idle / Walk / Talk / Surprise / Laugh / Approach / Run / Turn.
+3. Preserve Triton motion identity: planted, lower bounce, stable axis, heavy-hair tip lag, grounded laugh/run.
+4. Run Karen + Triton actual-game matched comparison at Medium44.
+5. Run Full48 / Medium44 / Compact41 scale evidence.
+6. Run full Node/browser CI.
+7. Verify all nine locked Karen visual blobs remain unchanged.
+8. Record **Triton Second Character Validation PASS** when those gates are green.
+9. Update Pixel Character Standard v1 from Karen + Triton evidence.
+10. Only then resume Sophie — STEADY HANDS front Idle.
 
-### Not completed
-
-- Triton Front v4 Visual PASS
-- Triton repaired left / right / back
-- repaired Triton 8 animations
-- Sophie validation
-- Margaret validation
-- formal Pixel-native adoption
-- main merge
-
-## Current evidence
-
-CI run:
-
-**37429109104 — SUCCESS**
-
-Head:
-
-`ccc93fdbebc9f052c039ed0f4200a0d6b51c31ce`
-
-Artifact:
-
-**11395929455 — karen-pixel-prototype-evidence**
-
-Digest:
-
-`sha256:830ed71a23d32bce01274aa4cab5872116964f9860cee9201ffaf9a991714087`
-
-## Correct next step
-
-Do not widen scope.
-
-The next gate is:
-
-> **Triton Front v4 — USER VISUAL PASS / REVISE / FAIL**
-
-Use the real-PNG evidence:
-
-- front
-- grayscale
-- face crop
-- face grayscale
-- silhouette
-- v3→v4 pixel difference
-
-## If PASS
-
-Proceed autonomously:
-
-front v4 accepted  
-→ left/right/back translation  
-→ four-direction atlas  
-→ four-direction mechanical Karen comparison  
-→ regenerate eight animations  
-→ Karen hash verification  
-→ gameplay comparison  
-→ 48/44/41 scale confirmation  
-→ full CI  
-→ Standard update  
-→ Sophie resumes
-
-## If REVISE
-
-Continue front-only.
-
-Karen remains untouched.
+## Sophie
+Sophie is paused until Triton PASS and Standard update. When resumed: front-facing character design only first; stop for user visual review before 4-dir/8Animation.
 
 ## Paused
-
-- Sophie
-- Margaret
-- NPC migration
-- main merge
-- v24
-- formal Pixel-native adoption
+Margaret; main merge; formal Pixel-native adoption; Portrait deletion decision; NPC scale migration; v24.
