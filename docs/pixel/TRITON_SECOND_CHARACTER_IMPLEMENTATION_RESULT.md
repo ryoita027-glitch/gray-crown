@@ -2,148 +2,201 @@
 
 ## Status
 
-**Branch:** `pixel-triton-second-character-validation`  
-**Implementation commit tested:** `43ab43be257e7db144c3e4b76171488580b1ae9d`  
-**Draft PR:** #20  
-**Source architecture:** 48×48 cell  
+**Branch:** `pixel-karen-triton-face-differentiation-fix`  
+**Draft PR:** #22  
+**Visual source:** **Triton Chibi Direction Lock v1**  
+**Source atlas:** `docs/pixel/reference/triton_chibi_direction_lock_v1.png`  
+**Source architecture:** 48×48 RGBA cells  
 **Logical world:** 32px tile  
 **Selected prototype screen occupancy:** **44px Medium**  
 **Design identity:** Triton A — GROUND ANCHOR  
-**Decision:** **TECHNICAL GO — SECOND CHARACTER VALIDATED**  
+**Decision:** **TRITON SECOND CHARACTER VALIDATION PASS**  
 **Production main merge:** NOT PERFORMED  
 **Pixel-native formal adoption:** NOT YET
 
-## Completed
+## Visual lock
 
-1. Back-facing Triton pose added.
-2. Four-direction Idle source atlas completed in down / left / right / up order.
-3. Karen + Triton matched-framing comparison added.
-4. Exactly eight Triton animation categories implemented:
-   - Idle — 4 frames
-   - Walk — 6
-   - Turn — 3
-   - Talk — 4
-   - Surprise — 4
-   - Approach — 4
-   - Laugh — 6
-   - Run — 6
-5. Full 48 / Medium 44 / Compact 41 scale comparison added.
-6. Deterministic Triton asset generation and verification added.
-7. Save schema remains 23 and logical map tile remains 32.
+The user-approved Triton direction is now the authoritative Triton visual direction.
 
-## Character-specific acting
+Do not reopen old v2 / v3 / v4 face-repair directions unless the user explicitly reopens Triton design.
 
-Triton intentionally does not reuse Karen's motion personality.
+The approved direction preserves:
 
-- Idle: low-amplitude body motion.
-- Walk: less vertical bounce; stable stride.
-- Hair: heavy shoulder-length mass with tip-only lag.
-- Talk: arm motion without Karen-like light whole-body bounce.
-- Surprise: compact reaction rather than a large jump.
-- Approach: torso commitment with a planted step.
-- Laugh: broad upper-body reaction while keeping the stance grounded.
-- Run: stronger leg separation with restrained hair motion.
+- protagonist-grade Chibi readability;
+- dark unbound heavy hair;
+- broader shoulders than Karen;
+- low center of gravity;
+- planted stance;
+- off-white / gray main mass;
+- faded-blue horizontal waist / side mass;
+- calm but readable face;
+- reliable / strong / grounded / approachable first impression.
 
-The purpose is to preserve **GROUND ANCHOR**, not create a recolored Karen animation set.
+Karen remains unchanged.
 
-## Karen / Triton comparison
+## Four-direction Idle
 
-The Medium comparison uses matched camera framing and the same source-cell architecture.
+The approved lock is normalized to a 192×48 atlas in:
 
-Target distinction is preserved in implementation:
+`docs/pixel/reference/triton_chibi_direction_lock_v1.png`
 
-- Karen: forward / light / red-haired / vertically active.
-- Triton: planted / horizontally stable / dark-haired / broader shoulder and waist mass / lower center of gravity.
-- Triton's faded-blue waist block remains the low horizontal visual hook.
+Compatibility alias:
 
-Karen remains the control, not an anatomy template.
+`docs/pixel/reference/triton_idle_4dir_v1.png`
 
-## Scale verdict
+Both are byte-identical and use:
 
-### Full 48
-Retains the most source detail but is the most dominant against the existing 32px world population and furniture.
+1. down
+2. left
+3. right
+4. up
 
-### Medium 44
-**Selected prototype condition.**
+The four directions preserve Triton's heavy hair mass, shoulder width and low-center stance.
 
-It preserves the advantages of the 48px source architecture while matching the world scale closely enough to use for both Karen and Triton prototype validation.
+## Eight animation categories
 
-This is now stronger evidence than Karen alone because the same architecture supports two characters with substantially different silhouette, weight, posture and motion personality.
+Committed runtime sheets:
 
-### Compact 41
-Retained as fallback. It fits the old world more tightly but gives up more facial, waist-block and acting readability.
+1. Idle — 4 frames
+2. Walk — 6
+3. Turn — 3
+4. Talk — 4
+5. Surprise — 4
+6. Approach — 4
+7. Laugh — 6
+8. Run — 6
 
-## Regression evidence
+All eight committed sheets match deterministic regeneration from the approved lock.
 
-GitHub Actions run: **37401209352**  
-Workflow: **Karen Pixel Prototype CI**  
-Tested implementation head: **43ab43be257e7db144c3e4b76171488580b1ae9d**
+Triton motion remains character-specific:
 
-The first attempt stopped in the pre-existing Frontier Section 2 browser walk gate with `AssertionError: walk failed`. Triton Node tests had already passed. The failed job was re-run on the **same head without code changes** and completed successfully, confirming the first failure was not caused by the Triton implementation.
+- Idle: low amplitude;
+- Walk: reduced vertical bounce;
+- Talk: restrained body axis;
+- Surprise: compact rather than jumping;
+- Approach: weight-committed;
+- Laugh: broad but planted;
+- Run: visible weight;
+- Hair: heavy mass with tip-focused lag.
 
-Final successful evidence:
+## Karen / Triton actual-game comparison
 
-- Node tests: **58 / 58 PASS**
-- Triton metadata/grid tests: PASS
-- V21 Browser Gate: PASS
-- Alpha2 Frontier Section 1: PASS
-- Alpha2 Frontier Section 2: PASS on rerun
-- Developer Mode: PASS
-- Karen Pixel / Chibi gates: PASS
-- Karen scale gate: PASS
-- Triton Karen-comparison browser gate: PASS
-- Triton eight-animation browser sequence: PASS
-- Triton 48 / 44 / 41 scale gate: PASS
-- control restoration: PASS
-- Save schema: 23
-- logical tile: 32
+Browser evidence places Karen and Triton together in the live game scene at matched camera framing.
 
-## Evidence artifact
+At Medium44:
 
-Artifact id: **11385149436**  
-Name: `karen-pixel-prototype-evidence`  
-Digest: `sha256:b384f11ba8fe998fb3e363025a0869dce711bb55aae3967c6795059629dc154a`
+- Karen remains forward / light / red-haired / vertically active;
+- Triton remains planted / dark-haired / broader / horizontally stable;
+- Triton does not read as a Karen recolor;
+- Triton remains visible against the village background;
+- both read as protagonist-class characters from the same game.
 
-Triton evidence includes:
+Evidence includes:
 
 - `triton_karen_idle_medium.png`
 - `triton_medium_walk.png`
 - `triton_medium_talk.png`
 - `triton_medium_laugh.png`
 - `triton_medium_run.png`
+
+## Scale verdict
+
+### Full48
+Useful for maximum facial and clothing detail, but more dominant against the 32px world.
+
+### Medium44
+# **SELECTED**
+
+Medium44 preserves Triton's face, dark-hair silhouette, shoulder width and blue waist mass while fitting the existing world better.
+
+### Compact41
+Retained as fallback. It fits the world more tightly but gives up more protagonist and face readability.
+
+Evidence:
+
 - `triton_scale_full_idle.png`
 - `triton_scale_medium_idle.png`
 - `triton_scale_compact_idle.png`
 
-## Decision
+## Karen Visual Regression Control
 
-# **TECHNICAL GO**
+Karen remained completely unchanged.
 
-The second-character reproducibility question is answered positively:
+CI verifies the approved Karen source plus all eight Karen runtime PNG Git blobs before and after the full test suite.
 
-> The same 48×48 Pixel-native source architecture and approximately 44px on-screen scale can support both Karen and Triton without requiring the same body, silhouette, posture, hair behavior or acting personality.
+Result:
 
-This does **not** mean:
+# **9 / 9 KAREN VISUAL BLOBS UNCHANGED**
 
-- game-wide Pixel-native adoption is final;
-- 44px is permanently locked for every hero;
-- Portrait OFF is final policy;
-- main should be merged now;
-- Sophie / Margaret should be mass-produced immediately.
+Karen remains the Visual Regression Control.
 
-## Next authorized phase
+## Final CI evidence
 
-Prepare **Pixel Character Standard v1 — PROVISIONAL** from the two-character evidence.
+Workflow:
 
-That standard may define shared technical rules such as:
+**Gray Crown Triton Completion CI**
 
-- 48×48 source cells;
-- logical 32px world unchanged;
-- foot-anchor-based scaling;
-- approximately 44px default hero occupancy as a starting point;
-- nearest-neighbor rendering;
-- eight acting categories;
-- per-character silhouette / center-of-gravity / hair-motion differences;
-- no requirement for identical visible height or internal foot placement.
+Run:
 
-Sophie and Margaret production should begin only after the provisional standard is reviewed.
+**37436833623 — SUCCESS**
+
+Tested head:
+
+`69d01fba95d8f18b7d1eeacfb7f7a3de96f8a5e4`
+
+Artifact:
+
+- id: **11398669794**
+- name: `gray-crown-triton-completion-evidence`
+- digest: `sha256:0e67a662aece3df4cf95a25a15b728b6eeefd9961f7de2c7acc9c4d731558d9c`
+
+Verified:
+
+- repository hygiene: PASS
+- project authority: PASS
+- Karen lock before work: PASS
+- Triton Direction Lock: PASS
+- eight runtime sheets: PASS
+- deterministic regeneration equality: PASS
+- mechanical Karen / Triton four-direction evidence: PASS
+- Node regression: PASS
+- V21 browser gate: PASS
+- Frontier Section 1: PASS
+- Frontier Section 2: PASS
+- Developer Mode: PASS
+- Karen prototype browser gate: PASS
+- Karen scale browser gate: PASS
+- Triton actual-game / eight-animation / scale browser gate: PASS
+- control restoration: PASS
+- Karen lock after work: PASS
+- Save schema remains 23
+
+## Final decision
+
+# **TRITON SECOND CHARACTER VALIDATION PASS**
+
+Karen and Triton now demonstrate that the same Pixel Actor system can support two protagonist characters that differ in:
+
+- face;
+- silhouette;
+- shoulder width;
+- center of gravity;
+- hair structure;
+- color mass;
+- standing pose;
+- movement amplitude;
+- animation personality;
+
+without changing the 48×48 source architecture or the 32px logical world.
+
+## Next phase
+
+Update Pixel Character Standard v1 from the completed two-character evidence.
+
+After that:
+
+> **Sophie — STEADY HANDS**
+
+starts with one front-facing Idle visual candidate only.
+
+Do not begin Sophie four-direction or eight-animation work before user visual approval.

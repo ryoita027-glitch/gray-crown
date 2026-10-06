@@ -1,6 +1,6 @@
 # Gray Crown — Pixel Character Standard v1
 
-**Status:** PROVISIONAL  
+**Status:** PROVISIONAL — KAREN + TRITON VALIDATED  
 **Scope:** field / event Pixel Actor for protagonist-class characters  
 **Evidence base:** Karen Chibi + Triton GROUND ANCHOR  
 **Production status:** NOT ADOPTED TO main  
@@ -849,3 +849,145 @@ For Triton/Sophie/Margaret work:
 - Technical PASS and Visual PASS remain separate decisions.
 
 Any AI-generated comparison board is automatically **NON-AUTHORITATIVE / DISCARD**.
+
+
+---
+
+# 26. Two-character validated identity rules
+
+Status after **Triton Second Character Validation PASS**:
+
+- Karen VILLAGE RUNNER: visual lock validated;
+- Triton GROUND ANCHOR: visual lock + four-direction + eight-animation + gameplay + scale validated;
+- Medium44 remains the default starting condition for protagonist field actors;
+- 48×48 remains the shared source-cell architecture;
+- the Standard remains PROVISIONAL until Sophie and Margaret also pass.
+
+## 26.1 Same system must not mean same person
+
+A shared Pixel Character system may standardize:
+
+- source-cell dimensions;
+- direction order;
+- anchor behavior;
+- nearest-neighbor rendering;
+- animation category names;
+- scene integration;
+- comparison and regression tooling.
+
+It must **not** normalize characters into one face/body template.
+
+Every protagonist needs an explicit identity signature in at least these areas:
+
+### Face signature
+- face width / length relationship;
+- eye shape and openness;
+- brow geometry;
+- mouth width / resting expression;
+- jaw / chin read;
+- face-framing hair.
+
+### Body signature
+- shoulder width;
+- torso / hip relationship;
+- foot spacing;
+- center of gravity;
+- visible height inside the source cell;
+- resting arm position.
+
+### Motion signature
+- bounce amplitude;
+- stride weight;
+- arm range;
+- hair lag;
+- approach distance;
+- emotional-reaction amplitude.
+
+Color is supportive evidence only.
+
+> If two characters become the same person after swapping hair / costume colors, the visual gate FAILS.
+
+## 26.2 No master anatomy sprite
+
+Neither Karen nor Triton may become a universal base body.
+
+Forbidden workflow:
+
+> approved hero sprite → recolor → hair swap → minor face edit → new hero.
+
+Reuse technical infrastructure, not anatomy identity.
+
+## 26.3 Character Direction Lock
+
+Once a character front direction receives explicit user approval and is recorded as a Direction Lock:
+
+- that direction becomes the visual authority;
+- later work may make only directional-consistency, animation-readability or source-cell cleanup corrections;
+- a wholesale redesign requires the user to explicitly reopen the visual direction.
+
+Current locks:
+
+- Karen: `karen_chibi_direction_v1.png`
+- Triton: `triton_chibi_direction_lock_v1.png`
+
+## 26.4 Control-character protection
+
+Karen remains the permanent Visual Regression Control for the current protagonist-validation phase.
+
+Triton is now also a validated comparison control for future characters.
+
+Sophie and Margaret must be compared against real committed Karen / Triton PNGs, not regenerated stand-ins.
+
+## 26.5 Face quality is a first-class gate
+
+Differentiation alone is insufficient.
+
+A new protagonist must satisfy both:
+
+1. **distinct identity** — not a reskin of an existing hero;
+2. **protagonist-grade appeal/readability** — the face still works at intended gameplay scale.
+
+A character does not PASS merely because their eyes, mouth or hair differ mathematically.
+
+## 26.6 Medium44 rule
+
+Medium44 is the validated default **starting scale**, not a demand for identical visible body height.
+
+Future heroes may occupy the 48px cell differently according to canonical height, hair volume, body width and stance.
+
+The invariant is grounded world placement, not matching head height.
+
+## 26.7 Animation personality is mandatory
+
+The eight category names are shared, but animation personality must remain character-specific.
+
+Validated contrast:
+
+- Karen: forward, light, larger reactions, more social distance-closing;
+- Triton: planted, lower bounce, stable axis, heavy-hair response, grounded emotional weight.
+
+A new hero that merely uses the same displacement curves with different art has not passed the acting standard.
+
+## 26.8 Sophie validation rule
+
+The next test is **Sophie — STEADY HANDS**.
+
+Start with one front-facing Idle candidate only.
+
+Do not create side/back poses or eight animations until the user approves the front design.
+
+Sophie must challenge the system in the opposite direction from Triton:
+
+- 158cm / smallest hero;
+- softer body;
+- honey-colored hair;
+- gentler / slightly drooping eyes;
+- off-white main mass;
+- green concentrated around hands;
+- hands as primary acting focus;
+- quiet support;
+- stubborn stillness around life-and-death matters.
+
+The goal is not "small healer."
+
+The goal is a distinct adult 23-year-old protagonist whose hands communicate identity before profession symbols do.
