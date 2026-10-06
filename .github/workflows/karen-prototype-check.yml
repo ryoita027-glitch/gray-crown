@@ -1,10 +1,7 @@
 name: Karen Pixel Prototype CI
-# Read-only visual/control gate. Karen is the locked regression control.
-
 on:
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
       - "**"
       - "!docs/**"
@@ -24,14 +21,11 @@ on:
       - "!README.txt"
       - "!*.txt"
   workflow_dispatch:
-
 concurrency:
   group: karen-pixel-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
-
 permissions:
   contents: read
-
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -40,82 +34,53 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
       - name: Verify repository hygiene and production baseline
         run: npm run verify-hygiene
-
       - name: Verify Python source syntax
         run: npm run verify-python-syntax
-
       - name: Verify project authority and current work gate
         run: npm run verify-authority
-
       - name: Install pinned CI dependencies
         run: python -m pip install --disable-pip-version-check -r requirements-ci.txt
-
       - name: Verify Karen visual regression control before work
         run: python tools/verify_karen_visual_regression_control.py
-
-      - name: Generate deterministic Triton v4 front candidate
-        run: python tools/generate_triton_front_v4_candidate.py
-
-      - name: Verify Triton v4 face-only pixel scope
-        run: python tools/verify_triton_front_v4_pixel_scope.py
-
-      - name: Build real-PNG mechanical Karen Triton evidence
+      - name: Verify Triton Chibi Direction Lock v1
+        run: python tools/verify_triton_direction_lock.py
+      - name: Build committed-source Karen Triton evidence
         run: python tools/build_karen_triton_identity_evidence.py
-
       - name: Install Playwright Chromium
         run: python -m playwright install --with-deps chromium
-
       - name: Full prototype regression
         run: npm run prototype-check
-
-      - name: Verify Triton review runtime outputs remain uncommitted
-        run: |
-          tracked="$(git ls-files 'assets/characters/triton/*.png')"
-          if [ -n "$tracked" ]; then
-            echo "Triton review runtime PNGs became tracked before USER VISUAL PASS:"
-            echo "$tracked"
-            exit 1
-          fi
-          count="$(find assets/characters/triton -maxdepth 1 -type f -name 'triton_*.png' | wc -l)"
-          if [ "$count" -ne 8 ]; then
-            echo "Expected 8 generated Triton runtime PNGs, found $count"
-            exit 1
-          fi
-
+      - name: Verify Triton generated runtime sheets
+        run: python tools/verify_triton_prototype_assets.py
+      - name: Verify committed Triton runtime sheets match generator
+        run: git diff --exit-code -- assets/characters/triton/
       - name: Verify Karen visual regression control after work
         run: python tools/verify_karen_visual_regression_control.py
-
       - name: Write machine-readable CI state manifest
         if: always()
         run: python tools/write_ci_state_manifest.py
-
       - name: Write CI gate summary
         if: always()
         run: |
           {
-            echo "## Gray Crown automated gate"
+            echo "## Gray Crown Triton completion gate"
             echo ""
-            echo "- Event: \`${GITHUB_EVENT_NAME}\`"
-            echo "- Commit: \`${GITHUB_SHA}\`"
+            echo "- Commit: \${GITHUB_SHA}"
             echo "- Job status: **${{ job.status }}**"
-            echo "- Automated: authority drift, repo hygiene, Python/JS/tests, deterministic review outputs, visual evidence."
-            echo "- Authority: Triton Front v4 remains the active USER VISUAL gate."
-            echo "- Karen: locked regression control; CI may not redesign her."
-            echo "- Triton runtime PNGs: generated for testing/review, not committed before PASS."
+            echo "- Triton authority: user-approved Chibi Direction Lock v1."
+            echo "- Karen: locked regression control and unchanged by this pipeline."
+            echo "- Required: 8Animation + actual-game Medium44 + 48/44/41 + full regression."
+            echo "- Sophie remains paused until Triton PASS and Standard update."
             echo "- main merge / formal Pixel-native adoption: not automated."
-          } >> "$GITHUB_STEP_SUMMARY"
-
+          } >> "\${GITHUB_STEP_SUMMARY}"
       - name: Upload CI and visual evidence
         if: always()
         uses: actions/upload-artifact@v4
