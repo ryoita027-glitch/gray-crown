@@ -6,68 +6,71 @@
 - Draft PR: #22
 - Karen: **LOCKED / VISUAL REGRESSION CONTROL**
 - Triton Technical Architecture: **PASS**
-- Triton Front Visual: **v4 candidate ready for user review**
+- Triton Front Visual: **v4 deterministic candidate**
 - Sophie / Margaret: paused
 
 ## Progress review
 
-Completed and stable:
+Stable:
 
-- production remains main / v23 / Save schema 23 / Story 00–19;
-- Karen approved design and all eight runtime PNGs are pinned;
-- 48×48 source architecture works;
-- ~44px Medium render works;
-- Triton GROUND ANCHOR body / stance / color-mass direction works;
-- eight-animation architecture and grounded motion personality work;
-- comparison boards are now real-PNG mechanical composites only;
-- CI separates Technical PASS from Visual PASS.
+- main / v23 / Save schema 23 / Story 00–19;
+- Karen approved source and 8 runtime sheets are hash-pinned;
+- 48×48 source architecture and ~44px Medium rendering work;
+- Triton GROUND ANCHOR body, stance, dark heavy hair silhouette and faded-blue waist mass work;
+- Triton eight-animation technical system works;
+- AI-generated comparison boards are permanently banned;
+- Technical PASS and Visual PASS are separate.
 
-The remaining blocker is **Triton's front-face quality**.
+Current blocker:
 
-v3 was technically valid but visually rejected because the face remained less attractive / readable than Karen.
+> Triton's front face needs protagonist-level charm and readability without collapsing back into Karen's face template.
 
-## v4 direction
+## v4 implementation strategy
 
-v4 keeps the proven Triton body and external silhouette.
+The prior attempt to commit a new binary candidate exposed an avoidable binary-transport problem.
 
-It changes only the internal face / immediate face-framing region to move toward:
+Therefore v4 is represented by a deterministic pixel patch over committed v3:
 
-- larger-head-feeling Chibi readability;
-- narrow but clearly readable eyes;
-- visible pupil/iris information without copying Karen's round-eye template;
-- straight grounded brows;
-- a restrained but wider-capable mouth;
-- slightly longer / sharper face;
-- clearer open face center under heavy dark hair;
-- reliable / strong / grounded / approachable protagonist read.
+`tools/generate_triton_front_v4_candidate.py`
 
-Exact eye color remains unresolved canon. Any current iris color is implementation placeholder only.
+It generates:
 
-## v4 source candidate
+`prototype_artifacts/triton_idle_front_repair_candidate_v4_48.png`
 
-`docs/pixel/reference/triton_idle_front_repair_candidate_v4_48.png`
+This is a real 48×48 RGBA PNG, not a generated comparison board.
 
-This file is a **front-only candidate**, not the official Triton four-direction source.
+Advantages:
 
-## Pixel-perfect scope
+- every changed pixel is reviewable in Git;
+- the candidate is reproducible byte-for-byte in CI;
+- body / silhouette scope can be verified;
+- Karen is never passed through an image generator or modified.
 
-v4 is checked against v3.
+## v4 visual target
 
-Allowed patch:
+- Chibi protagonist face with clearer read at gameplay scale;
+- eyes remain narrower than Karen, but regain readable pupil/sclera structure;
+- straight stable brows;
+- compact, natural Idle mouth with room for broad Laugh animation later;
+- slightly longer/sharper facial read than Karen;
+- heavy dark hair remains, but the central face is less visually crushed;
+- reliable / strong / grounded / approachable.
 
-`[18,8,31,18]`
+Eye color remains unresolved canon; the current implementation color is provisional only.
 
-Required:
+## Pixel scope
 
-- no changed pixel outside the face patch;
-- no alpha/silhouette change;
-- body / stance / clothing / waist blue mass unchanged;
-- outer hair silhouette unchanged;
-- Karen unchanged.
+v3 → v4:
 
-## Comparison evidence
+- exact changed pixels: **76**
+- allowed face patch: `[18,8,31,18]`
+- body outside face patch must be pixel-perfect;
+- alpha silhouette must be pixel-perfect;
+- Karen must remain hash-identical.
 
-Generated mechanically from committed PNGs only:
+## Mechanical evidence
+
+CI creates:
 
 - `karen_triton_v4_front_mechanical_x10.png`
 - `karen_triton_v4_grayscale_mechanical_x10.png`
@@ -78,19 +81,12 @@ Generated mechanically from committed PNGs only:
 - `triton_v3_v4_face_grayscale_mechanical_x10.png`
 - `triton_v3_v4_rgba_difference_x10.png`
 
-No image-generation model is used to build these boards.
+Only actual PNG pixels are mechanically composed.
 
 ## Decision boundary
 
-CI may approve only:
+After Technical PASS, the user still decides:
 
-- file integrity;
-- pixel repair scope;
-- Karen preservation;
-- runtime regression.
+**Triton Front v4 — PASS / REVISE / FAIL**
 
-Only the user may approve:
-
-> **Triton Front v4 Visual PASS**
-
-Do not propagate v4 to other directions until that PASS.
+No directional or animation propagation before PASS.

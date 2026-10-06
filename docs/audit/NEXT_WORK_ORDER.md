@@ -2,77 +2,58 @@
 
 Production remains **main / v23 / Save schema 23 / Story 00–19**.
 
-## Current blocker
+## Development review
 
-The project is not blocked by runtime architecture.
+The project is technically much further along than the current visual blocker suggests.
 
-The active blocker is:
+Completed:
 
-> **Triton Front v4 Visual Gate**
+- Story 00–19 production baseline;
+- stable Save schema 23;
+- Karen approved Chibi Pixel Actor;
+- Karen 4-direction / 8-animation / scale validation;
+- Triton GROUND ANCHOR body and motion architecture;
+- 48×48 source / 44px Medium prototype architecture;
+- SceneRunner / camera / control restore;
+- regression suite;
+- Pixel Character Standard v1 provisional;
+- locked-character hash protection;
+- real-PNG comparison pipeline.
 
-Karen is fixed and must not change.
+Not completed:
 
-## What is already complete
+- Triton final front-face Visual PASS;
+- Triton repaired four directions;
+- repaired eight animations;
+- Sophie validation;
+- formal Pixel-native adoption.
 
-- Karen Chibi visual direction: approved and locked.
-- Karen source + eight runtime PNGs: hash-pinned.
-- 48×48 Pixel Actor architecture: validated.
-- 44px Medium prototype occupancy: validated technically.
-- Triton GROUND ANCHOR body / low center / broad shoulders / heavy dark hair / faded-blue waist mass: retained.
-- Triton 8-animation technical structure: validated.
-- Real-PNG mechanical comparison policy: enforced.
-- AI-generated comparison boards: banned.
-- Technical PASS and Visual PASS: separated.
+## Correct next step
 
-## Current task
+Do **not** widen scope.
 
-Evaluate:
+The next step is:
 
-`docs/pixel/reference/triton_idle_front_repair_candidate_v4_48.png`
+> Generate and review Triton front v4 through the deterministic pixel patch + real-PNG evidence pipeline.
 
-with the mechanically generated:
+The binary candidate is generated in CI from committed v3 and a reviewable text pixel patch.
 
-- front comparison
-- grayscale comparison
-- face crop
-- face grayscale
-- silhouette
-- v3→v4 raw difference
+## After Technical PASS
 
-## Mandatory stop
-
-The next human decision remains:
+Human gate:
 
 **PASS / REVISE / FAIL**
 
-for Triton Front v4.
+If PASS:
 
-## If PASS
-
-Proceed without further micro-confirmations:
-
-v4 front accepted  
-→ left/right/back translation  
-→ four-direction source atlas  
-→ mechanical four-direction Karen comparison  
-→ regenerate Triton eight animation sheets  
-→ preserve grounded motion personality  
-→ Karen hash check  
-→ matched gameplay comparison  
-→ 48 / 44 / 41 scale re-check  
+front v4 accepted  
+→ translate identity to left/right/back  
+→ four-direction evidence  
+→ regenerate eight animation sheets  
+→ Karen hash verification  
+→ matched gameplay / 48-44-41 scale re-check  
 → full CI  
 → Standard update  
 → Sophie resumes
 
-## If REVISE
-
-Continue Triton front only.
-
-## Paused until PASS
-
-- Sophie production
-- Margaret production
-- NPC migration
-- main merge
-- v24
-- formal Pixel-native adoption
+Until then, Sophie/Margaret/main merge/v24 remain paused.

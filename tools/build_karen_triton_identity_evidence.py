@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
-"""Build deterministic Karen/Triton v4 visual evidence from real PNGs only.
-
-No image-generation model is used for comparison boards.
-"""
+"""Build deterministic Karen/Triton v4 evidence from real PNGs only."""
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 import hashlib, json
@@ -12,7 +9,7 @@ OUT=ROOT/"prototype_artifacts";OUT.mkdir(exist_ok=True)
 KAREN=ROOT/"docs/pixel/reference/karen_chibi_direction_v1.png"
 TRITON=ROOT/"docs/pixel/reference/triton_idle_4dir_v1.png"
 V3=ROOT/"docs/pixel/reference/triton_idle_front_repair_candidate_v3_48.png"
-V4=ROOT/"docs/pixel/reference/triton_idle_front_repair_candidate_v4_48.png"
+V4=OUT/"triton_idle_front_repair_candidate_v4_48.png"
 CELL=48
 
 def load_atlas(p):
@@ -73,7 +70,7 @@ panel([gray(v3f),gray(v4f)],["TRITON V3 FACE","TRITON V4 FACE"],"triton_v3_v4_fa
 panel([rgba_diff(v3,v4)],["TRITON V3 -> V4 RAW PIXEL DIFFERENCE"],"triton_v3_v4_rgba_difference_x10.png")
 
 metrics={
- "method":"committed repository PNG mechanical composition only",
+ "method":"actual committed PNGs + deterministically generated v4; mechanical composition only",
  "nearest_neighbor_only":True,
  "karen_front_rgba_sha256":raw_hash(k),
  "triton_current_front_rgba_sha256":raw_hash(t),
@@ -81,8 +78,7 @@ metrics={
  "triton_v4_rgba_sha256":raw_hash(v4),
  "v4_exactly_equals_karen":v4.tobytes()==k.tobytes(),
  "v4_exactly_equals_v3":v4.tobytes()==v3.tobytes(),
- "face_box":list(face),
- "visual_status":"USER REVIEW REQUIRED; CI does not approve attractiveness"
+ "visual_status":"USER REVIEW REQUIRED"
 }
 (OUT/"karen_triton_v4_identity_metrics.json").write_text(json.dumps(metrics,indent=2),encoding="utf-8")
 print(json.dumps(metrics,indent=2))

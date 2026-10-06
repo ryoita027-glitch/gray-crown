@@ -38,11 +38,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -52,6 +50,9 @@ jobs:
 
       - name: Verify Karen visual regression control before work
         run: python tools/verify_karen_visual_regression_control.py
+
+      - name: Generate deterministic Triton v4 front candidate
+        run: python tools/generate_triton_front_v4_candidate.py
 
       - name: Verify Triton v4 face-only pixel scope
         run: python tools/verify_triton_front_v4_pixel_scope.py
