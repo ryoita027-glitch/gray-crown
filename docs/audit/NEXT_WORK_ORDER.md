@@ -1,110 +1,65 @@
 # Gray Crown — Next Work Order
 
-## Completed gate: Triton completion PASS
+## Completed
 
-**Triton Second Character Validation PASS** is complete.
+- Karen locked.
+- Triton Second Character Validation PASS.
+- Sophie Chibi Direction Lock v1 approved.
+- Sophie Acting Reference v1 approved.
+- Sophie 4-direction 48×48 source complete.
+- Sophie eight runtime animation categories complete.
+- Sophie runtime metadata complete.
+- Karen / Triton / Sophie actual-game comparison complete.
+- Full48 / Medium44 / Compact41 validation complete.
+- Save schema 23 / control restoration confirmed.
+- full regression CI green.
 
-Do not reopen old Triton v2 / v3 / v4 face directions.
+## Current gate
 
-Authoritative Triton source:
+# **Sophie Character Validation — PASS / REVISE**
 
-`docs/pixel/reference/triton_chibi_direction_lock_v1.png`
+This is a human visual / character-quality decision.
 
-Karen remains completely frozen.
+Technical result is already PASS.
 
-## Active phase: Sophie — STEADY HANDS
+### PASS means
 
-### First deliverable
+Sophie is accepted as the third validated protagonist.
 
-Create **one front-facing Sophie Idle visual candidate only**.
+Then:
 
-Do not create:
+1. record Sophie Character Validation PASS;
+2. update Pixel Character Standard from Karen + Triton + Sophie evidence;
+3. start **Margaret — MEASURED LINE Front Idle only**;
+4. stop again for Margaret user Visual Review before her four-direction / animation production.
 
-- side view;
-- back view;
-- four-direction atlas;
-- Walk;
-- Talk;
-- Surprise;
-- Laugh;
-- Approach;
-- Run;
-- Turn;
+### REVISE means
 
-until the user approves the front design.
+Keep work on Sophie.
 
-### Locked Sophie identity
+Do not modify Karen or Triton.
 
-The front candidate must express:
+Do not start Margaret.
 
-- 23-year-old adult woman;
-- 158cm / smallest hero;
-- soft standard body shape;
-- rounded / gentle face;
-- slightly drooping eyes;
-- honey to light golden-brown hair;
-- one low soft bundle / braid;
-- off-white / cream as the largest clothing mass;
-- green concentrated around forearms / hands / practical treatment storage;
-- hands clearly visible;
-- small calm stance;
-- helpful / reassuring presence;
-- quiet but unyielding seriousness around life.
+## Evidence available
 
-### Required contrast
+Actual-game / scale evidence includes:
 
-Against Karen:
-
-- smaller;
-- calmer;
-- less forward;
-- less large-body motion;
-- hands rather than whole-body energy carry the identity.
-
-Against Triton:
-
-- narrower / softer;
-- higher, lighter center;
-- less horizontal weight;
-- gentler face;
-- much smaller spatial footprint.
-
-### Fail conditions
-
-REVISE if Sophie reads as:
-
-- a child;
-- a generic cute healer;
-- a nun/high cleric through costume shorthand;
-- a small Karen;
-- a shrunken Triton;
-- hands hidden in body/sleeves;
-- green used as a giant torso block;
-- same face template as Karen or Triton.
-
-### User gate
-
-After one front candidate is created, stop for:
-
-> **Sophie Front — PASS / REVISE / FAIL**
-
-Only PASS authorizes four-direction production.
-
-## After Sophie front PASS
-
-front lock  
-→ four-direction Idle  
-→ Karen / Triton / Sophie real-PNG/gameplay comparison  
-→ eight Sophie-specific animation categories  
-→ Full48 / Medium44 / Compact41 scale check  
-→ full CI  
-→ Standard update
+- Sophie + Karen + Triton Medium44 Idle
+- Sophie Walk
+- Sophie Talk
+- Sophie Laugh
+- Sophie Run
+- Sophie Full48
+- Sophie Medium44
+- Sophie Compact41
 
 ## Paused
 
-- Margaret;
+- Margaret until Sophie PASS;
+- Environment Prototype until all four protagonists pass;
 - main merge;
 - formal Pixel-native adoption;
-- Portrait deletion decision;
+- Portrait deletion;
 - NPC scale migration;
 - v24.

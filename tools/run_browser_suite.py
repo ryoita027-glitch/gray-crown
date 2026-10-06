@@ -18,6 +18,7 @@ TESTS=[
     "tests/browser_karen_pixel_prototype_e2e_test.py",
     "tests/browser_karen_chibi_scale_e2e_test.py",
     "tests/browser_triton_pixel_validation_e2e_test.py",
+    "tests/browser_sophie_pixel_validation_e2e_test.py",
 ]
 summary=[]
 failed=[]

@@ -98,5 +98,6 @@ jobs:
             prototype_artifacts/
             test-results/
             playwright-report/
+            docs/pixel/reference/sophie_steady_hands_front_candidate_v1_48.png
           if-no-files-found: warn
           retention-days: 14
