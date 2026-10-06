@@ -8,23 +8,35 @@
 
 This lock supersedes all older Sophie front candidates v1 / v2 / v3 as active visual authority.
 
-## Approved user reference
+## Approved user references
 
-Primary direction reference:
+Direction / four-view reference:
 
 - uploaded image: `ソフィーの冒険者スプライトシート.png`
 - SHA-256: `c3b796ec55b8a54bd413e17f326f256ce3e2869c99c70968f3b7523955a530bc`
 
-Acting / animation reference:
+Acting / eight-animation reference:
 
 - uploaded image: `ソフィーの癒し手アニメーションシート.png`
 - SHA-256: `b1bec435fbdfba0faa2212e66a965cbe2c492e7e4d7d20df608124c7e2366ec5`
 
-These user-provided references define the current Sophie design direction.
+## 48×48 technical source
+
+Current production translation source:
+
+`docs/pixel/reference/sophie_chibi_direction_lock_v1_48.png`
+
+- dimensions: 192×48
+- cell: 48×48
+- order: down / left / right / up
+- SHA-256: `3291a1331fb1a41d85bd023e2f9907e798926746c856c92c63c7eb5aa26c3e36`
+- derived mechanically from the approved four-view design
+
+This technical source may receive cleanup for pixel readability, but must not redesign Sophie.
 
 ## Locked identity
 
-Sophie remains:
+Preserve:
 
 - 23 years old;
 - 158cm / smallest protagonist;
@@ -32,48 +44,24 @@ Sophie remains:
 - honey / light golden-brown hair;
 - warm off-white / cream clothing mass;
 - muted green accent;
-- visible hands as the primary identity hook;
+- visible hands as primary identity hook;
 - calm / kind / reassuring;
-- stubborn and immovable where life is concerned;
-- not a generic healer / saint / nurse archetype.
-
-## Locked visual direction
-
-Preserve:
-
+- stubborn where life is concerned;
 - protagonist-grade cute Chibi face;
-- larger, soft readable eyes;
-- honey hair with high-quality layered mass;
-- practical low gathering / braid structure;
-- warm cream + brown leather + muted green palette;
-- treatment / travel utility around waist and hands;
-- small spatial footprint;
-- clearly adult body language;
-- soft but not weak silhouette;
+- layered honey-hair mass;
+- practical gathered / braided hair structure;
+- cream + brown leather + muted green palette;
+- treatment/travel utility around waist and hands;
+- small adult silhouette;
 - hand-focused posing and acting.
 
-## Four-direction lock
+## Historical candidates
 
-The approved visual reference includes:
-
-- Front
-- Left
-- Back
-- Right
-
-These views are now the design authority for technical 48×48 translation.
-
-Do not redesign Sophie into a different visual direction while producing runtime assets.
-
-## Relationship to older candidates
-
-The following remain historical only:
+These are no longer active authority:
 
 - `sophie_steady_hands_front_candidate_v1_48.png`
 - `sophie_steady_hands_front_candidate_v2_48.png`
 - `sophie_steady_hands_front_candidate_v3_48.png`
-
-They may be retained for audit history but are not current visual authority.
 
 ## Control characters
 
@@ -82,20 +70,18 @@ Karen and Triton remain untouched.
 - Karen = Visual Regression Control
 - Triton = completed locked control
 
-Do not modify either character to fit Sophie.
+## Current implementation phase
 
-## Next authorized work
+Visual direction is locked.
 
-Visual front gate is now passed.
+Authorized now:
 
-Authorized:
-
-1. translate approved 4-direction design into production 48×48 source;
-2. verify Medium44 readability;
-3. create / adjust all eight runtime animation categories from the approved acting reference;
+1. generate all eight Sophie runtime sheets from the 48×48 source;
+2. preserve Sophie-specific hand-focused acting;
+3. wire runtime metadata;
 4. compare Karen / Triton / Sophie in gameplay;
-5. run Full48 / Medium44 / Compact41 validation;
-6. run full CI;
+5. validate Full48 / Medium44 / Compact41;
+6. run full regression / CI;
 7. determine Sophie Character Validation PASS.
 
-Margaret and Environment remain paused until Sophie validation completes.
+Margaret and Environment remain paused.
