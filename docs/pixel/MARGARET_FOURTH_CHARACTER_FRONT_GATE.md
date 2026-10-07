@@ -4,7 +4,7 @@
 
 **Character:** Margaret  
 **Phase:** FRONT CANDIDATE ONLY  
-**Visual status:** **NOT USER APPROVED / NOT LOCKED**  
+**Visual status:** **USER REJECTED v1 / NOT LOCKED**  
 **Branch:** `pixel-margaret-fourth-character-front-gate`  
 **Base:** Sophie validated prototype state `91d859dc31455db129649a7c08f22555609f87cb`
 
@@ -103,3 +103,20 @@ The user-facing result must end in one of:
 - **REJECT** — discard candidate v1 and try a new direction.
 
 Do not start Margaret's eight animation categories before front direction approval.
+
+
+## User review — v1 result
+
+**Decision:** REJECTED
+
+Reason observed in the actual four-character comparison:
+
+- face reads unsettling rather than calm;
+- eyes / mouth are too rigid and severe;
+- face and hair framing feel too tall / mask-like beside the existing three protagonists;
+- dark costume mass amplifies the intimidating read;
+- candidate loses the cute protagonist-grade Chibi language shared by Karen / Triton / Sophie.
+
+Do not expand v1 to four directions or eight animations.
+
+Next candidate must keep Margaret calm and intelligent **without** expressing that through a frightening or severe face.
