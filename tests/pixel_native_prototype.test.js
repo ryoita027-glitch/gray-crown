@@ -50,9 +50,12 @@ test('Karen prototype keeps locked handedness and unresolved fields explicit',()
  assert.deepEqual(Array.from(rules.anchor),[24,44]);
  assert.equal(rules.dominantHand,'left');
  assert.equal(rules.swordHip,'right');
+ assert.equal(rules.designDirection,'karen-chibi-direction-v1');
+ assert.equal(rules.reference,'docs/pixel/reference/karen_chibi_direction_v1.png');
  for(const key of ['exactEyeColor','surname','formalWeaponDesign','formalWeaponName','stageBFinalHeroCostume','kingdomEmblem','heroCertificationMark','religiousEmblem'])assert.ok(rules.unresolved.includes(key),key);
  const generator=fs.readFileSync(path.join(ROOT,'tools/generate_karen_prototype_assets.py'),'utf8');
  assert.match(generator,/sword is always anatomical RIGHT hip/);
+ assert.match(generator,/Karen Chibi Direction Lock v1/);
  assert.doesNotMatch(generator,/antialias|resampl/i,'generator should remain integer-grid native');
 });
 

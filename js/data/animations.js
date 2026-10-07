@@ -15,7 +15,8 @@
  const visualRules=Object.freeze({
   prototypeTemporary:true,character:'karen',sourceCell:[48,48],logicalTile:32,anchor:[24,44],
   dominantHand:'left',swordHip:'right',stage:'A',
-  hair:'red-brown low partial tie',colorMass:'warm off-white + muted red + leather brown',
+  designDirection:'karen-chibi-direction-v1',reference:'docs/pixel/reference/karen_chibi_direction_v1.png',
+  hair:'large red-hair silhouette + low partial tie + loose hair',colorMass:'warm off-white + muted red + leather brown',
   unresolved:['exactEyeColor','surname','formalWeaponDesign','formalWeaponName','stageBFinalHeroCostume','kingdomEmblem','heroCertificationMark','religiousEmblem']
  });
  GC.Data=GC.Data||{};GC.Data.Animations={definitions:Object.freeze({karen:Object.freeze(karen)}),visualRules};

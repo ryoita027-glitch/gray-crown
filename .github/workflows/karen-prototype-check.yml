@@ -1,4 +1,5 @@
 name: Karen Pixel Prototype CI
+# Karen Chibi integration gate
 
 on:
   push:
@@ -6,6 +7,14 @@ on:
       - pixel-karen-acting-prototype
       - pixel-karen-chibi-direction
       - repo-actions-consolidation
+    paths-ignore:
+      - "docs/**"
+      - "README.txt"
+      - "*.txt"
+      - ".gitignore"
+  pull_request:
+    branches:
+      - pixel-karen-acting-prototype
     paths-ignore:
       - "docs/**"
       - "README.txt"
@@ -49,6 +58,9 @@ jobs:
           PY
           )"
           sudo ln -sf "$CHROMIUM" /usr/bin/chromium
+
+      - name: Karen Chibi integration evidence gate
+        run: python tests/browser_karen_pixel_prototype_e2e_test.py
 
       - name: Full prototype regression
         run: npm run prototype-check
