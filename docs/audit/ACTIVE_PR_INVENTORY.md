@@ -19,7 +19,7 @@ This document tracks open PR intent and merge safety without making visual, stor
 | --- | --- | --- | --- | --- |
 | #26 | Add main v23 baseline CI | `main` -> `main-v23-ci-baseline` | technical-safe | Ready for review; CI passes. This should be the first infrastructure PR considered for `main` once approved. |
 | #25 | Sync visual asset manifest with hygiene state | `main` -> `source-truth-asset-manifest-sync` | technical-safe docs | Safe docs consistency fix. No runtime/design impact. |
-| #17 | Integrate Karen Chibi Direction v1 into Pixel Acting prototype | `pixel-karen-acting-prototype` -> `pixel-karen-chibi-direction` | review-only visual/runtime prototype | Do not promote to `main` automatically. Requires visual approval and Scale Integration decision. |
+| #17 | Integrate Karen Chibi Direction v1 into Pixel Acting prototype | `pixel-karen-acting-prototype` -> `pixel-karen-chibi-direction` | review-only visual/runtime prototype | PR-triggered `Karen Pixel Prototype CI` now passes on head `859c981eb2af4d4953ad75e8d825e90786b73743`. Do not promote to `main` automatically; visual approval and Scale Integration remain required. |
 | #6 | Karen Pixel Acting technical prototype base - DO NOT MERGE YET | `main` -> `pixel-karen-acting-prototype` | prototype foundation | Keep as prototype reference. Do not merge before Pixel-native adoption and scope are approved. |
 
 ## Dependency Order
