@@ -1,10 +1,10 @@
-# Gray Crown — Current Project State
+# Gray Crown - Current Project State
 
 **Repository:** ryoita027-glitch/gray-crown  
 **Canonical production branch:** `main`  
 **Game baseline:** v23  
 **Save schema:** 23  
-**Status date:** 2026-10-06
+**Status date:** 2026-10-07
 
 ---
 
@@ -14,8 +14,8 @@
 
 Current production rules:
 
-- Story 00–19 remains the completed range.
-- Existing 32×32 hero walking sprite remains **ACTIVE runtime / PROVISIONAL design**.
+- Story 00-19 remains the completed range.
+- Existing 32x32 hero walking sprite remains **ACTIVE runtime / PROVISIONAL design**.
 - Four protagonist Visual Identities remain locked.
 - Art Bible v2 remains provisional.
 - No Pixel-native experiment is formally adopted into production.
@@ -31,7 +31,7 @@ Primary technical prototype branch:
 
 This branch proves the experimental technical foundation:
 
-- 48×48 source-cell actor support
+- 48x48 source-cell actor support
 - eight Karen animation categories
 - SceneRunner / transient cinematic control
 - camera focus and return
@@ -69,6 +69,15 @@ Target principles:
 
 Do not copy a specific commercial sprite or character. Use the chibi pixel-RPG design language as reference only.
 
+Current implementation/review branch:
+
+`pixel-karen-chibi-direction`
+
+- Open PR: #17
+- Base: `pixel-karen-acting-prototype`
+- CI: PR-triggered `Karen Pixel Prototype CI` passes on head `859c981eb2af4d4953ad75e8d825e90786b73743`
+- Status: technical validation exists, but visual approval and Scale Integration approval are still not formalized for `main`
+
 ---
 
 ## 4. Experimental branches
@@ -76,6 +85,12 @@ Do not copy a specific commercial sprite or character. Use the chibi pixel-RPG d
 ### Keep as technical base
 
 `pixel-karen-acting-prototype`
+
+### Keep as active review branch
+
+`pixel-karen-chibi-direction`
+
+This branch exists and is under PR review. Its passing CI does not promote the visual direction to production by itself.
 
 ### Keep temporarily as technical reference
 
@@ -99,15 +114,15 @@ These are historical comparison material, not active visual direction.
 
 Do not continue mass animation production yet.
 
-The next visual implementation should start from the proven technical prototype and create a new dedicated branch, for example:
+The current review lane is:
 
 `pixel-karen-chibi-direction`
 
-First gate:
+Current gate:
 
-> Create only one front-facing Karen Idle candidate and obtain user visual approval.
+> Review the Karen Chibi front-facing Idle candidate and preserve technical validation evidence.
 
-Do not proceed to:
+Do not proceed to production adoption of:
 
 - side/back views
 - eight-animation expansion
@@ -118,6 +133,8 @@ Do not proceed to:
 - main merge
 
 until the front Idle visual direction is approved.
+
+Safe technical work may continue around CI, audit docs, branch inventory, asset validation, and missing-asset detection as long as it does not imply visual/design approval.
 
 ---
 
