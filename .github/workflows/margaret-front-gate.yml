@@ -1,0 +1,59 @@
+name: Gray Crown Margaret Front Gate CI
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+concurrency:
+  group: gray-crown-margaret-front-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  front-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with: { persist-credentials: false }
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-ci.txt
+      - run: python -m pip install --disable-pip-version-check -r requirements-ci.txt
+      - name: Verify project authority
+        run: python tools/verify_project_authority.py
+      - name: Verify Karen visual regression control
+        run: python tools/verify_karen_visual_regression_control.py
+      - name: Verify Triton lock
+        run: python tools/verify_triton_direction_lock.py
+      - name: Verify Sophie lock
+        run: python tools/verify_sophie_direction_lock.py
+      - name: Generate Margaret front candidate and exact-pixel comparison boards
+        run: python tools/generate_margaret_front_candidate.py
+      - name: Verify front evidence
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          root=Path("prototype_artifacts/margaret_front")
+          expected={
+            "margaret_front_candidate_v1_48.png":(48,48),
+            "margaret_four_character_front_compare_48.png":None,
+            "margaret_four_character_front_compare_medium44.png":None,
+          }
+          for name,size in expected.items():
+              p=root/name
+              assert p.exists(),p
+              with Image.open(p) as im:
+                  if size is not None:
+                      assert im.size==size,(name,im.size,size)
+                  assert im.mode=="RGBA",(name,im.mode)
+          print("Margaret front-gate evidence PASS")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gray-crown-margaret-front-gate
+          path: prototype_artifacts/margaret_front/
+          if-no-files-found: error
+          retention-days: 14
