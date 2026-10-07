@@ -120,3 +120,18 @@ Reason observed in the actual four-character comparison:
 Do not expand v1 to four directions or eight animations.
 
 Next candidate must keep Margaret calm and intelligent **without** expressing that through a frightening or severe face.
+
+
+## User review — v2 result
+
+**Decision:** APPROVE DIRECTION
+
+The user approved the revised Margaret direction after replacing the awkward bulky hair arrangement with a simpler high ponytail.
+
+Active authority now moves to:
+
+`MARGARET_CHIBI_DIRECTION_LOCK_v2.md`
+
+The v1 front candidate remains historical / rejected evidence only.
+
+The next authorized work is four-direction technical lock verification, exact-pixel comparison evidence, and then eight-animation prototype generation. This does not authorize main merge or final costume / weapon / eye-color canon.

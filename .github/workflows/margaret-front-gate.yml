@@ -1,15 +1,15 @@
-name: Gray Crown Margaret Front Gate CI
+name: Gray Crown Margaret Direction v2 CI
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
 concurrency:
-  group: gray-crown-margaret-front-${{ github.event.pull_request.number || github.ref }}
+  group: gray-crown-margaret-direction-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 permissions:
   contents: read
 jobs:
-  front-gate:
+  direction-lock:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -29,31 +29,13 @@ jobs:
         run: python tools/verify_triton_direction_lock.py
       - name: Verify Sophie lock
         run: python tools/verify_sophie_direction_lock.py
-      - name: Generate Margaret front candidate and exact-pixel comparison boards
-        run: python tools/generate_margaret_front_candidate.py
-      - name: Verify front evidence
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          from PIL import Image
-          root=Path("prototype_artifacts/margaret_front")
-          expected={
-            "margaret_front_candidate_v1_48.png":(48,48),
-            "margaret_four_character_front_compare_48.png":None,
-            "margaret_four_character_front_compare_medium44.png":None,
-          }
-          for name,size in expected.items():
-              p=root/name
-              assert p.exists(),p
-              with Image.open(p) as im:
-                  if size is not None:
-                      assert im.size==size,(name,im.size,size)
-                  assert im.mode=="RGBA",(name,im.mode)
-          print("Margaret front-gate evidence PASS")
-          PY
+      - name: Verify Margaret direction v2
+        run: python tools/verify_margaret_direction_lock.py
+      - name: Build Margaret exact-pixel evidence
+        run: python tools/build_margaret_direction_evidence.py
       - uses: actions/upload-artifact@v4
         with:
-          name: gray-crown-margaret-front-gate
-          path: prototype_artifacts/margaret_front/
+          name: gray-crown-margaret-direction-v2
+          path: prototype_artifacts/margaret_direction_v2/
           if-no-files-found: error
           retention-days: 14
