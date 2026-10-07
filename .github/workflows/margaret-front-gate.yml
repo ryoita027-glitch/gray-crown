@@ -1,15 +1,15 @@
-name: Gray Crown Margaret Direction v2 CI
+name: Gray Crown Margaret Character Validation CI
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
 concurrency:
-  group: gray-crown-margaret-direction-${{ github.event.pull_request.number || github.ref }}
+  group: gray-crown-margaret-character-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 permissions:
   contents: read
 jobs:
-  direction-lock:
+  character-validation:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -31,11 +31,20 @@ jobs:
         run: python tools/verify_sophie_direction_lock.py
       - name: Verify Margaret direction v2
         run: python tools/verify_margaret_direction_lock.py
-      - name: Build Margaret exact-pixel evidence
+      - name: Build Margaret exact-pixel direction evidence
         run: python tools/build_margaret_direction_evidence.py
+      - name: Generate Margaret eight-animation prototype
+        run: python tools/generate_margaret_prototype_assets.py --out prototype_artifacts/margaret_generated
+      - name: Verify Margaret generated animation sheets
+        run: python tools/verify_margaret_prototype_assets.py
+      - name: Build Margaret animation evidence
+        run: python tools/build_margaret_animation_evidence.py
       - uses: actions/upload-artifact@v4
         with:
-          name: gray-crown-margaret-direction-v2
-          path: prototype_artifacts/margaret_direction_v2/
+          name: gray-crown-margaret-character-validation
+          path: |
+            prototype_artifacts/margaret_direction_v2/
+            prototype_artifacts/margaret_generated/
+            prototype_artifacts/margaret_animation_evidence/
           if-no-files-found: error
           retention-days: 14
