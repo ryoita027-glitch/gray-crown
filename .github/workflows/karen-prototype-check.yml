@@ -12,6 +12,14 @@ on:
       - "README.txt"
       - "*.txt"
       - ".gitignore"
+  pull_request:
+    branches:
+      - pixel-karen-acting-prototype
+    paths-ignore:
+      - "docs/**"
+      - "README.txt"
+      - "*.txt"
+      - ".gitignore"
   workflow_dispatch:
 
 concurrency:
