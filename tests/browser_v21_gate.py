@@ -51,7 +51,8 @@ def fight(page):
         if page.locator('#levelUpPanel').is_visible():page.locator('#levelUpContinue').click();page.wait_for_timeout(50);continue
         if not page.locator('#battlePanel').is_visible():return
         if page.evaluate('GC.State.get().locked'):page.wait_for_timeout(90);continue
-        if page.locator('#battleActions button').count():page.locator('#battleActions button').nth(0).click();page.wait_for_timeout(450)
+        buttons=page.locator('#battleActions button:visible')
+        if buttons.count():buttons.nth(0).click();page.wait_for_timeout(450)
         else:page.wait_for_timeout(70)
     raise AssertionError('battle stuck')
 def dump(page):return page.evaluate('Object.fromEntries(Array.from({length:localStorage.length},(_,i)=>localStorage.key(i)).map(k=>[k,localStorage.getItem(k)]))')
