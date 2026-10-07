@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gray Crown Margaret Runtime Validation</title>
+<style>
+html,body{margin:0;background:#17191f;color:#f3efe7;font-family:system-ui,sans-serif}
+main{max-width:920px;margin:0 auto;padding:18px}
+h1{font-size:20px;margin:0 0 10px}
+p{margin:6px 0 12px;color:#c9c3b8}
+canvas{width:100%;height:auto;image-rendering:pixelated;border:1px solid #4b4f5a;background:#8aa06b}
+.controls{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+button{background:#2c313d;color:#eee;border:1px solid #5d6473;border-radius:5px;padding:8px 10px}
+button[aria-pressed="true"]{background:#596274}
+.status{font-family:ui-monospace,monospace;margin-top:10px;font-size:13px}
+</style>
+</head>
+<body>
+<main>
+<h1>Margaret Runtime Validation — Medium44</h1>
+<p>Exact committed runtime sheets. Karen / Triton / Sophie are controls; Margaret is the active prototype actor.</p>
+<canvas id="stage" width="512" height="320" aria-label="Four protagonist runtime comparison"></canvas>
+<div class="controls" id="controls"></div>
+<div class="status" id="status">loading</div>
+</main>
+<script src="../../js/data/animations.js"></script>
+<script src="runtime-preview.js"></script>
+</body>
+</html>
