@@ -61,6 +61,9 @@ jobs:
       - name: Run Margaret browser E2E
         run: python tests/browser_margaret_runtime_e2e_test.py
 
+      - name: Run full Gray Crown regression gate
+        run: npm run check
+
       - name: Re-verify locked controls
         run: |
           python tools/verify_karen_visual_regression_control.py
