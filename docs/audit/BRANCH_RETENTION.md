@@ -2,13 +2,15 @@
 
 ## Purpose
 
-This file defines which branches are active, which are retained temporarily as technical reference, and which are safe deletion candidates.
+This file defines which branches are active, which are retained temporarily as technical reference, and which branches require deletion review.
 
 The goal is to prevent superseded experiments from being mistaken for the current development path.
 
+Last audited: 2026-10-07 JST
+
 ---
 
-## KEEP — active
+## KEEP - active baseline
 
 ### main
 Production baseline.
@@ -18,13 +20,24 @@ Production baseline.
 - no formal Pixel-native adoption yet
 
 ### pixel-karen-acting-prototype
-Single active Pixel technical base.
+Active Pixel Acting technical base.
 
-Keep until the accepted Chibi Karen direction is validated and a later integration decision is made.
+- Open PR: #6
+- Current role: technical prototype foundation only
+- Restriction: do not merge to `main` before Pixel-native adoption and scope are explicitly approved
+
+### pixel-karen-chibi-direction
+Active Karen Chibi review branch.
+
+- Open PR: #17
+- Base: `pixel-karen-acting-prototype`
+- Current role: review-only visual/runtime prototype
+- CI status: PR-triggered `Karen Pixel Prototype CI` passes on head `859c981eb2af4d4953ad75e8d825e90786b73743`
+- Restriction: do not treat this as visual approval, Scale Integration approval, or `main` promotion approval
 
 ---
 
-## KEEP TEMPORARILY — technical reference
+## KEEP TEMPORARILY - technical or review reference
 
 ### pixel-karen-scale-integration
 
@@ -40,83 +53,85 @@ Restriction:
 
 This branch is a technical reference only.
 
----
+### pixel-karen-chibi-scale-integration
 
-## NEXT ACTIVE VISUAL BRANCH
+Review-gated branch for scale integration work after the Chibi direction. Keep as a candidate/reference branch only until the Karen Chibi review lane is resolved.
 
-Not created yet at the time of this document.
+### pixel-triton-second-character-validation
+### pixel-sophie-third-character-validation
+### pixel-sophie-steady-hands-validation
 
-Planned name:
+Character validation branches. Keep as review-gated references only. They must not be treated as final Sophie/Margaret design approval or party-wide production adoption.
 
-`pixel-karen-chibi-direction`
+### pixel-environment-prototype-prep-v1
 
-It must branch from the current cleaned `pixel-karen-acting-prototype`.
+Environment prototype prep branch. Keep as a prototype reference only unless a later approved integration branch promotes specific loader/validation work.
 
-First gate:
+### pixel-character-standard-v1-provisional
+### art-bible-v2-provisional
+### character-visual-identity-lock
 
-> front-facing Chibi Karen Idle only
-
----
-
-## SAFE DELETION CANDIDATES
-
-The following branches are superseded or already merged into their intended base.
-
-- art-bible-v2-provisional
-- character-visual-identity-lock
-- pixel-karen-phase2-eval
-- pixel-karen-phase2-gate-fix
-- pixel-karen-phase2-result
-- pixel-karen-runtime-doc-fixes
-- pixel-karen-visual-refinement
-- pixel-karen-visual-refinement-v2
-- pixel-native-direction-study
-- pixel-native-phase2-go-decision
-- repo-hygiene-current-state
-- visual-foundation-sync
-
-Their useful history is already represented by merged commits, closed PRs, or the active prototype branch.
+Visual documentation/reference branches. Keep as provisional references until Source of Truth reconciliation is complete. They must not override `main` by branch existence alone.
 
 ---
 
-## HISTORICAL VISUAL REFERENCES — DELETE AFTER NO LONGER NEEDED
+## TRANSIENT TECHNICAL PR BRANCHES
 
-### pixel-karen-visual-anchor-redesign
+These branches exist to carry safe audit/CI/docs work through PRs. Delete only after their PRs are merged or closed and their useful content is represented elsewhere.
 
-Superseded visual direction.
-
-The user rejected this direction after direct image review.
-
-PR #12 is closed and marked superseded.
-
-### pixel-karen-visual-redesign-v3
-
-Alternative superseded visual experiment.
-
-Keep only until the new Chibi front-Idle direction is approved, then delete.
+- `main-v23-ci-baseline` - PR #26
+- `source-truth-asset-manifest-sync` - PR #25
+- `audit-active-pr-inventory` - PR #28
 
 ---
 
-## TRANSIENT REPOSITORY-MAINTENANCE BRANCHES
+## REPOSITORY-MAINTENANCE REFERENCES
 
-Branches created only for repository maintenance should be deleted after their PR is merged.
+The following branches appear to be repository-maintenance or hygiene references. Review before deletion; do not delete automatically while Source of Truth reconciliation is open.
 
-Examples:
+- `repo-actions-consolidation`
+- `repo-actions-finalize`
+- `repo-branch-retention`
+- `repo-hygiene-current-state`
+- `repo-karen-integration-handoff`
+- `ci-finalize-triggers`
+- `visual-foundation-sync`
 
-- repo-actions-consolidation
-- repo-branch-retention
+---
+
+## HISTORICAL OR SUPERSEDED VISUAL REFERENCES
+
+These branches may contain superseded or rejected visual experiments. Keep them from being mistaken for the current path. Delete only after confirming no open PR uses them and no needed technical implementation remains unique there.
+
+- `pixel-karen-phase2-eval`
+- `pixel-karen-phase2-gate-fix`
+- `pixel-karen-phase2-result`
+- `pixel-karen-runtime-doc-fixes`
+- `pixel-karen-triton-face-differentiation-fix`
+- `pixel-karen-visual-anchor-redesign`
+- `pixel-karen-visual-redesign-v3`
+- `pixel-karen-visual-refinement`
+- `pixel-karen-visual-refinement-v2`
+- `pixel-native-direction-study`
+- `pixel-native-phase2-go-decision`
+
+Restriction:
+
+> Do not revive or merge historical visual branches as design approval. Any reusable code must be extracted through a scoped technical PR.
 
 ---
 
 ## Open PR policy
 
-The only long-lived open PR should be the active integration/prototype PR.
+Current open PRs observed during this audit:
 
-Current intended open PR:
+- #6 - Karen Pixel Acting technical prototype base - DO NOT MERGE YET
+- #17 - Integrate Karen Chibi Direction v1 into Pixel Acting prototype
+- #25 - Sync visual asset manifest with hygiene state
+- #26 - Add main v23 baseline CI
+- #28 - Add active PR inventory audit
 
-- #6 — Karen Pixel Acting technical prototype base — DO NOT MERGE YET
-
-Superseded experiment PRs should remain closed.
+The prototype PRs are review-gated. The docs/CI PRs are technical-safe, but still should not be merged to `main` automatically without an explicit merge decision.
 
 ---
 
@@ -129,4 +144,5 @@ Before deleting any branch:
 3. preserve any reusable technical implementation elsewhere if needed
 4. never delete `main`
 5. never delete the active prototype base
+6. never delete a branch to resolve uncertainty; document the uncertainty instead
 
