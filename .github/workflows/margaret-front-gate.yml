@@ -1,25 +1,32 @@
-name: Gray Crown Margaret Character Validation CI
+name: Gray Crown Margaret Runtime Validation CI
 on:
+  push:
+    branches: [pixel-margaret-fourth-character-front-gate]
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
 concurrency:
-  group: gray-crown-margaret-character-${{ github.event.pull_request.number || github.ref }}
+  group: gray-crown-margaret-runtime-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 permissions:
-  contents: read
+  contents: write
 jobs:
-  character-validation:
+  runtime-validation:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 18
     steps:
       - uses: actions/checkout@v4
-        with: { persist-credentials: false }
+        with:
+          persist-credentials: true
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
           cache-dependency-path: requirements-ci.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
       - run: python -m pip install --disable-pip-version-check -r requirements-ci.txt
       - name: Verify project authority
         run: python tools/verify_project_authority.py
@@ -31,20 +38,59 @@ jobs:
         run: python tools/verify_sophie_direction_lock.py
       - name: Verify Margaret direction v2
         run: python tools/verify_margaret_direction_lock.py
-      - name: Build Margaret exact-pixel direction evidence
-        run: python tools/build_margaret_direction_evidence.py
-      - name: Generate Margaret eight-animation prototype
-        run: python tools/generate_margaret_prototype_assets.py --out prototype_artifacts/margaret_generated
-      - name: Verify Margaret generated animation sheets
-        run: python tools/verify_margaret_prototype_assets.py
-      - name: Build Margaret animation evidence
-        run: python tools/build_margaret_animation_evidence.py
+
+      - name: Generate Margaret runtime sheets
+        run: |
+          rm -rf prototype_artifacts/margaret_generated
+          python tools/generate_margaret_prototype_assets.py --out prototype_artifacts/margaret_generated
+          mkdir -p assets/characters/margaret
+          cp prototype_artifacts/margaret_generated/margaret_*.png assets/characters/margaret/
+
+      - name: Verify Margaret runtime assets
+        run: |
+          python tools/verify_margaret_prototype_assets.py
+          node tests/margaret_runtime_integration.test.js
+
+      - name: Build Margaret evidence
+        run: |
+          python tools/build_margaret_direction_evidence.py
+          python tools/build_margaret_animation_evidence.py
+
+      - name: Install Chromium
+        run: python -m playwright install --with-deps chromium
+      - name: Run Margaret browser E2E
+        run: python tests/browser_margaret_runtime_e2e_test.py
+
+      - name: Re-verify locked controls
+        run: |
+          python tools/verify_karen_visual_regression_control.py
+          python tools/verify_triton_direction_lock.py
+          python tools/verify_sophie_direction_lock.py
+
+      - name: Commit generated Margaret runtime PNGs to prototype branch
+        if: github.event_name == 'push'
+        run: |
+          if git diff --quiet -- assets/characters/margaret && [ -n "$(git ls-files assets/characters/margaret)" ]; then
+            echo "Margaret runtime assets already synchronized"
+            exit 0
+          fi
+          git config user.name "gray-crown-ci"
+          git config user.email "gray-crown-ci@users.noreply.github.com"
+          git add assets/characters/margaret
+          if git diff --cached --quiet; then
+            echo "No Margaret runtime asset changes"
+            exit 0
+          fi
+          git commit -m "Sync Margaret v2 runtime animation assets"
+          git push origin HEAD:pixel-margaret-fourth-character-front-gate
+
       - uses: actions/upload-artifact@v4
         with:
-          name: gray-crown-margaret-character-validation
+          name: gray-crown-margaret-runtime-validation
           path: |
+            assets/characters/margaret/
             prototype_artifacts/margaret_direction_v2/
-            prototype_artifacts/margaret_generated/
             prototype_artifacts/margaret_animation_evidence/
+            prototype_artifacts/margaret_runtime_e2e/
           if-no-files-found: error
           retention-days: 14
