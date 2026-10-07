@@ -74,7 +74,7 @@ Active technical source:
 - cell: 48×48;
 - order: down / left / right / up;
 - mode: RGBA;
-- SHA-256: `01995c338153d891f6ea653764a7cf4afe7c6e279a8f24c6ef85eb16179be074`;
+- SHA-256: `ca8aa68a0bb2b81925406411aa381914910ef280a8ebd7c4c006a7f03255b8c7`;
 - derived mechanically from the approved four-view ponytail reference;
 - intended for prototype validation, not final commercial sprite polish.
 

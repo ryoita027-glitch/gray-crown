@@ -4,7 +4,7 @@ from PIL import Image
 import hashlib
 
 PATH = Path("docs/pixel/reference/margaret_chibi_direction_lock_v2_48.png")
-EXPECTED_SHA256 = "01995c338153d891f6ea653764a7cf4afe7c6e279a8f24c6ef85eb16179be074"
+EXPECTED_SHA256 = "ca8aa68a0bb2b81925406411aa381914910ef280a8ebd7c4c006a7f03255b8c7"
 
 if not PATH.exists():
     raise SystemExit(f"missing Margaret direction lock: {PATH}")
