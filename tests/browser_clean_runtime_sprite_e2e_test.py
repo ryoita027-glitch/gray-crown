@@ -28,10 +28,28 @@ with server():
         page.goto(f"http://127.0.0.1:{PORT}/index.html",wait_until="networkidle")
         page.click("#titleNewGame")
         page.wait_for_timeout(350)
-        # close intro dialogue and walk enough to expose follower trail
-        for _ in range(4): page.keyboard.press("Space"); page.wait_for_timeout(60)
-        for key in ("ArrowRight","ArrowRight","ArrowDown","ArrowDown","ArrowRight","ArrowRight"):
-            page.keyboard.press(key);page.wait_for_timeout(140)
+        # Close only the active intro dialogue. Do not over-press Space into a world interaction.
+        for _ in range(16):
+            hidden=page.locator("#dialogueBox").evaluate("e=>e.classList.contains('hidden')")
+            if hidden:
+                break
+            page.keyboard.press("Space")
+            page.wait_for_timeout(90)
+        if not page.locator("#dialogueBox").evaluate("e=>e.classList.contains('hidden')"):
+            raise AssertionError("intro dialogue did not close")
+
+        # Walk a deterministic open-area pattern long enough to separate all followers.
+        # If a direction is blocked, the remaining moves still expose the party trail.
+        for key in ("ArrowDown","ArrowDown","ArrowRight","ArrowRight","ArrowDown","ArrowLeft","ArrowLeft","ArrowUp","ArrowRight"):
+            page.keyboard.press(key);page.wait_for_timeout(155)
+        page.wait_for_timeout(350)
+
+        party_count=page.evaluate("()=>state.party.length")
+        if party_count!=4:
+            raise AssertionError(f"expected four-person party, got {party_count}")
+        if not page.locator("#dialogueBox").evaluate("e=>e.classList.contains('hidden')"):
+            raise AssertionError("unexpected dialogue obscures game screenshot")
+
         # actual game canvas, not a generated comparison board
         canvas=page.locator("#game")
         if canvas.count()!=1: raise AssertionError("game canvas missing")
