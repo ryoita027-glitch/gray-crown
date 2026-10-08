@@ -34,6 +34,9 @@ with server():
         raise AssertionError("desktop prototype sidebar is still permanently visible")
     if page.locator(".topbar").evaluate("e=>getComputedStyle(e).display")!="none":
         raise AssertionError("outer webpage header is visible on the title screen")
+    for sel in (".world-hud",".story-context",".statusbar"):
+        if page.locator(sel).evaluate("e=>getComputedStyle(e).visibility")!="hidden":
+            raise AssertionError("gameplay HUD leaks behind title screen: "+sel)
     if "ALPHA" in page.locator("body").inner_text().upper():
         raise AssertionError("normal player shell exposes ALPHA wording")
 
@@ -92,6 +95,9 @@ with server():
     overflow=page.locator("#battlePanel").evaluate("e=>({scroll:e.scrollHeight,client:e.clientHeight})")
     if overflow["scroll"]>overflow["client"]+3:
         raise AssertionError("desktop battle still requires scrolling: "+repr(overflow))
+    stage_h=page.locator("#battleStage").evaluate("e=>e.getBoundingClientRect().height")
+    if stage_h<245:
+        raise AssertionError("battle stage did not expand into the previously empty viewport: "+repr(stage_h))
     page.screenshot(path=str(OUT/"battle_desktop.png"),full_page=True)
 
     mobile=browser.new_page(viewport={"width":390,"height":844},device_scale_factor=1)
