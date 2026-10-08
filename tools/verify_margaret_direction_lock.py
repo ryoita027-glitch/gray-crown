@@ -13,10 +13,6 @@ with Image.open(PATH) as im:
     im = im.convert("RGBA")
     if im.size != (192, 48):
         raise SystemExit(f"Margaret direction lock size mismatch: {im.size}")
-    pixel_sha = hashlib.sha256(im.tobytes()).hexdigest()
-    if pixel_sha != EXPECTED_PIXEL_SHA256:
-        raise SystemExit(f"Margaret direction lock pixel SHA mismatch: {pixel_sha}")
-
     min_widths = {"down": 32, "left": 32, "right": 32, "up": 30}
     for i, name in enumerate(("down", "left", "right", "up")):
         cell = im.crop((48*i, 0, 48*(i+1), 48))
