@@ -86,6 +86,9 @@ with server():
         raise AssertionError("battle panel failed to open")
     if page.locator(".battle-hero.sprite.direct").count()!=4:
         raise AssertionError("battle is not using the four direct 48px hero sheets")
+    enemy_bg=page.locator("#enemyArt").evaluate("e=>getComputedStyle(e).backgroundImage")
+    if "wolf_battle.png" not in enemy_bg:
+        raise AssertionError("battle still uses the smooth CSS enemy placeholder: "+enemy_bg)
     overflow=page.locator("#battlePanel").evaluate("e=>({scroll:e.scrollHeight,client:e.clientHeight})")
     if overflow["scroll"]>overflow["client"]+3:
         raise AssertionError("desktop battle still requires scrolling: "+repr(overflow))
