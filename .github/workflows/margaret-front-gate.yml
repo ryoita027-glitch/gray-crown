@@ -92,7 +92,11 @@ jobs:
 
       - name: Verify runtime integration
         run: |
-          python tools/verify_margaret_prototype_assets.py || true
+          rm -rf prototype_artifacts/margaret_generated
+          python tools/generate_margaret_prototype_assets.py --reference docs/pixel/reference/margaret_chibi_direction_lock_v5_48.png --out prototype_artifacts/margaret_generated
+          python tools/verify_margaret_prototype_assets.py
+          python tools/verify_sophie_direction_lock.py
+          python tools/verify_margaret_direction_lock.py
           node tests/margaret_runtime_integration.test.js
 
       - name: Build post-promotion quality evidence
