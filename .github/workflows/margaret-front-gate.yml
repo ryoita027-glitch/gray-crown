@@ -36,9 +36,9 @@ jobs:
         run: python tools/verify_triton_direction_lock.py
       - name: Verify Sophie lock
         run: python tools/verify_sophie_direction_lock.py
-      - name: Generate Margaret direction v3 source
-        run: python tools/generate_margaret_direction_v3.py
-      - name: Verify Margaret direction v3
+      - name: Generate Margaret direction v4 source
+        run: python tools/generate_margaret_direction_v4.py
+      - name: Verify Margaret direction v4
         run: python tools/verify_margaret_direction_lock.py
 
       - name: Generate Margaret runtime sheets
@@ -75,18 +75,18 @@ jobs:
       - name: Commit generated Margaret runtime PNGs to prototype branch
         if: github.event_name == 'push'
         run: |
-          if git diff --quiet -- docs/pixel/reference/margaret_chibi_direction_lock_v3_48.png assets/characters/margaret && [ -n "$(git ls-files assets/characters/margaret)" ]; then
-            echo "Margaret v3 source and runtime assets already synchronized"
+          if git diff --quiet -- docs/pixel/reference/margaret_chibi_direction_lock_v4_48.png assets/characters/margaret && [ -n "$(git ls-files assets/characters/margaret)" ]; then
+            echo "Margaret v4 source and runtime assets already synchronized"
             exit 0
           fi
           git config user.name "gray-crown-ci"
           git config user.email "gray-crown-ci@users.noreply.github.com"
-          git add docs/pixel/reference/margaret_chibi_direction_lock_v3_48.png assets/characters/margaret
+          git add docs/pixel/reference/margaret_chibi_direction_lock_v4_48.png assets/characters/margaret
           if git diff --cached --quiet; then
             echo "No Margaret runtime asset changes"
             exit 0
           fi
-          git commit -m "Sync Margaret v3 runtime animation assets"
+          git commit -m "Sync Margaret v4 runtime animation assets"
           git push origin HEAD:pixel-margaret-fourth-character-front-gate
 
       - uses: actions/upload-artifact@v4
@@ -94,7 +94,7 @@ jobs:
           name: gray-crown-margaret-runtime-validation
           path: |
             assets/characters/margaret/
-            prototype_artifacts/margaret_direction_v3/
+            prototype_artifacts/margaret_direction_v4/
             prototype_artifacts/margaret_animation_evidence/
             prototype_artifacts/margaret_runtime_e2e/
           if-no-files-found: error
