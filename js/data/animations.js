@@ -35,7 +35,7 @@
  });
  const margaretVisualRules=Object.freeze({
   prototypeTemporary:true,character:'margaret',sourceCell:[48,48],logicalTile:32,anchor:[24,44],dominantHand:'right',stage:'A',
-  designDirection:'margaret-chibi-direction-lock-v3',reference:'docs/pixel/reference/margaret_chibi_direction_lock_v3_48.png',
+  designDirection:'margaret-chibi-direction-lock-v4',reference:'docs/pixel/reference/margaret_chibi_direction_lock_v4_48.png',
   face:'cute protagonist-grade face + calm intelligent approachable expression; never severe or frightening',
   hair:'white to pale silver-lavender simple high ponytail + soft face-framing bangs; restrained sway',
   colorMass:'prototype dark navy/charcoal + cream/ivory + restrained gold accents',
