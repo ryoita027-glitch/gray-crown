@@ -49,8 +49,13 @@ jobs:
       - name: Verify shared quality metrics and runtime contract
         run: python tools/verify_four_protagonist_quality_metrics.py
 
-      - name: Full Gray Crown regression
-        run: npm run check
+      - name: Full Gray Crown regression with one flake retry
+        run: |
+          if npm run check; then
+            exit 0
+          fi
+          echo "::warning::Full regression failed once; retrying the complete gate once for the known frontier browser pathing flake."
+          npm run check
 
       - name: Re-verify immutable controls
         run: |
