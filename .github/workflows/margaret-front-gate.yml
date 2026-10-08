@@ -36,6 +36,8 @@ jobs:
         run: python tools/verify_triton_direction_lock.py
       - name: Verify Sophie lock
         run: python tools/verify_sophie_direction_lock.py
+      - name: Generate Margaret direction v3 source
+        run: python tools/generate_margaret_direction_v3.py
       - name: Verify Margaret direction v3
         run: python tools/verify_margaret_direction_lock.py
 
@@ -73,13 +75,13 @@ jobs:
       - name: Commit generated Margaret runtime PNGs to prototype branch
         if: github.event_name == 'push'
         run: |
-          if git diff --quiet -- assets/characters/margaret && [ -n "$(git ls-files assets/characters/margaret)" ]; then
-            echo "Margaret runtime assets already synchronized"
+          if git diff --quiet -- docs/pixel/reference/margaret_chibi_direction_lock_v3_48.png assets/characters/margaret && [ -n "$(git ls-files assets/characters/margaret)" ]; then
+            echo "Margaret v3 source and runtime assets already synchronized"
             exit 0
           fi
           git config user.name "gray-crown-ci"
           git config user.email "gray-crown-ci@users.noreply.github.com"
-          git add assets/characters/margaret
+          git add docs/pixel/reference/margaret_chibi_direction_lock_v3_48.png assets/characters/margaret
           if git diff --cached --quiet; then
             echo "No Margaret runtime asset changes"
             exit 0
