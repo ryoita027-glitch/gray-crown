@@ -2,55 +2,43 @@
 
 ## Status
 
-**MARGARET v3 RUNTIME-SCALE CORRECTION INTEGRATED — PROTOTYPE BRANCH**
+**MARGARET v5 RUNTIME PROTOTYPE INTEGRATION ACTIVE — PROTOTYPE ONLY**
 
 Branch: `pixel-margaret-fourth-character-front-gate`  
 Draft PR: #29
 
-This result supersedes `MARGARET_RUNTIME_INTEGRATION_RESULT_v1.md` for the active Margaret prototype.
+This document supersedes the earlier v1/v3/v4 runtime notes for the active Margaret prototype.
 
 It does not authorize merge to `main` and does not make whole-game Pixel-native adoption final.
 
-## Why v3 exists
+## Why v5 is active
 
-The first real Medium44 runtime comparison showed that Margaret v2 occupied too little horizontal space and read too thin beside Karen, Triton and Sophie.
+The v3/v4 occupancy work proved that Margaret needed comparable Medium44 presence beside Karen, Triton and Sophie, but the later head-resampling approach crushed facial readability.
 
-The correction was made in the 48×48 source instead of giving Margaret a special renderer scale.
+v5 corrects that specific failure:
 
-v3 therefore keeps the shared **44px runtime draw size** and changes the source silhouette:
-
-- broader occupied area;
-- slightly larger Chibi head read;
-- slightly thicker torso / body mass;
-- stronger outline separation;
-- clearer high-ponytail silhouette.
-
-## Exact Medium44 occupied-area check
-
-Measured from the mechanically composed comparison using exact committed control PNGs:
-
-| Character | occupied width at 44px | occupied height at 44px |
-| --- | ---: | ---: |
-| Karen | 24 px | 40 px |
-| Triton | 26 px | 40 px |
-| Sophie | 30 px | 39 px |
-| Margaret v3 | 30 px | 40 px |
-
-Margaret no longer has a unique undersized footprint. Her width now matches Sophie while height remains in the same ~40px band as all three controls.
+- the approved face/head pixels are preserved at 1:1;
+- body occupancy is corrected below the face;
+- the external silhouette is strengthened without filling internal face/hair gaps;
+- the simple high ponytail remains the primary silhouette hook;
+- the shared 44px runtime scale remains unchanged.
 
 ## Active source
 
-`docs/pixel/reference/margaret_chibi_direction_lock_v3_48.png`
+`docs/pixel/reference/margaret_chibi_direction_lock_v5_48.png`
+
+Technical contract:
 
 - 192×48 RGBA;
-- 48×48 cells;
+- four 48×48 direction cells;
 - order: down / left / right / up;
-- generated deterministically from the v2 source by `tools/generate_margaret_direction_v3.py`;
-- source occupancy gate prevents regression to the narrow v2 silhouette.
+- foot-anchor family: [24,44];
+- deterministic source reproduction checked by CI;
+- source and runtime hashes pinned by `tools/verify_margaret_direction_lock.py`.
 
-## Runtime assets
+## Active runtime assets
 
-The shared eight animation categories have been regenerated from v3 and synchronized to:
+The shared eight animation categories are regenerated from v5 and synchronized to:
 
 - `assets/characters/margaret/margaret_idle.png`
 - `assets/characters/margaret/margaret_walk.png`
@@ -61,39 +49,62 @@ The shared eight animation categories have been regenerated from v3 and synchron
 - `assets/characters/margaret/margaret_laugh.png`
 - `assets/characters/margaret/margaret_run.png`
 
-The runtime registration remains in `js/data/animations.js`.
+Runtime metadata remains registered in `js/data/animations.js`.
+
+## Cast-wide exact-pixel quality state
+
+The active four-protagonist quality evidence measures the front Medium44 visible footprint as:
+
+| Character | Visible width | Visible height |
+| --- | ---: | ---: |
+| Karen | 24 px | 40 px |
+| Triton | 26 px | 40 px |
+| Sophie | 30 px | 39 px |
+| Margaret v5 | 28 px | 40 px |
+
+The goal is not identical width. The important result is one protagonist-scale band without Margaret's earlier accidental undersizing, while preserving four distinct silhouettes.
 
 ## Validation
 
-The Margaret runtime CI now validates:
+The harmonized prototype gate verifies:
 
-- Karen visual regression control;
+- Karen immutable visual regression control;
 - Triton direction lock;
-- Sophie direction lock;
-- deterministic Margaret v3 source generation;
-- Margaret v3 occupied-area constraints;
-- eight regenerated runtime sheets;
-- exact-pixel four-character Medium44 evidence;
-- Margaret Chromium browser E2E;
-- full Gray Crown `npm run check` regression gate;
-- locked control re-verification after Margaret testing.
+- Sophie v2 technical-cleanup lock;
+- Margaret v5 direction/runtime lock;
+- Margaret v5 deterministic source reproduction;
+- exact-pixel Medium44 front / face / grayscale / silhouette / four-direction evidence;
+- numeric occupancy, face-contrast and silhouette metrics;
+- all eight runtime categories for all four protagonists;
+- Sophie browser E2E;
+- Margaret browser E2E;
+- full Gray Crown `npm run check`;
+- immutable-control re-verification after runtime testing.
 
-The Margaret workflow's repository write permission is explicitly restricted by the repository hygiene gate to this prototype branch and to the Margaret generated source/runtime paths.
+One complete regression retry is allowed only for the known intermittent frontier browser pathing flake. A deterministic second failure remains a true failure.
 
 ## Still unresolved
 
 No change to these unresolved items:
 
 - exact eye color;
-- final fourth-character color;
+- final fourth-character palette;
 - surname;
 - final weapon;
 - final hero costume;
 - magic visual language;
-- heraldry / religious marks / certification marks;
+- heraldry / religious / certification marks;
 - formal whole-game Pixel-native adoption;
+- final Portrait policy;
 - main merge.
 
 ## Next technical phase
 
-With all four protagonist prototype runtime sets present, the next engineering phase is four-protagonist Source-of-Truth reconciliation and in-scene integration testing against the existing environment prototypes before any main merge.
+After the final harmonization gate is green, proceed to **Four Protagonist Environment Integration** against:
+
+- Ryune village;
+- grass field / road;
+- house exterior;
+- house interior.
+
+That environment gate must use the exact committed runtime PNGs before any formal adoption decision.
