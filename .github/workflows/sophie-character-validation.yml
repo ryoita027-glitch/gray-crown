@@ -1,6 +1,7 @@
 name: Gray Crown Sophie Character Validation CI
 on:
   pull_request:
+    branches: [pixel-karen-triton-face-differentiation-fix]
     types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
 concurrency:
