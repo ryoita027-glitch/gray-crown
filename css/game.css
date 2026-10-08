@@ -398,3 +398,6 @@ button{border-radius:5px}
 @media(max-width:650px){
  .enemy-art{transform:scale(.82);transform-origin:50% 90%}
 }
+
+/* Empty journal should not reserve sidebar space. */
+.journal-panel:has(#journalHud:empty){display:none}
