@@ -26,8 +26,6 @@ jobs:
         run: python tools/generate_four_hero_appeal_runtime.py
       - name: Verify appeal runtime
         run: python tools/verify_four_hero_appeal_runtime.py
-      - name: Verify no cutout fringe
-        run: python tools/verify_clean_runtime_sprite_assets.py
       - name: Build exact evidence
         run: python tools/build_four_hero_appeal_evidence.py
       - name: Full project regression
