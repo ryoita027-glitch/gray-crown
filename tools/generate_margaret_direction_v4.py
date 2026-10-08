@@ -5,7 +5,7 @@ from PIL import Image, ImageFilter, ImageChops
 SRC=Path("docs/pixel/reference/margaret_chibi_direction_lock_v2_48.png")
 OUT=Path("docs/pixel/reference/margaret_chibi_direction_lock_v4_48.png")
 CELL=48
-TARGET_WIDTHS=(34,35,35,33)
+TARGET_WIDTHS=(30,31,31,29)
 TARGET_H=44
 DARK=(44,31,55,255)
 
@@ -22,12 +22,12 @@ for i,tw in enumerate(TARGET_WIDTHS):
     reg=cell.crop(bb).resize((tw,TARGET_H),Image.Resampling.NEAREST)
 
     # Larger chibi head while retaining the approved face/hair pixels.
-    head_h=21
-    head=reg.crop((0,0,tw,head_h)).resize((min(tw+2,40),22),Image.Resampling.NEAREST)
+    head_h=20
+    head=reg.crop((0,0,tw,head_h)).resize((tw+1,21),Image.Resampling.NEAREST)
 
     # Slightly thicker torso/body mass so Margaret no longer reads as undersized.
-    staged=Image.new("RGBA",(max(tw+2,40),TARGET_H),(0,0,0,0))
-    body=reg.crop((0,18,tw,TARGET_H)).resize((tw+2,TARGET_H-18),Image.Resampling.NEAREST)
+    staged=Image.new("RGBA",(tw+3,TARGET_H),(0,0,0,0))
+    body=reg.crop((0,18,tw,TARGET_H)).resize((tw+1,TARGET_H-18),Image.Resampling.NEAREST)
     cx=staged.width//2
     staged.alpha_composite(body,(cx-body.width//2,18))
     staged.alpha_composite(head,(cx-head.width//2,0))
