@@ -1,0 +1,42 @@
+'use strict';
+function pushIssue(list,code,message,context={}){list.push({code,message,context})}
+function duplicates(values){const seen=new Set(),dups=new Set();for(const v of values){if(seen.has(v))dups.add(v);seen.add(v)}return [...dups]}
+function validateData(){
+ const errors=[],warnings=[];const blocked=new Set(['T','H','S','W','R','K','Z']);
+ for(const [mapId,m] of Object.entries(maps)){
+  if(!Array.isArray(m.tiles)||m.tiles.length!==ROWS||m.tiles.some(r=>typeof r!=='string'||r.length!==COLS))pushIssue(errors,'MAP_DIMENSIONS',`Map ${mapId} has invalid dimensions`,{mapId});
+  for(const id of duplicates((m.npcs||[]).map(n=>n.id)))pushIssue(errors,'NPC_DUPLICATE_IN_MAP',`Duplicate NPC id ${id} in ${mapId}`,{mapId,id});
+  for(const id of duplicates((m.objects||[]).map(o=>o.id)))pushIssue(errors,'OBJECT_DUPLICATE_IN_MAP',`Duplicate object id ${id} in ${mapId}`,{mapId,id});
+  for(const n of m.npcs||[]){if(n.x<0||n.y<0||n.x>=COLS||n.y>=ROWS)pushIssue(errors,'NPC_OUT_OF_BOUNDS',`NPC ${n.id} is outside ${mapId}`,{mapId,id:n.id,x:n.x,y:n.y})}
+  for(const o of m.objects||[]){if(o.x<0||o.y<0||o.x>=COLS||o.y>=ROWS)pushIssue(errors,'OBJECT_OUT_OF_BOUNDS',`Object ${o.id} is outside ${mapId}`,{mapId,id:o.id,x:o.x,y:o.y})}
+ }
+ const eventIds=EVENT_DEFS.map(e=>e.id);for(const id of duplicates(eventIds))pushIssue(errors,'EVENT_DUPLICATE',`Duplicate event id ${id}`,{id});
+ const eventStateIds=new Set(eventIds);for(const e of EVENT_DEFS)for(const fx of e.effects||[])if(fx.type==='completeEvent'&&fx.id)eventStateIds.add(fx.id);
+ for(const e of EVENT_DEFS){
+  const tr=e.trigger||{};if(tr.map&&!maps[tr.map])pushIssue(errors,'EVENT_BAD_MAP',`Event ${e.id} references missing map ${tr.map}`,{id:e.id,map:tr.map});
+  if(tr.map&&tr.type==='npc'&&!maps[tr.map]?.npcs?.some(n=>n.id===tr.target))pushIssue(errors,'EVENT_BAD_NPC',`Event ${e.id} references missing NPC ${tr.target}`,{id:e.id});
+  if(tr.map&&tr.type==='object'&&!maps[tr.map]?.objects?.some(o=>o.id===tr.target))pushIssue(errors,'EVENT_BAD_OBJECT',`Event ${e.id} references missing object ${tr.target}`,{id:e.id});
+  const complete=new Set((e.when||[]).filter(c=>c.eventComplete).map(c=>c.eventComplete)),incomplete=new Set((e.when||[]).filter(c=>c.eventIncomplete).map(c=>c.eventIncomplete));for(const id of complete)if(incomplete.has(id))pushIssue(errors,'EVENT_IMPOSSIBLE_CONDITION',`Event ${e.id} requires ${id} both complete and incomplete`,{id:e.id,condition:id});
+  for(const id of [...complete,...incomplete])if(!eventStateIds.has(id))pushIssue(errors,'EVENT_BAD_EVENT_REF',`Event ${e.id} references unknown event state ${id}`,{id:e.id,condition:id});
+  for(const fx of e.effects||[]){if(fx.type==='startBattle'&&!battles[fx.id])pushIssue(errors,'EVENT_BAD_BATTLE',`Event ${e.id} starts missing battle ${fx.id}`,{id:e.id,battle:fx.id});if(fx.type==='openTreasure'&&!TREASURE_DEFS[fx.id])pushIssue(errors,'EVENT_BAD_TREASURE',`Event ${e.id} opens missing treasure ${fx.id}`,{id:e.id,treasure:fx.id});if(fx.type==='advanceStory'&&!STORY_ORDER.includes(fx.stage))pushIssue(errors,'EVENT_BAD_STORY_EFFECT',`Event ${e.id} advances to unknown story stage ${fx.stage}`,{id:e.id,stage:fx.stage})}
+  for(const c of e.when||[])if(c.storyIs&&!STORY_ORDER.includes(c.storyIs)||c.storyAtLeast&&!STORY_ORDER.includes(c.storyAtLeast))pushIssue(errors,'EVENT_BAD_STORY_STAGE',`Event ${e.id} references unknown story stage`,{id:e.id,condition:c});
+ }
+ for(const [id,t] of Object.entries(MAP_TRANSITIONS)){if(!maps[t.from])pushIssue(errors,'TRANSITION_BAD_FROM',`Transition ${id} missing from map ${t.from}`,{id});if(!maps[t.to])pushIssue(errors,'TRANSITION_BAD_TO',`Transition ${id} missing to map ${t.to}`,{id});if(maps[t.to]){if(t.x<0||t.y<0||t.x>=COLS||t.y>=ROWS)pushIssue(errors,'TRANSITION_OUT_OF_BOUNDS',`Transition ${id} spawn is outside ${t.to}`,{id});else if(blocked.has(maps[t.to].tiles[t.y][t.x]))pushIssue(warnings,'TRANSITION_BLOCKED_TILE',`Transition ${id} spawns on blocking tile`,{id,map:t.to,x:t.x,y:t.y})}}
+ for(const [id,def] of Object.entries(TREASURE_DEFS)){if(!maps[def.map])pushIssue(errors,'TREASURE_BAD_MAP',`Treasure ${id} references missing map`,{id,map:def.map});if(!ITEM_DEFS[def.item])pushIssue(errors,'TREASURE_BAD_ITEM',`Treasure ${id} references missing item ${def.item}`,{id,item:def.item});if(maps[def.map]&&!maps[def.map].objects.some(o=>o.id===id))pushIssue(warnings,'TREASURE_OBJECT_MISSING',`Treasure ${id} has no matching map object`,{id,map:def.map})}
+ for(const [mapId,f] of Object.entries(MAP_FEATURES)){const m=maps[mapId];if(!m){pushIssue(errors,'FEATURE_BAD_MAP',`Map features reference missing map ${mapId}`,{mapId});continue}for(const id of f.npcs||[])if(!m.npcs.some(n=>n.id===id))pushIssue(errors,'FEATURE_BAD_NPC',`Feature ${mapId} references missing NPC ${id}`,{mapId,id});for(const id of f.optional||[])if(!m.objects.some(o=>o.id===id))pushIssue(errors,'FEATURE_BAD_OBJECT',`Feature ${mapId} references missing object ${id}`,{mapId,id});for(const id of f.treasures||[])if(!TREASURE_DEFS[id])pushIssue(errors,'FEATURE_BAD_TREASURE',`Feature ${mapId} references missing treasure ${id}`,{mapId,id});for(const id of f.shortcuts||[]){if(!SHORTCUT_DEFS[id])pushIssue(errors,'FEATURE_BAD_SHORTCUT',`Feature ${mapId} references missing shortcut ${id}`,{mapId,id});else if(SHORTCUT_DEFS[id].map!==mapId)pushIssue(errors,'FEATURE_SHORTCUT_WRONG_MAP',`Shortcut ${id} belongs to ${SHORTCUT_DEFS[id].map}, not ${mapId}`,{mapId,id})}}
+ for(const [id,def] of Object.entries(SHORTCUT_DEFS))if(!maps[def.map])pushIssue(errors,'SHORTCUT_BAD_MAP',`Shortcut ${id} references missing map ${def.map}`,{id,map:def.map});
+ for(const [owner,loadout] of Object.entries(BATTLE_LOADOUTS)){if(!partyBase.some(p=>p.id===owner))pushIssue(errors,'LOADOUT_BAD_OWNER',`Loadout owner ${owner} is missing`,{owner});for(const skill of loadout)if(!SKILLS[skill])pushIssue(errors,'LOADOUT_BAD_SKILL',`Loadout ${owner} references missing skill ${skill}`,{owner,skill})}
+ for(const [id,skill] of Object.entries(SKILLS)){if(skill.id!==id)pushIssue(errors,'SKILL_ID_MISMATCH',`Skill key ${id} has id ${skill.id}`,{id});if(skill.owner&&!partyBase.some(p=>p.id===skill.owner))pushIssue(errors,'SKILL_BAD_OWNER',`Skill ${id} references missing owner ${skill.owner}`,{id})}
+ for(const [id,b] of Object.entries(battles)){if(!Array.isArray(b.enemies)||!b.enemies.length)pushIssue(errors,'BATTLE_NO_ENEMIES',`Battle ${id} has no enemies`,{id});if(b.reward?.drop?.item&&!ITEM_DEFS[b.reward.drop.item])pushIssue(errors,'BATTLE_BAD_DROP',`Battle ${id} drops undefined item ${b.reward.drop.item}`,{id,item:b.reward.drop.item})}
+ // Conservative reachability: a required completed-event condition must have a known producer.
+ const producers=new Set(EVENT_DEFS.map(e=>e.id));for(const e of EVENT_DEFS)for(const fx of e.effects||[])if(fx.type==='completeEvent'&&fx.id)producers.add(fx.id);for(const legacy of knownLegacyFlags())producers.add(LEGACY_EVENT_ID?.[legacy]||legacy);
+ for(const e of EVENT_DEFS)for(const c of e.when||[])if(c.eventComplete&&!producers.has(c.eventComplete))pushIssue(errors,'EVENT_UNREACHABLE_REQUIRED_EVENT',`Event ${e.id} requires event state with no producer: ${c.eventComplete}`,{id:e.id,required:c.eventComplete});
+ return{ok:errors.length===0,errors,warnings,summary:{maps:Object.keys(maps).length,events:EVENT_DEFS.length,battles:Object.keys(battles).length,skills:Object.keys(SKILLS).length,items:Object.keys(ITEM_DEFS).length}}
+}
+function validateRuntimeState(s=state){
+ const errors=[],warnings=[];if(!maps[s.map])pushIssue(errors,'STATE_BAD_MAP',`Current map ${s.map} does not exist`,{map:s.map});if(!STORY_ORDER.includes(s.story?.stage))pushIssue(errors,'STATE_BAD_STORY',`Unknown story stage ${s.story?.stage}`,{});if(!Number.isFinite(s.x)||!Number.isFinite(s.y)||s.x<0||s.y<0||s.x>=COLS||s.y>=ROWS)pushIssue(errors,'STATE_BAD_POSITION','Player position is out of bounds',{map:s.map,x:s.x,y:s.y});
+ const derived=deriveAlphaStageFromMilestones(s);if(storyIndex(derived)>storyIndex(s.story.stage))pushIssue(errors,'STATE_STORY_BEHIND',`Story ${s.story.stage} is behind milestone ${derived}`,{stage:s.story.stage,derived});
+ return{ok:errors.length===0,errors,warnings}
+}
+function runValidation(){const data=validateData(),runtime=validateRuntimeState();const result={ok:data.ok&&runtime.ok,data,runtime};if(!result.ok)GC.Log?.error('Validation failed',result);else GC.Log?.info('Validation passed',result.data.summary);return result}
+GC.Validation={validateData,validateRuntimeState,runValidation,duplicates};

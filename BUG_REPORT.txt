@@ -1,0 +1,63 @@
+Gray Crown v23 — BUG REPORT
+===========================
+
+1. 複数敵戦で先頭1体を倒すと戦闘終了する
+-------------------------------------------
+再現:
+- battlefieldWolves等、複数enemyを持つBattleを開始。
+- livingEnemies()[0]を倒す。
+- 残りenemyが生存していてもbattleWin()が呼ばれる。
+
+原因:
+- battleAction()のimpact callbackが e.hp<=0 の時点で無条件にbattleWin()していた。
+
+修正:
+- e.hp<=0でも livingEnemies().length > 0 ならnextActor()へ進む。
+- 全enemyが倒れた時だけbattleWin()。
+
+Regression Test:
+- multi-enemy battle does not end when only the first enemy is defeated
+
+2. ヴァルク撃退後も敵NPCがセラドに残る
+----------------------------------------
+再現:
+- v22第1区間でヴァルク撃破後、frontierを表示。
+- vanguardCaptain / imperialGuardが配置上残る。
+
+原因:
+- map NPCに撃退後のhide条件がなかった。
+
+修正:
+- 既存vanguardDefeated互換状態を利用しhideWhenを設定。
+- 新しいStory Flagは追加していない。
+
+3. 戦闘跡からセラドへ戻る際に目的表示が古いStory State文へ戻る
+-------------------------------------------------------------
+再現:
+- 戦場狼勝利後、objectiveが「セラドへ戻り報告」に更新される。
+- returnFrontierFromField()でSTORY_FLOW[18]を再代入すると「負傷兵を守る」へ戻る。
+
+原因:
+- Map return helperがEventによって更新済みのobjectiveを上書きしていた。
+
+修正:
+- returnFrontierFromField()は現在objectiveを保持する。
+- Node Regressionで報告objective保持を確認。
+
+4. v23 Save schema更新で旧Testが22固定値を期待
+---------------------------------------------
+分類:
+- 実ゲームのSave破損ではなくTest側の期待値更新漏れ。
+
+修正:
+- schema 23へ更新。
+- v18/v19系Migration Testを維持。
+- v22 frontier-complete Save専用Migration Testを追加。
+
+5. v23 Browser E2E初版のlocalStorage preload式に括弧欠落
+-------------------------------------------------------
+分類:
+- テストコードのみ。本編コードではない。
+
+修正:
+- preload JavaScriptを修正し、Browser再生成→Continueが実行される状態で再テスト。

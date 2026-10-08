@@ -1,0 +1,42 @@
+name: Gray Crown Current Playable Build
+on:
+  push:
+    branches: [pixel-margaret-fourth-character-front-gate, pixel-clean-runtime-integration-v1, pixel-four-protagonist-appeal-v1, pixel-four-protagonist-appeal-runtime-v2, commercial-presentation-pass-v1]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: gray-crown-current-playable-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify current playable branch
+        run: |
+          python tools/verify_project_authority.py
+          python tools/verify_repo_hygiene.py
+          node tests/check-syntax.js
+      - name: Build exact playable package
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf dist-playable
+          mkdir -p dist-playable/gray-crown-current
+          cp index.html dist-playable/gray-crown-current/
+          cp -a css js assets dist-playable/gray-crown-current/
+          printf '%s\n'             'GRAY CROWN — CURRENT PLAYABLE PROTOTYPE'             ''             "Branch: ${GITHUB_REF_NAME}"             "Commit: ${GITHUB_SHA}"             'Build: v23 Serad Frontier Second Slice + current Pixel prototype integration'             ''             'HOW TO START (Windows)'             '1. Extract the ZIP.'             '2. Open the gray-crown-current folder.'             '3. Double-click index.html.'             '   The project intentionally uses classic scripts so file:// launch works.'             ''             'CONTROLS'             '- Move: WASD / Arrow keys'             '- Confirm / dialogue: Enter / Space'             '- Menu: M'             '- Developer Mode: F2'             '- Save / Load / Restart: top-right buttons'             ''             'WHAT THIS BUILD IS'             '- This is the CURRENT DEVELOPMENT BRANCH, not main.'             '- v23 story/game systems are present.'             '- Current Karen / Triton / Sophie / Margaret runtime pixel assets are included.'             '- Pixel-native art is still prototype work and has NOT been merged to main.'             '- Developer Mode can warp maps, launch events/battles and inspect story state.'             ''             'IMPORTANT'             '- If a browser blocks local audio, gameplay itself should still run.'             '- Do not treat visual prototype assets as final production approval.'             > dist-playable/gray-crown-current/PLAYTEST_README.txt
+          printf '@echo off\r\nstart "" "%%~dp0index.html"\r\n' > dist-playable/gray-crown-current/PLAY_GRAY_CROWN.bat
+          cd dist-playable
+          zip -r -9 gray-crown-current-playable.zip gray-crown-current >/dev/null
+          sha256sum gray-crown-current-playable.zip > gray-crown-current-playable.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gray-crown-current-playable
+          path: |
+            dist-playable/gray-crown-current-playable.zip
+            dist-playable/gray-crown-current-playable.sha256
+          if-no-files-found: error
+          retention-days: 14

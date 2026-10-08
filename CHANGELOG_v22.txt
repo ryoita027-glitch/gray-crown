@@ -1,0 +1,13 @@
+Gray Crown v22 CHANGELOG
+
+- v21を基準に、Architecture全面改修をせずセラド前線・第1区間のみ本実装。
+- Story State 12_frontier_arrival / 13_frontier_crisis / 14_frontier_battle_won / 15_frontier_completeを追加。
+- 灰の街道11完了後、北端からセラドへ正式遷移。
+- 到着演出、前線将校、野戦病院、衛生兵、ヴァルク戦、戦後報告、区間終了をdata-driven Event化。
+- 任意Interactionとして見張り台、応急防壁、損耗記録板、野戦病院、補給箱、王国兵を整備。
+- vanguardCaptain戦後の旧battle.js専用処理を削除し、battleWin Eventへ一本化。
+- セラド北端から未完成の国境章へ進めないようv22区間終了で停止。
+- Developer Story State位置に09〜15を追加し、Story Inspectorから前線Event条件を確認可能。
+- Save schemaを22へ更新。
+- Validationに、eventComplete条件が既知のEvent/effect/compatibility producerを持つか確認する保守的reachability checkを追加。
+- Node前線テストと専用Chromium E2Eを追加。

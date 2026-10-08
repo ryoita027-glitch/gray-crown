@@ -1,0 +1,19 @@
+System Foundation v15
+
+【Phase 2】
+- 主要4人の歩行を実PNGスプライトシートへ移行。
+- 4方向 × 3フレーム、停止時は方向保持。
+- 街道レイアウトを蛇行＋脇空地へ変更。
+- 4領域の品質基準を QUALITY_BENCHMARK_v15.txt へ固定。
+
+【Phase 3】
+- EXP_TABLE をレベル判定の唯一の閾値に設定。
+- SKILLS / BATTLE_LOADOUTS を追加し戦闘UIがデータを参照。
+- ダメージ式を RPG_RULES へ集約。
+- calculateBaseStatsAtLevel() を追加。
+- TREASURE_DEFS と openTreasure() を追加。開封状態を state.treasures に保存。
+- 街道に汎用宝箱 roadCache を追加。
+- MAP_TRANSITIONS と useMapTransition() を追加し、序盤遷移をデータ化。
+- MAP_FEATURES / validateMapDesign() / auditBenchmarkMaps() を追加。
+- SHORTCUT_DEFS / state.shortcuts を追加し、後続マップでショートカットを共通処理できる基盤を用意。
+- v14セーブから宝箱状態と向きを維持して移行。

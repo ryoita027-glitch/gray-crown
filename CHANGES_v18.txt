@@ -1,0 +1,23 @@
+Alpha 1.0 v18
+
+【Task 1: Story Engine】
+- flags.talkedWithKaren を追加。
+- リュネ村の勇者任命をめぐる4人の会話完了時にセット。
+- 北門の遷移条件を talkedWithKaren に変更。
+- advanceStory() と STORY_FLOW / STORY_ORDER を追加。
+- 序盤Story Stateを単調増加にして、再入場やNPC再会話で進行が後戻りしないよう修正。
+- capitalOfficial は任命式完了後に同じ式典を再生しない。
+- シンボル接触用 startSymbolEncounter() を追加。
+- battleReturn に戦闘前のマップ、座標、向き、隊列を保存し、勝利後に復帰。
+
+【Task 2: Message Engine】
+- setTimeout型タイプライターを requestAnimationFrame ベースへ変更。
+- Enter/Space: タイピング中は全文表示、全文表示後はページ送り。
+- キーリピートによる意図しない複数ページ送りを抑止。
+- | / || のポーズ制御、[[...]]ハイライトを継続対応。
+
+【Task 3: Alpha 1.0】
+- タイトル画面追加。
+- タイトル→リュネ村→街道→灰牙狼→王都→任命式→白鹿亭までStory Stateを接続。
+- 白鹿亭の最終ページ完了後のみ alphaHourComplete=true。
+- SAVE_SCHEMA 18。v17 appointed セーブから talkedWithKaren を自動移行。
