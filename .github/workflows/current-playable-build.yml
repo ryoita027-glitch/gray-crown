@@ -27,41 +27,8 @@ jobs:
           mkdir -p dist-playable/gray-crown-current
           cp index.html dist-playable/gray-crown-current/
           cp -a css js assets dist-playable/gray-crown-current/
-          cat > dist-playable/gray-crown-current/PLAYTEST_README.txt <<EOF
-GRAY CROWN — CURRENT PLAYABLE PROTOTYPE
-
-Branch: ${GITHUB_REF_NAME}
-Commit: ${GITHUB_SHA}
-Build: v23 Serad Frontier Second Slice + current Pixel prototype integration
-
-HOW TO START (Windows)
-1. Extract the ZIP.
-2. Open the gray-crown-current folder.
-3. Double-click index.html.
-   The project intentionally uses classic scripts so file:// launch works.
-
-CONTROLS
-- Move: WASD / Arrow keys
-- Confirm / dialogue: Enter / Space
-- Menu: M
-- Developer Mode: F2
-- Save / Load / Restart: top-right buttons
-
-WHAT THIS BUILD IS
-- This is the CURRENT DEVELOPMENT BRANCH, not main.
-- v23 story/game systems are present.
-- Current Karen / Triton / Sophie / Margaret runtime pixel assets are included.
-- Pixel-native art is still prototype work and has NOT been merged to main.
-- Developer Mode can warp maps, launch events/battles and inspect story state.
-
-IMPORTANT
-- If a browser blocks local audio, gameplay itself should still run.
-- Do not treat visual prototype assets as final production approval.
-EOF
-          cat > dist-playable/gray-crown-current/PLAY_GRAY_CROWN.bat <<'EOF'
-@echo off
-start "" "%~dp0index.html"
-EOF
+          printf '%s\n'             'GRAY CROWN — CURRENT PLAYABLE PROTOTYPE'             ''             "Branch: ${GITHUB_REF_NAME}"             "Commit: ${GITHUB_SHA}"             'Build: v23 Serad Frontier Second Slice + current Pixel prototype integration'             ''             'HOW TO START (Windows)'             '1. Extract the ZIP.'             '2. Open the gray-crown-current folder.'             '3. Double-click index.html.'             '   The project intentionally uses classic scripts so file:// launch works.'             ''             'CONTROLS'             '- Move: WASD / Arrow keys'             '- Confirm / dialogue: Enter / Space'             '- Menu: M'             '- Developer Mode: F2'             '- Save / Load / Restart: top-right buttons'             ''             'WHAT THIS BUILD IS'             '- This is the CURRENT DEVELOPMENT BRANCH, not main.'             '- v23 story/game systems are present.'             '- Current Karen / Triton / Sophie / Margaret runtime pixel assets are included.'             '- Pixel-native art is still prototype work and has NOT been merged to main.'             '- Developer Mode can warp maps, launch events/battles and inspect story state.'             ''             'IMPORTANT'             '- If a browser blocks local audio, gameplay itself should still run.'             '- Do not treat visual prototype assets as final production approval.'             > dist-playable/gray-crown-current/PLAYTEST_README.txt
+          printf '@echo off\r\nstart "" "%%~dp0index.html"\r\n' > dist-playable/gray-crown-current/PLAY_GRAY_CROWN.bat
           cd dist-playable
           zip -r -9 gray-crown-current-playable.zip gray-crown-current >/dev/null
           sha256sum gray-crown-current-playable.zip > gray-crown-current-playable.sha256
