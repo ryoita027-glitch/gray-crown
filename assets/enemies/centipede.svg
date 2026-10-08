@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" shape-rendering="crispEdges">
+<g stroke="#221f1c" stroke-width="2"><path d="m12 38-4 8m7-8 5 8m4-8-4 8m7-8 5 8m4-8-4 8m7-8 5 8m4-8-4 8m7-8 5 8"/></g>
+<g fill="#221f1c"><path d="m8 28 7-4 5 4-2 12-10 1-4-6Z"/><rect x="13" y="25" width="10" height="16"/><rect x="19" y="26" width="10" height="16"/><rect x="25" y="25" width="10" height="16"/><rect x="31" y="26" width="10" height="16"/><rect x="37" y="25" width="10" height="16"/><rect x="43" y="26" width="10" height="16"/></g>
+<g fill="#7c6a50"><rect x="14" y="28" width="8" height="10"/><rect x="20" y="29" width="8" height="10"/><rect x="26" y="28" width="8" height="10"/><rect x="32" y="29" width="8" height="10"/><rect x="38" y="28" width="8" height="10"/><rect x="44" y="29" width="8" height="10"/></g>
+<g fill="#987f61"><rect x="16" y="29" width="4" height="3"/><rect x="28" y="29" width="4" height="3"/><rect x="40" y="29" width="4" height="3"/></g>
+<path fill="#7c6a50" d="m9 29 6-3 3 3-2 9-7 1-3-4Z"/><rect x="9" y="32" width="1" height="1" fill="#c66b37"/>
+<path d="m6 35-4-3m4 4-4 3" stroke="#221f1c" stroke-width="2"/>
+</svg>
