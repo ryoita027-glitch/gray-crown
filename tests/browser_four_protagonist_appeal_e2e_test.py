@@ -30,6 +30,9 @@ with server():
     page.wait_for_timeout(350)
     for _ in range(4):
         page.keyboard.press("Space");page.wait_for_timeout(80)
+    # Visual evidence must show the party itself, not a dialogue overlay.
+    page.evaluate("() => GC.Dialogue.closeDialogue(false)")
+    page.wait_for_timeout(120)
 
     # Put the real runtime party on an open path so all four are visible.
     page.evaluate("""() => {
