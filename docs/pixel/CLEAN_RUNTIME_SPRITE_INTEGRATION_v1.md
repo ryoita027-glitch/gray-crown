@@ -47,3 +47,12 @@ CI must prove:
 6. screenshot evidence is uploaded from the actual game, not an AI-generated comparison board.
 
 Visual adoption still requires the user's playtest. This branch can be discarded without affecting the current four-protagonist prototype branch.
+
+
+## Derived sheet sync
+
+The clean derived exploration/battle sheet was committed by CI at `f8be147f5dfdf091ebdec9694c1b0e429e634389`.
+
+Only `assets/hero_party_walk.png` changed in that sync commit. Approved Karen / Triton / Sophie / Margaret runtime source PNGs were not modified.
+
+A final clean-runtime validation run is required on the post-sync branch head before this Draft PR is considered ready for user playtest.
