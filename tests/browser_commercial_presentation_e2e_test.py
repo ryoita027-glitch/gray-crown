@@ -32,12 +32,18 @@ with server():
         raise AssertionError("player title still exposes build metadata: "+title)
     if page.locator(".sidebar").evaluate("e=>getComputedStyle(e).display")!="none":
         raise AssertionError("desktop prototype sidebar is still permanently visible")
+    if page.locator(".topbar").evaluate("e=>getComputedStyle(e).display")!="none":
+        raise AssertionError("outer webpage header is visible on the title screen")
     if "ALPHA" in page.locator("body").inner_text().upper():
         raise AssertionError("normal player shell exposes ALPHA wording")
 
     page.screenshot(path=str(OUT/"title_desktop.png"),full_page=True)
     page.click("#titleNewGame")
     page.wait_for_timeout(400)
+    if "playing" not in page.locator("body").get_attribute("class", timeout=1000):
+        raise AssertionError("focused play mode was not enabled")
+    if page.locator("#btnMenu").count()!=1:
+        raise AssertionError("player menu button missing")
     for _ in range(4):
         page.keyboard.press("Space");page.wait_for_timeout(70)
     page.evaluate("() => GC.Dialogue.closeDialogue(false)")
@@ -61,7 +67,7 @@ with server():
     page.screenshot(path=str(OUT/"road_desktop.png"),full_page=True)
 
     # Player menu must be a real game menu, not an architecture/debug information dump.
-    page.keyboard.press("m")
+    page.click("#btnMenu")
     page.wait_for_timeout(180)
     menu_text=page.locator("#modal").inner_text()
     for banned in ("v19","責務分離","自動回帰テスト","アーキテクチャ版"):
