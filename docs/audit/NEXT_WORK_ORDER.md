@@ -1,65 +1,73 @@
 # Gray Crown — Next Work Order
 
-## Completed
+## Completed in the protagonist-quality phase
 
-- Karen locked.
+- Karen locked as permanent Visual Regression Control.
 - Triton Second Character Validation PASS.
-- Sophie Chibi Direction Lock v1 approved.
-- Sophie Acting Reference v1 approved.
-- Sophie 4-direction 48×48 source complete.
-- Sophie eight runtime animation categories complete.
-- Sophie runtime metadata complete.
-- Karen / Triton / Sophie actual-game comparison complete.
-- Full48 / Medium44 / Compact41 validation complete.
-- Save schema 23 / control restoration confirmed.
-- full regression CI green.
+- Sophie user-approved identity retained.
+- Margaret four-direction + eight-animation runtime integration completed.
+- Four Protagonist Quality Standard v1 added.
+- exact PNG-only comparison evidence added:
+  - Medium44 front;
+  - face crop;
+  - grayscale;
+  - silhouette;
+  - four directions;
+  - animation contact sheets;
+  - field-scale comparison;
+  - numeric occupancy / face / silhouette metrics.
+- Sophie detached rendering debris identified and removed through a conservative component cleanup.
+- Sophie Direction Lock v2 + cleaned eight runtime sheets promoted on the prototype branch.
+- Margaret v5 face-readability source promoted.
+- Margaret eight runtime sheets regenerated from v5.
+- Karen and Triton required no visual rewrite.
 
-## Current gate
+## Completed gate
 
-# **Sophie Character Validation — PASS / REVISE**
+# **Four Protagonist Runtime Harmonization — FINAL GREEN**
 
-This is a human visual / character-quality decision.
+Validated head before this documentation-only update: `12c6deaf1849985c946c6e291be41828e2f4d77b`.
 
-Technical result is already PASS.
+Completed:
+1. Sophie browser E2E — PASS;
+2. Margaret browser E2E — PASS;
+3. four-character quality metrics — PASS;
+4. full `npm run check` — PASS;
+5. Karen / Triton immutable-control checks — PASS;
+6. Triton completion CI — PASS.
 
-### PASS means
+The frontier story E2E timing flake was fixed at the test harness boundary by disabling production key-repeat delay only in that story-flow test. No production movement change was made.
 
-Sophie is accepted as the third validated protagonist.
+Do not merge to main merely because this gate passes.
 
-Then:
+## Next work now
 
-1. record Sophie Character Validation PASS;
-2. update Pixel Character Standard from Karen + Triton + Sophie evidence;
-3. start **Margaret — MEASURED LINE Front Idle only**;
-4. stop again for Margaret user Visual Review before her four-direction / animation production.
+# **Four Protagonist Environment Integration**
 
-### REVISE means
+Use the existing environment prototype as the next controlled test.
 
-Keep work on Sophie.
+Required scenes:
+1. Ryune village;
+2. open grass / road;
+3. house exterior;
+4. house interior.
 
-Do not modify Karen or Triton.
+For every scene:
+- exact runtime PNGs only;
+- Medium44 default;
+- all four protagonists visible under matched world scale;
+- movement + Idle + Talk evidence;
+- furniture/NPC relationship;
+- no save-schema change;
+- browser E2E and control restoration.
 
-Do not start Margaret.
+Then produce a single environment comparison package and decide whether Pixel-native is strong enough for formal adoption.
 
-## Evidence available
+## Still paused
 
-Actual-game / scale evidence includes:
-
-- Sophie + Karen + Triton Medium44 Idle
-- Sophie Walk
-- Sophie Talk
-- Sophie Laugh
-- Sophie Run
-- Sophie Full48
-- Sophie Medium44
-- Sophie Compact41
-
-## Paused
-
-- Margaret until Sophie PASS;
-- Environment Prototype until all four protagonists pass;
 - main merge;
-- formal Pixel-native adoption;
-- Portrait deletion;
-- NPC scale migration;
+- final Portrait policy;
+- battle migration;
+- NPC mass migration;
+- final weapons/costumes/emblems;
 - v24.

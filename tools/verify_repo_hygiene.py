@@ -81,9 +81,19 @@ if "pixel-karen-triton-face-differentiation-fix" not in sync:
 if "assets/characters/triton/" not in sync:
     errors.append("Triton generated-asset sync must explicitly restrict committed output paths")
 
+margaret_sync=(ROOT/".github/workflows/margaret-front-gate.yml").read_text(encoding="utf-8")
+if "contents: write" not in margaret_sync:
+    errors.append("Margaret generated-asset sync requires contents: write")
+if "pixel-margaret-fourth-character-front-gate" not in margaret_sync:
+    errors.append("Margaret generated-asset sync must stay scoped to the Margaret prototype branch")
+for required_path in ("docs/pixel/reference/margaret_chibi_direction_lock_v5_48.png","assets/characters/margaret/","docs/pixel/reference/sophie_chibi_direction_lock_v2_48.png","assets/characters/sophie/"):
+    if required_path not in margaret_sync:
+        errors.append(f"Margaret generated-asset sync must restrict output to {required_path}")
+
+write_allowed={"sync-triton-lock-assets.yml","margaret-front-gate.yml"}
 for path in (ROOT/".github/workflows").glob("*.y*ml"):
     text=path.read_text(encoding="utf-8")
-    if "contents: write" in text and path.name!="sync-triton-lock-assets.yml":
+    if "contents: write" in text and path.name not in write_allowed:
         errors.append(f"unexpected workflow has repository write permission: {path.name}")
 
 if errors:
@@ -95,4 +105,4 @@ print("GRAY CROWN REPOSITORY HYGIENE PASS")
 print(f"Tracked files checked: {len(tracked)}")
 print("Production remains main / v23 / Save schema 23")
 print("Karen and Triton approved/current runtime sheets are committed")
-print("Only the narrowly scoped Triton asset-sync workflow has contents: write")
+print("Only narrowly scoped Triton and Margaret prototype asset-sync workflows have contents: write")

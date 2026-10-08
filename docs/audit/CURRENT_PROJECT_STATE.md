@@ -1,72 +1,103 @@
 # Gray Crown — Current Project State
 
-Status: 2026-10-07 JST.
+Status: 2026-10-08 JST.
 
 ## Production
 
 Production remains **main / v23 / Save schema 23 / Story 00–19**.
-Pixel-native is not merged to main.
 
-## Karen
+Pixel-native protagonist work remains isolated on prototype branches and is not merged to main.
 
-Karen — VILLAGE RUNNER remains approved and frozen as Visual Regression Control.
+## Four protagonists
 
-## Triton
+### Karen — VILLAGE RUNNER
+- approved and frozen Visual Regression Control;
+- eight runtime animation categories remain byte-locked;
+- no quality-harmonization rewrite was required.
 
-Triton — GROUND ANCHOR remains complete.
+### Triton — GROUND ANCHOR
+- **Triton Second Character Validation PASS**;
+- locked control;
+- no quality-harmonization rewrite was required.
 
-# **Triton Second Character Validation PASS**
-
-## Sophie
-
-Sophie — STEADY HANDS visual direction is user-approved and locked.
+### Sophie — STEADY HANDS
+- user-approved identity preserved;
+- active technical source: **Sophie Chibi Direction Lock v2**;
+- v2 removes repeated detached micro-pixel debris found by the unified cast audit;
+- eight runtime categories are cleaned and hash-pinned;
+- no face/body/acting redesign was introduced.
 
 Authority:
-
-- `docs/pixel/SOPHIE_CHIBI_DIRECTION_LOCK_v1.md`
+- `docs/pixel/SOPHIE_CHIBI_DIRECTION_LOCK_v2.md`
 - `docs/pixel/SOPHIE_ACTING_REFERENCE_v1.md`
-- `docs/pixel/reference/sophie_chibi_direction_lock_v1_48.png`
+- `docs/pixel/reference/sophie_chibi_direction_lock_v2_48.png`
 
-Technical implementation is complete:
+### Margaret
+- v4 runtime reached full technical integration but the user rejected its face as too crushed;
+- active prototype source: **Margaret Chibi Direction Lock v5**;
+- v5 preserves face/head pixels at 1:1 and avoids the destructive v4 head resampling;
+- all eight runtime categories have been regenerated from v5;
+- exact eye color, surname, final weapon/costume, magic language and emblems remain unresolved.
 
-- 4-direction 48×48 source;
-- exactly eight runtime animation categories;
-- deterministic asset generation;
-- runtime animation metadata;
-- Karen / Triton / Sophie actual-game comparison;
-- Full48 / Medium44 / Compact41 validation;
-- control restoration;
-- Save schema 23 unchanged;
-- full regression CI green.
+Authority:
+- `docs/pixel/MARGARET_CHIBI_DIRECTION_LOCK_v5.md`
+- `docs/pixel/reference/margaret_chibi_direction_lock_v5_48.png`
 
-Technical result:
+## Unified four-protagonist quality gate
 
-# **SOPHIE TECHNICAL PASS**
+Active cast standard:
 
-Implementation result:
+`docs/pixel/FOUR_PROTAGONIST_QUALITY_STANDARD_v1.md`
 
-`docs/pixel/SOPHIE_THIRD_CHARACTER_IMPLEMENTATION_RESULT.md`
+Exact Medium44 evidence before promotion measured:
 
-## Active gate
+- Karen: 24×40 visible px;
+- Triton: 26×40;
+- Sophie: 28×36;
+- Margaret v5: 28×40.
 
-> **Sophie Character Validation — USER PASS / REVISE**
+All normalized front-silhouette pairwise IoU values remain below the 0.90 collision threshold. Sophie / Margaret is 0.8262 and therefore remains a soft-review watch item for the environment gate.
 
-Automation does not decide the final Sophie character verdict.
+The quality audit identified two real corrections:
+1. Sophie repeated detached top-of-head debris;
+2. Margaret v4 face compression.
 
-## Margaret
+Karen and Triton remained controls.
 
-Paused until user gives Sophie Character Validation PASS.
+## Current gate
 
-## Environment
+# **FOUR PROTAGONIST RUNTIME HARMONIZATION — FINAL GREEN**
 
-Environment Pixel production remains paused until Karen, Triton, Sophie and Margaret complete validation.
+The source/runtime promotion and final validation are complete on the prototype branch.
+
+Validated head: `12c6deaf1849985c946c6e291be41828e2f4d77b`.
+
+Confirmed green:
+- Sophie browser E2E;
+- Margaret browser E2E;
+- exact four-character Medium44 quality gate;
+- full Gray Crown regression;
+- Karen/Triton lock re-verification;
+- Triton completion gate.
+
+The prior frontier story-test flake was traced to synthetic keypress timing versus the production movement cooldown and stabilized in the E2E harness only. Production movement behavior remains unchanged.
+
+## Next after green
+
+Proceed to **four-protagonist environment integration** using the existing environment prototype evidence:
+
+- Ryune village;
+- grass field / road;
+- house exterior;
+- house interior.
+
+The objective will be to prove that all four actors read correctly together in actual world scenes before any formal Pixel-native adoption decision.
 
 ## Still not authorized
 
-- Margaret before Sophie PASS;
-- Environment Prototype;
-- main merge;
-- formal Pixel-native adoption;
+- merge to main;
+- formal game-wide Pixel-native adoption;
 - Portrait deletion;
 - NPC mass migration;
-- v24.
+- battle-sprite migration;
+- v24 production scope.

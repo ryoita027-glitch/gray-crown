@@ -14,6 +14,10 @@
   idle:def('sophie','idle',4,4,true),walk:def('sophie','walk',6,7,true),turn:def('sophie','turn',3,9,false),talk:def('sophie','talk',4,6,true),
   surprise:def('sophie','surprise',4,8,false),approach:def('sophie','approach',4,7,false),laugh:def('sophie','laugh',6,8,false),run:def('sophie','run',6,9,true)
  };
+ const margaret={
+  idle:def('margaret','idle',4,4,true),walk:def('margaret','walk',6,6,true),turn:def('margaret','turn',3,8,false),talk:def('margaret','talk',4,6,true),
+  surprise:def('margaret','surprise',4,8,false),approach:def('margaret','approach',4,7,false),laugh:def('margaret','laugh',6,8,false),run:def('margaret','run',6,9,true)
+ };
  const visualRules=Object.freeze({
   prototypeTemporary:true,character:'karen',sourceCell:[48,48],logicalTile:32,anchor:[24,44],dominantHand:'left',swordHip:'right',stage:'A',
   designDirection:'karen-chibi-direction-v1',reference:'docs/pixel/reference/karen_chibi_direction_v1.png',
@@ -29,9 +33,19 @@
   posture:'broad shoulders + planted feet + low center of gravity + horizontal stability',
   unresolved:['exactEyeColor','surname','formalWeaponDesign','formalWeaponName','stageBFinalHeroCostume','kingdomEmblem','heroCertificationMark','religiousEmblem']
  });
+ const margaretVisualRules=Object.freeze({
+  prototypeTemporary:true,character:'margaret',sourceCell:[48,48],logicalTile:32,anchor:[24,44],dominantHand:'right',stage:'A',
+  designDirection:'margaret-chibi-direction-lock-v5',reference:'docs/pixel/reference/margaret_chibi_direction_lock_v5_48.png',
+  face:'cute protagonist-grade face + calm intelligent approachable expression; never severe or frightening',
+  hair:'white to pale silver-lavender simple high ponytail + soft face-framing bangs; restrained sway',
+  colorMass:'prototype dark navy/charcoal + cream/ivory + restrained gold accents',
+  posture:'upright composed center of gravity + runtime-balanced chibi mass; no undersized narrow silhouette',
+  acting:'measured restrained motion; smaller whole-body amplitude than Karen; ponytail secondary to body read',
+  unresolved:['exactEyeColor','finalFourthCharacterColor','surname','formalWeaponDesign','formalWeaponName','stageBFinalHeroCostume','magicVisualLanguage','kingdomEmblem','heroCertificationMark','religiousEmblem']
+ });
  const sophieVisualRules=Object.freeze({
   prototypeTemporary:true,character:'sophie',sourceCell:[48,48],logicalTile:32,anchor:[24,44],dominantHand:'right',stage:'A',
-  identity:'STEADY HANDS',designDirection:'sophie-chibi-direction-lock-v1',reference:'docs/pixel/reference/sophie_chibi_direction_lock_v1_48.png',
+  identity:'STEADY HANDS',designDirection:'sophie-chibi-direction-lock-v2',reference:'docs/pixel/reference/sophie_chibi_direction_lock_v2_48.png',
   face:'large soft readable eyes + gentle calm expression; distinct from Karen and Triton face templates',
   hair:'honey/light golden-brown layered mass + practical gathered/braided structure; restrained lower-tip lag',
   colorMass:'warm off-white/cream dominant + brown leather + muted green concentrated near hands and treatment storage',
@@ -41,7 +55,7 @@
  });
  GC.Data=GC.Data||{};
  GC.Data.Animations={
-  definitions:Object.freeze({karen:Object.freeze(karen),triton:Object.freeze(triton),sophie:Object.freeze(sophie)}),
-  visualRules,tritonVisualRules,sophieVisualRules
+  definitions:Object.freeze({karen:Object.freeze(karen),triton:Object.freeze(triton),sophie:Object.freeze(sophie),margaret:Object.freeze(margaret)}),
+  visualRules,tritonVisualRules,sophieVisualRules,margaretVisualRules
  };
 })();
