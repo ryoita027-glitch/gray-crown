@@ -45,7 +45,18 @@ with server():
     }""")
     page.wait_for_timeout(500)
 
-    # Give motion a few steps; this exercises the rebuilt 32px walk sheet.
+    # The world renderer must use the real 48px Walk assets for all four heroes,
+    # displayed at Medium44. The old 32px combined sheet remains fallback only.
+    page.wait_for_function("""() => {
+      const s=GC.Render?.World?.heroRuntimeStatus?.();
+      return s && ['karen','triton','sophie','margaret'].every(k => s[k]?.ready);
+    }""")
+    runtime=page.evaluate("() => GC.Render.World.heroRuntimeStatus()")
+    for hero,meta in runtime.items():
+        if meta["naturalWidth"]!=288 or meta["naturalHeight"]!=192:
+            raise AssertionError(f"{hero} direct walk sheet size {meta}")
+
+    # Give motion a few steps; this exercises the direct 48px walk sheets at Medium44.
     for key in ("ArrowRight","ArrowRight","ArrowUp","ArrowDown"):
         page.keyboard.press(key);page.wait_for_timeout(160)
 
@@ -63,7 +74,7 @@ with server():
     })""")
     if dims!=[96,512]: raise AssertionError("party sheet dimensions "+repr(dims))
 
-    page.screenshot(path=str(OUT/"actual_game_four_party.png"),full_page=True)
+    page.screenshot(path=str(OUT/"actual_game_four_party_medium44.png"),full_page=True)
 
     # A second screenshot in the village gives a softer green/brown contrast context.
     page.evaluate("""() => {
@@ -74,9 +85,9 @@ with server():
       GC.Render.World.draw();
     }""")
     page.wait_for_timeout(500)
-    page.screenshot(path=str(OUT/"actual_game_four_party_village.png"),full_page=True)
+    page.screenshot(path=str(OUT/"actual_game_four_party_village_medium44.png"),full_page=True)
 
     if errors: raise AssertionError("console errors: "+repr(errors))
     browser.close()
 
-print("FOUR PROTAGONIST APPEAL BROWSER E2E PASS")
+print("FOUR PROTAGONIST APPEAL MEDIUM44 BROWSER E2E PASS")
