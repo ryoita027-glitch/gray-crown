@@ -45,6 +45,17 @@ with server():
     page.evaluate("() => GC.Dialogue.closeDialogue(false)")
     page.wait_for_timeout(120)
 
+    # Protagonist dialogue defaults to portraitless Pixel-native presentation.
+    page.evaluate("() => GC.Dialogue.say('カレン','表示統合テスト')")
+    page.wait_for_timeout(80)
+    hero_dialogue=page.locator("#dialogueBox")
+    if "no-portrait" not in (hero_dialogue.get_attribute("class") or ""):
+        raise AssertionError("hero dialogue did not default to portraitless mode")
+    if page.locator("#speakerPortrait").evaluate("e=>getComputedStyle(e).display")!="none":
+        raise AssertionError("hero portrait still visible in commercial presentation")
+    page.evaluate("() => GC.Dialogue.closeDialogue(false)")
+    page.wait_for_timeout(80)
+
     # Put the real runtime party on an open path so all four are visible.
     page.evaluate("""() => {
       const s=GC.State.get();
@@ -108,6 +119,20 @@ with server():
     }""")
     page.wait_for_timeout(500)
     page.screenshot(path=str(OUT/"actual_game_commercial_village.png"),full_page=True)
+
+    # Battle must also use the real character runtime sheets, not the old combined 32px fallback.
+    page.evaluate("() => startBattle('wolf')")
+    page.wait_for_timeout(760)
+    heroes=page.locator(".battle-hero.runtime-hero")
+    if heroes.count()!=4:
+        raise AssertionError("battle runtime heroes missing: "+str(heroes.count()))
+    expected=("karen","triton","sophie","margaret")
+    for i,hero in enumerate(expected):
+        el=heroes.nth(i)
+        bg=el.evaluate("e=>getComputedStyle(e).backgroundImage")
+        if f"assets/characters/{hero}/{hero}_idle.png" not in bg:
+            raise AssertionError(f"{hero} battle sprite is not direct runtime art: {bg}")
+    page.screenshot(path=str(OUT/"actual_game_commercial_battle.png"),full_page=True)
 
     if errors: raise AssertionError("console errors: "+repr(errors))
     browser.close()
