@@ -5,7 +5,7 @@ Status: 2026-10-08 JST.
 - Production: **main / v23 / Save schema 23 / Story 00–19**.
 - Pixel-native work: prototype only; not merged to main.
 - Karen VILLAGE RUNNER: approved / locked permanent Visual Regression Control.
-- Triton GROUND ANCHOR: approved lock; **Second Character Validation PASS**.
+- Triton GROUND ANCHOR: approved lock; **Triton Second Character Validation PASS**.
 - Sophie STEADY HANDS:
   - approved identity preserved;
   - **Sophie Chibi Direction Lock v2** is active technical source;
