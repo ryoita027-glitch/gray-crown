@@ -60,6 +60,19 @@ with server():
         raise AssertionError("duplicate objective remains in bottom status bar")
     page.screenshot(path=str(OUT/"road_desktop.png"),full_page=True)
 
+    # Player menu must be a real game menu, not an architecture/debug information dump.
+    page.keyboard.press("m")
+    page.wait_for_timeout(180)
+    menu_text=page.locator("#modal").inner_text()
+    for banned in ("v19","責務分離","自動回帰テスト","アーキテクチャ版"):
+        if banned in menu_text:
+            raise AssertionError("development text leaked into player menu: "+banned)
+    if page.locator("#menuSave").count()!=1 or page.locator("#menuLoad").count()!=1:
+        raise AssertionError("save/load are not available from the player menu")
+    page.screenshot(path=str(OUT/"menu_desktop.png"),full_page=True)
+    page.locator("#modalClose").click()
+    page.wait_for_timeout(100)
+
     # Battle is part of the commercial surface too: capture the real battle presentation.
     page.evaluate("() => GC.Battle.startBattle('wolves')")
     page.wait_for_timeout(900)
