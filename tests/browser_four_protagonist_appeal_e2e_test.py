@@ -132,6 +132,9 @@ with server():
         bg=el.evaluate("e=>getComputedStyle(e).backgroundImage")
         if f"assets/characters/{hero}/{hero}_idle.png" not in bg:
             raise AssertionError(f"{hero} battle sprite is not direct runtime art: {bg}")
+    enemy_bg=page.locator("#enemyArt").evaluate("e=>getComputedStyle(e).backgroundImage")
+    if "assets/enemies/wolf.svg" not in enemy_bg:
+        raise AssertionError("wolf enemy is still using placeholder art: "+enemy_bg)
     page.screenshot(path=str(OUT/"actual_game_commercial_battle.png"),full_page=True)
 
     if errors: raise AssertionError("console errors: "+repr(errors))
