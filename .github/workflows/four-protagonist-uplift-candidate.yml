@@ -35,6 +35,7 @@ jobs:
       - name: Verify uplift candidates
         run: python tools/verify_four_protagonist_uplift_candidates.py
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: gray-crown-four-protagonist-uplift-candidate
           path: prototype_artifacts/four_protagonist_uplift/
