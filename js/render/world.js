@@ -64,11 +64,17 @@ function drawTerrainBlend(m){
  for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){
   const ch=m.tiles[y][x],px=x*TILE,py=y*TILE;if(!walk.has(ch))continue;
   const right=x+1<COLS?m.tiles[y][x+1]:null,down=y+1<ROWS?m.tiles[y+1][x]:null;
-  if(right===ch){ctx.fillStyle='rgba(255,255,255,.018)';ctx.fillRect(px+TILE-3,py,6,TILE)}
-  if(down===ch){ctx.fillStyle='rgba(0,0,0,.016)';ctx.fillRect(px,py+TILE-3,TILE,6)}
+  if(right===ch){ctx.fillStyle='rgba(255,255,255,.012)';ctx.fillRect(px+TILE-2,py,4,TILE)}
+  if(down===ch){ctx.fillStyle='rgba(0,0,0,.012)';ctx.fillRect(px,py+TILE-2,TILE,4)}
  }
- // broad irregular stains cross tile boundaries so the world reads as continuous ground.
- for(let i=0;i<22;i++){const sx=((i*173+state.map.length*41)% (COLS*TILE)),sy=((i*97+state.map.length*67)% (ROWS*TILE));ctx.fillStyle=i%2?'rgba(255,239,196,.018)':'rgba(24,28,24,.025)';ctx.beginPath();ctx.ellipse(sx,sy,34+(i%5)*11,14+(i%4)*8,(i%7)*.23,0,Math.PI*2);ctx.fill()}
+ // Commercial pass: no giant translucent ovals. Use restrained micro-texture
+ // so the ground supports the characters instead of looking procedurally stained.
+ const seed=state.map.length*31;
+ for(let i=0;i<54;i++){
+  const sx=(i*137+seed*17)%(COLS*TILE),sy=(i*83+seed*29)%(ROWS*TILE),w=2+(i%4),h=1+(i%2);
+  ctx.fillStyle=i%3===0?'rgba(232,218,172,.045)':'rgba(35,48,35,.05)';
+  ctx.fillRect(Math.round(sx),Math.round(sy),w,h)
+ }
 }
 function drawMapUnderlay(m){let c='#617556';if(INTERIOR_MAPS.includes(state.map))c='#8a6b49';else if(state.map==='capital')c='#858783';else if(state.map==='road')c='#657a59';else if(state.map==='village')c='#647a58';ctx.fillStyle=c;ctx.fillRect(-4,-4,COLS*TILE+8,ROWS*TILE+8)}
 function drawVerticalSliceGround(m){
@@ -80,9 +86,15 @@ function drawVerticalSliceGround(m){
   for(let i=0;i<18;i++){const x=(i*41+57)%720+24,y=(i*73+91)%390+35;ctx.fillStyle=i%3?'rgba(55,84,48,.26)':'rgba(198,171,89,.28)';ctx.beginPath();ctx.ellipse(x,y,7+(i%4)*3,3+(i%3)*2,(i%5)*.25,0,Math.PI*2);ctx.fill()}
  }
  if(map==='road'){
-  // twin wheel ruts and soft edge grass make this read as a travelled road, not a tiled corridor
-  ctx.strokeStyle='rgba(104,76,47,.34)';ctx.lineWidth=4;for(const off of [-8,10]){ctx.beginPath();ctx.moveTo(12*TILE+off,14*TILE);for(let y=14;y>=0;y--){const sway=Math.sin(y*.75)*7;ctx.lineTo(12*TILE+off+sway,y*TILE+16)}ctx.stroke()}
-  ctx.fillStyle='rgba(26,50,30,.15)';for(let i=0;i<14;i++){const x=(i%2?8:16)*TILE+(i%3)*18,y=(i*67)%430+20;ctx.beginPath();ctx.ellipse(x,y,55,24,(i%4)*.2,0,Math.PI*2);ctx.fill()}
+  // Wheel ruts plus small verge detail. Large translucent blobs were removed
+  // because they read as placeholder brush stamps at gameplay scale.
+  ctx.strokeStyle='rgba(104,76,47,.27)';ctx.lineWidth=3;for(const off of [-8,10]){ctx.beginPath();ctx.moveTo(12*TILE+off,14*TILE);for(let y=14;y>=0;y--){const sway=Math.sin(y*.75)*7;ctx.lineTo(12*TILE+off+sway,y*TILE+16)}ctx.stroke()}
+  for(let i=0;i<34;i++){
+   const side=i%2?1:-1,y=(i*47)%430+18,x=(12*TILE+16)+side*(54+(i%5)*13);
+   ctx.fillStyle=i%4===0?'rgba(167,151,103,.24)':'rgba(45,76,43,.28)';
+   ctx.fillRect(Math.round(x),Math.round(y),2+(i%3),3+(i%4));
+   if(i%5===0){ctx.fillStyle='rgba(72,91,57,.3)';ctx.fillRect(Math.round(x-3),Math.round(y+2),7,2)}
+  }
  }
  if(map==='capital'){
   // large paving bands and gutters ignore tile boundaries and make the plaza one continuous material
@@ -157,7 +169,53 @@ function drawPartyRuntime(leaderMoving,phase){
  for(const a of actors)drawCharacterSprite(a.x,a.y,a.style,false,a.facing,a.motion);
  drawLeaderWorldMarker(VISUAL.playerX,VISUAL.playerY)
 }
-function drawNpc(n){drawCharacterSprite(n.x,n.y,NPC_STYLE[n.id]||{body:'#756b5f',accent:'#a58d6d'},false,'down');if(Math.abs(state.x-n.x)+Math.abs(state.y-n.y)<=2){ctx.font='bold 9px system-ui';const w=Math.max(28,ctx.measureText(n.name).width+8);const px=n.x*TILE+16-w/2,py=n.y*TILE-5;ctx.fillStyle='rgba(20,21,24,.82)';ctx.fillRect(px,py,w,13);ctx.fillStyle='#f2e6c7';ctx.textAlign='center';ctx.fillText(n.name,n.x*TILE+16,py+10);ctx.textAlign='start'}}
+function colorMix(hex,amount){
+ const h=(hex||'#777777').replace('#','');if(h.length!==6)return hex||'#777777';
+ const n=parseInt(h,16),r=n>>16,g=(n>>8)&255,b=n&255,t=amount<0?0:255,p=Math.abs(amount);
+ const q=v=>Math.max(0,Math.min(255,Math.round(v+(t-v)*p)));
+ return '#'+[q(r),q(g),q(b)].map(v=>v.toString(16).padStart(2,'0')).join('')
+}
+function npcHash(id){let h=0;for(const ch of String(id||''))h=(h*31+ch.charCodeAt(0))>>>0;return h}
+function drawNpcCommercial(n){
+ const s=NPC_STYLE[n.id]||{body:'#756b5f',accent:'#a58d6d',hair:'#4b4037'},h=npcHash(n.id),scale=s.small?.86:1;
+ const px=n.x*TILE,py=n.y*TILE,cx=px+16,footY=py+30,body=s.body||'#756b5f',accent=s.accent||'#a58d6d',hair=s.hair||'#4b4037';
+ const dark=colorMix(body,-.48),shade=colorMix(body,-.22),light=colorMix(body,.16),hairDark=colorMix(hair,-.34),skin='#d9b294',skinShade='#b9826f';
+ ctx.save();ctx.imageSmoothingEnabled=false;
+ ctx.fillStyle='rgba(9,12,14,.26)';ctx.beginPath();ctx.ellipse(cx,footY,9*scale,3.2*scale,0,0,Math.PI*2);ctx.fill();
+ const ox=Math.round(cx-14*scale),top=Math.round(footY-35*scale);
+ // cloak / rear silhouette
+ if(s.cape){ctx.fillStyle=colorMix(body,-.34);ctx.beginPath();ctx.moveTo(cx-10*scale,top+17*scale);ctx.lineTo(cx+10*scale,top+17*scale);ctx.lineTo(cx+13*scale,footY-5);ctx.lineTo(cx-13*scale,footY-5);ctx.closePath();ctx.fill()}
+ // legs and boots
+ ctx.fillStyle='#2d2a29';ctx.fillRect(Math.round(cx-7*scale),Math.round(footY-9*scale),5*scale,9*scale);ctx.fillRect(Math.round(cx+2*scale),Math.round(footY-9*scale),5*scale,9*scale);
+ ctx.fillStyle='#493a31';ctx.fillRect(Math.round(cx-8*scale),Math.round(footY-3*scale),6*scale,3*scale);ctx.fillRect(Math.round(cx+2*scale),Math.round(footY-3*scale),6*scale,3*scale);
+ // torso with readable outline + accent band
+ ctx.fillStyle=dark;ctx.fillRect(Math.round(cx-10*scale),Math.round(top+16*scale),20*scale,18*scale);
+ ctx.fillStyle=body;ctx.fillRect(Math.round(cx-8*scale),Math.round(top+17*scale),16*scale,16*scale);
+ ctx.fillStyle=light;ctx.fillRect(Math.round(cx-7*scale),Math.round(top+18*scale),14*scale,3*scale);
+ ctx.fillStyle=accent;ctx.fillRect(Math.round(cx-8*scale),Math.round(top+23*scale),16*scale,3*scale);
+ // arms / hands
+ ctx.fillStyle=shade;ctx.fillRect(Math.round(cx-12*scale),Math.round(top+19*scale),5*scale,12*scale);ctx.fillRect(Math.round(cx+7*scale),Math.round(top+19*scale),5*scale,12*scale);
+ ctx.fillStyle=skin;ctx.fillRect(Math.round(cx-12*scale),Math.round(top+29*scale),4*scale,4*scale);ctx.fillRect(Math.round(cx+8*scale),Math.round(top+29*scale),4*scale,4*scale);
+ // head + ears
+ ctx.fillStyle=hairDark;ctx.fillRect(Math.round(cx-9*scale),Math.round(top+2*scale),18*scale,14*scale);
+ ctx.fillStyle=skinShade;ctx.fillRect(Math.round(cx-8*scale),Math.round(top+6*scale),16*scale,12*scale);
+ ctx.fillStyle=skin;ctx.fillRect(Math.round(cx-7*scale),Math.round(top+6*scale),14*scale,10*scale);
+ // hair cap / side locks vary by NPC id
+ ctx.fillStyle=hair;ctx.fillRect(Math.round(cx-8*scale),Math.round(top+2*scale),16*scale,6*scale);
+ if(h%3===0){ctx.fillRect(Math.round(cx-9*scale),Math.round(top+5*scale),4*scale,10*scale);ctx.fillRect(Math.round(cx+5*scale),Math.round(top+5*scale),4*scale,10*scale)}
+ else if(h%3===1){ctx.fillRect(Math.round(cx-8*scale),Math.round(top+5*scale),5*scale,7*scale);ctx.fillRect(Math.round(cx+4*scale),Math.round(top+5*scale),4*scale,5*scale)}
+ else{ctx.fillRect(Math.round(cx-9*scale),Math.round(top+5*scale),3*scale,8*scale);ctx.fillRect(Math.round(cx+6*scale),Math.round(top+5*scale),3*scale,8*scale)}
+ // face at gameplay scale
+ ctx.fillStyle='#473a34';ctx.fillRect(Math.round(cx-4*scale),Math.round(top+11*scale),2*scale,2*scale);ctx.fillRect(Math.round(cx+3*scale),Math.round(top+11*scale),2*scale,2*scale);
+ ctx.fillStyle='rgba(255,255,255,.62)';ctx.fillRect(Math.round(cx-4*scale),Math.round(top+10*scale),1*scale,1*scale);
+ if(h%4!==0){ctx.fillStyle='#9c645d';ctx.fillRect(Math.round(cx-1*scale),Math.round(top+15*scale),3*scale,1*scale)}
+ // role accessories
+ if(s.hat){ctx.fillStyle=colorMix(hair,-.15);ctx.fillRect(Math.round(cx-11*scale),Math.round(top+1*scale),22*scale,3*scale);ctx.fillRect(Math.round(cx-7*scale),Math.round(top-2*scale),14*scale,5*scale)}
+ if(s.weapon==='sword'){ctx.strokeStyle='#aeb8bf';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx+10*scale,top+20*scale);ctx.lineTo(cx+14*scale,footY-2);ctx.stroke()}
+ if(s.weapon==='staff'){ctx.strokeStyle='#765438';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx-11*scale,top+12*scale);ctx.lineTo(cx-12*scale,footY);ctx.stroke();ctx.fillStyle=accent;ctx.fillRect(Math.round(cx-14*scale),Math.round(top+9*scale),5*scale,5*scale)}
+ ctx.restore()
+}
+function drawNpc(n){drawNpcCommercial(n);if(Math.abs(state.x-n.x)+Math.abs(state.y-n.y)<=2){ctx.font='bold 9px system-ui';const w=Math.max(28,ctx.measureText(n.name).width+8);const px=n.x*TILE+16-w/2,py=n.y*TILE-7;ctx.fillStyle='rgba(13,16,20,.88)';ctx.fillRect(px,py,w,13);ctx.strokeStyle='rgba(210,181,112,.28)';ctx.strokeRect(px+.5,py+.5,w-1,12);ctx.fillStyle='#efe6d2';ctx.textAlign='center';ctx.fillText(n.name,n.x*TILE+16,py+10);ctx.textAlign='start'}}
 function drawVillageDecor(){
  // 畑
  for(let x=1;x<=2;x++)for(let y=7;y<=12;y++){ctx.fillStyle='#776448';ctx.fillRect(x*TILE+3,y*TILE+5,26,22);ctx.strokeStyle='#a58b5c';ctx.beginPath();ctx.moveTo(x*TILE+6,y*TILE+10);ctx.lineTo(x*TILE+26,y*TILE+10);ctx.moveTo(x*TILE+6,y*TILE+18);ctx.lineTo(x*TILE+26,y*TILE+18);ctx.stroke()}
