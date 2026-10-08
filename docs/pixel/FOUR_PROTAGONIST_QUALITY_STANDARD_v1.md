@@ -123,27 +123,31 @@ A character passes only if:
 4. no other protagonist must be degraded to make them fit;
 5. the full existing regression suite remains green.
 
-## Locked controls and candidate policy
+## Locked controls and active prototype authority
 
 - Karen remains the permanent Visual Regression Control until explicitly reopened.
 - Triton remains a locked control.
-- Sophie remains USER APPROVED / LOCKED.
-- Margaret v4 is the current runtime implementation.
-- Margaret v5 is a face-readability candidate and is **not** runtime authority until visual approval.
+- Sophie remains USER APPROVED / LOCKED; the active technical source is Direction Lock v2, which removes detached micro-pixel debris without redesigning the approved identity.
+- Margaret v4 is historical and retired because the Medium44 face was rejected as too crushed.
+- Margaret v5 is the active prototype source and runtime authority on this branch. It preserves the face/head pixels at 1:1 and the eight runtime categories are regenerated from that source.
 
-Therefore this quality phase may generate candidate evidence for all four, but it must not silently overwrite locked sources.
+From this point onward, the four-character quality phase must not silently rewrite any of these active sources. Any subjective visual redesign requires a new candidate gate and explicit review before promotion.
 
 ## Promotion sequence
+
+The first harmonization pass has completed this sequence for Sophie v2 and Margaret v5:
 
 1. Generate cross-character evidence and metrics.
 2. Record cast-level review result.
 3. Produce candidate corrections only where evidence identifies a real defect.
 4. Rebuild the exact same evidence from candidates.
-5. Obtain visual approval for subjective appearance changes.
-6. Promote approved source locks.
-7. Regenerate the eight runtime animations.
+5. Obtain/retain the required visual authority for identity-changing decisions.
+6. Promote source locks.
+7. Regenerate the eight runtime animations where the source changed.
 8. Run browser E2E + full `npm run check`.
-9. Only then begin four-protagonist environment integration.
+9. Re-verify immutable controls.
+
+After the final harmonization CI is green, the next technical gate is four-protagonist environment integration. This still does not authorize main merge or formal Pixel-native adoption.
 
 ## Main merge rule
 
