@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import contextlib,http.server,os,socketserver,threading
+import contextlib,http.server,os,socketserver,threading,json,math
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
@@ -63,6 +63,27 @@ with server():
         if marker not in world:
             raise AssertionError("world hero renderer lost nearest-neighbour sprite draw")
         page.screenshot(path=str(OUT/"actual_game_world.png"),full_page=True)
+        canvas.screenshot(path=str(OUT/"actual_game_canvas.png"))
+
+        # Inspect the same actor positions the real renderer uses. The visual-only
+        # spread must keep all four party members from collapsing onto one point
+        # during a reversal while leaving logical state/trail untouched.
+        actors=page.evaluate("""() => GC.Render.World.partyRenderActors().map(a=>({
+          x:a.x,y:a.y,leader:a.leader,order:a.order,
+          heroId:Object.entries(PARTY_STYLE).find(([k,v])=>v===a.style)?.[0]||null
+        }))""")
+        if len(actors)!=4:
+            raise AssertionError("renderer did not expose four party actors: "+repr(actors))
+        min_dist=min(
+            math.hypot(actors[i]["x"]-actors[j]["x"],actors[i]["y"]-actors[j]["y"])
+            for i in range(len(actors)) for j in range(i+1,len(actors))
+        )
+        if min_dist<0.22:
+            raise AssertionError(f"party presentation still stacks actors: min_dist={min_dist:.3f} {actors!r}")
+        (OUT/"party_render_positions.json").write_text(
+            json.dumps({"actors":actors,"minDistanceTiles":round(min_dist,4)},indent=2),
+            encoding="utf-8"
+        )
 
         # Verify browser loaded the rebuilt party sheet and exact natural size.
         dims=page.evaluate("""() => new Promise((resolve,reject)=>{
