@@ -60,6 +60,15 @@ with server():
     for key in ("ArrowRight","ArrowRight","ArrowUp","ArrowDown"):
         page.keyboard.press(key);page.wait_for_timeout(160)
 
+    # A quick reverse used to make a follower land on Karen's tile and disappear.
+    # The spaced five-step history must keep all four occupied positions distinct.
+    distinct=page.evaluate("""() => {
+      const s=GC.State.get(), pts=[[s.x,s.y],s.trail[0],s.trail[2],s.trail[4]].filter(Boolean);
+      return {trail:s.trail.map(p=>[p[0],p[1]]), count:new Set(pts.map(p=>p.join(','))).size};
+    }""")
+    if distinct["count"]!=4:
+        raise AssertionError("four protagonist positions overlap after reversal: "+repr(distinct))
+
     canvas=page.locator("canvas").first
     if canvas.count()!=1: raise AssertionError("game canvas missing")
     # Nearest-neighbour is set immediately around hero-sheet draw calls in world.js.
