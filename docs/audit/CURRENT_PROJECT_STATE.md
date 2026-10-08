@@ -53,10 +53,10 @@ Exact Medium44 evidence before promotion measured:
 
 - Karen: 24×40 visible px;
 - Triton: 26×40;
-- Sophie: 30×39;
+- Sophie: 28×36;
 - Margaret v5: 28×40.
 
-Normalized front-silhouette pairwise IoU remained below 0.79 for every pair, so the four silhouettes remain distinguishable.
+All normalized front-silhouette pairwise IoU values remain below the 0.90 collision threshold. Sophie / Margaret is 0.8262 and therefore remains a soft-review watch item for the environment gate.
 
 The quality audit identified two real corrections:
 1. Sophie repeated detached top-of-head debris;
@@ -66,16 +66,21 @@ Karen and Triton remained controls.
 
 ## Current gate
 
-# **FOUR PROTAGONIST RUNTIME HARMONIZATION — FINAL CI / REVIEW**
+# **FOUR PROTAGONIST RUNTIME HARMONIZATION — FINAL GREEN**
 
-The source/runtime promotion is complete on the prototype branch.
+The source/runtime promotion and final validation are complete on the prototype branch.
 
-Required final evidence:
+Validated head: `12c6deaf1849985c946c6e291be41828e2f4d77b`.
+
+Confirmed green:
 - Sophie browser E2E;
 - Margaret browser E2E;
-- exact four-character Medium44 evidence;
+- exact four-character Medium44 quality gate;
 - full Gray Crown regression;
-- Karen/Triton lock re-verification.
+- Karen/Triton lock re-verification;
+- Triton completion gate.
+
+The prior frontier story-test flake was traced to synthetic keypress timing versus the production movement cooldown and stabilized in the E2E harness only. Production movement behavior remains unchanged.
 
 ## Next after green
 

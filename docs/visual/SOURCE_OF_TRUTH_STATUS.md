@@ -19,7 +19,8 @@ Status: 2026-10-08 JST.
 - Four-character comparisons must use exact repository/candidate PNG pixels only.
 - AI-generated comparison boards remain prohibited.
 - Active quality authority: `FOUR_PROTAGONIST_QUALITY_STANDARD_v1.md`.
-- Active gate: **FOUR PROTAGONIST RUNTIME HARMONIZATION — FINAL CI / REVIEW**.
-- After green: four-protagonist Environment Integration.
+- Completed gate: **FOUR PROTAGONIST RUNTIME HARMONIZATION — FINAL GREEN**.
+- Current next gate: **Four Protagonist Environment Integration**.
+- Soft watch item: Sophie / Margaret normalized front-silhouette IoU = 0.8262 (below 0.90 fail threshold, above 0.82 review threshold); verify separation in real scene backgrounds.
 - Pixel Character Standard v2 four-protagonist edition remains prototype policy until formal adoption.
 - main merge / Portrait policy / NPC scale / battle migration / formal Pixel-native adoption remain UNDECIDED.

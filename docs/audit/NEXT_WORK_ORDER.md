@@ -22,20 +22,25 @@
 - Margaret eight runtime sheets regenerated from v5.
 - Karen and Triton required no visual rewrite.
 
-## Current gate
+## Completed gate
 
 # **Four Protagonist Runtime Harmonization — FINAL GREEN**
 
-Required:
-1. Sophie browser E2E;
-2. Margaret browser E2E;
-3. four-character quality metrics;
-4. full `npm run check` (one complete retry is allowed only for the known browser-walk flake);
-5. Karen / Triton immutable-control checks.
+Validated head before this documentation-only update: `12c6deaf1849985c946c6e291be41828e2f4d77b`.
+
+Completed:
+1. Sophie browser E2E — PASS;
+2. Margaret browser E2E — PASS;
+3. four-character quality metrics — PASS;
+4. full `npm run check` — PASS;
+5. Karen / Triton immutable-control checks — PASS;
+6. Triton completion CI — PASS.
+
+The frontier story E2E timing flake was fixed at the test harness boundary by disabling production key-repeat delay only in that story-flow test. No production movement change was made.
 
 Do not merge to main merely because this gate passes.
 
-## Next work after final green
+## Next work now
 
 # **Four Protagonist Environment Integration**
 

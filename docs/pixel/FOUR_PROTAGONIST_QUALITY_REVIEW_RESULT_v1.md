@@ -1,31 +1,31 @@
 # Gray Crown — Four Protagonist Quality Review Result v1
 
-**Status:** QUALITY HARMONIZATION IMPLEMENTED ON PROTOTYPE BRANCH  
+**Status:** QUALITY HARMONIZATION FINAL GREEN ON PROTOTYPE BRANCH  
 **Main:** unchanged / not authorized for merge
 
 ## Exact evidence
 
 The review uses mechanically composed PNG evidence only.
 
-Pre-promotion Medium44 visible front bounds:
+Final active Medium44 visible front bounds:
 
 | Character | Visible width | Visible height | Face contrast p90-p10 | Normalized palette bins |
 | --- | ---: | ---: | ---: | ---: |
 | Karen | 24 | 40 | 201.1 | 47 |
 | Triton | 26 | 40 | 180.6 | 45 |
-| Sophie | 30 | 39 | 114.5 | 41 |
+| Sophie | 28 | 36 | 126.6 | 41 |
 | Margaret v5 | 28 | 40 | 189.0 | 18 |
 
 Pairwise normalized front-silhouette IoU:
 
 - Karen / Triton: 0.7879
-- Karen / Sophie: 0.6282
+- Karen / Sophie: 0.6581
 - Karen / Margaret: 0.6794
-- Triton / Sophie: 0.6744
+- Triton / Sophie: 0.6806
 - Triton / Margaret: 0.7242
-- Sophie / Margaret: 0.7149
+- Sophie / Margaret: 0.8262
 
-No pair crossed the 0.90 collision threshold. The cast remains visually distinct before color.
+No pair crossed the 0.90 collision threshold. Sophie / Margaret reaches 0.8262, which is above the 0.82 soft-review threshold, so that pair remains an explicit environment-review watch item rather than being hidden by the aggregate PASS. Their hair mass, palette, posture and acting remain distinct, but in-world scene evidence must confirm the separation.
 
 ## Character verdicts
 
@@ -96,15 +96,26 @@ The outcome is:
 
 Karen and Triton did not need changes. Sophie and Margaret received localized evidence-driven corrections.
 
-## Regression note
+## Final validation
 
-A previous full `npm run check` attempt reached all 59 Node tests and the first two major browser gates, then hit the known intermittent `walk failed` condition in `browser_alpha2_frontier_second_e2e_test.py`.
+Final branch head validated before this documentation-only state update:
 
-That failure occurred outside the protagonist asset code path and has previously passed on retry. The harmonization CI therefore permits **one complete retry only**. A deterministic second failure remains a real gate failure.
+`12c6deaf1849985c946c6e291be41828e2f4d77b`
+
+Successful current-head gates:
+
+- Four Protagonist Runtime Harmonization CI — PR run `37754599193` — **SUCCESS**;
+- Four Protagonist Quality Gate — PR run `37754599298` — **SUCCESS**;
+- Triton Completion CI — PR run `37754599196` — **SUCCESS**;
+- Sophie Character Validation CI — PR run `37754599234` — **SUCCESS**;
+- Margaret v5 Face Gate — PR run `37754599205` — **SUCCESS**;
+- Four Protagonist Uplift Candidate — PR run `37754599305` — **SUCCESS**.
+
+The intermittent frontier story E2E was traced to a test-timing mismatch: the story-flow helper pressed synthetic movement keys 12 ms apart while production movement intentionally applies an ~88 ms key-repeat delay. The test now disables that delay only inside its isolated runtime, because this E2E validates story/path progression rather than input-repeat timing. Production movement code was not changed.
+
+All 59 Node tests and the browser regression chain now pass in the harmonization gate, followed by Karen/Triton immutable-control re-verification.
 
 ## Next gate
-
-After the latest harmonization workflow is green:
 
 > **Four Protagonist Environment Integration**
 
