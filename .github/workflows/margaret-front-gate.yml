@@ -86,7 +86,7 @@ jobs:
             echo "No Margaret runtime asset changes"
             exit 0
           fi
-          git commit -m "Sync Margaret v2 runtime animation assets"
+          git commit -m "Sync Margaret v3 runtime animation assets"
           git push origin HEAD:pixel-margaret-fourth-character-front-gate
 
       - uses: actions/upload-artifact@v4
