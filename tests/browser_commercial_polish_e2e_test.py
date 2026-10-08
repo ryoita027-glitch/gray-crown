@@ -88,6 +88,10 @@ with server():
         raise AssertionError("battle hero fell back to low-fidelity party sheet: "+battle_bg)
     if page.locator("#enemyArt .enemy-part").count()<8:
         raise AssertionError("enemy presentation regressed to a placeholder silhouette")
+    if "×3" not in page.locator('[data-battle="item"]').inner_text():
+        raise AssertionError("battle item command does not expose inventory count")
+    if not page.locator('[data-battle="foodItem"]').is_disabled():
+        raise AssertionError("zero-stock battle item must be disabled before selection")
     page.screenshot(path=str(OUT/"commercial_battle.png"),full_page=True)
 
     # Distinct encounters must not collapse back to the wolf placeholder.
