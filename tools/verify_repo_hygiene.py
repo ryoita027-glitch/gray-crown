@@ -90,7 +90,7 @@ for required_path in ("docs/pixel/reference/margaret_chibi_direction_lock_v5_48.
     if required_path not in margaret_sync:
         errors.append(f"Margaret generated-asset sync must restrict output to {required_path}")
 
-write_allowed={"sync-triton-lock-assets.yml","margaret-front-gate.yml","clean-runtime-sprites.yml"}
+write_allowed={"sync-triton-lock-assets.yml","margaret-front-gate.yml","clean-runtime-sprites.yml","four-hero-appeal-upgrade.yml"}
 for path in (ROOT/".github/workflows").glob("*.y*ml"):
     text=path.read_text(encoding="utf-8")
     if "contents: write" in text and path.name not in write_allowed:
