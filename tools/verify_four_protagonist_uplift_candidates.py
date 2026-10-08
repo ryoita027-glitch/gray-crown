@@ -17,9 +17,8 @@ for c in ("karen","triton"):
     removed=summary["characters"][c]["total_removed_pixels"]
     if removed>24: errors.append(f"{c}: cleanup touched too many pixels: {removed}")
 
-# Sophie is allowed to remove detached rendering debris, but not rewrite the figure.
+# Sophie is allowed to remove detached rendering debris, but not rewrite the figure.\n# Zero removals is also valid after the cleaned assets have been promoted; the pass must be idempotent.
 sremoved=summary["characters"]["sophie"]["total_removed_pixels"]
-if sremoved<=0: errors.append("Sophie: expected detached artifact cleanup found no pixels")
 # 37 animation frames × 4 directions = 148 cells. The observed debris is a
 # repeated detached 3-6 px marker per cell, so use a per-cell safety budget
 # rather than an arbitrary whole-sheet total.
