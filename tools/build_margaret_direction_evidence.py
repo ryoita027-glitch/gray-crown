@@ -3,7 +3,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 CELL=48
-OUT=Path("prototype_artifacts/margaret_direction_v2")
+OUT=Path("prototype_artifacts/margaret_direction_v3")
 OUT.mkdir(parents=True, exist_ok=True)
 
 def first_down(path):
@@ -17,7 +17,7 @@ def font(size=18):
         return ImageFont.load_default()
 
 def main():
-    with Image.open("docs/pixel/reference/margaret_chibi_direction_lock_v2_48.png") as im:
+    with Image.open("docs/pixel/reference/margaret_chibi_direction_lock_v3_48.png") as im:
         margaret=im.convert("RGBA")
 
     # 4-direction exact-pixel board.
@@ -29,7 +29,7 @@ def main():
         big=cell.resize((CELL*zoom,CELL*zoom),Image.Resampling.NEAREST)
         board.alpha_composite(big,(i*CELL*zoom,36))
         d.text((i*CELL*zoom+8,8),name,fill=(20,20,20,255),font=font())
-    board.save(OUT/"margaret_v2_four_direction_x8.png",optimize=False)
+    board.save(OUT/"margaret_v3_four_direction_x8.png",optimize=False)
 
     controls=[
         ("Karen",first_down("assets/characters/karen/karen_idle.png")),
@@ -52,7 +52,7 @@ def main():
         med=cell.resize((scale,scale),Image.Resampling.NEAREST)
         big=med.resize((tile,tile),Image.Resampling.NEAREST)
         out.alpha_composite(big,(x,pad+label_h))
-    out.save(OUT/"karen_triton_sophie_margaret_medium44.png",optimize=False)
+    out.save(OUT/"karen_triton_sophie_margaret_v3_medium44.png",optimize=False)
 
     # Margaret scale-only comparison.
     scales=(48,44,41)
@@ -70,8 +70,8 @@ def main():
         ox=x+(tile-big.width)//2
         oy=24+28+(tile-big.height)
         out2.alpha_composite(big,(ox,oy))
-    out2.save(OUT/"margaret_v2_scale_48_44_41.png",optimize=False)
-    print("Margaret v2 direction evidence built")
+    out2.save(OUT/"margaret_v3_scale_48_44_41.png",optimize=False)
+    print("Margaret v3 direction evidence built")
 
 if __name__=="__main__":
     main()
