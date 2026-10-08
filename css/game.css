@@ -286,3 +286,25 @@ html,body{min-height:100%;background:
 .dialogue-overlay{left:10px;right:10px;bottom:10px}
 @media(max-width:1000px){.layout{grid-template-columns:minmax(0,1fr) 224px}.statusbar::after{display:none}}
 @media(max-width:850px){#app{padding:8px}.layout{grid-template-columns:1fr}.sidebar{grid-template-columns:repeat(2,minmax(0,1fr))}.controls-panel{display:block}.statusbar::after{display:none}}
+
+
+/* commercial battle integration — exact protagonist runtime art */
+.party-battle-line{left:28px;width:250px;height:126px}
+.battle-hero.sprite.runtime-hero{
+ width:72px;height:72px;bottom:2px;
+ background-image:var(--hero-idle)!important;
+ background-size:288px 288px!important;
+ background-position:0 -144px!important;
+ background-repeat:no-repeat;
+ image-rendering:pixelated!important;
+ filter:drop-shadow(0 8px 4px rgba(0,0,0,.42));
+}
+.battle-hero.sprite.runtime-hero::before,.battle-hero.sprite.runtime-hero::after{display:none!important}
+.battle-hero.sprite.runtime-hero.active{transform:translateY(-5px) scale(1.04);filter:drop-shadow(0 0 7px rgba(241,210,120,.42)) drop-shadow(0 8px 4px rgba(0,0,0,.42))}
+.battle-hero.sprite.runtime-hero.strike{
+ background-image:var(--hero-run)!important;
+ background-position:-72px -144px!important;
+ animation:heroStrikeCommercial .30s cubic-bezier(.2,.9,.28,1)
+}
+@keyframes heroStrikeCommercial{0%{transform:translateX(0)}45%{transform:translateX(105px) scale(1.06)}70%{transform:translateX(94px)}100%{transform:translateX(0)}}
+@media(max-width:650px){.party-battle-line{left:4px;transform:scale(.78);transform-origin:left bottom}}
