@@ -75,6 +75,15 @@ with server():
     page.wait_for_timeout(450)
     page.screenshot(path=str(OUT/"commercial_village_npc.png"),full_page=True)
 
+    # Battle must use the same real protagonist source family rather than the
+    # old 32px combined fallback sheet.
+    page.evaluate("() => startBattle('wolves')")
+    page.wait_for_timeout(760)
+    battle_bg=page.locator("#battleHero0").evaluate("e=>getComputedStyle(e).backgroundImage")
+    if "assets/characters/karen/karen_idle.png" not in battle_bg:
+        raise AssertionError("battle hero fell back to low-fidelity party sheet: "+battle_bg)
+    page.screenshot(path=str(OUT/"commercial_battle.png"),full_page=True)
+
     if errors:
         raise AssertionError("browser console errors: "+repr(errors))
     browser.close()
