@@ -119,7 +119,7 @@ function drawCharacterSprite(x,y,style={},leader=false,facing='down',motion=0){
  const body=style.body||'#776a5e',accent=style.accent||'#c2ad86',hair=style.hair||'#443b34',skin='#ddb99e',outline='#2c2826',boot='#3a302b',small=!!style.small,side=facing==='left'||facing==='right',back=facing==='up',flip=facing==='left'?-1:1;
  const ox=px,oy=py-bob+(small?2:0);
  ctx.save();ctx.imageSmoothingEnabled=false;
- const npcScale=small?.96:1.15,footX=px+16,footY=py+30;
+ const npcScale=small ? .96 : 1.15,footX=px+16,footY=py+30;
  if(npcScale!==1){ctx.translate(footX,footY);ctx.scale(npcScale,npcScale);ctx.translate(-footX,-footY)}
  // one consistent, restrained ground shadow for all non-hero people
  ctx.fillStyle='rgba(13,15,16,.30)';ctx.fillRect(ox+9,py+28,14,3);ctx.fillRect(ox+12,py+27,8,1);
