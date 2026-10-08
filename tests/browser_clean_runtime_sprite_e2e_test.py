@@ -33,11 +33,12 @@ with server():
         for key in ("ArrowRight","ArrowRight","ArrowDown","ArrowDown","ArrowRight","ArrowRight"):
             page.keyboard.press(key);page.wait_for_timeout(140)
         # actual game canvas, not a generated comparison board
-        canvas=page.locator("canvas").first
+        canvas=page.locator("#game")
         if canvas.count()!=1: raise AssertionError("game canvas missing")
-        image_rendering=canvas.evaluate("e=>getComputedStyle(e).imageRendering")
-        if image_rendering not in ("pixelated","crisp-edges"):
-            raise AssertionError("canvas is not pixelated: "+image_rendering)
+        size=canvas.evaluate("e=>[e.width,e.height]")
+        if size!=[768,480]: raise AssertionError("unexpected game canvas size: "+repr(size))
+        smoothing=canvas.evaluate("e=>e.getContext('2d').imageSmoothingEnabled")
+        if smoothing is not False: raise AssertionError("game canvas smoothing unexpectedly enabled")
         page.screenshot(path=str(OUT/"actual_game_world.png"),full_page=True)
 
         # Verify browser loaded the rebuilt party sheet and exact natural size.
