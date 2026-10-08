@@ -48,9 +48,9 @@ with server():
 
     canvas=page.locator("canvas").first
     if canvas.count()!=1: raise AssertionError("game canvas missing")
-    rendering=canvas.evaluate("e=>getComputedStyle(e).imageRendering")
-    if rendering not in ("pixelated","crisp-edges"):
-        raise AssertionError("canvas imageRendering="+rendering)
+    smoothing=canvas.evaluate("e=>e.getContext('2d').imageSmoothingEnabled")
+    if smoothing is not False:
+        raise AssertionError("2D context imageSmoothingEnabled="+repr(smoothing))
 
     # Ensure the current party sheet really contains all four character rows.
     dims=page.evaluate("""() => new Promise((resolve,reject)=>{
