@@ -244,3 +244,52 @@ html,body{background:radial-gradient(circle at 45% -10%,#29303b 0,#12161d 34%,#0
 @media(max-width:520px){
  .dialogue-overlay.no-portrait,.dialogue-overlay.hero-dialogue.no-portrait{padding-left:11px;min-height:112px}
 }
+
+
+/* --------------------------------------------------------------------------
+   Commercial presentation pass v1
+   Game-first desktop composition. Keep DOM/API compatibility while removing
+   dashboard/prototype visual noise from the default player experience.
+   -------------------------------------------------------------------------- */
+@media (min-width:851px){
+  html,body{min-height:100%;background:
+    radial-gradient(circle at 50% -20%,rgba(96,76,47,.16),transparent 38%),
+    linear-gradient(180deg,#0d1015 0%,#090b0f 100%);overflow-x:hidden}
+  body{min-height:100vh}
+  #app{max-width:1480px;min-height:100vh;margin:0 auto;padding:10px 14px 14px;display:flex;flex-direction:column}
+  .topbar{min-height:62px;margin:0 0 8px;padding:4px 2px 7px;align-items:center;border-bottom:1px solid rgba(211,181,109,.18)}
+  .topbar>div:first-child{display:flex;align-items:baseline;gap:14px;min-width:0}
+  .topbar h1{font-size:clamp(1.25rem,2.1vw,1.78rem);margin:0;letter-spacing:.055em;white-space:nowrap}
+  .eyebrow{font-size:.61rem;letter-spacing:.22em;color:#c9aa61;white-space:nowrap}
+  .build-note{font-size:.58rem;letter-spacing:.19em;color:#686f79;text-transform:uppercase;white-space:nowrap}
+  .top-actions{gap:6px;justify-content:flex-end}
+  .top-actions button{padding:.52rem .72rem;border-radius:7px;font-size:.79rem;background:rgba(26,31,38,.86);border-color:rgba(140,149,159,.32);box-shadow:inset 0 1px rgba(255,255,255,.025)}
+  .top-actions button:hover{background:#262d36;border-color:rgba(211,181,109,.48)}
+  .layout{flex:1;min-height:0;grid-template-columns:minmax(0,1fr) 224px;gap:10px;align-items:start}
+  .game-column{min-width:0}
+  .game-shell{padding:5px;background:#10141a;border-color:rgba(211,181,109,.28);border-radius:9px;box-shadow:0 16px 42px rgba(0,0,0,.34)}
+  .game-stage{border-radius:6px;overflow:hidden;background:#050608}
+  canvas{border-radius:4px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.035)}
+  .sidebar{gap:8px}
+  .sidebar .panel{padding:10px 11px;background:linear-gradient(180deg,rgba(24,29,36,.94),rgba(17,21,27,.94));border-color:rgba(130,141,153,.25);border-radius:9px;box-shadow:0 8px 20px rgba(0,0,0,.16)}
+  .sidebar .panel h2{font-size:.72rem;letter-spacing:.12em;color:#c9aa61;text-transform:uppercase;margin-bottom:8px}
+  .sidebar .panel:nth-child(3),.sidebar .controls-panel{display:none}
+  .party-row{margin-bottom:9px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.055)}
+  .party-row:last-child{border-bottom:0;padding-bottom:0}
+  .party-head{font-size:.78rem}
+  .party-sub{font-size:.67rem}
+  .bar{height:4px;margin-top:4px}
+  .exp-label,.bar.exp{display:none}
+  #questHud{font-size:.82rem;line-height:1.5}
+  .statusbar{min-height:25px;padding:6px 5px 1px;font-size:.68rem;letter-spacing:.04em}
+  #objectiveLabel{display:none}
+  .world-hud{left:10px;top:10px;transform:scale(.88);transform-origin:top left;opacity:.94}
+  .story-context{top:10px;right:10px;max-width:246px;padding:8px 11px;background:linear-gradient(180deg,rgba(18,19,19,.86),rgba(11,12,13,.86));border:1px solid rgba(211,181,109,.26);box-shadow:0 5px 16px rgba(0,0,0,.24)}
+  .story-context span{font-size:.55rem;letter-spacing:.11em}
+  .story-context strong{font-size:.82rem;margin-top:2px}
+  .stage-vignette{opacity:.55;pointer-events:none}
+  .dialogue-overlay{left:12px;right:12px;bottom:12px;border-width:1px;border-color:rgba(211,181,109,.54);background:linear-gradient(180deg,rgba(18,21,26,.965),rgba(10,12,16,.98));box-shadow:0 13px 34px rgba(0,0,0,.58)}
+}
+@media (min-width:1200px) and (min-height:760px){
+  .layout{grid-template-columns:minmax(0,1fr) 238px}
+}
