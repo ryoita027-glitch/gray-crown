@@ -448,7 +448,7 @@ function currentQuestTarget(){
 }
 function drawQuestMarker(){const q=currentQuestTarget();if(!q)return;const m=maps[state.map],item=q.kind==='npc'?m.npcs.find(n=>n.id===q.id&&npcVisible(n)):m.objects.find(o=>o.id===q.id&&visibleObject(o));if(!item)return;const px=item.x*TILE+16,py=item.y*TILE-8;ctx.fillStyle='rgba(26,20,11,.78)';ctx.beginPath();ctx.arc(px,py,8,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f2cf67';ctx.beginPath();ctx.moveTo(px,py-6);ctx.lineTo(px+5,py);ctx.lineTo(px,py+6);ctx.lineTo(px-5,py);ctx.closePath();ctx.fill();ctx.strokeStyle='#fff0ad';ctx.lineWidth=1;ctx.stroke()}
 function drawAreaIdentity(){/* area identity is rendered by the HTML world HUD */}
-function viewScale(){if(INTERIOR_MAPS.includes(state.map))return 1.18;if(['capital','imperialcity','borderland','watchfort','empirevillage','elsia'].includes(state.map))return 1.25;return 1.16}
+function viewScale(){if(INTERIOR_MAPS.includes(state.map))return 1.34;if(['capital','imperialcity','borderland','watchfort','empirevillage','elsia'].includes(state.map))return 1.50;return 1.42}
 const VISUAL={map:null,camX:0,camY:0,playerX:0,playerY:0,followers:[[12,13],[13,13],[14,13]],raf:0,nextMoveAt:0};
 function partyTrailPoints(){const t=Array.isArray(state.trail)?state.trail:[];if(t.length>=5)return[t[0],t[2],t[4]];return[t[0],t[1],t[2]].filter(Boolean)}
 function cameraForMap(){const o=GC.Cinematic?.cameraTarget?.(),scale=o?.scale||viewScale(),vw=canvas.width/scale,vh=canvas.height/scale,worldW=COLS*TILE,worldH=ROWS*TILE,fx=Number.isFinite(o?.x)?o.x:state.x,fy=Number.isFinite(o?.y)?o.y:state.y,cx=fx*TILE+TILE/2,cy=fy*TILE+TILE/2;return{scale,x:Math.max(0,Math.min(worldW-vw,cx-vw/2)),y:Math.max(0,Math.min(worldH-vh,cy-vh/2))}}
