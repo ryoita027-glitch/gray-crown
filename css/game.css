@@ -531,3 +531,12 @@ body:not(.playing) .game-shell{box-shadow:0 26px 80px rgba(0,0,0,.58)}
 .enemy-art.human-bandit{background-image:url('../assets/enemies/bandit_battle.png')}
 .enemy-art.beast-wolf::before,.enemy-art.beast-wolf::after,
 .enemy-art.human-bandit::before,.enemy-art.human-bandit::after{display:none}
+
+
+/* Center the standalone game surface on roomy desktop viewports. */
+@media(min-width:851px) and (min-height:860px){
+  #app{min-height:100vh;display:flex;flex-direction:column;justify-content:center}
+}
+@media(max-height:859px){
+  #app{min-height:0;display:block}
+}
