@@ -63,9 +63,12 @@ with server():
     page.keyboard.press("Escape")
     page.wait_for_timeout(80)
 
-    canvas=page.locator("#game").bounding_box()
+    canvas_el=page.locator("#game")
+    canvas=canvas_el.bounding_box()
     if not canvas or canvas["width"]<1160:
         raise AssertionError("commercial shell leaves the game viewport too small: "+repr(canvas))
+    if canvas_el.evaluate("e=>getComputedStyle(e).imageRendering") not in ("pixelated","crisp-edges"):
+        raise AssertionError("commercial shell is blurring pixel-native art")
 
     visible_panels=page.locator(".sidebar .panel:visible").count()
     if visible_panels!=0:
