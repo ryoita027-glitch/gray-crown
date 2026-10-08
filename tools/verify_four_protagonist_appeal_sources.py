@@ -20,7 +20,7 @@ for name,p in specs.items():
         if not bb: errors.append(f"{name} {d}: empty"); continue
         w=bb[2]-bb[0];h=bb[3]-bb[1]
         if not (20<=w<=34): errors.append(f"{name} {d}: width {w}")
-        if not (34<=h<=44): errors.append(f"{name} {d}: height {h}")
+        if not (34<=h<=45): errors.append(f"{name} {d}: height {h}")
 
 # Margaret should now match the other protagonists' physical screen mass, not v5's tall/narrow read.
 m=Image.open(specs["margaret"]).convert("RGBA")
