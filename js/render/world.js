@@ -67,17 +67,19 @@ function drawTerrainBlend(m){
   if(right===ch){ctx.fillStyle='rgba(255,255,255,.018)';ctx.fillRect(px+TILE-3,py,6,TILE)}
   if(down===ch){ctx.fillStyle='rgba(0,0,0,.016)';ctx.fillRect(px,py+TILE-3,TILE,6)}
  }
- // broad irregular stains cross tile boundaries so the world reads as continuous ground.
- for(let i=0;i<22;i++){const sx=((i*173+state.map.length*41)% (COLS*TILE)),sy=((i*97+state.map.length*67)% (ROWS*TILE));ctx.fillStyle=i%2?'rgba(255,239,196,.018)':'rgba(24,28,24,.025)';ctx.beginPath();ctx.ellipse(sx,sy,34+(i%5)*11,14+(i%4)*8,(i%7)*.23,0,Math.PI*2);ctx.fill()}
+ // Low-amplitude pixel texture replaces the old translucent circular brush marks.
+ for(let i=0;i<56;i++){const sx=((i*173+state.map.length*41)% (COLS*TILE)),sy=((i*97+state.map.length*67)% (ROWS*TILE)),w=2+(i%4)*2,h=1+(i%3);ctx.fillStyle=i%3?'rgba(236,221,177,.035)':'rgba(27,35,29,.045)';ctx.fillRect(Math.round(sx),Math.round(sy),w,h)}
 }
 function drawMapUnderlay(m){let c='#617556';if(INTERIOR_MAPS.includes(state.map))c='#8a6b49';else if(state.map==='capital')c='#858783';else if(state.map==='road')c='#657a59';else if(state.map==='village')c='#647a58';ctx.fillStyle=c;ctx.fillRect(-4,-4,COLS*TILE+8,ROWS*TILE+8)}
 function drawVerticalSliceGround(m){
  const map=state.map;
  if(map==='village'){
-  // broad, irregular footpath shoulders hide the square tile seam
-  ctx.save();ctx.globalAlpha=.24;ctx.fillStyle='#b59a6a';for(let y=1;y<14;y++){const wob=(y%4-1.5)*3;ctx.beginPath();ctx.ellipse(12*TILE+wob, y*TILE+16,37+(y%3)*4,22,0,0,Math.PI*2);ctx.fill()}ctx.restore();
-  // small patches and flower clusters crossing tile borders
-  for(let i=0;i<18;i++){const x=(i*41+57)%720+24,y=(i*73+91)%390+35;ctx.fillStyle=i%3?'rgba(55,84,48,.26)':'rgba(198,171,89,.28)';ctx.beginPath();ctx.ellipse(x,y,7+(i%4)*3,3+(i%3)*2,(i%5)*.25,0,Math.PI*2);ctx.fill()}
+  // Pixel-scale wear and grass intrusion keep the crossroads organic without brush-shaped blobs.
+  const dirt='#a98f63',grass='#647a58',dark='rgba(76,67,47,.20)';
+  for(let y=1;y<14;y++){const yy=y*TILE,cut=((y*7)%11)-5;ctx.fillStyle=grass;ctx.fillRect(11*TILE-2,yy+5+(y%3)*6,3+(y%2),7);ctx.fillRect(13*TILE-1,yy+14+((y+1)%3)*5,3,6);ctx.fillStyle=dirt;ctx.fillRect(11*TILE+4+cut,yy+8,6,2);ctx.fillRect(12*TILE+11-cut,yy+23,4,2);ctx.fillStyle=dark;ctx.fillRect(11*TILE+20+(y%5)*3,yy+17,3,1)}
+  for(let x=5;x<20;x++){const xx=x*TILE;ctx.fillStyle=grass;ctx.fillRect(xx+6+(x%3)*7,6*TILE-2,7,3);ctx.fillRect(xx+17,7*TILE-1,5+(x%2)*2,3);ctx.fillStyle=dark;ctx.fillRect(xx+10,6*TILE+12+(x%4)*3,3,1)}
+  // small plant clusters and flowers; all aligned to the pixel grid
+  for(let i=0;i<26;i++){const x=(i*53+61)%720+20,y=(i*79+47)%388+34;ctx.fillStyle=i%4===0?'#c4a65e':'#52704c';ctx.fillRect(Math.round(x),Math.round(y),2+(i%2),3);if(i%4===0){ctx.fillStyle='#e2c86f';ctx.fillRect(Math.round(x)+1,Math.round(y)-2,2,2)}}
  }
  if(map==='road'){
   // twin wheel ruts and soft edge grass make this read as a travelled road, not a tiled corridor
