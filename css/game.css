@@ -244,3 +244,137 @@ html,body{background:radial-gradient(circle at 45% -10%,#29303b 0,#12161d 34%,#0
 @media(max-width:520px){
  .dialogue-overlay.no-portrait,.dialogue-overlay.hero-dialogue.no-portrait{padding-left:11px;min-height:112px}
 }
+
+
+/* ------------------------------------------------------------------
+   Commercial Presentation Pass v1
+   Player-facing shell only. Developer Mode remains available with F2.
+   ------------------------------------------------------------------ */
+html,body{
+  background:
+    radial-gradient(circle at 50% -10%,rgba(108,91,62,.16),transparent 38%),
+    linear-gradient(180deg,#0b0e12 0%,#10141a 62%,#090c10 100%);
+}
+body{overflow-x:hidden}
+#app{max-width:1180px;padding:12px 16px 24px}
+.topbar{
+  min-height:58px;margin:0 0 10px;padding:4px 2px 8px;
+  align-items:center;border-bottom:1px solid rgba(211,181,109,.14)
+}
+.topbar>div:first-child{display:flex;align-items:baseline;gap:12px;min-width:0}
+.topbar h1{
+  margin:0;font-size:clamp(1.35rem,2.4vw,2rem);letter-spacing:.08em;
+  color:#f4efe4;text-shadow:0 2px 14px rgba(0,0,0,.38)
+}
+.eyebrow{
+  font-size:.62rem;letter-spacing:.22em;color:#c9ad70;
+  border:1px solid rgba(201,173,112,.28);padding:4px 7px;border-radius:999px
+}
+.build-note{font-size:.72rem;color:#777f89;white-space:nowrap}
+.top-actions{gap:6px}
+.top-actions button{
+  border-radius:7px;padding:.48rem .68rem;font-size:.78rem;
+  background:rgba(28,33,40,.92);border-color:rgba(128,139,151,.25);
+  box-shadow:none
+}
+.top-actions button:hover{background:#262d36;border-color:rgba(211,181,109,.45)}
+
+.layout{display:block;position:relative}
+.game-column{width:100%}
+.game-shell{
+  padding:7px;background:#0c1015;border:1px solid rgba(211,181,109,.22);
+  border-radius:11px;box-shadow:0 18px 48px rgba(0,0,0,.42)
+}
+.game-stage{
+  overflow:hidden;border-radius:7px;background:#05080b;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.03)
+}
+canvas{border-radius:7px}
+.sidebar{display:none}
+
+.world-hud{
+  transform:scale(.88);transform-origin:top left;
+  opacity:.92;pointer-events:none
+}
+.story-context{
+  right:14px;top:14px;min-width:220px;max-width:300px;
+  padding:8px 11px;border-radius:6px;
+  background:linear-gradient(180deg,rgba(12,15,18,.88),rgba(12,15,18,.74));
+  border:1px solid rgba(211,181,109,.22);
+  box-shadow:0 5px 18px rgba(0,0,0,.22)
+}
+.story-context span{font-size:.58rem;letter-spacing:.16em;color:#b69d69}
+.story-context strong{font-size:.84rem;line-height:1.35}
+.stage-vignette{opacity:.58}
+
+.statusbar{
+  height:28px;padding:6px 4px 0;font-size:.72rem;
+  color:#8e969f;letter-spacing:.02em
+}
+#objectiveLabel{display:none}
+.safety-label{margin-left:auto}
+.statusbar::before{
+  content:"M  メニュー";order:2;margin-left:auto;margin-right:14px;
+  color:#6f7883;font-size:.67rem;letter-spacing:.08em
+}
+#safetyLabel{order:3}
+#locationLabel{order:1}
+
+.dialogue-overlay{
+  left:28px;right:28px;bottom:24px;min-height:118px;
+  padding:14px 18px 13px 112px;
+  border-radius:8px;border-width:1px;
+  background:linear-gradient(180deg,rgba(13,16,20,.965),rgba(7,9,12,.985));
+  box-shadow:0 16px 44px rgba(0,0,0,.68),inset 0 1px rgba(255,255,255,.035)
+}
+.speaker-portrait{
+  width:82px;height:88px;border-radius:6px;
+  background:#191c20;border-color:rgba(211,181,109,.32)
+}
+.speaker{font-size:.88rem;letter-spacing:.07em}
+.dialogue-text{font-size:.92rem;line-height:1.68}
+.dialogue-hint{opacity:.58}
+
+.title-screen{
+  background:
+    linear-gradient(180deg,rgba(4,7,10,.24),rgba(4,6,9,.83)),
+    radial-gradient(circle at 50% 42%,rgba(173,145,91,.12),transparent 48%)
+}
+.title-content{max-width:640px}
+.title-kicker{letter-spacing:.35em;color:#cdb171;font-size:.66rem}
+.title-content h2{
+  letter-spacing:.12em;text-shadow:0 4px 24px rgba(0,0,0,.75);
+  font-size:clamp(2.1rem,6vw,4.2rem)
+}
+.title-content p{max-width:550px;margin-left:auto;margin-right:auto;color:#d7d0c4}
+.title-menu button{min-width:170px;border-radius:6px}
+.title-primary{
+  background:linear-gradient(180deg,#8e7040,#66502e)!important;
+  border-color:#c3a66b!important
+}
+
+.panel.battle-panel{border-radius:8px}
+
+@media(max-width:850px){
+  #app{padding:8px}
+  .topbar{align-items:flex-start}
+  .topbar>div:first-child{display:block}
+  .build-note{display:none}
+  .layout{display:block}
+  .sidebar{display:block;margin-top:8px}
+  .sidebar>section:not(.controls-panel){display:none}
+  .controls-panel{
+    background:rgba(17,21,27,.96);border-color:rgba(211,181,109,.18)
+  }
+  .story-context{right:8px;top:8px;max-width:220px;min-width:0}
+  .dialogue-overlay{left:8px;right:8px;bottom:8px}
+}
+@media(max-width:600px){
+  .eyebrow{display:none}
+  .topbar h1{font-size:1.25rem}
+  .top-actions{width:100%;justify-content:flex-end}
+  .top-actions button{padding:.42rem .55rem;font-size:.72rem}
+  .world-hud{transform:scale(.72)}
+  .story-context{transform:scale(.82);transform-origin:top right}
+  .statusbar::before{display:none}
+}
