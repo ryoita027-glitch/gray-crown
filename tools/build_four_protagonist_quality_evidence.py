@@ -9,7 +9,7 @@ OUT.mkdir(parents=True,exist_ok=True)
 CELL=48
 MEDIUM=44
 CHARS=("karen","triton","sophie","margaret")
-LABELS={"karen":"Karen","triton":"Triton","sophie":"Sophie","margaret":"Margaret v5"}
+LABELS={"karen":"Karen","triton":"Triton","sophie":"Sophie","margaret":"Margaret"}
 ANIMS={"idle":4,"walk":6,"turn":3,"talk":4,"surprise":4,"approach":4,"laugh":6,"run":6}
 DIRS=("down","left","right","up")
 
@@ -23,7 +23,7 @@ def runtime_frame(character,anim="idle",frame=0,direction=0):
     return im.crop((frame*CELL,direction*CELL,(frame+1)*CELL,(direction+1)*CELL))
 
 def margaret_v5_sheet():
-    path=ROOT/"prototype_artifacts/margaret_face_v5/margaret_chibi_direction_candidate_v5_48.png"
+    path=ROOT/"docs/pixel/reference/margaret_chibi_direction_lock_v5_48.png"
     if not path.exists():
         raise SystemExit("Margaret v5 candidate missing; run tools/generate_margaret_direction_v5_candidate.py first")
     return Image.open(path).convert("RGBA")
@@ -115,7 +115,7 @@ def alpha_iou(a,b):
     return round(len(A&B)/max(1,len(A|B)),4)
 
 fronts={c:direction_frame(c,0) for c in CHARS}
-metrics={"characters":{},"pairwise_silhouette_iou":{},"animation_runtime_authority":{"margaret":"v4 runtime sheets; v5 is direction candidate only"}}
+metrics={"characters":{},"pairwise_silhouette_iou":{},"animation_runtime_authority":{"margaret":"v5 committed runtime sheets","sophie":"v2 cleaned committed runtime sheets"}}
 
 for c in CHARS:
     dirs={}
