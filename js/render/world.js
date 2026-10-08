@@ -107,7 +107,7 @@ function drawVerticalSliceGround(m){
  if(map==='road'){
   // twin wheel ruts and soft edge grass make this read as a travelled road, not a tiled corridor
   ctx.strokeStyle='rgba(104,76,47,.34)';ctx.lineWidth=4;for(const off of [-8,10]){ctx.beginPath();ctx.moveTo(12*TILE+off,14*TILE);for(let y=14;y>=0;y--){const sway=Math.sin(y*.75)*7;ctx.lineTo(12*TILE+off+sway,y*TILE+16)}ctx.stroke()}
-  ctx.fillStyle='rgba(26,50,30,.15)';for(let i=0;i<14;i++){const x=(i%2?8:16)*TILE+(i%3)*18,y=(i*67)%430+20;ctx.beginPath();ctx.ellipse(x,y,55,24,(i%4)*.2,0,Math.PI*2);ctx.fill()}
+  ctx.fillStyle='rgba(26,50,30,.07)';for(let i=0;i<18;i++){const x=(i%2?7.5:16.5)*TILE+(i%4)*14,y=(i*61)%430+20;ctx.beginPath();ctx.ellipse(x,y,24+(i%3)*7,9+(i%2)*4,(i%5)*.18,0,Math.PI*2);ctx.fill()}
  }
  if(map==='capital'){
   // large paving bands and gutters ignore tile boundaries and make the plaza one continuous material
