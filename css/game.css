@@ -330,3 +330,144 @@ html,body{background:radial-gradient(circle at 45% -10%,#29303b 0,#12161d 34%,#0
   body.title-mode .title-content{width:min(650px,78%);padding-left:30px;padding-right:30px}
   body.title-mode .title-content h2{font-size:clamp(2.5rem,5vw,3.8rem);letter-spacing:.045em;white-space:nowrap}
 }
+
+
+/* Commercial battle presentation v1 — use actual runtime heroes and remove prototype emptiness. */
+@media (min-width:851px){
+  .battle-panel{
+    inset:8px;padding:12px 14px 11px;overflow:hidden;
+    display:flex;flex-direction:column;
+    background:linear-gradient(180deg,rgba(12,16,21,.992),rgba(7,10,14,.995));
+    border:1px solid rgba(164,91,83,.74);
+    box-shadow:inset 0 0 0 1px rgba(221,194,139,.08),0 12px 44px rgba(0,0,0,.44)
+  }
+  .battle-head{flex:0 0 auto;margin-bottom:8px;padding-bottom:7px}
+  .battle-stage{
+    height:auto;min-height:320px;flex:1 1 auto;margin-bottom:8px;
+    border-color:rgba(205,187,143,.24);
+    background:
+      linear-gradient(180deg,#242d36 0 43%,#394634 44% 100%);
+    box-shadow:inset 0 -85px 110px rgba(7,10,9,.22),inset 0 32px 70px rgba(4,8,12,.30)
+  }
+  .battle-backdrop{
+    background:
+      linear-gradient(180deg,rgba(142,164,171,.055),transparent 43%),
+      repeating-linear-gradient(0deg,transparent 0 31px,rgba(221,207,165,.025) 32px 33px)
+  }
+  .battle-backdrop::before{
+    bottom:62px;height:52px;opacity:.45;
+    background:
+      linear-gradient(160deg,#273329 0 12%,transparent 13%),
+      linear-gradient(200deg,#2a372d 0 12%,transparent 13%);
+    background-size:84px 52px
+  }
+
+  .party-battle-line{left:44px;bottom:43px;width:390px;height:130px}
+  .battle-hero.sprite{
+    width:96px;height:96px;bottom:0;
+    background-size:384px 384px!important;
+    background-position:0 0!important;
+    background-repeat:no-repeat;
+    image-rendering:pixelated;
+    filter:drop-shadow(0 9px 6px rgba(0,0,0,.42));
+    transform-origin:50% 100%
+  }
+  .battle-hero.sprite.active{
+    transform:translateY(-7px) scale(1.035);
+    filter:drop-shadow(0 0 10px rgba(237,202,105,.55)) drop-shadow(0 10px 6px rgba(0,0,0,.44))
+  }
+  .battle-hero.sprite.active::after{
+    content:"";display:block;position:absolute;left:29px;bottom:-5px;width:38px;height:4px;
+    background:#d7b762;box-shadow:0 0 9px rgba(215,183,98,.55)
+  }
+
+  .enemy-visual{right:100px;bottom:45px;width:300px;height:225px}
+  .enemy-shadow{bottom:4px;width:205px;height:20px;border-radius:50%;filter:blur(2px);background:rgba(0,0,0,.36)}
+  .enemy-art{
+    width:230px;height:178px;filter:drop-shadow(0 11px 5px rgba(0,0,0,.42));
+    image-rendering:pixelated
+  }
+  .enemy-art.beast-wolf{
+    background:
+      linear-gradient(#343c3a 0 0) 58px 124px/25px 43px no-repeat,
+      linear-gradient(#343c3a 0 0) 132px 124px/25px 43px no-repeat,
+      linear-gradient(#49524f 0 0) 19px 91px/37px 14px no-repeat
+  }
+  .enemy-art.beast-wolf::before{
+    left:34px;top:59px;width:127px;height:72px;border-radius:0;
+    background:#515b57;
+    clip-path:polygon(0 45%,12% 23%,30% 14%,64% 18%,80% 28%,100% 22%,92% 47%,75% 58%,72% 84%,54% 100%,22% 91%,10% 72%);
+    box-shadow:none
+  }
+  .enemy-art.beast-wolf::after{
+    left:143px;top:39px;width:66px;height:68px;border-radius:0;
+    background:#46504d;
+    clip-path:polygon(8% 22%,27% 22%,34% 0,49% 23%,74% 15%,100% 34%,87% 56%,91% 85%,59% 76%,39% 100%,28% 72%,0 66%,13% 47%);
+    box-shadow:inset -8px 0 #38413f,15px 26px 0 -12px #d8c27d
+  }
+
+  .enemy-art.beast-bat::before{
+    content:"";position:absolute;left:21px;top:46px;width:188px;height:96px;
+    background:#39414a;clip-path:polygon(0 43%,25% 13%,42% 36%,50% 22%,58% 36%,77% 12%,100% 43%,78% 56%,66% 88%,51% 66%,34% 89%,21% 57%);
+  }
+  .enemy-art.beast-bat::after{
+    content:"";position:absolute;left:100px;top:63px;width:31px;height:58px;
+    background:#59636b;clip-path:polygon(50% 0,100% 22%,79% 100%,22% 100%,0 22%);
+    box-shadow:inset 18px 13px 0 -15px #d6b86d
+  }
+
+  .enemy-art.beast-crawler::before{
+    content:"";position:absolute;left:29px;top:88px;width:31px;height:31px;background:#62594b;
+    box-shadow:26px -10px #716554,52px -13px #796d59,78px -8px #6d6252,104px 2px #62594b,130px 13px #554e43
+  }
+  .enemy-art.beast-crawler::after{
+    content:"";position:absolute;left:32px;top:121px;width:160px;height:4px;background:#302e29;
+    box-shadow:8px 9px #302e29,28px -7px #302e29,50px 8px #302e29,75px -7px #302e29,99px 8px #302e29,124px -5px #302e29
+  }
+
+  .enemy-art.beast-horned::before{
+    content:"";position:absolute;left:25px;top:57px;width:164px;height:93px;background:#55514a;
+    clip-path:polygon(0 45%,12% 23%,32% 13%,70% 17%,88% 33%,100% 60%,83% 78%,68% 100%,24% 91%,8% 72%)
+  }
+  .enemy-art.beast-horned::after{
+    content:"";position:absolute;left:141px;top:19px;width:76px;height:91px;background:#666158;
+    clip-path:polygon(5% 37%,23% 24%,22% 0,43% 27%,66% 0,67% 29%,100% 43%,83% 67%,88% 100%,49% 83%,22% 100%,25% 70%,0 59%);
+    box-shadow:inset 15px 24px 0 -12px #c1ad75
+  }
+
+  .enemy-art.human-soldier::before{
+    content:"";position:absolute;left:74px;top:63px;width:83px;height:100px;background:#3f5265;
+    clip-path:polygon(15% 0,85% 0,100% 28%,83% 100%,58% 87%,50% 100%,42% 87%,16% 100%,0 28%);
+    box-shadow:inset 0 9px #aebbc2,inset 0 -14px #2d3741
+  }
+  .enemy-art.human-soldier::after{
+    content:"";position:absolute;left:89px;top:24px;width:54px;height:55px;background:#c7a187;
+    clip-path:polygon(17% 0,83% 0,100% 28%,88% 85%,50% 100%,12% 85%,0 28%);
+    box-shadow:0 -10px 0 -2px #37383d,inset 23px 16px 0 -20px #4f4039
+  }
+
+  .enemy-stage-ui{right:18px;top:16px;width:286px;background:rgba(10,14,18,.83)}
+  .damage-pop{right:205px;top:105px}
+  .damage-pop.heal,.damage-pop.ally{left:195px}
+
+  .battle-panel #partyCards{
+    flex:0 0 auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:6px;margin:0 0 7px
+  }
+  .battle-panel #partyCards .card{
+    min-height:49px;padding:7px 9px;border-radius:4px;
+    background:linear-gradient(180deg,#202833,#171d25);
+    border-color:rgba(132,143,157,.30)
+  }
+  .battle-panel #partyCards .party-head{font-size:.76rem}
+  .battle-panel #partyCards .party-sub{font-size:.66rem;margin-top:2px}
+  .battle-actions{
+    flex:0 0 auto;margin:0 0 7px;gap:6px;
+    display:grid;grid-template-columns:repeat(6,minmax(0,1fr))
+  }
+  .battle-actions button{min-width:0;padding:.63rem .5rem;border-radius:4px}
+  .battle-log{
+    flex:0 0 43px;height:43px;max-height:43px;margin:0;
+    padding:9px 11px;border-radius:4px;font-size:.78rem
+  }
+}
