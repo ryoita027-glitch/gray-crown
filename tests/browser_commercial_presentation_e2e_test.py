@@ -90,6 +90,29 @@ with server():
     page.wait_for_timeout(250)
     page.screenshot(path=str(OUT/"commercial_village_interaction.png"),full_page=False)
 
+    # Environment integration must also survive a road and a furnished interior.
+    page.evaluate("""() => {
+      const s=GC.State.get();s.map='road';s.x=12;s.y=10;s.dir='up';
+      s.trail=[[12,11],[12,12],[11,12],[10,12],[9,12]];
+      GC.Render.World.VISUAL.map=null;GC.Render.World.draw();
+    }""")
+    page.wait_for_timeout(300)
+    page.screenshot(path=str(OUT/"commercial_road_1280x900.png"),full_page=False)
+
+    page.evaluate("""() => {
+      const s=GC.State.get();s.map='karenhome';s.x=12;s.y=10;s.dir='up';
+      s.trail=[[12,11],[12,12],[11,12],[10,12],[9,12]];
+      GC.Render.World.VISUAL.map=null;GC.Render.World.draw();
+    }""")
+    page.wait_for_timeout(300)
+    page.screenshot(path=str(OUT/"commercial_interior_1280x900.png"),full_page=False)
+
+    # Battle is part of the sellable presentation too; capture a real battle panel.
+    page.evaluate("() => GC.Battle.startBattle('wolves')")
+    page.wait_for_selector("#battlePanel:not(.hidden)")
+    page.wait_for_timeout(650)
+    page.screenshot(path=str(OUT/"commercial_battle_1280x900.png"),full_page=False)
+
     if errors: raise AssertionError("console errors: "+repr(errors))
     browser.close()
 
