@@ -35,7 +35,7 @@ function isBlocked(x,y){
 function drawTile(ch,x,y){const px=x*TILE,py=y*TILE,h=((x*1103515245)^(y*12345))>>>0;
  const dot=(c1,c2)=>{ctx.fillStyle=c1;ctx.fillRect(px-.65,py-.65,TILE+1.3,TILE+1.3);ctx.fillStyle=c2;ctx.globalAlpha=.62;ctx.beginPath();ctx.ellipse(px+5+(h%20),py+7+((h>>4)%18),3+((h>>9)%4),2+((h>>12)%3),0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1};
  if(ch==='G'||ch==='H')dot(state.map==='empirevillage'?'#66755e':COLORS.grass,state.map==='empirevillage'?'#53664d':COLORS.grass2)
- else if(ch==='P'){ctx.fillStyle=COLORS.path;ctx.fillRect(px-.65,py-.65,TILE+1.3,TILE+1.3);ctx.fillStyle='rgba(80,60,38,.16)';ctx.fillRect(px+5,py+7,5,2);ctx.fillRect(px+18,py+19,7,2);ctx.fillRect(px+10,py+27,3,2)}
+ else if(ch==='P'){dot(state.map==='empirevillage'?'#66755e':COLORS.grass,state.map==='empirevillage'?'#53664d':COLORS.grass2)}
  else if(ch==='D'){ctx.fillStyle='#927550';ctx.fillRect(px-.65,py-.65,TILE+1.3,TILE+1.3);ctx.fillStyle='rgba(48,35,25,.18)';ctx.fillRect(px+3,py+6,9,2);ctx.fillRect(px+16,py+17,11,2);ctx.fillRect(px+8,py+27,7,2)}
  else if(ch==='A'){ctx.fillStyle='#8f8f8c';ctx.fillRect(px-.65,py-.65,TILE+1.3,TILE+1.3);ctx.strokeStyle='rgba(50,52,55,.2)';ctx.lineWidth=1;const gy=y*TILE;for(let yy=Math.ceil(gy/16)*16;yy<gy+TILE;yy+=16){ctx.beginPath();ctx.moveTo(px,yy);ctx.lineTo(px+TILE,yy);ctx.stroke()}const row=Math.floor(gy/16);for(let xx=Math.ceil((px-(row%2)*16)/32)*32+(row%2)*16;xx<px+TILE;xx+=32){ctx.beginPath();ctx.moveTo(xx,py);ctx.lineTo(xx,py+TILE);ctx.stroke()}}
  else if(ch==='E'){ctx.fillStyle='#65717a';ctx.fillRect(px-.65,py-.65,TILE+1.3,TILE+1.3);ctx.fillStyle='rgba(31,39,44,.14)';ctx.beginPath();ctx.ellipse(px+6+(h%22),py+7+((h>>5)%20),5,2,0,0,Math.PI*2);ctx.fill()}
@@ -58,6 +58,31 @@ function drawTileDetail(ch,x,y){const px=x*TILE,py=y*TILE,h=((x*73856093)^(y*193
  if(ch==='R'){ctx.strokeStyle='rgba(235,248,248,.14)';ctx.beginPath();ctx.moveTo(px+3,py+5+(h%9));ctx.quadraticCurveTo(px+12,py+1+(h%8),px+27,py+6+(h%9));ctx.stroke()}
  if(ch==='F'){ctx.fillStyle='rgba(255,236,192,.08)';ctx.fillRect(px+2,py+4,28,2);ctx.fillStyle='rgba(50,29,19,.14)';ctx.fillRect(px+15,py+2,2,28)}
  if(ch==='Z'){ctx.strokeStyle='rgba(193,215,224,.08)';ctx.beginPath();ctx.moveTo(px+3,py+6+(h%9));ctx.lineTo(px+14,py+11);ctx.lineTo(px+28,py+5+(h%11));ctx.stroke()}
+}
+function drawPathNetwork(m){
+ const segments=[],nodes=[];
+ for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){
+  if(m.tiles[y][x]!=='P')continue;
+  const cx=x*TILE+TILE/2,cy=y*TILE+TILE/2;nodes.push([cx,cy]);
+  if(x+1<COLS&&m.tiles[y][x+1]==='P')segments.push([cx,cy,(x+1)*TILE+TILE/2,cy]);
+  if(y+1<ROWS&&m.tiles[y+1][x]==='P')segments.push([cx,cy,cx,(y+1)*TILE+TILE/2]);
+ }
+ if(!nodes.length)return;
+ const edge=state.map==='empirevillage'?'rgba(118,104,76,.78)':'rgba(142,118,78,.68)';
+ const fill=state.map==='empirevillage'?'#a69269':COLORS.path;
+ ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+ ctx.strokeStyle=edge;ctx.lineWidth=42;
+ for(const s of segments){ctx.beginPath();ctx.moveTo(s[0],s[1]);ctx.lineTo(s[2],s[3]);ctx.stroke()}
+ ctx.fillStyle=edge;for(const [x,y] of nodes){ctx.beginPath();ctx.arc(x,y,21,0,Math.PI*2);ctx.fill()}
+ ctx.strokeStyle=fill;ctx.lineWidth=34;
+ for(const s of segments){ctx.beginPath();ctx.moveTo(s[0],s[1]);ctx.lineTo(s[2],s[3]);ctx.stroke()}
+ ctx.fillStyle=fill;for(const [x,y] of nodes){ctx.beginPath();ctx.arc(x,y,17,0,Math.PI*2);ctx.fill()}
+ // restrained dirt/stone texture follows the road instead of exposing the logical grid.
+ for(let i=0;i<nodes.length;i++){const [x,y]=nodes[i],h=((i*1103515245)^(Math.floor(x)*97)^(Math.floor(y)*53))>>>0;
+   ctx.fillStyle=i%3?'rgba(82,61,38,.16)':'rgba(238,218,171,.13)';
+   ctx.fillRect(Math.round(x-9+(h%16)),Math.round(y-8+((h>>5)%16)),3+(h%4),1+(h%2));
+ }
+ ctx.restore()
 }
 function drawTerrainBlend(m){
  const walk=new Set(['G','Q','P','D','A','E','B','M','F']);
@@ -476,7 +501,7 @@ function drawScene(){
  if(VISUAL.map!==state.map){VISUAL.map=state.map;VISUAL.camX=target.x;VISUAL.camY=target.y;VISUAL.playerX=state.x;VISUAL.playerY=state.y;VISUAL.followers=partyTrailPoints().map(p=>[p[0],p[1]])}
  const ease=.22;VISUAL.camX+=(target.x-VISUAL.camX)*ease;VISUAL.camY+=(target.y-VISUAL.camY)*ease;VISUAL.playerX+=(state.x-VISUAL.playerX)*.48;VISUAL.playerY+=(state.y-VISUAL.playerY)*.48;const trailPoints=partyTrailPoints();for(let i=0;i<3;i++){const t=trailPoints[i]||trailPoints[trailPoints.length-1]||[state.x,state.y];if(!VISUAL.followers[i])VISUAL.followers[i]=[t[0],t[1]];VISUAL.followers[i][0]+=(t[0]-VISUAL.followers[i][0])*.42;VISUAL.followers[i][1]+=(t[1]-VISUAL.followers[i][1])*.42;}
  ctx.save();ctx.scale(target.scale,target.scale);ctx.translate(-VISUAL.camX,-VISUAL.camY);drawMapUnderlay(m);
- for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){drawTile(m.tiles[y][x],x,y);drawTileDetail(m.tiles[y][x],x,y)}drawTerrainBlend(m);drawVerticalSliceGround(m);
+ for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){drawTile(m.tiles[y][x],x,y);drawTileDetail(m.tiles[y][x],x,y)}drawPathNetwork(m);drawTerrainBlend(m);drawVerticalSliceGround(m);
  if(state.map==='village'){drawVillageDecor();villageHouses.forEach(drawHouse)}if(INTERIOR_MAPS.includes(state.map))drawInteriorDecor();drawRegionDecor();m.objects.forEach(drawObject);const cinematicActive=GC.Cinematic?.isActive?.()===true,controlledNpcs=new Set(GC.Cinematic?.controlledNpcIds?.()||[]);m.npcs.filter(n=>npcVisible(n)&&!controlledNpcs.has(n.id)).forEach(drawNpc);drawQuestMarker();
  if(cinematicActive){GC.Cinematic?.drawActors?.(ctx,{drawCharacterSprite,drawHeroSpriteSheet})}else{const leaderMoving=Math.abs(state.x-VISUAL.playerX)>.015||Math.abs(state.y-VISUAL.playerY)>.015,phase=leaderMoving?Date.now()/82:0;drawPartyRuntime(leaderMoving,phase);drawInteractionMarker()}GC.Dev?.drawWorldOverlay?.(ctx);ctx.restore();drawAreaIdentity();$('locationLabel').textContent=m.name;if($('safetyLabel')){const safe=encounterSafeZone();$('safetyLabel').textContent=safe?'● 安全地帯':'▲ 危険地帯';$('safetyLabel').classList.toggle('danger',!safe)};
  const followerTargets=partyTrailPoints(),followerMoving=VISUAL.followers.some((p,i)=>{const t=followerTargets[i]||p;return Math.abs(t[0]-p[0])>.01||Math.abs(t[1]-p[1])>.01});const moving=cinematicActive||Math.abs(target.x-VISUAL.camX)>.08||Math.abs(target.y-VISUAL.camY)>.08||Math.abs(state.x-VISUAL.playerX)>.01||Math.abs(state.y-VISUAL.playerY)>.01||followerMoving;
