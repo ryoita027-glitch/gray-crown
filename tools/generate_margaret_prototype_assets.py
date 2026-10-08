@@ -101,7 +101,7 @@ def frame(b,anim,i,d):
 
 def main():
     ap=argparse.ArgumentParser()
-    ap.add_argument("--reference",default="docs/pixel/reference/margaret_chibi_direction_lock_v4_48.png")
+    ap.add_argument("--reference",default="docs/pixel/reference/margaret_chibi_direction_lock_v5_48.png")
     ap.add_argument("--out",default="prototype_artifacts/margaret_generated")
     args=ap.parse_args()
 
