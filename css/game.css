@@ -378,3 +378,19 @@ canvas{border-radius:7px}
   .story-context{transform:scale(.82);transform-origin:top right}
   .statusbar::before{display:none}
 }
+
+
+/* Commercial cohesion: normal dialogue is Pixel Acting first.
+   The generic SVG portrait system remains in code for reversible experiments,
+   but is not part of the normal desktop presentation. */
+.speaker-portrait{display:none}
+.dialogue-overlay{padding-left:18px}
+.dialogue-header{
+  padding-left:10px;border-left:2px solid rgba(211,181,109,.72)
+}
+#btnSave,#btnLoad,#btnRestart{display:none}
+
+@media(max-width:850px){
+  #btnSave,#btnLoad,#btnRestart{display:inline-block}
+  .dialogue-overlay{padding-left:11px}
+}
