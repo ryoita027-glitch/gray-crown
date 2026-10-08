@@ -184,7 +184,7 @@ function colorMix(hex,amount){
  return '#'+[q(r),q(g),q(b)].map(v=>v.toString(16).padStart(2,'0')).join('')
 }
 function npcHash(id){let h=0;for(const ch of String(id||''))h=(h*31+ch.charCodeAt(0))>>>0;return h}
-function drawNpcCommercial(n){
+function drawNpcCommercial(n,facing='down'){
  const s=NPC_STYLE[n.id]||{body:'#756b5f',accent:'#a58d6d',hair:'#4b4037'},h=npcHash(n.id),scale=s.small?.86:1;
  const px=n.x*TILE,py=n.y*TILE,cx=px+16,footY=py+30,body=s.body||'#756b5f',accent=s.accent||'#a58d6d',hair=s.hair||'#4b4037';
  const dark=colorMix(body,-.48),shade=colorMix(body,-.22),light=colorMix(body,.16),hairDark=colorMix(hair,-.34),skin='#d9b294',skinShade='#b9826f';
@@ -213,17 +213,29 @@ function drawNpcCommercial(n){
  if(h%3===0){ctx.fillRect(Math.round(cx-9*scale),Math.round(top+5*scale),4*scale,10*scale);ctx.fillRect(Math.round(cx+5*scale),Math.round(top+5*scale),4*scale,10*scale)}
  else if(h%3===1){ctx.fillRect(Math.round(cx-8*scale),Math.round(top+5*scale),5*scale,7*scale);ctx.fillRect(Math.round(cx+4*scale),Math.round(top+5*scale),4*scale,5*scale)}
  else{ctx.fillRect(Math.round(cx-9*scale),Math.round(top+5*scale),3*scale,8*scale);ctx.fillRect(Math.round(cx+6*scale),Math.round(top+5*scale),3*scale,8*scale)}
- // face at gameplay scale
- ctx.fillStyle='#473a34';ctx.fillRect(Math.round(cx-4*scale),Math.round(top+11*scale),2*scale,2*scale);ctx.fillRect(Math.round(cx+3*scale),Math.round(top+11*scale),2*scale,2*scale);
- ctx.fillStyle='rgba(255,255,255,.62)';ctx.fillRect(Math.round(cx-4*scale),Math.round(top+10*scale),1*scale,1*scale);
- if(h%4!==0){ctx.fillStyle='#9c645d';ctx.fillRect(Math.round(cx-1*scale),Math.round(top+15*scale),3*scale,1*scale)}
+ // face at gameplay scale. Nearby NPCs turn toward the player instead of
+ // remaining permanently front-facing.
+ if(facing==='up'){
+  ctx.fillStyle=hair;ctx.fillRect(Math.round(cx-7*scale),Math.round(top+7*scale),14*scale,9*scale);
+  ctx.fillStyle=hairDark;ctx.fillRect(Math.round(cx-5*scale),Math.round(top+14*scale),10*scale,3*scale)
+ }else if(facing==='left'||facing==='right'){
+  const dir=facing==='left'?-1:1;
+  ctx.fillStyle='#473a34';ctx.fillRect(Math.round(cx+dir*2*scale),Math.round(top+11*scale),2*scale,2*scale);
+  ctx.fillStyle='rgba(255,255,255,.62)';ctx.fillRect(Math.round(cx+dir*2*scale),Math.round(top+10*scale),1*scale,1*scale);
+  ctx.fillStyle=hair;ctx.fillRect(Math.round(cx-dir*8*scale),Math.round(top+6*scale),5*scale,9*scale);
+  if(h%4!==0){ctx.fillStyle='#9c645d';ctx.fillRect(Math.round(cx+dir*3*scale),Math.round(top+15*scale),2*scale,1*scale)}
+ }else{
+  ctx.fillStyle='#473a34';ctx.fillRect(Math.round(cx-4*scale),Math.round(top+11*scale),2*scale,2*scale);ctx.fillRect(Math.round(cx+3*scale),Math.round(top+11*scale),2*scale,2*scale);
+  ctx.fillStyle='rgba(255,255,255,.62)';ctx.fillRect(Math.round(cx-4*scale),Math.round(top+10*scale),1*scale,1*scale);
+  if(h%4!==0){ctx.fillStyle='#9c645d';ctx.fillRect(Math.round(cx-1*scale),Math.round(top+15*scale),3*scale,1*scale)}
+ }
  // role accessories
  if(s.hat){ctx.fillStyle=colorMix(hair,-.15);ctx.fillRect(Math.round(cx-11*scale),Math.round(top+1*scale),22*scale,3*scale);ctx.fillRect(Math.round(cx-7*scale),Math.round(top-2*scale),14*scale,5*scale)}
  if(s.weapon==='sword'){ctx.strokeStyle='#aeb8bf';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx+10*scale,top+20*scale);ctx.lineTo(cx+14*scale,footY-2);ctx.stroke()}
  if(s.weapon==='staff'){ctx.strokeStyle='#765438';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx-11*scale,top+12*scale);ctx.lineTo(cx-12*scale,footY);ctx.stroke();ctx.fillStyle=accent;ctx.fillRect(Math.round(cx-14*scale),Math.round(top+9*scale),5*scale,5*scale)}
  ctx.restore()
 }
-function drawNpc(n){drawNpcCommercial(n);if(Math.abs(state.x-n.x)+Math.abs(state.y-n.y)<=2){ctx.font='bold 9px system-ui';const w=Math.max(28,ctx.measureText(n.name).width+8);const px=n.x*TILE+16-w/2,py=n.y*TILE-7;ctx.fillStyle='rgba(13,16,20,.88)';ctx.fillRect(px,py,w,13);ctx.strokeStyle='rgba(210,181,112,.28)';ctx.strokeRect(px+.5,py+.5,w-1,12);ctx.fillStyle='#efe6d2';ctx.textAlign='center';ctx.fillText(n.name,n.x*TILE+16,py+10);ctx.textAlign='start'}}
+function drawNpc(n){const close=Math.abs(state.x-n.x)+Math.abs(state.y-n.y)<=2,face=close?facingBetween([n.x,n.y],[state.x,state.y],'down'):'down';drawNpcCommercial(n,face);if(close){ctx.font='bold 9px system-ui';const w=Math.max(28,ctx.measureText(n.name).width+8);const px=n.x*TILE+16-w/2,py=n.y*TILE-7;ctx.fillStyle='rgba(13,16,20,.88)';ctx.fillRect(px,py,w,13);ctx.strokeStyle='rgba(210,181,112,.28)';ctx.strokeRect(px+.5,py+.5,w-1,12);ctx.fillStyle='#efe6d2';ctx.textAlign='center';ctx.fillText(n.name,n.x*TILE+16,py+10);ctx.textAlign='start'}}
 function drawVillageDecor(){
  // 畑
  for(let x=1;x<=2;x++)for(let y=7;y<=12;y++){ctx.fillStyle='#776448';ctx.fillRect(x*TILE+3,y*TILE+5,26,22);ctx.strokeStyle='#a58b5c';ctx.beginPath();ctx.moveTo(x*TILE+6,y*TILE+10);ctx.lineTo(x*TILE+26,y*TILE+10);ctx.moveTo(x*TILE+6,y*TILE+18);ctx.lineTo(x*TILE+26,y*TILE+18);ctx.stroke()}
