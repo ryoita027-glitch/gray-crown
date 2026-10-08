@@ -244,3 +244,97 @@ html,body{background:radial-gradient(circle at 45% -10%,#29303b 0,#12161d 34%,#0
 @media(max-width:520px){
  .dialogue-overlay.no-portrait,.dialogue-overlay.hero-dialogue.no-portrait{padding-left:11px;min-height:112px}
 }
+
+
+/* v24 — commercial presentation pass
+   Remove prototype chrome, reduce duplicated HUD information, and keep pixel
+   characters crisp when the canvas is scaled by the responsive shell. */
+:root{
+  --panel:#171c23;--panel2:#20262f;--line:#39424d;--accent:#d6b76f;
+  --muted:#9fa7b0;
+}
+#app{max-width:1340px;padding:12px 16px 22px}
+.topbar{
+  min-height:58px;margin-bottom:10px;padding:2px 2px 9px;
+  align-items:center;border-bottom:1px solid rgba(214,183,111,.14)
+}
+.topbar h1{margin:.05rem 0 0;font-size:clamp(1.55rem,2.6vw,2.15rem);letter-spacing:.075em}
+.eyebrow{font-size:.6rem;letter-spacing:.24em;color:#b9a36f}
+.build-note{display:none}
+.top-actions{gap:6px}
+.top-actions button{
+  padding:.48rem .68rem;min-height:34px;border-radius:4px;
+  font-size:.78rem;background:linear-gradient(#252c34,#1b2128);
+  border-color:#3d4752
+}
+.layout{grid-template-columns:minmax(0,1fr) 258px;gap:12px}
+.game-shell{padding:5px;border-radius:6px;background:#0c1015;border-color:#454c53}
+.game-stage{
+  border-radius:3px;border-color:rgba(205,178,112,.22);
+  box-shadow:0 18px 54px rgba(0,0,0,.42),inset 0 0 28px rgba(0,0,0,.22)
+}
+/* The source art is pixel-native. Browser interpolation was softening faces. */
+.game-stage canvas{
+  image-rendering:pixelated;
+  filter:saturate(.96) contrast(1.025) brightness(1.01);
+  border-radius:2px
+}
+.stage-vignette{
+  box-shadow:inset 0 0 48px 5px rgba(2,5,8,.23);
+  background:linear-gradient(180deg,rgba(255,225,165,.018),transparent 22%,transparent 80%,rgba(0,0,0,.13))
+}
+.world-hud{left:9px;top:9px;filter:drop-shadow(0 3px 5px rgba(0,0,0,.42))}
+.world-hud-chapter{
+  padding:0 9px;font-size:.62rem;letter-spacing:.055em;
+  background:linear-gradient(#753941,#54282e)
+}
+.world-hud-main{min-width:205px;padding:5px 12px 6px 17px;background:rgba(16,20,25,.88)}
+.world-hud-main span{font-size:.88rem}.world-hud-main small{font-size:.59rem}
+.story-context{
+  right:9px;top:9px;width:min(240px,32%);padding:6px 9px 7px;
+  background:rgba(13,17,22,.87);border-color:rgba(207,177,107,.34);
+  box-shadow:0 4px 12px rgba(0,0,0,.28)
+}
+.story-context span{font-size:.53rem;margin-bottom:2px}.story-context strong{font-size:.7rem}
+.statusbar{
+  grid-template-columns:auto 1fr auto;padding:6px 5px 1px;
+  min-height:25px;font-size:.7rem;background:transparent
+}
+/* The objective is already visible in the stage and quest panel. Three copies read as debug UI. */
+.statusbar #objectiveLabel{display:none}
+.statusbar #locationLabel{color:#aeb5bc}.safety-label{font-size:.64rem}
+.sidebar{gap:7px}
+.sidebar .panel{
+  padding:10px;border-radius:5px;background:linear-gradient(160deg,rgba(24,29,36,.98),rgba(16,20,26,.98));
+  border-color:rgba(83,92,104,.48);box-shadow:0 5px 17px rgba(0,0,0,.16)
+}
+.sidebar .panel h2{font-size:.68rem;margin-bottom:6px;padding-bottom:6px;letter-spacing:.16em}
+.party-row{margin:0;padding:6px 0}
+.party-head{font-size:.78rem}.party-sub{font-size:.68rem;margin-top:2px}
+.bar{height:5px;margin-top:4px}.exp-label{font-size:.6rem}
+.journal-item{font-size:.7rem;line-height:1.45}
+.controls-panel{padding-top:8px!important}
+.controls-panel p{display:inline;margin:0 .42rem 0 0;font-size:.66rem;color:#959da6}
+.controls-panel h2{margin-bottom:5px!important}
+.panel.quest-panel{border-color:rgba(195,163,91,.38)}
+.panel.journal-panel{opacity:.92}
+.dialogue-overlay{
+  left:10px;right:10px;bottom:10px;min-height:116px;
+  border-radius:3px;padding-top:11px;padding-bottom:9px
+}
+button{border-radius:5px}
+@media(max-width:980px){
+  .layout{grid-template-columns:minmax(0,1fr) 236px}
+  .story-context{width:29%}
+}
+@media(max-width:850px){
+  #app{padding:8px}.layout{grid-template-columns:1fr}
+  .sidebar{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .party-panel{grid-column:1/-1}.controls-panel{grid-column:1/-1}
+  .game-stage canvas{image-rendering:pixelated}
+}
+@media(max-width:520px){
+  .topbar{min-height:48px}.topbar h1{font-size:1.35rem}
+  .eyebrow{display:none}.top-actions button{padding:.4rem .52rem;font-size:.7rem}
+  .layout{gap:7px}.story-context{width:40%}
+}
