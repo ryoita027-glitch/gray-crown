@@ -494,3 +494,7 @@ html,body{background:radial-gradient(circle at 45% -10%,#29303b 0,#12161d 34%,#0
   body.session-started .stage-actions #stageSound{width:30px;padding-left:0;padding-right:0}
   body.title-mode .stage-actions{display:none!important}
 }
+
+.menu-quick-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:0 0 10px}
+.menu-quick-actions button{padding:.62rem .55rem;border-radius:4px;border-color:rgba(211,181,109,.30);background:#252c34}
+.menu-note{text-align:center;color:#817d74!important;background:transparent!important;border:0!important;padding:4px!important}
