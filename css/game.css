@@ -551,3 +551,12 @@ body:not(.playing) .game-shell{box-shadow:0 26px 80px rgba(0,0,0,.58)}
  .battle-panel{display:block}
  .battle-stage{height:190px;min-height:190px}
 }
+
+
+/* Title screen is a clean presentation state: gameplay HUD stays hidden until play starts. */
+body:not(.playing) .world-hud,
+body:not(.playing) .story-context,
+body:not(.playing) .stage-vignette,
+body:not(.playing) .statusbar{visibility:hidden}
+body:not(.playing) .title-screen .title-mist,
+body:not(.playing) .title-screen .title-content{visibility:visible}
