@@ -198,7 +198,7 @@ html,body{background:radial-gradient(circle at 45% -10%,#29303b 0,#12161d 34%,#0
 .world-hud{top:11px;left:11px}.world-hud-chapter{border-radius:2px 0 0 2px}.world-hud-main{min-width:240px}.story-context{top:11px;right:11px;border-radius:2px;border-color:rgba(202,175,113,.4)}
 .dialogue-overlay{left:13px;right:13px;bottom:13px;border-radius:4px;border-width:1px;background:linear-gradient(180deg,rgba(17,21,27,.97),rgba(9,12,16,.985));box-shadow:0 16px 40px rgba(0,0,0,.62),inset 0 1px rgba(255,255,255,.035)}.speaker-portrait{border-radius:3px}.choice-box button{border-radius:3px}.statusbar{padding:8px 8px 2px;color:#aeb3b6;font-size:.78rem}
 /* Canvas no longer advertises a retro nearest-neighbor look. The art can still be crisp, but movement stays smooth. */
-.game-stage canvas{image-rendering:auto;filter:saturate(.93) contrast(1.035) brightness(.99);backface-visibility:hidden}.stage-vignette{box-shadow:inset 0 0 78px 16px rgba(1,4,8,.34);background:linear-gradient(180deg,rgba(252,223,161,.025),transparent 25%,transparent 72%,rgba(0,0,0,.19))}
+.game-stage canvas{image-rendering:pixelated;filter:none;backface-visibility:hidden}.stage-vignette{box-shadow:inset 0 0 78px 16px rgba(1,4,8,.34);background:linear-gradient(180deg,rgba(252,223,161,.025),transparent 25%,transparent 72%,rgba(0,0,0,.19))}
 /* Product-style menu */
 .modal-card{border-radius:6px;background:linear-gradient(155deg,#242b34,#141920);border-color:#59616c}.menu-character{border-radius:3px}.levelup-panel{border-radius:4px}
 @media(max-width:850px){#app{padding:10px}.layout{gap:10px}.sidebar{grid-template-columns:repeat(2,minmax(0,1fr))}}
