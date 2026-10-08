@@ -40,7 +40,7 @@ with server():
 
         # Walk a deterministic open-area pattern long enough to separate all followers.
         # If a direction is blocked, the remaining moves still expose the party trail.
-        for key in ("ArrowDown","ArrowDown","ArrowRight","ArrowRight","ArrowDown","ArrowLeft","ArrowLeft","ArrowUp","ArrowRight"):
+        for key in ("ArrowUp","ArrowUp","ArrowUp","ArrowUp","ArrowUp","ArrowRight","ArrowRight","ArrowLeft","ArrowUp"):
             page.keyboard.press(key);page.wait_for_timeout(155)
         page.wait_for_timeout(350)
 
