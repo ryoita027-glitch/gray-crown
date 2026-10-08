@@ -84,6 +84,11 @@ with server():
     page.wait_for_timeout(900)
     if page.locator("#battlePanel").evaluate("e=>getComputedStyle(e).display")=="none":
         raise AssertionError("battle panel failed to open")
+    if page.locator(".battle-hero.sprite.direct").count()!=4:
+        raise AssertionError("battle is not using the four direct 48px hero sheets")
+    overflow=page.locator("#battlePanel").evaluate("e=>({scroll:e.scrollHeight,client:e.clientHeight})")
+    if overflow["scroll"]>overflow["client"]+3:
+        raise AssertionError("desktop battle still requires scrolling: "+repr(overflow))
     page.screenshot(path=str(OUT/"battle_desktop.png"),full_page=True)
 
     mobile=browser.new_page(viewport={"width":390,"height":844},device_scale_factor=1)
