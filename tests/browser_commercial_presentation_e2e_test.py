@@ -54,12 +54,12 @@ with server():
     page.wait_for_timeout(450)
 
     canvas=page.locator("#game").bounding_box()
-    if not canvas or canvas["width"]<900:
+    if not canvas or canvas["width"]<1160:
         raise AssertionError("commercial shell leaves the game viewport too small: "+repr(canvas))
 
     visible_panels=page.locator(".sidebar .panel:visible").count()
-    if visible_panels!=2:
-        raise AssertionError(f"desktop sidebar should expose only party/objective, got {visible_panels}")
+    if visible_panels!=0:
+        raise AssertionError(f"exploration should not expose dashboard side panels, got {visible_panels}")
 
     objective_display=page.locator("#objectiveLabel").evaluate("e=>getComputedStyle(e).display")
     if objective_display!="none":
