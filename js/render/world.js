@@ -115,37 +115,54 @@ function drawHouse(h){const px=h.x*TILE,py=h.y*TILE,w=TILE*3;
  ctx.fillStyle='rgba(31,26,21,.86)';ctx.fillRect(px+26,py+77,44,15);ctx.strokeStyle='rgba(220,196,143,.35)';ctx.strokeRect(px+26,py+77,44,15);ctx.fillStyle='#eee4cf';ctx.font='bold 10px system-ui';ctx.textAlign='center';ctx.fillText(h.label,px+w/2,py+88);ctx.textAlign='start'}
 function drawCharacterSprite(x,y,style={},leader=false,facing='down',motion=0){
  if(style.heroId&&drawHeroSpriteSheet(x,y,style.heroId,leader,facing,motion))return;
- const px=x*TILE,py=y*TILE,small=style.small?.84:1,walk=Math.sin(motion)*2.2,bob=Math.abs(Math.sin(motion))*1.1,side=facing==='left'||facing==='right',back=facing==='up',flip=facing==='left'?-1:1;
- const cx=px+16,baseY=py+1-bob,skin=COLORS.skin,body=style.body||'#776a5e',accent=style.accent||'#c2ad86',hair=style.hair||'#443b34';
- ctx.fillStyle='rgba(16,18,18,.34)';ctx.beginPath();ctx.ellipse(cx,py+29,side?9:10,4,0,0,Math.PI*2);ctx.fill();
- if(side){
-  // legs read clearly as a side walk instead of a front-facing slide
-  ctx.fillStyle='#37312d';ctx.fillRect(cx-5+walk*.35,baseY+23,4,7);ctx.fillRect(cx+2-walk*.35,baseY+23,4,7);
-  ctx.fillStyle=body;ctx.fillRect(cx-6,baseY+13,12,12);ctx.fillStyle=accent;ctx.fillRect(cx-6,baseY+13,12,4);
-  if(style.cape){ctx.fillStyle='#263f67';ctx.beginPath();ctx.moveTo(cx-flip*5,baseY+15);ctx.lineTo(cx-flip*9,baseY+27);ctx.lineTo(cx-flip*3,baseY+25);ctx.closePath();ctx.fill()}
-  // arm swing and profile face
-  ctx.fillStyle=skin;ctx.fillRect(cx+flip*4,baseY+17+walk*.25,4,8);ctx.fillRect(cx-flip*7,baseY+17-walk*.25,4,7);
-  ctx.fillStyle=skin;ctx.beginPath();ctx.arc(cx+flip*2,baseY+9,7*small,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle=hair;ctx.beginPath();ctx.arc(cx+flip*1,baseY+7,7*small,Math.PI,Math.PI*2);ctx.fill();ctx.fillRect(cx-6,baseY+3,11,4);
-  ctx.fillStyle='#4e3a33';ctx.fillRect(cx+flip*7-(flip<0?2:0),baseY+9,2,2);
-  if(style.hat){ctx.fillStyle='#5a4632';ctx.fillRect(cx-9,baseY+3,18,3);ctx.fillRect(cx-5,baseY,11,5)}
-  if(style.weapon==='sword'){ctx.strokeStyle='#d7dbe0';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx-flip*5,baseY+14);ctx.lineTo(cx-flip*10,baseY+27);ctx.stroke()}
-  if(style.weapon==='staff'){ctx.strokeStyle='#6c5135';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx-flip*7,baseY+10);ctx.lineTo(cx-flip*7,baseY+29);ctx.stroke()}
+ const px=Math.round(x*TILE),py=Math.round(y*TILE),moving=!!motion,phase=moving?Math.floor(motion)%4:0,bob=moving&&phase===1?1:0,step=moving?(phase<2?1:-1):0;
+ const body=style.body||'#776a5e',accent=style.accent||'#c2ad86',hair=style.hair||'#443b34',skin='#ddb99e',outline='#2c2826',boot='#3a302b',small=!!style.small,side=facing==='left'||facing==='right',back=facing==='up',flip=facing==='left'?-1:1;
+ const ox=px,oy=py-bob+(small?2:0);
+ ctx.save();ctx.imageSmoothingEnabled=false;
+ // one consistent, restrained ground shadow for all non-hero people
+ ctx.fillStyle='rgba(13,15,16,.30)';ctx.fillRect(ox+9,py+28,14,3);ctx.fillRect(ox+12,py+27,8,1);
+ // legs / boots
+ ctx.fillStyle=outline;ctx.fillRect(ox+10+step,oy+22,5,8);ctx.fillRect(ox+18-step,oy+22,5,8);
+ ctx.fillStyle=boot;ctx.fillRect(ox+11+step,oy+23,3,6);ctx.fillRect(ox+19-step,oy+23,3,6);
+ // torso with a dark one-pixel border and readable faction/accent band
+ ctx.fillStyle=outline;ctx.fillRect(ox+8,oy+15,17,11);
+ ctx.fillStyle=body;ctx.fillRect(ox+9,oy+16,15,9);
+ ctx.fillStyle=accent;ctx.fillRect(ox+9,oy+17,15,3);
+ ctx.fillStyle=outline;ctx.fillRect(ox+9,oy+24,15,2);
+ // arms move by one pixel only: enough motion without rubber-limb vector animation
+ const armA=side?step*flip:step,armB=-armA;
+ ctx.fillStyle=outline;ctx.fillRect(ox+5,oy+16+armA,4,9);ctx.fillRect(ox+24,oy+16+armB,4,9);
+ ctx.fillStyle=body;ctx.fillRect(ox+6,oy+17+armA,2,7);ctx.fillRect(ox+25,oy+17+armB,2,7);
+ ctx.fillStyle=skin;ctx.fillRect(ox+6,oy+23+armA,2,2);ctx.fillRect(ox+25,oy+23+armB,2,2);
+ // head: deliberately block-built so NPCs share the heroes' pixel language.
+ ctx.fillStyle=outline;ctx.fillRect(ox+8,oy+3,17,14);
+ ctx.fillStyle=skin;ctx.fillRect(ox+10,oy+6,13,10);
+ if(back){
+   ctx.fillStyle=hair;ctx.fillRect(ox+9,oy+4,15,12);ctx.fillRect(ox+11,oy+15,11,3);
+ }else if(side){
+   const faceX=flip>0?12:9;
+   ctx.fillStyle=hair;ctx.fillRect(ox+9,oy+4,15,5);ctx.fillRect(ox+(flip>0?9:20),oy+8,4,8);
+   ctx.fillStyle='#433a35';ctx.fillRect(ox+faceX+(flip>0?7:3),oy+10,2,2);
+   ctx.fillStyle='rgba(160,95,82,.9)';ctx.fillRect(ox+faceX+(flip>0?8:2),oy+13,2,1);
  }else{
-  const legA=walk*.5,legB=-walk*.5;
-  ctx.fillStyle='#37312d';ctx.fillRect(px+10+legA,baseY+23,5,7);ctx.fillRect(px+18+legB,baseY+23,5,7);
-  ctx.fillStyle=body;ctx.fillRect(px+9,baseY+13,14,12);ctx.fillStyle=accent;ctx.fillRect(px+9,baseY+13,14,4);
-  // arms visibly alternate while moving
-  ctx.fillStyle=skin;ctx.fillRect(px+6,baseY+16+walk*.28,4,8);ctx.fillRect(px+23,baseY+16-walk*.28,4,8);
-  if(style.cape){ctx.fillStyle='#263f67';ctx.fillRect(px+7,baseY+15,3,12);ctx.fillRect(px+22,baseY+15,3,12)}
-  ctx.fillStyle=skin;ctx.beginPath();ctx.arc(px+16,baseY+9,7*small,0,Math.PI*2);ctx.fill();ctx.fillStyle=hair;ctx.beginPath();ctx.arc(px+16,baseY+7,7*small,Math.PI,Math.PI*2);ctx.fill();ctx.fillRect(px+10,baseY+3,12,4);
-  if(back){ctx.fillStyle=hair;ctx.beginPath();ctx.arc(px+16,baseY+10,6*small,0,Math.PI*2);ctx.fill();ctx.fillStyle=body;ctx.fillRect(px+10,baseY+14,12,5)}
-  else{ctx.fillStyle='#493b35';ctx.fillRect(px+12,baseY+9,2,2);ctx.fillRect(px+19,baseY+9,2,2)}
-  if(style.hat){ctx.fillStyle='#5a4632';ctx.fillRect(px+7,baseY+3,18,3);ctx.fillRect(px+10,baseY,12,5)}
-  if(style.weapon==='sword'){ctx.strokeStyle='#d7dbe0';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(px+24,baseY+13);ctx.lineTo(px+29,baseY+26);ctx.stroke()}
-  if(style.weapon==='staff'){ctx.strokeStyle='#6c5135';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(px+6,baseY+10);ctx.lineTo(px+7,baseY+29);ctx.stroke();ctx.fillStyle=accent;ctx.beginPath();ctx.arc(px+6,baseY+8,3,0,Math.PI*2);ctx.fill()}
+   ctx.fillStyle=hair;ctx.fillRect(ox+9,oy+4,15,5);ctx.fillRect(ox+9,oy+8,3,5);ctx.fillRect(ox+21,oy+8,3,5);
+   ctx.fillStyle='#433a35';ctx.fillRect(ox+12,oy+10,2,2);ctx.fillRect(ox+19,oy+10,2,2);
+   ctx.fillStyle='rgba(160,95,82,.9)';ctx.fillRect(ox+15,oy+14,3,1);
  }
- if(leader){ctx.fillStyle='#f0d178';ctx.beginPath();ctx.moveTo(cx,py-5);ctx.lineTo(cx+5,py-11);ctx.lineTo(cx,py-16);ctx.lineTo(cx-5,py-11);ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(66,46,20,.8)';ctx.lineWidth=1;ctx.stroke()}
+ // hair silhouette variants
+ if(style.hat){ctx.fillStyle=outline;ctx.fillRect(ox+6,oy+2,21,3);ctx.fillStyle=accent;ctx.fillRect(ox+7,oy+2,19,2);ctx.fillRect(ox+11,oy,11,2)}
+ if(style.cape){ctx.fillStyle=outline;ctx.fillRect(ox+7,oy+19,3,8);ctx.fillRect(ox+23,oy+19,3,8);ctx.fillStyle=accent;ctx.fillRect(ox+8,oy+20,2,6);ctx.fillRect(ox+23,oy+20,2,6)}
+ // equipment is built from stepped pixels, never antialiased canvas strokes.
+ if(style.weapon==='sword'){
+   const sx=facing==='left'?6:26;
+   ctx.fillStyle='#d7dbe0';ctx.fillRect(ox+sx,oy+17,2,4);ctx.fillRect(ox+sx+(facing==='left'?-1:1),oy+20,2,4);ctx.fillRect(ox+sx+(facing==='left'?-2:2),oy+23,2,4);
+   ctx.fillStyle='#7c5a3b';ctx.fillRect(ox+sx-1,oy+16,4,2)
+ }
+ if(style.weapon==='staff'){
+   const sx=facing==='right'?27:5;ctx.fillStyle='#6c5135';ctx.fillRect(ox+sx,oy+11,2,18);ctx.fillStyle=accent;ctx.fillRect(ox+sx-2,oy+8,6,5);ctx.fillStyle='#efe3bd';ctx.fillRect(ox+sx,oy+9,2,2)
+ }
+ ctx.restore();
+ if(leader)drawHeroMarker(px+16,py-2)
 }
 function facingBetween(a,b,fallback='down'){if(!a||!b)return fallback;const dx=b[0]-a[0],dy=b[1]-a[1];if(Math.abs(dx)>Math.abs(dy))return dx<0?'left':'right';if(dy!==0)return dy<0?'up':'down';return fallback}
 function drawLeaderWorldMarker(x,y){const px=Math.round(x*TILE),py=Math.round(y*TILE),footX=px+16,footY=py+30,scale=HERO_RUNTIME.display/HERO_RUNTIME.frameH,topY=Math.round(footY-HERO_RUNTIME.anchor[1]*scale);drawHeroMarker(footX,topY)}
