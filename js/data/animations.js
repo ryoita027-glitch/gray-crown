@@ -35,18 +35,18 @@
  });
  const margaretVisualRules=Object.freeze({
   prototypeTemporary:true,character:'margaret',sourceCell:[48,48],logicalTile:32,anchor:[24,44],dominantHand:'right',stage:'A',
-  designDirection:'margaret-chibi-direction-lock-v5',reference:'docs/pixel/reference/margaret_chibi_direction_lock_v5_48.png',
-  face:'cute protagonist-grade face + calm intelligent approachable expression; never severe or frightening',
-  hair:'white to pale silver-lavender simple high ponytail + soft face-framing bangs; restrained sway',
-  colorMass:'prototype dark navy/charcoal + cream/ivory + restrained gold accents',
+  designDirection:'margaret-chibi-direction-appeal-v7',reference:'docs/pixel/reference/margaret_chibi_direction_appeal_v7_48.png',
+  face:'readable violet eyes + gentle composed smile + cute protagonist-grade calm intelligence; never severe or blank',
+  hair:'silver-lavender high ponytail + face-framing bangs + old-gold clasp; strong clean silhouette with restrained sway',
+  colorMass:'deep indigo/plum + silver-lavender hair + ivory skin breaks + restrained old-gold and amethyst accents',
   posture:'upright composed center of gravity + runtime-balanced chibi mass; no undersized narrow silhouette',
   acting:'measured restrained motion; smaller whole-body amplitude than Karen; ponytail secondary to body read',
   unresolved:['exactEyeColor','finalFourthCharacterColor','surname','formalWeaponDesign','formalWeaponName','stageBFinalHeroCostume','magicVisualLanguage','kingdomEmblem','heroCertificationMark','religiousEmblem']
  });
  const sophieVisualRules=Object.freeze({
   prototypeTemporary:true,character:'sophie',sourceCell:[48,48],logicalTile:32,anchor:[24,44],dominantHand:'right',stage:'A',
-  identity:'STEADY HANDS',designDirection:'sophie-chibi-direction-lock-v2',reference:'docs/pixel/reference/sophie_chibi_direction_lock_v2_48.png',
-  face:'large soft readable eyes + gentle calm expression; distinct from Karen and Triton face templates',
+  identity:'STEADY HANDS',designDirection:'sophie-chibi-direction-appeal-v3',reference:'docs/pixel/reference/sophie_chibi_direction_appeal_v3_48.png',
+  face:'crisper calm green eyes + small warm smile; gentle readable expression distinct from Karen/Triton/Margaret',
   hair:'honey/light golden-brown layered mass + practical gathered/braided structure; restrained lower-tip lag',
   colorMass:'warm off-white/cream dominant + brown leather + muted green concentrated near hands and treatment storage',
   posture:'smallest spatial footprint + soft adult body + calm narrow stance + both hands readable',
