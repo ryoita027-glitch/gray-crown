@@ -401,3 +401,37 @@ button{border-radius:5px}
 
 /* Empty journal should not reserve sidebar space. */
 .journal-panel:has(#journalHud:empty){display:none}
+
+
+/* v24e — distinct enemy families */
+.human-empire .bandit-body{background:#344f6c}
+.human-empire .bandit-arm{background:#3e5872}
+.human-empire .bandit-hair{background:#343941}
+.human-empire .bandit-blade{background:#c5ccd0;border-color:#59626a}
+.human-empire .bandit-body::after{content:"";position:absolute;left:8px;top:9px;width:19px;height:5px;background:#9d8761;box-shadow:0 11px 0 #263e58}
+
+.bat-shadow{left:27px;bottom:8px;width:95px;height:12px;border-radius:50%;background:rgba(0,0,0,.3)}
+.bat{width:35px;height:21px;background:#3d424b;border:3px solid #24272d;clip-path:polygon(0 43%,28% 5%,48% 35%,66% 4%,100% 43%,72% 39%,88% 100%,50% 67%,13% 100%,29% 40%);filter:drop-shadow(0 3px 1px rgba(0,0,0,.35))}
+.bat::after{content:"";position:absolute;left:15px;top:7px;width:4px;height:4px;background:#d7b75b}
+.bat.b1{left:18px;top:55px;transform:scale(.95) rotate(-7deg)}
+.bat.b2{left:59px;top:27px;transform:scale(1.16) rotate(5deg)}
+.bat.b3{left:102px;top:52px;transform:scale(.86) rotate(9deg)}
+.bat.b4{left:71px;top:76px;transform:scale(.72) rotate(-4deg)}
+
+.crawler-shadow{left:17px;bottom:8px;width:120px;height:13px;border-radius:50%;background:rgba(0,0,0,.34)}
+.crawler-seg{top:58px;width:30px;height:29px;border:4px solid #282b29;background:#665e4b;border-radius:42%}
+.crawler-seg::after{content:"";position:absolute;left:3px;right:3px;top:7px;height:4px;background:#8b805f}
+.crawler-seg.s1{left:22px;top:65px}.crawler-seg.s2{left:45px;top:58px}.crawler-seg.s3{left:69px;top:53px}.crawler-seg.s4{left:93px;top:49px}
+.crawler-head{left:115px;top:43px;width:31px;height:31px;background:#756a50;border:4px solid #282b29;clip-path:polygon(0 22%,80% 0,100% 50%,77% 100%,0 78%)}
+.crawler-head::before,.crawler-head::after{content:"";position:absolute;right:21px;top:-13px;width:3px;height:16px;background:#443d31;transform:rotate(28deg);transform-origin:bottom}
+.crawler-head::after{right:8px;transform:rotate(-22deg)}
+.crawler-eye{left:134px;top:53px;width:4px;height:4px;background:#d0a955}
+
+.beast-shadow{left:18px;bottom:5px;width:116px;height:16px;border-radius:50%;background:rgba(0,0,0,.38)}
+.beast-body{left:34px;top:49px;width:76px;height:42px;background:#665f55;border:4px solid #302d29;clip-path:polygon(7% 17%,80% 3%,100% 29%,94% 88%,66% 100%,11% 90%,0 51%)}
+.beast-head{left:99px;top:31px;width:44px;height:39px;background:#746b5d;border:4px solid #302d29;clip-path:polygon(8% 14%,76% 0,100% 39%,86% 92%,25% 100%,0 61%)}
+.beast-horn{top:11px;width:12px;height:34px;background:#d7c69d;border:3px solid #514b40;clip-path:polygon(50% 0,100% 100%,0 100%)}
+.beast-horn.a{left:104px;transform:rotate(-20deg)}.beast-horn.b{left:128px;transform:rotate(18deg)}
+.beast-eye{left:127px;top:45px;width:5px;height:5px;background:#d8a64e;box-shadow:1px 1px #2a211b}
+.beast-leg{top:82px;width:18px;height:30px;background:#514b45;border:4px solid #302d29}
+.beast-leg.l{left:48px}.beast-leg.r{left:95px}
