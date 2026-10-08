@@ -53,6 +53,16 @@ with server():
     }""")
     page.wait_for_timeout(450)
 
+    if page.locator(".topbar:visible").count()!=0:
+        raise AssertionError("desktop play still exposes browser-like topbar")
+    if page.locator(".stage-actions:visible button").count()!=4:
+        raise AssertionError("compact in-stage controls are missing")
+    page.click("#stageMenu")
+    if "アーキテクチャ" in page.locator("#modalContent").inner_text() or page.locator("#menuSave").count()!=1 or page.locator("#menuLoad").count()!=1:
+        raise AssertionError("adventure menu still contains developer copy or lacks player controls")
+    page.keyboard.press("Escape")
+    page.wait_for_timeout(80)
+
     canvas=page.locator("#game").bounding_box()
     if not canvas or canvas["width"]<1160:
         raise AssertionError("commercial shell leaves the game viewport too small: "+repr(canvas))
