@@ -36,7 +36,7 @@ jobs:
         run: python tools/verify_triton_direction_lock.py
       - name: Verify Sophie lock
         run: python tools/verify_sophie_direction_lock.py
-      - name: Verify Margaret direction v2
+      - name: Verify Margaret direction v3
         run: python tools/verify_margaret_direction_lock.py
 
       - name: Generate Margaret runtime sheets
@@ -92,7 +92,7 @@ jobs:
           name: gray-crown-margaret-runtime-validation
           path: |
             assets/characters/margaret/
-            prototype_artifacts/margaret_direction_v2/
+            prototype_artifacts/margaret_direction_v3/
             prototype_artifacts/margaret_animation_evidence/
             prototype_artifacts/margaret_runtime_e2e/
           if-no-files-found: error
