@@ -1,32 +1,82 @@
 # Margaret v5 Face Readability Gate
 
-Status: **CANDIDATE / USER VISUAL REVIEW REQUIRED**
+Status: **PROMOTED ON PROTOTYPE BRANCH / ACTIVE MARGARET SOURCE**
 
-## Why this gate exists
+## Why v5 exists
 
-Margaret v4 solved the large-scale occupancy mismatch, but the 44px result compressed the facial pixels too aggressively. The user explicitly rejected the result as "顔つぶれすぎ".
+Margaret v4 solved the large-scale occupancy mismatch, but the Medium44 face became too compressed. The user explicitly rejected that result as "顔つぶれすぎ".
 
-The next priority is therefore not new game systems and not more animation work. It is to repair Margaret's source face while preserving the already-improved body occupancy and ponytail identity.
+v5 fixes that specific failure without reopening unresolved canon.
 
 ## v5 technical rule
 
-v5 is generated from the previously approved v2 four-direction source, but unlike v4:
+v5 is generated from the earlier approved face-readable direction source with these constraints:
 
-- the head and face pixels are kept at exact 1:1 scale;
-- only the lower body is widened to preserve four-character occupancy balance;
-- the added dark silhouette is restricted to the external boundary;
-- internal transparent face/hair gaps are not outlined or filled;
-- the 44px comparison is built mechanically from the exact committed Karen, Triton and Sophie runtime PNGs.
+- head and face pixels are kept at exact 1:1 scale;
+- occupancy correction happens below the face instead of horizontally resampling the head;
+- added dark silhouette is restricted to the external boundary;
+- internal transparent face/hair gaps are not filled by outline expansion;
+- four-character evidence is composed mechanically from exact evaluated PNG pixels;
+- AI-generated comparison boards are not accepted as scale or quality evidence.
 
-## Safety / scope
+## Current prototype authority
 
-v5 is a candidate only.
+Active direction lock:
 
-Until the user approves the exact Medium44 board:
+`docs/pixel/reference/margaret_chibi_direction_lock_v5_48.png`
 
-- do not replace `docs/pixel/reference/margaret_chibi_direction_lock_v4_48.png`;
-- do not regenerate or commit the eight Margaret runtime animation PNGs from v5;
-- do not change `animations.js`;
-- do not merge PR #29 to main.
+Active runtime:
 
-After visual approval, promote v5 to the direction lock, then regenerate all eight animations and rerun browser/full regression tests.
+- `assets/characters/margaret/margaret_idle.png`
+- `assets/characters/margaret/margaret_walk.png`
+- `assets/characters/margaret/margaret_turn.png`
+- `assets/characters/margaret/margaret_talk.png`
+- `assets/characters/margaret/margaret_surprise.png`
+- `assets/characters/margaret/margaret_approach.png`
+- `assets/characters/margaret/margaret_laugh.png`
+- `assets/characters/margaret/margaret_run.png`
+
+The source and all eight runtime sheets are hash-pinned by `tools/verify_margaret_direction_lock.py`.
+
+## Visual intent retained
+
+- white / pale silver-lavender hair;
+- simple high ponytail;
+- cute protagonist-grade readable face;
+- calm / intelligent / approachable expression;
+- dark navy / charcoal major clothing mass;
+- cream / ivory secondary mass;
+- upright, measured identity;
+- restrained acting amplitude.
+
+## Still unresolved
+
+Do not infer final canon for:
+
+- exact eye color;
+- fourth-character final palette;
+- surname;
+- final weapon design/name;
+- final hero costume;
+- magic visual language;
+- Kingdom / hero-certification / religious emblems.
+
+## Safety boundary
+
+Promotion to v5 is prototype-only.
+
+It does not authorize:
+
+- merge to `main`;
+- formal game-wide Pixel-native adoption;
+- Portrait removal;
+- NPC migration;
+- battle sprite migration;
+- Save schema change;
+- v24 production scope.
+
+## Next gate
+
+Margaret is no longer the isolated bottleneck.
+
+The active next gate is the shared **Four Protagonist Runtime Harmonization / Quality Gate**, followed by **Four Protagonist Environment Integration** after final green.
