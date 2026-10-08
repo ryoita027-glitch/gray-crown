@@ -1,9 +1,27 @@
 'use strict';
 const COLORS={grass:'#6f8059',grass2:'#62724f',path:'#b49a6c',tree:'#496345',trunk:'#6c513c',gold:'#c9aa61',skin:'#ddb99e',shadow:'rgba(0,0,0,.22)',cave:'#3c3b41'};
 const HERO_SPRITES={image:null,ready:false,frameW:32,frameH:32,columns:3,directions:{down:0,left:1,right:2,up:3},characters:{karen:0,triton:1,sophie:2,margaret:3}};
-if(typeof Image!=='undefined'){const im=new Image();HERO_SPRITES.image=im;im.onload=()=>{HERO_SPRITES.ready=true};im.onerror=()=>{HERO_SPRITES.ready=false};im.src='assets/hero_party_walk.png'}
-function heroWalkFrame(motion){if(!motion)return 1;return [0,1,2,1][Math.floor(motion)%4]}
-function drawHeroSpriteSheet(x,y,heroId,leader,facing,motion){const cfg=HERO_SPRITES;if(!cfg.ready||!cfg.image||cfg.characters[heroId]===undefined)return false;const frame=heroWalkFrame(motion),row=cfg.characters[heroId]*4+(cfg.directions[facing]??0),px=Math.round(x*TILE),py=Math.round(y*TILE);ctx.imageSmoothingEnabled=false;ctx.drawImage(cfg.image,frame*32,row*32,32,32,px,py,32,32);if(leader){ctx.fillStyle='#f0d178';ctx.beginPath();ctx.moveTo(px+16,py-4);ctx.lineTo(px+21,py-10);ctx.lineTo(px+16,py-15);ctx.lineTo(px+11,py-10);ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(66,46,20,.8)';ctx.stroke()}return true}
+const HERO_RUNTIME={frameW:48,frameH:48,display:44,anchor:[24,44],directions:{down:0,left:1,right:2,up:3},images:{}};
+if(typeof Image!=='undefined'){
+ const fallback=new Image();HERO_SPRITES.image=fallback;fallback.onload=()=>{HERO_SPRITES.ready=true};fallback.onerror=()=>{HERO_SPRITES.ready=false};fallback.src='assets/hero_party_walk.png';
+ for(const id of Object.keys(HERO_SPRITES.characters)){const rec={image:new Image(),ready:false,error:false};rec.image.onload=()=>{rec.ready=true;rec.error=false};rec.image.onerror=()=>{rec.ready=false;rec.error=true};rec.image.src='assets/characters/'+id+'/'+id+'_walk.png';HERO_RUNTIME.images[id]=rec}
+}
+function heroWalkFrame(motion){if(!motion)return 0;const cycle=[0,1,2,3,4,5,4,3,2,1];return cycle[Math.floor(motion)%cycle.length]}
+function drawHeroMarker(cx,topY){ctx.fillStyle='#f0d178';ctx.beginPath();ctx.moveTo(cx,topY-3);ctx.lineTo(cx+5,topY-9);ctx.lineTo(cx,topY-14);ctx.lineTo(cx-5,topY-9);ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(66,46,20,.86)';ctx.lineWidth=1;ctx.stroke()}
+function drawHeroSpriteSheet(x,y,heroId,leader,facing,motion){
+ const frame=heroWalkFrame(motion),row=HERO_RUNTIME.directions[facing]??0,px=Math.round(x*TILE),py=Math.round(y*TILE),footX=px+16,footY=py+30;
+ const rec=HERO_RUNTIME.images[heroId];
+ if(rec?.ready&&rec.image){
+  const size=HERO_RUNTIME.display,scale=size/HERO_RUNTIME.frameW,dx=Math.round(footX-HERO_RUNTIME.anchor[0]*scale),dy=Math.round(footY-HERO_RUNTIME.anchor[1]*scale);
+  ctx.save();ctx.fillStyle='rgba(16,18,18,.28)';ctx.beginPath();ctx.ellipse(footX,footY-1,10,4,0,0,Math.PI*2);ctx.fill();ctx.imageSmoothingEnabled=false;
+  ctx.drawImage(rec.image,frame*48,row*48,48,48,dx,dy,size,size);ctx.restore();
+  if(leader)drawHeroMarker(footX,dy);return true
+ }
+ const cfg=HERO_SPRITES;if(!cfg.ready||!cfg.image||cfg.characters[heroId]===undefined)return false;
+ const fallbackFrame=motion?[0,1,2,1][Math.floor(motion)%4]:1,fallbackRow=cfg.characters[heroId]*4+(cfg.directions[facing]??0);
+ ctx.save();ctx.imageSmoothingEnabled=false;ctx.drawImage(cfg.image,fallbackFrame*32,fallbackRow*32,32,32,px,py,32,32);ctx.restore();if(leader)drawHeroMarker(px+16,py);return true
+}
+function heroRuntimeStatus(){const out={};for(const id of Object.keys(HERO_SPRITES.characters)){const rec=HERO_RUNTIME.images[id];out[id]={ready:!!rec?.ready,error:!!rec?.error,naturalWidth:rec?.image?.naturalWidth||0,naturalHeight:rec?.image?.naturalHeight||0}}return out}
 function tileAt(mapId,x,y){const m=maps[mapId];if(!m||x<0||y<0||x>=COLS||y>=ROWS)return'S';return m.tiles[y][x]}
 function objectCleared(id){if(TREASURE_DEFS[id]&&state.world.treasures[id])return true;return (id==='wolf'&&isDefeated('wolf'))||(id==='bandit'&&isDefeated('bandit'))||(id==='bats'&&isDefeated('bats'))||(id==='crawler'&&isDefeated('crawler'))||(id==='boss'&&isDefeated('boss'))||(id==='scavengerWolves'&&isDefeated('scavengerWolves'))||(id==='chest1'&&state.world.treasures.chest1)||(id==='chest2'&&state.world.treasures.chest2)||(id==='innerGate'&&getWorldSwitch('leverWest')&&getWorldSwitch('leverEast'))||((id==='imperialPatrol'&&isDefeated('imperialPatrol'))||((['fortGate','fortGateRight'].includes(id)&&getWorldSwitch('fortGateOpen'))||(['ashCache','frontierCache','empireCache','imperialCache','yukiCache','elsiaCache'].includes(id)&&state.world.treasures[id])))}
 function npcVisible(n){if(n.showWhen&&!structuredCondition(n.showWhen))return false;if(n.hideWhen&&structuredCondition(n.hideWhen))return false;return true}
@@ -130,6 +148,15 @@ function drawCharacterSprite(x,y,style={},leader=false,facing='down',motion=0){
  if(leader){ctx.fillStyle='#f0d178';ctx.beginPath();ctx.moveTo(cx,py-5);ctx.lineTo(cx+5,py-11);ctx.lineTo(cx,py-16);ctx.lineTo(cx-5,py-11);ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(66,46,20,.8)';ctx.lineWidth=1;ctx.stroke()}
 }
 function facingBetween(a,b,fallback='down'){if(!a||!b)return fallback;const dx=b[0]-a[0],dy=b[1]-a[1];if(Math.abs(dx)>Math.abs(dy))return dx<0?'left':'right';if(dy!==0)return dy<0?'up':'down';return fallback}
+function drawLeaderWorldMarker(x,y){const px=Math.round(x*TILE),py=Math.round(y*TILE),footX=px+16,footY=py+30,scale=HERO_RUNTIME.display/HERO_RUNTIME.frameH,topY=Math.round(footY-HERO_RUNTIME.anchor[1]*scale);drawHeroMarker(footX,topY)}
+function drawPartyRuntime(leaderMoving,phase){
+ const actors=[],trailPoints=partyTrailPoints();
+ for(let i=Math.min(2,trailPoints.length-1);i>=0;i--){const p=trailPoints[i],vp=VISUAL.followers[i]||p,member=state.party[i+1],target=i===0?[state.x,state.y]:trailPoints[i-1],face=facingBetween(p,target,state.dir),fm=Math.abs(p[0]-vp[0])>.015||Math.abs(p[1]-vp[1])>.015;actors.push({x:vp[0],y:vp[1],style:PARTY_STYLE[member?.id]||PARTY_STYLE.triton,facing:face,motion:fm?Date.now()/82+i*.9:0,leader:false})}
+ actors.push({x:VISUAL.playerX,y:VISUAL.playerY,style:PARTY_STYLE.karen,facing:state.dir,motion:phase,leader:true});
+ actors.sort((a,b)=>(a.y-b.y)||(a.x-b.x)||(a.leader?1:-1));
+ for(const a of actors)drawCharacterSprite(a.x,a.y,a.style,false,a.facing,a.motion);
+ drawLeaderWorldMarker(VISUAL.playerX,VISUAL.playerY)
+}
 function drawNpc(n){drawCharacterSprite(n.x,n.y,NPC_STYLE[n.id]||{body:'#756b5f',accent:'#a58d6d'},false,'down');if(Math.abs(state.x-n.x)+Math.abs(state.y-n.y)<=2){ctx.font='bold 9px system-ui';const w=Math.max(28,ctx.measureText(n.name).width+8);const px=n.x*TILE+16-w/2,py=n.y*TILE-5;ctx.fillStyle='rgba(20,21,24,.82)';ctx.fillRect(px,py,w,13);ctx.fillStyle='#f2e6c7';ctx.textAlign='center';ctx.fillText(n.name,n.x*TILE+16,py+10);ctx.textAlign='start'}}
 function drawVillageDecor(){
  // 畑
@@ -423,18 +450,19 @@ function drawQuestMarker(){const q=currentQuestTarget();if(!q)return;const m=map
 function drawAreaIdentity(){/* area identity is rendered by the HTML world HUD */}
 function viewScale(){if(INTERIOR_MAPS.includes(state.map))return 1.18;if(['capital','imperialcity','borderland','watchfort','empirevillage','elsia'].includes(state.map))return 1.25;return 1.16}
 const VISUAL={map:null,camX:0,camY:0,playerX:0,playerY:0,followers:[[12,13],[13,13],[14,13]],raf:0,nextMoveAt:0};
+function partyTrailPoints(){const t=Array.isArray(state.trail)?state.trail:[];if(t.length>=5)return[t[0],t[2],t[4]];return[t[0],t[1],t[2]].filter(Boolean)}
 function cameraForMap(){const o=GC.Cinematic?.cameraTarget?.(),scale=o?.scale||viewScale(),vw=canvas.width/scale,vh=canvas.height/scale,worldW=COLS*TILE,worldH=ROWS*TILE,fx=Number.isFinite(o?.x)?o.x:state.x,fy=Number.isFinite(o?.y)?o.y:state.y,cx=fx*TILE+TILE/2,cy=fy*TILE+TILE/2;return{scale,x:Math.max(0,Math.min(worldW-vw,cx-vw/2)),y:Math.max(0,Math.min(worldH-vh,cy-vh/2))}}
 function drawScene(){
  ctx.clearRect(0,0,canvas.width,canvas.height);const m=maps[state.map],target=cameraForMap();
- if(VISUAL.map!==state.map){VISUAL.map=state.map;VISUAL.camX=target.x;VISUAL.camY=target.y;VISUAL.playerX=state.x;VISUAL.playerY=state.y;VISUAL.followers=state.trail.slice(0,3).map(p=>[p[0],p[1]])}
- const ease=.22;VISUAL.camX+=(target.x-VISUAL.camX)*ease;VISUAL.camY+=(target.y-VISUAL.camY)*ease;VISUAL.playerX+=(state.x-VISUAL.playerX)*.48;VISUAL.playerY+=(state.y-VISUAL.playerY)*.48;for(let i=0;i<3;i++){const t=state.trail[i]||state.trail[state.trail.length-1]||[state.x,state.y];if(!VISUAL.followers[i])VISUAL.followers[i]=[t[0],t[1]];VISUAL.followers[i][0]+=(t[0]-VISUAL.followers[i][0])*.42;VISUAL.followers[i][1]+=(t[1]-VISUAL.followers[i][1])*.42;}
+ if(VISUAL.map!==state.map){VISUAL.map=state.map;VISUAL.camX=target.x;VISUAL.camY=target.y;VISUAL.playerX=state.x;VISUAL.playerY=state.y;VISUAL.followers=partyTrailPoints().map(p=>[p[0],p[1]])}
+ const ease=.22;VISUAL.camX+=(target.x-VISUAL.camX)*ease;VISUAL.camY+=(target.y-VISUAL.camY)*ease;VISUAL.playerX+=(state.x-VISUAL.playerX)*.48;VISUAL.playerY+=(state.y-VISUAL.playerY)*.48;const trailPoints=partyTrailPoints();for(let i=0;i<3;i++){const t=trailPoints[i]||trailPoints[trailPoints.length-1]||[state.x,state.y];if(!VISUAL.followers[i])VISUAL.followers[i]=[t[0],t[1]];VISUAL.followers[i][0]+=(t[0]-VISUAL.followers[i][0])*.42;VISUAL.followers[i][1]+=(t[1]-VISUAL.followers[i][1])*.42;}
  ctx.save();ctx.scale(target.scale,target.scale);ctx.translate(-VISUAL.camX,-VISUAL.camY);drawMapUnderlay(m);
  for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){drawTile(m.tiles[y][x],x,y);drawTileDetail(m.tiles[y][x],x,y)}drawTerrainBlend(m);drawVerticalSliceGround(m);
  if(state.map==='village'){drawVillageDecor();villageHouses.forEach(drawHouse)}if(INTERIOR_MAPS.includes(state.map))drawInteriorDecor();drawRegionDecor();m.objects.forEach(drawObject);const cinematicActive=GC.Cinematic?.isActive?.()===true,controlledNpcs=new Set(GC.Cinematic?.controlledNpcIds?.()||[]);m.npcs.filter(n=>npcVisible(n)&&!controlledNpcs.has(n.id)).forEach(drawNpc);drawQuestMarker();
- if(cinematicActive){GC.Cinematic?.drawActors?.(ctx,{drawCharacterSprite,drawHeroSpriteSheet})}else{const leaderMoving=Math.abs(state.x-VISUAL.playerX)>.015||Math.abs(state.y-VISUAL.playerY)>.015,phase=leaderMoving?Date.now()/82:0;for(let i=Math.min(2,state.trail.length-1);i>=0;i--){const p=state.trail[i],vp=VISUAL.followers[i]||p,member=state.party[i+1],target=i===0?[state.x,state.y]:state.trail[i-1],face=facingBetween(p,target,state.dir),fm=Math.abs(p[0]-vp[0])>.015||Math.abs(p[1]-vp[1])>.015;drawCharacterSprite(vp[0],vp[1],PARTY_STYLE[member?.id]||PARTY_STYLE.triton,false,face,fm?Date.now()/82+i*.9:0)}drawCharacterSprite(VISUAL.playerX,VISUAL.playerY,PARTY_STYLE.karen,true,state.dir,phase);drawInteractionMarker()}GC.Dev?.drawWorldOverlay?.(ctx);ctx.restore();drawAreaIdentity();$('locationLabel').textContent=m.name;if($('safetyLabel')){const safe=encounterSafeZone();$('safetyLabel').textContent=safe?'● 安全地帯':'▲ 危険地帯';$('safetyLabel').classList.toggle('danger',!safe)};
- const followerMoving=VISUAL.followers.some((p,i)=>{const t=state.trail[i]||p;return Math.abs(t[0]-p[0])>.01||Math.abs(t[1]-p[1])>.01});const moving=cinematicActive||Math.abs(target.x-VISUAL.camX)>.08||Math.abs(target.y-VISUAL.camY)>.08||Math.abs(state.x-VISUAL.playerX)>.01||Math.abs(state.y-VISUAL.playerY)>.01||followerMoving;
+ if(cinematicActive){GC.Cinematic?.drawActors?.(ctx,{drawCharacterSprite,drawHeroSpriteSheet})}else{const leaderMoving=Math.abs(state.x-VISUAL.playerX)>.015||Math.abs(state.y-VISUAL.playerY)>.015,phase=leaderMoving?Date.now()/82:0;drawPartyRuntime(leaderMoving,phase);drawInteractionMarker()}GC.Dev?.drawWorldOverlay?.(ctx);ctx.restore();drawAreaIdentity();$('locationLabel').textContent=m.name;if($('safetyLabel')){const safe=encounterSafeZone();$('safetyLabel').textContent=safe?'● 安全地帯':'▲ 危険地帯';$('safetyLabel').classList.toggle('danger',!safe)};
+ const followerTargets=partyTrailPoints(),followerMoving=VISUAL.followers.some((p,i)=>{const t=followerTargets[i]||p;return Math.abs(t[0]-p[0])>.01||Math.abs(t[1]-p[1])>.01});const moving=cinematicActive||Math.abs(target.x-VISUAL.camX)>.08||Math.abs(target.y-VISUAL.camY)>.08||Math.abs(state.x-VISUAL.playerX)>.01||Math.abs(state.y-VISUAL.playerY)>.01||followerMoving;
  if(moving){cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene)}
 }
 function draw(){cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene)}
 
-GC.Render=GC.Render||{};GC.Render.World={draw,drawScene,renderHud:()=>renderHud(),VISUAL,drawCharacterSprite,drawHeroSpriteSheet};
+GC.Render=GC.Render||{};GC.Render.World={draw,drawScene,renderHud:()=>renderHud(),VISUAL,drawCharacterSprite,drawHeroSpriteSheet,heroRuntimeStatus,drawPartyRuntime};
