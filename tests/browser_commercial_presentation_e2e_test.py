@@ -30,6 +30,12 @@ with server():
         raise AssertionError("prototype ALPHA label leaked into player-facing shell")
     if page.locator(".build-note").inner_text().strip()!="GRAY CROWN":
         raise AssertionError("player-facing build note is not cleaned")
+    if page.locator(".sidebar:visible").count()!=0 or page.locator(".topbar:visible").count()!=0:
+        raise AssertionError("title screen still exposes dashboard chrome")
+    title_box=page.locator(".game-shell").bounding_box()
+    if not title_box or title_box["width"]<1000:
+        raise AssertionError("title presentation is too small: "+repr(title_box))
+    page.screenshot(path=str(OUT/"commercial_title_1280x900.png"),full_page=False)
 
     page.click("#titleNewGame")
     page.wait_for_timeout(300)
