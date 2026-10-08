@@ -150,8 +150,8 @@ function drawCharacterSprite(x,y,style={},leader=false,facing='down',motion=0){
 function facingBetween(a,b,fallback='down'){if(!a||!b)return fallback;const dx=b[0]-a[0],dy=b[1]-a[1];if(Math.abs(dx)>Math.abs(dy))return dx<0?'left':'right';if(dy!==0)return dy<0?'up':'down';return fallback}
 function drawLeaderWorldMarker(x,y){const px=Math.round(x*TILE),py=Math.round(y*TILE),footX=px+16,footY=py+30,scale=HERO_RUNTIME.display/HERO_RUNTIME.frameH,topY=Math.round(footY-HERO_RUNTIME.anchor[1]*scale);drawHeroMarker(footX,topY)}
 function drawPartyRuntime(leaderMoving,phase){
- const actors=[];
- for(let i=Math.min(2,state.trail.length-1);i>=0;i--){const p=state.trail[i],vp=VISUAL.followers[i]||p,member=state.party[i+1],target=i===0?[state.x,state.y]:state.trail[i-1],face=facingBetween(p,target,state.dir),fm=Math.abs(p[0]-vp[0])>.015||Math.abs(p[1]-vp[1])>.015;actors.push({x:vp[0],y:vp[1],style:PARTY_STYLE[member?.id]||PARTY_STYLE.triton,facing:face,motion:fm?Date.now()/82+i*.9:0,leader:false})}
+ const actors=[],trailPoints=partyTrailPoints();
+ for(let i=Math.min(2,trailPoints.length-1);i>=0;i--){const p=trailPoints[i],vp=VISUAL.followers[i]||p,member=state.party[i+1],target=i===0?[state.x,state.y]:trailPoints[i-1],face=facingBetween(p,target,state.dir),fm=Math.abs(p[0]-vp[0])>.015||Math.abs(p[1]-vp[1])>.015;actors.push({x:vp[0],y:vp[1],style:PARTY_STYLE[member?.id]||PARTY_STYLE.triton,facing:face,motion:fm?Date.now()/82+i*.9:0,leader:false})}
  actors.push({x:VISUAL.playerX,y:VISUAL.playerY,style:PARTY_STYLE.karen,facing:state.dir,motion:phase,leader:true});
  actors.sort((a,b)=>(a.y-b.y)||(a.x-b.x)||(a.leader?1:-1));
  for(const a of actors)drawCharacterSprite(a.x,a.y,a.style,false,a.facing,a.motion);
@@ -450,16 +450,17 @@ function drawQuestMarker(){const q=currentQuestTarget();if(!q)return;const m=map
 function drawAreaIdentity(){/* area identity is rendered by the HTML world HUD */}
 function viewScale(){if(INTERIOR_MAPS.includes(state.map))return 1.18;if(['capital','imperialcity','borderland','watchfort','empirevillage','elsia'].includes(state.map))return 1.25;return 1.16}
 const VISUAL={map:null,camX:0,camY:0,playerX:0,playerY:0,followers:[[12,13],[13,13],[14,13]],raf:0,nextMoveAt:0};
+function partyTrailPoints(){const t=Array.isArray(state.trail)?state.trail:[];if(t.length>=5)return[t[0],t[2],t[4]];return[t[0],t[1],t[2]].filter(Boolean)}
 function cameraForMap(){const o=GC.Cinematic?.cameraTarget?.(),scale=o?.scale||viewScale(),vw=canvas.width/scale,vh=canvas.height/scale,worldW=COLS*TILE,worldH=ROWS*TILE,fx=Number.isFinite(o?.x)?o.x:state.x,fy=Number.isFinite(o?.y)?o.y:state.y,cx=fx*TILE+TILE/2,cy=fy*TILE+TILE/2;return{scale,x:Math.max(0,Math.min(worldW-vw,cx-vw/2)),y:Math.max(0,Math.min(worldH-vh,cy-vh/2))}}
 function drawScene(){
  ctx.clearRect(0,0,canvas.width,canvas.height);const m=maps[state.map],target=cameraForMap();
- if(VISUAL.map!==state.map){VISUAL.map=state.map;VISUAL.camX=target.x;VISUAL.camY=target.y;VISUAL.playerX=state.x;VISUAL.playerY=state.y;VISUAL.followers=state.trail.slice(0,3).map(p=>[p[0],p[1]])}
- const ease=.22;VISUAL.camX+=(target.x-VISUAL.camX)*ease;VISUAL.camY+=(target.y-VISUAL.camY)*ease;VISUAL.playerX+=(state.x-VISUAL.playerX)*.48;VISUAL.playerY+=(state.y-VISUAL.playerY)*.48;for(let i=0;i<3;i++){const t=state.trail[i]||state.trail[state.trail.length-1]||[state.x,state.y];if(!VISUAL.followers[i])VISUAL.followers[i]=[t[0],t[1]];VISUAL.followers[i][0]+=(t[0]-VISUAL.followers[i][0])*.42;VISUAL.followers[i][1]+=(t[1]-VISUAL.followers[i][1])*.42;}
+ if(VISUAL.map!==state.map){VISUAL.map=state.map;VISUAL.camX=target.x;VISUAL.camY=target.y;VISUAL.playerX=state.x;VISUAL.playerY=state.y;VISUAL.followers=partyTrailPoints().map(p=>[p[0],p[1]])}
+ const ease=.22;VISUAL.camX+=(target.x-VISUAL.camX)*ease;VISUAL.camY+=(target.y-VISUAL.camY)*ease;VISUAL.playerX+=(state.x-VISUAL.playerX)*.48;VISUAL.playerY+=(state.y-VISUAL.playerY)*.48;const trailPoints=partyTrailPoints();for(let i=0;i<3;i++){const t=trailPoints[i]||trailPoints[trailPoints.length-1]||[state.x,state.y];if(!VISUAL.followers[i])VISUAL.followers[i]=[t[0],t[1]];VISUAL.followers[i][0]+=(t[0]-VISUAL.followers[i][0])*.42;VISUAL.followers[i][1]+=(t[1]-VISUAL.followers[i][1])*.42;}
  ctx.save();ctx.scale(target.scale,target.scale);ctx.translate(-VISUAL.camX,-VISUAL.camY);drawMapUnderlay(m);
  for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){drawTile(m.tiles[y][x],x,y);drawTileDetail(m.tiles[y][x],x,y)}drawTerrainBlend(m);drawVerticalSliceGround(m);
  if(state.map==='village'){drawVillageDecor();villageHouses.forEach(drawHouse)}if(INTERIOR_MAPS.includes(state.map))drawInteriorDecor();drawRegionDecor();m.objects.forEach(drawObject);const cinematicActive=GC.Cinematic?.isActive?.()===true,controlledNpcs=new Set(GC.Cinematic?.controlledNpcIds?.()||[]);m.npcs.filter(n=>npcVisible(n)&&!controlledNpcs.has(n.id)).forEach(drawNpc);drawQuestMarker();
  if(cinematicActive){GC.Cinematic?.drawActors?.(ctx,{drawCharacterSprite,drawHeroSpriteSheet})}else{const leaderMoving=Math.abs(state.x-VISUAL.playerX)>.015||Math.abs(state.y-VISUAL.playerY)>.015,phase=leaderMoving?Date.now()/82:0;drawPartyRuntime(leaderMoving,phase);drawInteractionMarker()}GC.Dev?.drawWorldOverlay?.(ctx);ctx.restore();drawAreaIdentity();$('locationLabel').textContent=m.name;if($('safetyLabel')){const safe=encounterSafeZone();$('safetyLabel').textContent=safe?'● 安全地帯':'▲ 危険地帯';$('safetyLabel').classList.toggle('danger',!safe)};
- const followerMoving=VISUAL.followers.some((p,i)=>{const t=state.trail[i]||p;return Math.abs(t[0]-p[0])>.01||Math.abs(t[1]-p[1])>.01});const moving=cinematicActive||Math.abs(target.x-VISUAL.camX)>.08||Math.abs(target.y-VISUAL.camY)>.08||Math.abs(state.x-VISUAL.playerX)>.01||Math.abs(state.y-VISUAL.playerY)>.01||followerMoving;
+ const followerTargets=partyTrailPoints(),followerMoving=VISUAL.followers.some((p,i)=>{const t=followerTargets[i]||p;return Math.abs(t[0]-p[0])>.01||Math.abs(t[1]-p[1])>.01});const moving=cinematicActive||Math.abs(target.x-VISUAL.camX)>.08||Math.abs(target.y-VISUAL.camY)>.08||Math.abs(state.x-VISUAL.playerX)>.01||Math.abs(state.y-VISUAL.playerY)>.01||followerMoving;
  if(moving){cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene)}
 }
 function draw(){cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene)}
