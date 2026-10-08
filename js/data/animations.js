@@ -20,13 +20,13 @@
  };
  const visualRules=Object.freeze({
   prototypeTemporary:true,character:'karen',sourceCell:[48,48],logicalTile:32,anchor:[24,44],dominantHand:'left',swordHip:'right',stage:'A',
-  designDirection:'karen-appeal-direction-lock-v1',reference:'docs/pixel/reference/karen_appeal_direction_lock_v1.png',
+  designDirection:'karen-chibi-direction-v1',reference:'docs/pixel/reference/karen_chibi_direction_v1.png',appealCandidateReference:'docs/pixel/reference/karen_appeal_direction_lock_v1.png',
   hair:'large red-hair silhouette + low partial tie + loose hair',colorMass:'warm off-white + muted red + leather brown',
   unresolved:['exactEyeColor','surname','formalWeaponDesign','formalWeaponName','stageBFinalHeroCostume','kingdomEmblem','heroCertificationMark','religiousEmblem']
  });
  const tritonVisualRules=Object.freeze({
   prototypeTemporary:true,character:'triton',sourceCell:[48,48],logicalTile:32,anchor:[24,44],dominantHand:'right',stage:'A',
-  identity:'GROUND ANCHOR',designDirection:'triton-appeal-direction-lock-v1',reference:'docs/pixel/reference/triton_appeal_direction_lock_v1.png',
+  identity:'GROUND ANCHOR',designDirection:'triton-chibi-direction-lock-v1',reference:'docs/pixel/reference/triton_chibi_direction_lock_v1.png',appealCandidateReference:'docs/pixel/reference/triton_appeal_direction_lock_v1.png',
   face:'readable narrow eyes + straight stable brows + restrained friendly idle mouth; distinct from Karen face template',
   hair:'heavy dark unbound shoulder-length mass; face remains readable; tip lag only in motion',
   colorMass:'off-white/gray upper + broad faded-blue waist/side horizontal block + sturdy leather',
@@ -35,7 +35,7 @@
  });
  const margaretVisualRules=Object.freeze({
   prototypeTemporary:true,character:'margaret',sourceCell:[48,48],logicalTile:32,anchor:[24,44],dominantHand:'right',stage:'A',
-  designDirection:'margaret-appeal-direction-lock-v1',reference:'docs/pixel/reference/margaret_appeal_direction_lock_v1.png',
+  designDirection:'margaret-chibi-direction-lock-v5',reference:'docs/pixel/reference/margaret_chibi_direction_lock_v5_48.png',appealCandidateReference:'docs/pixel/reference/margaret_appeal_direction_lock_v1.png',
   face:'clear protagonist-grade face + calm intelligent approachable expression; visibly charming at Medium44; never severe or frightening',
   hair:'white to silver-lavender high ponytail with a dark ribbon anchor + soft face-framing bangs; strong readable silhouette',
   colorMass:'deep plum/navy + silver-lavender hair + cream + restrained gold accents',
@@ -45,7 +45,7 @@
  });
  const sophieVisualRules=Object.freeze({
   prototypeTemporary:true,character:'sophie',sourceCell:[48,48],logicalTile:32,anchor:[24,44],dominantHand:'right',stage:'A',
-  identity:'STEADY HANDS',designDirection:'sophie-appeal-direction-lock-v1',reference:'docs/pixel/reference/sophie_appeal_direction_lock_v1.png',
+  identity:'STEADY HANDS',designDirection:'sophie-chibi-direction-lock-v2',reference:'docs/pixel/reference/sophie_chibi_direction_lock_v2_48.png',appealCandidateReference:'docs/pixel/reference/sophie_appeal_direction_lock_v1.png',
   face:'large soft readable eyes + gentle calm expression; distinct from Karen and Triton face templates',
   hair:'honey/light golden-brown layered mass + practical gathered/braided structure; restrained lower-tip lag',
   colorMass:'warm off-white/cream dominant + brown leather + muted green concentrated near hands and treatment storage',
