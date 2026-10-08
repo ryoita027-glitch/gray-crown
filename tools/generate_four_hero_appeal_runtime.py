@@ -107,9 +107,12 @@ def rebuild_party_walk():
         walk=Image.open(ROOT/f"assets/characters/{char}/{char}_walk.png").convert("RGBA")
         for di in range(4):
             for col,frame in enumerate((0,2,4)):
+                # Keep the exact 48x48 runtime cell. The atlas grid itself is 48px;
+                # shrinking to 32px here would destroy face detail and, worse, using
+                # 32px offsets inside a 48px atlas causes adjacent frames to bleed
+                # into the source rectangle used by world/battle rendering.
                 cell=walk.crop((frame*48,di*48,(frame+1)*48,(di+1)*48))
-                cell=cell.resize((32,32),Image.Resampling.NEAREST)
-                out.alpha_composite(cell,(col*32,(ci*4+di)*32))
+                out.alpha_composite(cell,(col*48,(ci*4+di)*48))
     binary_clean(out).save(ROOT/"assets/hero_party_walk.png",optimize=False)
 
 def main():
