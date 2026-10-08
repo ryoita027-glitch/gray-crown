@@ -323,3 +323,10 @@ html,body{background:radial-gradient(circle at 45% -10%,#29303b 0,#12161d 34%,#0
   body.session-started .topbar h1{font-size:1.42rem}
   body.session-started .game-stage{width:100%}
 }
+
+@media (min-width:851px){
+  body.title-mode .layout{flex:0 0 auto}
+  body.title-mode .game-shell{max-width:1180px}
+  body.title-mode .title-content{width:min(650px,78%);padding-left:30px;padding-right:30px}
+  body.title-mode .title-content h2{font-size:clamp(2.5rem,5vw,3.8rem);letter-spacing:.045em;white-space:nowrap}
+}
