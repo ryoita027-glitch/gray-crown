@@ -121,7 +121,7 @@ with server():
     page.screenshot(path=str(OUT/"actual_game_commercial_village.png"),full_page=True)
 
     # Battle must also use the real character runtime sheets, not the old combined 32px fallback.
-    page.evaluate("() => startBattle('wolf')")
+    page.evaluate("() => startBattle('wolves')")
     page.wait_for_timeout(760)
     heroes=page.locator(".battle-hero.runtime-hero")
     if heroes.count()!=4:
