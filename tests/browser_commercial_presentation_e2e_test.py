@@ -107,10 +107,28 @@ with server():
     page.wait_for_timeout(300)
     page.screenshot(path=str(OUT/"commercial_interior_1280x900.png"),full_page=False)
 
-    # Battle is part of the sellable presentation too; capture a real battle panel.
+    # Battle is part of the sellable presentation too; capture the settled real panel.
+    art_classes=page.evaluate("""() => ({
+      bat:GC.Render.Battle.battleArtClass({id:'bats'},{name:'洞窟コウモリA'}),
+      crawler:GC.Render.Battle.battleArtClass({id:'crawler'},{name:'石殻ムカデ'}),
+      boss:GC.Render.Battle.battleArtClass({id:'boss'},{name:'灰角獣'}),
+      soldier:GC.Render.Battle.battleArtClass({id:'imperialRaid'},{name:'帝国斥候兵A',faction:'empire'})
+    })""")
+    if art_classes!={'bat':'beast-bat','crawler':'beast-crawler','boss':'beast-horned','soldier':'human-soldier'}:
+        raise AssertionError("enemy art classifier regressed: "+repr(art_classes))
+
     page.evaluate("() => GC.Battle.startBattle('wolves')")
     page.wait_for_selector("#battlePanel:not(.hidden)")
-    page.wait_for_timeout(650)
+    page.wait_for_timeout(1000)
+    if "beast-wolf" not in page.locator("#enemyArt").get_attribute("class"):
+        raise AssertionError("wolf battle is not using the wolf presentation")
+    hero_box=page.locator("#battleHero0").bounding_box()
+    hero_bg=page.locator("#battleHero0").evaluate("e=>getComputedStyle(e).backgroundImage")
+    if not hero_box or hero_box["width"]<90 or "assets/characters/karen/karen_idle.png" not in hero_bg:
+        raise AssertionError("battle is not using full-size Karen runtime art: "+repr((hero_box,hero_bg)))
+    card_boxes=[page.locator("#partyCards .card").nth(i).bounding_box() for i in range(4)]
+    if any(b is None for b in card_boxes) or max(b["y"] for b in card_boxes)-min(b["y"] for b in card_boxes)>2:
+        raise AssertionError("party battle cards are not a compact one-row command rail")
     page.screenshot(path=str(OUT/"commercial_battle_1280x900.png"),full_page=False)
 
     if errors: raise AssertionError("console errors: "+repr(errors))
