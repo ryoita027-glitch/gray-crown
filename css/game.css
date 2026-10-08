@@ -574,3 +574,16 @@ body:not(.playing) .title-screen .title-content{visibility:visible}
   .title-menu button{min-width:0;flex:1;padding:8px 9px;font-size:.78rem}
   .title-content small{display:none}
 }
+
+.enemy-art.beast-bat{background-image:url('../assets/enemies/bat_battle.png')}
+.enemy-art.beast-rat{background-image:url('../assets/enemies/rat_battle.png')}
+.enemy-art.beast-crawler{background-image:url('../assets/enemies/crawler_battle.png')}
+.enemy-art.beast-horn{background-image:url('../assets/enemies/hornbeast_battle.png')}
+.enemy-art.beast-boar{background-image:url('../assets/enemies/boar_battle.png')}
+.enemy-art.human-imperial{background-image:url('../assets/enemies/imperial_soldier_battle.png')}
+.enemy-art.beast-bat::before,.enemy-art.beast-bat::after,
+.enemy-art.beast-rat::before,.enemy-art.beast-rat::after,
+.enemy-art.beast-crawler::before,.enemy-art.beast-crawler::after,
+.enemy-art.beast-horn::before,.enemy-art.beast-horn::after,
+.enemy-art.beast-boar::before,.enemy-art.beast-boar::after,
+.enemy-art.human-imperial::before,.enemy-art.human-imperial::after{display:none}
