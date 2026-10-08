@@ -1,0 +1,76 @@
+name: Gray Crown Four Protagonist Appeal CI
+on:
+  push:
+    branches: [pixel-four-protagonist-appeal-v1]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: gray-crown-four-appeal-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  appeal-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-ci.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: python -m pip install --disable-pip-version-check -r requirements-ci.txt
+
+      - name: Generate appeal direction sources
+        run: python tools/generate_four_protagonist_appeal_sources.py
+      - name: Verify appeal direction sources
+        run: python tools/verify_four_protagonist_appeal_sources.py
+
+      - name: Regenerate Sophie from appeal source
+        run: python tools/generate_sophie_prototype_assets.py --reference docs/pixel/reference/sophie_chibi_direction_appeal_v3_48.png --out assets/characters/sophie
+      - name: Regenerate Margaret from appeal source
+        run: python tools/generate_margaret_prototype_assets.py --reference docs/pixel/reference/margaret_chibi_direction_appeal_v7_48.png --out assets/characters/margaret
+
+      - name: Clean alpha and rebuild exploration/battle party sheet
+        run: python tools/normalize_character_runtime_assets.py
+
+      - name: Verify clean sprite integration
+        run: python tools/verify_clean_runtime_sprite_assets.py
+      - name: Verify appeal runtime propagation
+        run: python tools/verify_four_protagonist_appeal_runtime.py
+
+      - name: Build exact-pixel comparison evidence
+        run: python tools/build_four_protagonist_appeal_evidence.py
+
+      - name: Full Gray Crown regression
+        run: npm run check
+
+      - name: Install Chromium
+        run: python -m playwright install --with-deps chromium
+      - name: Real game four-party E2E
+        run: python tests/browser_four_protagonist_appeal_e2e_test.py
+
+      - name: Commit generated appeal assets
+        if: github.event_name == 'push'
+        run: |
+          git config user.name "gray-crown-ci"
+          git config user.email "gray-crown-ci@users.noreply.github.com"
+          git add             docs/pixel/reference/sophie_chibi_direction_appeal_v3_48.png             docs/pixel/reference/margaret_chibi_direction_appeal_v7_48.png             assets/characters/sophie             assets/characters/margaret             assets/hero_party_walk.png
+          if git diff --cached --quiet; then
+            echo "Appeal assets already synchronized"
+            exit 0
+          fi
+          git commit -m "Integrate Sophie v3 and Margaret v7 appeal assets"
+          git push origin HEAD:pixel-four-protagonist-appeal-v1
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gray-crown-four-protagonist-appeal-evidence
+          path: prototype_artifacts/four_protagonist_appeal_v1/
+          if-no-files-found: error
+          retention-days: 14
