@@ -102,7 +102,7 @@ def save_runtime(char, dirs):
         sheet.save(d/f"{char}_{anim}.png",optimize=False)
 
 def rebuild_party_walk():
-    out=Image.new("RGBA",(96,512),(0,0,0,0))
+    out=Image.new("RGBA",(144,768),(0,0,0,0))
     for ci,char in enumerate(CHARS):
         walk=Image.open(ROOT/f"assets/characters/{char}/{char}_walk.png").convert("RGBA")
         for di in range(4):
