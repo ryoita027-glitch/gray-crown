@@ -57,6 +57,17 @@ with server():
         raise AssertionError("empty journal panel should not occupy the commercial HUD")
     if page.locator(".controls-panel").evaluate("e=>getComputedStyle(e).display")!="none":
         raise AssertionError("desktop control cheat-sheet should not occupy the commercial HUD")
+    for selector in ("#btnSave","#btnLoad","#btnRestart"):
+        if page.locator(selector).evaluate("e=>getComputedStyle(e).display")!="none":
+            raise AssertionError("save/load/reset must live in the adventure menu, not permanent chrome")
+    page.evaluate("() => openMenu()")
+    menu_text=page.locator("#modalContent").inner_text()
+    if "責務分離" in menu_text or "自動回帰" in menu_text or "v19" in menu_text:
+        raise AssertionError("developer architecture copy leaked into the player menu")
+    for label in ("セーブ","ロード","最初から"):
+        if label not in menu_text:
+            raise AssertionError("adventure menu is missing "+label)
+    page.locator("#modalClose").click()
 
     # Road: show the real four-character party at commercial gameplay scale.
     page.evaluate("""() => {
