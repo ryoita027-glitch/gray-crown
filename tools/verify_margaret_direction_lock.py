@@ -4,20 +4,19 @@ from PIL import Image
 import hashlib
 
 PATH = Path("docs/pixel/reference/margaret_chibi_direction_lock_v3_48.png")
-EXPECTED_SHA256 = "a4d570ec42c0c0db427ba1312780c047cfef66a8c925b4febda94776ef1d69e2"
+EXPECTED_PIXEL_SHA256 = "b978ba8c255fadd9238c5d34a1eeac4e6d58ecf4d73dc91b2f0418e382a8f12b"
 
 if not PATH.exists():
     raise SystemExit(f"missing Margaret direction lock: {PATH}")
-
-raw = PATH.read_bytes()
-sha = hashlib.sha256(raw).hexdigest()
-if sha != EXPECTED_SHA256:
-    raise SystemExit(f"Margaret direction lock SHA mismatch: {sha}")
 
 with Image.open(PATH) as im:
     im = im.convert("RGBA")
     if im.size != (192, 48):
         raise SystemExit(f"Margaret direction lock size mismatch: {im.size}")
+    pixel_sha = hashlib.sha256(im.tobytes()).hexdigest()
+    if pixel_sha != EXPECTED_PIXEL_SHA256:
+        raise SystemExit(f"Margaret direction lock pixel SHA mismatch: {pixel_sha}")
+
     min_widths = {"down": 32, "left": 32, "right": 32, "up": 30}
     for i, name in enumerate(("down", "left", "right", "up")):
         cell = im.crop((48*i, 0, 48*(i+1), 48))
