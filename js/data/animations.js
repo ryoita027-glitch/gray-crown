@@ -35,7 +35,7 @@
  });
  const margaretVisualRules=Object.freeze({
   prototypeTemporary:true,character:'margaret',sourceCell:[48,48],logicalTile:32,anchor:[24,44],dominantHand:'right',stage:'A',
-  designDirection:'margaret-chibi-direction-lock-v4',reference:'docs/pixel/reference/margaret_chibi_direction_lock_v4_48.png',
+  designDirection:'margaret-chibi-direction-lock-v5',reference:'docs/pixel/reference/margaret_chibi_direction_lock_v5_48.png',
   face:'cute protagonist-grade face + calm intelligent approachable expression; never severe or frightening',
   hair:'white to pale silver-lavender simple high ponytail + soft face-framing bangs; restrained sway',
   colorMass:'prototype dark navy/charcoal + cream/ivory + restrained gold accents',
@@ -45,7 +45,7 @@
  });
  const sophieVisualRules=Object.freeze({
   prototypeTemporary:true,character:'sophie',sourceCell:[48,48],logicalTile:32,anchor:[24,44],dominantHand:'right',stage:'A',
-  identity:'STEADY HANDS',designDirection:'sophie-chibi-direction-lock-v1',reference:'docs/pixel/reference/sophie_chibi_direction_lock_v1_48.png',
+  identity:'STEADY HANDS',designDirection:'sophie-chibi-direction-lock-v2',reference:'docs/pixel/reference/sophie_chibi_direction_lock_v2_48.png',
   face:'large soft readable eyes + gentle calm expression; distinct from Karen and Triton face templates',
   hair:'honey/light golden-brown layered mass + practical gathered/braided structure; restrained lower-tip lag',
   colorMass:'warm off-white/cream dominant + brown leather + muted green concentrated near hands and treatment storage',
