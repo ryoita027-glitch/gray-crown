@@ -86,7 +86,7 @@ if "contents: write" not in margaret_sync:
     errors.append("Margaret generated-asset sync requires contents: write")
 if "pixel-margaret-fourth-character-front-gate" not in margaret_sync:
     errors.append("Margaret generated-asset sync must stay scoped to the Margaret prototype branch")
-for required_path in ("docs/pixel/reference/margaret_chibi_direction_lock_v4_48.png","assets/characters/margaret/"):
+for required_path in ("docs/pixel/reference/margaret_chibi_direction_lock_v5_48.png","assets/characters/margaret/","docs/pixel/reference/sophie_chibi_direction_lock_v2_48.png","assets/characters/sophie/"):
     if required_path not in margaret_sync:
         errors.append(f"Margaret generated-asset sync must restrict output to {required_path}")
 
