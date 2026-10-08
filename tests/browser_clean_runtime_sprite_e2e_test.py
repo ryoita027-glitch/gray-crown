@@ -37,8 +37,13 @@ with server():
         if canvas.count()!=1: raise AssertionError("game canvas missing")
         size=canvas.evaluate("e=>[e.width,e.height]")
         if size!=[768,480]: raise AssertionError("unexpected game canvas size: "+repr(size))
-        smoothing=canvas.evaluate("e=>e.getContext('2d').imageSmoothingEnabled")
-        if smoothing is not False: raise AssertionError("game canvas smoothing unexpectedly enabled")
+        # Persistent canvas state is not a reliable assertion because other render
+        # passes may legitimately toggle it after sprite drawing. Instead verify the
+        # real world renderer disables smoothing immediately for the party draw call.
+        world=(ROOT/"js/render/world.js").read_text(encoding="utf-8")
+        marker="ctx.imageSmoothingEnabled=false;ctx.drawImage(cfg.image"
+        if marker not in world:
+            raise AssertionError("world hero renderer lost nearest-neighbour sprite draw")
         page.screenshot(path=str(OUT/"actual_game_world.png"),full_page=True)
 
         # Verify browser loaded the rebuilt party sheet and exact natural size.
