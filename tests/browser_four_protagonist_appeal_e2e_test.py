@@ -26,6 +26,17 @@ with server():
     errors=[]
     page.on("console",lambda m: errors.append(m.text) if m.type=="error" else None)
     page.goto(f"http://127.0.0.1:{PORT}/index.html",wait_until="networkidle")
+    eyebrow=page.locator(".eyebrow").inner_text().strip()
+    build_note=page.locator(".build-note").inner_text().strip()
+    if eyebrow!="2D FANTASY RPG":
+        raise AssertionError("prototype eyebrow leaked: "+repr(eyebrow))
+    if any(token in build_note.lower() for token in ("alpha","v23","v22","second slice")):
+        raise AssertionError("prototype build metadata leaked into player UI: "+repr(build_note))
+    image_rendering=page.locator("canvas").evaluate("e=>getComputedStyle(e).imageRendering")
+    if image_rendering not in ("pixelated","crisp-edges"):
+        raise AssertionError("canvas CSS scaling is not crisp pixel mode: "+repr(image_rendering))
+    if page.locator(".controls-panel").evaluate("e=>getComputedStyle(e).display")!="none":
+        raise AssertionError("desktop controls help still occupies product sidebar")
     page.click("#titleNewGame")
     page.wait_for_timeout(350)
     for _ in range(4):
@@ -55,6 +66,8 @@ with server():
     for hero,meta in runtime.items():
         if meta["naturalWidth"]!=288 or meta["naturalHeight"]!=192:
             raise AssertionError(f"{hero} direct walk sheet size {meta}")
+        if meta.get("display")!=42:
+            raise AssertionError(f"{hero} commercial world display scale {meta}")
 
     # Give motion a few steps; this exercises the direct 48px walk sheets at Medium44.
     for key in ("ArrowRight","ArrowRight","ArrowUp","ArrowDown"):
@@ -83,7 +96,7 @@ with server():
     })""")
     if dims!=[96,512]: raise AssertionError("party sheet dimensions "+repr(dims))
 
-    page.screenshot(path=str(OUT/"actual_game_four_party_medium44.png"),full_page=True)
+    page.screenshot(path=str(OUT/"actual_game_commercial_road.png"),full_page=True)
 
     # A second screenshot in the village gives a softer green/brown contrast context.
     page.evaluate("""() => {
@@ -94,9 +107,9 @@ with server():
       GC.Render.World.draw();
     }""")
     page.wait_for_timeout(500)
-    page.screenshot(path=str(OUT/"actual_game_four_party_village_medium44.png"),full_page=True)
+    page.screenshot(path=str(OUT/"actual_game_commercial_village.png"),full_page=True)
 
     if errors: raise AssertionError("console errors: "+repr(errors))
     browser.close()
 
-print("FOUR PROTAGONIST APPEAL MEDIUM44 BROWSER E2E PASS")
+print("GRAY CROWN COMMERCIAL PRESENTATION BROWSER E2E PASS")
