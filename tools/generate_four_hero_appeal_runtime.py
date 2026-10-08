@@ -33,9 +33,14 @@ def load_directions(char):
     if not p.exists():
         raise SystemExit(f"missing appeal direction lock: {p}")
     im=binary_clean(Image.open(p))
-    if im.size!=(48,192):
-        raise SystemExit(f"{p}: expected (48,192), got {im.size}")
-    return [im.crop((0,i*48,48,(i+1)*48)) for i in range(4)]
+    if im.size==(48,192):
+        return [im.crop((0,i*48,48,(i+1)*48)) for i in range(4)]
+    if im.size==(192,48):
+        # Some approved appeal locks were authored as a horizontal
+        # down/left/right/up strip. Normalize orientation here without
+        # resampling or changing a single source pixel.
+        return [im.crop((i*48,0,(i+1)*48,48)) for i in range(4)]
+    raise SystemExit(f"{p}: expected (48,192) or (192,48), got {im.size}")
 
 def shifted(base, dx=0, dy=0, lower_dx=0, upper_dx=0):
     out=Image.new("RGBA",(48,48),(0,0,0,0))
