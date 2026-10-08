@@ -560,3 +560,17 @@ body:not(.playing) .stage-vignette,
 body:not(.playing) .statusbar{visibility:hidden}
 body:not(.playing) .title-screen .title-mist,
 body:not(.playing) .title-screen .title-content{visibility:visible}
+
+
+/* Mobile title must fit inside the 16:10 game surface; touch controls appear only after play starts. */
+@media(max-width:600px){
+  body:not(.playing) .sidebar,
+  body:not(.playing) .controls-panel{display:none!important}
+  .title-content{width:94%;padding:13px 10px 11px}
+  .title-kicker{font-size:.52rem;letter-spacing:.28em}
+  .title-content h2{font-size:clamp(1.75rem,9vw,2.35rem);margin:4px 0 6px;letter-spacing:.07em}
+  .title-content p{font-size:.76rem;line-height:1.5;margin:0 auto 10px}
+  .title-menu{gap:7px}
+  .title-menu button{min-width:0;flex:1;padding:8px 9px;font-size:.78rem}
+  .title-content small{display:none}
+}
