@@ -60,6 +60,13 @@ with server():
         raise AssertionError("duplicate objective remains in bottom status bar")
     page.screenshot(path=str(OUT/"road_desktop.png"),full_page=True)
 
+    # Battle is part of the commercial surface too: capture the real battle presentation.
+    page.evaluate("() => GC.Battle.startBattle('wolves')")
+    page.wait_for_timeout(900)
+    if page.locator("#battlePanel").evaluate("e=>getComputedStyle(e).display")=="none":
+        raise AssertionError("battle panel failed to open")
+    page.screenshot(path=str(OUT/"battle_desktop.png"),full_page=True)
+
     mobile=browser.new_page(viewport={"width":390,"height":844},device_scale_factor=1)
     mobile.goto(f"http://127.0.0.1:{PORT}/index.html",wait_until="networkidle")
     if mobile.locator(".controls-panel").evaluate("e=>getComputedStyle(e).display")=="none":
