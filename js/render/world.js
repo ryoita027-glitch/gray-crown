@@ -424,13 +424,13 @@ function drawAreaIdentity(){/* area identity is rendered by the HTML world HUD *
 function viewScale(){if(INTERIOR_MAPS.includes(state.map))return 1.18;if(['capital','imperialcity','borderland','watchfort','empirevillage','elsia'].includes(state.map))return 1.25;return 1.16}
 const VISUAL={map:null,camX:0,camY:0,playerX:0,playerY:0,followers:[[12,13],[13,13],[14,13]],raf:0,nextMoveAt:0};
 function cameraForMap(){const o=GC.Cinematic?.cameraTarget?.(),scale=o?.scale||viewScale(),vw=canvas.width/scale,vh=canvas.height/scale,worldW=COLS*TILE,worldH=ROWS*TILE,fx=Number.isFinite(o?.x)?o.x:state.x,fy=Number.isFinite(o?.y)?o.y:state.y,cx=fx*TILE+TILE/2,cy=fy*TILE+TILE/2;return{scale,x:Math.max(0,Math.min(worldW-vw,cx-vw/2)),y:Math.max(0,Math.min(worldH-vh,cy-vh/2))}}
-function partyPresentationOffset(index,dir,crowded=false){if(index<0)return{x:0,y:0};const sign=index===1?1:-1,base=index===2?.08:.13,amount=base*(crowded?1.75:1);return dir==='left'||dir==='right'?{x:0,y:sign*amount*.72}:{x:sign*amount,y:0}}
+function partyPresentationOffset(index,dir,crowded=false){if(index<0)return{x:0,y:0};const normal=[-.12,.12,-.08],crowd=[-.48,.48,-.78],amount=(crowded?crowd:normal)[Math.min(index,2)]??0;return dir==='left'||dir==='right'?{x:0,y:amount*.62}:{x:amount,y:0}}
 function partyRenderActors(now=Date.now()){
  const actors=[],raw=[];
  const leaderMoving=Math.abs(state.x-VISUAL.playerX)>.015||Math.abs(state.y-VISUAL.playerY)>.015,phase=leaderMoving?now/82:0;
  raw.push({x:VISUAL.playerX,y:VISUAL.playerY,style:PARTY_STYLE.karen,leader:true,facing:state.dir,motion:phase,order:0});
  for(let i=0;i<Math.min(3,state.trail.length);i++){const p=state.trail[i],vp=VISUAL.followers[i]||p,member=state.party[i+1],target=i===0?[state.x,state.y]:state.trail[i-1],face=facingBetween(p,target,state.dir),fm=Math.abs(p[0]-vp[0])>.015||Math.abs(p[1]-vp[1])>.015;raw.push({x:vp[0],y:vp[1],style:PARTY_STYLE[member?.id]||PARTY_STYLE.triton,leader:false,facing:face,motion:fm?now/82+i*.9:0,order:i+1})}
- for(const a of raw){if(a.leader){actors.push(a);continue}const crowded=raw.some(b=>b!==a&&Math.hypot(a.x-b.x,a.y-b.y)<1.08),off=partyPresentationOffset(a.order-1,state.dir,crowded);actors.push({...a,x:a.x+off.x,y:a.y+off.y})}
+ for(const a of raw){if(a.leader){actors.push(a);continue}const crowded=raw.some(b=>b!==a&&Math.hypot(a.x-b.x,a.y-b.y)<.62),off=partyPresentationOffset(a.order-1,state.dir,crowded);actors.push({...a,x:a.x+off.x,y:a.y+off.y})}
  return actors.sort((a,b)=>(a.y-b.y)||(a.x-b.x)||(a.order-b.order))
 }
 function drawScene(){
