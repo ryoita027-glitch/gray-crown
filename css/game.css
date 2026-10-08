@@ -435,3 +435,19 @@ button{border-radius:5px}
 .beast-eye{left:127px;top:45px;width:5px;height:5px;background:#d8a64e;box-shadow:1px 1px #2a211b}
 .beast-leg{top:82px;width:18px;height:30px;background:#514b45;border:4px solid #302d29}
 .beast-leg.l{left:48px}.beast-leg.r{left:95px}
+
+
+/* v24f — battle focus mode: do not show exploration HUD twice */
+body:has(.battle-panel:not(.hidden)) .layout{grid-template-columns:minmax(0,1fr)}
+body:has(.battle-panel:not(.hidden)) .sidebar{display:none}
+.game-shell:has(.battle-panel:not(.hidden)) .statusbar{display:none}
+body:has(.battle-panel:not(.hidden)) #app{max-width:1380px}
+body:has(.battle-panel:not(.hidden)) .battle-panel{inset:8px}
+body:has(.battle-panel:not(.hidden)) .battle-stage{height:280px}
+body:has(.battle-panel:not(.hidden)) .enemy-visual{right:13%;bottom:42px}
+body:has(.battle-panel:not(.hidden)) .enemy-stage-ui{right:18px;width:300px}
+body:has(.battle-panel:not(.hidden)) .party-battle-line{left:5%;bottom:38px}
+@media(max-width:650px){
+ body:has(.battle-panel:not(.hidden)) .battle-stage{height:220px}
+ body:has(.battle-panel:not(.hidden)) .enemy-visual{right:18px}
+}
