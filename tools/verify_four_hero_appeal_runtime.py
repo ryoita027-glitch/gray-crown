@@ -38,7 +38,7 @@ party=ROOT/"assets/hero_party_walk.png"
 if not party.exists(): errors.append("missing hero_party_walk.png")
 else:
     im=Image.open(party).convert("RGBA")
-    if im.size!=(96,512): errors.append(f"party sheet bad size {im.size}")
+    if im.size!=(144,768): errors.append(f"party sheet bad size {im.size}")
     if any(a not in (0,255) for a in set(im.getchannel("A").getdata())):
         errors.append("party sheet non-binary alpha")
 
