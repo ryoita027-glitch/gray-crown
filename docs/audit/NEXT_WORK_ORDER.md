@@ -1,65 +1,68 @@
 # Gray Crown — Next Work Order
 
-## Completed
+## Completed in the protagonist-quality phase
 
-- Karen locked.
+- Karen locked as permanent Visual Regression Control.
 - Triton Second Character Validation PASS.
-- Sophie Chibi Direction Lock v1 approved.
-- Sophie Acting Reference v1 approved.
-- Sophie 4-direction 48×48 source complete.
-- Sophie eight runtime animation categories complete.
-- Sophie runtime metadata complete.
-- Karen / Triton / Sophie actual-game comparison complete.
-- Full48 / Medium44 / Compact41 validation complete.
-- Save schema 23 / control restoration confirmed.
-- full regression CI green.
+- Sophie user-approved identity retained.
+- Margaret four-direction + eight-animation runtime integration completed.
+- Four Protagonist Quality Standard v1 added.
+- exact PNG-only comparison evidence added:
+  - Medium44 front;
+  - face crop;
+  - grayscale;
+  - silhouette;
+  - four directions;
+  - animation contact sheets;
+  - field-scale comparison;
+  - numeric occupancy / face / silhouette metrics.
+- Sophie detached rendering debris identified and removed through a conservative component cleanup.
+- Sophie Direction Lock v2 + cleaned eight runtime sheets promoted on the prototype branch.
+- Margaret v5 face-readability source promoted.
+- Margaret eight runtime sheets regenerated from v5.
+- Karen and Triton required no visual rewrite.
 
 ## Current gate
 
-# **Sophie Character Validation — PASS / REVISE**
+# **Four Protagonist Runtime Harmonization — FINAL GREEN**
 
-This is a human visual / character-quality decision.
+Required:
+1. Sophie browser E2E;
+2. Margaret browser E2E;
+3. four-character quality metrics;
+4. full `npm run check` (one complete retry is allowed only for the known browser-walk flake);
+5. Karen / Triton immutable-control checks.
 
-Technical result is already PASS.
+Do not merge to main merely because this gate passes.
 
-### PASS means
+## Next work after final green
 
-Sophie is accepted as the third validated protagonist.
+# **Four Protagonist Environment Integration**
 
-Then:
+Use the existing environment prototype as the next controlled test.
 
-1. record Sophie Character Validation PASS;
-2. update Pixel Character Standard from Karen + Triton + Sophie evidence;
-3. start **Margaret — MEASURED LINE Front Idle only**;
-4. stop again for Margaret user Visual Review before her four-direction / animation production.
+Required scenes:
+1. Ryune village;
+2. open grass / road;
+3. house exterior;
+4. house interior.
 
-### REVISE means
+For every scene:
+- exact runtime PNGs only;
+- Medium44 default;
+- all four protagonists visible under matched world scale;
+- movement + Idle + Talk evidence;
+- furniture/NPC relationship;
+- no save-schema change;
+- browser E2E and control restoration.
 
-Keep work on Sophie.
+Then produce a single environment comparison package and decide whether Pixel-native is strong enough for formal adoption.
 
-Do not modify Karen or Triton.
+## Still paused
 
-Do not start Margaret.
-
-## Evidence available
-
-Actual-game / scale evidence includes:
-
-- Sophie + Karen + Triton Medium44 Idle
-- Sophie Walk
-- Sophie Talk
-- Sophie Laugh
-- Sophie Run
-- Sophie Full48
-- Sophie Medium44
-- Sophie Compact41
-
-## Paused
-
-- Margaret until Sophie PASS;
-- Environment Prototype until all four protagonists pass;
 - main merge;
-- formal Pixel-native adoption;
-- Portrait deletion;
-- NPC scale migration;
+- final Portrait policy;
+- battle migration;
+- NPC mass migration;
+- final weapons/costumes/emblems;
 - v24.
