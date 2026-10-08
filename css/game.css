@@ -451,3 +451,12 @@ body:has(.battle-panel:not(.hidden)) .party-battle-line{left:5%;bottom:38px}
  body:has(.battle-panel:not(.hidden)) .battle-stage{height:220px}
  body:has(.battle-panel:not(.hidden)) .enemy-visual{right:18px}
 }
+
+
+/* v24g — saves belong to the adventure menu, not permanent browser chrome */
+#btnSave,#btnLoad,#btnRestart{display:none}
+.menu-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:12px;padding-top:10px;border-top:1px solid rgba(214,183,111,.18)}
+.menu-actions button{border-radius:3px;padding:.62rem .7rem;background:linear-gradient(#2d3540,#20262e);border-color:#46515e}
+.menu-actions .menu-danger{color:#d7b1a9;border-color:rgba(164,85,76,.55);background:linear-gradient(#3a292a,#271d1e)}
+.menu-inventory{margin-top:9px;border-top:1px solid rgba(255,255,255,.06);padding-top:5px}
+@media(max-width:520px){.menu-actions{grid-template-columns:1fr}}
