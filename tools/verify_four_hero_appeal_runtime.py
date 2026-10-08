@@ -19,10 +19,13 @@ for c in CHARS:
     lock=ROOT/f"docs/pixel/reference/{c}_appeal_direction_lock_v1.png"
     if not lock.exists(): errors.append(f"missing {lock}"); continue
     lim=Image.open(lock).convert("RGBA")
-    if lim.size!=(48,192): errors.append(f"{lock}: bad size {lim.size}")
+    if lim.size not in ((48,192),(192,48)): errors.append(f"{lock}: bad size {lim.size}")
     report["characters"][c]={"directions":{},"runtime":{}}
     for di,d in enumerate(("down","left","right","up")):
-        cell=lim.crop((0,di*48,48,(di+1)*48))
+        if lim.size==(48,192):
+            cell=lim.crop((0,di*48,48,(di+1)*48))
+        else:
+            cell=lim.crop((di*48,0,(di+1)*48,48))
         report["characters"][c]["directions"][d]=bbox_metric(cell)
         if cell.getchannel("A").getbbox() is None: errors.append(f"{c} {d}: empty lock")
     for anim,n in ANIMS.items():
