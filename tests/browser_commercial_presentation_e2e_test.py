@@ -92,6 +92,20 @@ with server():
     enemy_bg=page.locator("#enemyArt").evaluate("e=>getComputedStyle(e).backgroundImage")
     if "wolf_battle.png" not in enemy_bg:
         raise AssertionError("battle still uses the smooth CSS enemy placeholder: "+enemy_bg)
+    roster=page.evaluate("""() => {
+      const f=GC.Render.Battle.enemyVisualClass;
+      return {
+        bat:f({name:'洞窟コウモリA'},{id:'bats'}),
+        rat:f({name:'洞窟ネズミA'},{id:'caveRats'}),
+        crawler:f({name:'石殻ムカデ'},{id:'crawler'}),
+        horn:f({name:'灰角獣'},{id:'boss'}),
+        boar:f({name:'角猪'},{id:'roadBoar'}),
+        imperial:f({name:'帝国斥候兵A',faction:'empire'},{id:'imperialRaid'})
+      };
+    }""")
+    expected={"bat":"beast-bat","rat":"beast-rat","crawler":"beast-crawler","horn":"beast-horn","boar":"beast-boar","imperial":"human-imperial"}
+    if roster!=expected:
+        raise AssertionError("battle enemy visual roster collapsed to placeholders: "+repr(roster))
     overflow=page.locator("#battlePanel").evaluate("e=>({scroll:e.scrollHeight,client:e.clientHeight})")
     if overflow["scroll"]>overflow["client"]+3:
         raise AssertionError("desktop battle still requires scrolling: "+repr(overflow))
