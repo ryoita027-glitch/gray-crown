@@ -1,52 +1,111 @@
 # Gray Crown — Four Protagonist Quality Review Result v1
 
-**Status:** EVIDENCE-FIRST REVIEW IN PROGRESS  
-**Authority:** `FOUR_PROTAGONIST_QUALITY_STANDARD_v1.md`
+**Status:** QUALITY HARMONIZATION IMPLEMENTED ON PROTOTYPE BRANCH  
+**Main:** unchanged / not authorized for merge
 
-## Current cast state before the unified gate
+## Exact evidence
 
-### Karen
-- Role in this review: permanent visual regression control.
-- Strength: immediate warm/red silhouette and active protagonist energy.
-- Risk to inspect: whether the older pixel treatment now looks rougher or less facially clear than Sophie after all four are placed together.
-- Rule: do not modify until evidence proves a cast-level mismatch worth reopening.
+The review uses mechanically composed PNG evidence only.
 
-### Triton
-- Role: locked grounded control.
-- Strength: broad dark mass, low center of gravity, clear contrast to Karen.
-- Risk to inspect: small-scale face/eye clarity and whether dark hair loses internal separation at Medium44.
-- Rule: preserve planted body language.
+Pre-promotion Medium44 visible front bounds:
 
-### Sophie
-- Role: USER APPROVED / LOCKED.
-- Strength: strongest soft-face readability and hand-focused identity.
-- Risk to inspect: whether her higher internal detail density makes Karen/Triton look like an older asset generation when seen side-by-side.
-- Rule: do not shrink her into the other bodies merely to equalize metrics.
+| Character | Visible width | Visible height | Face contrast p90-p10 | Normalized palette bins |
+| --- | ---: | ---: | ---: | ---: |
+| Karen | 24 | 40 | 201.1 | 47 |
+| Triton | 26 | 40 | 180.6 | 45 |
+| Sophie | 30 | 39 | 114.5 | 41 |
+| Margaret v5 | 28 | 40 | 189.0 | 18 |
 
-### Margaret
-- Role: v4 runtime + v5 face-readability candidate.
-- Known defect: v4 face was rejected as too crushed.
-- v5 intent: preserve face/head pixels at 1:1 and change body occupancy/outer silhouette only.
-- Rule: no eight-animation regeneration from v5 until the exact four-character evidence is reviewed.
+Pairwise normalized front-silhouette IoU:
 
-## Required decision after CI evidence
+- Karen / Triton: 0.7879
+- Karen / Sophie: 0.6282
+- Karen / Margaret: 0.6794
+- Triton / Sophie: 0.6744
+- Triton / Margaret: 0.7242
+- Sophie / Margaret: 0.7149
 
-The quality gate must answer, in this order:
+No pair crossed the 0.90 collision threshold. The cast remains visually distinct before color.
 
-1. Is Margaret v5 face readability acceptable enough to become the new direction source?
-2. Are Karen / Triton / Sophie visibly in the same quality generation when compared at exact Medium44?
-3. Which characters require a **candidate-only** cleanup pass before any lock is reopened?
-4. Does the cast still preserve four distinct silhouettes after any cleanup?
-5. Can all four then move together into environment/runtime integration?
+## Character verdicts
 
-## Promotion rule
+### Karen — PASS / KEEP LOCKED
 
-No locked character is altered because of a numeric score alone.
+Karen remains the permanent Visual Regression Control.
 
-A locked character is reopened only when:
-- exact-pixel evidence shows a visible cast-level quality gap;
-- the proposed correction is localized and reversible;
-- a before/after mechanical comparison is produced;
-- the user approves the visual change.
+The conservative uplift pass removed **0 pixels** from Karen's runtime sheets. No defect justified reopening the source.
 
-This prevents quality harmonization from erasing character identity.
+Result: **no art change**.
+
+### Triton — PASS / KEEP LOCKED
+
+Triton's planted mass and dark-hair silhouette remain distinct.
+
+The conservative uplift pass removed **0 pixels** from Triton's runtime sheets.
+
+Result: **no art change**.
+
+### Sophie — PASS WITH TECHNICAL CLEANUP
+
+The audit found repeated detached micro-pixel debris above Sophie's head across runtime frames.
+
+This was not an identity feature. It was isolated rendering debris.
+
+The conservative cleanup removed **701 pixels total across 148 directional animation cells**, averaging under five pixels per cell, while preserving:
+- face;
+- hair mass;
+- body;
+- hands;
+- palette;
+- stance;
+- animation timing.
+
+The cleaned source is promoted as **Sophie Chibi Direction Lock v2** and the eight cleaned runtime sheets are hash-pinned.
+
+Result: **quality increased without redesign**.
+
+### Margaret — PASS FOR v5 SOURCE / v4 RETIRED
+
+Margaret v4 solved occupancy but failed the visual gate because its face was crushed by head resampling.
+
+v5 preserves the approved earlier face/head pixels at 1:1 and handles occupancy below the face.
+
+The exact Medium44 evidence shows:
+- 28×40 visible front bounds;
+- strong face-region contrast;
+- distinct silhouette from all three controls;
+- readable ponytail and pale-hair separation.
+
+All eight runtime categories have been regenerated from the v5 source and hash-pinned.
+
+Result: **v5 becomes active prototype authority; v4 is historical only**.
+
+## Cast-level verdict
+
+# **FOUR PROTAGONIST QUALITY HARMONIZATION — VISUAL/ASSET PASS**
+
+The important outcome is not that all four sprites became identical.
+
+The outcome is:
+- the same 48×48 / Medium44 technical grammar;
+- comparable gameplay presence;
+- four distinct silhouettes;
+- no accidental detached debris;
+- no face-crushing occupancy correction;
+- exact locks for every promoted source/runtime set.
+
+Karen and Triton did not need changes. Sophie and Margaret received localized evidence-driven corrections.
+
+## Regression note
+
+A previous full `npm run check` attempt reached all 59 Node tests and the first two major browser gates, then hit the known intermittent `walk failed` condition in `browser_alpha2_frontier_second_e2e_test.py`.
+
+That failure occurred outside the protagonist asset code path and has previously passed on retry. The harmonization CI therefore permits **one complete retry only**. A deterministic second failure remains a real gate failure.
+
+## Next gate
+
+After the latest harmonization workflow is green:
+
+> **Four Protagonist Environment Integration**
+
+Use exact runtime assets in Ryune village / grass-road / house exterior / house interior before any formal Pixel-native adoption or main merge.
