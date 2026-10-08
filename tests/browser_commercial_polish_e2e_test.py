@@ -90,6 +90,16 @@ with server():
         raise AssertionError("enemy presentation regressed to a placeholder silhouette")
     page.screenshot(path=str(OUT/"commercial_battle.png"),full_page=True)
 
+    # Distinct encounters must not collapse back to the wolf placeholder.
+    page.evaluate("() => startBattle('bats')")
+    page.wait_for_timeout(80)
+    if "bat-swarm" not in page.locator("#enemyArt").get_attribute("class"):
+        raise AssertionError("bat encounter did not receive bat visual family")
+    page.evaluate("() => startBattle('imperialRaid')")
+    page.wait_for_timeout(80)
+    if "human-empire" not in page.locator("#enemyArt").get_attribute("class"):
+        raise AssertionError("imperial human encounter did not receive soldier visual family")
+
     if errors:
         raise AssertionError("browser console errors: "+repr(errors))
     browser.close()
