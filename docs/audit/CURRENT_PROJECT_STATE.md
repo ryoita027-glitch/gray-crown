@@ -16,7 +16,7 @@ Pixel-native protagonist work remains isolated on prototype branches and is not 
 - no quality-harmonization rewrite was required.
 
 ### Triton — GROUND ANCHOR
-- Second Character Validation PASS;
+- **Triton Second Character Validation PASS**;
 - locked control;
 - no quality-harmonization rewrite was required.
 
