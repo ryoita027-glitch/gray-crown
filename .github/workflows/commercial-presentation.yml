@@ -1,0 +1,37 @@
+name: Gray Crown Commercial Presentation CI
+on:
+  push:
+    branches: [commercial-presentation-pass-v1]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: gray-crown-commercial-presentation-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  presentation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-ci.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: python -m pip install --disable-pip-version-check -r requirements-ci.txt
+      - name: Repository regression
+        run: npm run check
+      - name: Install Chromium
+        run: python -m playwright install --with-deps chromium
+      - name: Commercial presentation E2E
+        run: python tests/browser_commercial_presentation_e2e_test.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gray-crown-commercial-presentation-evidence
+          path: prototype_artifacts/commercial_presentation_v1/
+          if-no-files-found: error
+          retention-days: 14
