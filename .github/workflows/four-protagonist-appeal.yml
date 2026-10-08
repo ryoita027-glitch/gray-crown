@@ -1,7 +1,7 @@
 name: Gray Crown Four Protagonist Appeal CI
 on:
   push:
-    branches: [pixel-four-protagonist-appeal-v1, pixel-four-protagonist-appeal-runtime-v2]
+    branches: [pixel-four-protagonist-appeal-v1, pixel-four-protagonist-appeal-runtime-v2, commercial-polish-v1]
   workflow_dispatch:
 permissions:
   contents: write
@@ -54,6 +54,8 @@ jobs:
         run: python -m playwright install --with-deps chromium
       - name: Real game four-party E2E
         run: python tests/browser_four_protagonist_appeal_e2e_test.py
+      - name: Commercial presentation E2E
+        run: python tests/browser_commercial_polish_e2e_test.py
 
       - name: Commit generated appeal assets
         if: github.event_name == 'push'
