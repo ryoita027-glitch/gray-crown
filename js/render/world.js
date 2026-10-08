@@ -148,6 +148,15 @@ function drawCharacterSprite(x,y,style={},leader=false,facing='down',motion=0){
  if(leader){ctx.fillStyle='#f0d178';ctx.beginPath();ctx.moveTo(cx,py-5);ctx.lineTo(cx+5,py-11);ctx.lineTo(cx,py-16);ctx.lineTo(cx-5,py-11);ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(66,46,20,.8)';ctx.lineWidth=1;ctx.stroke()}
 }
 function facingBetween(a,b,fallback='down'){if(!a||!b)return fallback;const dx=b[0]-a[0],dy=b[1]-a[1];if(Math.abs(dx)>Math.abs(dy))return dx<0?'left':'right';if(dy!==0)return dy<0?'up':'down';return fallback}
+function drawLeaderWorldMarker(x,y){const px=Math.round(x*TILE),py=Math.round(y*TILE),footX=px+16,footY=py+30,scale=HERO_RUNTIME.display/HERO_RUNTIME.frameH,topY=Math.round(footY-HERO_RUNTIME.anchor[1]*scale);drawHeroMarker(footX,topY)}
+function drawPartyRuntime(leaderMoving,phase){
+ const actors=[];
+ for(let i=Math.min(2,state.trail.length-1);i>=0;i--){const p=state.trail[i],vp=VISUAL.followers[i]||p,member=state.party[i+1],target=i===0?[state.x,state.y]:state.trail[i-1],face=facingBetween(p,target,state.dir),fm=Math.abs(p[0]-vp[0])>.015||Math.abs(p[1]-vp[1])>.015;actors.push({x:vp[0],y:vp[1],style:PARTY_STYLE[member?.id]||PARTY_STYLE.triton,facing:face,motion:fm?Date.now()/82+i*.9:0,leader:false})}
+ actors.push({x:VISUAL.playerX,y:VISUAL.playerY,style:PARTY_STYLE.karen,facing:state.dir,motion:phase,leader:true});
+ actors.sort((a,b)=>(a.y-b.y)||(a.x-b.x)||(a.leader?1:-1));
+ for(const a of actors)drawCharacterSprite(a.x,a.y,a.style,false,a.facing,a.motion);
+ drawLeaderWorldMarker(VISUAL.playerX,VISUAL.playerY)
+}
 function drawNpc(n){drawCharacterSprite(n.x,n.y,NPC_STYLE[n.id]||{body:'#756b5f',accent:'#a58d6d'},false,'down');if(Math.abs(state.x-n.x)+Math.abs(state.y-n.y)<=2){ctx.font='bold 9px system-ui';const w=Math.max(28,ctx.measureText(n.name).width+8);const px=n.x*TILE+16-w/2,py=n.y*TILE-5;ctx.fillStyle='rgba(20,21,24,.82)';ctx.fillRect(px,py,w,13);ctx.fillStyle='#f2e6c7';ctx.textAlign='center';ctx.fillText(n.name,n.x*TILE+16,py+10);ctx.textAlign='start'}}
 function drawVillageDecor(){
  // 畑
@@ -449,10 +458,10 @@ function drawScene(){
  ctx.save();ctx.scale(target.scale,target.scale);ctx.translate(-VISUAL.camX,-VISUAL.camY);drawMapUnderlay(m);
  for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){drawTile(m.tiles[y][x],x,y);drawTileDetail(m.tiles[y][x],x,y)}drawTerrainBlend(m);drawVerticalSliceGround(m);
  if(state.map==='village'){drawVillageDecor();villageHouses.forEach(drawHouse)}if(INTERIOR_MAPS.includes(state.map))drawInteriorDecor();drawRegionDecor();m.objects.forEach(drawObject);const cinematicActive=GC.Cinematic?.isActive?.()===true,controlledNpcs=new Set(GC.Cinematic?.controlledNpcIds?.()||[]);m.npcs.filter(n=>npcVisible(n)&&!controlledNpcs.has(n.id)).forEach(drawNpc);drawQuestMarker();
- if(cinematicActive){GC.Cinematic?.drawActors?.(ctx,{drawCharacterSprite,drawHeroSpriteSheet})}else{const leaderMoving=Math.abs(state.x-VISUAL.playerX)>.015||Math.abs(state.y-VISUAL.playerY)>.015,phase=leaderMoving?Date.now()/82:0;for(let i=Math.min(2,state.trail.length-1);i>=0;i--){const p=state.trail[i],vp=VISUAL.followers[i]||p,member=state.party[i+1],target=i===0?[state.x,state.y]:state.trail[i-1],face=facingBetween(p,target,state.dir),fm=Math.abs(p[0]-vp[0])>.015||Math.abs(p[1]-vp[1])>.015;drawCharacterSprite(vp[0],vp[1],PARTY_STYLE[member?.id]||PARTY_STYLE.triton,false,face,fm?Date.now()/82+i*.9:0)}drawCharacterSprite(VISUAL.playerX,VISUAL.playerY,PARTY_STYLE.karen,true,state.dir,phase);drawInteractionMarker()}GC.Dev?.drawWorldOverlay?.(ctx);ctx.restore();drawAreaIdentity();$('locationLabel').textContent=m.name;if($('safetyLabel')){const safe=encounterSafeZone();$('safetyLabel').textContent=safe?'● 安全地帯':'▲ 危険地帯';$('safetyLabel').classList.toggle('danger',!safe)};
+ if(cinematicActive){GC.Cinematic?.drawActors?.(ctx,{drawCharacterSprite,drawHeroSpriteSheet})}else{const leaderMoving=Math.abs(state.x-VISUAL.playerX)>.015||Math.abs(state.y-VISUAL.playerY)>.015,phase=leaderMoving?Date.now()/82:0;drawPartyRuntime(leaderMoving,phase);drawInteractionMarker()}GC.Dev?.drawWorldOverlay?.(ctx);ctx.restore();drawAreaIdentity();$('locationLabel').textContent=m.name;if($('safetyLabel')){const safe=encounterSafeZone();$('safetyLabel').textContent=safe?'● 安全地帯':'▲ 危険地帯';$('safetyLabel').classList.toggle('danger',!safe)};
  const followerMoving=VISUAL.followers.some((p,i)=>{const t=state.trail[i]||p;return Math.abs(t[0]-p[0])>.01||Math.abs(t[1]-p[1])>.01});const moving=cinematicActive||Math.abs(target.x-VISUAL.camX)>.08||Math.abs(target.y-VISUAL.camY)>.08||Math.abs(state.x-VISUAL.playerX)>.01||Math.abs(state.y-VISUAL.playerY)>.01||followerMoving;
  if(moving){cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene)}
 }
 function draw(){cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene)}
 
-GC.Render=GC.Render||{};GC.Render.World={draw,drawScene,renderHud:()=>renderHud(),VISUAL,drawCharacterSprite,drawHeroSpriteSheet,heroRuntimeStatus};
+GC.Render=GC.Render||{};GC.Render.World={draw,drawScene,renderHud:()=>renderHud(),VISUAL,drawCharacterSprite,drawHeroSpriteSheet,heroRuntimeStatus,drawPartyRuntime};
