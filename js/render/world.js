@@ -94,17 +94,16 @@ function drawVerticalSliceGround(m){
   for(let i=0;i<18;i++){const x=(i*41+57)%720+24,y=(i*73+91)%390+35;ctx.fillStyle=i%3?'rgba(55,84,48,.26)':'rgba(198,171,89,.28)';ctx.beginPath();ctx.ellipse(x,y,7+(i%4)*3,3+(i%3)*2,(i%5)*.25,0,Math.PI*2);ctx.fill()}
  }
  if(map==='road'){
-  // Wheel ruts plus small verge detail. Large translucent blobs were removed
-  // because they read as placeholder brush stamps at gameplay scale.
-  ctx.strokeStyle='rgba(104,76,47,.27)';ctx.lineWidth=3;for(const off of [-8,10]){ctx.beginPath();ctx.moveTo(12*TILE+off,14*TILE);for(let y=14;y>=0;y--){const sway=Math.sin(y*.75)*7;ctx.lineTo(12*TILE+off+sway,y*TILE+16)}ctx.stroke()}
-  for(let i=0;i<34;i++){
-   const side=i%2?1:-1,y=(i*47)%430+18,x=(12*TILE+16)+side*(54+(i%5)*13);
-   ctx.fillStyle=i%4===0?'rgba(167,151,103,.24)':'rgba(45,76,43,.28)';
-   ctx.fillRect(Math.round(x),Math.round(y),2+(i%3),3+(i%4));
-   if(i%5===0){ctx.fillStyle='rgba(72,91,57,.3)';ctx.fillRect(Math.round(x-3),Math.round(y+2),7,2)}
-  }
- }
- if(map==='capital'){
+  // Continuous travelled-road surface. Collision still follows the tile map,
+  // but presentation no longer exposes square 32px path stamps.
+  const centers=[12,12,11,11,10,10,10,11,12,12,11,11,12,12,12];
+  const path=(width,stroke)=>{ctx.strokeStyle=stroke;ctx.lineWidth=width;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();for(let y=0;y<centers.length;y++){const x=centers[y]*TILE+16,yy=y*TILE+16;if(!y)ctx.moveTo(x,yy);else ctx.lineTo(x,yy)}ctx.stroke()};
+  path(92,'rgba(74,72,48,.34)');path(82,'#ad9569');path(72,'#b9a174');
+  // Irregular shoulder pixels and compacted center patches.
+  for(let i=0;i<42;i++){const y=(i*37)%450+8,ri=Math.max(0,Math.min(14,Math.floor(y/TILE))),cx=centers[ri]*TILE+16,side=i%2?1:-1;ctx.fillStyle=i%3?'rgba(64,88,52,.31)':'rgba(95,72,43,.19)';ctx.fillRect(Math.round(cx+side*(41+(i%5)*3)),Math.round(y),2+(i%3),3+(i%4))}
+  // Wheel ruts follow the same actual route.
+  for(const off of [-10,10]){ctx.strokeStyle='rgba(91,68,43,.30)';ctx.lineWidth=2;ctx.beginPath();for(let y=0;y<centers.length;y++){const x=centers[y]*TILE+16+off,yy=y*TILE+16;if(!y)ctx.moveTo(x,yy);else ctx.lineTo(x,yy)}ctx.stroke()}
+ } if(map==='capital'){
   // large paving bands and gutters ignore tile boundaries and make the plaza one continuous material
   ctx.fillStyle='rgba(242,229,196,.055)';ctx.fillRect(9*TILE,4*TILE,6*TILE,9*TILE);ctx.fillStyle='rgba(54,58,61,.17)';ctx.fillRect(11*TILE-4,4*TILE,3,10*TILE);ctx.fillRect(13*TILE+1,4*TILE,3,10*TILE);
   ctx.strokeStyle='rgba(211,190,145,.13)';ctx.lineWidth=2;for(let y=5;y<13;y+=2){ctx.beginPath();ctx.moveTo(8*TILE,y*TILE+10);ctx.lineTo(16*TILE,y*TILE+10);ctx.stroke()}
@@ -132,7 +131,8 @@ function drawHouse(h){const px=h.x*TILE,py=h.y*TILE,w=TILE*3;
  for(const wx of [16,66]){ctx.fillStyle='#b8d8df';ctx.fillRect(px+wx,py+50,20,16);ctx.fillStyle='rgba(246,213,128,.2)';ctx.fillRect(px+wx+3,py+53,14,10);ctx.strokeStyle='#5d5042';ctx.lineWidth=2;ctx.strokeRect(px+wx,py+50,20,16);ctx.beginPath();ctx.moveTo(px+wx+10,py+50);ctx.lineTo(px+wx+10,py+66);ctx.moveTo(px+wx,py+58);ctx.lineTo(px+wx+20,py+58);ctx.stroke()}
  // crates, flower box, sign
  ctx.fillStyle='#775538';ctx.fillRect(px+10,py+72,19,13);ctx.strokeStyle='#a77b4e';ctx.strokeRect(px+10,py+72,19,13);ctx.fillStyle='#72503a';ctx.fillRect(px+66,py+68,21,7);ctx.fillStyle='#d3a958';for(const dx of [70,77,84]){ctx.fillRect(px+dx,py+64,3,4)}
- ctx.fillStyle='rgba(31,26,21,.86)';ctx.fillRect(px+26,py+77,44,15);ctx.strokeStyle='rgba(220,196,143,.35)';ctx.strokeRect(px+26,py+77,44,15);ctx.fillStyle='#eee4cf';ctx.font='bold 10px system-ui';ctx.textAlign='center';ctx.fillText(h.label,px+w/2,py+88);ctx.textAlign='start'}
+ // no floating building-name plate: doors and in-world signs carry navigation now
+ ctx.fillStyle='#5a4430';ctx.fillRect(px+35,py+86,30,4);ctx.fillStyle='rgba(220,196,143,.18)';ctx.fillRect(px+38,py+86,24,1)}
 function drawCharacterSprite(x,y,style={},leader=false,facing='down',motion=0){
  if(style.heroId&&drawHeroSpriteSheet(x,y,style.heroId,leader,facing,motion))return;
  const px=x*TILE,py=y*TILE,small=style.small?.84:1,walk=Math.sin(motion)*2.2,bob=Math.abs(Math.sin(motion))*1.1,side=facing==='left'||facing==='right',back=facing==='up',flip=facing==='left'?-1:1;
