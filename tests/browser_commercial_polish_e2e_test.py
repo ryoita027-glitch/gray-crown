@@ -53,6 +53,10 @@ with server():
     objective_display=page.locator("#objectiveLabel").evaluate("e=>getComputedStyle(e).display")
     if objective_display!="none":
         raise AssertionError("duplicated statusbar objective remains visible")
+    if page.locator(".journal-panel").evaluate("e=>getComputedStyle(e).display")!="none":
+        raise AssertionError("empty journal panel should not occupy the commercial HUD")
+    if page.locator(".controls-panel").evaluate("e=>getComputedStyle(e).display")!="none":
+        raise AssertionError("desktop control cheat-sheet should not occupy the commercial HUD")
 
     # Road: show the real four-character party at commercial gameplay scale.
     page.evaluate("""() => {
@@ -82,6 +86,8 @@ with server():
     battle_bg=page.locator("#battleHero0").evaluate("e=>getComputedStyle(e).backgroundImage")
     if "assets/characters/karen/karen_idle.png" not in battle_bg:
         raise AssertionError("battle hero fell back to low-fidelity party sheet: "+battle_bg)
+    if page.locator("#enemyArt .enemy-part").count()<8:
+        raise AssertionError("enemy presentation regressed to a placeholder silhouette")
     page.screenshot(path=str(OUT/"commercial_battle.png"),full_page=True)
 
     if errors:
