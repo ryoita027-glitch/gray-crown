@@ -354,3 +354,47 @@ button{border-radius:5px}
 .battle-hero.sprite.active{
   filter:drop-shadow(0 0 9px rgba(241,210,120,.52)) drop-shadow(0 7px 5px rgba(0,0,0,.4))
 }
+
+
+/* v24c — remove desktop debug-dashboard clutter */
+.controls-panel{display:none}
+@media(max-width:850px){
+  .controls-panel{display:block}
+  .controls-panel p{display:none}
+  .mobile-pad{display:grid}
+}
+.journal-panel.hidden{display:none!important}
+
+/* v24d — layered pixel-like battle enemies.
+   These use discrete hard-edged parts rather than the previous soft CSS blob. */
+.enemy-art::before,.enemy-art::after{display:none!important}
+.enemy-art{position:relative;width:150px;height:118px;image-rendering:pixelated;filter:drop-shadow(0 8px 5px rgba(0,0,0,.42))}
+.enemy-part{position:absolute;display:block;box-sizing:border-box}
+.wolf-shadow{left:18px;bottom:4px;width:116px;height:15px;border-radius:50%;background:rgba(0,0,0,.35)}
+.wolf-body{left:38px;top:48px;width:72px;height:38px;background:#505b59;border:4px solid #293231;clip-path:polygon(7% 16%,78% 5%,100% 32%,93% 83%,73% 100%,16% 91%,0 58%)}
+.wolf-neck{left:91px;top:37px;width:31px;height:40px;background:#596463;border:4px solid #293231;transform:skew(-12deg)}
+.wolf-head{left:103px;top:25px;width:38px;height:34px;background:#626c69;border:4px solid #293231;clip-path:polygon(14% 9%,78% 0,100% 40%,86% 88%,35% 100%,0 63%)}
+.wolf-ear{top:15px;width:17px;height:25px;background:#485452;border:4px solid #293231;clip-path:polygon(50% 0,100% 100%,0 84%)}
+.wolf-ear.a{left:108px;transform:rotate(-9deg)}.wolf-ear.b{left:127px;transform:rotate(16deg)}
+.wolf-muzzle{left:126px;top:45px;width:27px;height:15px;background:#8b8f82;border:3px solid #293231;clip-path:polygon(0 6%,100% 40%,78% 100%,0 86%)}
+.wolf-eye{left:126px;top:34px;width:5px;height:5px;background:#e0c466;box-shadow:1px 1px 0 #251c13}
+.wolf-tail{left:10px;top:38px;width:43px;height:18px;background:#4e5957;border:4px solid #293231;transform:rotate(-24deg);clip-path:polygon(0 36%,90% 0,100% 66%,17% 100%)}
+.wolf-leg{top:78px;width:17px;height:32px;background:#454f4e;border:4px solid #293231}
+.wolf-leg.back{left:47px;transform:skew(7deg)}.wolf-leg.front{left:94px;transform:skew(-7deg)}
+.wolf-leg::after{content:"";position:absolute;left:-5px;bottom:-5px;width:21px;height:8px;background:#333c3b;border:3px solid #252c2c}
+
+.bandit-shadow{left:30px;bottom:4px;width:92px;height:15px;border-radius:50%;background:rgba(0,0,0,.34)}
+.bandit-body{left:59px;top:45px;width:43px;height:48px;background:#675244;border:4px solid #2e2926;clip-path:polygon(15% 0,84% 0,100% 28%,87% 100%,12% 100%,0 28%)}
+.bandit-head{left:65px;top:18px;width:31px;height:31px;background:#c99b7c;border:4px solid #332a26}
+.bandit-hair{left:60px;top:12px;width:42px;height:20px;background:#49372f;border:4px solid #2c2623;clip-path:polygon(0 30%,21% 0,100% 9%,92% 77%,65% 63%,48% 100%,26% 64%,0 83%)}
+.bandit-eye{left:88px;top:32px;width:5px;height:4px;background:#302624}
+.bandit-arm{top:51px;width:13px;height:39px;background:#755b48;border:4px solid #2e2926}
+.bandit-arm.l{left:48px;transform:rotate(12deg)}.bandit-arm.r{left:101px;transform:rotate(-18deg)}
+.bandit-leg{top:87px;width:15px;height:27px;background:#393534;border:4px solid #252322}
+.bandit-leg.l{left:62px}.bandit-leg.r{left:87px}
+.bandit-blade{left:116px;top:45px;width:7px;height:57px;background:#b9c0c3;border:2px solid #4b5051;transform:rotate(17deg);transform-origin:bottom}
+.bandit-blade::after{content:"";position:absolute;left:-7px;bottom:4px;width:17px;height:5px;background:#85633d;border:2px solid #453324}
+
+@media(max-width:650px){
+ .enemy-art{transform:scale(.82);transform-origin:50% 90%}
+}
