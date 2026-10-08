@@ -212,7 +212,7 @@ for ai,anim in enumerate(ANIMS):
 for ri,c in enumerate(CHARS):
     y=44+ri*(at+30); ad.text((10,y+at//2-10),LABELS[c],fill=(20,20,20,255),font=font(16))
     for ai,anim in enumerate(ANIMS):
-        # Runtime authority for animations. Margaret intentionally remains current v4 here.
+        # Runtime authority for animations. Margaret v5 and Sophie v2 are the active prototype runtime sets.
         fr=runtime_frame(c,anim,0,0).resize((at,at),Image.Resampling.NEAREST)
         anim_board.alpha_composite(fr,(160+ai*(at+16),y))
 anim_board.save(OUT/"animation_contact_sheet.png",optimize=False)
