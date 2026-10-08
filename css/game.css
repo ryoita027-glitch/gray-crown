@@ -519,3 +519,15 @@ body:not(.playing) .game-shell{box-shadow:0 26px 80px rgba(0,0,0,.58)}
  .battle-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
  .battle-log{max-height:62px}
 }
+
+
+/* Pixel-native enemy art replaces the smooth CSS placeholder silhouettes. */
+.enemy-art{
+  width:96px;height:96px;
+  background-position:center bottom;background-repeat:no-repeat;background-size:96px 96px;
+  image-rendering:pixelated;filter:drop-shadow(0 8px 5px rgba(0,0,0,.45))
+}
+.enemy-art.beast-wolf{background-image:url('../assets/enemies/wolf_battle.png')}
+.enemy-art.human-bandit{background-image:url('../assets/enemies/bandit_battle.png')}
+.enemy-art.beast-wolf::before,.enemy-art.beast-wolf::after,
+.enemy-art.human-bandit::before,.enemy-art.human-bandit::after{display:none}
