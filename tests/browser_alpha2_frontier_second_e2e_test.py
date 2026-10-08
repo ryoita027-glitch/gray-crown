@@ -11,6 +11,10 @@ def load_runtime(page,preload=None):
     page.set_content(BASE,wait_until='domcontentloaded');page.add_style_tag(content=CSS);page.add_script_tag(content=SHIM)
     if preload: page.evaluate('(o)=>{for(const [k,v] of Object.entries(o))localStorage.setItem(k,v)}',preload)
     for rel in SCRIPTS: page.add_script_tag(content=(ROOT/rel).read_text(encoding='utf-8'))
+    # Story-flow E2E is not a movement-timing test. Disable the production key-repeat delay
+    # so every synthetic key press advances exactly one logical step instead of being
+    # intermittently dropped by VISUAL.nextMoveAt on slower/faster CI runners.
+    page.evaluate("()=>{if(GC.Dev&&GC.Dev.settings)GC.Dev.settings.moveDelay=0}")
     page.evaluate('(u)=>{if(typeof HERO_SPRITES!=="undefined"&&HERO_SPRITES.image)HERO_SPRITES.image.src=u}',SPRITE);page.wait_for_timeout(60)
 def dismiss(page,limit=240):
     for _ in range(limit):
