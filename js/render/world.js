@@ -82,9 +82,9 @@ function drawVerticalSliceGround(m){
   for(let i=0;i<26;i++){const x=(i*53+61)%720+20,y=(i*79+47)%388+34;ctx.fillStyle=i%4===0?'#c4a65e':'#52704c';ctx.fillRect(Math.round(x),Math.round(y),2+(i%2),3);if(i%4===0){ctx.fillStyle='#e2c86f';ctx.fillRect(Math.round(x)+1,Math.round(y)-2,2,2)}}
  }
  if(map==='road'){
-  // twin wheel ruts and soft edge grass make this read as a travelled road, not a tiled corridor
-  ctx.strokeStyle='rgba(104,76,47,.34)';ctx.lineWidth=4;for(const off of [-8,10]){ctx.beginPath();ctx.moveTo(12*TILE+off,14*TILE);for(let y=14;y>=0;y--){const sway=Math.sin(y*.75)*7;ctx.lineTo(12*TILE+off+sway,y*TILE+16)}ctx.stroke()}
-  ctx.fillStyle='rgba(26,50,30,.15)';for(let i=0;i<14;i++){const x=(i%2?8:16)*TILE+(i%3)*18,y=(i*67)%430+20;ctx.beginPath();ctx.ellipse(x,y,55,24,(i%4)*.2,0,Math.PI*2);ctx.fill()}
+  // Travel wear is pixel-aligned: wheel ruts, broken verge and grass intrusion.
+  ctx.strokeStyle='rgba(104,76,47,.30)';ctx.lineWidth=3;for(const off of [-8,10]){ctx.beginPath();ctx.moveTo(12*TILE+off,14*TILE);for(let y=14;y>=0;y--){const sway=Math.sin(y*.75)*7;ctx.lineTo(12*TILE+off+sway,y*TILE+16)}ctx.stroke()}
+  for(let i=0;i<42;i++){const side=i%2?8:16,x=side*TILE+((i*19)%73)-22,y=(i*67)%430+20;ctx.fillStyle=i%3?'rgba(45,71,43,.18)':'rgba(116,91,57,.13)';ctx.fillRect(Math.round(x),Math.round(y),4+(i%4)*2,2+(i%2));if(i%5===0){ctx.fillStyle='rgba(82,104,62,.28)';ctx.fillRect(Math.round(x)+2,Math.round(y)-4,2,5);ctx.fillRect(Math.round(x),Math.round(y)-2,5,2)}}
  }
  if(map==='capital'){
   // large paving bands and gutters ignore tile boundaries and make the plaza one continuous material
