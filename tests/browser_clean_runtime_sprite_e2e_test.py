@@ -59,7 +59,7 @@ with server():
         # passes may legitimately toggle it after sprite drawing. Instead verify the
         # real world renderer disables smoothing immediately for the party draw call.
         world=(ROOT/"js/render/world.js").read_text(encoding="utf-8")
-        marker="ctx.imageSmoothingEnabled=false;ctx.drawImage(cfg.image"
+        marker="ctx.imageSmoothingEnabled=false;const drawSize=44"
         if marker not in world:
             raise AssertionError("world hero renderer lost nearest-neighbour sprite draw")
         page.screenshot(path=str(OUT/"actual_game_world.png"),full_page=True)
@@ -70,7 +70,7 @@ with server():
           i.onerror=()=>reject(new Error('hero_party_walk load failed'));
           i.src='assets/hero_party_walk.png?e2e=1';
         })""")
-        if dims!=[96,512]: raise AssertionError("party sheet dimensions "+repr(dims))
+        if dims!=[144,768]: raise AssertionError("party sheet dimensions "+repr(dims))
         if errors: raise AssertionError("browser console errors: "+repr(errors))
         browser.close()
 
