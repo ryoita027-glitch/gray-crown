@@ -35,11 +35,11 @@
  });
  const margaretVisualRules=Object.freeze({
   prototypeTemporary:true,character:'margaret',sourceCell:[48,48],logicalTile:32,anchor:[24,44],dominantHand:'right',stage:'A',
-  designDirection:'margaret-chibi-direction-lock-v2',reference:'docs/pixel/reference/margaret_chibi_direction_lock_v2_48.png',
+  designDirection:'margaret-chibi-direction-lock-v3',reference:'docs/pixel/reference/margaret_chibi_direction_lock_v3_48.png',
   face:'cute protagonist-grade face + calm intelligent approachable expression; never severe or frightening',
   hair:'white to pale silver-lavender simple high ponytail + soft face-framing bangs; restrained sway',
   colorMass:'prototype dark navy/charcoal + cream/ivory + restrained gold accents',
-  posture:'slightly slender vertical silhouette + upright composed center of gravity',
+  posture:'upright composed center of gravity + runtime-balanced chibi mass; no undersized narrow silhouette',
   acting:'measured restrained motion; smaller whole-body amplitude than Karen; ponytail secondary to body read',
   unresolved:['exactEyeColor','finalFourthCharacterColor','surname','formalWeaponDesign','formalWeaponName','stageBFinalHeroCostume','magicVisualLanguage','kingdomEmblem','heroCertificationMark','religiousEmblem']
  });
