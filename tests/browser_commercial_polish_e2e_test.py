@@ -86,6 +86,8 @@ with server():
     battle_bg=page.locator("#battleHero0").evaluate("e=>getComputedStyle(e).backgroundImage")
     if "assets/characters/karen/karen_idle.png" not in battle_bg:
         raise AssertionError("battle hero fell back to low-fidelity party sheet: "+battle_bg)
+    if page.locator(".sidebar").evaluate("e=>getComputedStyle(e).display")!="none":
+        raise AssertionError("exploration sidebar should leave the stage during battle focus mode")
     if page.locator("#enemyArt .enemy-part").count()<8:
         raise AssertionError("enemy presentation regressed to a placeholder silhouette")
     if "×3" not in page.locator('[data-battle="item"]').inner_text():
