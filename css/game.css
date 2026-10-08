@@ -338,3 +338,19 @@ button{border-radius:5px}
   .eyebrow{display:none}.top-actions button{padding:.4rem .52rem;font-size:.7rem}
   .layout{gap:7px}.story-context{width:40%}
 }
+
+
+/* v24b — battle presentation parity with exploration */
+.party-battle-line{left:26px;width:250px;height:128px}
+.battle-hero.sprite{
+  width:64px;height:64px;bottom:2px;
+  background-size:256px 256px;
+  background-repeat:no-repeat;
+  image-rendering:pixelated;
+  background-color:transparent;
+  filter:drop-shadow(0 7px 5px rgba(0,0,0,.38))
+}
+.battle-hero.sprite::before,.battle-hero.sprite::after{display:none}
+.battle-hero.sprite.active{
+  filter:drop-shadow(0 0 9px rgba(241,210,120,.52)) drop-shadow(0 7px 5px rgba(0,0,0,.4))
+}
