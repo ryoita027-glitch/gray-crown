@@ -42,6 +42,22 @@ else:
     if any(a not in (0,255) for a in set(im.getchannel("A").getdata())):
         errors.append("party sheet non-binary alpha")
 
+    # Atlas integrity: every 48x48 source rectangle used by the real world/battle
+    # renderer must be byte-identical to the corresponding committed Walk frame.
+    # This catches a subtle class of bugs where the atlas dimensions are correct
+    # but frames were packed on a 32px grid and adjacent sprites bleed together.
+    for ci,char in enumerate(CHARS):
+        walk_path=ROOT/f"assets/characters/{char}/{char}_walk.png"
+        if not walk_path.exists():
+            continue
+        walk=Image.open(walk_path).convert("RGBA")
+        for di in range(4):
+            for col,frame in enumerate((0,2,4)):
+                expected=walk.crop((frame*48,di*48,(frame+1)*48,(di+1)*48))
+                actual=im.crop((col*48,(ci*4+di)*48,(col+1)*48,(ci*4+di+1)*48))
+                if actual.tobytes()!=expected.tobytes():
+                    errors.append(f"party atlas mismatch: {char} dir={di} col={col} frame={frame}")
+
 # Distinctness guard: front silhouette overlap must not collapse into near-identical sprites.
 front={}
 for c in CHARS:
@@ -57,6 +73,13 @@ for i,a in enumerate(CHARS):
             v=iou(front[a],front[b])
             report.setdefault("pairwise_iou",{})[f"{a}/{b}"]=round(v,4)
             if v>=0.94: errors.append(f"silhouette collision {a}/{b}: {v:.3f}")
+
+# Real renderer contract: source atlas cells stay 48px; visual draw can be 44px.
+world=(ROOT/"js/render/world.js").read_text(encoding="utf-8")
+if "frameW:48,frameH:48" not in world:
+    errors.append("world renderer lost 48px atlas cell contract")
+if "const drawSize=44" not in world:
+    errors.append("world renderer lost 44px visual draw size")
 
 out=ROOT/"prototype_artifacts/four_hero_appeal"
 out.mkdir(parents=True,exist_ok=True)
