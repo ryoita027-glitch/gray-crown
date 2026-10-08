@@ -313,3 +313,13 @@ html,body{background:radial-gradient(circle at 45% -10%,#29303b 0,#12161d 34%,#0
   body.title-mode .world-hud,body.title-mode .story-context,body.title-mode .stage-vignette{visibility:hidden}
   body.title-mode .title-screen{border-radius:10px}
 }
+
+@media (min-width:851px){
+  body.session-started .layout{display:block;width:100%}
+  body.session-started .sidebar{display:none!important}
+  body.session-started .game-column{width:100%}
+  body.session-started .game-shell{width:100%}
+  body.session-started .topbar{min-height:54px}
+  body.session-started .topbar h1{font-size:1.42rem}
+  body.session-started .game-stage{width:100%}
+}
