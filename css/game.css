@@ -540,3 +540,14 @@ body:not(.playing) .game-shell{box-shadow:0 26px 80px rgba(0,0,0,.58)}
 @media(max-height:859px){
   #app{min-height:0;display:block}
 }
+
+
+/* Use the whole battle viewport: stage expands instead of leaving a black lower void. */
+.battle-panel{display:flex;flex-direction:column}
+.battle-head{flex:0 0 auto}
+.battle-stage{height:auto;min-height:205px;flex:1 1 auto}
+#enemyCards,#partyCards,.battle-actions,.battle-log{flex:0 0 auto}
+@media(max-width:650px){
+ .battle-panel{display:block}
+ .battle-stage{height:190px;min-height:190px}
+}
