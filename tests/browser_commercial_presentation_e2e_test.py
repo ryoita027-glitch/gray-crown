@@ -102,9 +102,14 @@ with server():
 
     mobile=browser.new_page(viewport={"width":390,"height":844},device_scale_factor=1)
     mobile.goto(f"http://127.0.0.1:{PORT}/index.html",wait_until="networkidle")
-    if mobile.locator(".controls-panel").evaluate("e=>getComputedStyle(e).display")=="none":
-        raise AssertionError("mobile controls disappeared")
+    if mobile.locator(".controls-panel").evaluate("e=>getComputedStyle(e).display")!="none":
+        raise AssertionError("mobile touch controls leak behind title screen")
     mobile.screenshot(path=str(OUT/"title_mobile.png"),full_page=True)
+    mobile.click("#titleNewGame")
+    mobile.wait_for_timeout(400)
+    if mobile.locator(".controls-panel").evaluate("e=>getComputedStyle(e).display")=="none":
+        raise AssertionError("mobile touch controls are missing after gameplay starts")
+    mobile.screenshot(path=str(OUT/"play_mobile.png"),full_page=True)
 
     if console_errors:
         raise AssertionError("desktop console errors: "+repr(console_errors))
