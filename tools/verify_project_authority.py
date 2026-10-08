@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from pathlib import Path
 import sys
+
 ROOT=Path(__file__).resolve().parents[1]
 FILES={
  "current":ROOT/"docs/audit/CURRENT_PROJECT_STATE.md",
@@ -12,38 +13,45 @@ for label,path in FILES.items():
     if not path.exists(): errors.append(f"missing authority file: {path.relative_to(ROOT)}")
 if errors:
     print("\n".join(errors),file=sys.stderr);sys.exit(1)
+
 current=FILES["current"].read_text(encoding="utf-8")
 nxt=FILES["next"].read_text(encoding="utf-8")
 source=FILES["source"].read_text(encoding="utf-8")
+
 checks=[
- ("current",current,"main / v23 / Save schema 23"),
- ("current",current,"Triton Second Character Validation PASS"),
- ("current",current,"SOPHIE TECHNICAL PASS"),
- ("current",current,"Sophie Character Validation — USER PASS / REVISE"),
- ("current",current,"Environment Pixel production remains paused"),
- ("next",nxt,"Sophie Character Validation — PASS / REVISE"),
- ("next",nxt,"Margaret — MEASURED LINE Front Idle only"),
- ("source",source,"Sophie Chibi Direction Lock v1 — USER APPROVED"),
- ("source",source,"TECHNICAL PASS"),
- ("source",source,"Sophie Character Validation — USER PASS / REVISE"),
- ("source",source,"Environment Pixel production remains paused"),
+ ("current",current,"main / v23 / Save schema 23 / Story 00–19"),
+ ("current",current,"Sophie Chibi Direction Lock v2"),
+ ("current",current,"Margaret Chibi Direction Lock v5"),
+ ("current",current,"FOUR PROTAGONIST RUNTIME HARMONIZATION"),
+ ("current",current,"four-protagonist environment integration"),
+ ("next",nxt,"Four Protagonist Runtime Harmonization"),
+ ("next",nxt,"Four Protagonist Environment Integration"),
+ ("source",source,"Sophie Chibi Direction Lock v2"),
+ ("source",source,"Margaret Chibi Direction Lock v5"),
+ ("source",source,"FOUR PROTAGONIST RUNTIME HARMONIZATION"),
+ ("source",source,"AI-generated comparison boards remain prohibited"),
 ]
 for label,textv,needle in checks:
     if needle not in textv: errors.append(f"{label} authority missing {needle!r}")
+
 stale=[
- "Sophie v3: user Visual Review pending",
- "Sophie remains front-only until explicit PASS",
- "Sophie 4-direction + 8Animation technical implementation",
+ "Margaret remains paused until Sophie PASS",
+ "Margaret before Sophie PASS",
+ "Sophie Character Validation — USER PASS / REVISE",
+ "Sophie Character Validation — PASS / REVISE",
+ "Environment Pixel production remains paused until Karen, Triton, Sophie and Margaret complete validation",
 ]
 for marker in stale:
     if marker in current or marker in nxt or marker in source:
-        errors.append(f"stale Sophie implementation marker remains: {marker!r}")
+        errors.append(f"stale protagonist gate remains: {marker!r}")
+
 if errors:
     print("GRAY CROWN AUTHORITY CONSISTENCY FAILED",file=sys.stderr)
     for e in errors: print(" -",e,file=sys.stderr)
     sys.exit(1)
+
 print("GRAY CROWN AUTHORITY CONSISTENCY PASS")
-print("Sophie technical implementation is complete")
-print("Active gate: Sophie Character Validation — USER PASS / REVISE")
-print("Karen and Triton remain locked controls")
-print("Margaret and Environment remain paused")
+print("Production remains main / v23 / Save schema 23 / Story 00-19")
+print("Karen/Triton locked; Sophie v2 cleanup and Margaret v5 runtime promoted on prototype branch")
+print("Active gate: Four Protagonist Runtime Harmonization")
+print("Next after green: Four Protagonist Environment Integration")
