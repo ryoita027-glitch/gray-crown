@@ -1,9 +1,27 @@
 'use strict';
 const COLORS={grass:'#6f8059',grass2:'#62724f',path:'#b49a6c',tree:'#496345',trunk:'#6c513c',gold:'#c9aa61',skin:'#ddb99e',shadow:'rgba(0,0,0,.22)',cave:'#3c3b41'};
 const HERO_SPRITES={image:null,ready:false,frameW:32,frameH:32,columns:3,directions:{down:0,left:1,right:2,up:3},characters:{karen:0,triton:1,sophie:2,margaret:3}};
-if(typeof Image!=='undefined'){const im=new Image();HERO_SPRITES.image=im;im.onload=()=>{HERO_SPRITES.ready=true};im.onerror=()=>{HERO_SPRITES.ready=false};im.src='assets/hero_party_walk.png'}
-function heroWalkFrame(motion){if(!motion)return 1;return [0,1,2,1][Math.floor(motion)%4]}
-function drawHeroSpriteSheet(x,y,heroId,leader,facing,motion){const cfg=HERO_SPRITES;if(!cfg.ready||!cfg.image||cfg.characters[heroId]===undefined)return false;const frame=heroWalkFrame(motion),row=cfg.characters[heroId]*4+(cfg.directions[facing]??0),px=Math.round(x*TILE),py=Math.round(y*TILE);ctx.imageSmoothingEnabled=false;ctx.drawImage(cfg.image,frame*32,row*32,32,32,px,py,32,32);if(leader){ctx.fillStyle='#f0d178';ctx.beginPath();ctx.moveTo(px+16,py-4);ctx.lineTo(px+21,py-10);ctx.lineTo(px+16,py-15);ctx.lineTo(px+11,py-10);ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(66,46,20,.8)';ctx.stroke()}return true}
+const HERO_RUNTIME={frameW:48,frameH:48,display:44,anchor:[24,44],directions:{down:0,left:1,right:2,up:3},images:{}};
+if(typeof Image!=='undefined'){
+ const fallback=new Image();HERO_SPRITES.image=fallback;fallback.onload=()=>{HERO_SPRITES.ready=true};fallback.onerror=()=>{HERO_SPRITES.ready=false};fallback.src='assets/hero_party_walk.png';
+ for(const id of Object.keys(HERO_SPRITES.characters)){const rec={image:new Image(),ready:false,error:false};rec.image.onload=()=>{rec.ready=true;rec.error=false};rec.image.onerror=()=>{rec.ready=false;rec.error=true};rec.image.src='assets/characters/'+id+'/'+id+'_walk.png';HERO_RUNTIME.images[id]=rec}
+}
+function heroWalkFrame(motion){if(!motion)return 0;const cycle=[0,1,2,3,4,5,4,3,2,1];return cycle[Math.floor(motion)%cycle.length]}
+function drawHeroMarker(cx,topY){ctx.fillStyle='#f0d178';ctx.beginPath();ctx.moveTo(cx,topY-3);ctx.lineTo(cx+5,topY-9);ctx.lineTo(cx,topY-14);ctx.lineTo(cx-5,topY-9);ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(66,46,20,.86)';ctx.lineWidth=1;ctx.stroke()}
+function drawHeroSpriteSheet(x,y,heroId,leader,facing,motion){
+ const frame=heroWalkFrame(motion),row=HERO_RUNTIME.directions[facing]??0,px=Math.round(x*TILE),py=Math.round(y*TILE),footX=px+16,footY=py+30;
+ const rec=HERO_RUNTIME.images[heroId];
+ if(rec?.ready&&rec.image){
+  const size=HERO_RUNTIME.display,scale=size/HERO_RUNTIME.frameW,dx=Math.round(footX-HERO_RUNTIME.anchor[0]*scale),dy=Math.round(footY-HERO_RUNTIME.anchor[1]*scale);
+  ctx.save();ctx.fillStyle='rgba(16,18,18,.28)';ctx.beginPath();ctx.ellipse(footX,footY-1,10,4,0,0,Math.PI*2);ctx.fill();ctx.imageSmoothingEnabled=false;
+  ctx.drawImage(rec.image,frame*48,row*48,48,48,dx,dy,size,size);ctx.restore();
+  if(leader)drawHeroMarker(footX,dy);return true
+ }
+ const cfg=HERO_SPRITES;if(!cfg.ready||!cfg.image||cfg.characters[heroId]===undefined)return false;
+ const fallbackFrame=motion?[0,1,2,1][Math.floor(motion)%4]:1,fallbackRow=cfg.characters[heroId]*4+(cfg.directions[facing]??0);
+ ctx.save();ctx.imageSmoothingEnabled=false;ctx.drawImage(cfg.image,fallbackFrame*32,fallbackRow*32,32,32,px,py,32,32);ctx.restore();if(leader)drawHeroMarker(px+16,py);return true
+}
+function heroRuntimeStatus(){const out={};for(const id of Object.keys(HERO_SPRITES.characters)){const rec=HERO_RUNTIME.images[id];out[id]={ready:!!rec?.ready,error:!!rec?.error,naturalWidth:rec?.image?.naturalWidth||0,naturalHeight:rec?.image?.naturalHeight||0}}return out}
 function tileAt(mapId,x,y){const m=maps[mapId];if(!m||x<0||y<0||x>=COLS||y>=ROWS)return'S';return m.tiles[y][x]}
 function objectCleared(id){if(TREASURE_DEFS[id]&&state.world.treasures[id])return true;return (id==='wolf'&&isDefeated('wolf'))||(id==='bandit'&&isDefeated('bandit'))||(id==='bats'&&isDefeated('bats'))||(id==='crawler'&&isDefeated('crawler'))||(id==='boss'&&isDefeated('boss'))||(id==='scavengerWolves'&&isDefeated('scavengerWolves'))||(id==='chest1'&&state.world.treasures.chest1)||(id==='chest2'&&state.world.treasures.chest2)||(id==='innerGate'&&getWorldSwitch('leverWest')&&getWorldSwitch('leverEast'))||((id==='imperialPatrol'&&isDefeated('imperialPatrol'))||((['fortGate','fortGateRight'].includes(id)&&getWorldSwitch('fortGateOpen'))||(['ashCache','frontierCache','empireCache','imperialCache','yukiCache','elsiaCache'].includes(id)&&state.world.treasures[id])))}
 function npcVisible(n){if(n.showWhen&&!structuredCondition(n.showWhen))return false;if(n.hideWhen&&structuredCondition(n.hideWhen))return false;return true}
@@ -437,4 +455,4 @@ function drawScene(){
 }
 function draw(){cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene)}
 
-GC.Render=GC.Render||{};GC.Render.World={draw,drawScene,renderHud:()=>renderHud(),VISUAL,drawCharacterSprite,drawHeroSpriteSheet};
+GC.Render=GC.Render||{};GC.Render.World={draw,drawScene,renderHud:()=>renderHud(),VISUAL,drawCharacterSprite,drawHeroSpriteSheet,heroRuntimeStatus};
