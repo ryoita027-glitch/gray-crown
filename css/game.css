@@ -587,3 +587,24 @@ body:not(.playing) .title-screen .title-content{visibility:visible}
 .enemy-art.beast-horn::before,.enemy-art.beast-horn::after,
 .enemy-art.beast-boar::before,.enemy-art.beast-boar::after,
 .enemy-art.human-imperial::before,.enemy-art.human-imperial::after{display:none}
+
+
+/* Title art uses the same committed runtime protagonists as gameplay. */
+.title-party{
+  height:88px;display:flex;align-items:flex-end;justify-content:center;
+  gap:2px;margin:-7px auto 7px;overflow:visible
+}
+.title-hero{
+  display:block;width:96px;height:96px;flex:0 0 96px;
+  background-repeat:no-repeat;background-position:0 0;background-size:576px 384px;
+  image-rendering:pixelated;
+  filter:drop-shadow(0 7px 5px rgba(0,0,0,.55))
+}
+.title-hero.karen{background-image:url('../assets/characters/karen/karen_walk.png')}
+.title-hero.triton{background-image:url('../assets/characters/triton/triton_walk.png')}
+.title-hero.sophie{background-image:url('../assets/characters/sophie/sophie_walk.png')}
+.title-hero.margaret{background-image:url('../assets/characters/margaret/margaret_walk.png')}
+@media(max-width:600px){
+  .title-party{height:48px;margin:-5px auto 5px;gap:0}
+  .title-hero{width:48px;height:48px;flex-basis:48px;background-size:288px 192px}
+}
