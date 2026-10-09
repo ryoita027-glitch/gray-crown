@@ -17,7 +17,7 @@ ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT/'prototype_artifacts/vertical_slice_v1'
 OUT.mkdir(parents=True,exist_ok=True)
 SAVE_KEY='gray-crown-vslice-save-v1'
-STATS={'play_seconds':0,'battles':[],'steps':0,'dialogue_advance_keys':0,
+STATS={'play_seconds':0,'battles':[],'steps':0,'dialogue_advance_keys':0,'dialogue_seconds':0,
  'checkpoints':[],'screenshots':[],'blocked_steps':[],'warnings':[], 'viewport':[]}
 EVENT='alpha.village.appointment'
 DIRECTIONS=((0,-1,'ArrowUp'),(1,0,'ArrowRight'),(0,1,'ArrowDown'),(-1,0,'ArrowLeft'))
@@ -56,10 +56,13 @@ def shot(page,name):
  STATS['screenshots'].append(name+'.png')
 
 def clean_dialogue(page,limit=145):
+ tick=time.perf_counter()
  for _ in range(limit):
   in_scene=page.evaluate("GC.RyuneActing?.isRunning?.()||false")
   dlg=page.locator('#dialogueBox').is_visible()
-  if not in_scene and not dlg:return
+  if not in_scene and not dlg:
+   STATS['dialogue_seconds']+=round(time.perf_counter()-tick,3)
+   return
   if dlg:
    page.keyboard.press('Enter');STATS['dialogue_advance_keys']+=1
   page.wait_for_timeout(60)
@@ -219,6 +222,12 @@ def reload_continue(page,label):
 def play(page,url):
  start=time.perf_counter()
  page.goto(url,wait_until='networkidle');check(page.locator('#titleNewGame').is_visible(),'no title')
+ page.evaluate("""() => {
+   const m=window.__verticalPerf={frames:0,slowFrames:0,maxGapMs:0,prev:0};
+   const tick=t=>{if(m.prev){let dt=t-m.prev;m.frames++;if(dt>45)m.slowFrames++;
+    m.maxGapMs=Math.max(m.maxGapMs,dt)}m.prev=t;requestAnimationFrame(tick)};
+   requestAnimationFrame(tick)
+ }""")
  shot(page,'00_title')
  page.locator('#titleNewGame').click();clean_dialogue(page)
  check(snapshot(page)['story']=='00_village','new game progression start invalid')
@@ -344,6 +353,11 @@ def play(page,url):
  shot(page,'13_capital')
  checkpoint(page,'canonical capital transition')
  STATS['play_seconds']=round(time.perf_counter()-start,1)
+ STATS['frame_samples']=page.evaluate("""() => ({
+   frames:window.__verticalPerf.frames,slowFrames:window.__verticalPerf.slowFrames,
+   maxGapMs:Math.round(window.__verticalPerf.maxGapMs)
+ })""")
+ STATS['completed_events_count']=len(snapshot(page)['completed'])
 
 def main():
  errors=[]
