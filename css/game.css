@@ -528,3 +528,14 @@ body:has(.battle-panel:not(.hidden)) .party-battle-line{left:5%;bottom:38px}
 .battle-hero.sprite.strike{animation:heroStrike .3s cubic-bezier(.2,.9,.28,1)}
 @keyframes approvedHeroIdle{0%,24%{background-position:0 0}25%,49%{background-position:-44px 0}50%,74%{background-position:-88px 0}75%,99%{background-position:-132px 0}100%{background-position:0 0}}
 .quality-context{flex:1 1 100%;font-size:clamp(11px,1.8vw,12px);font-weight:600;color:#f0dca9;letter-spacing:.01em;min-height:18px;text-align:left}
+
+
+/* Commercial-quality combat: accessible target choice, 44px touch targets, actionable tips. */
+.battle-target-picker{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:6px 0 9px}
+.target-picker-label{font-size:.75rem;color:#dfcda9;font-weight:700}
+.battle-target-picker button{min-height:44px;max-width:100%;padding:8px 11px;border:1px solid #68717c;border-radius:7px;background:#252b32;font-size:.82rem;text-align:left}
+.battle-target-picker button.selected,.battle-target-picker button[aria-pressed="true"]{border-color:#e7c47e;background:#403829;color:#fff1d1;box-shadow:inset 0 0 0 1px #bb9b65}
+.battle-target-picker button:focus-visible{outline:3px solid #efd28b;outline-offset:2px}
+.card.enemy.targeted{border-color:#dabb7b!important;box-shadow:inset 3px 0 #e1c17d}
+.battle-command-help{margin:5px 0 9px;color:#d0d5d9;font-size:.79rem;line-height:1.5;min-height:18px}
+@media(max-width:520px){.battle-target-picker{gap:4px}.battle-target-picker button{flex:1 1 46%;min-height:44px;font-size:.75rem;padding:6px}.battle-command-help{font-size:.73rem}}
