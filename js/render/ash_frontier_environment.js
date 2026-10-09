@@ -28,28 +28,41 @@ const AshFrontierEnvironment=(()=>{
  });
  function paintTile(ctx,map,ch,x,y){
   if(!inScope(map))return false;
-  const a=x*TILE_PX,b=y*TILE_PX,r=hash(x,y),p=palette[map],thin=1;
+  const a=x*TILE_PX,b=y*TILE_PX,r=hash(x,y),p=palette[map];
+  // Broad material clusters and sparse micro-details avoid a stamped 32px
+  // checkerboard. Every logical cell is nevertheless still 32px collision.
+  const area=hash(Math.floor(x/3),Math.floor(y/2),11);
   if(ch==='D'){
-   pix(ctx,p.path,a,b,32,32);
-   pix(ctx,map==='ashroad'?'#b39a7a':'#aaa08a',a+1,b+1,30,30);
-   pix(ctx,p.edge,a+((r>>>7)%18)+4,b+((r>>>3)%18)+5,5,1);
-   pix(ctx,p.mud||p.ash||p.dirt,a+(r%19)+3,b+((r>>>9)%20)+4,8,2);
-   if(y%3===0)pix(ctx,'#685a4c',a+7,b+21,19,1);
+   // Full-bleed earth: an inset 30x30 fill would draw false grid joints.
+   pix(ctx,map==='ashroad'?(area%3===0?'#ae9677':'#b39a7a'):
+                (area%3===0?'#a19886':'#aaa08a'),a,b,32,32);
+   if((r&3)===0)pix(ctx,p.edge,a+((r>>>7)%20)+3,b+((r>>>3)%21)+4,5,1);
+   if((r&7)<=2)pix(ctx,p.mud||p.ash||p.dirt,a+(r%20)+2,b+((r>>>9)%21)+4,7,1);
    return true;
   }
   if(map==='ashroad'&&(ch==='B'||ch==='T')){
-   pix(ctx,ch==='B'?p.ground:p.edge,a,b,32,32);
-   pix(ctx,(r%4===0)?'#817568':'#5f5952',a+2,b+3,28,2);
-   pix(ctx,'#8b7966',a+8,b+20,7,1);
-   if(r%5===0){pix(ctx,'#292e2a',a+13,b+11,4,17);pix(ctx,'#756d5b',a+10,b+8,3,5)}
+   const burnt=ch==='T';
+   pix(ctx,burnt?(area%3===0?'#41423b':p.edge):
+       (area%4===0?'#70665a':p.ground),a,b,32,32);
+   // Ash wisps remain a surface stain. Physical charred posts are drawn
+   // separately and only on existing non-traversable T cells.
+   if(r%4===0)pix(ctx,burnt?'#656158':'#817568',a+((r>>>5)%19)+3,b+((r>>>10)%22)+4,9,2);
+   if(r%7===0)pix(ctx,'#8b7966',a+((r>>>11)%21)+3,b+((r>>>16)%24)+3,4,1);
    return true;
   }
   if((map==='frontier'||map==='frontierfield')&&['M','B','K','H'].includes(ch)){
-   const wall=ch==='K'||ch==='H',c=wall?p.edge:p.ground;
-   pix(ctx,c,a,b,32,32);
-   pix(ctx,wall?'#67675f':p.mud,a+2,b+4,28,24);
-   pix(ctx,wall?'#45484a':'#94826e',a+5,b+((r>>>3)%21)+6,14,2);
-   if(wall){pix(ctx,'#333638',a+2,b+27,28,3);pix(ctx,'#aea395',a+3,b+2,25,2)}
+   const wall=ch==='K'||ch==='H';
+   pix(ctx,wall?(area%3===0?'#484a47':p.edge):
+       (area%3===0?'#706b60':p.ground),a,b,32,32);
+   // Retain rough, readable defensive masonry, but no 28x24 inset
+   // rectangle on every square and no regular grid of false floor seams.
+   if(wall){
+    if((r&1)===0)pix(ctx,'#77766c',a+((r>>>4)%17)+5,b+((r>>>12)%20)+4,9,2);
+    if((r&7)===1)pix(ctx,'#aaa395',a+((r>>>10)%19)+4,b+21,6,2);
+   }else{
+    if((r&3)===0)pix(ctx,p.mud,a+((r>>>3)%19)+4,b+((r>>>7)%19)+4,10,2);
+    if((r&7)===2)pix(ctx,'#978470',a+((r>>>13)%23)+3,b+((r>>>17)%23)+3,5,1);
+   }
    return true;
   }
   return false;
