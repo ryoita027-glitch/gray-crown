@@ -132,6 +132,16 @@ with game_server() as URL:
   final_ms=record_cost(page,'village_environment_v2',True)
   check('art v2 improves the village without changing any actor sprite',prior_v1!=next_v2)
   check('v1 and v2 cost recorded without a fragile timing threshold',prior_ms>=0 and final_ms>=0)
+  check('v2 village NPC pixel rendering is scoped and does not change other maps',
+        page.evaluate("""() => {
+           const test=document.createElement('canvas');test.width=768;test.height=480;
+           const c=test.getContext('2d',{willReadFrequently:true}),npc=maps.village.npcs.find(n=>n.id==='father');
+           const valid=RyuneArtV2.drawNpc(c,'village',npc,'down')===true;
+           const other=RyuneArtV2.drawNpc(c,'road',npc,'down')===false;
+           const pixels=c.getImageData(0,0,768,480).data;
+           let nonblank=0;for(let i=3;i<pixels.length;i+=4)if(pixels[i]>0)nonblank++;
+           return valid&&other&&nonblank>100;
+         }"""))
   check('four canonical buildings have different palettes and unchanged coordinates',
         page.evaluate("""() => RyuneArtV2.blueprints.length===4
            && new Set(RyuneArtV2.blueprints.map(b=>b.kind)).size===4
