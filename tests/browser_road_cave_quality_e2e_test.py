@@ -143,7 +143,12 @@ def interact(page,obj,auto_battle=None):
    return fight(page,auto_battle)
   page.keyboard.press("Enter");page.wait_for_timeout(160)
   if page.locator("#battlePanel").is_visible():return fight(page,auto_battle)
-  if obj=="boss" and page.locator("#choiceBox button").count():
+  if obj=="boss":
+   # Typewriter dialogue must finish before the choice buttons materialize.
+   for attempt in range(50):
+    if page.locator("#choiceBox button").count():break
+    if not page.locator("#dialogueBox").is_visible():break
+    page.keyboard.press("Enter");page.wait_for_timeout(35)
    labels=page.locator("#choiceBox button").all_text_contents()
    check("boss has player choice",any("戦う" in x for x in labels),labels)
    page.locator("#choiceBox button").filter(has_text="戦う").click();page.wait_for_timeout(190)
