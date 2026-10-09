@@ -34,6 +34,6 @@ function createHarness(root=path.resolve(__dirname,'..')){
  function flushTimers(limit=300){while(timers.length&&limit-->0){timers.shift()()}if(limit<=0&&timers.length)throw new Error('Timer queue did not settle')}
  function press(key){for(const fn of documentEvents.keydown||[])fn({key,repeat:false,preventDefault(){}})}
  function evaluate(code){return vm.runInContext(code,context)}
- return{context,GC:context.GC,elements,getElement,storage,flushRaf,flushTimers,press,raf,timers,evaluate};
+ return{context,GC:context.GC,elements,getElement,storage,flushRaf,pumpRaf,flushTimers,press,raf,timers,evaluate};
 }
 module.exports={createHarness,SCRIPT_ORDER};
