@@ -21,6 +21,7 @@ from datetime import datetime,timezone
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
+MAIN_V23_SHA="d689aabb5146c9f45466a4f74f397e664c08fb4f"
 def utc():return datetime.now(timezone.utc).isoformat()
 def capture(root:Path, argv:list[str], timeout:int, label:str):
     start=time.monotonic()
@@ -102,6 +103,25 @@ def run(root:Path,mode:str,main_v23_dir:Path|None,output:Path):
             report["blocked_at"]="real main v23 save/backup/defeat fixture missing"
             report["finished_utc"]=utc();write()
             print("STOP: full acceptance requires --main-v23-dir",flush=True)
+            return 2
+        # Do not accept a user-supplied later/alternate game as the v23 source.
+        # CI uses actions/checkout at the immutable SHA; the local fallback
+        # must preserve the same provenance or report BLOCKED, never PASS.
+        if git is None or not (main_v23_dir.resolve()/".git").exists():
+            report["status"]="BLOCKED"
+            report["blocked_at"]="main-v23 fixture must be an actual Git checkout"
+            report["finished_utc"]=utc();write()
+            print("STOP: main-v23 fixture provenance not verified",flush=True)
+            return 2
+        confirmed=subprocess.run([git,"rev-parse","HEAD"],cwd=main_v23_dir.resolve(),
+                                 capture_output=True,text=True,check=False)
+        if confirmed.returncode!=0 or confirmed.stdout.strip()!=MAIN_V23_SHA:
+            report["status"]="BLOCKED"
+            report["blocked_at"]="main-v23 SHA mismatch"
+            report["expected_main_v23_sha"]=MAIN_V23_SHA
+            report["actual_fixture_sha"]=confirmed.stdout.strip()
+            report["finished_utc"]=utc();write()
+            print("STOP: only the immutable real main v23 reference is accepted",flush=True)
             return 2
         env=os.environ.copy()
         env["GRAY_CROWN_MAIN_V23_DIR"]=str(main_v23_dir.resolve())
