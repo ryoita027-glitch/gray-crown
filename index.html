@@ -102,8 +102,10 @@
                 </div>
               </div>
               <div id="enemyCards" class="card-grid compact-enemy-cards"></div>
+              <div id="battleTargets" class="battle-target-picker" role="group" aria-label="攻撃する敵"></div>
               <div id="partyCards" class="card-grid"></div>
               <div id="battleActions" class="battle-actions"></div>
+              <p id="battleHelp" class="battle-command-help" aria-live="off"></p>
               <div id="battleLog" class="battle-log"></div>
             </section>
           </div>
@@ -204,6 +206,7 @@
   <script src="js/systems/cinematic.js"></script>
   <script src="js/systems/ryune_acting.js"></script>
   <script src="js/systems/capital_acting.js"></script>
+  <script src="js/systems/commercial_tactics.js"></script>
   <script src="js/render/battle.js"></script>
   <script src="js/systems/battle.js"></script>
   <script src="js/core/save.js"></script>
