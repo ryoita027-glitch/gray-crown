@@ -5,7 +5,6 @@ Real Chromium + real HTML/assets. Only the low-HP defeat fixture is primed;
 it still uses ordinary movement, rendered battle buttons, and the real AI turn.
 """
 import contextlib
-import functools
 import hashlib
 import http.server
 import json
@@ -23,8 +22,9 @@ SAVE_KEY = "gray-crown-vslice-save-v1"
 
 @contextlib.contextmanager
 def served(root):
-    handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(root))
-    class Quiet(handler):
+    class Quiet(http.server.SimpleHTTPRequestHandler):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, directory=str(root), **kwargs)
         def log_message(self, *args):
             pass
     server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Quiet)
