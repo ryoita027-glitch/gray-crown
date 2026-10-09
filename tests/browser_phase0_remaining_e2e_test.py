@@ -214,8 +214,11 @@ def test_defeat_and_battle(browser, url):
     page.wait_for_function("() => GC.State.get().battle === null", timeout=10000)
     page.wait_for_function("() => document.querySelector('#battlePanel').classList.contains('hidden')", timeout=10000)
     require(page.locator("#dialogueBox").is_visible(), "defeat recovery feedback absent")
-    require("力尽き" in page.locator("#dialogueText").inner_text() or
-            "退いた" in page.locator("#dialogueText").inner_text(), "defeat dialogue incorrect")
+    # Text is revealed one glyph at a time after the panel closes.
+    # Assert the actual final in-game wording, not an early partial frame.
+    page.wait_for_function("""() =>
+      document.querySelector('#dialogueText')?.textContent.includes('安全な場所まで退いた')
+    """, timeout=8000)
     page.screenshot(path=str(EVIDENCE / "phase0_defeat_recovery.png"), full_page=True)
     finish(page)
     after = page.evaluate("""() => ({
