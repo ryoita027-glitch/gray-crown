@@ -539,3 +539,8 @@ body:has(.battle-panel:not(.hidden)) .party-battle-line{left:5%;bottom:38px}
 .card.enemy.targeted{border-color:#dabb7b!important;box-shadow:inset 3px 0 #e1c17d}
 .battle-command-help{margin:5px 0 9px;color:#d0d5d9;font-size:.79rem;line-height:1.5;min-height:18px}
 @media(max-width:520px){.battle-target-picker{gap:4px}.battle-target-picker button{flex:1 1 46%;min-height:44px;font-size:.75rem;padding:6px}.battle-command-help{font-size:.73rem}}
+
+
+/* Optional routes are discoverable, but never mislabeled as mandatory. */
+.discovery-progress{margin-top:12px;padding:10px 12px;background:#282d31;border:1px solid #64583e;border-radius:7px;color:#f0d8a0;font-size:.82rem;font-weight:650;line-height:1.5}
+.discovery-progress.hidden{display:none}

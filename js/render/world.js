@@ -513,7 +513,7 @@ function drawBeast(px,py,type){ctx.fillStyle=COLORS.shadow;ctx.beginPath();ctx.e
 function front(){let x=state.x,y=state.y;if(state.dir==='up')y--;if(state.dir==='down')y++;if(state.dir==='left')x--;if(state.dir==='right')x++;return{x,y}}
 function visibleObject(o){return !objectCleared(o.id)}
 function drawInteractionMarker(){const f=front(),m=maps[state.map];let target=m.npcs.find(n=>npcVisible(n)&&n.x===f.x&&n.y===f.y);if(!target)target=m.objects.find(o=>o.x===f.x&&o.y===f.y&&visibleObject(o));if(!target&&state.map==='village'&&f.y===0&&[11,12].includes(f.x))target={x:f.x,y:f.y};if(!target)return;const cx=target.x*TILE+16,cy=Math.max(12,target.y*TILE+2);ctx.fillStyle='#f1d077';ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+5,cy+5);ctx.lineTo(cx,cy+10);ctx.lineTo(cx-5,cy+5);ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(0,0,0,.55)';ctx.stroke()}
-function currentQuestTarget(){
+function currentQuestTarget(){const candidate=GC.CommercialDiscovery?.questHint?.(state.map);if(candidate)return candidate;
  if(state.map==='capital'&&!getWorldSwitch('returnedKingdom')){
   if(!isEventComplete('alpha.capital.ceremony'))return{id:'capitalOfficial',kind:'npc'};
   if(!isEventComplete('alpha.capital.whiteStagNight'))return{id:'capitalInnDoor',kind:'object'};
