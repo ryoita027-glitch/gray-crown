@@ -153,6 +153,15 @@ with game_server() as URL:
   check('map/NPC/object coordinates and collision definitions unchanged',static_before==static_after)
   snap(page,'after_village_party_walk')
   walk(page,(18,7));snap(page,'after_npc_near_building')
+  # Important existing village NPCs must remain interactable and reachable.
+  for npc,pos,facing in (('father',(5,7),'ArrowUp'),
+                          ('orphan',(18,7),'ArrowUp'),
+                          ('mayor',(6,8),'ArrowDown')):
+   walk(page,pos)
+   page.keyboard.press(facing);page.wait_for_timeout(130)
+   page.keyboard.press('Enter');page.wait_for_timeout(130)
+   check('important NPC conversation '+npc,page.locator('#dialogueBox').is_visible())
+   close_dialogue(page)
 
   # Four actors move through an authentic map with the unchanged walk sprites.
   check('same four party members',page.evaluate("GC.State.get().party.map(p=>p.id).join(',')==='karen,triton,sophie,margaret'"))
@@ -177,7 +186,15 @@ with game_server() as URL:
     GC.Render.World.VISUAL.map=null;GC.Render.World.draw();
   }""")
   page.wait_for_timeout(250)
+  page.evaluate("""() => {
+     document.querySelector('.world-hud').style.visibility='hidden';
+     document.querySelector('.story-context').style.visibility='hidden';
+  }""")
   page.locator('#game').screenshot(path=str(OUT/'after_village_whole_map.png'))
+  page.evaluate("""() => {
+     document.querySelector('.world-hud').style.visibility='';
+     document.querySelector('.story-context').style.visibility='';
+  }""")
   page.evaluate("""() => {GC.Cinematic.cameraTarget=()=>null;GC.Render.World.VISUAL.map=null;GC.Render.World.draw()}""")
 
   for w,h,label in ((1024,768,'smallpc'),(390,844,'mobile')):
