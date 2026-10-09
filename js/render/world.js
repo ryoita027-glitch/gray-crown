@@ -32,7 +32,7 @@ function isBlocked(x,y){
  return false
 }
 
-function drawTile(ch,x,y){const px=x*TILE,py=y*TILE,h=((x*1103515245)^(y*12345))>>>0;
+function drawTile(ch,x,y){if(RyuneEnvironment.enabled&&RyuneEnvironment.paintTile(ctx,state.map,ch,x,y,maps[state.map]))return;const px=x*TILE,py=y*TILE,h=((x*1103515245)^(y*12345))>>>0;
  const dot=(c1,c2)=>{ctx.fillStyle=c1;ctx.fillRect(px-.65,py-.65,TILE+1.3,TILE+1.3);ctx.fillStyle=c2;ctx.globalAlpha=.62;ctx.beginPath();ctx.ellipse(px+5+(h%20),py+7+((h>>4)%18),3+((h>>9)%4),2+((h>>12)%3),0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1};
  if(ch==='G'||ch==='H')dot(state.map==='empirevillage'?'#66755e':COLORS.grass,state.map==='empirevillage'?'#53664d':COLORS.grass2)
  else if(ch==='P'){ctx.fillStyle=COLORS.path;ctx.fillRect(px-.65,py-.65,TILE+1.3,TILE+1.3);ctx.fillStyle='rgba(73,57,38,.13)';ctx.fillRect(px+4+(h%5),py+7,5,2);ctx.fillRect(px+18,py+18+((h>>5)%3),7,2);ctx.fillRect(px+10,py+27,3,2);ctx.fillStyle='rgba(236,215,165,.12)';ctx.fillRect(px+7,py+13,3,1);ctx.fillRect(px+23,py+8,2,1);ctx.fillStyle='rgba(72,92,55,.13)';ctx.fillRect(px,py+((h>>8)%24),2,5);ctx.fillRect(px+30,py+((h>>12)%23),2,6)}
@@ -59,7 +59,7 @@ function drawTile(ch,x,y){const px=x*TILE,py=y*TILE,h=((x*1103515245)^(y*12345))
  else if(ch==='W'){ctx.fillStyle='#56483c';ctx.fillRect(px-.65,py-.65,TILE+1.3,TILE+1.3);ctx.fillStyle='#6d5a49';ctx.fillRect(px+2,py+3,28,11);ctx.fillStyle='#3d342d';ctx.fillRect(px,py+25,TILE,7);ctx.fillStyle='rgba(255,255,255,.055)';ctx.fillRect(px+4,py+5,22,2)}
  else if(ch==='S'){ctx.fillStyle='#222329';ctx.fillRect(px-.65,py-.65,TILE+1.3,TILE+1.3);ctx.fillStyle='#30323a';ctx.fillRect(px,py,TILE,6);ctx.fillStyle='rgba(255,255,255,.025)';ctx.fillRect(px+4,py+12,12,2)}
 }
-function drawTileDetail(ch,x,y){const px=x*TILE,py=y*TILE,h=((x*73856093)^(y*19349663))>>>0;
+function drawTileDetail(ch,x,y){if(RyuneEnvironment.enabled&&RyuneEnvironment.targets.has(state.map))return;const px=x*TILE,py=y*TILE,h=((x*73856093)^(y*19349663))>>>0;
  if(ch==='G'||ch==='Q'){ctx.fillStyle='rgba(238,223,164,.16)';if(h%3===0){ctx.fillRect(px+7+(h%11),py+7,2,5);ctx.fillRect(px+9+(h%11),py+5,1,7)}if(h%5===0){ctx.fillStyle='rgba(54,88,51,.34)';ctx.fillRect(px+22,py+20,2,6);ctx.fillRect(px+19,py+24,7,2)}}
  if(['A','E'].includes(ch)){ctx.strokeStyle='rgba(26,29,31,.18)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(px+4+(h%7),py+8);ctx.lineTo(px+14+(h%9),py+11);ctx.lineTo(px+20+(h%5),py+7);ctx.stroke();ctx.fillStyle='rgba(255,255,255,.05)';ctx.fillRect(px+3,py+3,10,1)}
  if(['D','B','M'].includes(ch)){ctx.fillStyle='rgba(31,25,21,.16)';ctx.fillRect(px+5+(h%13),py+9,5,2);ctx.fillRect(px+17,py+22+(h%5),7,2);if(h%4===0){ctx.fillStyle='rgba(174,139,91,.18)';ctx.fillRect(px+12,py+15,3,3)}}
@@ -67,7 +67,7 @@ function drawTileDetail(ch,x,y){const px=x*TILE,py=y*TILE,h=((x*73856093)^(y*193
  if(ch==='F'){ctx.fillStyle='rgba(255,236,192,.08)';ctx.fillRect(px+2,py+4,28,2);ctx.fillStyle='rgba(50,29,19,.14)';ctx.fillRect(px+15,py+2,2,28)}
  if(ch==='Z'){ctx.strokeStyle='rgba(193,215,224,.08)';ctx.beginPath();ctx.moveTo(px+3,py+6+(h%9));ctx.lineTo(px+14,py+11);ctx.lineTo(px+28,py+5+(h%11));ctx.stroke()}
 }
-function drawTerrainBlend(m){
+function drawTerrainBlend(m){if(RyuneEnvironment.enabled&&RyuneEnvironment.targets.has(state.map))return;
  const walk=new Set(['G','Q','P','D','A','E','B','M','F']);
  for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){
   const ch=m.tiles[y][x],px=x*TILE,py=y*TILE;if(!walk.has(ch))continue;
@@ -85,7 +85,7 @@ function drawTerrainBlend(m){
  }
 }
 function drawMapUnderlay(m){let c='#617556';if(INTERIOR_MAPS.includes(state.map))c='#8a6b49';else if(state.map==='capital')c='#858783';else if(state.map==='road')c='#657a59';else if(state.map==='village')c='#647a58';ctx.fillStyle=c;ctx.fillRect(-4,-4,COLS*TILE+8,ROWS*TILE+8)}
-function drawVerticalSliceGround(m){
+function drawVerticalSliceGround(m){if(RyuneEnvironment.enabled&&RyuneEnvironment.targets.has(state.map))return;
  const map=state.map;
  if(map==='village'){
   // broad, irregular footpath shoulders hide the square tile seam
@@ -414,7 +414,7 @@ function drawRegionDecor(){
  if(state.map==='ravine'){ctx.fillStyle='#15191b';ctx.fillRect(5*TILE,2*TILE,14*TILE,10*TILE)}
 
 }
-function drawObject(o){const px=o.x*TILE,py=o.y*TILE;
+function drawObject(o){if(RyuneEnvironment.enabled&&RyuneEnvironment.drawObject(ctx,state.map,o))return;const px=o.x*TILE,py=o.y*TILE;
  if(o.id==='store'){ctx.fillStyle='#916f45';ctx.fillRect(px+4,py+12,12,14);ctx.fillRect(px+16,py+8,12,18);ctx.strokeStyle='#5b4229';ctx.strokeRect(px+4.5,py+12.5,11,13);ctx.strokeRect(px+16.5,py+8.5,11,17);ctx.fillStyle='#d4c39d';ctx.beginPath();ctx.ellipse(px+10,py+9,6,5,0,0,Math.PI*2);ctx.ellipse(px+24,py+6,6,5,0,0,Math.PI*2);ctx.fill()}
  if(o.id==='well'){ctx.fillStyle='#676b70';ctx.beginPath();ctx.ellipse(px+16,py+17,13,8,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#252c31';ctx.beginPath();ctx.ellipse(px+16,py+16,8,4,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#7b5e3f';ctx.fillRect(px+5,py+2,3,17);ctx.fillRect(px+24,py+2,3,17);ctx.fillRect(px+5,py+2,22,3)}
  if(o.id==='home'){ctx.fillStyle='#72553c';ctx.fillRect(px+5,py+20,22,6);ctx.fillStyle='#c7aa72';ctx.fillRect(px+8,py+22,16,2);ctx.fillStyle='#efe1bc';ctx.font='bold 8px system-ui';ctx.textAlign='center';ctx.fillText('自宅',px+16,py+17);ctx.textAlign='start'}
@@ -530,14 +530,33 @@ function viewScale(){if(INTERIOR_MAPS.includes(state.map))return 1.18;if(['capit
 const VISUAL={map:null,camX:0,camY:0,playerX:0,playerY:0,followers:[[12,13],[13,13],[14,13]],raf:0,nextMoveAt:0};
 function partyTrailPoints(){
  const t=Array.isArray(state.trail)?state.trail:[],order=t.length>=5?[0,2,4,1,3]:[0,1,2];
- // In a compact U-turn the default [0,2,4] may overlap two party actors.
- // Prefer distinct *visited* tiles while preserving the established spacing.
- // This only changes rendered follower sampling, not save/story or sprite files.
  const used=new Set([state.x+','+state.y]),result=[];
- for(const i of order){const p=t[i];if(!Array.isArray(p))continue;const key=p[0]+','+p[1];if(used.has(key))continue;used.add(key);result.push(p);if(result.length===3)return result}
- // If there are fewer than three distinct visited tiles (e.g. repeated
- // movement between two cells), keep all followers instead of dropping actors.
- for(const i of order){const p=t[i];if(!Array.isArray(p)||result.includes(p))continue;result.push(p);if(result.length===3)break}
+ // Keep genuine, distinct trail positions as first priority.
+ for(const i of order){
+  const p=t[i];
+  if(!Array.isArray(p)||!Number.isFinite(p[0])||!Number.isFinite(p[1]))continue;
+  const key=p[0]+','+p[1];if(used.has(key))continue;
+  used.add(key);result.push([p[0],p[1]]);if(result.length===3)return result;
+ }
+ // Two-tile ping-pong can supply fewer than three different visited tiles.
+ // Render-only formation: choose nearby *walkable* cells rather than drawing
+ // multiple 48px actors on exactly the same footprint. Never change state.trail,
+ // story, saved coordinates, collision, or movement semantics.
+ const forward={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[state.dir]||[0,1];
+ const nearby=[];
+ for(let radius=1;radius<=4;radius++)for(let dy=-radius;dy<=radius;dy++)for(let dx=-radius;dx<=radius;dx++){
+  if(Math.abs(dx)+Math.abs(dy)!==radius)continue;
+  const x=state.x+dx,y=state.y+dy;
+  if(x<0||y<0||x>=COLS||y>=ROWS||isBlocked(x,y))continue;
+  // Prefer positions behind the leader, close to the actual travel history.
+  const behind=-(dx*forward[0]+dy*forward[1]);
+  nearby.push({x,y,radius,behind,side:Math.abs(dx*forward[1]-dy*forward[0])});
+ }
+ nearby.sort((a,b)=>a.radius-b.radius||b.behind-a.behind||a.side-b.side||a.y-b.y||a.x-b.x);
+ for(const p of nearby){
+  const key=p.x+','+p.y;if(used.has(key))continue;
+  used.add(key);result.push([p.x,p.y]);if(result.length===3)break;
+ }
  return result
 }
 function cameraForMap(){const o=GC.Cinematic?.cameraTarget?.(),scale=o?.scale||viewScale(),vw=canvas.width/scale,vh=canvas.height/scale,worldW=COLS*TILE,worldH=ROWS*TILE,fx=Number.isFinite(o?.x)?o.x:state.x,fy=Number.isFinite(o?.y)?o.y:state.y,cx=fx*TILE+TILE/2,cy=fy*TILE+TILE/2;return{scale,x:Math.max(0,Math.min(worldW-vw,cx-vw/2)),y:Math.max(0,Math.min(worldH-vh,cy-vh/2))}}
@@ -547,7 +566,7 @@ function drawScene(){
  const ease=.22;VISUAL.camX+=(target.x-VISUAL.camX)*ease;VISUAL.camY+=(target.y-VISUAL.camY)*ease;VISUAL.playerX+=(state.x-VISUAL.playerX)*.48;VISUAL.playerY+=(state.y-VISUAL.playerY)*.48;const trailPoints=partyTrailPoints();for(let i=0;i<3;i++){const t=trailPoints[i]||trailPoints[trailPoints.length-1]||[state.x,state.y];if(!VISUAL.followers[i])VISUAL.followers[i]=[t[0],t[1]];VISUAL.followers[i][0]+=(t[0]-VISUAL.followers[i][0])*.42;VISUAL.followers[i][1]+=(t[1]-VISUAL.followers[i][1])*.42;}
  ctx.save();ctx.scale(target.scale,target.scale);ctx.translate(-VISUAL.camX,-VISUAL.camY);drawMapUnderlay(m);
  for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){drawTile(m.tiles[y][x],x,y);drawTileDetail(m.tiles[y][x],x,y)}drawTerrainBlend(m);drawVerticalSliceGround(m);
- if(state.map==='village'){drawVillageDecor();villageHouses.forEach(drawHouse)}if(INTERIOR_MAPS.includes(state.map))drawInteriorDecor();drawRegionDecor();m.objects.forEach(drawObject);const cinematicActive=GC.Cinematic?.isActive?.()===true,controlledNpcs=new Set(GC.Cinematic?.controlledNpcIds?.()||[]);m.npcs.filter(n=>npcVisible(n)&&!controlledNpcs.has(n.id)).forEach(drawNpc);drawQuestMarker();
+ if(state.map==='village'){if(RyuneEnvironment.enabled)RyuneEnvironment.drawVillage(ctx);else{drawVillageDecor();villageHouses.forEach(drawHouse)}}if(INTERIOR_MAPS.includes(state.map)){if(RyuneEnvironment.enabled&&RyuneEnvironment.rooms.has(state.map))RyuneEnvironment.drawInterior(ctx,state.map);else drawInteriorDecor();}drawRegionDecor();m.objects.forEach(drawObject);const cinematicActive=GC.Cinematic?.isActive?.()===true,controlledNpcs=new Set(GC.Cinematic?.controlledNpcIds?.()||[]);m.npcs.filter(n=>npcVisible(n)&&!controlledNpcs.has(n.id)).forEach(drawNpc);drawQuestMarker();
  if(cinematicActive){GC.Cinematic?.drawActors?.(ctx,{drawCharacterSprite,drawHeroSpriteSheet})}else{const leaderMoving=Math.abs(state.x-VISUAL.playerX)>.015||Math.abs(state.y-VISUAL.playerY)>.015,phase=leaderMoving?Date.now()/82:0;drawPartyRuntime(leaderMoving,phase);drawInteractionMarker()}GC.Dev?.drawWorldOverlay?.(ctx);ctx.restore();drawAreaIdentity();$('locationLabel').textContent=m.name;if($('safetyLabel')){const safe=encounterSafeZone();$('safetyLabel').textContent=safe?'● 安全地帯':'▲ 危険地帯';$('safetyLabel').classList.toggle('danger',!safe)};
  const followerTargets=partyTrailPoints(),followerMoving=VISUAL.followers.some((p,i)=>{const t=followerTargets[i]||p;return Math.abs(t[0]-p[0])>.01||Math.abs(t[1]-p[1])>.01});const moving=cinematicActive||Math.abs(target.x-VISUAL.camX)>.08||Math.abs(target.y-VISUAL.camY)>.08||Math.abs(state.x-VISUAL.playerX)>.01||Math.abs(state.y-VISUAL.playerY)>.01||followerMoving;
  if(moving){cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene)}

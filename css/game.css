@@ -460,3 +460,28 @@ body:has(.battle-panel:not(.hidden)) .party-battle-line{left:5%;bottom:38px}
 .menu-actions .menu-danger{color:#d7b1a9;border-color:rgba(164,85,76,.55);background:linear-gradient(#3a292a,#271d1e)}
 .menu-inventory{margin-top:9px;border-top:1px solid rgba(255,255,255,.06);padding-top:5px}
 @media(max-width:520px){.menu-actions{grid-template-columns:1fr}}
+
+/* Phase 0 acceptance: preserve one-line touch controls and readable battle actors.
+   Presentation-only. Source sprite bytes and encounter balance are unchanged. */
+@media (max-width:850px){
+ .mobile-pad{grid-template-columns:repeat(3,minmax(54px,62px));grid-template-rows:repeat(3,48px);gap:7px}
+ .mobile-pad button{min-width:0;padding:0 3px;white-space:nowrap;word-break:keep-all;font-size:.88rem;line-height:1.1}
+}
+@media (min-width:851px){
+ body:has(.battle-panel:not(.hidden)) .battle-stage{height:310px}
+ body:has(.battle-panel:not(.hidden)) .party-battle-line{left:10%;bottom:45px;width:360px;height:155px}
+ body:has(.battle-panel:not(.hidden)) .battle-hero.sprite{width:80px;height:80px;background-size:480px 320px}
+ body:has(.battle-panel:not(.hidden)) .battle-hero.sprite:nth-child(2){left:78px!important}
+ body:has(.battle-panel:not(.hidden)) .battle-hero.sprite:nth-child(3){left:156px!important}
+ body:has(.battle-panel:not(.hidden)) .battle-hero.sprite:nth-child(4){left:234px!important}
+ body:has(.battle-panel:not(.hidden)) .enemy-visual{right:12%;bottom:50px;transform:scale(1.16);transform-origin:50% 90%}
+}
+@media (max-width:850px){
+ body:has(.battle-panel:not(.hidden)) .battle-hero.sprite{background-size:384px 256px}
+}
+@media (max-width:520px){
+ body:has(.battle-panel:not(.hidden)) .battle-stage{height:236px}
+ body:has(.battle-panel:not(.hidden)) .party-battle-line{left:8px;bottom:30px}
+ body:has(.battle-panel:not(.hidden)) .enemy-visual{right:8px;bottom:30px}
+ body:has(.battle-panel:not(.hidden)) .enemy-stage-ui{right:7px;width:min(230px,70%)}
+}
