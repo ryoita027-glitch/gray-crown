@@ -41,16 +41,46 @@ else:
             bbox=cell.getbbox()
             if bbox!=EXPECTED_BBOX[name]: errors.append(f"Margaret {name} bbox {bbox} != {EXPECTED_BBOX[name]}")
 
-for name,expected_hash in RUNTIME.items():
-    p=ROOT/f"assets/characters/margaret/margaret_{name}.png"
-    if not p.exists():
-        errors.append(f"missing Margaret runtime sheet: {p.relative_to(ROOT)}");continue
-    h=hashlib.sha256(p.read_bytes()).hexdigest()
-    if h!=expected_hash: errors.append(f"Margaret {name} runtime hash changed: {h}")
-    with Image.open(p) as im:
-        if im.mode!="RGBA": errors.append(f"Margaret {name} mode {im.mode} != RGBA")
-        expected=(48*FRAMES[name],192)
-        if im.size!=expected: errors.append(f"Margaret {name} size {im.size} != {expected}")
+# Preserve the immutable historical Margaret lock while validating the active
+# appeal runtime against its exact deterministic generator. An old v2/v5
+# runtime SHA must not reject an explicitly promoted v3/v7 source.
+appeal_source=ROOT/"docs/pixel/reference/margaret_chibi_direction_appeal_v7_48.png"
+if appeal_source.exists():
+    import subprocess,tempfile
+    try:
+        with tempfile.TemporaryDirectory(prefix="margaret-appeal-verify-") as temp:
+            subprocess.run(
+                [sys.executable,str(ROOT/"tools/generate_margaret_prototype_assets.py"),
+                 "--reference",str(appeal_source),"--out",temp],
+                cwd=ROOT,check=True,capture_output=True,text=True
+            )
+            for name in RUNTIME:
+                p=ROOT/f"assets/characters/margaret/margaret_{name}.png"
+                generated=Path(temp)/f"margaret_{name}.png"
+                if not p.exists() or not generated.exists():
+                    errors.append(f"missing Margaret {name} runtime or regenerated sheet")
+                    continue
+                with Image.open(p) as im,Image.open(generated) as expected:
+                    if im.mode!="RGBA": errors.append(f"Margaret {name} mode {im.mode} != RGBA")
+                    size=(48*FRAMES[name],192)
+                    if im.size!=size: errors.append(f"Margaret {name} size {im.size} != {size}")
+                    if im.convert("RGBA").tobytes()!=expected.convert("RGBA").tobytes():
+                        errors.append(f"Margaret {name} differs from appeal source deterministic regeneration")
+    except Exception as exc:
+        errors.append(f"Margaret appeal regeneration failed: {exc}")
+else:
+    # Legacy prototype branches still require the exact original runtime hashes.
+    for name,expected_hash in RUNTIME.items():
+        p=ROOT/f"assets/characters/margaret/margaret_{name}.png"
+        if not p.exists():
+            errors.append(f"missing Margaret runtime sheet: {p.relative_to(ROOT)}")
+            continue
+        h=hashlib.sha256(p.read_bytes()).hexdigest()
+        if h!=expected_hash: errors.append(f"Margaret {name} runtime hash changed: {h}")
+        with Image.open(p) as im:
+            if im.mode!="RGBA": errors.append(f"Margaret {name} mode {im.mode} != RGBA")
+            size=(48*FRAMES[name],192)
+            if im.size!=size: errors.append(f"Margaret {name} size {im.size} != {size}")
 
 if errors:
     print("MARGARET DIRECTION LOCK v5 VERIFY FAIL",file=sys.stderr)
