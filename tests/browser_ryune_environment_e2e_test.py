@@ -132,6 +132,16 @@ with game_server() as URL:
   final_ms=record_cost(page,'village_environment_v2',True)
   check('art v2 improves the village without changing any actor sprite',prior_v1!=next_v2)
   check('v1 and v2 cost recorded without a fragile timing threshold',prior_ms>=0 and final_ms>=0)
+  # The per-NPC procedural prototype lacks the approved heroes' finish.
+  # Keep it in the exact-pixel comparison artifacts, but do not use it as the
+  # shipped Ryune NPC appearance until reviewed/approved.
+  check('NPC visual study is explicitly opt-in',
+        page.evaluate("RyuneArtV2.npcStyle==='legacy'"))
+  page.evaluate("RyuneArtV2.npcStyle='prototype';GC.Render.World.draw()")
+  npc_proto=snap(page,'npc_prototype_not_adopted')
+  page.evaluate("RyuneArtV2.npcStyle='legacy';GC.Render.World.draw()")
+  npc_legacy=snap(page,'npc_existing_retained')
+  check('NPC options visibly differ in exact-game image',npc_proto!=npc_legacy)
   check('v2 village NPC pixel rendering is scoped and does not change other maps',
         page.evaluate("""() => {
            const test=document.createElement('canvas');test.width=768;test.height=480;
