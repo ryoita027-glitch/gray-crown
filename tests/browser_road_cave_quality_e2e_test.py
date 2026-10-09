@@ -45,7 +45,7 @@ def toggle_art(page,enable):
 def dismiss(page):
  for _ in range(180):
   if not page.locator("#dialogueBox").is_visible():return
-  if page.locator("#choiceBox button").count():return
+  if page.locator("#choiceBox button:visible").count():return
   page.keyboard.press("Enter");page.wait_for_timeout(25)
  raise AssertionError("dialogue cannot finish")
 def fight(page,battle_id=None,allow_loss=False):
