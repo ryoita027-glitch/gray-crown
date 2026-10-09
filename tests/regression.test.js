@@ -93,7 +93,7 @@ test('event engine completes a data-driven dialogue event only after its pages f
   h.pumpRaf(8);h.flushTimers();
   await Promise.resolve();
  }
- assert.ok(lines>=23,'all original appointment lines must be delivered');
+ assert.ok(lines>=23,'all original appointment lines must be delivered; observed='+lines+' scene='+JSON.stringify(h.GC.RyuneActing.getSnapshot())+' done='+stateOf(h).events.completed['alpha.village.appointment']);
  assert.equal(stateOf(h).events.completed['alpha.village.appointment'],true);
  assert.equal(stateOf(h).story.stage,h.GC.Story.STORY_STAGES.APPOINTED);
  assert.equal(h.GC.Events.findTriggeredEvent('npc','messenger',{map:'village'}).id,'alpha.village.appointment.repeat');
