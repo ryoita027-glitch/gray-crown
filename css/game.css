@@ -485,3 +485,38 @@ body:has(.battle-panel:not(.hidden)) .party-battle-line{left:5%;bottom:38px}
  body:has(.battle-panel:not(.hidden)) .enemy-visual{right:8px;bottom:30px}
  body:has(.battle-panel:not(.hidden)) .enemy-stage-ui{right:7px;width:min(230px,70%)}
 }
+
+/* Road & first-fort vertical slice: game rules and locked sprite pixels unchanged. */
+.battle-stage[data-terrain="cave"]{
+ background:linear-gradient(180deg,#242b35 0 38%,#3e4145 38% 62%,#66615b 62% 100%);
+ box-shadow:inset 0 18px 0 rgba(10,13,17,.55),inset 0 -26px 0 rgba(23,26,29,.4);
+}
+.battle-stage[data-terrain="cave"] .battle-backdrop{
+ background:repeating-linear-gradient(90deg,transparent 0 50px,rgba(12,18,23,.25) 51px 54px),
+ repeating-linear-gradient(0deg,transparent 0 30px,rgba(13,17,22,.15) 31px 33px);
+}
+.battle-stage[data-terrain="road"]{
+ background:linear-gradient(180deg,#344552 0 38%,#476047 38% 60%,#667558 60% 100%);
+}
+.battle-stage[data-terrain="road"] .battle-backdrop{
+ background:repeating-linear-gradient(90deg,transparent 0 90px,rgba(17,33,26,.13) 91px 107px),
+ linear-gradient(180deg,rgba(202,220,192,.08),transparent 48%);
+}
+.battle-hero.sprite{image-rendering:pixelated;background-repeat:no-repeat}
+.battle-hero.down{filter:grayscale(.75) brightness(.65)}
+#partyCards .ally.acting{border-color:rgba(234,197,120,.85);box-shadow:inset 3px 0 #e4bb73}
+.battle-hp-meter,.battle-mp-meter{height:5px;overflow:hidden;border-radius:2px;background:#2c343a;margin-top:5px;border:1px solid rgba(255,255,255,.09)}
+.battle-hp-meter span,.battle-mp-meter span{display:block;height:100%;transition:width .18s ease}
+.battle-hp-meter span{background:#90bc80}.battle-mp-meter span{background:#7aaac9}
+.battle-hp-meter[aria-label^="HP 0"] span{background:#be685f}
+#battleActions button:focus-visible{outline:2px solid #efdb9e;outline-offset:3px}
+@media (max-width:600px){
+ .battle-stage{height:220px}
+ .party-battle-line{left:9px;bottom:24px}
+ .enemy-visual{right:14px;bottom:24px;transform:scale(.88);transform-origin:100% 100%}
+ .battle-hero{filter:none}
+}
+
+/* Phase 4 optional boss-stage hierarchy, scoped to its existing battle UI. */
+.battle-stage[data-boss="true"] .enemy-art.horned-beast{transform:scale(1.18);transform-origin:50% 90%;filter:drop-shadow(0 9px 0 rgba(20,22,26,.65))}
+.battle-stage[data-boss="true"] .enemy-stage-ui{border-color:rgba(208,164,105,.6)}
