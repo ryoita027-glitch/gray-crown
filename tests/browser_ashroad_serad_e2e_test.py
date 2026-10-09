@@ -93,7 +93,7 @@ def play(page,url):
  require(snap(page)['story']=='10_ash_road','canonical Ash Road stage 10')
  compare_pixels(page,'ashroad')
  require('寄り道の発見' in page.locator('#discoveryHud').inner_text(),'optional discovery surfaced without adding quests')
- require(page.evaluate("GC.CommercialDiscovery.questHint('ashroad').id")==='refugee','authentic Ash Road quest marker directs to existing mother')
+ require(page.evaluate("GC.CommercialDiscovery.questHint('ashroad').id")=='refugee','authentic Ash Road quest marker directs to existing mother')
  # The actual narrative gate requires mother + orders + patrol; optional
  # household/priest/cart visits are deliberately not a new completion gate.
  meet(page,'ashroad','refugee','npc')
