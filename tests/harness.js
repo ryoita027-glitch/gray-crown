@@ -14,7 +14,7 @@ class Element{
 }
 function makeCtx(){return new Proxy({imageSmoothingEnabled:false,measureText:t=>({width:String(t).length*7})},{get(o,k){if(k in o)return o[k];return()=>{}},set(o,k,v){o[k]=v;return true}})}
 const SCRIPT_ORDER=[
- 'js/core/dom.js','js/core/log.js','js/systems/story.js','js/data/items.js','js/core/state.js','js/data/maps.js','js/data/npcs.js','js/data/animations.js','js/systems/animation.js','js/systems/audio.js','js/systems/progression.js','js/data/events.js','js/data/battles.js','js/systems/dialogue.js','js/render/ui.js','js/systems/exploration.js','js/systems/events.js','js/systems/movement.js','js/render/ryune_environment.js','js/render/ryune_art_direction_v2.js','js/render/world.js','js/systems/cinematic.js','js/render/battle.js','js/systems/battle.js','js/core/save.js','js/systems/validation.js','js/systems/menu.js','js/dev/developer.js','js/game.js'
+ 'js/core/dom.js','js/core/log.js','js/systems/story.js','js/data/items.js','js/core/state.js','js/data/maps.js','js/data/npcs.js','js/data/animations.js','js/systems/animation.js','js/systems/audio.js','js/systems/progression.js','js/data/events.js','js/data/battles.js','js/systems/dialogue.js','js/render/ui.js','js/systems/exploration.js','js/systems/events.js','js/systems/movement.js','js/render/ryune_environment.js','js/render/ryune_art_direction_v2.js','js/render/road_cave_quality.js','js/render/world.js','js/systems/cinematic.js','js/render/battle.js','js/systems/battle.js','js/core/save.js','js/systems/validation.js','js/systems/menu.js','js/dev/developer.js','js/game.js'
 ];
 function createHarness(root=path.resolve(__dirname,'..')){
  const elements=new Map();const ctx=makeCtx();const raf=[];const timers=[];const documentEvents={};
