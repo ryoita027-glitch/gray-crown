@@ -7,6 +7,15 @@ function sfx(name){ensureAudio();if(!AUDIO.ctx)return;if(name==='slash'){audioTo
  else if(name==='victory'){[523,659,784].forEach((f,i)=>audioTone(f,.22,'sine',.07,i*.1))}}
 function mapMusicTheme(map){if(map==='ashroad')return 'ashroad';if(map==='frontier')return 'frontier';if(map==='frontierfield')return 'frontierfield';if(map==='capitalinn')return 'capitalInn';if(map==='capitalarmory')return 'capitalArmory';if(map==='village'||INTERIOR_MAPS.includes(map))return 'village';if(map==='capital')return 'capital';if(map==='road'||map==='northroad')return 'road';if(map==='cave')return 'cave';return 'travel'}
 function setMusic(theme){AUDIO.theme=theme;if(AUDIO.ctx)startMusicLoop()}
-function startMusicLoop(){if(typeof clearInterval==='function'&&AUDIO.timer)clearInterval(AUDIO.timer);if(!AUDIO.enabled||!AUDIO.ctx||typeof setInterval!=='function')return;AUDIO.step=0;const seqs={ashroad:[165,147,196,147],frontier:[131,165,196,165],frontierfield:[123,147,131,110],village:[262,330,392,330],road:[220,294,330,294],capital:[262,392,440,392],capitalInn:[220,262,330,262],capitalArmory:[131,196,165,196],battle:[147,196,220,196],boss:[110,147,165,131],cave:[147,174,196,174],travel:[196,262,294,262]};AUDIO.timer=setInterval(()=>{const seq=seqs[AUDIO.theme]||seqs.travel,f=seq[AUDIO.step++%seq.length];audioTone(f,.33,'triangle',.018);if(AUDIO.step%2===0)audioTone(f/2,.42,'sine',.012)},430)}
+function startMusicLoop(){if(typeof clearInterval==='function'&&AUDIO.timer)clearInterval(AUDIO.timer);if(!AUDIO.enabled||!AUDIO.ctx||typeof setInterval!=='function')return;AUDIO.step=0;const seqs={ashroad:[165,147,196,147],frontier:[131,165,196,165],frontierfield:[123,147,131,110],village:[262,330,392,330],road:[220,294,330,294],capital:[262,392,440,392],capitalInn:[220,262,330,262],capitalArmory:[131,196,165,196],battle:[147,196,220,196],boss:[110,147,165,131],cave:[147,174,196,174],travel:[196,262,294,262]};AUDIO.timer=setInterval(()=>{
+ const note=GC.CommercialSoundscape?.beat?.(AUDIO.theme,AUDIO.step++);
+ if(note){
+  if(note.melody!=null)audioTone(note.melody,.29,note.voice,note.gain);
+  if(note.bass!=null)audioTone(note.bass,.38,'sine',note.gain*.62,.025);
+ }else{
+  const seq=seqs[AUDIO.theme]||seqs.travel,f=seq[(AUDIO.step-1)%seq.length];
+  audioTone(f,.33,'triangle',.018);if(AUDIO.step%2===0)audioTone(f/2,.42,'sine',.012)
+ }
+},430)}
 function toggleSound(){AUDIO.enabled=!AUDIO.enabled;const b=$('btnSound');if(b){b.setAttribute('aria-pressed',String(AUDIO.enabled));b.textContent=AUDIO.enabled?'♪ 音声 ON':'♪ 音声 OFF'}if(AUDIO.enabled){if(AUDIO.master)AUDIO.master.gain.value=.11;ensureAudio();setMusic(state.battle?(state.battle.id==='boss'?'boss':'battle'):mapMusicTheme(state.map))}else{if(AUDIO.master)AUDIO.master.gain.value=0;if(AUDIO.timer&&typeof clearInterval==='function')clearInterval(AUDIO.timer);AUDIO.timer=null}}
 GC.Audio={ensureAudio,audioTone,sfx,mapMusicTheme,setMusic,startMusicLoop,toggleSound,AUDIO};
