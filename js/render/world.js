@@ -528,7 +528,18 @@ function drawQuestMarker(){const q=currentQuestTarget();if(!q)return;const m=map
 function drawAreaIdentity(){/* area identity is rendered by the HTML world HUD */}
 function viewScale(){if(INTERIOR_MAPS.includes(state.map))return 1.18;if(['capital','imperialcity','borderland','watchfort','empirevillage','elsia'].includes(state.map))return 1.25;return 1.16}
 const VISUAL={map:null,camX:0,camY:0,playerX:0,playerY:0,followers:[[12,13],[13,13],[14,13]],raf:0,nextMoveAt:0};
-function partyTrailPoints(){const t=Array.isArray(state.trail)?state.trail:[];if(t.length>=5)return[t[0],t[2],t[4]];return[t[0],t[1],t[2]].filter(Boolean)}
+function partyTrailPoints(){
+ const t=Array.isArray(state.trail)?state.trail:[],order=t.length>=5?[0,2,4,1,3]:[0,1,2];
+ // In a compact U-turn the default [0,2,4] may overlap two party actors.
+ // Prefer distinct *visited* tiles while preserving the established spacing.
+ // This only changes rendered follower sampling, not save/story or sprite files.
+ const used=new Set([state.x+','+state.y]),result=[];
+ for(const i of order){const p=t[i];if(!Array.isArray(p))continue;const key=p[0]+','+p[1];if(used.has(key))continue;used.add(key);result.push(p);if(result.length===3)return result}
+ // If there are fewer than three distinct visited tiles (e.g. repeated
+ // movement between two cells), keep all followers instead of dropping actors.
+ for(const i of order){const p=t[i];if(!Array.isArray(p)||result.includes(p))continue;result.push(p);if(result.length===3)break}
+ return result
+}
 function cameraForMap(){const o=GC.Cinematic?.cameraTarget?.(),scale=o?.scale||viewScale(),vw=canvas.width/scale,vh=canvas.height/scale,worldW=COLS*TILE,worldH=ROWS*TILE,fx=Number.isFinite(o?.x)?o.x:state.x,fy=Number.isFinite(o?.y)?o.y:state.y,cx=fx*TILE+TILE/2,cy=fy*TILE+TILE/2;return{scale,x:Math.max(0,Math.min(worldW-vw,cx-vw/2)),y:Math.max(0,Math.min(worldH-vh,cy-vh/2))}}
 function drawScene(){
  ctx.clearRect(0,0,canvas.width,canvas.height);const m=maps[state.map],target=cameraForMap();
