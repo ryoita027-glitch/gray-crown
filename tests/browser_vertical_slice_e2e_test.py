@@ -348,7 +348,7 @@ def play(page,url):
  page.keyboard.press('ArrowUp');page.wait_for_timeout(160);process_interruptions(page)
  check(snapshot(page)['map']=='northroad','boss-to-old-road transition failed')
  shot(page,'12_northroad')
- walk_to(page,[(11,1),(12,1)],'northroad capital direction')
+ walk_to(page,[(11,0),(12,0)],'northroad capital direction')
  page.keyboard.press('ArrowUp');page.wait_for_timeout(170);process_interruptions(page)
  check(snapshot(page)['map']=='capital','fort victory failed to connect to canonical capital')
  check(snapshot(page)['story']=='05_capital','canonical story stage missing after capital entry')
