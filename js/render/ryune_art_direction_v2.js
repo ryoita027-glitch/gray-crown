@@ -415,7 +415,7 @@ const RyuneArtV2=(()=>{
   return true
  }
 
- const api={enabled:true,blueprints,palette:color,drawNpc:actor};
+ const api={enabled:true,blueprints,palette:color,drawNpc:actor,npcStyle:'legacy'};
  r.paintTile=tile;r.drawVillage=village;r.drawInterior=interior;r.drawObject=object;
  return api;
 })();
