@@ -530,14 +530,33 @@ function viewScale(){if(INTERIOR_MAPS.includes(state.map))return 1.18;if(['capit
 const VISUAL={map:null,camX:0,camY:0,playerX:0,playerY:0,followers:[[12,13],[13,13],[14,13]],raf:0,nextMoveAt:0};
 function partyTrailPoints(){
  const t=Array.isArray(state.trail)?state.trail:[],order=t.length>=5?[0,2,4,1,3]:[0,1,2];
- // In a compact U-turn the default [0,2,4] may overlap two party actors.
- // Prefer distinct *visited* tiles while preserving the established spacing.
- // This only changes rendered follower sampling, not save/story or sprite files.
  const used=new Set([state.x+','+state.y]),result=[];
- for(const i of order){const p=t[i];if(!Array.isArray(p))continue;const key=p[0]+','+p[1];if(used.has(key))continue;used.add(key);result.push(p);if(result.length===3)return result}
- // If there are fewer than three distinct visited tiles (e.g. repeated
- // movement between two cells), keep all followers instead of dropping actors.
- for(const i of order){const p=t[i];if(!Array.isArray(p)||result.includes(p))continue;result.push(p);if(result.length===3)break}
+ // Keep genuine, distinct trail positions as first priority.
+ for(const i of order){
+  const p=t[i];
+  if(!Array.isArray(p)||!Number.isFinite(p[0])||!Number.isFinite(p[1]))continue;
+  const key=p[0]+','+p[1];if(used.has(key))continue;
+  used.add(key);result.push([p[0],p[1]]);if(result.length===3)return result;
+ }
+ // Two-tile ping-pong can supply fewer than three different visited tiles.
+ // Render-only formation: choose nearby *walkable* cells rather than drawing
+ // multiple 48px actors on exactly the same footprint. Never change state.trail,
+ // story, saved coordinates, collision, or movement semantics.
+ const forward={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[state.dir]||[0,1];
+ const nearby=[];
+ for(let radius=1;radius<=4;radius++)for(let dy=-radius;dy<=radius;dy++)for(let dx=-radius;dx<=radius;dx++){
+  if(Math.abs(dx)+Math.abs(dy)!==radius)continue;
+  const x=state.x+dx,y=state.y+dy;
+  if(x<0||y<0||x>=COLS||y>=ROWS||isBlocked(x,y))continue;
+  // Prefer positions behind the leader, close to the actual travel history.
+  const behind=-(dx*forward[0]+dy*forward[1]);
+  nearby.push({x,y,radius,behind,side:Math.abs(dx*forward[1]-dy*forward[0])});
+ }
+ nearby.sort((a,b)=>a.radius-b.radius||b.behind-a.behind||a.side-b.side||a.y-b.y||a.x-b.x);
+ for(const p of nearby){
+  const key=p.x+','+p.y;if(used.has(key))continue;
+  used.add(key);result.push([p.x,p.y]);if(result.length===3)break;
+ }
  return result
 }
 function cameraForMap(){const o=GC.Cinematic?.cameraTarget?.(),scale=o?.scale||viewScale(),vw=canvas.width/scale,vh=canvas.height/scale,worldW=COLS*TILE,worldH=ROWS*TILE,fx=Number.isFinite(o?.x)?o.x:state.x,fy=Number.isFinite(o?.y)?o.y:state.y,cx=fx*TILE+TILE/2,cy=fy*TILE+TILE/2;return{scale,x:Math.max(0,Math.min(worldW-vw,cx-vw/2)),y:Math.max(0,Math.min(worldH-vh,cy-vh/2))}}
