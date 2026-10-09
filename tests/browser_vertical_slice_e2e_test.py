@@ -202,7 +202,10 @@ def save_via_menu(page,label):
  process_interruptions(page)
  page.keyboard.press('m');page.wait_for_timeout(90)
  check(page.locator('#modal').is_visible(),'menu not accessible at '+label)
- page.locator('.menu-actions button').first.click()
+ # Existing game menu is read-only; actual Save is the top-right #btnSave.
+ page.locator('#modalClose').click()
+ check(not page.locator('#modal').is_visible(),'menu failed to close at '+label)
+ page.locator('#btnSave').click()
  clean_dialogue(page)
  raw=page.evaluate("localStorage.getItem("+json.dumps(SAVE_KEY)+")")
  check(raw,'no persisted save at '+label)
@@ -218,6 +221,21 @@ def reload_continue(page,label):
  page.locator('#titleContinue').click()
  clean_dialogue(page)
  check(snapshot(page)['schema']==23,'Continue schema mismatch')
+
+def cross_north_boundary(page,expected,name,max_press=3):
+ """Use original keyboard movement; different maps transition at y==0/y<0."""
+ original=snapshot(page)['map']
+ for _ in range(max_press):
+  process_interruptions(page)
+  if snapshot(page)['map']==expected:return
+  s=snapshot(page)
+  check(s['map']==original,'unexpected map while crossing '+name+': '+s['map'])
+  check(s['x'] in (11,12),'outside north gate columns on '+name)
+  page.keyboard.press('ArrowUp')
+  page.wait_for_timeout(175)
+  STATS['steps']+=1
+ process_interruptions(page)
+ check(snapshot(page)['map']==expected,'north boundary did not reach '+expected+' from '+original+' in '+name)
 
 def play(page,url):
  start=time.perf_counter()
@@ -244,7 +262,7 @@ def play(page,url):
  save_via_menu(page,'appointed')
  # Follow the prescribed village north gate, no warps.
  walk_to(page,[(11,1),(12,1)],'village north gate')
- page.keyboard.press('ArrowUp');page.wait_for_timeout(180);process_interruptions(page)
+ cross_north_boundary(page,'road','village north gate')
  check(snapshot(page)['map']=='road','north gate failed')
  check(snapshot(page)['story']=='02_road','road story stage missing')
  checkpoint(page,'road arrival');shot(page,'03_road')
@@ -343,11 +361,11 @@ def play(page,url):
  shot(page,'11_boss_continue')
  # North cave gate -> northroad -> capital: actual canonical Story 04/05.
  walk_to(page,[(11,1),(12,1)],'fort northern exit')
- page.keyboard.press('ArrowUp');page.wait_for_timeout(160);process_interruptions(page)
+ cross_north_boundary(page,'northroad','fort northern exit')
  check(snapshot(page)['map']=='northroad','boss-to-old-road transition failed')
  shot(page,'12_northroad')
  walk_to(page,[(11,1),(12,1)],'northroad capital direction')
- page.keyboard.press('ArrowUp');page.wait_for_timeout(170);process_interruptions(page)
+ cross_north_boundary(page,'capital','northroad capital direction')
  check(snapshot(page)['map']=='capital','fort victory failed to connect to canonical capital')
  check(snapshot(page)['story']=='05_capital','canonical story stage missing after capital entry')
  shot(page,'13_capital')
