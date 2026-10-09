@@ -1,7 +1,7 @@
 name: Gray Crown Commercial Polish CI
 on:
   push:
-    branches: [commercial-polish-v1]
+    branches: [commercial-polish-v1, integration/commercial-reconcile-20261010]
   workflow_dispatch:
 permissions:
   contents: read
@@ -25,6 +25,10 @@ jobs:
       - run: python -m pip install --disable-pip-version-check -r requirements-ci.txt
       - name: Full project regression
         run: npm run check
+      - name: Verify historical source locks and active appeal regeneration
+        run: |
+          python tools/verify_sophie_direction_lock.py
+          python tools/verify_margaret_direction_lock.py
       - name: Verify four protagonist runtime
         run: |
           python tools/verify_clean_runtime_sprite_assets.py
