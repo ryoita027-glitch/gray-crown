@@ -233,7 +233,31 @@ function drawNpcCommercial(n,facing='down'){
  if(s.hat){ctx.fillStyle=colorMix(hair,-.15);ctx.fillRect(Math.round(cx-11*scale),Math.round(top+1*scale),22*scale,3*scale);ctx.fillRect(Math.round(cx-7*scale),Math.round(top-2*scale),14*scale,5*scale)}
  if(s.weapon==='sword'){ctx.strokeStyle='#aeb8bf';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx+10*scale,top+20*scale);ctx.lineTo(cx+14*scale,footY-2);ctx.stroke()}
  if(s.weapon==='staff'){ctx.strokeStyle='#765438';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx-11*scale,top+12*scale);ctx.lineTo(cx-12*scale,footY);ctx.stroke();ctx.fillStyle=accent;ctx.fillRect(Math.round(cx-14*scale),Math.round(top+9*scale),5*scale,5*scale)}
- ctx.restore()
+ // Selected high-contact villagers gain distinct posture/work silhouettes.
+  // These are presentation accents, not new costume/canon claims.
+  if(n.id==='messenger'){
+   ctx.fillStyle=accent;ctx.fillRect(Math.round(cx-12*scale),Math.round(top+17*scale),5*scale,3*scale);
+   ctx.fillRect(Math.round(cx+7*scale),Math.round(top+17*scale),5*scale,3*scale);
+  }else if(n.id==='mayor'){
+   ctx.fillStyle=accent;ctx.fillRect(Math.round(cx-9*scale),Math.round(top+18*scale),18*scale,2*scale);
+   ctx.fillStyle=hair;ctx.fillRect(Math.round(cx-10*scale),Math.round(top+5*scale),5*scale,8*scale);
+  }else if(n.id==='father'||n.id==='karenFather'){
+   ctx.fillStyle=dark;ctx.fillRect(Math.round(cx-13*scale),Math.round(top+19*scale),5*scale,5*scale);
+   ctx.fillRect(Math.round(cx+8*scale),Math.round(top+19*scale),5*scale,5*scale);
+  }else if(n.id==='caretaker'||n.id==='karenMother'){
+   ctx.fillStyle=accent;ctx.fillRect(Math.round(cx-6*scale),Math.round(top+28*scale),12*scale,3*scale);
+   ctx.fillStyle=skin;ctx.fillRect(Math.round(cx-3*scale),Math.round(top+27*scale),6*scale,3*scale);
+  }else if(n.id==='mika'||n.id==='orphan'||n.id==='theo'){
+   ctx.fillStyle=hair;ctx.fillRect(Math.round(cx-9*scale),Math.round(top+4*scale),4*scale,7*scale);
+   ctx.fillStyle=accent;ctx.fillRect(Math.round(cx-6*scale),Math.round(top+23*scale),12*scale,2*scale);
+  }else if(n.id==='baker'){
+   ctx.fillStyle=accent;ctx.fillRect(Math.round(cx-6*scale),Math.round(top+26*scale),12*scale,8*scale);
+   ctx.fillStyle=shade;ctx.fillRect(Math.round(cx-4*scale),Math.round(top+30*scale),8*scale,2*scale);
+  }else if(n.id==='farmer'){
+   ctx.fillStyle=shade;ctx.fillRect(Math.round(cx-9*scale),Math.round(top+30*scale),18*scale,4*scale);
+   ctx.fillStyle=accent;ctx.fillRect(Math.round(cx-7*scale),Math.round(top+29*scale),14*scale,2*scale);
+  }
+  ctx.restore()
 }
 function drawNpc(n){const close=Math.abs(state.x-n.x)+Math.abs(state.y-n.y)<=2,face=close?facingBetween([n.x,n.y],[state.x,state.y],'down'):'down';drawNpcCommercial(n,face);if(close){ctx.font='bold 9px system-ui';const w=Math.max(28,ctx.measureText(n.name).width+8);const px=n.x*TILE+16-w/2,py=n.y*TILE-7;ctx.fillStyle='rgba(13,16,20,.88)';ctx.fillRect(px,py,w,13);ctx.strokeStyle='rgba(210,181,112,.28)';ctx.strokeRect(px+.5,py+.5,w-1,12);ctx.fillStyle='#efe6d2';ctx.textAlign='center';ctx.fillText(n.name,n.x*TILE+16,py+10);ctx.textAlign='start'}}
 function drawVillageDecor(){
@@ -567,7 +591,7 @@ function drawScene(){
  ctx.save();ctx.scale(target.scale,target.scale);ctx.translate(-VISUAL.camX,-VISUAL.camY);drawMapUnderlay(m);
  for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){drawTile(m.tiles[y][x],x,y);drawTileDetail(m.tiles[y][x],x,y)}drawTerrainBlend(m);drawVerticalSliceGround(m);
  if(state.map==='village'){if(RyuneEnvironment.enabled)RyuneEnvironment.drawVillage(ctx);else{drawVillageDecor();villageHouses.forEach(drawHouse)}}if(INTERIOR_MAPS.includes(state.map)){if(RyuneEnvironment.enabled&&RyuneEnvironment.rooms.has(state.map))RyuneEnvironment.drawInterior(ctx,state.map);else drawInteriorDecor();}drawRegionDecor();m.objects.forEach(drawObject);const cinematicActive=GC.Cinematic?.isActive?.()===true,controlledNpcs=new Set(GC.Cinematic?.controlledNpcIds?.()||[]);m.npcs.filter(n=>npcVisible(n)&&!controlledNpcs.has(n.id)).forEach(drawNpc);drawQuestMarker();
- if(cinematicActive){GC.Cinematic?.drawActors?.(ctx,{drawCharacterSprite,drawHeroSpriteSheet})}else{const leaderMoving=Math.abs(state.x-VISUAL.playerX)>.015||Math.abs(state.y-VISUAL.playerY)>.015,phase=leaderMoving?Date.now()/82:0;drawPartyRuntime(leaderMoving,phase);drawInteractionMarker()}GC.Dev?.drawWorldOverlay?.(ctx);ctx.restore();drawAreaIdentity();$('locationLabel').textContent=m.name;if($('safetyLabel')){const safe=encounterSafeZone();$('safetyLabel').textContent=safe?'● 安全地帯':'▲ 危険地帯';$('safetyLabel').classList.toggle('danger',!safe)};
+ if(cinematicActive){GC.Cinematic?.drawActors?.(ctx,{drawCharacterSprite,drawHeroSpriteSheet,drawNpcCommercial})}else{const leaderMoving=Math.abs(state.x-VISUAL.playerX)>.015||Math.abs(state.y-VISUAL.playerY)>.015,phase=leaderMoving?Date.now()/82:0;drawPartyRuntime(leaderMoving,phase);drawInteractionMarker()}GC.Dev?.drawWorldOverlay?.(ctx);ctx.restore();drawAreaIdentity();$('locationLabel').textContent=m.name;if($('safetyLabel')){const safe=encounterSafeZone();$('safetyLabel').textContent=safe?'● 安全地帯':'▲ 危険地帯';$('safetyLabel').classList.toggle('danger',!safe)};
  const followerTargets=partyTrailPoints(),followerMoving=VISUAL.followers.some((p,i)=>{const t=followerTargets[i]||p;return Math.abs(t[0]-p[0])>.01||Math.abs(t[1]-p[1])>.01});const moving=cinematicActive||Math.abs(target.x-VISUAL.camX)>.08||Math.abs(target.y-VISUAL.camY)>.08||Math.abs(state.x-VISUAL.playerX)>.01||Math.abs(state.y-VISUAL.playerY)>.01||followerMoving;
  if(moving){cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene)}
 }
