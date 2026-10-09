@@ -144,14 +144,17 @@ def interact(page,obj,auto_battle=None):
   page.keyboard.press("Enter");page.wait_for_timeout(160)
   if page.locator("#battlePanel").is_visible():return fight(page,auto_battle)
   if obj=="boss":
-   # Typewriter dialogue must finish before the choice buttons materialize.
+   # Walking/facing can trigger battle before any click. Stale hidden choice
+   # buttons are not a pending decision and must not be clicked.
+   if page.locator("#battlePanel").is_visible():return fight(page,"boss")
    for attempt in range(50):
-    if page.locator("#choiceBox button").count():break
+    if page.locator("#battlePanel").is_visible():return fight(page,"boss")
+    if page.locator("#choiceBox button:visible").count():break
     if not page.locator("#dialogueBox").is_visible():break
     page.keyboard.press("Enter");page.wait_for_timeout(35)
-   labels=page.locator("#choiceBox button").all_text_contents()
+   labels=page.locator("#choiceBox button:visible").all_text_contents()
    check("boss has player choice",any("戦う" in x for x in labels),labels)
-   page.locator("#choiceBox button").filter(has_text="戦う").click();page.wait_for_timeout(190)
+   page.locator("#choiceBox button:visible").filter(has_text="戦う").click();page.wait_for_timeout(190)
    check("boss started from normal dialogue",page.locator("#battlePanel").is_visible())
    return fight(page,"boss")
   if page.locator("#dialogueBox").is_visible():dismiss(page)
