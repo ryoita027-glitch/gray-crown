@@ -244,3 +244,219 @@ html,body{background:radial-gradient(circle at 45% -10%,#29303b 0,#12161d 34%,#0
 @media(max-width:520px){
  .dialogue-overlay.no-portrait,.dialogue-overlay.hero-dialogue.no-portrait{padding-left:11px;min-height:112px}
 }
+
+
+/* v24 — commercial presentation pass
+   Remove prototype chrome, reduce duplicated HUD information, and keep pixel
+   characters crisp when the canvas is scaled by the responsive shell. */
+:root{
+  --panel:#171c23;--panel2:#20262f;--line:#39424d;--accent:#d6b76f;
+  --muted:#9fa7b0;
+}
+#app{max-width:1340px;padding:12px 16px 22px}
+.topbar{
+  min-height:58px;margin-bottom:10px;padding:2px 2px 9px;
+  align-items:center;border-bottom:1px solid rgba(214,183,111,.14)
+}
+.topbar h1{margin:.05rem 0 0;font-size:clamp(1.55rem,2.6vw,2.15rem);letter-spacing:.075em}
+.eyebrow{font-size:.6rem;letter-spacing:.24em;color:#b9a36f}
+.build-note{display:none}
+.top-actions{gap:6px}
+.top-actions button{
+  padding:.48rem .68rem;min-height:34px;border-radius:4px;
+  font-size:.78rem;background:linear-gradient(#252c34,#1b2128);
+  border-color:#3d4752
+}
+.layout{grid-template-columns:minmax(0,1fr) 258px;gap:12px}
+.game-shell{padding:5px;border-radius:6px;background:#0c1015;border-color:#454c53}
+.game-stage{
+  border-radius:3px;border-color:rgba(205,178,112,.22);
+  box-shadow:0 18px 54px rgba(0,0,0,.42),inset 0 0 28px rgba(0,0,0,.22)
+}
+/* The source art is pixel-native. Browser interpolation was softening faces. */
+.game-stage canvas{
+  image-rendering:pixelated;
+  filter:saturate(.96) contrast(1.025) brightness(1.01);
+  border-radius:2px
+}
+.stage-vignette{
+  box-shadow:inset 0 0 48px 5px rgba(2,5,8,.23);
+  background:linear-gradient(180deg,rgba(255,225,165,.018),transparent 22%,transparent 80%,rgba(0,0,0,.13))
+}
+.world-hud{left:9px;top:9px;filter:drop-shadow(0 3px 5px rgba(0,0,0,.42))}
+.world-hud-chapter{
+  padding:0 9px;font-size:.62rem;letter-spacing:.055em;
+  background:linear-gradient(#753941,#54282e)
+}
+.world-hud-main{min-width:205px;padding:5px 12px 6px 17px;background:rgba(16,20,25,.88)}
+.world-hud-main span{font-size:.88rem}.world-hud-main small{font-size:.59rem}
+.story-context{
+  right:9px;top:9px;width:min(240px,32%);padding:6px 9px 7px;
+  background:rgba(13,17,22,.87);border-color:rgba(207,177,107,.34);
+  box-shadow:0 4px 12px rgba(0,0,0,.28)
+}
+.story-context span{font-size:.53rem;margin-bottom:2px}.story-context strong{font-size:.7rem}
+.statusbar{
+  grid-template-columns:auto 1fr auto;padding:6px 5px 1px;
+  min-height:25px;font-size:.7rem;background:transparent
+}
+/* The objective is already visible in the stage and quest panel. Three copies read as debug UI. */
+.statusbar #objectiveLabel{display:none}
+.statusbar #locationLabel{color:#aeb5bc}.safety-label{font-size:.64rem}
+.sidebar{gap:7px}
+.sidebar .panel{
+  padding:10px;border-radius:5px;background:linear-gradient(160deg,rgba(24,29,36,.98),rgba(16,20,26,.98));
+  border-color:rgba(83,92,104,.48);box-shadow:0 5px 17px rgba(0,0,0,.16)
+}
+.sidebar .panel h2{font-size:.68rem;margin-bottom:6px;padding-bottom:6px;letter-spacing:.16em}
+.party-row{margin:0;padding:6px 0}
+.party-head{font-size:.78rem}.party-sub{font-size:.68rem;margin-top:2px}
+.bar{height:5px;margin-top:4px}.exp-label{font-size:.6rem}
+.journal-item{font-size:.7rem;line-height:1.45}
+.controls-panel{padding-top:8px!important}
+.controls-panel p{display:inline;margin:0 .42rem 0 0;font-size:.66rem;color:#959da6}
+.controls-panel h2{margin-bottom:5px!important}
+.panel.quest-panel{border-color:rgba(195,163,91,.38)}
+.panel.journal-panel{opacity:.92}
+.dialogue-overlay{
+  left:10px;right:10px;bottom:10px;min-height:116px;
+  border-radius:3px;padding-top:11px;padding-bottom:9px
+}
+button{border-radius:5px}
+@media(max-width:980px){
+  .layout{grid-template-columns:minmax(0,1fr) 236px}
+  .story-context{width:29%}
+}
+@media(max-width:850px){
+  #app{padding:8px}.layout{grid-template-columns:1fr}
+  .sidebar{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .party-panel{grid-column:1/-1}.controls-panel{grid-column:1/-1}
+  .game-stage canvas{image-rendering:pixelated}
+}
+@media(max-width:520px){
+  .topbar{min-height:48px}.topbar h1{font-size:1.35rem}
+  .eyebrow{display:none}.top-actions button{padding:.4rem .52rem;font-size:.7rem}
+  .layout{gap:7px}.story-context{width:40%}
+}
+
+
+/* v24b — battle presentation parity with exploration */
+.party-battle-line{left:26px;width:250px;height:128px}
+.battle-hero.sprite{
+  width:64px;height:64px;bottom:2px;
+  background-size:256px 256px;
+  background-repeat:no-repeat;
+  image-rendering:pixelated;
+  background-color:transparent;
+  filter:drop-shadow(0 7px 5px rgba(0,0,0,.38))
+}
+.battle-hero.sprite::before,.battle-hero.sprite::after{display:none}
+.battle-hero.sprite.active{
+  filter:drop-shadow(0 0 9px rgba(241,210,120,.52)) drop-shadow(0 7px 5px rgba(0,0,0,.4))
+}
+
+
+/* v24c — remove desktop debug-dashboard clutter */
+.controls-panel{display:none}
+@media(max-width:850px){
+  .controls-panel{display:block}
+  .controls-panel p{display:none}
+  .mobile-pad{display:grid}
+}
+.journal-panel.hidden{display:none!important}
+
+/* v24d — layered pixel-like battle enemies.
+   These use discrete hard-edged parts rather than the previous soft CSS blob. */
+.enemy-art::before,.enemy-art::after{display:none!important}
+.enemy-art{position:relative;width:150px;height:118px;image-rendering:pixelated;filter:drop-shadow(0 8px 5px rgba(0,0,0,.42))}
+.enemy-part{position:absolute;display:block;box-sizing:border-box}
+.wolf-shadow{left:18px;bottom:4px;width:116px;height:15px;border-radius:50%;background:rgba(0,0,0,.35)}
+.wolf-body{left:38px;top:48px;width:72px;height:38px;background:#505b59;border:4px solid #293231;clip-path:polygon(7% 16%,78% 5%,100% 32%,93% 83%,73% 100%,16% 91%,0 58%)}
+.wolf-neck{left:91px;top:37px;width:31px;height:40px;background:#596463;border:4px solid #293231;transform:skew(-12deg)}
+.wolf-head{left:103px;top:25px;width:38px;height:34px;background:#626c69;border:4px solid #293231;clip-path:polygon(14% 9%,78% 0,100% 40%,86% 88%,35% 100%,0 63%)}
+.wolf-ear{top:15px;width:17px;height:25px;background:#485452;border:4px solid #293231;clip-path:polygon(50% 0,100% 100%,0 84%)}
+.wolf-ear.a{left:108px;transform:rotate(-9deg)}.wolf-ear.b{left:127px;transform:rotate(16deg)}
+.wolf-muzzle{left:126px;top:45px;width:27px;height:15px;background:#8b8f82;border:3px solid #293231;clip-path:polygon(0 6%,100% 40%,78% 100%,0 86%)}
+.wolf-eye{left:126px;top:34px;width:5px;height:5px;background:#e0c466;box-shadow:1px 1px 0 #251c13}
+.wolf-tail{left:10px;top:38px;width:43px;height:18px;background:#4e5957;border:4px solid #293231;transform:rotate(-24deg);clip-path:polygon(0 36%,90% 0,100% 66%,17% 100%)}
+.wolf-leg{top:78px;width:17px;height:32px;background:#454f4e;border:4px solid #293231}
+.wolf-leg.back{left:47px;transform:skew(7deg)}.wolf-leg.front{left:94px;transform:skew(-7deg)}
+.wolf-leg::after{content:"";position:absolute;left:-5px;bottom:-5px;width:21px;height:8px;background:#333c3b;border:3px solid #252c2c}
+
+.bandit-shadow{left:30px;bottom:4px;width:92px;height:15px;border-radius:50%;background:rgba(0,0,0,.34)}
+.bandit-body{left:59px;top:45px;width:43px;height:48px;background:#675244;border:4px solid #2e2926;clip-path:polygon(15% 0,84% 0,100% 28%,87% 100%,12% 100%,0 28%)}
+.bandit-head{left:65px;top:18px;width:31px;height:31px;background:#c99b7c;border:4px solid #332a26}
+.bandit-hair{left:60px;top:12px;width:42px;height:20px;background:#49372f;border:4px solid #2c2623;clip-path:polygon(0 30%,21% 0,100% 9%,92% 77%,65% 63%,48% 100%,26% 64%,0 83%)}
+.bandit-eye{left:88px;top:32px;width:5px;height:4px;background:#302624}
+.bandit-arm{top:51px;width:13px;height:39px;background:#755b48;border:4px solid #2e2926}
+.bandit-arm.l{left:48px;transform:rotate(12deg)}.bandit-arm.r{left:101px;transform:rotate(-18deg)}
+.bandit-leg{top:87px;width:15px;height:27px;background:#393534;border:4px solid #252322}
+.bandit-leg.l{left:62px}.bandit-leg.r{left:87px}
+.bandit-blade{left:116px;top:45px;width:7px;height:57px;background:#b9c0c3;border:2px solid #4b5051;transform:rotate(17deg);transform-origin:bottom}
+.bandit-blade::after{content:"";position:absolute;left:-7px;bottom:4px;width:17px;height:5px;background:#85633d;border:2px solid #453324}
+
+@media(max-width:650px){
+ .enemy-art{transform:scale(.82);transform-origin:50% 90%}
+}
+
+/* Empty journal should not reserve sidebar space. */
+.journal-panel:has(#journalHud:empty){display:none}
+
+
+/* v24e — distinct enemy families */
+.human-empire .bandit-body{background:#344f6c}
+.human-empire .bandit-arm{background:#3e5872}
+.human-empire .bandit-hair{background:#343941}
+.human-empire .bandit-blade{background:#c5ccd0;border-color:#59626a}
+.human-empire .bandit-body::after{content:"";position:absolute;left:8px;top:9px;width:19px;height:5px;background:#9d8761;box-shadow:0 11px 0 #263e58}
+
+.bat-shadow{left:27px;bottom:8px;width:95px;height:12px;border-radius:50%;background:rgba(0,0,0,.3)}
+.bat{width:35px;height:21px;background:#3d424b;border:3px solid #24272d;clip-path:polygon(0 43%,28% 5%,48% 35%,66% 4%,100% 43%,72% 39%,88% 100%,50% 67%,13% 100%,29% 40%);filter:drop-shadow(0 3px 1px rgba(0,0,0,.35))}
+.bat::after{content:"";position:absolute;left:15px;top:7px;width:4px;height:4px;background:#d7b75b}
+.bat.b1{left:18px;top:55px;transform:scale(.95) rotate(-7deg)}
+.bat.b2{left:59px;top:27px;transform:scale(1.16) rotate(5deg)}
+.bat.b3{left:102px;top:52px;transform:scale(.86) rotate(9deg)}
+.bat.b4{left:71px;top:76px;transform:scale(.72) rotate(-4deg)}
+
+.crawler-shadow{left:17px;bottom:8px;width:120px;height:13px;border-radius:50%;background:rgba(0,0,0,.34)}
+.crawler-seg{top:58px;width:30px;height:29px;border:4px solid #282b29;background:#665e4b;border-radius:42%}
+.crawler-seg::after{content:"";position:absolute;left:3px;right:3px;top:7px;height:4px;background:#8b805f}
+.crawler-seg.s1{left:22px;top:65px}.crawler-seg.s2{left:45px;top:58px}.crawler-seg.s3{left:69px;top:53px}.crawler-seg.s4{left:93px;top:49px}
+.crawler-head{left:115px;top:43px;width:31px;height:31px;background:#756a50;border:4px solid #282b29;clip-path:polygon(0 22%,80% 0,100% 50%,77% 100%,0 78%)}
+.crawler-head::before,.crawler-head::after{content:"";position:absolute;right:21px;top:-13px;width:3px;height:16px;background:#443d31;transform:rotate(28deg);transform-origin:bottom}
+.crawler-head::after{right:8px;transform:rotate(-22deg)}
+.crawler-eye{left:134px;top:53px;width:4px;height:4px;background:#d0a955}
+
+.beast-shadow{left:18px;bottom:5px;width:116px;height:16px;border-radius:50%;background:rgba(0,0,0,.38)}
+.beast-body{left:34px;top:49px;width:76px;height:42px;background:#665f55;border:4px solid #302d29;clip-path:polygon(7% 17%,80% 3%,100% 29%,94% 88%,66% 100%,11% 90%,0 51%)}
+.beast-head{left:99px;top:31px;width:44px;height:39px;background:#746b5d;border:4px solid #302d29;clip-path:polygon(8% 14%,76% 0,100% 39%,86% 92%,25% 100%,0 61%)}
+.beast-horn{top:11px;width:12px;height:34px;background:#d7c69d;border:3px solid #514b40;clip-path:polygon(50% 0,100% 100%,0 100%)}
+.beast-horn.a{left:104px;transform:rotate(-20deg)}.beast-horn.b{left:128px;transform:rotate(18deg)}
+.beast-eye{left:127px;top:45px;width:5px;height:5px;background:#d8a64e;box-shadow:1px 1px #2a211b}
+.beast-leg{top:82px;width:18px;height:30px;background:#514b45;border:4px solid #302d29}
+.beast-leg.l{left:48px}.beast-leg.r{left:95px}
+
+
+/* v24f — battle focus mode: do not show exploration HUD twice */
+body:has(.battle-panel:not(.hidden)) .layout{grid-template-columns:minmax(0,1fr)}
+body:has(.battle-panel:not(.hidden)) .sidebar{display:none}
+.game-shell:has(.battle-panel:not(.hidden)) .statusbar{display:none}
+body:has(.battle-panel:not(.hidden)) #app{max-width:1380px}
+body:has(.battle-panel:not(.hidden)) .battle-panel{inset:8px}
+body:has(.battle-panel:not(.hidden)) .battle-stage{height:280px}
+body:has(.battle-panel:not(.hidden)) .enemy-visual{right:13%;bottom:42px}
+body:has(.battle-panel:not(.hidden)) .enemy-stage-ui{right:18px;width:300px}
+body:has(.battle-panel:not(.hidden)) .party-battle-line{left:5%;bottom:38px}
+@media(max-width:650px){
+ body:has(.battle-panel:not(.hidden)) .battle-stage{height:220px}
+ body:has(.battle-panel:not(.hidden)) .enemy-visual{right:18px}
+}
+
+
+/* v24g — saves belong to the adventure menu, not permanent browser chrome */
+#btnSave,#btnLoad,#btnRestart{display:none}
+.menu-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:12px;padding-top:10px;border-top:1px solid rgba(214,183,111,.18)}
+.menu-actions button{border-radius:3px;padding:.62rem .7rem;background:linear-gradient(#2d3540,#20262e);border-color:#46515e}
+.menu-actions .menu-danger{color:#d7b1a9;border-color:rgba(164,85,76,.55);background:linear-gradient(#3a292a,#271d1e)}
+.menu-inventory{margin-top:9px;border-top:1px solid rgba(255,255,255,.06);padding-top:5px}
+@media(max-width:520px){.menu-actions{grid-template-columns:1fr}}

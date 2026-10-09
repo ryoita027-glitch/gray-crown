@@ -3,6 +3,7 @@ on:
   push:
     branches: [pixel-margaret-fourth-character-front-gate]
   pull_request:
+    branches: [pixel-sophie-steady-hands-validation]
     types: [opened, synchronize, reopened]
   workflow_dispatch:
 permissions:
