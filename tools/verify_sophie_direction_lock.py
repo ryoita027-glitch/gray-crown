@@ -34,16 +34,46 @@ else:
     except Exception as exc:
         errors.append(f"Sophie v2 source unreadable: {exc}")
 
-for name,expected_hash in RUNTIME.items():
-    p=ROOT/f"assets/characters/sophie/sophie_{name}.png"
-    if not p.exists():
-        errors.append(f"missing Sophie runtime sheet: {p.relative_to(ROOT)}");continue
-    h=hashlib.sha256(p.read_bytes()).hexdigest()
-    if h!=expected_hash: errors.append(f"Sophie {name} runtime hash changed: {h}")
-    with Image.open(p) as im:
-        if im.mode!="RGBA": errors.append(f"Sophie {name} mode {im.mode} != RGBA")
-        expected=(48*FRAMES[name],192)
-        if im.size!=expected: errors.append(f"Sophie {name} size {im.size} != {expected}")
+# Preserve the immutable historical Sophie lock while validating the active
+# appeal runtime against its exact deterministic generator. An old v2/v5
+# runtime SHA must not reject an explicitly promoted v3/v7 source.
+appeal_source=ROOT/"docs/pixel/reference/sophie_chibi_direction_appeal_v3_48.png"
+if appeal_source.exists():
+    import subprocess,tempfile
+    try:
+        with tempfile.TemporaryDirectory(prefix="sophie-appeal-verify-") as temp:
+            subprocess.run(
+                [sys.executable,str(ROOT/"tools/generate_sophie_prototype_assets.py"),
+                 "--reference",str(appeal_source),"--out",temp],
+                cwd=ROOT,check=True,capture_output=True,text=True
+            )
+            for name in RUNTIME:
+                p=ROOT/f"assets/characters/sophie/sophie_{name}.png"
+                generated=Path(temp)/f"sophie_{name}.png"
+                if not p.exists() or not generated.exists():
+                    errors.append(f"missing Sophie {name} runtime or regenerated sheet")
+                    continue
+                with Image.open(p) as im,Image.open(generated) as expected:
+                    if im.mode!="RGBA": errors.append(f"Sophie {name} mode {im.mode} != RGBA")
+                    size=(48*FRAMES[name],192)
+                    if im.size!=size: errors.append(f"Sophie {name} size {im.size} != {size}")
+                    if im.convert("RGBA").tobytes()!=expected.convert("RGBA").tobytes():
+                        errors.append(f"Sophie {name} differs from appeal source deterministic regeneration")
+    except Exception as exc:
+        errors.append(f"Sophie appeal regeneration failed: {exc}")
+else:
+    # Legacy prototype branches still require the exact original runtime hashes.
+    for name,expected_hash in RUNTIME.items():
+        p=ROOT/f"assets/characters/sophie/sophie_{name}.png"
+        if not p.exists():
+            errors.append(f"missing Sophie runtime sheet: {p.relative_to(ROOT)}")
+            continue
+        h=hashlib.sha256(p.read_bytes()).hexdigest()
+        if h!=expected_hash: errors.append(f"Sophie {name} runtime hash changed: {h}")
+        with Image.open(p) as im:
+            if im.mode!="RGBA": errors.append(f"Sophie {name} mode {im.mode} != RGBA")
+            size=(48*FRAMES[name],192)
+            if im.size!=size: errors.append(f"Sophie {name} size {im.size} != {size}")
 
 for rel in ("docs/pixel/SOPHIE_CHIBI_DIRECTION_LOCK_v2.md","docs/pixel/SOPHIE_ACTING_REFERENCE_v1.md"):
     if not (ROOT/rel).exists(): errors.append(f"missing authority: {rel}")
