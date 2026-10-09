@@ -87,6 +87,15 @@ const CapitalEnvironment=(()=>{
   for(const [x,y] of [[18,7],[20,8],[18,10]]){box(c,'#555b5e',x*W+4,y*W+17,21,9);box(c,'#a6a397',x*W+6,y*W+15,19,6);box(c,'#736c64',x*W+9,y*W+18,3,3)}
   // Sparse small trade goods; no fake doors/loot.
   for(const [x,y] of [[3,10],[6,8],[19,9]]){box(c,'#846e53',x*W+9,y*W+23,10,4);box(c,'#d0b887',x*W+11,y*W+20,5,3)}
+  // Completed ceremony changes the square without a new saved flag.
+  // Small discarded petals are not interactable and never alter navigation.
+  if(typeof isEventComplete==='function'&&isEventComplete('alpha.capital.ceremony')&&
+     !(typeof getWorldSwitch==='function'&&getWorldSwitch('returnedKingdom'))){
+   for(const [x,y] of [[10,7],[11,6],[14,7],[12,9],[15,8]]){
+    box(c,'#b96966',x*W+5,y*W+21,4,2);
+    box(c,'#e5dcca',x*W+21,y*W+12,3,2)
+   }
+  }
   return true
  }
  function interior(c,map){

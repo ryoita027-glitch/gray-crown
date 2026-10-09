@@ -48,9 +48,9 @@ test('capital, original interiors and NPC map topology never change in presentat
  for(const id of ['capitalInnDoor','capitalArmoryDoor'])assert.ok(v.maps[0].objects.some(o=>o.id===id));
  assert.ok(v.maps[1].objects.some(o=>o.id==='innRest'));
  assert.ok(v.maps[2].npcs.includes('capitalSmith'));
- assert.equal(h.evaluate("CapitalEnvironment.paintTile(ctx,'road','A',0,0)"),false);
- assert.equal(h.evaluate("CapitalEnvironment.paintTile(ctx,'capital','A',10,7)"),true);
- assert.equal(h.evaluate("(CapitalEnvironment.enabled=false,CapitalEnvironment.paintTile(ctx,'capital','A',10,7))"),false);
+ assert.equal(h.evaluate("CapitalEnvironment.paintTile({fillRect(){}},'road','A',0,0)"),false);
+ assert.equal(h.evaluate("CapitalEnvironment.paintTile({fillRect(){}},'capital','A',10,7)"),true);
+ assert.equal(h.evaluate("(CapitalEnvironment.enabled=false,CapitalEnvironment.paintTile({fillRect(){}},'capital','A',10,7))"),false);
 });
 
 test('capital room audio is different and never becomes a new persistent save field',()=>{

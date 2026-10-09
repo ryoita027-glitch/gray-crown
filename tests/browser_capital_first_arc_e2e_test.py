@@ -106,20 +106,6 @@ def visit_door(page,door,map_name):
  first.process_interruptions(page)
  must(state(page)['map']=='capital','leave '+map_name+' to capital')
 
-def run_mode_b(browser,url,raw):
- b=browser.new_context(viewport={'width':1365,'height':900},device_scale_factor=1)
- b.add_init_script("(raw)=>localStorage.setItem('gray-crown-vslice-save-v1', raw)",raw)
- # Chromium add_init_script data use: string embedding eliminates accidental expression injection
- b.add_init_script("localStorage.setItem('gray-crown-vslice-save-v1',"+json.dumps(raw)+")")
- page=b.new_page()
- try:
-  page.goto(url,wait_until='networkidle')
-  must(page.locator('#titleContinue').is_enabled(),'B saved Continue available')
-  page.locator('#titleContinue').click()
-  first.clean_dialogue(page)
-  play_ceremony(page,'portraitOff')
- finally:b.close()
-
 def main():
  errors=[]
  try:
