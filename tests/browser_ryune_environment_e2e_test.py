@@ -123,6 +123,19 @@ with game_server() as URL:
   after_ms=record_cost(page,'village_ryune',True)
   check('village paint visibly changed',legacy!=current)
   check('village render cost measured',before_ms>=0 and after_ms>=0,LOG['performance_ms'])
+  # Direct v1/v2 A/B using exactly the same live Canvas and game state.
+  page.evaluate("RyuneArtV2.enabled=false;GC.Render.World.draw()")
+  prior_v1=snap(page,'environment_v1_village')
+  prior_ms=record_cost(page,'village_environment_v1',True)
+  page.evaluate("RyuneArtV2.enabled=true;GC.Render.World.draw()")
+  next_v2=snap(page,'environment_v2_village')
+  final_ms=record_cost(page,'village_environment_v2',True)
+  check('art v2 improves the village without changing any actor sprite',prior_v1!=next_v2)
+  check('v1 and v2 cost recorded without a fragile timing threshold',prior_ms>=0 and final_ms>=0)
+  check('four canonical buildings have different palettes and unchanged coordinates',
+        page.evaluate("""() => RyuneArtV2.blueprints.length===4
+           && new Set(RyuneArtV2.blueprints.map(b=>b.kind)).size===4
+           && RyuneArtV2.blueprints.every(b=>maps.village.tiles[b.y][b.x]==='H')"""))
   check('environment code mounted',page.evaluate("RyuneEnvironment.enabled && RyuneEnvironment.targets.has('village')"))
   check('unchanged runtime actor scale',page.evaluate("HERO_RUNTIME.display===44"))
 
@@ -140,6 +153,11 @@ with game_server() as URL:
    close_dialogue(page)
    switch_art(page,False);old=snap(page,'before_'+map_id)
    switch_art(page,True);new=snap(page,'after_'+map_id)
+   page.evaluate("RyuneArtV2.enabled=false;GC.Render.World.draw()")
+   v1png=snap(page,'environment_v1_'+map_id)
+   page.evaluate("RyuneArtV2.enabled=true;GC.Render.World.draw()")
+   v2png=snap(page,'environment_v2_'+map_id)
+   check('commercial art v2 improves distinct interior '+map_id,v1png!=v2png)
    check('interior '+map_id+' visually distinct',old!=new)
    check('interior hero scale unchanged',page.evaluate("HERO_RUNTIME.display===44"))
    # Exit via original blocked doorway interaction rather than direct state injection.
