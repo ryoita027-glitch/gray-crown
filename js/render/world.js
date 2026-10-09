@@ -174,7 +174,10 @@ function drawPartyRuntime(leaderMoving,phase){
  for(let i=Math.min(2,trailPoints.length-1);i>=0;i--){const p=trailPoints[i],vp=VISUAL.followers[i]||p,member=state.party[i+1],target=i===0?[state.x,state.y]:trailPoints[i-1],face=facingBetween(p,target,state.dir),fm=Math.abs(p[0]-vp[0])>.015||Math.abs(p[1]-vp[1])>.015;actors.push({x:vp[0],y:vp[1],style:PARTY_STYLE[member?.id]||PARTY_STYLE.triton,facing:face,motion:fm?Date.now()/82+i*.9:0,leader:false})}
  actors.push({x:VISUAL.playerX,y:VISUAL.playerY,style:PARTY_STYLE.karen,facing:state.dir,motion:phase,leader:true});
  actors.sort((a,b)=>(a.y-b.y)||(a.x-b.x)||(a.leader?1:-1));
- for(const a of actors)drawCharacterSprite(a.x,a.y,a.style,false,a.facing,a.motion);
+ for(const a of actors){
+  const expressed=a.style?.heroId&&GC.CommercialActing?.draws?.(a.style.heroId,ctx,a.x,a.y,a.facing);
+  if(!expressed)drawCharacterSprite(a.x,a.y,a.style,false,a.facing,a.motion);
+ }
  drawLeaderWorldMarker(VISUAL.playerX,VISUAL.playerY)
 }
 function colorMix(hex,amount){
@@ -510,7 +513,7 @@ function drawBeast(px,py,type){ctx.fillStyle=COLORS.shadow;ctx.beginPath();ctx.e
 function front(){let x=state.x,y=state.y;if(state.dir==='up')y--;if(state.dir==='down')y++;if(state.dir==='left')x--;if(state.dir==='right')x++;return{x,y}}
 function visibleObject(o){return !objectCleared(o.id)}
 function drawInteractionMarker(){const f=front(),m=maps[state.map];let target=m.npcs.find(n=>npcVisible(n)&&n.x===f.x&&n.y===f.y);if(!target)target=m.objects.find(o=>o.x===f.x&&o.y===f.y&&visibleObject(o));if(!target&&state.map==='village'&&f.y===0&&[11,12].includes(f.x))target={x:f.x,y:f.y};if(!target)return;const cx=target.x*TILE+16,cy=Math.max(12,target.y*TILE+2);ctx.fillStyle='#f1d077';ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+5,cy+5);ctx.lineTo(cx,cy+10);ctx.lineTo(cx-5,cy+5);ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(0,0,0,.55)';ctx.stroke()}
-function currentQuestTarget(){
+function currentQuestTarget(){const candidate=GC.CommercialDiscovery?.questHint?.(state.map);if(candidate)return candidate;
  if(state.map==='capital'&&!getWorldSwitch('returnedKingdom')){
   if(!isEventComplete('alpha.capital.ceremony'))return{id:'capitalOfficial',kind:'npc'};
   if(!isEventComplete('alpha.capital.whiteStagNight'))return{id:'capitalInnDoor',kind:'object'};
@@ -551,7 +554,7 @@ function currentQuestTarget(){
 function drawQuestMarker(){const q=currentQuestTarget();if(!q)return;const m=maps[state.map],item=q.kind==='npc'?m.npcs.find(n=>n.id===q.id&&npcVisible(n)):m.objects.find(o=>o.id===q.id&&visibleObject(o));if(!item)return;const px=item.x*TILE+16,py=item.y*TILE-8;ctx.fillStyle='rgba(26,20,11,.78)';ctx.beginPath();ctx.arc(px,py,8,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f2cf67';ctx.beginPath();ctx.moveTo(px,py-6);ctx.lineTo(px+5,py);ctx.lineTo(px,py+6);ctx.lineTo(px-5,py);ctx.closePath();ctx.fill();ctx.strokeStyle='#fff0ad';ctx.lineWidth=1;ctx.stroke()}
 function drawAreaIdentity(){/* area identity is rendered by the HTML world HUD */}
 function viewScale(){if(INTERIOR_MAPS.includes(state.map))return 1.18;if(['capital','imperialcity','borderland','watchfort','empirevillage','elsia'].includes(state.map))return 1.25;return 1.16}
-const VISUAL={map:null,camX:0,camY:0,playerX:0,playerY:0,followers:[[12,13],[13,13],[14,13]],raf:0,nextMoveAt:0};
+const VISUAL={lastActingFrame:0,map:null,camX:0,camY:0,playerX:0,playerY:0,followers:[[12,13],[13,13],[14,13]],raf:0,nextMoveAt:0};
 function partyTrailPoints(){
  const t=Array.isArray(state.trail)?state.trail:[],order=t.length>=5?[0,2,4,1,3]:[0,1,2];
  const used=new Set([state.x+','+state.y]),result=[];
@@ -585,6 +588,16 @@ function partyTrailPoints(){
 }
 function cameraForMap(){const o=GC.Cinematic?.cameraTarget?.(),scale=o?.scale||viewScale(),vw=canvas.width/scale,vh=canvas.height/scale,worldW=COLS*TILE,worldH=ROWS*TILE,fx=Number.isFinite(o?.x)?o.x:state.x,fy=Number.isFinite(o?.y)?o.y:state.y,cx=fx*TILE+TILE/2,cy=fy*TILE+TILE/2;return{scale,x:Math.max(0,Math.min(worldW-vw,cx-vw/2)),y:Math.max(0,Math.min(worldH-vh,cy-vh/2))}}
 function drawScene(){
+ // Dialogue's approved sheet poses need ~12fps, not an expensive full 60fps
+ // terrain repaint while the player is paused reading long character lines.
+ if(GC.CommercialActing?.active?.()&&VISUAL.map===state.map){
+  const t=Date.now();
+  if(t-VISUAL.lastActingFrame<80){
+   cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene);
+   return
+  }
+  VISUAL.lastActingFrame=t
+ }
  ctx.clearRect(0,0,canvas.width,canvas.height);const m=maps[state.map],target=cameraForMap();
  if(VISUAL.map!==state.map){VISUAL.map=state.map;VISUAL.camX=target.x;VISUAL.camY=target.y;VISUAL.playerX=state.x;VISUAL.playerY=state.y;VISUAL.followers=partyTrailPoints().map(p=>[p[0],p[1]])}
  const ease=.22;VISUAL.camX+=(target.x-VISUAL.camX)*ease;VISUAL.camY+=(target.y-VISUAL.camY)*ease;VISUAL.playerX+=(state.x-VISUAL.playerX)*.48;VISUAL.playerY+=(state.y-VISUAL.playerY)*.48;const trailPoints=partyTrailPoints();for(let i=0;i<3;i++){const t=trailPoints[i]||trailPoints[trailPoints.length-1]||[state.x,state.y];if(!VISUAL.followers[i])VISUAL.followers[i]=[t[0],t[1]];VISUAL.followers[i][0]+=(t[0]-VISUAL.followers[i][0])*.42;VISUAL.followers[i][1]+=(t[1]-VISUAL.followers[i][1])*.42;}
@@ -593,7 +606,9 @@ function drawScene(){
  if(state.map==='village'){if(RyuneEnvironment.enabled)RyuneEnvironment.drawVillage(ctx);else{drawVillageDecor();villageHouses.forEach(drawHouse)}}if(INTERIOR_MAPS.includes(state.map)){if(RyuneEnvironment.enabled&&RyuneEnvironment.rooms.has(state.map))RyuneEnvironment.drawInterior(ctx,state.map);else drawInteriorDecor();CapitalEnvironment.interior(ctx,state.map);}drawRegionDecor();AshFrontierEnvironment.accents(ctx,state.map);CapitalEnvironment.street(ctx,state.map);m.objects.forEach(drawObject);const cinematicActive=GC.Cinematic?.isActive?.()===true,controlledNpcs=new Set(GC.Cinematic?.controlledNpcIds?.()||[]);m.npcs.filter(n=>npcVisible(n)&&!controlledNpcs.has(n.id)).forEach(drawNpc);drawQuestMarker();
  if(cinematicActive){GC.Cinematic?.drawActors?.(ctx,{drawCharacterSprite,drawHeroSpriteSheet,drawNpcCommercial})}else{const leaderMoving=Math.abs(state.x-VISUAL.playerX)>.015||Math.abs(state.y-VISUAL.playerY)>.015,phase=leaderMoving?Date.now()/82:0;drawPartyRuntime(leaderMoving,phase);drawInteractionMarker()}GC.Dev?.drawWorldOverlay?.(ctx);ctx.restore();drawAreaIdentity();$('locationLabel').textContent=m.name;if($('safetyLabel')){const safe=encounterSafeZone();$('safetyLabel').textContent=safe?'● 安全地帯':'▲ 危険地帯';$('safetyLabel').classList.toggle('danger',!safe)};
  const followerTargets=partyTrailPoints(),followerMoving=VISUAL.followers.some((p,i)=>{const t=followerTargets[i]||p;return Math.abs(t[0]-p[0])>.01||Math.abs(t[1]-p[1])>.01});const moving=cinematicActive||Math.abs(target.x-VISUAL.camX)>.08||Math.abs(target.y-VISUAL.camY)>.08||Math.abs(state.x-VISUAL.playerX)>.01||Math.abs(state.y-VISUAL.playerY)>.01||followerMoving;
- if(moving){cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene)}
+ const f=front(),interactableNpc=m.npcs.find(n=>npcVisible(n)&&n.x===f.x&&n.y===f.y),interactableObject=m.objects.find(o=>o.x===f.x&&o.y===f.y&&visibleObject(o));
+ GC.CommercialUX?.update?.(state.map,interactableNpc,interactableObject);
+ if(moving||GC.CommercialActing?.active?.()){cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene)}
 }
 function draw(){cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene)}
 

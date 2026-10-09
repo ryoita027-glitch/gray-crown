@@ -102,8 +102,10 @@
                 </div>
               </div>
               <div id="enemyCards" class="card-grid compact-enemy-cards"></div>
+              <div id="battleTargets" class="battle-target-picker" role="group" aria-label="攻撃する敵"></div>
               <div id="partyCards" class="card-grid"></div>
               <div id="battleActions" class="battle-actions"></div>
+              <p id="battleHelp" class="battle-command-help" aria-live="off"></p>
               <div id="battleLog" class="battle-log"></div>
             </section>
           </div>
@@ -111,6 +113,7 @@
             <span id="locationLabel">リュネ村</span>
             <span id="objectiveLabel">村を見て回ろう</span>
             <span id="safetyLabel" class="safety-label">● 安全地帯</span>
+            <span id="qualityHint" class="quality-context" aria-live="off">移動：WASD / 矢印　　調べる：Enter</span>
           </div>
         </section>
 
@@ -124,6 +127,7 @@
         <section class="panel quest-panel">
           <h2>目的</h2>
           <div id="questHud"></div>
+          <div id="discoveryHud" class="discovery-progress hidden" aria-live="polite"></div>
         </section>
         <section class="panel journal-panel">
           <h2>記録</h2>
@@ -198,9 +202,14 @@
   <script src="js/render/capital_environment.js"></script>
   <script src="js/render/ash_frontier_environment.js"></script>
   <script src="js/render/world.js"></script>
+  <script src="js/systems/commercial_acting.js"></script>
+  <script src="js/systems/commercial_ux.js"></script>
+  <script src="js/systems/commercial_discovery.js"></script>
   <script src="js/systems/cinematic.js"></script>
   <script src="js/systems/ryune_acting.js"></script>
   <script src="js/systems/capital_acting.js"></script>
+  <script src="js/systems/commercial_tactics.js"></script>
+  <script src="js/systems/commercial_soundscape.js"></script>
   <script src="js/render/battle.js"></script>
   <script src="js/systems/battle.js"></script>
   <script src="js/core/save.js"></script>

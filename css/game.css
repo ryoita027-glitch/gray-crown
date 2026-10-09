@@ -520,3 +520,29 @@ body:has(.battle-panel:not(.hidden)) .party-battle-line{left:5%;bottom:38px}
 /* Phase 4 optional boss-stage hierarchy, scoped to its existing battle UI. */
 .battle-stage[data-boss="true"] .enemy-art.horned-beast{transform:scale(1.18);transform-origin:50% 90%;filter:drop-shadow(0 9px 0 rgba(20,22,26,.65))}
 .battle-stage[data-boss="true"] .enemy-stage-ui{border-color:rgba(208,164,105,.6)}
+
+
+/* Commercial pass: actual 48px approved original PNG *idle* sheet: 4 frames x 4 directions. */
+.battle-hero.sprite{width:44px;height:44px;background-size:176px 176px;background-position:0 0;background-repeat:no-repeat;image-rendering:pixelated;animation:approvedHeroIdle 1.2s steps(1,end) infinite;filter:drop-shadow(0 5px 4px rgba(0,0,0,.3))}
+.battle-hero.sprite::before,.battle-hero.sprite::after{display:none}
+.battle-hero.sprite.strike{animation:heroStrike .3s cubic-bezier(.2,.9,.28,1)}
+@keyframes approvedHeroIdle{0%,24%{background-position:0 0}25%,49%{background-position:-44px 0}50%,74%{background-position:-88px 0}75%,99%{background-position:-132px 0}100%{background-position:0 0}}
+.quality-context{flex:1 1 100%;font-size:clamp(11px,1.8vw,12px);font-weight:600;color:#f0dca9;letter-spacing:.01em;min-height:18px;text-align:left}
+
+
+/* Commercial-quality combat: accessible target choice, 44px touch targets, actionable tips. */
+.battle-target-picker{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:6px 0 9px}
+.target-picker-label{font-size:.75rem;color:#dfcda9;font-weight:700}
+.battle-target-picker button{min-height:44px;max-width:100%;padding:8px 11px;border:1px solid #68717c;border-radius:7px;background:#252b32;font-size:.82rem;text-align:left}
+.battle-target-picker button.selected,.battle-target-picker button[aria-pressed="true"]{border-color:#e7c47e;background:#403829;color:#fff1d1;box-shadow:inset 0 0 0 1px #bb9b65}
+.battle-target-picker button:focus-visible{outline:3px solid #efd28b;outline-offset:2px}
+.card.enemy.targeted{border-color:#dabb7b!important;box-shadow:inset 3px 0 #e1c17d}
+.battle-command-help{margin:5px 0 9px;color:#d0d5d9;font-size:.79rem;line-height:1.5;min-height:18px}
+@media(max-width:520px){.battle-target-picker{gap:4px}.battle-target-picker button{flex:1 1 46%;min-height:44px;font-size:.75rem;padding:6px}.battle-command-help{font-size:.73rem}}
+
+
+/* Optional routes are discoverable, but never mislabeled as mandatory. */
+.discovery-progress{margin-top:12px;padding:10px 12px;background:#282d31;border:1px solid #64583e;border-radius:7px;color:#f0d8a0;font-size:.82rem;font-weight:650;line-height:1.5}
+.discovery-progress.hidden{display:none}
+
+@media(prefers-reduced-motion:reduce){.battle-hero.sprite{animation:none!important}.battle-hero.sprite.strike{animation:none!important;transform:none}}

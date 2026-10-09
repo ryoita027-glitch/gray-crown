@@ -145,6 +145,7 @@ def main() -> int:
         if not run("all-node-regressions", [npm, "test"]): return 1
         for i, source in enumerate(SOURCES):
             if not run("locked-asset-" + str(i+1), source): return 1
+        if not run("approved-sprite-frame-crop-check", ["python", "tools/verify_commercial_sprite_frames.py"]): return 1
 
         if args.mode != "quick":
             # This includes existing Story 00-19 browser gates.
