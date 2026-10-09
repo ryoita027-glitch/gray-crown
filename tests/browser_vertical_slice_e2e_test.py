@@ -151,9 +151,13 @@ def bfs(page,target_set):
     prev[k]=((x,y),key);q.append(k)
  raise AssertionError('no legal route '+str(origin)+' -> '+str(sorted(target_set))+' in '+s['map'])
 
-def walk_to(page,targets,name,limit=170):
+def walk_to(page,targets,name,limit=170,stop_on_boss=False):
  targets=set(tuple(p) for p in targets)
  for count in range(limit):
+  if stop_on_boss and (snapshot(page)['battle']=='boss' or (
+       page.locator('#dialogueBox').is_visible() and
+       page.locator('#choiceBox button').filter(has_text='戦う').count()>0)):
+   return
   process_interruptions(page)
   st=snapshot(page)
   if (st['x'],st['y']) in targets:return
@@ -290,15 +294,30 @@ def play(page,url):
  shot(page,'08_fort_puzzle_complete')
  save_via_menu(page,'puzzle complete')
  checkpoint(page,'boss ready')
- # Real approach to blocked boss at (12,3) and actual displayed choice -> battle.
+ # Real player route to the boss. Stop for the first visible fight choice;
+ # do not auto-confirm or auto-fight it in the route navigation helper.
  boss=page.evaluate("(()=>{let o=maps.cave.objects.find(o=>o.id==='boss');return[o.x,o.y]})()")
- face_and_interact(page,boss,'boss')
+ tx,ty=boss
+ b=board(page)
+ boss_spots={(tx-dx,ty-dy) for dx,dy,_ in DIRECTIONS
+   if 0<=tx-dx<b['cols'] and 0<=ty-dy<b['rows'] and
+   not b['blocked'][ty-dy][tx-dx]}
+ check(boss_spots,'boss cannot be approached despite two activated levers')
+ walk_to(page,boss_spots,'boss approach',stop_on_boss=True)
+ if not snapshot(page)['battle'] and not page.locator('#choiceBox button').count():
+  st=snapshot(page)
+  direction=next((key for dx,dy,key in DIRECTIONS
+    if (st['x']+dx,st['y']+dy)==tuple(boss)),None)
+  check(direction,'not facing an adjacent boss after normal path')
+  page.keyboard.press(direction);page.wait_for_timeout(150)
+  if not page.locator('#choiceBox button').count() and not snapshot(page)['battle']:
+   page.keyboard.press('Enter');page.wait_for_timeout(120)
  if page.locator('#choiceBox button').count():
   option=page.locator('#choiceBox button').filter(has_text='戦う').first
   check(option.count(),'boss fight choice missing')
   if page.evaluate('GC.Dialogue.dialogueTyping()'):
    page.keyboard.press('Enter');page.wait_for_timeout(70)
-  option.click();page.wait_for_timeout(150)
+  option.click();page.wait_for_timeout(170)
  check(snapshot(page)['battle']=='boss','boss did not trigger through normal interaction')
  shot(page,'09_boss_battle')
  battle(page)
