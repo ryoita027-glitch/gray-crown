@@ -8,6 +8,8 @@
 - Two-parent PR #37/#38 source integration: committed; **combined CI on its own HEAD required**.
 
 ## NOW — integrated release-candidate gate
+**Decision boundary:** Portrait ON/OFF remains UNDECIDED; art quality stays PROVISIONAL and user-approved development direction does not authorize a main merge.
+
 1. Confirm integration branch/parent SHAs, `main` SHA, 32 runtime sprite blob SHAs and no changed game data.
 2. Run full lightweight regression and source-lock checks without re-generating committed PNGs.
 3. Run actual Chromium scene, defeat/Continue/save v23, extreme two-cell follower, battle/commercial and Ryune before/after checks on **one merged checkout**.
