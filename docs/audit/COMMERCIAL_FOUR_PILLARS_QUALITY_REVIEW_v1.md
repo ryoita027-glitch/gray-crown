@@ -87,3 +87,12 @@ The full existing suite includes the stronger second-Imperial-soldier attack tar
 5. Decide the canonical Portrait mode, final art and `main` merge only with explicit owner approval; until then **Draft / HOLD**.
 
 **Rollback:** leave Draft unmerged and return to Phase8 `9938b2e899555b9476248ac821380f6ca44ac532`. Pure art-layer opt-outs are `GC.CommercialActing.enabled=false`, `AshFrontierEnvironment.enabled=false` and other existing prior design toggles. Combat Guard behavior and target UI require reverting these specific commit diffs, not a visual toggle. No force push; no Story/data edits.
+
+
+## 2026-10-10 additional locked character-sheet audit
+
+The last pass added `tools/verify_commercial_sprite_frames.py` to the **Actions-free** `tools/run_local_quality.py` quick suite. It uses the existing pinned Pillow dependency and inspects the **original** PNGs without writing or modifying them: 4 heroes × 8 approved animations = **32 sheets and 592 individual 48×48 frames**. Each frame must contain visible pixels, preserve source RGBA grid dimensions and avoid an opaque (or partially transparent) pixel that touches its left/right atlas cell boundary; this detects physical frame cut-off regardless of whether runtime hardens alpha.
+
+**Actually measured now:** the mounted genuine archived official PNGs, which have the same Git blob hashes as this branch's 32 protected character sheets, passed **32/32 sheets, 592/592 frames, 0 empty frames, 0 left/right edge crossings**. Machine-readable detailed SHA256 report exists in this conversation as `gray_crown_sprite_integrity_report.json`. Separate image-difference samples verified the approved `talk`/`surprise`/`approach` textures are genuinely distinct from `idle` for each character. This is mechanical sprite-sheet QA, not an evaluation of emotional charm, original PNG hand-art quality or a latest-head web screenshot.
+
+No approved PNG, battle stat, dialogue line, map, Story or save source was altered. This new validation may block local adoption if future character art violates atlas boundaries. Keep this check in the local full suite; do not run any PNG generator as a side effect.
