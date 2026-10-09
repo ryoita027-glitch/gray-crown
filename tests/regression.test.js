@@ -77,17 +77,28 @@ test('level-up uses fixed growth table and can apply multiple levels',()=>{
  assert.equal(p.level,3);assert.equal(ups.length,2);assert.equal(p.maxHp,before.maxHp+g.hp*2);assert.equal(p.maxMp,before.maxMp+g.mp*2);assert.equal(p.atk,before.atk+g.atk*2);assert.equal(p.def,before.def+g.def*2);assert.equal(p.spd,before.spd+g.spd*2);
 });
 
-test('event engine completes a data-driven dialogue event only after its pages finish',()=>{
+test('event engine completes a data-driven dialogue event only after its pages finish',async()=>{
  const h=createHarness();h.evaluate('ALPHA_SESSION.started=true');
  assert.equal(h.GC.Events.runTriggeredEvent('npc','messenger',{map:'village'}),true);
  assert.equal(stateOf(h).events.completed['alpha.village.appointment'],undefined,'effects wait until dialogue completion');
- for(let i=0;i<80&&!h.getElement('dialogueBox').classList.contains('hidden');i++){
-  if(h.GC.Dialogue.dialogueTyping())h.GC.Dialogue.finishDialogueTyping();
-  h.GC.App.primaryAction();
+ let lines=0;
+ // SceneRunner schedules the original dialogue over awaited commands.
+ // Drain mock RAF/timers and JS promise microtasks without skipping story assertions.
+ for(let i=0;i<350&&!stateOf(h).events.completed['alpha.village.appointment'];i++){
+  await Promise.resolve();
+  if(!h.getElement('dialogueBox').classList.contains('hidden')){
+   if(h.GC.Dialogue.dialogueTyping())h.GC.Dialogue.finishDialogueTyping();
+   h.GC.App.primaryAction();lines++;
+  }
+  h.flushRaf();h.flushTimers();
+  await Promise.resolve();
  }
+ assert.ok(lines>=23,'all original appointment lines must be delivered');
  assert.equal(stateOf(h).events.completed['alpha.village.appointment'],true);
  assert.equal(stateOf(h).story.stage,h.GC.Story.STORY_STAGES.APPOINTED);
  assert.equal(h.GC.Events.findTriggeredEvent('npc','messenger',{map:'village'}).id,'alpha.village.appointment.repeat');
+ assert.equal(h.GC.Cinematic.isActive(),false,'scene cleans up after completion');
+ assert.equal(h.GC.Dialogue.isInputLocked(),false,'input lock is released');
 });
 
 test('multi-enemy battle does not end when only the first enemy is defeated',()=>{
