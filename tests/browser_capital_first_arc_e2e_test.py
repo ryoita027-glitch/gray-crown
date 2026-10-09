@@ -94,7 +94,11 @@ def visit_door(page,door,map_name):
  first.face_and_interact(page,coords,door)
  first.process_interruptions(page)
  must(state(page)['map']==map_name,'door transitions to '+map_name,state(page)['map'])
- screen(page,'inside_'+map_name)
+ # Same camera and same state; presentation-only art toggle is NOT Dev Mode.
+ page.evaluate("() => {CapitalEnvironment.enabled=false;GC.Render.World.drawScene()}")
+ screen(page,'before_art_'+map_name)
+ page.evaluate("() => {CapitalEnvironment.enabled=true;GC.Render.World.drawScene()}")
+ screen(page,'after_art_'+map_name)
  must(page.evaluate("GC.Save.save(true)"),'schema23 save possible in '+map_name)
  must(page.evaluate("JSON.parse(localStorage.getItem('gray-crown-vslice-save-v1')).schema===23"),
       'schema stays 23 in '+map_name)
@@ -119,7 +123,14 @@ def main():
      first.play(page,url) # Normal title -> village -> wolf -> both levers -> boss -> northroad -> capital.
      must(state(page)['map']=='capital','normal Phase 5 route reached capital')
      must(not page.evaluate("isEventComplete('alpha.capital.ceremony')"),'premature ceremony state')
-     screen(page,'capital_arrival_before')
+     ready=page.evaluate("""() => GC.Render.World.heroRuntimeStatus()""")
+     must(all(ready.get(k,{}).get('ready') for k in ('karen','triton','sophie','margaret')),
+          'four approved game sprites loaded before city ceremony',ready)
+     # Actual pixel screenshots (same state/viewport), never image generation.
+     page.evaluate("() => {CapitalEnvironment.enabled=false;GC.Render.World.drawScene()}")
+     screen(page,'capital_before_art')
+     page.evaluate("() => {CapitalEnvironment.enabled=true;GC.Render.World.drawScene()}")
+     screen(page,'capital_after_art')
      real=first.save_via_menu(page,'capital-before-ceremony')
      raw=page.evaluate("localStorage.getItem('gray-crown-vslice-save-v1')")
      must(bool(raw),'original preceremony save available')
@@ -143,6 +154,7 @@ def main():
      context=browser.new_context(viewport={'width':1365,'height':900},device_scale_factor=1)
      context.add_init_script("localStorage.setItem('gray-crown-vslice-save-v1',"+json.dumps(raw)+")")
      alt=context.new_page()
+     alt.on('pageerror',lambda e:errors.append(str(e)))
      alt.goto(url,wait_until='networkidle')
      must(alt.locator('#titleContinue').is_enabled(),'B original save readable')
      alt.locator('#titleContinue').click();first.clean_dialogue(alt)
@@ -152,7 +164,7 @@ def main():
      for w,h in ((390,844),(1024,768)):
       ctx=browser.new_context(viewport={'width':w,'height':h})
       ctx.add_init_script("localStorage.setItem('gray-crown-vslice-save-v1',"+json.dumps(raw)+")")
-      v=ctx.new_page();v.goto(url,wait_until='networkidle')
+      v=ctx.new_page();v.on('pageerror',lambda e:errors.append(str(e)));v.goto(url,wait_until='networkidle')
       v.locator('#titleContinue').click();first.clean_dialogue(v)
       info=v.evaluate("() => ({vw:innerWidth,scroll:document.documentElement.scrollWidth,render:getComputedStyle(document.querySelector('#game')).imageRendering})")
       must(info['scroll']<=w+2,'capital mobile no horizontal overflow',info)
