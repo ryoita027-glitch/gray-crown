@@ -516,3 +516,7 @@ body:has(.battle-panel:not(.hidden)) .party-battle-line{left:5%;bottom:38px}
  .enemy-visual{right:14px;bottom:24px;transform:scale(.88);transform-origin:100% 100%}
  .battle-hero{filter:none}
 }
+
+/* Phase 4 optional boss-stage hierarchy, scoped to its existing battle UI. */
+.battle-stage[data-boss="true"] .enemy-art.horned-beast{transform:scale(1.18);transform-origin:50% 90%;filter:drop-shadow(0 9px 0 rgba(20,22,26,.65))}
+.battle-stage[data-boss="true"] .enemy-stage-ui{border-color:rgba(208,164,105,.6)}
