@@ -1,7 +1,7 @@
 name: Gray Crown Pixel Vslice Acceptance Gate
 on:
   push:
-    branches: [pixel-vslice-acceptance-gate-v1]
+    branches: [pixel-vslice-acceptance-gate-v1, fix/phase0-remaining-gates-20261010]
   workflow_dispatch:
 permissions:
   contents: read
@@ -35,6 +35,16 @@ jobs:
         run: python -m playwright install --with-deps chromium
       - name: Real browser acceptance and evidence
         run: python tests/browser_pixel_vslice_acceptance_e2e_test.py
+      - name: Checkout pinned production main v23 for genuine save provenance
+        uses: actions/checkout@v4
+        with:
+          ref: d689aabb5146c9f45466a4f74f397e664c08fb4f
+          path: prototype_artifacts/main_v23_reference
+          persist-credentials: false
+      - name: Real main-v23 Continue and remaining phase-0 browser regressions
+        env:
+          GRAY_CROWN_MAIN_V23_DIR: prototype_artifacts/main_v23_reference
+        run: python tests/browser_phase0_remaining_e2e_test.py
       - name: Upload exact game screenshots and diagnostics
         if: always()
         uses: actions/upload-artifact@v4
