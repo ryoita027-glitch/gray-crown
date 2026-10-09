@@ -4,7 +4,7 @@ const battles={
  roadBandit:{name:'街道のならず者',prototype:true,faction:'human',enemies:[{name:'街道のならず者',art:'bandit',human:true,hp:82,maxHp:82,atk:11,def:6,morale:58,maxMorale:58}],reward:{gold:28,exp:24}},
  bats:{name:'洞窟コウモリの群れ',enemies:[{name:'洞窟コウモリA',hp:28,maxHp:28,atk:8,def:2},{name:'洞窟コウモリB',hp:28,maxHp:28,atk:8,def:2},{name:'洞窟コウモリC',hp:24,maxHp:24,atk:7,def:2}],reward:{gold:18,exp:16}},
  crawler:{name:'石殻ムカデ',enemies:[{name:'石殻ムカデ',hp:105,maxHp:105,atk:14,def:7}],reward:{gold:42,exp:30}},
- boss:{name:'古砦の主・灰角獣',enemies:[{name:'灰角獣',hp:185,maxHp:185,atk:18,def:9,phase:1}],reward:{gold:125,exp:65}},
+ boss:{name:'古砦の主・灰角獣',boss:true,epithet:'古砦の主',quote:'朽ちた砦に、低い唸り声が響く。',phase2:'灰角獣が地面を蹴り、角を突き下げる！',phase3:'灰角獣は最後の力を振り絞る！',enemies:[{name:'灰角獣',hp:185,maxHp:185,atk:18,def:9,phase:1}],reward:{gold:125,exp:65}},
  roadDogs:{name:'街道の野犬',random:true,enemies:[{name:'野犬A',hp:27,maxHp:27,atk:7,def:2},{name:'野犬B',hp:25,maxHp:25,atk:7,def:2}],reward:{gold:8,exp:10,drop:{item:'薬草',chance:.22}}},
  roadBoar:{name:'痩せた角猪',random:true,enemies:[{name:'角猪',hp:58,maxHp:58,atk:11,def:5}],reward:{gold:12,exp:13,drop:{item:'薬草',chance:.18}}},
  caveRats:{name:'洞窟ネズミの群れ',random:true,enemies:[{name:'洞窟ネズミA',hp:22,maxHp:22,atk:7,def:2},{name:'洞窟ネズミB',hp:22,maxHp:22,atk:7,def:2},{name:'洞窟ネズミC',hp:20,maxHp:20,atk:6,def:1}],reward:{gold:5,exp:10,drop:{item:'魔力草',chance:.15}}},
