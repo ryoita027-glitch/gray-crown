@@ -100,3 +100,27 @@ python tools/verify_four_protagonist_appeal_runtime.py
 **総合: REVISE / main未マージ。**
 
 重要: この資料は試験未実施の箇所をPASS扱いしない。GitHub Actionsの起動問題が解消後、新規E2Eから既存全回帰へ進め、画像と性能を取得し、不具合があればS0→S1→S2→S3で修正する。
+
+
+## 7. 追加検査追記（2026-10-10）
+
+**この追記は全編のCI成功を意味しない。**
+
+GitHubの最新コードから `js/data/battles.js`, `js/systems/audio.js`, `js/render/road_cave_quality.js`, `js/systems/battle.js` を取得し、V8内の小さなDOM/ゲーム状態スタブ上で実行して、以下**6項目すべてPASS**を取得した。
+
+1. 灰角獣ボス判定と元HP185は保持
+2. `road`のBGMマッピングは`road`
+3. `cave`のBGMマッピングは`cave`
+4. 生存味方が別にいるとき、同一人物を3回連続攻撃しない
+5. レンダラの効果対象が`road`と`cave`に限られる
+6. `enemyTurn()`実行でHP120時のPHASE IIは攻撃20/防御9、HP55時のPHASE IIIは攻撃23/防御10、その後さらに呼んでも攻撃23のままで二重上昇なし
+
+`index.html`の読み込みタグが正しく閉じており、`tests/harness.js`の追加モジュール順序も一致することを照合した。
+
+**しかしブラウザ全編テストではない**。結果のあいまいな「PASS」表記にしないため、上記を隔離V8実行テストとして区分する。
+
+PR #42の作成後、同一SHA `beb53efee8de71b1f45672df78f22543d21e4767` でのCI `37971969899`（road/cave新規）と `37972026483`（Triton既存）も**FAILURE**。どちらも約数秒で終了し、取得可能なjob stepsは0件・logsはGitHub側のBlobNotFound・スクリーンショットartifactsなし。新規E2E失敗と判断することも、成功と判断することもできない。
+
+**最新版に対する正式な採用ゲートは未達**: 人間の通常操作による通しプレイ、出入口/仕掛け、灰角獣勝利、保存/復元、Story00–19全回帰、実ブラウザでの改善後画像、実プレイ勝率とフレーム性能測定。したがって技術・美術ともREVISEを維持する。
+
+CI失敗が始まった時点でGitHub Actionsの残分/課金/ランナー割当状況は確認できなかった。実行枠が回復・設定が確認できるまで、同一失敗を起こす再Pushを繰り返すべきではない。
