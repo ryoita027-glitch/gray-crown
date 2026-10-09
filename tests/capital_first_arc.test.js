@@ -61,3 +61,65 @@ test('capital room audio is different and never becomes a new persistent save fi
  assert.equal(h.evaluate("mapMusicTheme('village')"),'village');
  assert.equal(h.evaluate("Object.keys(GC.State.get()).includes('CapitalActing')"),false);
 });
+
+
+test('all real capital public services remain reachable without adding obstacles',()=>{
+ const h=createHarness();
+ const zones=JSON.parse(JSON.stringify(h.evaluate(
+  "['capital','capitalinn','capitalarmory'].map(id=>({id,tiles:maps[id].tiles,npcs:maps[id].npcs.map(x=>({id:x.id,x:x.x,y:x.y})),objects:maps[id].objects.map(x=>({id:x.id,x:x.x,y:x.y}))}))"
+ )));
+ const blockedTile=new Set(['T','H','S','W','R','K','Z']);
+ const required={
+  capital:['capitalOfficial','capitalVendor','capitalRecruit','granz','capitalInnDoor','capitalArmoryDoor'],
+  capitalinn:['capitalInnHost','innRest','indoorExit'],
+  capitalarmory:['capitalSmith','indoorExit']
+ };
+ for(const m of zones){
+  const spawn=m.id==='capital'?[11,13]:[11,11];
+  const blockers=new Set([...m.npcs,...m.objects].map(x=>x.x+','+x.y));
+  const key=(x,y)=>x+','+y,queue=[spawn],seen=new Set();
+  for(let i=0;i<queue.length;i++){
+   const [x,y]=queue[i],k=key(x,y);
+   if(x<0||y<0||x>=24||y>=15||seen.has(k)||
+      blockedTile.has(m.tiles[y][x])||blockers.has(k))continue;
+   seen.add(k);
+   queue.push([x+1,y],[x-1,y],[x,y+1],[x,y-1]);
+  }
+  for(const id of required[m.id]){
+   const o=[...m.npcs,...m.objects].find(x=>x.id===id);
+   assert.ok(o,'existing service '+m.id+'/'+id+' is missing');
+   assert.ok([[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>
+    seen.has(key(o.x+dx,o.y+dy))),
+   'No reachable adjacent player cell for '+m.id+'/'+id);
+  }
+ }
+});
+
+test('live royal appointment completes exactly once and releases input lock',async()=>{
+ const h=createHarness();
+ h.evaluate("ALPHA_SESSION.started=true;state.map='capital';state.x=11;state.y=8;state.story.stage=STORY_STAGES.CAPITAL");
+ const state=h.GC.State.get(),id='alpha.capital.ceremony';
+ assert.equal(h.GC.Events.findTriggeredEvent('npc','capitalOfficial',{map:'capital'}).id,id);
+ assert.equal(h.GC.Events.runTriggeredEvent('npc','capitalOfficial',{map:'capital'}),true);
+ assert.equal(state.events.completed[id],undefined,'event effects are deferred until the canonical dialogue finishes');
+ assert.equal(h.GC.Cinematic.isActive(),true);
+ assert.equal(h.GC.Events.runTriggeredEvent('npc','capitalOfficial',{map:'capital'}),true,'reentry is safely ignored');
+ let advances=0;
+ for(let i=0;i<350&&!state.events.completed[id];i++){
+  await Promise.resolve();
+  if(!h.getElement('dialogueBox').classList.contains('hidden')){
+   if(h.GC.Dialogue.dialogueTyping())h.GC.Dialogue.finishDialogueTyping();
+   h.GC.App.primaryAction();advances++;
+  }
+  h.pumpRaf(8);h.flushTimers();
+  await Promise.resolve();
+ }
+ assert.ok(advances>=12,'all twelve royal ceremony lines were processed; observed='+advances);
+ assert.equal(state.events.completed[id],true);
+ assert.equal(state.story.stage,h.GC.Story.STORY_STAGES.CEREMONY);
+ await Promise.resolve();await Promise.resolve();
+ assert.equal(h.GC.Cinematic.isActive(),false,'camera scene must end');
+ assert.equal(h.GC.Dialogue.isInputLocked(),false,'player controls must return');
+ assert.equal(h.GC.Events.findTriggeredEvent('npc','capitalOfficial',{map:'capital'}).id,
+              'alpha.capital.ceremony.repeat','canonical repeat dialogue retained');
+});
