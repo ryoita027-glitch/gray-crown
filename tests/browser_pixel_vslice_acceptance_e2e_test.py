@@ -124,6 +124,18 @@ with serve_game() as url:
         ensure_runtime(page)
         shot(page,"desktop_village")
 
+        # S1 regression: rapid compact reversal used to overlap two followers.
+        for key in ("ArrowUp","ArrowUp","ArrowRight","ArrowRight",
+                    "ArrowDown","ArrowLeft","ArrowUp","ArrowDown"):
+            page.keyboard.press(key)
+            page.wait_for_timeout(130)
+        occupancy = page.evaluate("""() => {
+            const s = GC.State.get(), points=[[s.x,s.y],...partyTrailPoints()];
+            return {points,unique:new Set(points.map(p=>p.join(','))).size};
+        }""")
+        require(occupancy["unique"]==4,"S1 overlap on compact turn: "+repr(occupancy))
+        shot(page,"desktop_reversal")
+
         # Player-keyboard village appointment; do not set story flags.
         walk(page,(12,7))
         page.keyboard.press("ArrowUp");page.wait_for_timeout(140)
@@ -171,7 +183,7 @@ with serve_game() as url:
         require(page.evaluate("GC.Save.save(true)") is False,
                 "battle incorrectly allows save")
         shot(page,"desktop_battle")
-        battle_heroes=page.locator(".battle-hero.runtime-hero")
+        battle_heroes=page.locator("#partyBattleLine .battle-hero")
         require(battle_heroes.count()==4,"battle party count is not four")
         for i,hero in enumerate(HEROES):
             bg=battle_heroes.nth(i).evaluate("e=>getComputedStyle(e).backgroundImage")
