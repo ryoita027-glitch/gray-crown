@@ -95,3 +95,23 @@ Workflow: .github/workflows/pixel-vslice-acceptance-gate.yml
 **総合REVISE。** PR #35は技術統合の第一候補として保持し、受け入れCIの全緑・実画像の目視・上記リスクの追加検証後に再評価する。ユーザーが美術・Portrait・正式採用を明示的に決定するまでmainを変更しない。
 
 禁止事項順守：main未変更、承認された4人の素材を再描画せず、Save schema・世界観・物語を変更せず、既存テストを削除/緩和せず、PR #35本体を上書きせず専用ブランチ内でのみ修正。
+
+
+## 8. 工程0最終確認追記 — 2026-10-10
+
+受け入れブランチHEAD **1dd51a7457709bdd5e3cdf863d9c0b268d6cc0c5** で次を**SUCCESS**と再取得した。
+
+- Acceptance Gate run **37962009686**: Full existing regression、immutable sources/runtime asset verification、real browser acceptance E2E、artifact uploadの4段階すべて成功。
+- PR時の Triton Completion CI run **37962045120**: SUCCESS。
+- 生成されたGitHub Actions artifact **11632366119**（gray-crown-pixel-vslice-acceptance-evidence）：実ブラウザスクリーンショット**全15枚**を取得し、村・折り返し・会話・カレン宅・街道・通常戦闘・戦闘後・古砦・Continue、さらに小型PCとスマホ相当の村・街道・屋内を確認。
+- Evidence URL: https://github.com/ryoita027-glitch/gray-crown/actions/runs/37962009686/artifacts/11632366119
+
+### 実際の画像の観察
+
+折り返し画像では4人が別の位置に存在し、完全に消えてはいない。ただし44pxキャラが32px論理タイル上で隣接し、一部の輪郭・髪が重なる。全状況の非重複を証明したわけではない。
+
+戦闘画像では4人が正しい個別PNGで描かれるが、ゲーム画面下部に広い未活用の暗い空間が残り、キャラ・敵の相対表示面積が小さい。スマホ画像では横スクロールは起きないが、決定ボタンが縦に折り返し、文字とUIの優先順位も改善が必要。これらは **S2美術/UIの未解決事項** として維持する。
+
+**再判定:** PR #36のテスト済みコードは、初期PR #35より技術的に前進した。既存回帰＋新規受け入れE2EはGO。ただしユーザー指定の全検証（実v23セーブ、通常敗北、極端2マス往復）の証拠はまだないので**工程0の最終合否はREVISE**。美術はREVISE。正式採用はユーザー判断。
+
+この追記は記録文書の変更のみであり、ゲーム本体のコード・PNG・セーブは更新しない。
