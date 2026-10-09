@@ -9,6 +9,7 @@ import hashlib
 import http.server
 import json
 import threading
+from collections import deque
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
@@ -44,6 +45,35 @@ def screenshot(page,name):
     page.screenshot(path=str(path),full_page=True)
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
+def path_to(page,target):
+    """Ordinary keyboard-only BFS, no coordinate injection or event bypass."""
+    board=page.evaluate("""() => ({
+      width:COLS,height:ROWS,blocked:Array.from({length:ROWS},(_,y)=>
+        Array.from({length:COLS},(_,x)=>isBlocked(x,y)))
+    })""")
+    start=page.evaluate("({x:GC.State.get().x,y:GC.State.get().y})")
+    src=(start['x'],start['y'])
+    goal=tuple(target)
+    q=deque([src]);parents={src:None}
+    directions=((0,-1,'ArrowUp'),(1,0,'ArrowRight'),(0,1,'ArrowDown'),(-1,0,'ArrowLeft'))
+    while q:
+        x,y=q.popleft()
+        if (x,y)==goal:break
+        for dx,dy,key in directions:
+            xy=(x+dx,y+dy)
+            if (0<=xy[0]<board['width'] and 0<=xy[1]<board['height']
+                and not board['blocked'][xy[1]][xy[0]] and xy not in parents):
+                parents[xy]=((x,y),key);q.append(xy)
+    must(goal in parents,f'no walkable route {src} to {goal}')
+    keys=[];pos=goal
+    while pos!=src:
+        prev,key=parents[pos];keys.append(key);pos=prev
+    for key in reversed(keys):
+        before=page.evaluate("({x:GC.State.get().x,y:GC.State.get().y})")
+        page.keyboard.press(key);page.wait_for_timeout(155)
+        after=page.evaluate("({x:GC.State.get().x,y:GC.State.get().y})")
+        must(before!=after,f'blocked while navigating to messenger: {key} {before}')
+
 def start(page,url,mode):
     page.goto(url,wait_until='networkidle')
     page.locator('#titleNewGame').click()
@@ -61,7 +91,6 @@ def start(page,url,mode):
     must(not before['complete'],'fresh appointment already complete')
     screenshot(page,'before_'+mode)
     # Normal-world movement is handled by a tested BFS helper; no direct teleport.
-    from browser_pixel_vslice_acceptance_e2e_test import path_to
     path_to(page,(12,7))
     page.keyboard.press('ArrowUp')
     page.wait_for_timeout(135)
