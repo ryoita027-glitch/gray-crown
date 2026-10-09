@@ -336,7 +336,86 @@ const RyuneArtV2=(()=>{
   // v1 has all interaction geometry pinned correctly; retain it.
   return prior.drawObject(c,map,o);
  }
- const api={enabled:true,blueprints,palette:color};
+
+ function tint(hex,amount){
+  const n=parseInt(String(hex||'#777777').slice(1),16);
+  if(Number.isNaN(n))return '#777777';
+  const f=v=>Math.max(0,Math.min(255,Math.round(v+amount*255)));
+  return '#'+[f(n>>>16&255),f(n>>>8&255),f(n&255)].map(v=>v.toString(16).padStart(2,'0')).join('');
+ }
+ const villages=new Set(['village','karenhome','orphanage','mayorhouse','cottage']);
+ function actor(c,map,n,facing='down'){
+  if(!villages.has(map))return false;
+  const style=NPC_STYLE[n.id]||{body:'#786e62',accent:'#b7a481',hair:'#55463a'};
+  const short=!!style.small,baseX=n.x*32+16,foot=n.y*32+30;
+  const scale=short?.82:1,py=v=>Math.round(v*scale),px=v=>Math.round(v*scale);
+  const body=style.body||'#786e62',accent=style.accent||'#b7a481',hair=style.hair||'#55463a';
+  const bodyDark=tint(body,-.27),bodyLight=tint(body,.17),clothDeep=tint(body,-.45);
+  const hairDark=tint(hair,-.27),hairLight=tint(hair,.17);
+  const cx=baseX,ty=foot-py(38),ox=Math.round(cx-px(13)),back=facing==='up',side=facing==='left'||facing==='right';
+  const flip=facing==='left'?-1:1;
+  // 1px / 2px clusters built under nearest-neighbor game canvas.
+  // Feet anchor remains *exactly* tile x+16/y+30 for all NPC directions.
+  fill(c,'#39493f',cx-px(9),foot+1,px(18),2);
+  fill(c,'#2c302d',cx-px(9),foot-2,px(7),3);
+  fill(c,'#2c302d',cx+px(2),foot-2,px(7),3);
+  fill(c,'#37332d',cx-px(7),foot-py(10),px(6),py(9));
+  fill(c,'#403931',cx+px(1),foot-py(10),px(6),py(9));
+  fill(c,bodyDark,cx-px(10),ty+py(17),px(20),py(17));
+  fill(c,body,cx-px(9),ty+py(17),px(18),py(15));
+  // 4-color mass separation for the dress/coat without plastic outline.
+  fill(c,clothDeep,cx-px(11),ty+py(28),px(22),py(4));
+  fill(c,bodyLight,cx-px(7),ty+py(18),px(5),py(4));
+  fill(c,accent,cx-px(7),ty+py(23),px(14),py(3));
+  fill(c,tint(accent,-.15),cx-px(6),ty+py(26),px(12),1);
+  // Sleeves and hands are separate pixel clusters from the chest.
+  fill(c,bodyDark,cx-px(13),ty+py(19),px(4),py(10));
+  fill(c,bodyDark,cx+px(9),ty+py(19),px(4),py(10));
+  fill(c,body,cx-px(12),ty+py(20),px(3),py(6));
+  fill(c,bodyLight,cx+px(10),ty+py(20),px(2),py(5));
+  fill(c,'#c99d7c',cx-px(12),ty+py(27),px(4),py(4));
+  fill(c,'#d9b18d',cx+px(9),ty+py(27),px(4),py(4));
+  // Under-hair skin silhouette: a readable 15px face, intentionally
+  // different from the four locked 48px protagonist sheets.
+  fill(c,hairDark,cx-px(10),ty+py(2),px(20),py(18));
+  fill(c,'#bd8d74',cx-px(8),ty+py(6),px(16),py(14));
+  fill(c,'#e4b995',cx-px(7),ty+py(6),px(14),py(12));
+  fill(c,'#f0c4a0',cx-px(6),ty+py(7),px(8),py(4));
+  fill(c,hair,cx-px(10),ty+py(1),px(20),py(7));
+  fill(c,hairDark,cx-px(10),ty+py(6),px(4),py(10));
+  fill(c,hairDark,cx+px(6),ty+py(5),px(4),py(11));
+  fill(c,hairLight,cx-px(8),ty+py(3),px(7),py(2));
+  if(back){
+   fill(c,hair,cx-px(7),ty+py(7),px(14),py(10));
+   fill(c,hairDark,cx-px(3),ty+py(14),px(6),py(3));
+  }else if(side){
+   fill(c,'#4c3b36',cx+(flip>0?px(3):-px(5)),ty+py(13),px(2),py(2));
+   fill(c,'#ba8878',cx+(flip>0?px(7):-px(9)),ty+py(15),px(2),1);
+  }else{
+   // Crisp two-pixel eyes, a restrained jaw and asymmetric highlight.
+   fill(c,'#503c35',cx-px(5),ty+py(13),px(2),py(2));
+   fill(c,'#503c35',cx+px(3),ty+py(13),px(2),py(2));
+   fill(c,'#af7566',cx-px(1),ty+py(17),px(3),1);
+  }
+  if(style.hat){
+   fill(c,'#4d463c',cx-px(12),ty+py(4),px(24),py(4));
+   fill(c,'#867255',cx-px(8),ty-py(2),px(16),py(8));
+   fill(c,'#b49b6c',cx-px(6),ty,px(12),py(2));
+  }
+  if(style.cape){
+   // Shoulders and silhouette stay within the same logical tile footprint.
+   fill(c,clothDeep,cx-px(12),ty+py(20),px(4),py(12));
+   fill(c,clothDeep,cx+px(8),ty+py(20),px(4),py(12));
+   fill(c,tint(accent,.12),cx-px(3),ty+py(18),px(6),py(3));
+  }
+  if(style.weapon==='sword'){
+   fill(c,'#6d5a40',cx+px(10),ty+py(20),2,py(11));
+   fill(c,'#b4b7b1',cx+px(10),ty+py(13),2,py(9));
+  }
+  return true
+ }
+
+ const api={enabled:true,blueprints,palette:color,drawNpc:actor};
  r.paintTile=tile;r.drawVillage=village;r.drawInterior=interior;r.drawObject=object;
  return api;
 })();
