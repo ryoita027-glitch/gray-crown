@@ -39,13 +39,21 @@ def compare_pixels(page,map_name):
  scene(page,map_name+'_after')
  require(page.evaluate("AshFrontierEnvironment.enabled"),'art restored after comparison')
 
-def meet(page,map_name,obj,kind):
+def meet(page,map_name,obj,kind,expect_battle=None):
  require(snap(page)['map']==map_name,'correct map for '+obj)
  coords=page.evaluate("""([kind,id])=>{
   let m=maps[GC.State.get().map],a=(kind==='npc'?m.npcs:m.objects).find(x=>x.id===id);
   if(!a)throw Error('canonical interaction absent: '+id);return [a.x,a.y]
  }""",[kind,obj])
  world.face_and_interact(page,coords,obj)
+ if expect_battle:
+  # A normal battle follows an original multi-line event. Do NOT use the
+  # generic interruption processor; it intentionally auto-fights battles.
+  for _ in range(160):
+   if snap(page)['battle']==expect_battle:return
+   if page.locator('#dialogueBox').is_visible():world.clean_dialogue(page)
+   else:page.wait_for_timeout(85)
+  raise AssertionError('expected canonical battle did not start: '+expect_battle)
  world.process_interruptions(page)
 
 def normal_north(page,destination,name):
@@ -90,7 +98,7 @@ def play(page,url):
  require(snap(page)['map']=='ashroad','ashroad save/Continue')
  require(page.evaluate("isEventComplete('alpha2.ashroad.refugee')"),
          'refugee and orders flags persist')
- meet(page,'ashroad','imperialPatrol','object')
+ meet(page,'ashroad','imperialPatrol','object',expect_battle='imperialRaid')
  require(snap(page)['battle']=='imperialRaid','imperial patrol real battle started')
  scene(page,'ashroad_patrol_battle')
  METRICS['battle_ids'].append('imperialRaid')
@@ -113,7 +121,7 @@ def play(page,url):
  require(snap(page)['story']=='13_frontier_crisis',
          'hospital event advances to Serad defense')
  scene(page,'frontier_hospital_aftermath')
- meet(page,'frontier','vanguardCaptain','npc')
+ meet(page,'frontier','vanguardCaptain','npc',expect_battle='vanguardCaptain')
  require(snap(page)['battle']=='vanguardCaptain','Vark battle starts via normal NPC')
  METRICS['battle_ids'].append('vanguardCaptain')
  scene(page,'frontier_vark_battle')
