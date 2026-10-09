@@ -59,3 +59,16 @@ test('phase 7: local fallbacks cannot redefine completion or game state',()=>{
  assert.ok(runner.includes('rev-parse'));
  assert.ok(!runner.includes('GC.Dev.settings'),'No developer short-circuit may be introduced');
 });
+
+test('phase 7: boss route tests ignore hidden stale choices and respect northroad y=0',()=>{
+ const e2e=read('tests/browser_vertical_slice_e2e_test.py');
+ const road=read('tests/browser_road_cave_quality_e2e_test.py');
+ assert.ok(e2e.includes("if not snapshot(page)['battle']:"), 'active boss fight must not click hidden choice');
+ assert.ok(e2e.includes("#choiceBox button:visible"),'only visible real player choices');
+ assert.ok(e2e.includes("walk_to(page,[(11,0),(12,0)],'northroad capital direction')"),
+   'northroad must reach y=0 then press Up before capital transfer');
+ assert.ok(road.includes('#choiceBox button:visible'),
+   'road/cave E2E must ignore invisible old dialogue buttons');
+ assert.ok(road.includes('if page.locator("#battlePanel").is_visible():return fight(page,"boss")'),
+   'road/cave E2E must handle proximity-triggered boss');
+});
