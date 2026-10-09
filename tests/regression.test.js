@@ -90,7 +90,7 @@ test('event engine completes a data-driven dialogue event only after its pages f
    if(h.GC.Dialogue.dialogueTyping())h.GC.Dialogue.finishDialogueTyping();
    h.GC.App.primaryAction();lines++;
   }
-  h.flushRaf();h.flushTimers();
+  h.pumpRaf(8);h.flushTimers();
   await Promise.resolve();
  }
  assert.ok(lines>=23,'all original appointment lines must be delivered');
