@@ -72,3 +72,30 @@ All technical verdicts above remain **REVISE / NOT GO**, not production quality.
 Rollback points: Phase 7 `CapitalEnvironment.enabled=false` for *art-only A/B*; for entire phase, leave Phase 7 Draft PR unmerged and return to Phase 5 `81cf40a007dded765d14d468d66ccc4fcbf4ad19`. **Never force-push, overwrite or merge into production `main` without user permission.**
 
 **Adoption requested from the user only after clean same-HEAD CI, comparison footage/screenshots and playable user visual sign-off. Do not start a large subsequent story region before formal acceptance.**
+
+
+## 7. 2026-10-10 — Local-first execution change after confirmed Actions quota exhaustion
+
+The owner confirmed that the GitHub-hosted Actions allowance is currently exhausted. **The plan no longer depends on waiting for Actions minutes to reset.** Source code, branching, PR review, unit tests and browser screenshots can continue when run on a fully checked-out developer computer; GitHub Actions remains optional, not the verification authority.
+
+Committed on this same Phase 7 Draft branch:
+- `.github/workflows/capital-first-arc-acceptance.yml` — **only** `workflow_dispatch`. Stop automatic new expensive Phase 7 branch push runs; all test steps remain intact.
+- `.github/workflows/karen-prototype-check.yml` — **only** `workflow_dispatch` in the Phase-7 Draft branch. Suppresses the PR-triggered inherited Triton Completion CI here while retaining its original checks. This does **not** alter the production main workflow or another historical PR branch.
+- `tools/run_local_quality.py` — synchronous cross-platform local runner (`quick`, `capital`, `full`, optional genuine `--with-v23` pinned Git worktree), no GitHub-hosted minutes, no uploads, mutations to source, auto-generated PNGs or main merges.
+- `docs/audit/LOCAL_TESTING_NO_ACTIONS.md` — direct Windows setup, command sequence, logs, real screenshot and finite failure labels.
+- New Node checks on the current city candidate: reachable adjacent squares for existing city services / both interiors, exactly-one original 12-line ceremony effects and input-lock cleanup.
+
+Actual evidence limitations remain strict:
+1. The private repository's **current checkout is not present in the assistant's local container**, so this response did not execute `npm run check` or a real Playwright browser test. Editing the cloud GitHub branch is possible through the installed GitHub connection; it is not the same as having a cloned working tree or a GUI browser connected to that clone. **No new screenshots or local test PASS is claimed.**
+2. Source-level JavaScript functional checks on the live current implementation (not the browser) verified the source's 12 ceremony lines match the 12 SceneRunner `say` commands, double initiation only starts one scene, completion applies effects once, post-completion cannot restart that event, and scoped pixel tile draws return false outside capital and when disabled.
+3. An independent grid inspection found 24×15 maps with walkable adjacent cells for the capital official, Granz, vendor, recruit, inn/armory entrance, indoor service NPC and indoor exits. This **does not** prove a human can navigate every scripted interaction.
+4. Until the local full gate emits a **successful actual `results.json`**, the documented **REVISE** status remains. Review a real recording/screenshots before evaluating visual harmony and stage 06.
+
+**Local acceptance command** from a real checkout of this exact branch (Windows):
+```powershell
+py -3 tools/run_local_quality.py --mode quick --install
+py -3 tools/run_local_quality.py --mode full --install --with-v23
+```
+All generated text traces live under ignored `prototype_artifacts/local_quality_runs/`, with actual comparison screenshot evidence under ignored `prototype_artifacts/capital_first_arc_v1/`. No evidence is fabricated. GitHub may remain a source-code and PR host even while its hosted Actions runner budget is exhausted. Future tools/agents must **not** reactivate an automatic Actions trigger in this branch without an explicit change in the execution budget decision.
+
+**S0/S1 gate:** Unverified original Phase 5 natural boss journey, capital entrance, dialog/persistence migration and this new capital scene must be checked by the local runner first. CI platform limitations are not a reason to rewrite story, weaken assertions or declare completion.
