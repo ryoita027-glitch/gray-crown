@@ -255,23 +255,9 @@ def play(page,url):
  check(snapshot(page)['map']=='cave','fort side-path entrance failed')
  checkpoint(page,'fort entrance');shot(page,'06_fort')
  save_via_menu(page,'cave arrival')
- # In-cave mechanics: both side combat symbols and mechanisms through normal input.
- for obj in ('leverWest','leverEast'):
-  target=page.evaluate("(id)=>{let o=maps.cave.objects.find(o=>o.id===id);return [o.x,o.y]}",obj)
-  face_and_interact(page,target,obj)
-  process_interruptions(page)
-  check(snapshot(page)['switches'].get(obj) is True,'lever interaction did not set '+obj)
-  shot(page,'07_'+obj)
-  # Interact again: toggle must not revert; no duplicated rewards.
-  before=snapshot(page)
-  face_and_interact(page,target,obj)
-  process_interruptions(page)
-  check(snapshot(page)['switches'].get(obj) is True,'repeat lever toggled '+obj)
-  check(snapshot(page)['inventory']==before['inventory'],'lever yielded duplicate items')
- check('bats' in snapshot(page)['defeated'] and 'crawler' in snapshot(page)['defeated'],
-       'puzzle skipped cave guardian encounters')
- save_via_menu(page,'both levers')
- # Chests only once via actual contact; visited, world and inventory survive saving.
+ # Collect optional resources before activating both gate levers.
+ # Taking the chests *first* avoids prematurely auto-triggering the boss
+ # while demonstrating that side paths give a real preparation benefit.
  for obj in ('chest1','chest2'):
   target=page.evaluate("(id)=>{let o=maps.cave.objects.find(o=>o.id===id);return [o.x,o.y]}",obj)
   face_and_interact(page,target,obj)
@@ -281,6 +267,26 @@ def play(page,url):
   face_and_interact(page,target,obj)
   process_interruptions(page)
   check(snapshot(page)['inventory']==first['inventory'],'duplicate treasure '+obj)
+ # Two combat-guarded mechanisms must be activated through normal input.
+ for obj in ('leverWest','leverEast'):
+  target=page.evaluate("(id)=>{let o=maps.cave.objects.find(o=>o.id===id);return [o.x,o.y]}",obj)
+  face_and_interact(page,target,obj)
+  process_interruptions(page)
+  check(snapshot(page)['switches'].get(obj) is True,'lever interaction did not set '+obj)
+  shot(page,'07_'+obj)
+  before=snapshot(page)
+  face_and_interact(page,target,obj)
+  process_interruptions(page)
+  check(snapshot(page)['switches'].get(obj) is True,'repeat lever toggled '+obj)
+  check(snapshot(page)['inventory']==before['inventory'],'lever yielded duplicate items')
+ check('bats' in snapshot(page)['defeated'] and 'crawler' in snapshot(page)['defeated'],
+       'puzzle skipped cave guardian encounters')
+ save_via_menu(page,'both levers')
+ # Existing limited cave rest: actual interaction, not a test-only heal.
+ cave_rest=page.evaluate("(()=>{let o=maps.cave.objects.find(o=>o.id==='caveRest');return[o.x,o.y]})()")
+ face_and_interact(page,cave_rest,'caveRest')
+ process_interruptions(page)
+ check(any(p>0 for p in snapshot(page)['hp']),'party has no survivors after fort rest')
  shot(page,'08_fort_puzzle_complete')
  save_via_menu(page,'puzzle complete')
  checkpoint(page,'boss ready')
@@ -290,10 +296,9 @@ def play(page,url):
  if page.locator('#choiceBox button').count():
   option=page.locator('#choiceBox button').filter(has_text='戦う').first
   check(option.count(),'boss fight choice missing')
-  option.click();page.wait_for_timeout(130)
- if not snapshot(page)['battle']:
-  # On approach handleStep may have shown the same battle choice automatically.
-  process_interruptions(page)
+  if page.evaluate('GC.Dialogue.dialogueTyping()'):
+   page.keyboard.press('Enter');page.wait_for_timeout(70)
+  option.click();page.wait_for_timeout(150)
  check(snapshot(page)['battle']=='boss','boss did not trigger through normal interaction')
  shot(page,'09_boss_battle')
  battle(page)

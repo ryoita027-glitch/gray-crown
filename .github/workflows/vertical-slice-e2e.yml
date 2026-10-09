@@ -42,6 +42,8 @@ jobs:
         run: python tests/browser_ryune_acting_e2e_test.py
       - name: Existing Ryune outdoor/interior rendering regression
         run: python tests/browser_ryune_environment_e2e_test.py
+      - name: Road/cave terrain, enemy, boss and audio presentation comparisons
+        run: python tests/browser_road_cave_quality_e2e_test.py
       - uses: actions/checkout@v4
         name: Check out unchanged production main v23 for genuine save compatibility
         with:
@@ -61,6 +63,7 @@ jobs:
           name: gray-crown-phase5-real-browser-acceptance
           path: |
             prototype_artifacts/vertical_slice_v1/
+            prototype_artifacts/road_cave_combat_v1/
             prototype_artifacts/ryune_acting_v1/
             prototype_artifacts/ryune_environment_v1/
             prototype_artifacts/pixel_vslice_acceptance_v1/
