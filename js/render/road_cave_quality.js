@@ -105,6 +105,26 @@ const RoadCaveQuality=(()=>{
     fill(c,'#536d4e',x+3,y+22,3,7);fill(c,'#8d9a6b',x+3,y+21,7,2);
     fill(c,'#847e65',x+24,y+25,5,2)
    }
+   // The old forest landmark is rebuilt as an unobtrusive pixel detail.
+   // The small roadside stone marker stands only on existing blocked T tiles.
+   const lx=18*32,ly=8*32;
+   fill(c,'#39493e',lx+4,ly+23,25,6);
+   fill(c,'#777a70',lx+9,ly+10,15,16);
+   fill(c,'#a6a18e',lx+11,ly+9,11,5);
+   fill(c,'#55574e',lx+13,ly+17,7,2);
+   fill(c,'#74765c',lx+9,ly+26,16,2);
+   // A thin fallen branch lies outside the walked path. It looks passable
+   // and does not pretend to be a newly collision-blocking obstacle.
+   const fx=6*32,fy=10*32;
+   fill(c,'#615b46',fx+4,fy+23,25,3);
+   fill(c,'#a08b65',fx+5,fy+22,22,1);
+   fill(c,'#506e4b',fx+22,fy+18,6,3);
+   // Two short wheel-rut segments: route cues only, never a false shortcut.
+   for(const [tx,ty] of [[11,12],[10,8],[10,6],[12,4],[11,3]]){
+     const ox=tx*32,oy=ty*32;
+     fill(c,'#928064',ox+9,oy+5,2,11);
+     fill(c,'#928064',ox+21,oy+7,2,10);
+   }
    // Old road boundary: muted flat stones lead toward the existing cave door.
    for(const [tx,ty] of [[12,2],[13,2],[13,1]]){
     const x=tx*32,y=ty*32;
