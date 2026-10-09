@@ -16,7 +16,7 @@
 | **B** | 実プレイ受入に必要だが未取得 | 「FAILのゲーム不具合」でも「PASS」でもない。値は未測定 |
 | **J** | 審美性・面白さの評価者判断 | 提案・暫定評点のみ。ユーザー/人間プレイヤーの承認ではない |
 
-**I: 実際のGitHub監査の定量情報（同一PR #43のrecursive treeから集計）**：307 tracked blobs、28 map entries、13 battle definitions、`assets/`37ファイル（Git tree上の約618 KB）、主人公`assets/characters/`34ファイル（約507 KB、うち4人×8アニメ=32枚の実装シート＋候補参照2枚）、`tests/`41ファイル、`.github/workflows/`16ファイル。JavaScript 30ファイル（約431 KB）。**Git blob容量≠通信転送量、読み込み時間、VRAM、FPS**。実端末での測定が別途必要。
+**I: 実際のGitHub監査の定量情報（同一PR #43のrecursive treeから集計）**：307 tracked blobs、28 map entries、14 battle definitions、`assets/`37ファイル（Git tree上の約618 KB）、主人公`assets/characters/`34ファイル（約507 KB、うち4人×8アニメ=32枚の実装シート＋候補参照2枚）、`tests/`41ファイル、`.github/workflows/`16ファイル。JavaScript 30ファイル（約431 KB）。**Git blob容量≠通信転送量、読み込み時間、VRAM、FPS**。実端末での測定が別途必要。
 
 **H: 成功実績**：
 - Phase 1統合（PR #39 HEAD `994178432e44cdb06dd592fdd2d39bc418d90acc`）のCI **37967259690 SUCCESS**。
