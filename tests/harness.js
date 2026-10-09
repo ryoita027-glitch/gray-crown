@@ -28,6 +28,8 @@ function createHarness(root=path.resolve(__dirname,'..')){
  sandbox.window=sandbox;sandbox.globalThis=sandbox;
  const context=vm.createContext(sandbox);
  for(const rel of SCRIPT_ORDER){const file=path.join(root,rel);vm.runInContext(fs.readFileSync(file,'utf8'),context,{filename:rel})}
+ let pumpTimestamp=0;
+ function pumpRaf(count=8){for(let i=0;i<count&&raf.length;i++){const fn=raf.shift();fn(pumpTimestamp+=40)}}
  function flushRaf(limit=200){let ts=0;while(raf.length&&limit-->0){const fn=raf.shift();fn(ts+=40)}if(limit<=0&&raf.length)throw new Error('RAF queue did not settle')}
  function flushTimers(limit=300){while(timers.length&&limit-->0){timers.shift()()}if(limit<=0&&timers.length)throw new Error('Timer queue did not settle')}
  function press(key){for(const fn of documentEvents.keydown||[])fn({key,repeat:false,preventDefault(){}})}
