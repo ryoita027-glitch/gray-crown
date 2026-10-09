@@ -78,7 +78,7 @@ def play(page,mode,url):
       const d=EVENT_DEFS.find(x=>x.id==='alpha.village.appointment');
       return {lines:d.lines.map(x=>({speaker:x.speaker,text:x.text})),effects:JSON.stringify(d.effects)}
     }""")
-    must(len(expected['lines'])==23,'appointment transcript changed from baseline')
+    must(len(expected['lines'])==22,'appointment transcript changed from baseline')
     must(page.evaluate("GC.RyuneActing.getSnapshot().actors.length")==5,'five scene actors missing')
     must(page.evaluate("""() => {
       const a=GC.RyuneActing.getSnapshot().actors;
@@ -105,7 +105,7 @@ def play(page,mode,url):
         full=page.evaluate("""() => !GC.Dialogue.dialogueTyping() && 
           document.querySelector('#dialogueText').textContent.length>0""")
         must(full,f'line {i} continuous Enter failed to reveal dialogue')
-        if i in (0,1,4,6,8,11,15,18,20,22):
+        if i in (0,1,4,6,8,11,14,17,19,21):
             page.wait_for_timeout(115)
             samples[i]=page.evaluate("GC.RyuneActing.getSnapshot()")
             screenshot(page,f'{mode}_line_{i:02d}')
@@ -144,11 +144,11 @@ def play(page,mode,url):
     page.wait_for_timeout(120)
     must(not page.evaluate("GC.RyuneActing.isRunning()"),'appointment replayed instead of repeat NPC dialogue')
     # Distinct motivations expressed by transient staging, not by edits to speaker lines.
-    must(samples[1]['actors']!=samples[18]['actors'],'no visible actor-state change')
-    must(any(a['id']=='karen' and a['x']>=11.8 for a in samples[15]['actors']),'Karen approach absent')
-    must(any(a['id']=='triton' and a['x']>=9.35 for a in samples[18]['actors']),'Triton protective shift absent')
+    must(samples[1]['actors']!=samples[17]['actors'],'no visible actor-state change')
+    must(any(a['id']=='karen' and a['x']>=11.8 for a in samples[14]['actors']),'Karen approach absent')
+    must(any(a['id']=='triton' and a['x']>=9.35 for a in samples[17]['actors']),'Triton protective shift absent')
     must(any(a['id']=='sophie' and a['x']<13.3 for a in samples[11]['actors']),'Sophie step absent')
-    must(any(a['id']=='margaret' and a['animation']=='idle' for a in samples[20]['actors']),'Margaret measured stillness absent')
+    must(any(a['id']=='margaret' and a['animation']=='idle' for a in samples[19]['actors']),'Margaret measured stillness absent')
     return {'mode':mode,'lines':len(expected['lines']),'samples':{str(i):v for i,v in samples.items()},
      'before':before,'position':pos,'after':after,
      'screenshot_paths':[p.name for p in OUT.glob(f'*{mode}*.png')]}
@@ -179,7 +179,7 @@ def main():
             finally:
                 browser.close()
     (OUT/'acting_e2e_results.json').write_text(json.dumps(MEASURED,ensure_ascii=False,indent=2),encoding='utf8')
-    print('RYUNE ACTING E2E PASS: identical 23 lines A/B, natural interaction, all locks, saves and reload, 4 actor identities, 5-NPC staging screenshots')
+    print('RYUNE ACTING E2E PASS: identical 22 lines A/B, natural interaction, all locks, saves and reload, 4 actor identities, 5-NPC staging screenshots')
 
 if __name__=='__main__':
     main()

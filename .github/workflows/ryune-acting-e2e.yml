@@ -36,7 +36,7 @@ jobs:
           python tools/verify_four_protagonist_appeal_runtime.py
       - name: Install headless Chromium once
         run: python -m playwright install --with-deps chromium
-      - name: Real 23-line appointment / four-hero acting / Portrait A-B / save gate
+      - name: Real 22-line appointment / four-hero acting / Portrait A-B / save gate
         run: python tests/browser_ryune_acting_e2e_test.py
       - name: Preserve unretouched game screenshots and diagnostics
         if: always()

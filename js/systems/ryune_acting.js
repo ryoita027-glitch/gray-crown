@@ -23,14 +23,14 @@
   9:{look:[['margaret','karen']]},
   11:{move:[['sophie',12.8,8.0,430,'approach']]},
   12:{look:[['margaret','sophie']],still:['margaret']},
-  15:{move:[['karen',12.2,7.6,270,'approach']]},
-  16:{look:[['margaret','karen']],still:['margaret']},
-  17:{move:[['karen',11.65,8.0,260,'walk']],look:[['karen','margaret']]},
-  18:{move:[['triton',10.25,8.0,430,'walk']],look:[['triton','karen']]},
-  19:{look:[['sophie','karen']]},
-  20:{still:['margaret']},
-  21:{focus:['karen','triton','sophie','margaret'],look:[['karen','sophie']]},
-  22:{look:[['triton','karen']]}
+  14:{move:[['karen',12.2,7.6,270,'approach']]},
+  15:{look:[['margaret','karen']],still:['margaret']},
+  16:{move:[['karen',11.65,8.0,260,'walk']],look:[['karen','margaret']]},
+  17:{move:[['triton',10.25,8.0,430,'walk']],look:[['triton','karen']]},
+  18:{look:[['sophie','karen']]},
+  19:{still:['margaret']},
+  20:{focus:['karen','triton','sophie','margaret'],look:[['karen','sophie']]},
+  21:{look:[['triton','karen']]}
  });
  let mode='portraitOn',running=false;
  function setPortraitMode(next){if(!['portraitOn','portraitOff'].includes(next)||running||GC.Cinematic?.isActive?.())return false;mode=next;return true}

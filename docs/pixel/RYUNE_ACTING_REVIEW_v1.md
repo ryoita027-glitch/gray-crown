@@ -3,7 +3,7 @@
 
 ## Provenance, controls and scope
 - Character contracts: `docs/pixel/PIXEL_CHARACTER_ACTING.md`, `docs/characters/CHARACTER_VISUAL_IDENTITY.md`, `docs/pixel/PIXEL_CHARACTER_STANDARD_v2_FOUR_PROTAGONIST.md`. The latter two include historical status but remain the original acting/identity evidence; no unconfirmed Character Bible is fabricated.
-- **Canonical event text and choices/effects unchanged** in `js/data/events.js` (`alpha.village.appointment` has 23 exact lines, four original effects). The event runner `js/systems/events.js` routes **only** the initial village appointment to existing `GC.Cinematic.startScene()`; all other events use their original code.
+- **Canonical event text and choices/effects unchanged** in `js/data/events.js` (`alpha.village.appointment` has 22 exact lines, four original effects). The event runner `js/systems/events.js` routes **only** the initial village appointment to existing `GC.Cinematic.startScene()`; all other events use their original code.
 - `js/systems/ryune_acting.js` adds **only presentation** cues by matching exact line indices while existing dialogue is visible: turn, native 48px animation, short tweened temporary actor moves, camera focus, one soft existing step SFX. No large event engine rewrite.
 - The four actors are individual **48×48-source/44px-display** PNGs, not fresh generations. Save schema 23, world actor logical positions, directions, collision/trail, story and event idempotence remain authoritative.
 - **Portrait ON** is the existing default. **Portrait OFF** is a testable alternative via `GC.RyuneActing.setPortraitMode('portraitOff')` before starting a fresh appointment. This is non-persistent A/B instrumentation, not a product option or a decision to remove portraits.
@@ -22,7 +22,7 @@
 Existing `NPC_STYLE` + `drawNpcCommercial` differentiated role silhouettes, **without changing map IDs/placement**. Selected contacts: `messenger` upright/cape shoulders; `mayor` elder collar; `father`/`karenFather` strong shoulder; `caretaker`/`karenMother` clasped hands; `mika`/`orphan`/`theo` short child silhouette; `baker` apron mass; `farmer` workwear hem. They use consistent pixel-grid accents and retain their existing costume palettes. **These are not final designs**: no new Canon weapons, emblems, religion, uniforms or personal stories were established. NPCs outside the selected early roster continue with the shared reusable renderer.
 
 ## Acceptance & real screen capture
-Run `npm run check`, four-protagonist source/manifest checks and `python tests/browser_ryune_acting_e2e_test.py`. The browser test drives actual new game → envoy via ordinary keyboard, runs **exact same 23 original lines** in two isolated fresh contexts for A Portrait ON and B Portrait OFF, captures before/line milestones/after and mobile, and asserts:
+Run `npm run check`, four-protagonist source/manifest checks and `python tests/browser_ryune_acting_e2e_test.py`. The browser test drives actual new game → envoy via ordinary keyboard, runs **exact same 22 original lines** in two isolated fresh contexts for A Portrait ON and B Portrait OFF, captures before/line milestones/after and mobile, and asserts:
 - character-specific actor positions/animations and matching original speaker order;
 - input locked during dialogue, duplicate appointment dispatch ignored, Save/Load disabled;
 - event/Story flag exactly once, camera/position/facing/trail/input restoration, no browser exceptions;
@@ -37,7 +37,7 @@ CI exact HEAD / run / artifact are reported in the Draft PR comment after valida
 | Emotion | static portrait plus line and body cues | relies more heavily on body/line pacing and camera |
 | Attention on actors | portrait competes with world actors | more of the world staging remains visible |
 | Dialogue obstruction | large avatar occupies overlay | text has more width; still needs screen-size review |
-| Length | same 23 lines, no added text | same 23 lines, no added text |
+| Length | same 22 lines, no added text | same 22 lines, no added text |
 
 **Do not assert a subjective winner from automatic tests.** Inspect screenshots and regular-speed play: who speaks, silent reactions, screen time, read legibility, pacing on mobile. Keep Portrait ON/OFF as **UNDECIDED** pending explicit user signoff.
 
