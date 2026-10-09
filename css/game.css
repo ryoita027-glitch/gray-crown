@@ -544,3 +544,5 @@ body:has(.battle-panel:not(.hidden)) .party-battle-line{left:5%;bottom:38px}
 /* Optional routes are discoverable, but never mislabeled as mandatory. */
 .discovery-progress{margin-top:12px;padding:10px 12px;background:#282d31;border:1px solid #64583e;border-radius:7px;color:#f0d8a0;font-size:.82rem;font-weight:650;line-height:1.5}
 .discovery-progress.hidden{display:none}
+
+@media(prefers-reduced-motion:reduce){.battle-hero.sprite{animation:none!important}.battle-hero.sprite.strike{animation:none!important;transform:none}}

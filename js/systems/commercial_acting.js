@@ -20,7 +20,7 @@
   return cue?.id||null;
  }
  function onClose(){cue=null;actor=null;GC.Render?.World?.draw?.()}
- function active(){return enabled&&!!cue&&state.map===cue.map&&!state.battle&&!GC.Cinematic?.isActive?.()}
+ function active(){const reduced=typeof window!=='undefined'&&typeof window.matchMedia==='function'&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;return enabled&&!reduced&&!!cue&&state.map===cue.map&&!state.battle&&!GC.Cinematic?.isActive?.()}
  function draws(id,c,x,y,facing,now=Date.now()){
   if(!active()||cue.id!==id||!GC.Animation?.drawActor)return false;
   const trait=traits[id],elapsed=now-cue.created;
