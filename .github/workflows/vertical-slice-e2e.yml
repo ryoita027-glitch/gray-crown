@@ -1,7 +1,7 @@
 name: Gray Crown Phase 5 Vertical Slice Acceptance
 on:
   push:
-    branches: [pixel-vslice-integration-v1]
+    branches: [pixel-vslice-integration-v1, pixel-vslice-phase7-ci-recovery-v1]
   workflow_dispatch:
 permissions:
   contents: read
