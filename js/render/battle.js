@@ -19,7 +19,7 @@ function enemyVisualMarkup(type){
  return'<i class="enemy-part wolf-shadow"></i><i class="enemy-part wolf-tail"></i><i class="enemy-part wolf-leg back"></i><i class="enemy-part wolf-leg front"></i><i class="enemy-part wolf-body"></i><i class="enemy-part wolf-neck"></i><i class="enemy-part wolf-head"></i><i class="enemy-part wolf-ear a"></i><i class="enemy-part wolf-ear b"></i><i class="enemy-part wolf-muzzle"></i><i class="enemy-part wolf-eye"></i>'
 }
 function renderBattleStage(){const b=state.battle;if(!b)return;const e=livingEnemies()[0]||b.enemies[0];if(!e)return;$('stageEnemyName').textContent=e.name;$('stageEnemyState').textContent=enemyMood(e);$('stageHpText').textContent=`${Math.max(0,e.hp)} / ${e.maxHp}`;$('stageHpBar').style.width=`${Math.max(0,e.hp/e.maxHp*100)}%`;if(e.morale==null){$('stageMoraleText').textContent='—';$('stageMoraleBar').style.width='0%'}else{$('stageMoraleText').textContent=`${Math.max(0,e.morale)} / ${e.maxMorale}`;$('stageMoraleBar').style.width=`${Math.max(0,e.morale/e.maxMorale*100)}%`}const stage=$('battleStage'),terrain=state.battleReturn?.map||state.map;
- if(stage)stage.dataset.terrain=terrain==='cave'?'cave':terrain==='road'?'road':'other';
+ if(stage){stage.dataset.terrain=terrain==='cave'?'cave':terrain==='road'?'road':'other';stage.dataset.boss=b.id==='boss'?'true':'false'}
  const enemyArt=$('enemyArt'),enemyType=enemyVisualType(e);
  if(enemyArt.className!=='enemy-art '+enemyType){enemyArt.className='enemy-art '+enemyType;enemyArt.innerHTML=enemyVisualMarkup(enemyType)}
  const line=$('partyBattleLine');
