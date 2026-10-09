@@ -1,6 +1,6 @@
 'use strict';
 function useMapTransition(id,objective=null){const t=MAP_TRANSITIONS[id];if(!t)throw new Error('Unknown transition '+id);setMap(t.to,t.x,t.y,t.dir,[[t.x+1,t.y],[t.x+2,t.y],[t.x+3,t.y]]);markVisited(t.to,true);if(objective){state.objective=objective;renderHud()}return t}
-function openTreasure(id){const def=TREASURE_DEFS[id];if(!def)return false;if(state.world.treasures[id]){say(def.label||'宝箱','中は空だ。');return true}state.world.treasures[id]=true;state.inventory[def.item]=(state.inventory[def.item]||0)+def.amount;draw();say(def.label||'宝箱',`${def.item}を${def.amount}個手に入れた。`);return true}
+function openTreasure(id){const def=TREASURE_DEFS[id];if(!def)return false;if(state.world.treasures[id]){say(def.label||'宝箱','中は空だ。');return true}state.world.treasures[id]=true;state.inventory[def.item]=(state.inventory[def.item]||0)+def.amount;sfx('pickup');draw();say(def.label||'宝箱',`${def.item}を${def.amount}個手に入れた。`);return true}
 function setShortcutOpen(id,open=true){if(!SHORTCUT_DEFS[id])return false;state.world.shortcuts[id]=!!open;draw();return true}
 function isShortcutOpen(id){return !!state.world.shortcuts[id]}
 const RECOVERY_LIMITS={caveRest:1,fieldHospital:2,borderCampfire:2,fortRest:1,sacredSpring:2};
