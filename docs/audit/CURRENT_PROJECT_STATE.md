@@ -26,6 +26,8 @@
 | Existing regression and specialized Chromium gates | LOCKED | test semantics must not be deleted or weakened |
 | Phase-1 integrated CI and broader art/mobile approval | PROVISIONAL | must verify **this exact HEAD**, not inherit parents' green badges |
 
+**Historical completed gate:** Triton Second Character Validation PASS. This is a retained proof-of-completion marker for legacy CI, **not** a pending or restarted work item.
+
 ## Work already done — DO NOT restart
 Karen/Triton/Sophie/Margaret front-Idle, directions, eight animation categories, initial runtime integration, PR #30–#38 prototypes, real-world/road/battle/save gates and Ryune visuals are **implemented**. Starting Karen's first front Idle or generating Sophie/Margaret from old v2/v5 sources is obsolete.
 

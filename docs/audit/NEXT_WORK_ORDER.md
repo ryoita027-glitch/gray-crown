@@ -1,6 +1,8 @@
 # Gray Crown — Next Work Order (Phase 1)
 **Live development target:** `integration/phase1-pixel-native-baseline-20261010`. **Production:** main / v23 / Save schema 23 / Story 00–19, unchanged.
 
+**Historical completed gate:** Triton Second Character Validation PASS. This is a retained proof-of-completion marker for legacy CI, **not** a pending or restarted work item.
+
 ## Completed (do not queue again)
 - Four-character source approval/animation generation and clean runtime integration: complete.
 - Medium44, true 48px protagonist sheets in world and battle: implemented.

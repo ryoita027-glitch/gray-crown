@@ -17,6 +17,8 @@
 Live sprite assets, runtime hashes, reference hierarchy, active vs fallback assets: `docs/visual/VISUAL_ASSET_MANIFEST.md`.
 Contract: `docs/visual/PIXEL_NATIVE_PRODUCTION_STANDARD_v1.md`. Next steps: `docs/audit/VERTICAL_SLICE_PRODUCTION_PLAN_v1.md`.
 
+**Historical completed gate:** Triton Second Character Validation PASS. This is a retained proof-of-completion marker for legacy CI, **not** a pending or restarted work item.
+
 **Do not reinterpret completed sprite work as undone.** FOUR PROTAGONIST RUNTIME HARMONIZATION and Four Protagonist Environment Integration are historical gates, not new tasks. Sophie Chibi Direction Lock v2 and Margaret Chibi Direction Lock v5 are historical lock sources (not active appeal v3/v7 runtime references).
 
 **AI-generated comparison boards remain prohibited** as validation evidence. Only exact PNGs from repository and real Chromium Canvas screenshots count. Character-specific portrait hair colors are not a final decision about eyes, weapons, clothing, religion or culture.
