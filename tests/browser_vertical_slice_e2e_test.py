@@ -313,19 +313,21 @@ def play(page,url):
    not b['blocked'][ty-dy][tx-dx]}
  check(boss_spots,'boss cannot be approached despite two activated levers')
  walk_to(page,boss_spots,'boss approach',stop_on_boss=True)
- if not snapshot(page)['battle'] and not page.locator('#choiceBox button').count():
+ if not snapshot(page)['battle'] and not page.locator('#choiceBox button:visible').count():
   st=snapshot(page)
   direction=next((key for dx,dy,key in DIRECTIONS
     if (st['x']+dx,st['y']+dy)==tuple(boss)),None)
   check(direction,'not facing an adjacent boss after normal path')
   page.keyboard.press(direction);page.wait_for_timeout(150)
-  if not page.locator('#choiceBox button').count() and not snapshot(page)['battle']:
+  if not page.locator('#choiceBox button:visible').count() and not snapshot(page)['battle']:
    page.keyboard.press('Enter');page.wait_for_timeout(120)
- if page.locator('#choiceBox button').count():
-  option=page.locator('#choiceBox button').filter(has_text='戦う').first
-  check(option.count(),'boss fight choice missing')
+ # The real proximity event may start the boss fight immediately. A previous
+ # hidden dialogue can keep its buttons in the DOM: never click stale choices.
+ if not snapshot(page)['battle']:
   if page.evaluate('GC.Dialogue.dialogueTyping()'):
    page.keyboard.press('Enter');page.wait_for_timeout(70)
+  option=page.locator('#choiceBox button:visible').filter(has_text='戦う').first
+  check(option.count(),'boss fight choice missing')
   option.click();page.wait_for_timeout(170)
  check(snapshot(page)['battle']=='boss','boss did not trigger through normal interaction')
  shot(page,'09_boss_battle')
@@ -346,7 +348,7 @@ def play(page,url):
  page.keyboard.press('ArrowUp');page.wait_for_timeout(160);process_interruptions(page)
  check(snapshot(page)['map']=='northroad','boss-to-old-road transition failed')
  shot(page,'12_northroad')
- walk_to(page,[(11,1),(12,1)],'northroad capital direction')
+ walk_to(page,[(11,0),(12,0)],'northroad capital direction')
  page.keyboard.press('ArrowUp');page.wait_for_timeout(170);process_interruptions(page)
  check(snapshot(page)['map']=='capital','fort victory failed to connect to canonical capital')
  check(snapshot(page)['story']=='05_capital','canonical story stage missing after capital entry')
