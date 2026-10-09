@@ -1,8 +1,9 @@
 name: Gray Crown Phase 7 Capital First Arc Acceptance
+# Manual-only. Run the same tests on the developer PC using
+# tools/run_local_quality.py while the GitHub Actions budget is exhausted.
 on:
-  push:
-    branches: [pixel-production-capital-first-arc-v1]
   workflow_dispatch:
+
 permissions:
   contents: read
 concurrency:
