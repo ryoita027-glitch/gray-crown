@@ -92,12 +92,16 @@ def play(page,url):
  normal_north(page,'ashroad','capital north gate')
  require(snap(page)['story']=='10_ash_road','canonical Ash Road stage 10')
  compare_pixels(page,'ashroad')
+ require('寄り道の発見' in page.locator('#discoveryHud').inner_text(),'optional discovery surfaced without adding quests')
+ require(page.evaluate("GC.CommercialDiscovery.questHint('ashroad').id")==='refugee','authentic Ash Road quest marker directs to existing mother')
  # The actual narrative gate requires mother + orders + patrol; optional
  # household/priest/cart visits are deliberately not a new completion gate.
  meet(page,'ashroad','refugee','npc')
  require(page.evaluate("isEventComplete('alpha2.ashroad.refugee')"),
          'existing refugee inquiry')
  meet(page,'ashroad','burnedHomestead','object')
+ require(page.evaluate("GC.CommercialDiscovery.progress('ashroad').found")>=1,
+         'an existing optional discovery becomes visible to the player')
  meet(page,'ashroad','scorchedOrders','object')
  require(page.evaluate("isEventComplete('alpha2.ashroad.orders')"),
          'existing scorched military orders')
@@ -114,6 +118,20 @@ def play(page,url):
  require(snap(page)['battle']=='imperialRaid','imperial patrol real battle started')
  scene(page,'ashroad_patrol_battle')
  METRICS['battle_ids'].append('imperialRaid')
+ # Real battle targeting acceptance: choose the SECOND actual living Imperial
+ # soldier, click Karen's genuine attack button and assert first remains intact.
+ page.wait_for_function("!GC.State.get().locked",timeout=8000)
+ require(page.locator('#battleTargets [data-target-index]').count()==2,
+         'multi-foe targeting chooser actually exposed')
+ hp_before=page.evaluate("GC.State.get().battle.enemies.map(e=>e.hp)")
+ page.locator('#battleTargets [data-target-index="1"]').click()
+ require(page.evaluate("GC.CommercialTactics.index(GC.State.get().battle)")==1,
+         'second enemy chosen through real DOM button')
+ page.locator('#battleActions [data-battle="attack"]').click()
+ page.wait_for_timeout(110)
+ hp_after=page.evaluate("GC.State.get().battle.enemies.map(e=>e.hp)")
+ require(hp_after[0]==hp_before[0] and hp_after[1]<hp_before[1],
+         'Karen real attack reduces only selected living enemy',{'before':hp_before,'after':hp_after})
  world.battle(page)
  require(page.evaluate("isEventComplete('alpha2.ashroad.patrolVictory')"),
          'existing battle victory processed')
