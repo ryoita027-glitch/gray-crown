@@ -520,3 +520,11 @@ body:has(.battle-panel:not(.hidden)) .party-battle-line{left:5%;bottom:38px}
 /* Phase 4 optional boss-stage hierarchy, scoped to its existing battle UI. */
 .battle-stage[data-boss="true"] .enemy-art.horned-beast{transform:scale(1.18);transform-origin:50% 90%;filter:drop-shadow(0 9px 0 rgba(20,22,26,.65))}
 .battle-stage[data-boss="true"] .enemy-stage-ui{border-color:rgba(208,164,105,.6)}
+
+
+/* Commercial pass: actual 48px approved original PNG *idle* sheet: 4 frames x 4 directions. */
+.battle-hero.sprite{width:44px;height:44px;background-size:176px 176px;background-position:0 0;background-repeat:no-repeat;image-rendering:pixelated;animation:approvedHeroIdle 1.2s steps(1,end) infinite;filter:drop-shadow(0 5px 4px rgba(0,0,0,.3))}
+.battle-hero.sprite::before,.battle-hero.sprite::after{display:none}
+.battle-hero.sprite.strike{animation:heroStrike .3s cubic-bezier(.2,.9,.28,1)}
+@keyframes approvedHeroIdle{0%,24%{background-position:0 0}25%,49%{background-position:-44px 0}50%,74%{background-position:-88px 0}75%,99%{background-position:-132px 0}100%{background-position:0 0}}
+.quality-context{flex:1 1 100%;font-size:clamp(11px,1.8vw,12px);font-weight:600;color:#f0dca9;letter-spacing:.01em;min-height:18px;text-align:left}
