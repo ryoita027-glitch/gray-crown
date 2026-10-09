@@ -15,6 +15,12 @@ const AshFrontierEnvironment=(()=>{
   return Math.imul(h^(h>>>13),1274126177)>>>0;
  };
  const inScope=m=>api.enabled&&targets.has(m);
+ // Physical poles and supply sacks are drawn ONLY on existing blocked
+ // tiles (T / H); flat track marks on passable D/B/M are not obstacles.
+ const blockedDecorationCells=Object.freeze({
+  ashroad:Object.freeze([[0,3],[23,3],[0,10],[23,11],[0,9],[23,9]]),
+  frontier:Object.freeze([[3,9],[5,9],[3,10]])
+ });
  const palette=Object.freeze({
   ashroad:Object.freeze({ground:'#76695a',ash:'#625b54',path:'#a19077',edge:'#393934',dirt:'#817361'}),
   frontier:Object.freeze({ground:'#61635d',mud:'#666258',path:'#928977',edge:'#3d4041',canvas:'#999081'}),
@@ -52,7 +58,7 @@ const AshFrontierEnvironment=(()=>{
   if(!inScope(map))return false;
   if(map==='ashroad'){
    // Blackened fields are still fields, not random combat furniture.
-   for(const [x,y] of [[2,2],[4,2],[18,2],[20,3],[2,11]]){
+   for(const [x,y] of [[0,3],[23,3],[0,10],[23,11]]){
     pix(ctx,'#3e3c34',x*32+4,y*32+19,23,3);
     pix(ctx,'#514738',x*32+12,y*32+6,4,16);
     pix(ctx,'#827364',x*32+16,y*32+11,2,3);
@@ -62,14 +68,14 @@ const AshFrontierEnvironment=(()=>{
     for(const off of [-8,8])pix(ctx,'#776755',11*32+16+off,y*32+6,2,18);
    }
    // Neutral bundles by the eastern refugee/priest route; no path blocking.
-   for(const [x,y] of [[16,10],[19,11]]){
+   for(const [x,y] of [[0,9],[23,9]]){
     pix(ctx,'#594a3d',x*32+5,y*32+24,21,3);
     pix(ctx,'#aa9580',x*32+8,y*32+18,15,6);
    }
   }
   if(map==='frontier'){
    // Supply/triage lines: spatially separated without inventing military insignia.
-   for(const [x,y] of [[3,9],[5,9],[17,10]]){
+   for(const [x,y] of [[3,9],[5,9],[3,10]]){
     pix(ctx,'#4c4437',x*32+4,y*32+23,24,4);
     pix(ctx,'#b9b09f',x*32+6,y*32+16,20,7);
     pix(ctx,'#756c59',x*32+6,y*32+19,20,2);
@@ -124,6 +130,6 @@ const AshFrontierEnvironment=(()=>{
   else return false;
   return true
  }
- const api={enabled:true,targets,palette,paintTile,accents,objectAccent,npcAccent};
+ const api={enabled:true,targets,palette,blockedDecorationCells,paintTile,accents,objectAccent,npcAccent};
  return api
 })();
