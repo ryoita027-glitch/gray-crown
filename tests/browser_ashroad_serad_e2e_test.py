@@ -66,6 +66,14 @@ def play(page,url):
  page.on('pageerror',lambda e:METRICS['issues'].append(str(e)))
  # Entire inherited village + old fort + gray-horned beast mandatory route.
  world.play(page,url)
+ # Asset readiness is measured from the actual Chromium Image objects, not
+ # inferred from the fact that the PNG source files happen to exist.
+ page.wait_for_function("""() => ['karen','triton','sophie','margaret']
+  .every(k=>GC.Render.World.heroRuntimeStatus()[k]?.ready)""",timeout=10000)
+ runtime=page.evaluate("GC.Render.World.heroRuntimeStatus()")
+ require(all(runtime.get(k,{}).get('ready') for k in ('karen','triton','sophie','margaret')),
+         'four approved hero sprite sheets actually loaded',runtime)
+ METRICS['original_sprite_status']=runtime
  require(snap(page)['story']=='05_capital','capital reached from genuine village start')
  capital.play_ceremony(page,'portraitOn')
  require(snap(page)['story']=='06_ceremony','ceremony canonical')
@@ -98,6 +106,10 @@ def play(page,url):
  require(snap(page)['map']=='ashroad','ashroad save/Continue')
  require(page.evaluate("isEventComplete('alpha2.ashroad.refugee')"),
          'refugee and orders flags persist')
+ require(page.evaluate("isEventComplete('alpha2.ashroad.orders')"),
+         'orders evidence flag persists after Continue')
+ require(not page.evaluate("isEventComplete('alpha2.ashroad.complete')"),
+         'cannot complete Ash Road before legitimate patrol encounter')
  meet(page,'ashroad','imperialPatrol','object',expect_battle='imperialRaid')
  require(snap(page)['battle']=='imperialRaid','imperial patrol real battle started')
  scene(page,'ashroad_patrol_battle')
@@ -133,6 +145,8 @@ def play(page,url):
          'first Serad frontier arc completes at existing Stage 15')
  require(page.evaluate("isEventComplete('alpha2.frontier.complete')"),
          'first Serad arc completed once')
+ require(page.evaluate("isEventComplete('alpha2.frontier.vanguardVictory')"),
+         'Vark combat story event stored canonically')
  world.save_via_menu(page,'Serad Stage15 complete')
  world.reload_continue(page,'Serad Stage15 complete')
  require(snap(page)['story']=='15_frontier_complete','Stage 15 retained after restart')
