@@ -478,6 +478,8 @@ body:has(.battle-panel:not(.hidden)) .party-battle-line{left:5%;bottom:38px}
  background:repeating-linear-gradient(90deg,transparent 0 90px,rgba(17,33,26,.13) 91px 107px),
  linear-gradient(180deg,rgba(202,220,192,.08),transparent 48%);
 }
+.battle-stage[data-boss="true"] .enemy-art.horned-beast{transform:scale(1.18);transform-origin:50% 90%;filter:drop-shadow(0 9px 0 rgba(20,22,26,.65))}
+.battle-stage[data-boss="true"] .enemy-stage-ui{border-color:rgba(208,164,105,.6)}
 .battle-hero.sprite{image-rendering:pixelated;background-repeat:no-repeat}
 .battle-hero.down{filter:grayscale(.75) brightness(.65)}
 #partyCards .ally.acting{border-color:rgba(234,197,120,.85);box-shadow:inset 3px 0 #e4bb73}
