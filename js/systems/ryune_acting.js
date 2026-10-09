@@ -58,7 +58,7 @@
   const cue=choreography[cmd.lineIndex]||{},speakerId=SPEAKERS[cmd.speaker]||null;
   for(const a of GC.Cinematic.getRenderActors()){
    if(a.renderMode==='procedural32'){a.animation=a.id===speakerId?'talk':'idle';continue}
-   const isMeasured=a.id==='margaret'&&[4,12,20].includes(cmd.lineIndex);
+   const isMeasured=a.id==='margaret'&&[4,12,19].includes(cmd.lineIndex);
    GC.Animation.setAnimation(a,a.id===speakerId&&!isMeasured?'talk':'idle');
   }
   for(const [who,target] of cue.look||[]){
