@@ -91,3 +91,18 @@ test('Ash Road, Serad camp and aftermath have separate existing audio states wit
  assert.equal(h.evaluate('SAVE_SCHEMA'),23);
  assert.equal(h.evaluate("GC.State.get().story.stage"),'00_village');
 });
+
+
+test('Serad scenery physical poles and supply stacks never advertise obstacles on walkable cells',()=>{
+ const h=createHarness();
+ const actual=JSON.parse(JSON.stringify(h.evaluate(
+  "Object.fromEntries(Object.entries(AshFrontierEnvironment.blockedDecorationCells).map(([name,points])=>[name,points.map(([x,y])=>({x,y,tile:maps[name].tiles[y][x]}))]))"
+ )));
+ for(const [map,arr] of Object.entries(actual)){
+  assert.ok(arr.length>0,'no physical landmark inventory for '+map);
+  for(const {x,y,tile} of arr){
+   assert.ok(['T','H','S','W','R','K','Z'].includes(tile),
+    'physical landmark erroneously looks like passable obstacle: '+map+' ('+x+','+y+') '+tile);
+  }
+ }
+});
