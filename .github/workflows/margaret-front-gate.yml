@@ -2,7 +2,10 @@ name: Gray Crown Four Protagonist Runtime Harmonization CI
 on:
   push:
     branches: [pixel-margaret-fourth-character-front-gate]
+  # The v2/v5 asset-promotion job is historical and destructive on v3/v7 appeal branches.
+  # Keep it for the original Margaret validation PR (#29), not commercial-stage PRs.
   pull_request:
+    branches: [pixel-sophie-steady-hands-validation]
     types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
 concurrency:

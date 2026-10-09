@@ -26,6 +26,17 @@ with server():
     errors=[]
     page.on("console",lambda m: errors.append(m.text) if m.type=="error" else None)
     page.goto(f"http://127.0.0.1:{PORT}/index.html",wait_until="networkidle")
+    eyebrow=page.locator(".eyebrow").inner_text().strip()
+    build_note=page.locator(".build-note").inner_text().strip()
+    if eyebrow!="2D FANTASY RPG":
+        raise AssertionError("prototype eyebrow leaked: "+repr(eyebrow))
+    if any(token in build_note.lower() for token in ("alpha","v23","v22","second slice")):
+        raise AssertionError("prototype build metadata leaked into player UI: "+repr(build_note))
+    image_rendering=page.locator("canvas").evaluate("e=>getComputedStyle(e).imageRendering")
+    if image_rendering not in ("pixelated","crisp-edges"):
+        raise AssertionError("canvas CSS scaling is not crisp pixel mode: "+repr(image_rendering))
+    if page.locator(".controls-panel").evaluate("e=>getComputedStyle(e).display")!="none":
+        raise AssertionError("desktop controls help still occupies product sidebar")
     page.click("#titleNewGame")
     page.wait_for_timeout(350)
     for _ in range(4):
@@ -33,6 +44,17 @@ with server():
     # Visual evidence must show the party itself, not a dialogue overlay.
     page.evaluate("() => GC.Dialogue.closeDialogue(false)")
     page.wait_for_timeout(120)
+
+    # Protagonist dialogue defaults to portraitless Pixel-native presentation.
+    page.evaluate("() => GC.Dialogue.say('カレン','表示統合テスト')")
+    page.wait_for_timeout(80)
+    hero_dialogue=page.locator("#dialogueBox")
+    if "no-portrait" not in (hero_dialogue.get_attribute("class") or ""):
+        raise AssertionError("hero dialogue did not default to portraitless mode")
+    if page.locator("#speakerPortrait").evaluate("e=>getComputedStyle(e).display")!="none":
+        raise AssertionError("hero portrait still visible in commercial presentation")
+    page.evaluate("() => GC.Dialogue.closeDialogue(false)")
+    page.wait_for_timeout(80)
 
     # Put the real runtime party on an open path so all four are visible.
     page.evaluate("""() => {
@@ -55,6 +77,8 @@ with server():
     for hero,meta in runtime.items():
         if meta["naturalWidth"]!=288 or meta["naturalHeight"]!=192:
             raise AssertionError(f"{hero} direct walk sheet size {meta}")
+        if meta.get("display")!=42:
+            raise AssertionError(f"{hero} commercial world display scale {meta}")
 
     # Give motion a few steps; this exercises the direct 48px walk sheets at Medium44.
     for key in ("ArrowRight","ArrowRight","ArrowUp","ArrowDown"):
@@ -83,7 +107,7 @@ with server():
     })""")
     if dims!=[96,512]: raise AssertionError("party sheet dimensions "+repr(dims))
 
-    page.screenshot(path=str(OUT/"actual_game_four_party_medium44.png"),full_page=True)
+    page.screenshot(path=str(OUT/"actual_game_commercial_road.png"),full_page=True)
 
     # A second screenshot in the village gives a softer green/brown contrast context.
     page.evaluate("""() => {
@@ -94,9 +118,26 @@ with server():
       GC.Render.World.draw();
     }""")
     page.wait_for_timeout(500)
-    page.screenshot(path=str(OUT/"actual_game_four_party_village_medium44.png"),full_page=True)
+    page.screenshot(path=str(OUT/"actual_game_commercial_village.png"),full_page=True)
+
+    # Battle must also use the real character runtime sheets, not the old combined 32px fallback.
+    page.evaluate("() => startBattle('wolves')")
+    page.wait_for_timeout(760)
+    heroes=page.locator(".battle-hero.runtime-hero")
+    if heroes.count()!=4:
+        raise AssertionError("battle runtime heroes missing: "+str(heroes.count()))
+    expected=("karen","triton","sophie","margaret")
+    for i,hero in enumerate(expected):
+        el=heroes.nth(i)
+        bg=el.evaluate("e=>getComputedStyle(e).backgroundImage")
+        if f"assets/characters/{hero}/{hero}_idle.png" not in bg:
+            raise AssertionError(f"{hero} battle sprite is not direct runtime art: {bg}")
+    enemy_bg=page.locator("#enemyArt").evaluate("e=>getComputedStyle(e).backgroundImage")
+    if "assets/enemies/wolf.svg" not in enemy_bg:
+        raise AssertionError("wolf enemy is still using placeholder art: "+enemy_bg)
+    page.screenshot(path=str(OUT/"actual_game_commercial_battle.png"),full_page=True)
 
     if errors: raise AssertionError("console errors: "+repr(errors))
     browser.close()
 
-print("FOUR PROTAGONIST APPEAL MEDIUM44 BROWSER E2E PASS")
+print("GRAY CROWN COMMERCIAL PRESENTATION BROWSER E2E PASS")

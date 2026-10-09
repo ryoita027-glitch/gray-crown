@@ -1,7 +1,7 @@
 name: Gray Crown Current Playable Build
 on:
   push:
-    branches: [pixel-margaret-fourth-character-front-gate, pixel-clean-runtime-integration-v1, pixel-four-protagonist-appeal-v1, pixel-four-protagonist-appeal-runtime-v2]
+    branches: [pixel-margaret-fourth-character-front-gate, pixel-clean-runtime-integration-v1, pixel-four-protagonist-appeal-v1, pixel-four-protagonist-appeal-runtime-v2, pixel-commercial-presentation-pass-v1]
   workflow_dispatch:
 permissions:
   contents: read
