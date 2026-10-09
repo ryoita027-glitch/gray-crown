@@ -106,3 +106,30 @@ test('Serad scenery physical poles and supply stacks never advertise obstacles o
   }
  }
 });
+
+
+test('Phase8 continuous 32px surface fills do not stamp a 30px checkerboard on road tiles',()=>{
+ const h=createHarness();
+ const result=JSON.parse(JSON.stringify(h.evaluate(`(()=>{
+  let outcome={};
+  for(const name of ['ashroad','frontier','frontierfield']){
+   const calls=[],c={fillStyle:'',fillRect(x,y,w,h){calls.push({x,y,w,h,color:this.fillStyle})}};
+   let tiles=maps[name].tiles;
+   for(const ch of ['D',name==='ashroad'?'B':'M']){
+    const pt=tiles.flatMap((row,y)=>Array.from(row).map((v,x)=>v===ch?[x,y]:null)).find(v=>v);
+    if(!pt)throw Error(name+' has no tile '+ch);
+    calls.length=0;
+    AshFrontierEnvironment.paintTile(c,name,ch,pt[0],pt[1]);
+    outcome[name+ch]={start:calls[0],gridHole:calls.some(x=>x.w===30&&x.h===30),draws:calls.length};
+   }
+  }
+  return outcome;
+ })()`)));
+ for(const [name,details] of Object.entries(result)){
+  assert.ok(details.start,name+' never painted');
+  assert.equal(details.start.w,32,name+' base fill no longer full-bleed');
+  assert.equal(details.start.h,32,name+' base fill no longer full-bleed');
+  assert.equal(details.gridHole,false,name+' reintroduced repeated 30x30 tile borders');
+  assert.ok(details.draws>=1);
+ }
+});
