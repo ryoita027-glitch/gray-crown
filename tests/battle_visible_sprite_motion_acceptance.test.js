@@ -48,6 +48,36 @@ test('walking frame indices advance by traveled distance rather than wall-clock 
  assert.match(movement,/worldStepsOnMap=\(state\.worldStepsOnMap\|\|0\)\+1/);
  assert.match(movement,/worldStepsOnMap=0/);
 });
+test('rapid corner input finishes each orthogonal walking segment before turning',()=>{
+ const world=read('js/render/world.js');
+ const start=world.indexOf('function advanceWalkQueue('),end=world.indexOf('function cameraForMap()',start);
+ assert.ok(start>0&&end>start);
+ const api=new Function(world.slice(start,end)+';return {advanceWalkQueue,enqueueWalkGoal}')();
+ const point=[0,0],queue=[];let goal=null;
+ goal=api.enqueueWalkGoal(queue,goal,[1,0]);
+ api.advanceWalkQueue(point,queue,.16);
+ goal=api.enqueueWalkGoal(queue,goal,[1,1]);
+ for(let i=0;i<5;i++){
+  assert.equal(point[1],0,'character diagonally cut the corner before reaching x=1');
+  api.advanceWalkQueue(point,queue,.16)
+ }
+ assert.equal(point[0],1);
+ assert.equal(point[1],0);
+ api.advanceWalkQueue(point,queue,.16);
+ assert.ok(point[1]>0&&point[0]===1);
+ for(let i=0;i<8;i++)api.advanceWalkQueue(point,queue,.16);
+ assert.deepEqual(point,[1,1]);
+ assert.equal(queue.length,0);
+});
+test('queue does not grow from repeated frame renders of the same grid destination',()=>{
+ const world=read('js/render/world.js'),start=world.indexOf('function advanceWalkQueue('),end=world.indexOf('function cameraForMap()',start);
+ const {enqueueWalkGoal}=new Function(world.slice(start,end)+';return {enqueueWalkGoal}')();
+ const queue=[];let goal=[4,5];
+ for(let i=0;i<30;i++)goal=enqueueWalkGoal(queue,goal,[4,5]);
+ assert.equal(queue.length,0);
+ goal=enqueueWalkGoal(queue,goal,[4,6]);
+ assert.deepEqual(queue,[[4,6]]);
+});
 test('trailing party moves by actual adjacent history with no map transition seeds',()=>{
  const state={map:'road',x:10,y:7,dir:'right',worldStepsOnMap:4,
   trail:[[9,7],[8,7],[8,6],[12,13],[13,13],[14,13]]};
