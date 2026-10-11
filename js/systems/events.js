@@ -247,7 +247,6 @@ function earlyCaveBannerVisit(){
   {speaker:'ナレーション',text:'古い王国旗が、折れた支柱から垂れている。裏地に小さく縫い付けられたのは勝利の標語ではなく、兵たちの名前だった。'},
   {speaker:'マーガレット',text:'「今の戦争より前のものね。名前を写せば、後で誰がここにいたか調べられる」'},
   {speaker:'カレン',text:'「でも、このままじゃ崩れてしまう。誰かが帰れる場所だったって、残したい」'},
-  {speaker:'トリトン',text:'「どっちもできたらいいけど、獣が戻る前に一つ決めよう」'}
  ],()=>say('カレン','「この旗をどうしよう？」',[
   {label:'マーガレットと名前を写し取る',fn:()=>finishEarlyCaveBanner('names')},
   {label:'破れた旗を結び直して残す',fn:()=>finishEarlyCaveBanner('raise')},
@@ -284,7 +283,6 @@ function earlyOrphanVisit(){
  return saySequence([
   {speaker:'孤児院の子',text:'「ソフィお姉ちゃん。テオが熱を出したの。薬草はもうないって」'},
   {speaker:'ソフィ',text:'「……旅のために薬草を持ってきています。でも、私たちもこれから怪我をするかもしれない」'},
-  {speaker:'マーガレット',text:'「どちらを選んでも、後で困るかもしれない。だから決める理由を覚えておこう」'},
   {speaker:'カレン',text:'「ソフィがどうしたいか、聞かせて」'}
  ],()=>say('ソフィ','「今ある薬草をどうしましょう？」',[
   ...((state.inventory['薬草']||0)>0?[{label:'薬草を1個、孤児院へ渡す',fn:()=>finishEarlyOrphanMedicine('donate')}]:[]),
@@ -320,7 +318,6 @@ function earlyMerchantVisit(){
  return saySequence([
   {speaker:'行商人',text:'「やれやれ、荷車の軸が曲がった。食料を王都へ届けるはずが、このままじゃ狼の餌だ」'},
   {speaker:'トリトン',text:'「固定具ならその場で直せる。少し時間はかかるけどな」'},
-  {speaker:'マーガレット',text:'「獣が出る道に無理やり荷を進めるべきかは、別の話ね」'},
   {speaker:'行商人',text:'「東の古砦跡に抜け道があるとも聞くが、獣の声がする。どれも楽な道じゃない」'}
  ],()=>say('カレン','「この荷車、どうする？」',[
   {label:'トリトンと荷車を直し、王都への輸送を助ける',fn:()=>finishEarlyMerchantChoice('repair')},
@@ -446,7 +443,17 @@ function inlineNpcEvent(id){
   }
   if(id==='capitalCitizen')return say('王都市民',structuredCondition('returnedKingdom')?'「勇者様……前よりずっと疲れた顔をしてる。戦争は、まだ終わらないんですか？」':'「勇者様！ 魔王を倒して、聖地を取り戻してください！」')
   if(id==='capitalFlowerGirl')return say('花売りの少女',structuredCondition('returnedKingdom')?'「前は勇者様の花飾りが一番売れたの。今は、お墓に供える白い花ばっかり」':'「勇者様！ 任命式の日は赤と白の花が飛ぶんだよ。王城の前、すっごくきれい！」')
-  if(id==='capitalRecruit')return say('新兵',structuredCondition('returnedKingdom')?'「次の総攻撃、俺たちも出るそうです。勇者様……勝てば、本当に終わるんでしょうか」':'「勇者様と同じ前線に行けるなら光栄です。俺も聖地を取り戻してみせます！」')
+  if(id==='capitalRecruit'){
+   if(structuredCondition('returnedKingdom'))return say('新兵','「次の総攻撃、俺たちも出るそうです。勇者様……勝てば、本当に終わるんでしょうか」');
+   const roadDecision=state.events?.choices?.['moral.lethal.roadBandit'];
+   if(!roadDecision)return say('新兵','「勇者様と同じ前線に行けるなら光栄です。俺も聖地を取り戻してみせます！」');
+   return saySequence([
+    {speaker:'新兵',text:'「勇者様と同じ前線に行けるなら光栄です。俺も聖地を取り戻してみせます！」'},
+    roadDecision==='kill'
+     ?{speaker:'カレン',text:'「……戦いで勝つことと、正しいことは同じじゃない。私もまだ、答えられない」'}
+     :{speaker:'ソフィ',text:'「どうか、武器を下ろした人を傷つけずに済む道も覚えていてください」'}
+   ])
+  }
   if(id==='capitalVendor')return capitalShop()
   if(id==='rationMother')return saySequence([{speaker:'配給待ちの母親',text:structuredCondition('returnedKingdom')?'「勇者様。息子は前線から戻りました。片腕を失ったけど、生きてます。……それでも私は、勝ってよかったって言うべきなんでしょうか」':'「配給は一人パン二つまで。王都でこれなら、地方はもっとひどいんでしょうね」'},{speaker:'ソフィ',text:structuredCondition('returnedKingdom')?'「生きて帰ったことを喜んでいいと思います。それと戦争を喜ぶことは、同じじゃありません」':'「私たちの村では、小麦そのものが足りません」'},{speaker:'配給待ちの母親',text:structuredCondition('returnedKingdom')?'「……そうね。そう言ってもらえると、少し楽です」':'「なのに任命式にはあんなに花を使う。王都って、不思議なところね」'}].concat(structuredCondition('returnedKingdom')?[]:earlyCapitalEcho()))
   if(id==='granz'){
