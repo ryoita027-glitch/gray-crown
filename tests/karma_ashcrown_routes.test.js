@@ -27,6 +27,6 @@ test('Ash Crown route is distinct, and all changed JS parses',()=>{
   assert.doesNotThrow(()=>new vm.Script(fs.readFileSync(path.join(root,p),'utf8'),{filename:p}));
  }
  const m=fs.readFileSync(path.join(root,'js/systems/movement.js'),'utf8');
- assert.match(m,/route==='ashcrown'/);
+ assert.match(m,/routeCompanionScene\('ashcrown'\)/);
  assert.match(m,/state\.finalChoice==='ashcrown'/);
 });
