@@ -549,3 +549,59 @@ body:has(.battle-panel:not(.hidden)) .party-battle-line{left:5%;bottom:38px}
 .discovery-progress.hidden{display:none}
 
 @media(prefers-reduced-motion:reduce){.battle-hero.sprite{animation:none!important}.battle-hero.sprite.strike{animation:none!important;transform:none}}
+
+
+/* Battle art uses real 48x48 cells from 4-direction original 4x4 idle
+   and 6x4 walk sheets. Clip EACH cell; never stretch the entire sheet. */
+.battle-hero.sprite{
+ width:48px!important;height:48px!important;
+ background-image:none!important;background-size:auto!important;
+ background-position:0 0!important;animation:none!important;
+ overflow:visible;contain:layout style;
+}
+.battle-hero.sprite .battle-sprite-frame{
+ display:block;width:48px;height:48px;overflow:hidden;
+ background-image:var(--idle-sheet);background-repeat:no-repeat;
+ background-size:192px 192px!important;background-position:0 -96px;
+ image-rendering:pixelated;animation:gcBattleIdleFrames 1.12s steps(1,end) infinite;
+}
+@keyframes gcBattleIdleFrames{
+ 0%,24.99%{background-position:0 -96px}
+ 25%,49.99%{background-position:-48px -96px}
+ 50%,74.99%{background-position:-96px -96px}
+ 75%,100%{background-position:-144px -96px}
+}
+.battle-hero.sprite.strike{
+ animation:gcBattleLunge .38s ease-in-out 1!important;
+}
+.battle-hero.sprite.strike .battle-sprite-frame{
+ background-image:var(--walk-sheet)!important;
+ background-size:288px 192px!important;
+ animation:gcBattleWalkFrames .38s steps(1,end) 1!important;
+}
+@keyframes gcBattleWalkFrames{
+ 0%,16.66%{background-position:0 -96px}
+ 16.67%,33.33%{background-position:-48px -96px}
+ 33.34%,49.99%{background-position:-96px -96px}
+ 50%,66.66%{background-position:-144px -96px}
+ 66.67%,83.33%{background-position:-192px -96px}
+ 83.34%,100%{background-position:-240px -96px}
+}
+@keyframes gcBattleLunge{
+ 0%,100%{transform:translate(0,0)}
+ 40%{transform:translate(28px,-4px)}
+ 62%{transform:translate(18px,-2px)}
+}
+@media (prefers-reduced-motion:reduce){
+ .battle-hero.sprite,.battle-hero.sprite.strike{animation:none!important;transform:none!important}
+ .battle-hero.sprite .battle-sprite-frame{animation:none!important}
+}
+
+/* Clear feedback that Break really prevented an enemy action. */
+#enemyVisual.staggered{filter:saturate(.56) brightness(.82) drop-shadow(0 0 8px rgba(247,198,112,.5))}
+#battlePanel:has(#enemyVisual.staggered) #stageEnemyState{color:#ffe4a8;font-weight:800}
+
+/* The current asset generators mostly shift a base pose by 1px for idle.
+   Keep inactive characters stable to avoid four uncanny simultaneous jitters. */
+.battle-hero.sprite .battle-sprite-frame{animation:none}
+.battle-hero.sprite.active:not(.strike) .battle-sprite-frame{animation:gcBattleIdleFrames 1.8s steps(1,end) infinite}

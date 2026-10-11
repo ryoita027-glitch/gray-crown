@@ -556,33 +556,35 @@ function drawAreaIdentity(){/* area identity is rendered by the HTML world HUD *
 function viewScale(){if(INTERIOR_MAPS.includes(state.map))return 1.18;if(['capital','imperialcity','borderland','watchfort','empirevillage','elsia'].includes(state.map))return 1.25;return 1.16}
 const VISUAL={lastActingFrame:0,map:null,camX:0,camY:0,playerX:0,playerY:0,followers:[[12,13],[13,13],[14,13]],raf:0,nextMoveAt:0};
 function partyTrailPoints(){
- const t=Array.isArray(state.trail)?state.trail:[],order=t.length>=5?[0,2,4,1,3]:[0,1,2];
- const used=new Set([state.x+','+state.y]),result=[];
- // Keep genuine, distinct trail positions as first priority.
- for(const i of order){
-  const p=t[i];
-  if(!Array.isArray(p)||!Number.isFinite(p[0])||!Number.isFinite(p[1]))continue;
-  const key=p[0]+','+p[1];if(used.has(key))continue;
-  used.add(key);result.push([p[0],p[1]]);if(result.length===3)return result;
- }
- // Two-tile ping-pong can supply fewer than three different visited tiles.
- // Render-only formation: choose nearby *walkable* cells rather than drawing
- // multiple 48px actors on exactly the same footprint. Never change state.trail,
- // story, saved coordinates, collision, or movement semantics.
+ // Followers follow their actual route history at fixed intervals:
+ // 2, 4 and 6 steps behind Karen. Never reorder points into a zig-zag.
+ const used=new Set([state.x+','+state.y]),result=[],trail=Array.isArray(state.trail)?state.trail:[];
  const forward={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[state.dir]||[0,1];
- const nearby=[];
- for(let radius=1;radius<=4;radius++)for(let dy=-radius;dy<=radius;dy++)for(let dx=-radius;dx<=radius;dx++){
-  if(Math.abs(dx)+Math.abs(dy)!==radius)continue;
-  const x=state.x+dx,y=state.y+dy;
-  if(x<0||y<0||x>=COLS||y>=ROWS||isBlocked(x,y))continue;
-  // Prefer positions behind the leader, close to the actual travel history.
-  const behind=-(dx*forward[0]+dy*forward[1]);
-  nearby.push({x,y,radius,behind,side:Math.abs(dx*forward[1]-dy*forward[0])});
- }
- nearby.sort((a,b)=>a.radius-b.radius||b.behind-a.behind||a.side-b.side||a.y-b.y||a.x-b.x);
- for(const p of nearby){
-  const key=p.x+','+p.y;if(used.has(key))continue;
-  used.add(key);result.push([p.x,p.y]);if(result.length===3)break;
+ const walkable=(x,y)=>x>=0&&y>=0&&x<COLS&&y<ROWS&&!isBlocked(x,y);
+ const add=(x,y)=>{const key=x+','+y;if(!Number.isFinite(x)||!Number.isFinite(y)||used.has(key)||!walkable(x,y))return false;used.add(key);result.push([x,y]);return true};
+ for(let follower=0;follower<3;follower++){
+  const priority=1+follower*2;let placed=false;
+  // Keep the ordering by time traveled. Never sort history across turns.
+  for(let k=priority;trail.length>=8&&k<trail.length&&k<=priority+2;k++){
+   const p=trail[k];if(Array.isArray(p)&&add(p[0],p[1])){placed=true;break}
+  }
+  if(placed)continue;
+  // At new map spawn, travel history is short. Fill the missing slots
+  // behind the party in a stable formation instead of random nearby tiles.
+  const base=result.length?result[result.length-1]:[state.x,state.y];
+  const preferred=[base[0]-forward[0]*2,base[1]-forward[1]*2];
+  for(let radius=0;radius<=5&&!placed;radius++){
+   const offsets=[];
+   for(let dx=-radius;dx<=radius;dx++)for(let dy=-radius;dy<=radius;dy++){
+    if(Math.abs(dx)+Math.abs(dy)!==radius)continue;
+    offsets.push([dx,dy])
+   }
+   offsets.sort((a,b)=>{
+    const pa=Math.abs(a[0]*forward[1]-a[1]*forward[0]),pb=Math.abs(b[0]*forward[1]-b[1]*forward[0]);
+    return pa-pb||(a[0]*forward[0]+a[1]*forward[1])-(b[0]*forward[0]+b[1]*forward[1])
+   });
+   for(const [dx,dy] of offsets)if(add(preferred[0]+dx,preferred[1]+dy)){placed=true;break}
+  }
  }
  return result
 }

@@ -83,7 +83,8 @@ test('script order in actual browser HTML matches exact Node harness; battle app
   imports=Array.from(html.matchAll(/<script src="([^"]+)"\s*><\/script>/g),m=>m[1]);
  assert.deepEqual(imports,SCRIPT_ORDER);
  const css=fs.readFileSync(path.resolve(__dirname,'../css/game.css'),'utf8');
- assert.ok(css.includes('.battle-hero.sprite{width:44px;height:44px;background-size:176px 176px;'));
+ assert.ok(css.includes('width:48px!important;height:48px!important;'));
+ assert.ok(css.includes('background-size:192px 192px!important;'));
  assert.ok(css.includes('.battle-hero.sprite::before,.battle-hero.sprite::after{display:none}'));
  assert.ok(html.includes('id="battleTargets"'));
  assert.ok(html.includes('id="qualityHint"'));
