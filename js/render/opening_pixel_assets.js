@@ -60,7 +60,8 @@ const OpeningPixelAssets=(()=>{
   const flip=frame===1?1:frame===3?-1:0;
   const side=dir===1||dir===2,back=dir===3;
   // Anatomical action frame: leg and forearm position changes, head fixed.
-  const [leftFoot,rightFoot]=[[0,0],[2,-1],[0,0],[-1,2]][frame];
+  const working=['baker','farmer','smith','florist','scribe','merchant'].includes(job);
+  const [leftFoot,rightFoot]=working?[0,0]:[[0,0],[2,-1],[0,0],[-1,2]][frame];
   const shoulder=job==='fighter'?8:job==='child'?5:6;
   const bodyW=job==='child'?11:job==='elder'?15:14;
   const center=16;
@@ -116,7 +117,11 @@ const OpeningPixelAssets=(()=>{
   let sheet=npcCache.get(n.id);
   if(!sheet){sheet=makeNpc(profile);if(!sheet)return false;npcCache.set(n.id,sheet)}
   const near=now>0&&!((typeof matchMedia==='function')&&matchMedia('(prefers-reduced-motion:reduce)').matches);
-  const frame=near?Math.floor(now/240)%4:0;
+  // Static villagers do not march in place. Workers animate arms while
+  // feet stay planted; individual moving NPCs will use walk frames later.
+  const working=['baker','farmer','merchant','capitalVendor','capitalFlowerGirl',
+   'capitalSmith','armoryApprentice','clerk'].includes(n.id);
+  const frame=near&&working?Math.floor(now/460)%4:0;
   c.save();c.imageSmoothingEnabled=false;
   c.drawImage(sheet,frame*32,(dirs[dir]??0)*32,32,32,n.x*32,n.y*32,32,32);
   c.restore();return true
