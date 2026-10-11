@@ -157,7 +157,7 @@ const RyuneEnvironment=(()=>{
  function building(c,h){
   const kind=h.x===3?(h.y===2?'village':'mayorhouse'):(h.y===2?'orphanage':'cottage');
   const pal=palette[kind],x=h.x*32,y=h.y*32;
-  if(OpeningPixelAssets.drawHouse(c,kind,x,y))return;
+  if(typeof OpeningPixelAssets!=='undefined'&&OpeningPixelAssets.drawHouse(c,kind,x,y))return;
   rect(c,'#38403b',x+5,y+34,92,64);rect(c,'#796e58',x+3,y+41,90,54);
   rect(c,pal.wall,x+6,y+43,84,50);
   // 4px-chunk gable roof; no anti-aliased polygons or floating overhang.
