@@ -17,14 +17,14 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist"
-ENTRY = "ゲームを起動.html"
+ENTRY = "GrayCrown_起動.html"
 ROOT_DIR = "GrayCrown"
 APP_SCRIPT = re.compile(r'<script\b[^>]*\bsrc="(js/[^"]+\.js)"', re.I)
 APP_STYLE = re.compile(r'<link\b[^>]*\bhref="(css/[^"]+\.css)"', re.I)
 
 PLAY_GUIDE = """Gray Crown — プレイ版
 
-「ゲームを起動.html」をChromeまたはEdgeで開いてください。
+「GrayCrown_起動.html」をChromeまたはEdgeで開いてください。
 ※ ZIPを開いたまま実行せず、先にフォルダ全体を「すべて展開」してください。
 ※ js / css / assets はゲームに必要な素材です。削除しないでください。
 
