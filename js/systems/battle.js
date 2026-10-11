@@ -26,13 +26,13 @@ function battleAction(type){if(state.locked||!state.battle)return;const b=state.
  if(!acted)return;
  // Same-target coordination rewards consecutive different hero attacks.
  // Stored only in the transient encounter; no save schema or boss stats change.
- if(d>0&&e.hp>0){
+ if(d>0&&e.hp>0&&e.hp<e.maxHp){
   if(b.comboTarget===e&&b.comboActor!==a.id&&b.comboActor!=null){
    const extra=Math.min(3,e.hp);
    if(extra>0){e.hp-=extra;battleLog('連携成功！ '+a.name+'が仲間の作った隙を突き、追加'+extra+'ダメージ。');sfx('rally')}
   }
   b.comboTarget=e;b.comboActor=a.id;
- }else if(type!=='guard'&&type!=='rally'){b.comboTarget=null;b.comboActor=null}
+ }else{b.comboTarget=null;b.comboActor=null}
  renderBattleStage();battleImpact(actorIndex,d,moraleLoss,visual,()=>{if(e.hp<=0){if(!livingEnemies().length)return battleWin();return nextActor()}if(e.morale!=null&&e.morale<=0)return battleSurrender();nextActor()})}
 function nextActor(){const b=state.battle;if(!b)return;b.actor++;if(b.actor>=state.party.length){b.actor=0;b.comboTarget=null;b.comboActor=null;enemyTurn()}else renderBattle()}
 // Prevent 3 quick consecutive hits on one ally in a multi-enemy round.
