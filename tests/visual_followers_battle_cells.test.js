@@ -12,36 +12,37 @@ function isolatedTrail(){
  const s=src('js/render/world.js');
  const begin=s.indexOf('function partyTrailPoints(){'),end=s.indexOf('\nfunction cameraForMap()',begin);
  assert.ok(begin>0&&end>begin);
- return new Function('state','COLS','ROWS','isBlocked',s.slice(begin,end)+';return partyTrailPoints()');
+ return new Function('state','COLS','ROWS','tileAt',s.slice(begin,end)+';return partyTrailPoints()');
 }
 test('a simple straight route yields three actual, equally spaced followers',()=>{
- const state={x:8,y:3,dir:'up',trail:Array.from({length:9},(_,i)=>[8,i+4])};
- const points=isolatedTrail()(state,24,16,()=>false);
- assert.deepEqual(points,[[8,5],[8,7],[8,9]]);
+ const state={x:8,y:3,worldStepsOnMap:9,dir:'up',map:'road',trail:Array.from({length:9},(_,i)=>[8,i+4])};
+ const points=isolatedTrail()(state,24,16,()=> 'G');
+ assert.deepEqual(points,[[8,4],[8,5],[8,6]]);
  assert.equal(new Set(points.map(p=>p.join(','))).size,3);
 });
 test('90-degree turn follows exact history, not reordered points or a sudden cross-map scatter',()=>{
- const state={x:10,y:7,dir:'right',trail:[[9,7],[8,7],[8,6],[8,5],[8,4],[7,4],[6,4],[5,4]]};
- const points=isolatedTrail()(state,24,16,()=>false);
- assert.deepEqual(points,[[8,7],[8,5],[7,4]]);
+ const state={x:10,y:7,worldStepsOnMap:9,dir:'right',map:'road',trail:[[9,7],[8,7],[8,6],[8,5],[8,4],[7,4],[6,4],[5,4]]};
+ const points=isolatedTrail()(state,24,16,()=> 'G');
+ assert.deepEqual(points,[[9,7],[8,7],[8,6]]);
 });
 test('repeated short backtracking does not stack three visible heroes on the same tile',()=>{
- const state={x:8,y:8,dir:'down',trail:[[8,7],[8,8],[8,7],[8,8],[8,7],[8,8],[8,7]]};
- const points=isolatedTrail()(state,24,16,()=>false);
+ const state={x:8,y:8,worldStepsOnMap:9,dir:'down',map:'road',trail:[[8,7],[8,8],[8,7],[8,8],[8,7],[8,8],[8,7]]};
+ const points=isolatedTrail()(state,24,16,()=> 'G');
  assert.equal(points.length,3);
  assert.equal(new Set(points.map(p=>p.join(','))).size,3);
  assert.equal(points.some(([x,y])=>x===8&&y===8),false);
 });
-test('battle sprites isolate exact 48 pixel cells of 4-frame idle or 6-frame walk images',()=>{
+test('battle heroes use explicit HTML images and show fallback when loading fails',()=>{
  const render=src('js/render/battle.js'),css=src('css/game.css');
- assert.match(render,/class="battle-sprite-frame"/);
- assert.match(render,/\${p\.id}_idle\.png/);
- assert.match(render,/\${p\.id}_walk\.png/);
- assert.match(css,/\.battle-hero\.sprite\s*\{[^}]*width:48px!important;height:48px!important/s);
- assert.match(css,/\.battle-hero\.sprite \.battle-sprite-frame\s*\{[^}]*background-size:192px 192px!important/s);
- assert.match(css,/\.battle-hero\.sprite\.strike \.battle-sprite-frame\s*\{[^}]*background-size:288px 192px!important/s);
- assert.match(css,/@keyframes gcBattleIdleFrames/);
- assert.match(css,/@keyframes gcBattleWalkFrames/);
+ assert.match(render,/class="battle-frame-image"/);
+ assert.match(render,/class="battle-hero-fallback"/);
+ assert.match(render,/img.onerror=/);
+ assert.match(render,/img.naturalWidth>=192/);
+ assert.match(render,/data-idle="assets\/characters/);
+ assert.match(css,/#partyBattleLine \.battle-hero \.battle-frame-image/);
+ assert.match(css,/width:192px!important;height:192px!important/);
+ assert.match(css,/overflow:hidden;z-index:2/);
+ assert.match(css,/\.battle-hero:not\(\.asset-ready\) \.battle-frame-image/);
  assert.doesNotMatch(render,/id="battleHero\${i}"[^\n]*background-image:url/);
 });
 test('battle formation and overworld roster remain compatible with solo Ash Crown',()=>{
