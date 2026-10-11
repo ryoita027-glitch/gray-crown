@@ -93,7 +93,7 @@ const OpeningWorldLife=(()=>{
   // Weathered direction marker with no false clickable entrance.
   // The existing roadSign interactive object is the actual signpost.
   // Sparse, recognizable milestones: extra detail concentrated at bends.
-  for(const [tx,ty] of [[5,11],[17,5],[15,12]]){
+  for(const [tx,ty] of [[5,11],[18,8],[19,2]]){
    const [px,py]=at(tx,ty);
    R(c,'#4d584a',px+6,py+23,20,6);
    R(c,'#818577',px+11,py+12,11,15);
