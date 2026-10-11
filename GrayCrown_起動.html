@@ -4860,15 +4860,655 @@ GC.Cinematic={state:CINEMATIC,PROTOTYPE_RENDER_SCALES,renderScaleForMode,isActiv
 })();
 
 </script>
-  <script src="js/systems/capital_acting.js"></script>
-  <script src="js/systems/commercial_tactics.js"></script>
-  <script src="js/systems/commercial_soundscape.js"></script>
-  <script src="js/render/battle.js"></script>
-  <script src="js/systems/battle.js"></script>
-  <script src="js/core/save.js"></script>
-  <script src="js/systems/validation.js"></script>
-  <script src="js/systems/menu.js"></script>
-  <script src="js/dev/developer.js"></script>
-  <script src="js/game.js"></script>
+  <script>
+'use strict';
+/* Existing 12-line royal appointment remains authoritative in EVENT_DEFS.
+ * Pixel Acting modifies transient scene actors, never player/map/save state. */
+const CapitalActing=(()=>{
+ const EVENT_ID='alpha.capital.ceremony';
+ const SCENE_ID=EVENT_ID+'.acting';
+ let running=false,mode='portraitOn';
+ const S={'カレン':'karen','トリトン':'triton','ソフィ':'sophie','マーガレット':'margaret','王都係官':'capitalOfficial'};
+ const TEMPO=Object.freeze({karen:260,triton:480,sophie:540,margaret:650});
+ const CUES=Object.freeze({
+  0:{focus:['capitalOfficial','karen','triton','sophie','margaret'],look:[['karen','capitalOfficial'],['margaret','capitalOfficial']],still:['triton']},
+  1:{look:[['triton','capitalOfficial']],still:['triton']},
+  2:{look:[['margaret','capitalOfficial']],still:['margaret']},
+  3:{look:[['karen','capitalOfficial']],move:[['karen',11.45,7.3,260,'approach']]},
+  4:{sound:'ceremonyBell',still:['triton','margaret']},
+  5:{look:[['sophie','capitalOfficial']],move:[['sophie',13.55,7.8,540,'approach']]},
+  6:{look:[['karen','sophie']],still:['triton']},
+  7:{focus:['capitalOfficial','karen','triton','sophie','margaret'],still:['margaret']},
+  8:{look:[['karen','margaret']]},
+  9:{look:[['margaret','capitalOfficial']],still:['margaret']},
+  10:{look:[['triton','karen']],still:['triton']},
+  11:{look:[['karen','triton']],move:[['karen',11.25,7.75,260,'walk']]}
+ });
+ function setPortraitMode(v){if(!['portraitOn','portraitOff'].includes(v)||running||GC.Cinematic?.isActive?.())return false;mode=v;return true}
+ function getSnapshot(){return {running,mode,actors:(GC.Cinematic?.getRenderActors?.()||[]).map(a=>({id:a.id,x:a.x,y:a.y,animation:a.animation,facing:a.facing})),lineIndex:GC.Cinematic?.state?.currentCommand?.lineIndex??null}}
+ function sceneFor(def){
+  if(def?.id!==EVENT_ID)throw Error('Wrong capital appointment event');
+  const n=maps.capital.npcs.find(n=>n.id==='capitalOfficial');if(!n)throw Error('Missing original capital official');
+  const actors=[
+   {id:'karen',character:'karen',x:11.1,y:7.65,animation:'idle',facing:'up',renderMode:'pixel48-medium',layer:2},
+   {id:'triton',character:'triton',x:9.7,y:8.3,animation:'idle',facing:'up',renderMode:'pixel48-medium',layer:2},
+   {id:'sophie',character:'sophie',x:13.8,y:8.15,animation:'idle',facing:'up',renderMode:'pixel48-medium',layer:2},
+   {id:'margaret',character:'margaret',x:15.3,y:8.25,animation:'idle',facing:'left',renderMode:'pixel48-medium',layer:2},
+   {id:'capitalOfficial',character:'capitalOfficial',styleId:'capitalOfficial',x:n.x,y:n.y,animation:'idle',facing:'down',renderMode:'procedural32',controlNpc:true,layer:1}
+  ];
+  return {id:SCENE_ID,actors,commands:[
+    {type:'camera',actors:actors.map(a=>a.id),scale:1.12},
+    ...def.lines.map((line,lineIndex)=>({type:'say',speaker:line.speaker,text:line.text,lineIndex})),
+    {type:'camera',action:'return'}
+  ]}
+ }
+ function beforeDialogue(cmd){
+  if(!running||state.map!=='capital')return;
+  const cue=CUES[cmd.lineIndex]||{},speaking=S[cmd.speaker]||null;
+  for(const a of GC.Cinematic.getRenderActors()){
+   if(a.renderMode==='procedural32'){a.animation=a.id===speaking?'talk':'idle';continue}
+   GC.Animation.setAnimation(a,a.id===speaking&&!(a.id==='margaret')?'talk':'idle');
+  }
+  for(const [who,target] of cue.look||[]){
+   const a=GC.Cinematic.actor(who),b=GC.Cinematic.actor(target);
+   if(a&&b)GC.Animation.setFacing(a,GC.Cinematic.directionToward(a,b));
+  }
+  for(const who of cue.still||[]){
+   const a=GC.Cinematic.actor(who);
+   if(a)GC.Animation.setAnimation(a,'idle',{restart:false});
+  }
+  for(const [who,x,y,duration,animation] of cue.move||[]){
+   const a=GC.Cinematic.actor(who);if(!a)continue;
+   GC.Animation.setAnimation(a,animation);
+   GC.Cinematic.tweenActor(a,x,y,duration).then(ok=>{
+    if(ok&&running&&GC.Cinematic.isActive())GC.Animation.setAnimation(a,'idle')
+   });
+  }
+  if(cue.focus)GC.Cinematic.focusActors(cue.focus,1.12);
+  if(cue.sound)GC.Audio?.sfx?.(cue.sound);
+  GC.Render.World.draw()
+ }
+ function runCeremony(def,context={}){
+  if(def?.id!==EVENT_ID||state.map!=='capital')return false;
+  if(running||GC.Cinematic?.isActive?.()||state.locked||state.battle)return true;
+  if(isEventComplete(EVENT_ID)||getWorldSwitch('returnedKingdom'))return false;
+  const scene=sceneFor(def),valid=GC.Cinematic.validateScene(scene);
+  if(!valid.ok)throw Error('Invalid capital scene: '+valid.errors.join(', '));
+  running=true;
+  GC.Log?.info('Story Event Start',{id:def.id,acting:'capital-v1',mode});
+  GC.Dev?.noteEvent?.(def.id);
+  GC.Cinematic.startScene(scene,{mode,renderMode:'pixel48-medium'})
+   .then(ok=>{if(ok&&running&&state.map==='capital'&&!isEventComplete(EVENT_ID))applyEventEffects(def,context)})
+   .catch(err=>GC.Log?.error('Capital ceremony animation aborted; event effects not applied',{error:String(err)}))
+   .finally(()=>{running=false;GC.Render.World.draw()});
+  return true
+ }
+ return {EVENT_ID,SCENE_ID,TEMPO,CUES,S,sceneFor,beforeDialogue,runCeremony,
+  isRunning:()=>running,getSnapshot,setPortraitMode,getPortraitMode:()=>mode}
+})();
+
+</script>
+  <script>
+'use strict';
+/* UI-only battle cursor. Never persisted in game state / v23 save. */
+(function(){
+ let current=null,selected=-1;
+ function target(b){
+  if(!b){current=null;selected=-1;return null}
+  if(current!==b){current=b;selected=b.enemies.findIndex(x=>x.hp>0)}
+  if(!b.enemies[selected]||b.enemies[selected].hp<=0)selected=b.enemies.findIndex(x=>x.hp>0);
+  return b.enemies[selected]||null
+ }
+ function choose(b,n){
+  if(!b||!Number.isInteger(n)||!b.enemies[n]||b.enemies[n].hp<=0)return false;
+  current=b;selected=n;return true
+ }
+ function index(b){target(b);return selected}
+ function options(b){target(b);return b?b.enemies.map((e,i)=>({index:i,name:e.name,hp:e.hp,maxHp:e.maxHp,alive:e.hp>0,selected:i===selected})):[]}
+ function protect(party,original){return party.find(p=>p.hp>0&&p.guard===true)||original}
+ // Suppress ineffective commands; showing a disabled button is less frustrating
+ // than spending a resource or a full turn for zero benefit.
+ function actionAvailable(id,actor,party=activeRouteParty(),inventory=state.inventory){
+  if(!actor||actor.hp<=0)return false;
+  const alive=party.filter(p=>p.hp>0);
+  if((SKILLS[id]?.mp||0)>actor.mp)return false;
+  const needsHp=alive.some(p=>p.hp<p.maxHp);
+  const needsMp=alive.some(p=>p.mp<p.maxMp);
+  if(id==='heal'||id==='prayer')return needsHp;
+  if(id==='item')return (inventory['薬草']||0)>0&&needsHp;
+  if(id==='manaItem')return (inventory['魔力草']||0)>0&&needsMp;
+  if(id==='foodItem')return (inventory['携帯食']||0)>0&&(actor.hp<actor.maxHp||actor.mp<actor.maxMp);
+  return true
+ }
+ const hints=Object.freeze({
+  karen:'庇う：次の敵ターン、仲間への攻撃を引き受けて軽減。号令：全員の攻撃補助。',
+  triton:'強撃：高威力。崩し：敵の防御と士気を削る。',
+  sophie:'治癒：最も負傷した仲間を回復。祈り：全員を回復。',
+  margaret:'火球：高威力の魔法。氷槍：敵の攻撃力も低下。'
+ });
+ function bossForecast(b){
+  const def=GC.Data?.Battles?.battles?.[b?.id];
+  if(!def?.boss)return'';
+  const enemy=b.enemies.find(e=>e.hp>0);if(!enemy)return'';
+  if(enemy.phase===1&&enemy.hp<enemy.maxHp*.65)
+   return'　注意：次の敵行動から攻勢が強まります。';
+  if(enemy.phase===2&&enemy.hp<enemy.maxHp*.3)
+   return'　注意：次の敵行動から最終段階へ移ります。';
+  if(enemy.phase===2||enemy.phase===3)
+   return'　強化された攻勢に警戒。カレンの庇う・ソフィの回復・マーガレットの氷槍で対応できます。';
+  return''
+ }
+ function hint(actor,b){
+  const target=targetForHint(b);
+  const comboReady=!!(target&&b?.comboTarget===target&&b.comboActor&&b.comboActor!==actor?.id&&actor?.hp>0);
+  const coordination=comboReady?'　連携可能：同じ敵に攻撃すると追加ダメージ。':'';
+  return(actor?.id==='karen'&&activeRouteParty().length===1?'防御：自分への攻撃を軽減。号令：自身の攻撃を補助。':hints[actor?.id]||'')+
+    (b?.enemies.filter(e=>e.hp>0).length>1?'　敵を選んでから行動できます。':'')+coordination+bossForecast(b)
+ }
+ function targetForHint(b){return b?target(b):null}
+ GC.CommercialTactics={target,choose,index,options,protect,hint,bossForecast,actionAvailable,reset(){current=null;selected=-1}};
+})();
+
+</script>
+  <script>
+'use strict';
+/* Original synthesized score candidate — deterministic, royalty-free code tones.
+ * No claim of mastered music or soundtrack approval. No saved state. */
+(function(){
+ const profiles=Object.freeze({
+  village:{notes:[262,330,392,330,294,349,392,null],bass:[131,null,null,131,147,null,null,147],voice:'sine',gain:.014},
+  road:{notes:[220,null,294,330,262,null,247,220],bass:[110,null,147,null,131,null,110,null],voice:'triangle',gain:.015},
+  cave:{notes:[147,null,175,null,164,147,null,131],bass:[73.5,null,82,null,73.5,null,65.4,null],voice:'triangle',gain:.012},
+  capital:{notes:[262,392,440,null,392,330,294,null],bass:[131,null,196,null,174,null,147,null],voice:'sine',gain:.016},
+  capitalInn:{notes:[220,262,null,330,262,null,247,220],bass:[110,null,null,131,null,null,123.5,null],voice:'sine',gain:.014},
+  capitalArmory:{notes:[131,null,196,165,147,null,165,null],bass:[65.4,null,98,null,82.4,null,73.4,null],voice:'triangle',gain:.011},
+  ashroad:{notes:[165,null,147,196,null,175,147,null],bass:[82.4,null,null,98,null,73.4,null,null],voice:'triangle',gain:.012},
+  frontier:{notes:[131,165,null,196,175,null,147,165],bass:[65.4,null,82.4,null,87.3,null,73.4,null],voice:'triangle',gain:.014},
+  frontierfield:{notes:[123,null,null,147,131,null,110,null],bass:[61.7,null,null,null,65.4,null,null,null],voice:'sine',gain:.010},
+  battle:{notes:[147,196,220,196,174,220,246,196],bass:[73.4,null,98,null,87.3,null,123.5,null],voice:'triangle',gain:.016},
+  boss:{notes:[110,147,165,null,131,165,147,110],bass:[55,null,73.4,null,65.4,null,55,null],voice:'sawtooth',gain:.014},
+  travel:{notes:[196,262,294,262,247,294,null,220],bass:[98,null,131,null,123.5,null,110,null],voice:'sine',gain:.013}
+ });
+ function beat(theme,n){
+  const score=profiles[theme]||profiles.travel;
+  const i=Math.max(0,Math.floor(n))%score.notes.length;
+  return {melody:score.notes[i],bass:score.bass[i],gain:score.gain,voice:score.voice,accent:i===0,rest:score.notes[i]==null}
+ }
+ GC.CommercialSoundscape={profiles,beat};
+})();
+
+</script>
+  <script>
+'use strict';
+function showBattleIntro(name){$('battleFlashTitle').textContent=name;$('battleFlash').classList.remove('hidden');requestAnimationFrame(()=>$('battleFlash').classList.add('show'));setTimeout(()=>{$('battleFlash').classList.remove('show');setTimeout(()=>$('battleFlash').classList.add('hidden'),180)},650)}
+function showBossCinematic(b,defeat=false){const box=$('bossCinematic');if(!box)return;$('bossEpithet').textContent=defeat?'BOSS DEFEATED':(b.epithet||'強敵');$('bossName').textContent=b.name;$('bossQuote').textContent=defeat?'――戦場の空気が、静かにほどけていく。':(b.quote||'');box.classList.toggle('defeat',defeat);box.classList.remove('hidden');requestAnimationFrame(()=>box.classList.add('show'));setTimeout(()=>{box.classList.remove('show');setTimeout(()=>box.classList.add('hidden'),220)},defeat?1050:1450)}
+function showEncounterCinematic(epithet,name,quote){const box=$('bossCinematic');if(!box)return;$('bossEpithet').textContent=epithet;$('bossName').textContent=name;$('bossQuote').textContent=quote||'';box.classList.remove('defeat','hidden');requestAnimationFrame(()=>box.classList.add('show'));setTimeout(()=>{box.classList.remove('show');setTimeout(()=>box.classList.add('hidden'),220)},1250)}
+function enemyVisualType(e){
+ const n=String(e?.name||''),f=String(e?.faction||'');
+ if(e?.art==='bandit')return'human-bandit';
+ if(e?.human||f==='empire'||f==='kingdom'||/(兵|隊長|ヴァルク|ゼニス|斥候)/.test(n))return f==='empire'?'human-empire':'human-bandit';
+ if(/コウモリ/.test(n))return'bat-swarm';
+ if(/ムカデ|甲虫|ネズミ/.test(n))return'cave-crawler';
+ if(/角猪|灰角獣/.test(n))return'horned-beast';
+ return'beast-wolf'
+}
+function enemyVisualMarkup(type){
+ if(type==='human-bandit'||type==='human-empire')return'<i class="enemy-part bandit-shadow"></i><i class="enemy-part bandit-leg l"></i><i class="enemy-part bandit-leg r"></i><i class="enemy-part bandit-body"></i><i class="enemy-part bandit-arm l"></i><i class="enemy-part bandit-arm r"></i><i class="enemy-part bandit-head"></i><i class="enemy-part bandit-hair"></i><i class="enemy-part bandit-eye"></i><i class="enemy-part bandit-blade"></i>';
+ if(type==='bat-swarm')return'<i class="enemy-part bat b1"></i><i class="enemy-part bat b2"></i><i class="enemy-part bat b3"></i><i class="enemy-part bat b4"></i><i class="enemy-part bat-shadow"></i>';
+ if(type==='cave-crawler')return'<i class="enemy-part crawler-shadow"></i><i class="enemy-part crawler-seg s1"></i><i class="enemy-part crawler-seg s2"></i><i class="enemy-part crawler-seg s3"></i><i class="enemy-part crawler-seg s4"></i><i class="enemy-part crawler-head"></i><i class="enemy-part crawler-eye"></i>';
+ if(type==='horned-beast')return'<i class="enemy-part beast-shadow"></i><i class="enemy-part beast-leg l"></i><i class="enemy-part beast-leg r"></i><i class="enemy-part beast-body"></i><i class="enemy-part beast-head"></i><i class="enemy-part beast-horn a"></i><i class="enemy-part beast-horn b"></i><i class="enemy-part beast-eye"></i>';
+ return'<i class="enemy-part wolf-shadow"></i><i class="enemy-part wolf-tail"></i><i class="enemy-part wolf-leg back"></i><i class="enemy-part wolf-leg front"></i><i class="enemy-part wolf-body"></i><i class="enemy-part wolf-neck"></i><i class="enemy-part wolf-head"></i><i class="enemy-part wolf-ear a"></i><i class="enemy-part wolf-ear b"></i><i class="enemy-part wolf-muzzle"></i><i class="enemy-part wolf-eye"></i>'
+}
+function renderBattleStage(){const b=state.battle;if(!b)return;const e=GC.CommercialTactics.target(b)||livingEnemies()[0]||b.enemies[0];if(!e)return;$('stageEnemyName').textContent=e.name;$('stageEnemyState').textContent=enemyMood(e);const enemyStage=$('enemyVisual');if(enemyStage)enemyStage.classList.toggle('staggered',!!e.staggered);$('stageHpText').textContent=`${Math.max(0,e.hp)} / ${e.maxHp}`;$('stageHpBar').style.width=`${Math.max(0,e.hp/e.maxHp*100)}%`;if(e.morale==null){$('stageMoraleText').textContent='—';$('stageMoraleBar').style.width='0%'}else{$('stageMoraleText').textContent=`${Math.max(0,e.morale)} / ${e.maxMorale}`;$('stageMoraleBar').style.width=`${Math.max(0,e.morale/e.maxMorale*100)}%`}const stage=$('battleStage'),terrain=state.battleReturn?.map||state.map;
+ if(stage){stage.dataset.terrain=terrain==='cave'?'cave':terrain==='road'?'road':'other';stage.dataset.boss=b.id==='boss'?'true':'false'}
+ const enemyArt=$('enemyArt'),enemyType=enemyVisualType(e);
+ if(enemyArt.className!=='enemy-art '+enemyType){enemyArt.className='enemy-art '+enemyType;enemyArt.innerHTML=enemyVisualMarkup(enemyType)}
+ const line=$('partyBattleLine');
+ const ids=activeRouteParty().map(p=>p.id).join(',');
+ if(line.dataset.party!==ids||line.children.length!==activeRouteParty().length){
+  line.dataset.party=ids;
+  line.innerHTML=activeRouteParty().map((p,i)=>`<div id="battleHero${i}" data-hero="${p.id}" class="battle-hero sprite" style="left:${i*56}px"><span class="battle-hero-fallback" aria-hidden="true"><i></i></span><span class="battle-sprite-frame" aria-hidden="true"><img class="battle-frame-image" src="assets/characters/${p.id}/${p.id}_idle.png" data-idle="assets/characters/${p.id}/${p.id}_idle.png" data-walk="assets/characters/${p.id}/${p.id}_walk.png" alt="" draggable="false"></span></div>`).join('')
+ }
+ // Source paths belong to the HTML root, never to css/game.css. Keep a
+ // deliberately visible fallback when any atlas is missing or invalid.
+ activeRouteParty().forEach((p,i)=>{
+  const node=$('battleHero'+i);if(!node)return;
+  node.classList.toggle('active',i===b.actor);node.classList.toggle('down',p.hp<=0);
+  const img=node.querySelector('.battle-frame-image');if(!img)return;
+  if(!img.dataset.checking){
+   img.dataset.checking='1';
+   img.onload=()=>{const ok=img.naturalWidth>=192&&img.naturalHeight>=192;
+    node.classList.toggle('asset-ready',ok);
+    if(!ok)node.classList.add('asset-missing');
+   };
+   img.onerror=()=>{node.classList.remove('asset-ready');node.classList.add('asset-missing')};
+   if(img.complete&&img.naturalWidth>0)img.onload();
+  }
+ });
+
+}
+function battlePop(text,kind='damage'){const layer=$('damageLayer');if(!layer)return;const n=document.createElement('div');n.className='damage-pop '+(kind==='morale'?'morale':kind==='heal'?'heal':kind==='ally'?'ally':'');n.textContent=text;n.style.marginLeft=`${Math.floor(Math.random()*15)-7}px`;n.style.marginTop=`${Math.floor(Math.random()*9)-4}px`;layer.appendChild(n);setTimeout(()=>n.remove(),760)}
+function battleImpact(actorIndex,damage=0,moraleLoss=0,kind='physical',done=()=>{}){state.locked=true;const hero=$('battleHero'+actorIndex),enemy=$('enemyVisual'),stage=$('battleStage'),flash=$('battleImpactFlash');if(hero){hero.classList.add('strike');
+ const sprite=hero.querySelector('.battle-frame-image');
+ if(sprite&&hero.classList.contains('asset-ready')){
+  sprite.src=sprite.dataset.walk;
+ }
+}if(kind==='magic')sfx('magic');else if(kind==='heal')sfx('heal');else sfx('slash');setTimeout(()=>{if(damage>0){if(enemy){enemy.classList.remove('hit');void enemy.offsetWidth;enemy.classList.add('hit')}if(stage){stage.classList.remove('impact-shake');void stage.offsetWidth;stage.classList.add('impact-shake')}if(flash){flash.classList.remove('show');void flash.offsetWidth;flash.classList.add('show')}battlePop(String(damage));sfx('hit');$('battlePanel').classList.add('hit-stop');setTimeout(()=>$('battlePanel').classList.remove('hit-stop'),82)}if(moraleLoss>0)battlePop('士気 -'+moraleLoss,'morale');renderBattleStage()},135);setTimeout(()=>{if(hero){hero.classList.remove('strike');
+ const sprite=hero.querySelector('.battle-frame-image');
+ if(sprite&&hero.classList.contains('asset-ready'))sprite.src=sprite.dataset.idle;
+ }state.locked=false;done()},420)}
+function renderBattle(){const b=state.battle;if(!b)return;$('turnLabel').textContent='TURN '+b.turn;renderBattleStage();$('enemyCards').innerHTML=b.enemies.map((e,i)=>{const faction=e.faction||battles[b.id].faction||'wild';const label=e.human?'人間':faction==='empire'?'レグノア帝国軍':faction==='kingdom'?'アルディナ王国軍':'野生';return `<div class="card enemy faction-${faction} ${e.hp<=0?'down':''} ${GC.CommercialTactics.index(b)===i?'targeted':''}"><div class="enemy-row"><div class="enemy-info"><div class="enemy-faction">${label}</div><div class="party-head"><strong>${e.name}</strong><span>HP ${e.hp}/${e.maxHp}</span></div></div></div></div>`}).join('');$('partyCards').innerHTML=activeRouteParty().map((p,i)=>`<div class="card ally ${p.hp<=0?'down':''} ${i===b.actor?'acting':''}"><div class="party-head"><strong>${p.name} <small>Lv.${p.level}</small></strong><span>${i===b.actor?'▶ 行動中':''}</span></div><div class="party-sub">HP ${p.hp}/${p.maxHp}　MP ${p.mp}/${p.maxMp}</div><div class="battle-hp-meter" aria-label="HP ${p.hp} / ${p.maxHp}"><span style="width:${Math.max(0,Math.min(100,p.hp/p.maxHp*100))}%"></span></div><div class="battle-mp-meter" aria-label="MP ${p.mp} / ${p.maxMp}"><span style="width:${Math.max(0,Math.min(100,p.mp/p.maxMp*100))}%"></span></div></div>`).join('');const a=currentActor();if(a.hp<=0){nextActor();return}let acts=(BATTLE_LOADOUTS[a.id]||[]).map(id=>{const sk=SKILLS[id],mp=sk?.mp||0;return{id,label:sk.label+(mp?` · ${mp}MP`:''),disabled:!GC.CommercialTactics.actionAvailable(id,a)}});const e=GC.CommercialTactics.target(b)||livingEnemies()[0];if(e?.human)acts.push({id:'persuade',label:'降伏を促す',disabled:false});const herb=state.inventory['薬草']||0,mana=state.inventory['魔力草']||0,food=state.inventory['携帯食']||0;acts.push({id:'item',label:`薬草 ×${herb}`,disabled:!GC.CommercialTactics.actionAvailable('item',a)},{id:'manaItem',label:`魔力草 ×${mana}`,disabled:!GC.CommercialTactics.actionAvailable('manaItem',a)},{id:'foodItem',label:`携帯食 ×${food}`,disabled:!GC.CommercialTactics.actionAvailable('foodItem',a)});$('battleActions').innerHTML=acts.map(x=>`<button data-battle="${x.id}" ${x.disabled?'disabled':''}>${x.label}</button>`).join('');document.querySelectorAll('[data-battle]').forEach(btn=>btn.addEventListener('click',()=>{if(btn.disabled)return;sfx('select');battleAction(btn.dataset.battle)}));
+ const choices=GC.CommercialTactics.options(b).filter(v=>v.alive),picker=$('battleTargets');
+ picker.innerHTML=choices.length>1?'<span class="target-picker-label">狙う敵</span>'+choices.map(v=>'<button type="button" class="target-choice '+(v.selected?'selected':'')+'" data-target-index="'+v.index+'" aria-pressed="'+v.selected+'">'+v.name+' · HP '+v.hp+'/'+v.maxHp+'</button>').join(''):'';
+ document.querySelectorAll('[data-target-index]').forEach(btn=>btn.addEventListener('click',()=>{
+  if(state.locked||!state.battle)return;
+  if(GC.CommercialTactics.choose(state.battle,Number(btn.dataset.targetIndex))){sfx('select');renderBattle()}
+ }));
+ const tip=$('battleHelp');if(tip)tip.textContent=GC.CommercialTactics.hint(a,b)+
+  (b.counterWindow&&b.counterWindow.turn===b.turn&&b.counterWindow.enemy.hp>0?
+   '　反撃の好機：予告攻撃を庇った！ 次の攻撃に追加5ダメージ（1回限り）。':'');
+ const preview=$('battleForecast');if(preview){
+  const plan=checkpointEnemyIntent(b);
+  preview.classList.toggle('hidden',!plan);
+  preview.textContent=plan?'敵の予兆　'+plan.target.name+'への攻撃：'+plan.note:'';
+ }
+
+ renderHud()}
+function battleLog(t){const box=$('battleLog');box.innerHTML+=`<div>${t}</div>`;box.scrollTop=box.scrollHeight}
+function showLevelUpSummary(list,onClose){if(!list.length){onClose();return}const box=$('levelUpPanel');$('levelUpList').innerHTML=list.map(u=>`<div class="level-card"><div class="level-card-head"><strong>${u.name}</strong><span>Lv.${u.level}</span></div><div class="level-stat-grid"><span>最大HP <b>+${u.hp}</b></span><span>最大MP <b>+${u.mp}</b></span><span>攻撃 <b>+${u.atk}</b></span><span>防御 <b>+${u.def}</b></span><span>素早さ <b>+${u.spd}</b></span></div></div>`).join('');box.classList.remove('hidden');const close=()=>{box.classList.add('hidden');$('levelUpContinue').onclick=null;onClose()};$('levelUpContinue').onclick=close}
+function showBattleResult(outcome,gold,exp,done,quick=false){const box=$('battleResult');if(!box){done();return}const surrender=outcome==='surrender';$('battleResultKicker').textContent=surrender?'BATTLE END':'VICTORY';$('battleResultTitle').textContent=surrender?'降伏':'勝利';$('battleResultDetail').textContent=`${gold}G　/　EXP ${exp}`;box.classList.remove('hidden');requestAnimationFrame(()=>box.classList.add('show'));if(!quick)sfx('victory');setTimeout(()=>{box.classList.remove('show');setTimeout(()=>{box.classList.add('hidden');done()},quick?100:170)},quick?340:860)}
+GC.Render=GC.Render||{};GC.Render.Battle={showBattleIntro,showBossCinematic,showEncounterCinematic,renderBattleStage,battlePop,battleImpact,renderBattle,battleLog,showLevelUpSummary,showBattleResult};
+
+</script>
+  <script>
+'use strict';
+function captureBattleReturn(){state.battleReturn={map:state.map,x:state.x,y:state.y,dir:state.dir,trail:state.trail.map(p=>[p[0],p[1]])}}
+function restoreBattleReturn(){const r=state.battleReturn;if(!r||!maps[r.map]){state.battleReturn=null;return}state.map=r.map;state.x=r.x;state.y=r.y;state.dir=r.dir;state.trail=Array.isArray(r.trail)?r.trail:[[r.x+1,r.y],[r.x+2,r.y],[r.x+3,r.y]];state.battleReturn=null;VISUAL.map=null;setMusic(mapMusicTheme(state.map))}
+function startSymbolEncounter(objectId,battleId){if(state.battle||objectCleared(objectId))return false;state.symbolEncounter={objectId,battleId,map:state.map};captureBattleReturn();startBattle(battleId,true);return true}
+function startBattle(id,fromSymbol=false){if(!$('dialogueBox').classList.contains('hidden'))closeDialogue(false);GC.Log?.info('Battle Start',{id,map:state.map,fromSymbol});if(!state.battleReturn)captureBattleReturn();if(!fromSymbol)state.symbolEncounter=null;state.locked=true;const ev=$('enemyVisual');if(ev)ev.classList.remove('hit','shake','surrender');const bdef=battles[id];GC.CommercialTactics?.reset?.();state.battle={id,turn:1,actor:0,comboTarget:null,comboActor:null,counterWindow:null,enemies:bdef.enemies.map(e=>({...e,morale:e.morale??null,maxMorale:e.maxMorale??e.morale??null})),log:[],outcome:null};setMusic(id==='boss'?'boss':'battle');$('battleLog').innerHTML='';$('battleTitle').textContent=bdef.name;$('battlePanel').classList.remove('hidden');if(bdef.boss)showBossCinematic(bdef,false);else if(!bdef.random)showBattleIntro(bdef.name);battleLog(`―― ${bdef.name}との戦闘！`);renderBattle();setTimeout(()=>{state.locked=false},bdef.boss?1480:bdef.random?180:680)}
+function livingEnemies(){return state.battle.enemies.filter(e=>e.hp>0)}
+function currentActor(){return activeRouteParty()[state.battle.actor]}
+function enemyMood(e){if(e.staggered>0)return'体勢崩れ・次の行動不能';if(e.morale==null)return'野生';const r=e.morale/e.maxMorale;if(r<=.2)return'崩れかけ';if(r<=.5)return'動揺';return'戦意あり'}
+function applyMoraleDamage(e,amount){if(e.morale==null)return 0;const d=Math.max(0,Math.min(e.morale,Math.floor(amount)));e.morale-=d;return d}
+function battleSurrender(){const b=state.battle,e=b.enemies[0];state.locked=true;b.outcome='surrender';if($('enemyVisual'))$('enemyVisual').classList.add('surrender');battleLog(`${e.name}は武器を捨て、戦意を失った。`);setTimeout(()=>battleWin('surrender'),420)}
+
+function damageFormula(atk,def,bonus=0,variance=RPG_RULES.damage.variance){return Math.max(RPG_RULES.damage.minimum,Math.floor(atk+bonus-def*RPG_RULES.damage.defenseScale)+Math.floor(Math.random()*(variance+1)))}
+// Guarding the announced target creates exactly one short counter opportunity.
+// Stored on the active encounter only: no skill unlock, no button, no save migration.
+function applyGuardOpening(b,e,damage){
+ const opportunity=b?.counterWindow;
+ if(!opportunity||damage<=0||e.hp<=0||opportunity.enemy!==e||opportunity.turn!==b.turn)return 0;
+ b.counterWindow=null;
+ const extra=Math.min(5,e.hp);
+ if(extra){
+  e.hp-=extra;
+  const m=applyMoraleDamage(e,3);
+  battleLog('反撃の好機！ 守りから生まれた隙に追加'+extra+'ダメージ。'+(m?' 士気-'+m+'。':''));
+  sfx('rally');
+ }
+ return extra
+}
+function battleAction(type){if(state.locked||!state.battle)return;const b=state.battle,a=currentActor(),e=GC.CommercialTactics?.target?.(b)||livingEnemies()[0];if(!e)return;if(!GC.CommercialTactics.actionAvailable(type,a))return;const actorIndex=b.actor;let d=0,moraleLoss=0,visual='physical',acted=true;
+ if(type==='attack'){d=damageFormula(a.atk+(a.buff||0),e.def);if(GC.Dev?.settings?.instantVictory)d=e.hp;e.hp=Math.max(0,e.hp-d);moraleLoss=applyMoraleDamage(e,d*.42);battleLog(`${a.name}の剣撃！ ${e.name}に${d}ダメージ。`)}
+ else if(type==='staffSophie'||type==='staffMargaret'){d=damageFormula(a.atk,e.def,SKILLS[type].power);e.hp=Math.max(0,e.hp-d);moraleLoss=applyMoraleDamage(e,d*.35);battleLog(`${a.name}の杖撃！ ${e.name}に${d}ダメージ。`)}
+ else if(type==='guard'){a.guard=true;visual='heal';battleLog(activeRouteParty().length===1?`${a.name}は防御の構えを取った。`:`${a.name}は仲間を庇う構えを取った。`);sfx('guard')}
+ else if(type==='rally'){activeRouteParty().forEach(p=>p.buff=(p.buff||0)+SKILLS.rally.value);visual='heal';battleLog(`${a.name}の号令！ 全員の攻撃力が一時的に上がる。`);battleLog('カレン「全員、顔を上げて！　私たちなら進める！」');sfx('rally')}
+ else if(type==='heavy'){d=damageFormula(a.atk+(a.buff||0),e.def,SKILLS.heavy.power);e.hp=Math.max(0,e.hp-d);moraleLoss=applyMoraleDamage(e,d*.55);battleLog(`${a.name}の強撃！ ${e.name}に${d}ダメージ。`)}
+ else if(type==='break'){d=damageFormula(a.atk,e.def,SKILLS.break.power);e.hp=Math.max(0,e.hp-d);e.def=Math.max(1,e.def-SKILLS.break.defDown);moraleLoss=applyMoraleDamage(e,10+d*.45);battleLog(`${a.name}が防御を崩した。${d}ダメージ、防御低下。`);
+  // A visible tactical payoff for the first optional dungeon. One interruption
+  // per tough enemy: no extra command button or repetitive stun-lock.
+  if(d>0&&e.hp>0&&!e.staggerUsed&&['crawler','boss'].includes(b.id)){
+   e.staggered=1;e.staggerUsed=true;
+   battleLog('体勢崩し成功！ '+e.name+'の次の攻撃を阻止した。');
+   sfx('guard')
+  }battleLog('トリトン「今だ、隙ができた！」')}
+ else if(type==='fire'||type==='ice'){const sk=SKILLS[type];if(a.mp<sk.mp){battleLog('MPが足りない。');return}a.mp-=sk.mp;d=sk.power+Math.floor(Math.random()*(sk.variance+1));e.hp=Math.max(0,e.hp-d);if(type==='ice')e.atk=Math.max(4,e.atk-SKILLS.ice.atkDown);moraleLoss=applyMoraleDamage(e,d*.3);visual='magic';battleLog(`${a.name}の${type==='fire'?'火球':'氷槍'}！ ${e.name}に${d}ダメージ。`);if(type==='ice')battleLog('マーガレット「動きを鈍らせた。次の攻撃に備えて」')}
+ else if(type==='heal'||type==='prayer'){const sk=SKILLS[type];if(a.mp<sk.mp){battleLog('MPが足りない。');return}a.mp-=sk.mp;visual='heal';if(type==='heal'){const t=[...activeRouteParty()].filter(x=>x.hp>0).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp)[0]||a;const before=t.hp;t.hp=Math.min(t.maxHp,t.hp+sk.power);const healed=t.hp-before;battleLog(`${a.name}の治癒。${t.name}のHPが${healed}回復。`);battlePop('+'+healed,'heal')}else{let total=0;activeRouteParty().forEach(p=>{if(p.hp>0){const before=p.hp;p.hp=Math.min(p.maxHp,p.hp+sk.power);total+=p.hp-before}});battleLog(`${a.name}の祈り。全体でHPが${total}回復。`);battleLog('ソフィ「まだ立てます。みんな、無理しないで！」')}}
+ else if(type==='persuade'){const missing=1-e.hp/e.maxHp,m=12+Math.floor(missing*22)+(a.id==='sophie'?6:a.id==='margaret'?3:0);moraleLoss=applyMoraleDamage(e,m);visual='heal';battleLog(`${a.name}は武器を下ろすよう呼びかけた。${e.name}の士気が${moraleLoss}下がった。`)}
+ else if(type==='manaItem'){if((state.inventory['魔力草']||0)<=0){battleLog('魔力草がない。');return}state.inventory['魔力草']--;const t=[...activeRouteParty()].filter(x=>x.hp>0).sort((x,y)=>x.mp/x.maxMp-y.mp/y.maxMp)[0]||a;const before=t.mp;t.mp=Math.min(t.maxMp,t.mp+14);visual='heal';battleLog(`${a.name}は魔力草を使った。${t.name}のMPが${t.mp-before}回復。`)}
+ else if(type==='item'){if((state.inventory['薬草']||0)<=0){battleLog('薬草がない。');return}state.inventory['薬草']--;const t=[...activeRouteParty()].filter(x=>x.hp>0).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp)[0]||a;const before=t.hp;t.hp=Math.min(t.maxHp,t.hp+22);visual='heal';battleLog(`${a.name}は薬草を使った。${t.name}のHPが${t.hp-before}回復。`)}
+ else if(type==='foodItem'){if((state.inventory['携帯食']||0)<=0){battleLog('携帯食がない。');return}state.inventory['携帯食']--;a.hp=Math.min(a.maxHp,a.hp+12);a.mp=Math.min(a.maxMp,a.mp+6);visual='heal';battleLog(`${a.name}は携帯食を口にした。HPとMPが少し回復。`)}else acted=false;
+ if(!acted)return;
+ if(d>0)applyGuardOpening(b,e,d);
+ // Same-target coordination rewards consecutive different hero attacks.
+ // Stored only in the transient encounter; no save schema or boss stats change.
+ if(d>0&&e.hp>0&&e.hp<e.maxHp){
+  if(b.comboTarget===e&&b.comboActor!==a.id&&b.comboActor!=null){
+   const extra=Math.min(3,e.hp);
+   if(extra>0){e.hp-=extra;battleLog('連携成功！ '+a.name+'が仲間の作った隙を突き、追加'+extra+'ダメージ。');sfx('rally')}
+  }
+  b.comboTarget=e;b.comboActor=a.id;
+ }else{b.comboTarget=null;b.comboActor=null}
+ renderBattleStage();battleImpact(actorIndex,d,moraleLoss,visual,()=>{if(e.hp<=0){if(!livingEnemies().length)return battleWin();return nextActor()}if(e.morale!=null&&e.morale<=0)return battleSurrender();nextActor()})}
+// Announced *before* player actions for route-specific checkpoint encounters.
+// Uses the same prediction for the HUD and the real incoming strike.
+function checkpointEnemyIntent(b){
+ if(!b)return null;
+ const patterns={
+  kingdomEvacuation:{order:['sophie','triton'],bonus:2,note:'避難路の支援役を狙う。カレンの庇うで守れる。'},
+  kingdomOrders:{order:['karen','margaret'],bonus:3,note:'前衛を崩す強打。庇うか事前に回復を。'},
+  empireProtect:{order:['sophie','karen'],bonus:1,note:'捕虜の治療担当を牽制。庇うで援護できる。'},
+  empireAdvance:{order:['triton','karen'],bonus:3,note:'追撃を止める前衛へ集中攻撃。回復と防御を計画しよう。'}
+ };
+ // One gentle, clear defensive decision in the first mandatory encounter.
+ // Later wolf turns keep the standard AI to avoid a scripted-feeling entire fight.
+ if(b.id==='crawler'&&b.turn===1){
+  const living=activeRouteParty().filter(p=>p.hp>0);
+  if(!living.length)return null;
+  return {target:living.find(p=>p.id==='triton')||living[0],bonus:0,
+   note:'硬い殻はトリトンの崩しで弱体化。マーガレットの氷槍なら攻撃も鈍る。'}
+ }
+ if(b.id==='wolves'&&b.turn===1){
+  const living=activeRouteParty().filter(p=>p.hp>0);
+  if(!living.length)return null;
+  const target=living.find(p=>p.id==='sophie')||living[0];
+  const scouted=state.events?.choices?.['early.wolfScout']==='read';
+  return {target,bonus:0,scouted,note:scouted
+   ?'足跡から後衛への回り込みを予測。カレンの庇うで防げる（偵察で被害軽減）。'
+   :'後衛への回り込みに警戒。カレンの庇うで守れる。'}
+ }
+ const pattern=patterns[b.id];if(!pattern)return null;
+ const living=activeRouteParty().filter(p=>p.hp>0);if(!living.length)return null;
+ const preferred=pattern.order[(Math.max(1,b.turn)-1)%pattern.order.length];
+ const target=living.find(p=>p.id===preferred)||living.slice().sort((a,c)=>a.hp/a.maxHp-c.hp/c.maxHp)[0];
+ return {target,bonus:pattern.bonus,note:pattern.note}
+}
+function nextActor(){const b=state.battle;if(!b)return;b.actor++;if(b.actor>=activeRouteParty().length){b.actor=0;b.comboTarget=null;b.comboActor=null;enemyTurn()}else renderBattle()}
+// Prevent 3 quick consecutive hits on one ally in a multi-enemy round.
+function selectEnemyTarget(alive,b,random=Math.random){
+ const alternatives=alive.filter(p=>p.id!==b.lastTarget);
+ const pool=b.targetStreak>=2&&alternatives.length?alternatives:alive;
+ const picked=pool[Math.min(pool.length-1,Math.floor(random()*pool.length))];
+ b.targetStreak=picked.id===b.lastTarget?(b.targetStreak||0)+1:1;
+ b.lastTarget=picked.id;
+ return picked
+}
+function enemyTurn(){const b=state.battle,bd=battles[b.id],foes=livingEnemies().slice();state.locked=true;b.counterWindow=null;let i=0;const step=()=>{if(i>=foes.length){activeRouteParty().forEach(p=>{p.guard=false;if(p.buff)p.buff=Math.max(0,p.buff-1)});if(activeRouteParty().every(p=>p.hp<=0))return battleLose();b.turn++;b.actor=0;state.locked=false;renderBattle();return}const e=foes[i++];
+ if(e.staggered>0){e.staggered--;battleLog(e.name+'は体勢を崩して行動できない！');renderBattle();setTimeout(step,220);return}
+ if(bd.boss&&e.phase===1&&e.hp<e.maxHp*.65){e.phase=2;e.atk+=2;battleLog(`<strong class="boss-phase">PHASE II — ${bd.phase2||'攻勢が変化した'}</strong>`)}else if(bd.boss&&e.phase===2&&e.hp<e.maxHp*.3){e.phase=3;e.atk+=3;e.def+=1;battleLog(`<strong class="boss-phase">FINAL PHASE — ${bd.phase3||'全力を解放した'}</strong>`)}const alive=activeRouteParty().filter(p=>p.hp>0);if(!alive.length)return battleLose();// Telegraph tactical danger while preserving original fair target-selection rules.
+ if(bd.boss&&e.phase>=2)battleLog('警戒：'+e.name+'が攻勢を強めている。防御と回復を確認しよう。');
+ const focus=checkpointEnemyIntent(b);const originallyTargeted=focus?.target||selectEnemyTarget(alive,b);const t=GC.CommercialTactics?.protect?.(activeRouteParty(),originallyTargeted)||originallyTargeted;let d=damageFormula(e.atk+(focus?.bonus||0),t.def);if(focus?.scouted)d=Math.max(1,d-2);if(t.guard)d=Math.max(1,Math.floor(d/2));if(GC.Dev?.settings?.invincible)d=0;t.hp=Math.max(0,t.hp-d);if(t!==originallyTargeted)battleLog(`${t.name}が${originallyTargeted.name}を庇った！ ${e.name}の攻撃を引き受け、${d}ダメージ。`);if(t!==originallyTargeted&&t.guard&&focus){
+  b.counterWindow={enemy:e,turn:b.turn+1};
+  battleLog('守りの連携！ 敵に隙が生まれた。次の味方ターンの攻撃で反撃できる。');
+ }
+ if(t!==originallyTargeted)sfx('guard');else battleLog(`${e.name}の攻撃。${t.name}に${d}ダメージ。`);const ev=$('enemyVisual');if(ev){ev.classList.remove('shake');void ev.offsetWidth;ev.classList.add('shake')}battlePop('-'+d,'ally');sfx('hit');renderBattle();setTimeout(step,360)};step()}
+function battleWin(outcome='defeat'){const id=state.battle.id,bd=battles[id],r=bd.reward;GC.Log?.info('Battle End',{id,outcome});const scriptedEvent=findTriggeredEvent('battleWin',id,{outcome,map:state.map});if(scriptedEvent)applyEventEffects(scriptedEvent,{outcome,map:state.map});if(bd.boss)showBossCinematic(bd,true);const rewardGold=outcome==='surrender'?Math.floor(r.gold*.65):r.gold;state.gold+=rewardGold;const levelMessages=[];activeRouteParty().forEach(p=>{p.exp+=r.exp;const ups=applyLevelUps(p);for(const up of ups)levelMessages.push({name:p.name,...up})});battleLog(`${outcome==='surrender'?'戦闘終了':'勝利'}！ ${rewardGold}G、経験値${r.exp}を獲得。`);for(const u of levelMessages)battleLog(`<strong class="level-up">LEVEL UP! ${u.name} Lv.${u.level}　HP+${u.hp} MP+${u.mp} 攻撃+${u.atk} 防御+${u.def} 素早さ+${u.spd}</strong>`);if(r.drop&&Math.random()<r.drop.chance){state.inventory[r.drop.item]=(state.inventory[r.drop.item]||0)+1;battleLog(`${r.drop.item}を1個手に入れた。`)}
+ const finalRouteBattle={
+  kingdomEvacuation:{route:'kingdom',choice:'evacuate',context:'避難路を確保するため帝国の封鎖兵を退けた。'},
+  kingdomOrders:{route:'kingdom',choice:'orders',context:'帝国本陣の前衛警戒隊を退け、交渉の道を開いた。'},
+  empireProtect:{route:'empire',choice:'protect',context:'降伏者を護送する王国兵の抵抗を収めた。'},
+  empireAdvance:{route:'empire',choice:'advance',context:'追撃命令を届ける王国の伝令隊を止めた。'}
+ }[id];
+ if(finalRouteBattle){
+  const key='final.route.'+finalRouteBattle.route+'.checkpoint';
+  if(state.finalChoice===finalRouteBattle.route&&
+     state.events?.choices?.['route.companions.'+finalRouteBattle.route]===finalRouteBattle.choice){
+   completeEvent(key,true);
+   addJournal(finalRouteBattle.context+(outcome==='surrender'?'相手は降伏して武器を下ろした。':'戦闘不能となった相手の死亡は確定していない。'));
+  }
+ }
+ if(id==='ashcrownCheckpoint'){
+  completeEvent('ashcrownCheckpointCleared',true);
+  addJournal(outcome==='surrender'
+   ?'灰冠への道を塞いだ守備兵は武器を捨てた。カレンは追撃せず、先へ進んだ。'
+   :'灰冠への道を塞いだ守備兵を退けた。倒れた相手の生死は確認できておらず、殺害と決めつけない。');
+ }
+ if(id==='roadBandit'){markDefeated('bandit',true);addJournal(outcome==='surrender'?'街道のならず者を降伏させ、命を奪わず戦闘を終えた。':'街道のならず者との戦闘に勝利した。')}
+ if(id==='bats'){markDefeated('bats',true);addJournal('古砦跡の入口付近に巣食うコウモリを追い払った。')}
+ if(id==='crawler'){markDefeated('crawler',true);addJournal('古砦跡の奥で石殻ムカデを退けた。')}
+ if(id==='boss'){markDefeated('boss',true);state.objective='古砦跡の北出口を目指す';addJournal('古砦跡の主・灰角獣を倒し、北側の鉄柵が開いた。')}
+ if(id==='zenithEncounter'){completeEvent('metZenith',true);state.objective='北側の帰還路から王国へ戻る';addJournal('ゼニスとの対決を経て、王国の歴史的主張に根拠があることと、現在の住民を追い出す正当性は別問題だという認識を共有した。');draw()}
+ const won=id,wasRandom=!!battles[id].random;resetEncounterCounter();const ev=$('enemyVisual');if(ev&&outcome!=='surrender')ev.classList.add('defeated');state.battle=null;state.locked=true;const finishBattle=()=>{restoreBattleReturn();state.symbolEncounter=null;$('battlePanel').classList.add('hidden');if(ev)ev.classList.remove('defeated');renderHud();draw();const afterLevel=()=>{state.locked=false;if(scriptedEvent)playEventDialogue(scriptedEvent);
+ else if(['kingdomEvacuation','kingdomOrders','empireProtect','empireAdvance'].includes(won)){
+  saySequence([
+   {speaker:'ナレーション',text:outcome==='surrender'?'相手は武器を置き、進路を譲った。':'敵兵は戦う力を失い、進路が開いた。'},
+   {speaker:'カレン',text:'「先へ進もう。私たちは勝敗だけを伝えに来たんじゃない」'},
+   {speaker:'ナレーション',text:'指揮官へ話しかけ、交渉を続けよう。'}
+  ])
+ }
+
+ else if(won==='ashcrownCheckpoint')saySequence([
+ {speaker:'ナレーション',text:outcome==='surrender'?'守備兵は武器を下ろし、道から退いた。':'守備兵は戦う力を失い、道を塞ぐことができなくなった。'},
+ {speaker:'カレン',text:'「この先で何を失うのか、もう誰も教えてくれない」'},
+ {speaker:'ナレーション',text:'北へ進むと、灰冠の道が続く。準備ができたら北端へ向かおう。'}
+ ]);
+ else if(won==='roadBandit'&&outcome!=='surrender')saySequence([{speaker:'ナレーション',text:'武器を落としたならず者は、もう抵抗できない。'},{speaker:'ソフィ',text:'「この人はもう戦えません」'}],()=>say('カレン','「命を奪う理由が、まだある？」',[{label:'武器を取り上げて見逃す',fn:()=>{recordGrayCrownMoralChoice('roadBandit','spare');say('トリトン','「武器は置いていけ。二度と旅人を襲うな」')}},{label:'抵抗できない相手を殺す',fn:()=>{recordGrayCrownMoralChoice('roadBandit','kill');saySequence([{speaker:'ナレーション',text:'誰も止める言葉を間に合わせられなかった。'},{speaker:'ソフィ',text:'「……なぜ。もう戦えなかったのに」'},{speaker:'マーガレット',text:'「これは戦いじゃない。私たちが選んだことよ」'}])}}]));else if(won==='roadBandit')saySequence(outcome==='surrender'?[{speaker:'街道のならず者',text:'「……もういい。武器は捨てる。だから殺すな」'},{speaker:'カレン',text:'「追いかけない。食べ物が必要なら、行商人に仕事を頼めないか聞いてみて」'},{speaker:'トリトン',text:'「甘いと思うけど……倒す以外で終われるなら、その方がいい」'}]:[{speaker:'ナレーション',text:'ならず者は地面に倒れ、しばらく動かなかった。さっきまでの獣との戦いとは、後味がまるで違う。'},{speaker:'ソフィ',text:'「……人と戦うのは、やっぱり嫌です」'},{speaker:'マーガレット',text:'「今後はもっと増える。だからこそ、倒す以外の終わらせ方も考えないと」'}]);else if(won==='boss')say('マーガレット','「奥の鉄柵が壊れた。これで北側へ抜けられるはずよ」');else if(won==='crawler')say('ソフィ','「この先にも何かいます。傷が深いなら、いったん村まで戻るのもありですよ」');else if(won==='zenithEncounter')saySequence([{speaker:'ゼニス',text:'「……十分だ。資料を持って行け」'},{speaker:'マーガレット',text:'「敵なのに、止めないの？」'},{speaker:'ゼニス',text:'「敵だからこそだ。王国側にも、事実を見た人間が必要になる。私は帝国の利益のためにそう判断する」'},{speaker:'カレン',text:'「最後まで合理的なんだね」'},{speaker:'ゼニス',text:'「君たちは最後まで感情的だ。それで助かった人間もいる。互いに長所ということにしておこう」'}]);else if(wasRandom){canvas.focus()}else say('カレン','「みんな無事？ よし。先へ進もう」')};showLevelUpSummary(levelMessages,afterLevel)};setTimeout(()=>showBattleResult(outcome,rewardGold,r.exp,finishBattle,wasRandom),bd.boss?720:wasRandom?60:180)}
+function battleLose(){GC.Log?.warn('Battle Lose',{id:state.battle?.id,map:state.map});battleLog(activeRouteParty().length===1?'カレンは力尽きた……。':'仲間たちは力尽きた……。');const wasMap=state.battleReturn?.map||state.map;state.battleReturn=null;state.symbolEncounter=null;activeRouteParty().forEach(p=>{p.hp=p.maxHp;p.mp=p.maxMp;p.guard=false;p.buff=0});state.battle=null;state.locked=true;setTimeout(()=>{$('battlePanel').classList.add('hidden');if(wasMap==='cave')setMap('cave',12,13,'up',[[12,14],[11,14],[10,14]]);else if(maps[wasMap]&&!INTERIOR_MAPS.includes(wasMap))setMap(wasMap,11,13,'up',[[12,13],[13,13],[14,13]]);else setMap('road',11,13,'up',[[12,13],[13,13],[14,13]]);state.locked=false;say('ナレーション',activeRouteParty().length===1?'カレンは退き、立て直した。HP・MPは回復。経験値は失わない。':'仲間たちは安全な場所へ退き、立て直した。HP・MPは回復。経験値は失わない。');renderHud()},700)}
+function showEnding(){enterCapital(true)}
+GC.Battle={selectEnemyTarget,captureBattleReturn,restoreBattleReturn,startSymbolEncounter,startBattle,livingEnemies,currentActor,enemyMood,applyMoraleDamage,battleSurrender,battleAction,nextActor,enemyTurn,battleWin,battleLose};
+
+</script>
+  <script>
+'use strict';
+const SAVE_KEY='gray-crown-vslice-save-v1';
+const SAVE_BACKUP_KEY=SAVE_KEY+'-backup';
+const SAVE_SCHEMA=23;
+function safeNumber(v,fallback,min=-Infinity,max=Infinity){return Number.isFinite(v)?Math.max(min,Math.min(max,v)):fallback}
+function nearestSafeTile(mapId,x,y){const m=maps[mapId];if(!m)return[11,13];const passThrough=new Set(['gate','exit','northExit','southExit','roadSign','milestone','banner','rations']);const blockedTile=(xx,yy)=>{const t=tileAt(mapId,xx,yy);if(['T','H','S','W','R','K','Z'].includes(t))return true;if(m.npcs.some(n=>n.x===xx&&n.y===yy))return true;if(m.objects.some(o=>o.x===xx&&o.y===yy&&!passThrough.has(o.id)))return true;return false};x=Math.max(0,Math.min(COLS-1,Math.floor(x)));y=Math.max(0,Math.min(ROWS-1,Math.floor(y)));if(!blockedTile(x,y))return[x,y];for(let r=1;r<12;r++)for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){if(Math.abs(dx)!==r&&Math.abs(dy)!==r)continue;const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<COLS&&yy<ROWS&&!blockedTile(xx,yy))return[xx,yy]}return INTERIOR_MAPS.includes(mapId)?[11,11]:[11,13]}
+function mergeStructuredState(fresh,src){
+ const loaded=createGameState();
+ for(const key of ['map','x','y','dir','trail','locked','encounterSteps','nextEncounterAt','interiorReturn','journal','inventory','gold'])if(src[key]!==undefined)loaded[key]=src[key];
+ loaded.story={...fresh.story,...(src.story||{})};
+ loaded.quests={...fresh.quests,...(src.quests||{}),main:{...fresh.quests.main,...(src.quests?.main||{})},active:{...fresh.quests.active,...(src.quests?.active||{})},completed:{...fresh.quests.completed,...(src.quests?.completed||{})}};
+ loaded.world={...fresh.world,...(src.world||{}),visited:{...fresh.world.visited,...(src.world?.visited||{})},switches:{...fresh.world.switches,...(src.world?.switches||{})},defeatedSymbols:{...fresh.world.defeatedSymbols,...(src.world?.defeatedSymbols||{})},recoveryUses:{...fresh.world.recoveryUses,...(src.world?.recoveryUses||src.recoveryUses||{})},treasures:{...fresh.world.treasures,...(src.world?.treasures||src.treasures||{})},shortcuts:{...fresh.world.shortcuts,...(src.world?.shortcuts||src.shortcuts||{})},finalChoice:src.world?.finalChoice??src.finalChoice??fresh.world.finalChoice};
+ loaded.events={...fresh.events,...(src.events||{}),completed:{...fresh.events.completed,...(src.events?.completed||{})},choices:{...fresh.events.choices,...(src.events?.choices||{})}};
+ loaded.party=(src.party||fresh.party).map((p,i)=>({...fresh.party[i],...p}));
+ loaded.inventory={...fresh.inventory,...(src.inventory||{})};
+ importLegacyFlags(loaded,src.flags||{});
+ if(src.flags?.chest1)loaded.world.treasures.chest1=true;if(src.flags?.chest2)loaded.world.treasures.chest2=true;
+ if(src.flags?.talkedWithKaren||src.flags?.appointed)loaded.events.completed['alpha.village.appointment']=true;
+ if(src.flags?.capitalCeremony)loaded.events.completed['alpha.capital.ceremony']=true;
+ if(src.flags?.capitalFirstNight)loaded.events.completed['alpha.capital.whiteStagNight']=true;
+ if(src.flags?.alphaHourComplete)loaded.events.completed['alpha.complete']=true;
+ loaded.story.stage=inferStoryStage(src);
+ if(!src.story?.chapter&&src.chapter)loaded.story.chapter=src.chapter;
+ if(!src.story?.objective&&src.objective)loaded.story.objective=src.objective;
+ syncMainQuest(loaded);
+ return attachStateCompatibility(loaded)
+}
+function validateLoadedState(loaded,fresh=createGameState()){
+ loaded.gold=safeNumber(loaded.gold,fresh.gold,0,999999);loaded.x=safeNumber(loaded.x,11,0,COLS-1);loaded.y=safeNumber(loaded.y,13,0,ROWS-1);
+ loaded.party=(loaded.party||fresh.party).slice(0,4).map((p,i)=>{const f=fresh.party[i]||fresh.party[0];return{...f,...p,level:safeNumber(p.level,f.level,1,MAX_LEVEL),exp:safeNumber(p.exp,f.exp,0,9999999),maxHp:safeNumber(p.maxHp,f.maxHp,1,9999),maxMp:safeNumber(p.maxMp,f.maxMp,0,9999),atk:safeNumber(p.atk,f.atk,1,999),def:safeNumber(p.def,f.def,0,999),spd:safeNumber(p.spd,f.spd,1,999),hp:safeNumber(p.hp,f.maxHp,0,safeNumber(p.maxHp,f.maxHp,1,9999)),mp:safeNumber(p.mp,f.maxMp,0,safeNumber(p.maxMp,f.maxMp,0,9999))}});
+ for(const k of Object.keys(loaded.inventory||{}))loaded.inventory[k]=Math.floor(safeNumber(loaded.inventory[k],0,0,999));
+ for(const k of Object.keys(loaded.world.recoveryUses||{}))loaded.world.recoveryUses[k]=Math.floor(safeNumber(loaded.world.recoveryUses[k],0,0,99));
+ loaded.map=maps[loaded.map]?loaded.map:'village';if(loaded.map==='relayvillage'){loaded.map='borderland';loaded.x=11;loaded.y=5}if(loaded.map==='ravine'){loaded.map='watchfort';loaded.x=11;loaded.y=8}
+ loaded.world.visited[loaded.map]=true;loaded.battle=null;loaded.battleReturn=null;loaded.symbolEncounter=null;loaded.locked=false;
+ loaded.encounterSteps=Number.isFinite(loaded.encounterSteps)?loaded.encounterSteps:0;loaded.nextEncounterAt=Number.isFinite(loaded.nextEncounterAt)?loaded.nextEncounterAt:rollEncounterThreshold(loaded.map);
+ const pos=nearestSafeTile(loaded.map,loaded.x,loaded.y);loaded.x=pos[0];loaded.y=pos[1];if(!Array.isArray(loaded.trail)||loaded.trail.length<3)loaded.trail=[[loaded.x+1,loaded.y],[loaded.x+2,loaded.y],[loaded.x+3,loaded.y]];
+ return attachStateCompatibility(loaded)
+}
+function migrateLoaded(raw){const fresh=createGameState(),src=JSON.parse(raw);const loaded=mergeStructuredState(fresh,src);loaded.party.forEach(p=>applyLevelUps(p));const reconciled=reconcileStoryState(loaded);if(reconciled.repairs.length)GC.Log?.warn('Save story state repaired during migration',reconciled);loaded.schema=SAVE_SCHEMA;return validateLoadedState(loaded,fresh)}
+function transientUiActive(){return !!state.battle||!!state.locked||($('dialogueBox')&&!$('dialogueBox').classList.contains('hidden'))||($('levelUpPanel')&&!$('levelUpPanel').classList.contains('hidden'))||($('battleResult')&&!$('battleResult').classList.contains('hidden'))}
+function canPersistNow(mode='save'){
+ if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started)return mode==='load';
+ if(mode==='save'&&GC.Dev?.isStateTainted?.())return false;
+ return !transientUiActive()
+}
+function serializeSave(){return JSON.stringify({...state,schema:SAVE_SCHEMA,locked:false,battle:null,battleReturn:null,symbolEncounter:null})}
+function save(silent=false){
+ if(!canPersistNow('save')){if(!silent&&!GC.Dev?.isStateTainted?.()&&!state.battle&&$('dialogueBox')?.classList.contains('hidden'))say('システム','イベントや戦闘の途中ではセーブできません。操作可能な場所でセーブしてください。');else if(!silent&&GC.Dev?.isStateTainted?.())say('システム','Developer操作後の状態は通常セーブできません。Debug Snapshotを使用してください。');return false}
+ try{const payload=serializeSave(),prev=localStorage.getItem(SAVE_KEY);if(prev)localStorage.setItem(SAVE_BACKUP_KEY,prev);else localStorage.setItem(SAVE_BACKUP_KEY,payload);localStorage.setItem(SAVE_KEY,payload);GC.Log?.info('Save',{map:state.map,x:state.x,y:state.y,stage:state.story.stage});if(!silent)say('システム','セーブしました。');return true}catch(e){GC.Log?.error('Save failed',{error:String(e)});if(!silent)say('システム','セーブに失敗しました。ブラウザの保存領域を確認してください。');return false}}
+function clearTransientPanels(){for(const id of ['battlePanel','levelUpPanel','battleResult','battleFlash','bossCinematic','chapterCard'])$(id)?.classList.add('hidden');if($('dialogueBox')&&!$('dialogueBox').classList.contains('hidden'))closeDialogue(false)}
+function load(silent=false){
+ if(!canPersistNow('load')){if(!silent&&$('dialogueBox')?.classList.contains('hidden'))say('システム','イベントや戦闘の途中ではロードできません。操作可能な場所でロードしてください。');return false}
+ const primary=localStorage.getItem(SAVE_KEY),backup=localStorage.getItem(SAVE_BACKUP_KEY);if(!primary&&!backup){if(!silent)say('システム','セーブデータがありません。');return false}let recovered=false,next;
+ try{next=migrateLoaded(primary||backup)}catch(e){GC.Log?.warn('Primary save load failed',{error:String(e)});if(!backup){if(!silent)say('システム','セーブデータを読み込めませんでした。');return false}try{next=migrateLoaded(backup);recovered=true}catch(e2){GC.Log?.error('Primary and backup save load failed',{primary:String(e),backup:String(e2)});if(!silent)say('システム','セーブデータとバックアップの両方を読み込めませんでした。');return false}}
+ clearTransientPanels();replaceState(next);VISUAL.map=null;setMusic(mapMusicTheme(state.map));renderHud();draw();GC.Dev?.clearTaint?.();GC.Log?.info('Load',{map:state.map,x:state.x,y:state.y,stage:state.story.stage,recovered});if(!silent&&typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started)hideTitle();if(!silent)say('システム',recovered?'通常セーブが壊れていたため、バックアップから復旧しました。':'ロードしました。');return true}
+
+function restart(){if(!confirm('最初からやり直しますか？'))return;beginAlphaNewGame(true)}
+GC.Save={SAVE_KEY,SAVE_BACKUP_KEY,SAVE_SCHEMA,save,load,restart,migrateLoaded,serializeSave,validateLoadedState,nearestSafeTile,transientUiActive,canPersistNow,clearTransientPanels};
+
+</script>
+  <script>
+'use strict';
+function pushIssue(list,code,message,context={}){list.push({code,message,context})}
+function duplicates(values){const seen=new Set(),dups=new Set();for(const v of values){if(seen.has(v))dups.add(v);seen.add(v)}return [...dups]}
+function validateData(){
+ const errors=[],warnings=[];const blocked=new Set(['T','H','S','W','R','K','Z']);
+ for(const [mapId,m] of Object.entries(maps)){
+  if(!Array.isArray(m.tiles)||m.tiles.length!==ROWS||m.tiles.some(r=>typeof r!=='string'||r.length!==COLS))pushIssue(errors,'MAP_DIMENSIONS',`Map ${mapId} has invalid dimensions`,{mapId});
+  for(const id of duplicates((m.npcs||[]).map(n=>n.id)))pushIssue(errors,'NPC_DUPLICATE_IN_MAP',`Duplicate NPC id ${id} in ${mapId}`,{mapId,id});
+  for(const id of duplicates((m.objects||[]).map(o=>o.id)))pushIssue(errors,'OBJECT_DUPLICATE_IN_MAP',`Duplicate object id ${id} in ${mapId}`,{mapId,id});
+  for(const n of m.npcs||[]){if(n.x<0||n.y<0||n.x>=COLS||n.y>=ROWS)pushIssue(errors,'NPC_OUT_OF_BOUNDS',`NPC ${n.id} is outside ${mapId}`,{mapId,id:n.id,x:n.x,y:n.y})}
+  for(const o of m.objects||[]){if(o.x<0||o.y<0||o.x>=COLS||o.y>=ROWS)pushIssue(errors,'OBJECT_OUT_OF_BOUNDS',`Object ${o.id} is outside ${mapId}`,{mapId,id:o.id,x:o.x,y:o.y})}
+ }
+ const eventIds=EVENT_DEFS.map(e=>e.id);for(const id of duplicates(eventIds))pushIssue(errors,'EVENT_DUPLICATE',`Duplicate event id ${id}`,{id});
+ const eventStateIds=new Set(eventIds);for(const e of EVENT_DEFS)for(const fx of e.effects||[])if(fx.type==='completeEvent'&&fx.id)eventStateIds.add(fx.id);
+ for(const e of EVENT_DEFS){
+  const tr=e.trigger||{};if(tr.map&&!maps[tr.map])pushIssue(errors,'EVENT_BAD_MAP',`Event ${e.id} references missing map ${tr.map}`,{id:e.id,map:tr.map});
+  if(tr.map&&tr.type==='npc'&&!maps[tr.map]?.npcs?.some(n=>n.id===tr.target))pushIssue(errors,'EVENT_BAD_NPC',`Event ${e.id} references missing NPC ${tr.target}`,{id:e.id});
+  if(tr.map&&tr.type==='object'&&!maps[tr.map]?.objects?.some(o=>o.id===tr.target))pushIssue(errors,'EVENT_BAD_OBJECT',`Event ${e.id} references missing object ${tr.target}`,{id:e.id});
+  const complete=new Set((e.when||[]).filter(c=>c.eventComplete).map(c=>c.eventComplete)),incomplete=new Set((e.when||[]).filter(c=>c.eventIncomplete).map(c=>c.eventIncomplete));for(const id of complete)if(incomplete.has(id))pushIssue(errors,'EVENT_IMPOSSIBLE_CONDITION',`Event ${e.id} requires ${id} both complete and incomplete`,{id:e.id,condition:id});
+  for(const id of [...complete,...incomplete])if(!eventStateIds.has(id))pushIssue(errors,'EVENT_BAD_EVENT_REF',`Event ${e.id} references unknown event state ${id}`,{id:e.id,condition:id});
+  for(const fx of e.effects||[]){if(fx.type==='startBattle'&&!battles[fx.id])pushIssue(errors,'EVENT_BAD_BATTLE',`Event ${e.id} starts missing battle ${fx.id}`,{id:e.id,battle:fx.id});if(fx.type==='openTreasure'&&!TREASURE_DEFS[fx.id])pushIssue(errors,'EVENT_BAD_TREASURE',`Event ${e.id} opens missing treasure ${fx.id}`,{id:e.id,treasure:fx.id});if(fx.type==='advanceStory'&&!STORY_ORDER.includes(fx.stage))pushIssue(errors,'EVENT_BAD_STORY_EFFECT',`Event ${e.id} advances to unknown story stage ${fx.stage}`,{id:e.id,stage:fx.stage})}
+  for(const c of e.when||[])if(c.storyIs&&!STORY_ORDER.includes(c.storyIs)||c.storyAtLeast&&!STORY_ORDER.includes(c.storyAtLeast))pushIssue(errors,'EVENT_BAD_STORY_STAGE',`Event ${e.id} references unknown story stage`,{id:e.id,condition:c});
+ }
+ for(const [id,t] of Object.entries(MAP_TRANSITIONS)){if(!maps[t.from])pushIssue(errors,'TRANSITION_BAD_FROM',`Transition ${id} missing from map ${t.from}`,{id});if(!maps[t.to])pushIssue(errors,'TRANSITION_BAD_TO',`Transition ${id} missing to map ${t.to}`,{id});if(maps[t.to]){if(t.x<0||t.y<0||t.x>=COLS||t.y>=ROWS)pushIssue(errors,'TRANSITION_OUT_OF_BOUNDS',`Transition ${id} spawn is outside ${t.to}`,{id});else if(blocked.has(maps[t.to].tiles[t.y][t.x]))pushIssue(warnings,'TRANSITION_BLOCKED_TILE',`Transition ${id} spawns on blocking tile`,{id,map:t.to,x:t.x,y:t.y})}}
+ for(const [id,def] of Object.entries(TREASURE_DEFS)){if(!maps[def.map])pushIssue(errors,'TREASURE_BAD_MAP',`Treasure ${id} references missing map`,{id,map:def.map});if(!ITEM_DEFS[def.item])pushIssue(errors,'TREASURE_BAD_ITEM',`Treasure ${id} references missing item ${def.item}`,{id,item:def.item});if(maps[def.map]&&!maps[def.map].objects.some(o=>o.id===id))pushIssue(warnings,'TREASURE_OBJECT_MISSING',`Treasure ${id} has no matching map object`,{id,map:def.map})}
+ for(const [mapId,f] of Object.entries(MAP_FEATURES)){const m=maps[mapId];if(!m){pushIssue(errors,'FEATURE_BAD_MAP',`Map features reference missing map ${mapId}`,{mapId});continue}for(const id of f.npcs||[])if(!m.npcs.some(n=>n.id===id))pushIssue(errors,'FEATURE_BAD_NPC',`Feature ${mapId} references missing NPC ${id}`,{mapId,id});for(const id of f.optional||[])if(!m.objects.some(o=>o.id===id))pushIssue(errors,'FEATURE_BAD_OBJECT',`Feature ${mapId} references missing object ${id}`,{mapId,id});for(const id of f.treasures||[])if(!TREASURE_DEFS[id])pushIssue(errors,'FEATURE_BAD_TREASURE',`Feature ${mapId} references missing treasure ${id}`,{mapId,id});for(const id of f.shortcuts||[]){if(!SHORTCUT_DEFS[id])pushIssue(errors,'FEATURE_BAD_SHORTCUT',`Feature ${mapId} references missing shortcut ${id}`,{mapId,id});else if(SHORTCUT_DEFS[id].map!==mapId)pushIssue(errors,'FEATURE_SHORTCUT_WRONG_MAP',`Shortcut ${id} belongs to ${SHORTCUT_DEFS[id].map}, not ${mapId}`,{mapId,id})}}
+ for(const [id,def] of Object.entries(SHORTCUT_DEFS))if(!maps[def.map])pushIssue(errors,'SHORTCUT_BAD_MAP',`Shortcut ${id} references missing map ${def.map}`,{id,map:def.map});
+ for(const [owner,loadout] of Object.entries(BATTLE_LOADOUTS)){if(!partyBase.some(p=>p.id===owner))pushIssue(errors,'LOADOUT_BAD_OWNER',`Loadout owner ${owner} is missing`,{owner});for(const skill of loadout)if(!SKILLS[skill])pushIssue(errors,'LOADOUT_BAD_SKILL',`Loadout ${owner} references missing skill ${skill}`,{owner,skill})}
+ for(const [id,skill] of Object.entries(SKILLS)){if(skill.id!==id)pushIssue(errors,'SKILL_ID_MISMATCH',`Skill key ${id} has id ${skill.id}`,{id});if(skill.owner&&!partyBase.some(p=>p.id===skill.owner))pushIssue(errors,'SKILL_BAD_OWNER',`Skill ${id} references missing owner ${skill.owner}`,{id})}
+ for(const [id,b] of Object.entries(battles)){if(!Array.isArray(b.enemies)||!b.enemies.length)pushIssue(errors,'BATTLE_NO_ENEMIES',`Battle ${id} has no enemies`,{id});if(b.reward?.drop?.item&&!ITEM_DEFS[b.reward.drop.item])pushIssue(errors,'BATTLE_BAD_DROP',`Battle ${id} drops undefined item ${b.reward.drop.item}`,{id,item:b.reward.drop.item})}
+ // Conservative reachability: a required completed-event condition must have a known producer.
+ const producers=new Set(EVENT_DEFS.map(e=>e.id));for(const e of EVENT_DEFS)for(const fx of e.effects||[])if(fx.type==='completeEvent'&&fx.id)producers.add(fx.id);for(const legacy of knownLegacyFlags())producers.add(LEGACY_EVENT_ID?.[legacy]||legacy);
+ for(const e of EVENT_DEFS)for(const c of e.when||[])if(c.eventComplete&&!producers.has(c.eventComplete))pushIssue(errors,'EVENT_UNREACHABLE_REQUIRED_EVENT',`Event ${e.id} requires event state with no producer: ${c.eventComplete}`,{id:e.id,required:c.eventComplete});
+ return{ok:errors.length===0,errors,warnings,summary:{maps:Object.keys(maps).length,events:EVENT_DEFS.length,battles:Object.keys(battles).length,skills:Object.keys(SKILLS).length,items:Object.keys(ITEM_DEFS).length}}
+}
+function validateRuntimeState(s=state){
+ const errors=[],warnings=[];if(!maps[s.map])pushIssue(errors,'STATE_BAD_MAP',`Current map ${s.map} does not exist`,{map:s.map});if(!STORY_ORDER.includes(s.story?.stage))pushIssue(errors,'STATE_BAD_STORY',`Unknown story stage ${s.story?.stage}`,{});if(!Number.isFinite(s.x)||!Number.isFinite(s.y)||s.x<0||s.y<0||s.x>=COLS||s.y>=ROWS)pushIssue(errors,'STATE_BAD_POSITION','Player position is out of bounds',{map:s.map,x:s.x,y:s.y});
+ const derived=deriveAlphaStageFromMilestones(s);if(storyIndex(derived)>storyIndex(s.story.stage))pushIssue(errors,'STATE_STORY_BEHIND',`Story ${s.story.stage} is behind milestone ${derived}`,{stage:s.story.stage,derived});
+ return{ok:errors.length===0,errors,warnings}
+}
+function runValidation(){const data=validateData(),runtime=validateRuntimeState();const result={ok:data.ok&&runtime.ok,data,runtime};if(!result.ok)GC.Log?.error('Validation failed',result);else GC.Log?.info('Validation passed',result.data.summary);return result}
+GC.Validation={validateData,validateRuntimeState,runValidation,duplicates};
+
+</script>
+  <script>
+'use strict';
+function openMenu(){
+ if(state.battle)return;
+ const inv=Object.entries(state.inventory).map(([k,v])=>`<div class="kv"><strong>${k}</strong><span>${v}</span></div>`).join('');
+ const levels=state.party.map(p=>`<div class="menu-character"><div class="party-head"><strong>${p.name}　Lv.${p.level}</strong><span>${p.job}</span></div><div class="menu-statline"><span>HP ${p.maxHp}</span><span>MP ${p.maxMp}</span><span>攻撃 ${p.atk}</span><span>防御 ${p.def}</span><span>素早さ ${p.spd}</span></div><div class="party-sub">EXP ${p.exp}${p.level<MAX_LEVEL?` / ${expThreshold(p.level)}`:' / MAX'}</div></div>`).join('');
+ $('modalTitle').textContent='冒険メニュー';
+ $('modalContent').innerHTML=`<div class="menu-list">
+   <div class="kv"><strong>所持金</strong><span>${state.gold}G</span></div>
+   <div class="kv"><strong>現在地</strong><span>${maps[state.map].name}</span></div>
+   <div class="kv"><strong>目的</strong><span>${state.objective}</span></div>
+   ${levels}
+   <div class="menu-inventory">${inv}</div>
+   <div class="menu-actions">
+     <button onclick="$('modal').classList.add('hidden');save(false)">セーブ</button>
+     <button onclick="$('modal').classList.add('hidden');load(false)">ロード</button>
+     <button class="menu-danger" onclick="$('modal').classList.add('hidden');restart()">最初から</button>
+   </div>
+ </div>`;
+ $('modal').classList.remove('hidden')
+}
+GC.Menu={openMenu};
+
+</script>
+  <script>
+'use strict';
+const DEV_SNAPSHOT_KEY='gray-crown-dev-snapshots-v1';
+const DEV_SETTINGS_DEFAULTS=Object.freeze({encounters:true,invincible:false,instantVictory:false,moveDelay:88,showCollision:false,showNpcCoords:false,showPlayerCoords:false,showMapId:false,showEventTriggers:false});
+const DEV_STATE={open:false,tainted:false,lastEvent:null,settings:{...DEV_SETTINGS_DEFAULTS}};
+const DEV_STAGE_LOCATION=Object.freeze({
+ [STORY_STAGES.VILLAGE]:['village',12,12,'up'],[STORY_STAGES.APPOINTED]:['village',11,1,'up'],
+ [STORY_STAGES.ROAD]:['road',11,13,'up'],[STORY_STAGES.FIRST_BATTLE]:['road',11,6,'up'],
+ [STORY_STAGES.CAPITAL_APPROACH]:['northroad',11,13,'up'],[STORY_STAGES.CAPITAL]:['capital',11,13,'up'],
+ [STORY_STAGES.CEREMONY]:['capital',11,10,'up'],[STORY_STAGES.WHITE_STAG]:['capitalinn',11,11,'up'],
+ [STORY_STAGES.ALPHA_COMPLETE]:['capitalinn',11,11,'up'],
+ [STORY_STAGES.ASH_ROAD_ORDER]:['capital',11,1,'up'],[STORY_STAGES.ASH_ROAD]:['ashroad',11,13,'up'],[STORY_STAGES.ASH_ROAD_COMPLETE]:['ashroad',11,0,'up'],
+ [STORY_STAGES.FRONTIER_ARRIVAL]:['frontier',11,13,'up'],[STORY_STAGES.FRONTIER_CRISIS]:['frontier',7,10,'up'],[STORY_STAGES.FRONTIER_BATTLE_WON]:['frontier',11,6,'down'],[STORY_STAGES.FRONTIER_COMPLETE]:['frontier',9,8,'up'],
+ [STORY_STAGES.FRONTIER_AFTERMATH]:['frontier',9,8,'up'],[STORY_STAGES.FRONTIER_INVESTIGATION]:['frontier',11,1,'up'],[STORY_STAGES.FRONTIER_DISCOVERY]:['frontierfield',16,6,'right'],[STORY_STAGES.FRONTIER_SECOND_COMPLETE]:['frontier',9,8,'up']
+});
+function devEl(id){return $(id)}
+function setOptions(el,items,selected=null){if(!el)return;el.innerHTML=items.map(([v,l])=>`<option value="${String(v).replace(/"/g,'&quot;')}">${l}</option>`).join('');if(selected!=null)el.value=selected}
+function markTainted(reason='Developer state mutation'){DEV_STATE.tainted=true;GC.Log?.warn(reason);refresh()}
+function clearTaint(){DEV_STATE.tainted=false;refresh()}
+function isStateTainted(){return DEV_STATE.tainted}
+function noteEvent(id){if(id)DEV_STATE.lastEvent=id;refresh()}
+function conditionExplanation(c,context={}){
+ let pass=true,label='unknown condition';
+ if(c.eventComplete){pass=isEventComplete(c.eventComplete);label=`event ${c.eventComplete} complete`}
+ else if(c.eventIncomplete){pass=!isEventComplete(c.eventIncomplete);label=`event ${c.eventIncomplete} incomplete`}
+ else if(c.storyIs){pass=state.story.stage===c.storyIs;label=`story == ${c.storyIs}`}
+ else if(c.storyAtLeast){pass=storyAtLeast(c.storyAtLeast);label=`story >= ${c.storyAtLeast}`}
+ else if(c.worldSwitchTruthy){pass=!!state.world.switches[c.worldSwitchTruthy];label=`switch ${c.worldSwitchTruthy} = true`}
+ else if(c.worldSwitchFalsy){pass=!state.world.switches[c.worldSwitchFalsy];label=`switch ${c.worldSwitchFalsy} = false`}
+ else if(c.visited){pass=hasVisited(c.visited);label=`visited ${c.visited}`}
+ else if(c.notVisited){pass=!hasVisited(c.notVisited);label=`not visited ${c.notVisited}`}
+ else if(c.contextEquals){pass=context[c.contextEquals.key]===c.contextEquals.value;label=`context.${c.contextEquals.key} == ${c.contextEquals.value}`}
+ return{pass,label}
+}
+function inspectEvent(def){
+ const context={map:state.map},tr=def.trigger||{};const checks=[];
+ if(tr.map)checks.push({pass:tr.map===state.map,label:`map == ${tr.map}`});
+ for(const c of def.when||[])checks.push(conditionExplanation(c,context));
+ const available=checks.every(c=>c.pass);return{def,available,checks}
+}
+function renderStoryInspector(){const box=devEl('devStoryInspector');if(!box)return;const candidates=EVENT_DEFS.filter(e=>!e.trigger?.map||e.trigger.map===state.map||e.id.startsWith('alpha.')).map(inspectEvent);box.innerHTML=candidates.map(x=>`<div class="dev-story-event ${x.available?'available':'blocked'}"><b>${x.def.id} — ${x.available?'EVENT AVAILABLE':'BLOCKED'}</b>${x.checks.length?x.checks.map(c=>`<div class="dev-cond ${c.pass?'pass':'fail'}">${c.pass?'PASS':'FAIL'} · ${c.label}</div>`).join(''):'<div class="dev-cond pass">PASS · no conditions</div>'}</div>`).join('')||'<em>イベントなし</em>'}
+function renderFlags(){const box=devEl('devActiveFlags');if(!box)return;const legacy=knownLegacyFlags().sort().map(k=>`flag:${k} = ${structuredCondition(k)}`);const switches=Object.entries(state.world.switches||{}).sort(([a],[b])=>a.localeCompare(b)).map(([k,v])=>`switch:${k} = ${!!v}`);const eventIds=[...new Set([...EVENT_DEFS.map(e=>e.id),...Object.keys(state.events.completed||{})])].sort();const events=eventIds.map(k=>`one-shot:${k} = ${isEventComplete(k)}`);box.textContent=['[Story/World compatibility flags]',...legacy,'','[World switches]',...(switches.length?switches:['(none)']),'','[One-shot events]',...events].join('\n')}
+function renderRuntime(){const box=devEl('devRuntime');if(!box)return;const p=state.party[0];box.textContent=[`Map: ${state.map}  (${state.x},${state.y}) dir=${state.dir}`,`Story: ${state.story.stage}`,`Chapter: ${state.story.chapter}`,`Objective: ${state.story.objective}`,`Karen: Lv.${p.level} HP ${p.hp}/${p.maxHp} MP ${p.mp}/${p.maxMp}`,`Gold: ${state.gold}`,`BGM: ${AUDIO.theme} / sound=${AUDIO.enabled}`,`Last Event: ${DEV_STATE.lastEvent||'-'}`,`Save Schema: ${SAVE_SCHEMA}`,`State: ${DEV_STATE.tainted?'DEV TAINTED — normal save protected':'clean'}`].join('\n')}
+function renderLogs(){const box=devEl('devLog');if(!box)return;box.textContent=(GC.Log?.get()?.slice(-60)||[]).map(e=>`${e.time.slice(11,19)} [${e.type}] ${e.message}${e.data?' '+JSON.stringify(e.data):''}`).join('\n')||'(log empty)';box.scrollTop=box.scrollHeight}
+function refreshSnapshots(){const el=devEl('devSnapshotSelect');if(!el)return;const snaps=readSnapshots();setOptions(el,snaps.map(s=>[s.id,`${s.name} · ${new Date(s.created).toLocaleString()}`]),el.value)}
+function syncPlayerInputs(){const sel=devEl('devHeroSelect');if(!sel)return;const p=state.party.find(x=>x.id===sel.value)||state.party[0];sel.value=p.id;devEl('devLevel').value=p.level;devEl('devExp').value=p.exp;devEl('devHp').value=p.hp;devEl('devMp').value=p.mp;devEl('devGold').value=state.gold}
+function refresh(){if(!DEV_STATE.open)return;renderRuntime();renderStoryInspector();renderFlags();renderLogs();syncPlayerInputs();refreshSnapshots()}
+function toggle(force){DEV_STATE.open=force===undefined?!DEV_STATE.open:!!force;devEl('developerPanel')?.classList.toggle('hidden',!DEV_STATE.open);if(DEV_STATE.open){populateStaticControls();refresh()}else canvas?.focus()}
+function populateStaticControls(){
+ setOptions(devEl('devStoryStage'),STORY_ORDER.map(s=>[s,`${s} · ${STORY_FLOW[s]?.objective||''}`]),state.story.stage);
+ setOptions(devEl('devFlagSelect'),[...new Set([...knownLegacyFlags(),...Object.keys(state.world.switches||{})])].sort().map(k=>[k,k]),devEl('devFlagSelect')?.value);
+ setOptions(devEl('devMapSelect'),Object.keys(maps).sort().map(id=>[id,`${id} · ${maps[id].name}`]),state.map);
+ setOptions(devEl('devEventSelect'),EVENT_DEFS.map(e=>[e.id,e.id]),devEl('devEventSelect')?.value);
+ setOptions(devEl('devBattleSelect'),Object.keys(battles).map(id=>[id,`${id} · ${battles[id].name}`]),devEl('devBattleSelect')?.value);
+ setOptions(devEl('devHeroSelect'),state.party.map(p=>[p.id,p.name]),devEl('devHeroSelect')?.value||state.party[0].id);
+ setOptions(devEl('devItemSelect'),Object.keys(ITEM_DEFS).map(id=>[id,id]),devEl('devItemSelect')?.value);
+ devEl('devEncounters').checked=DEV_STATE.settings.encounters;devEl('devInvincible').checked=DEV_STATE.settings.invincible;devEl('devInstantVictory').checked=DEV_STATE.settings.instantVictory;devEl('devMoveDelay').value=DEV_STATE.settings.moveDelay;devEl('devShowCollision').checked=DEV_STATE.settings.showCollision;devEl('devShowNpcCoords').checked=DEV_STATE.settings.showNpcCoords;devEl('devShowPlayerCoords').checked=DEV_STATE.settings.showPlayerCoords;devEl('devShowMapId').checked=DEV_STATE.settings.showMapId
+}
+function safeSpawn(mapId){const preferred=INTERIOR_MAPS.includes(mapId)?[11,11]:[11,13];return nearestSafeTile(mapId,preferred[0],preferred[1])}
+function warp(mapId){if(!maps[mapId])return false;const [x,y]=safeSpawn(mapId);setMap(mapId,x,y,'up',[[x+1,y],[x+2,y],[x+3,y]]);markTainted('Developer Map Warp');refresh();return true}
+function applyStoryStage(stage){if(!STORY_ORDER.includes(stage))return false;if(typeof confirm==='function'&&!confirm(`Story Stateを ${stage} へ安全適用します。Developer状態になります。`))return false;applyCanonicalAlphaStage(state,stage);const loc=DEV_STAGE_LOCATION[stage];if(loc){const [map,x,y,dir]=loc,sp=nearestSafeTile(map,x,y);setMap(map,sp[0],sp[1],dir,[[sp[0]+1,sp[1]],[sp[0]+2,sp[1]],[sp[0]+3,sp[1]]])}markTainted('Developer Story State change');renderHud();draw();refresh();return true}
+function applyFlag(name,value){if(!name)return false;setStructuredCondition(name,!!value);reconcileStoryState(state);markTainted('Developer Flag change: '+name);renderHud();draw();refresh();return true}
+function launchEvent(id,force=false){const def=EVENT_DEFS.find(e=>e.id===id);if(!def)return false;if(!force){const inspection=inspectEvent(def);if(!inspection.available){GC.Log?.warn('Developer event blocked by conditions',{id,checks:inspection.checks});refresh();return false}}markTainted('Developer Event Launcher: '+id);noteEvent(id);playEventDialogue(def,()=>{applyEventEffects(def,{map:state.map,developer:true,forced:force});refresh()});return true}
+function launchBattle(id){if(!battles[id]||state.battle)return false;markTainted('Developer Battle Launcher: '+id);startBattle(id,false);refresh();return true}
+function launchKarenPrototype(mode='portraitOn',renderMode='pixel48-full'){if(GC.Cinematic?.isActive?.())return false;if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started)hideTitle();markTainted('Developer Karen Pixel Acting Prototype');toggle(false);GC.Cinematic?.startKarenPrototype?.({mode,renderMode}).then(()=>refresh());return true}
+function applyPlayerDebug(){const hero=state.party.find(p=>p.id===devEl('devHeroSelect').value)||state.party[0],level=Math.max(1,Math.min(MAX_LEVEL,Number(devEl('devLevel').value)||hero.level)),stats=calculateBaseStatsAtLevel(hero.id,level);hero.level=level;hero.exp=Math.max(0,Number(devEl('devExp').value)||0);if(stats){hero.maxHp=stats.maxHp;hero.maxMp=stats.maxMp;hero.atk=stats.atk;hero.def=stats.def;hero.spd=stats.spd}hero.hp=Math.max(0,Math.min(hero.maxHp,Number(devEl('devHp').value)||0));hero.mp=Math.max(0,Math.min(hero.maxMp,Number(devEl('devMp').value)||0));state.gold=Math.max(0,Math.floor(Number(devEl('devGold').value)||0));markTainted('Developer Player Debug');renderHud();draw();refresh()}
+function applyItemDebug(){const id=devEl('devItemSelect').value;if(!ITEM_DEFS[id])return;state.inventory[id]=Math.max(0,Math.floor(Number(devEl('devItemQty').value)||0));markTainted('Developer Item Debug: '+id);renderHud();refresh()}
+function readSnapshots(){try{const v=JSON.parse(localStorage.getItem(DEV_SNAPSHOT_KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
+function writeSnapshots(v){localStorage.setItem(DEV_SNAPSHOT_KEY,JSON.stringify(v.slice(-20)))}
+function saveSnapshot(name='checkpoint'){if(transientUiActive()){GC.Log?.warn('Debug Snapshot rejected during transient state');refresh();return false}const list=readSnapshots(),id='snap-'+Date.now();list.push({id,name:String(name||'checkpoint'),created:Date.now(),payload:serializeSave()});writeSnapshots(list);GC.Log?.info('Debug Snapshot Save',{id,name});refresh();return true}
+function loadSnapshot(id){const snap=readSnapshots().find(s=>s.id===id);if(!snap)return false;const next=migrateLoaded(snap.payload);clearTransientPanels();replaceState(next);VISUAL.map=null;setMusic(mapMusicTheme(state.map));if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started)hideTitle();markTainted('Debug Snapshot Restore');GC.Log?.info('Debug Snapshot Load',{id,name:snap.name});renderHud();draw();refresh();return true}
+function deleteSnapshot(id){writeSnapshots(readSnapshots().filter(s=>s.id!==id));refresh()}
+function resetOptions(){DEV_STATE.settings={...DEV_SETTINGS_DEFAULTS};populateStaticControls();draw();refresh()}
+function drawWorldOverlay(c){const st=DEV_STATE.settings,m=maps[state.map];if(st.showCollision){c.save();c.lineWidth=1;for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){const blocked=['T','H','S','W','R','K','Z'].includes(m.tiles[y][x])||m.npcs.some(n=>npcVisible(n)&&n.x===x&&n.y===y)||m.objects.some(o=>o.x===x&&o.y===y&&!objectCleared(o.id)&&!['gate','exit','northExit','southExit','roadSign','milestone','banner','rations'].includes(o.id));if(blocked){c.fillStyle='rgba(220,65,65,.15)';c.fillRect(x*TILE,y*TILE,TILE,TILE);c.strokeStyle='rgba(255,80,80,.5)';c.strokeRect(x*TILE+.5,y*TILE+.5,TILE-1,TILE-1)}}c.restore()}if(st.showNpcCoords){c.save();c.font='9px monospace';c.fillStyle='#ffe39a';for(const n of m.npcs.filter(npcVisible))c.fillText(`${n.id} ${n.x},${n.y}`,n.x*TILE,n.y*TILE-2);c.restore()}if(st.showPlayerCoords){c.save();c.font='bold 10px monospace';c.fillStyle='#fff';c.fillText(`P ${state.x},${state.y}`,state.x*TILE,state.y*TILE-5);c.restore()}if(st.showMapId){c.save();c.font='bold 12px monospace';c.fillStyle='#fff';c.fillText(`MAP ${state.map}`,8,16);c.restore()}}
+function bind(){
+ devEl('devClose')?.addEventListener('click',()=>toggle(false));devEl('devApplyStory')?.addEventListener('click',()=>applyStoryStage(devEl('devStoryStage').value));devEl('devApplyFlag')?.addEventListener('click',()=>applyFlag(devEl('devFlagSelect').value,devEl('devFlagValue').value==='true'));devEl('devWarp')?.addEventListener('click',()=>warp(devEl('devMapSelect').value));devEl('devEventNormal')?.addEventListener('click',()=>launchEvent(devEl('devEventSelect').value,false));devEl('devEventForce')?.addEventListener('click',()=>launchEvent(devEl('devEventSelect').value,true));devEl('devBattleLaunch')?.addEventListener('click',()=>launchBattle(devEl('devBattleSelect').value));devEl('devApplyPlayer')?.addEventListener('click',applyPlayerDebug);devEl('devApplyItem')?.addEventListener('click',applyItemDebug);devEl('devHeroSelect')?.addEventListener('change',syncPlayerInputs);
+ const bindSetting=(id,key,kind='check')=>devEl(id)?.addEventListener('change',e=>{DEV_STATE.settings[key]=kind==='number'?Math.max(20,Math.min(250,Number(e.target.value)||88)):!!e.target.checked;draw();refresh()});bindSetting('devEncounters','encounters');bindSetting('devInvincible','invincible');bindSetting('devInstantVictory','instantVictory');bindSetting('devMoveDelay','moveDelay','number');bindSetting('devShowCollision','showCollision');bindSetting('devShowNpcCoords','showNpcCoords');bindSetting('devShowPlayerCoords','showPlayerCoords');bindSetting('devShowMapId','showMapId');
+ devEl('devKaren48Portrait')?.addEventListener('click',()=>launchKarenPrototype('portraitOn','pixel48-full'));devEl('devKaren48NoPortrait')?.addEventListener('click',()=>launchKarenPrototype('portraitOff','pixel48-full'));devEl('devKaren48Motion')?.addEventListener('click',()=>launchKarenPrototype('motionOnly','pixel48-full'));devEl('devKaren44Portrait')?.addEventListener('click',()=>launchKarenPrototype('portraitOn','pixel48-medium'));devEl('devKaren44NoPortrait')?.addEventListener('click',()=>launchKarenPrototype('portraitOff','pixel48-medium'));devEl('devKaren44Motion')?.addEventListener('click',()=>launchKarenPrototype('motionOnly','pixel48-medium'));devEl('devKaren41Motion')?.addEventListener('click',()=>launchKarenPrototype('motionOnly','pixel48-compact'));devEl('devKaren32Baseline')?.addEventListener('click',()=>launchKarenPrototype('motionOnly','legacy32'));
+ devEl('devSnapshotSave')?.addEventListener('click',()=>saveSnapshot(devEl('devSnapshotName').value));devEl('devSnapshotLoad')?.addEventListener('click',()=>loadSnapshot(devEl('devSnapshotSelect').value));devEl('devSnapshotDelete')?.addEventListener('click',()=>deleteSnapshot(devEl('devSnapshotSelect').value));devEl('devValidate')?.addEventListener('click',()=>{const r=runValidation();devEl('devValidation').textContent=JSON.stringify(r,null,2);refresh()});devEl('devClearLog')?.addEventListener('click',()=>{GC.Log?.clear();refresh()});devEl('devResetOptions')?.addEventListener('click',resetOptions)
+}
+bind();
+GC.Dev={state:DEV_STATE,settings:DEV_STATE.settings,getSettings:()=>DEV_STATE.settings,toggle,refresh,markTainted,clearTaint,isStateTainted,noteEvent,inspectEvent,applyStoryStage,applyFlag,warp,launchEvent,launchBattle,launchKarenPrototype,saveSnapshot,loadSnapshot,deleteSnapshot,readSnapshots,drawWorldOverlay,resetOptions};
+// Keep settings reference stable for systems that read GC.Dev.settings directly.
+Object.defineProperty(GC.Dev,'settings',{get:()=>DEV_STATE.settings});
+
+</script>
+  <script>
+'use strict';
+const ALPHA_SESSION={started:false};
+function updateTitleContinue(){const b=$('titleContinue');if(b)b.disabled=!(localStorage.getItem(SAVE_KEY)||localStorage.getItem(SAVE_BACKUP_KEY))}
+function hideTitle(){const t=$('titleScreen');if(t)t.classList.add('hidden');ALPHA_SESSION.started=true;canvas.focus()}
+function showAlphaIntro(){say('ナレーション','戦争が始まって四年。|王都から遠い[[リュネ村]]にも、食料不足の影響が出始めていた。<br><br>今日は子どもたちも大人たちも、いつも通り村で暮らしている。||村を歩き、人々に話しかけてみよう。')}
+function beginAlphaNewGame(clearSave=false){resetState();GC.Dev?.clearTaint?.();if(clearSave){localStorage.removeItem(SAVE_KEY);localStorage.removeItem(SAVE_BACKUP_KEY)}$('battlePanel').classList.add('hidden');$('levelUpPanel').classList.add('hidden');VISUAL.map=null;setMusic(mapMusicTheme(state.map));renderHud();draw();hideTitle();GC.Log?.info('New Game');showAlphaIntro();updateTitleContinue()}
+function continueAlphaFromTitle(){if(!load(true)){updateTitleContinue();return}hideTitle();say('システム','セーブ地点から再開します。')}
+function primaryAction(){if(!ALPHA_SESSION.started)return;if(!$('dialogueBox').classList.contains('hidden')){if(dialogueTyping()){finishDialogueTyping();return}if(dialogueChoices.length)activateDialogueChoice();else if(dialogueContinue){const fn=dialogueContinue;closeDialogue(false);fn()}else closeDialogue();return}interact()}
+function handleKeydown(e){if(e.key==='F2'){e.preventDefault();GC.Dev?.toggle?.();return}ensureAudio();if(!ALPHA_SESSION.started){if((e.key==='Enter'||e.key===' ')&&!e.repeat){const active=document.activeElement;if(active&&['titleNewGame','titleContinue'].includes(active.id))return;e.preventDefault();beginAlphaNewGame(false)}return}if($('levelUpPanel')&&!$('levelUpPanel').classList.contains('hidden')){if(e.key==='Enter'||e.key===' '){e.preventDefault();$('levelUpContinue').click()}return}if(!$('modal').classList.contains('hidden')){if(e.key==='Escape')$('modal').classList.add('hidden');return}const k=e.key.toLowerCase();if(state.battle)return;if(isInputLocked()&&$('dialogueBox').classList.contains('hidden'))return;if(!$('dialogueBox').classList.contains('hidden')){if(dialogueTyping()){if(k==='enter'||k===' '){e.preventDefault();if(!e.repeat)finishDialogueTyping()}return}if(dialogueChoices.length&&['arrowleft','arrowup','a','w'].includes(k)){e.preventDefault();dialogueChoiceIndex=(dialogueChoiceIndex-1+dialogueChoices.length)%dialogueChoices.length;refreshChoiceHighlight();return}if(dialogueChoices.length&&['arrowright','arrowdown','d','s'].includes(k)){e.preventDefault();dialogueChoiceIndex=(dialogueChoiceIndex+1)%dialogueChoices.length;refreshChoiceHighlight();return}if(k==='enter'||k===' '){e.preventDefault();if(!e.repeat)primaryAction();return}if(k==='escape'&&!dialogueChoices.length){e.preventDefault();closeDialogue();return}return}if(['arrowup','w'].includes(k)){e.preventDefault();move('up')}else if(['arrowdown','s'].includes(k)){e.preventDefault();move('down')}else if(['arrowleft','a'].includes(k)){e.preventDefault();move('left')}else if(['arrowright','d'].includes(k)){e.preventDefault();move('right')}else if(k==='enter'||k===' '){e.preventDefault();if(!e.repeat)primaryAction()}else if(k==='m')openMenu()}
+function bindAppControls(){document.addEventListener('keydown',handleKeydown);$('titleNewGame')?.addEventListener('click',()=>{ensureAudio();beginAlphaNewGame(false)});$('titleContinue')?.addEventListener('click',()=>{ensureAudio();continueAlphaFromTitle()});document.querySelectorAll('[data-move]').forEach(b=>b.addEventListener('click',()=>move(b.dataset.move)));$('mobileAct')?.addEventListener('click',()=>{ensureAudio();primaryAction()});$('btnSound')?.addEventListener('click',toggleSound);$('btnSave')?.addEventListener('click',()=>save(false));$('btnLoad')?.addEventListener('click',()=>load(false));$('btnRestart')?.addEventListener('click',restart);$('modalClose')?.addEventListener('click',()=>$('modal').classList.add('hidden'));$('modal')?.addEventListener('click',e=>{if(e.target===$('modal'))$('modal').classList.add('hidden')});canvas.addEventListener('click',()=>canvas.focus())}
+function boot(){bindAppControls();const validation=GC.Validation?.runValidation?.();if(validation&&!validation.ok)GC.Log?.error('Boot validation failed',validation);renderHud();draw();updateTitleContinue();GC.Log?.info('Boot complete')}
+boot();
+GC.App={ALPHA_SESSION,updateTitleContinue,hideTitle,showAlphaIntro,beginAlphaNewGame,continueAlphaFromTitle,primaryAction,handleKeydown,boot};
+
+</script>
 </body>
 </html>
