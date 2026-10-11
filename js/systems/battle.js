@@ -46,6 +46,12 @@ function checkpointEnemyIntent(b){
  };
  // One gentle, clear defensive decision in the first mandatory encounter.
  // Later wolf turns keep the standard AI to avoid a scripted-feeling entire fight.
+ if(b.id==='crawler'&&b.turn===1){
+  const living=activeRouteParty().filter(p=>p.hp>0);
+  if(!living.length)return null;
+  return {target:living.find(p=>p.id==='triton')||living[0],bonus:0,
+   note:'硬い殻はトリトンの崩しで弱体化。マーガレットの氷槍なら攻撃も鈍る。'}
+ }
  if(b.id==='wolves'&&b.turn===1){
   const living=activeRouteParty().filter(p=>p.hp>0);
   if(!living.length)return null;
