@@ -33,6 +33,8 @@ function applyEventEffect(effect,context={}){
 }
 function applyEventEffects(def,context={}){for(const effect of def?.effects||[])applyEventEffect(effect,context);if(def?.id)GC.Log?.info('Story Event Effects',{id:def.id,stage:state.story.stage,context});GC.Dev?.noteEvent?.(def?.id||null);GC.Dev?.refresh?.();return def}
 function playEventDialogue(def,after=null){if(!def){after?.();return false}const finish=()=>{if(def.postLines?.length)saySequence(def.postLines,after);else after?.()};if(def.lines?.length)saySequence(def.lines,finish);else finish();return true}
+function grayCrownMorality(){const v=state.events?.choices||{};const lethal=Object.keys(v).filter(k=>k.startsWith('moral.lethal.')&&v[k]==='kill').length;return{lethal,ashCrownUnlocked:lethal>=1}}
+function recordGrayCrownMoralChoice(id,decision){if(!['kill','spare'].includes(decision))return false;const key='moral.lethal.'+id;if(state.events.choices[key])return false;state.events.choices[key]=decision;addJournal(decision==='kill'?'自ら命を奪った。戦闘の勝敗とは異なる、取り返せない選択。':'抵抗できない敵を追撃せず、命を奪わなかった。');renderHud();return true}
 function finishSeradGravesChoice(choice){
  const lines={
   care:[{speaker:'ナレーション',text:'四人は崩れた土を直し、どの墓にも同じ大きさの小石を置いた。'},
@@ -260,7 +262,7 @@ function inlineNpcEvent(id){
  if(state.map==='returnroad'&&id==='returnScout')return say('王国軍伝令','「勇者一行！？ 生きていたのか。王都ではもう……いや、総司令部へ急げ。君たちに見せられない記録を処分しているという噂がある」')
  if(state.map==='finalfield'&&id==='decisionGuide'){
   if(!(structuredCondition('finalKingdomPlan')&&structuredCondition('finalEmpirePlan')))return say('マーガレット','「決める前に両軍の作戦を確認しよう。王国側と帝国側、それぞれの前線を見ておきたい」');
-  return say('カレン','「王国が戦争を始めた。でも、帝国の反攻で今の王国民まで潰していいわけじゃない。逆に王国の総攻撃を通せば、聖域の人たちがまた戦場になる。……ここからは、私たちが誰を守るために剣を使うか決める」',[{label:'アルディナ王国側に立つ',fn:()=>{state.finalChoice='kingdom';state.objective='北へ進み、帝国本陣へ向かう';addJournal('最終局面で、故郷と王国民を守るためアルディナ王国側に立つと決めた。');renderHud();say('トリトン','「決めたなら行こう。誰かに決められた勇者じゃなく、私たちで選んだんだ」')}},{label:'レグノア帝国側に立つ',fn:()=>{state.finalChoice='empire';state.objective='北へ進み、王国軍総司令部へ向かう';addJournal('最終局面で、聖域侵攻と勇者制度を止めるためレグノア帝国側に協力すると決めた。');renderHud();say('マーガレット','「自分の国に剣を向けることになる。それでも、ここまで見てきたものを無かったことにはできない」')}}])
+  return say('カレン','「王国が戦争を始めた。でも、帝国の反攻で今の王国民まで潰していいわけじゃない。逆に王国の総攻撃を通せば、聖域の人たちがまた戦場になる。……ここからは、私たちが誰を守るために剣を使うか決める」',[{label:'アルディナ王国側に立つ',fn:()=>{state.finalChoice='kingdom';state.objective='北へ進み、帝国本陣へ向かう';addJournal('最終局面で、故郷と王国民を守るためアルディナ王国側に立つと決めた。');renderHud();say('トリトン','「決めたなら行こう。誰かに決められた勇者じゃなく、私たちで選んだんだ」')}},{label:'レグノア帝国側に立つ',fn:()=>{state.finalChoice='empire';state.objective='北へ進み、王国軍総司令部へ向かう';addJournal('最終局面で、聖域侵攻と勇者制度を止めるためレグノア帝国側に協力すると決めた。');renderHud();say('マーガレット','「自分の国に剣を向けることになる。それでも、ここまで見てきたものを無かったことにはできない」')}},...(grayCrownMorality().ashCrownUnlocked?[{label:'両国に従わず、灰冠の道を選ぶ',fn:()=>{state.finalChoice='ashcrown';state.objective='灰冠ルート・未完成';addJournal('王国にも帝国にも従わず、灰冠の道を選んだ。');renderHud();say('マーガレット','「両国を倒した後に、何が残るというの？」')}}]:[])])
  }
  if(state.map==='imperialcamp'&&id==='shion')return saySequence([{speaker:'皇帝シオン',text:'「王国の勇者。ここまで来た以上、退けとは言わない」'},{speaker:'カレン',text:'「私たちは王国が正しかったからここにいるんじゃない。今、王国の人たちを守るために来た」'},{speaker:'皇帝シオン',text:'「ならば立場は明確だ」'}],()=>showWorldSkeletonEnding('kingdom'))
  if(state.map==='royalcamp'&&id==='granzFinal')return saySequence([{speaker:'総司令グランツ',text:'「まさか君たちがこちらへ剣を向けるとはな」'},{speaker:'カレン',text:'「国を嫌いになったわけじゃない。だから、これ以上同じことを続けさせたくない」'},{speaker:'総司令グランツ',text:'「それもまた、君が選んだ勇者の形か」'}],()=>showWorldSkeletonEnding('empire'))
