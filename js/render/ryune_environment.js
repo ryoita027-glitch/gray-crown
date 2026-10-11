@@ -111,6 +111,49 @@ const RyuneEnvironment=(()=>{
    rect(c,'#664d35',px+17,py+13,3,12);rect(c,'#c19b68',px+8,py+15,8,2)
   }
  }
+ function houseIdentity(c,kind,x,y){
+  // Each named residence gets one unmistakable silhouette rather than
+  // four palette swaps of the same prefab. Does not change collision.
+  if(kind==='orphanage'){
+   // A long, low communal canopy: caring interior visible from the village.
+   rect(c,'#566347',x+8,y+50,80,4);
+   rect(c,'#83966b',x+11,y+48,74,6);
+   for(let i=0;i<4;i++)rect(c,'#bac499',x+15+i*18,y+51,14,3);
+   // Bench under the front right window, away from doorway.
+   rect(c,'#625540',x+64,y+84,22,4);
+   rect(c,'#927a54',x+65,y+81,20,4);
+   rect(c,'#58452f',x+67,y+87,2,8);
+   rect(c,'#58452f',x+81,y+87,2,8);
+  }else if(kind==='mayorhouse'){
+   // Taller central dormer and formal stone step, not a sacred emblem.
+   rect(c,'#4e5561',x+30,y+9,36,23);
+   rect(c,'#8794a4',x+34,y+13,28,19);
+   rect(c,'#5c6b75',x+39,y+15,17,14);
+   rect(c,'#bfcbc5',x+42,y+15,8,5);
+   rect(c,'#524a47',x+47,y+15,2,14);
+   rect(c,'#55515a',x+28,y+8,40,5);
+   rect(c,'#a4a5a0',x+30,y+6,35,4);
+   rect(c,'#9c9486',x+34,y+94,28,4);
+   rect(c,'#bcb0a0',x+29,y+98,38,3);
+  }else if(kind==='cottage'){
+   // Low kitchen chimney, exposed repair timbers and a drying herb rack.
+   rect(c,'#5a4b40',x+69,y+7,12,26);
+   rect(c,'#a58e73',x+71,y+8,8,21);
+   rect(c,'#4b4241',x+67,y+6,16,5);
+   for(let k=0;k<3;k++){rect(c,'#62503c',x+74,y+54+k*11,2,7);rect(c,'#a99375',x+73,y+54+k*11,4,2)}
+   rect(c,'#66533c',x+14,y+94,29,3);
+   for(let k=0;k<4;k++)rect(c,k%2?'#8fa077':'#a6ae83',x+16+k*6,y+90,3,6);
+  }else{
+   // Family house: wood pile and a visible smoke vent, no invented weapon crest.
+   rect(c,'#514139',x+14,y+8,10,19);
+   rect(c,'#a38469',x+16,y+10,6,16);
+   rect(c,'#4d413a',x+12,y+6,14,4);
+   for(let k=0;k<3;k++){
+    rect(c,'#7a593f',x+9+k*6,y+84,6,8);
+    rect(c,'#b58e64',x+10+k*6,y+85,4,3)
+   }
+  }
+ }
  function building(c,h){
   const kind=h.x===3?(h.y===2?'village':'mayorhouse'):(h.y===2?'orphanage':'cottage');
   const pal=palette[kind],x=h.x*32,y=h.y*32;
@@ -151,6 +194,7 @@ const RyuneEnvironment=(()=>{
    rect(c,'#b38a61',x+10,y+81,15,10);
    rect(c,'#987a53',x+67,y+81,13,6);
   }
+  houseIdentity(c,kind,x,y)
  }
  function outdoors(c){lowProps(c);for(const h of villageHouses)building(c,h)}
  function rug(c,map,x,y,w,h){const color=roomPalette[map].rug;rect(c,'#594d40',x,y,w,h);rect(c,color,x+3,y+3,w-6,h-6);for(let yy=y+8;yy<y+h-6;yy+=12)rect(c,'#d3c2a4',x+7,yy,w-14,1)}
