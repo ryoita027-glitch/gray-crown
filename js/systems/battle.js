@@ -44,6 +44,17 @@ function checkpointEnemyIntent(b){
   empireProtect:{order:['sophie','karen'],bonus:1,note:'捕虜の治療担当を牽制。庇うで援護できる。'},
   empireAdvance:{order:['triton','karen'],bonus:3,note:'追撃を止める前衛へ集中攻撃。回復と防御を計画しよう。'}
  };
+ // One gentle, clear defensive decision in the first mandatory encounter.
+ // Later wolf turns keep the standard AI to avoid a scripted-feeling entire fight.
+ if(b.id==='wolves'&&b.turn===1){
+  const living=activeRouteParty().filter(p=>p.hp>0);
+  if(!living.length)return null;
+  const target=living.find(p=>p.id==='sophie')||living[0];
+  const scouted=state.events?.choices?.['early.wolfScout']==='read';
+  return {target,bonus:0,scouted,note:scouted
+   ?'足跡から後衛への回り込みを予測。カレンの庇うで防げる（偵察で被害軽減）。'
+   :'後衛への回り込みに警戒。カレンの庇うで守れる。'}
+ }
  const pattern=patterns[b.id];if(!pattern)return null;
  const living=activeRouteParty().filter(p=>p.hp>0);if(!living.length)return null;
  const preferred=pattern.order[(Math.max(1,b.turn)-1)%pattern.order.length];
@@ -62,7 +73,7 @@ function selectEnemyTarget(alive,b,random=Math.random){
 }
 function enemyTurn(){const b=state.battle,bd=battles[b.id],foes=livingEnemies().slice();state.locked=true;let i=0;const step=()=>{if(i>=foes.length){activeRouteParty().forEach(p=>{p.guard=false;if(p.buff)p.buff=Math.max(0,p.buff-1)});if(activeRouteParty().every(p=>p.hp<=0))return battleLose();b.turn++;b.actor=0;state.locked=false;renderBattle();return}const e=foes[i++];if(bd.boss&&e.phase===1&&e.hp<e.maxHp*.65){e.phase=2;e.atk+=2;battleLog(`<strong class="boss-phase">PHASE II — ${bd.phase2||'攻勢が変化した'}</strong>`)}else if(bd.boss&&e.phase===2&&e.hp<e.maxHp*.3){e.phase=3;e.atk+=3;e.def+=1;battleLog(`<strong class="boss-phase">FINAL PHASE — ${bd.phase3||'全力を解放した'}</strong>`)}const alive=activeRouteParty().filter(p=>p.hp>0);if(!alive.length)return battleLose();// Telegraph tactical danger while preserving original fair target-selection rules.
  if(bd.boss&&e.phase>=2)battleLog('警戒：'+e.name+'が攻勢を強めている。防御と回復を確認しよう。');
- const focus=checkpointEnemyIntent(b);const originallyTargeted=focus?.target||selectEnemyTarget(alive,b);const t=GC.CommercialTactics?.protect?.(activeRouteParty(),originallyTargeted)||originallyTargeted;let d=damageFormula(e.atk+(focus?.bonus||0),t.def);if(t.guard)d=Math.max(1,Math.floor(d/2));if(GC.Dev?.settings?.invincible)d=0;t.hp=Math.max(0,t.hp-d);if(t!==originallyTargeted)battleLog(`${t.name}が${originallyTargeted.name}を庇った！ ${e.name}の攻撃を引き受け、${d}ダメージ。`);if(t!==originallyTargeted)sfx('guard');else battleLog(`${e.name}の攻撃。${t.name}に${d}ダメージ。`);const ev=$('enemyVisual');if(ev){ev.classList.remove('shake');void ev.offsetWidth;ev.classList.add('shake')}battlePop('-'+d,'ally');sfx('hit');renderBattle();setTimeout(step,360)};step()}
+ const focus=checkpointEnemyIntent(b);const originallyTargeted=focus?.target||selectEnemyTarget(alive,b);const t=GC.CommercialTactics?.protect?.(activeRouteParty(),originallyTargeted)||originallyTargeted;let d=damageFormula(e.atk+(focus?.bonus||0),t.def);if(focus?.scouted)d=Math.max(1,d-2);if(t.guard)d=Math.max(1,Math.floor(d/2));if(GC.Dev?.settings?.invincible)d=0;t.hp=Math.max(0,t.hp-d);if(t!==originallyTargeted)battleLog(`${t.name}が${originallyTargeted.name}を庇った！ ${e.name}の攻撃を引き受け、${d}ダメージ。`);if(t!==originallyTargeted)sfx('guard');else battleLog(`${e.name}の攻撃。${t.name}に${d}ダメージ。`);const ev=$('enemyVisual');if(ev){ev.classList.remove('shake');void ev.offsetWidth;ev.classList.add('shake')}battlePop('-'+d,'ally');sfx('hit');renderBattle();setTimeout(step,360)};step()}
 function battleWin(outcome='defeat'){const id=state.battle.id,bd=battles[id],r=bd.reward;GC.Log?.info('Battle End',{id,outcome});const scriptedEvent=findTriggeredEvent('battleWin',id,{outcome,map:state.map});if(scriptedEvent)applyEventEffects(scriptedEvent,{outcome,map:state.map});if(bd.boss)showBossCinematic(bd,true);const rewardGold=outcome==='surrender'?Math.floor(r.gold*.65):r.gold;state.gold+=rewardGold;const levelMessages=[];activeRouteParty().forEach(p=>{p.exp+=r.exp;const ups=applyLevelUps(p);for(const up of ups)levelMessages.push({name:p.name,...up})});battleLog(`${outcome==='surrender'?'戦闘終了':'勝利'}！ ${rewardGold}G、経験値${r.exp}を獲得。`);for(const u of levelMessages)battleLog(`<strong class="level-up">LEVEL UP! ${u.name} Lv.${u.level}　HP+${u.hp} MP+${u.mp} 攻撃+${u.atk} 防御+${u.def} 素早さ+${u.spd}</strong>`);if(r.drop&&Math.random()<r.drop.chance){state.inventory[r.drop.item]=(state.inventory[r.drop.item]||0)+1;battleLog(`${r.drop.item}を1個手に入れた。`)}
  const finalRouteBattle={
   kingdomEvacuation:{route:'kingdom',choice:'evacuate',context:'避難路を確保するため帝国の封鎖兵を退けた。'},
