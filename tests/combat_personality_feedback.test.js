@@ -10,7 +10,7 @@ test('role-specific combat reactions use authentic battle actions without changi
  const start=h.evaluate('state.schema');
  h.evaluate("startBattle('bats'); state.locked=false");
  h.evaluate("battleAction('rally')");
- const log=h.evaluate('state.battle.log.join(" ")');
+ const log=h.getElement('battleLog').innerHTML;
  assert.match(log,/カレン「全員、顔を上げて/);
  assert.equal(h.evaluate('state.schema'),start);
 });
