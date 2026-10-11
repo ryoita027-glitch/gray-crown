@@ -44,6 +44,7 @@ const CommercialQuality=(()=>{
    advice='防御が高い敵：崩しで防御を下げると次の攻撃が通りやすい';
   else if(actor.id==='karen'&&battle.turn===1&&party.filter(p=>p.hp>0).length>=3)
    advice='開戦の選択：号令は全員の火力を高める（重複は上限あり）';
+  if(enemies.length>1)advice+=' ／ 敵カードを選ぶと攻撃対象を切り替えられます';
   return{label:actor.name+'｜'+r.role,advice,actor:actor.id,
    enemyCount:enemies.length,hurt:vulnerable.length};
  }

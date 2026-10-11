@@ -6,7 +6,7 @@ function startBattle(id,fromSymbol=false){if(!$('dialogueBox').classList.contain
 function livingEnemies(){return state.battle.enemies.filter(e=>e.hp>0)}
 function currentActor(){return state.party[state.battle.actor]}
 function selectedEnemy(){if(!state.battle)return null;const b=state.battle;const selected=b.enemies.find((e,i)=>i===b.focusEnemy&&e.hp>0);return selected||livingEnemies()[0]||null}
-function focusEnemy(index){if(!state.battle||state.locked)return false;const b=state.battle,i=Number(index);if(!Number.isInteger(i)||i<0||i>=b.enemies.length||b.enemies[i].hp<=0)return false;b.focusEnemy=i;renderBattle();return true}
+function focusEnemy(index){if(!state.battle||state.locked)return false;const b=state.battle,i=Number(index);if(!Number.isInteger(i)||i<0||i>=b.enemies.length||b.enemies[i].hp<=0)return false;const restoreFocus=typeof document!=='undefined'&&document.activeElement?.dataset?.enemyTarget!==undefined;b.focusEnemy=i;renderBattle();if(restoreFocus)document.querySelector?.('[data-enemy-target="'+i+'"]')?.focus?.();return true}
 function enemyMood(e){if(e.morale==null)return'野生';const r=e.morale/e.maxMorale;if(r<=.2)return'崩れかけ';if(r<=.5)return'動揺';return'戦意あり'}
 function applyMoraleDamage(e,amount){if(e.morale==null)return 0;const d=Math.max(0,Math.min(e.morale,Math.floor(amount)));e.morale-=d;return d}
 function battleSurrender(){const b=state.battle,e=b.enemies[0];state.locked=true;b.outcome='surrender';if($('enemyVisual'))$('enemyVisual').classList.add('surrender');battleLog(`${e.name}は武器を捨て、戦意を失った。`);setTimeout(()=>battleWin('surrender'),420)}
