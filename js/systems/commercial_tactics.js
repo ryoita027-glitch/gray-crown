@@ -33,7 +33,13 @@
    return'　現在、強化された攻勢を受けています。';
   return''
  }
- function hint(actor,b){return(hints[actor?.id]||'')+
-  (b?.enemies.filter(e=>e.hp>0).length>1?'　敵を選んでから行動できます。':'')+bossForecast(b)}
+ function hint(actor,b){
+  const target=targetForHint(b);
+  const comboReady=!!(target&&b?.comboTarget===target&&b.comboActor&&b.comboActor!==actor?.id&&actor?.hp>0);
+  const coordination=comboReady?'　連携可能：同じ敵に攻撃すると追加ダメージ。':'';
+  return(hints[actor?.id]||'')+
+    (b?.enemies.filter(e=>e.hp>0).length>1?'　敵を選んでから行動できます。':'')+coordination+bossForecast(b)
+ }
+ function targetForHint(b){return b?target(b):null}
  GC.CommercialTactics={target,choose,index,options,protect,hint,bossForecast,reset(){current=null;selected=-1}};
 })();
