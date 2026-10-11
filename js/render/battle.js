@@ -26,7 +26,7 @@ function renderBattleStage(){const b=state.battle;if(!b)return;const e=GC.Commer
  const ids=activeRouteParty().map(p=>p.id).join(',');
  if(line.dataset.party!==ids||line.children.length!==activeRouteParty().length){
   line.dataset.party=ids;
-  line.innerHTML=activeRouteParty().map((p,i)=>`<div id="battleHero${i}" data-hero="${p.id}" class="battle-hero sprite" style="left:${i*52}px;background-image:url('assets/characters/${p.id}/${p.id}_idle.png');background-position:0 0"></div>`).join('')
+  line.innerHTML=activeRouteParty().map((p,i)=>`<div id="battleHero${i}" data-hero="${p.id}" class="battle-hero sprite" style="left:${i*56}px;--idle-sheet:url('assets/characters/${p.id}/${p.id}_idle.png');--walk-sheet:url('assets/characters/${p.id}/${p.id}_walk.png')"><span class="battle-sprite-frame" aria-hidden="true"></span></div>`).join('')
  }
  activeRouteParty().forEach((p,i)=>{const node=$('battleHero'+i);if(node){node.classList.toggle('active',i===b.actor);node.classList.toggle('down',p.hp<=0)}});
 }
