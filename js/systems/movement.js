@@ -98,7 +98,7 @@ function move(dir){if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started
  if(state.map==='elsia'&&ny<0&&[11,12].includes(nx)){if(!isEventComplete('metZenith')){say('ゼニス','「まだ見るべきものがある。住民と古い碑文、その両方を見てから来い」');return}enterReturnRoad();return}
  if(state.map==='returnroad'&&ny>=15&&[11,12].includes(nx)){enterElsia();return}
  if(state.map==='returnroad'&&ny<0&&[11,12].includes(nx)){enterCapital(false);return}
- if(state.map==='finalfield'&&ny>=15&&[11,12].includes(nx)){if(state.finalChoice==='ashcrown'&&getWorldSwitch('ashcrownPartySeparated')){say('カレン','「三人と別れた。戻っても、あの頃の四人には戻れない」');return}travelScene('capital',11,1,'down','最終章 — 誰のための勇者か','最後の選択へ向かう','王都側の前線へ戻った。');return}
+ if(state.map==='finalfield'&&ny>=15&&[11,12].includes(nx)){if(state.finalChoice==='ashcrown'&&!!state.events?.choices?.['route.companions.ashcrown']){say('カレン','「三人と別れた。戻っても、あの頃の四人には戻れない」');return}travelScene('capital',11,1,'down','最終章 — 誰のための勇者か','最後の選択へ向かう','王都側の前線へ戻った。');return}
  if(state.map==='finalfield'&&ny<0&&[11,12].includes(nx)){if(!state.finalChoice){say('決断の地点','中央にいる人物に話しかけ、どちら側に立つか決める必要がある。');return}enterFinalBranch();return}
  if(['imperialcamp','royalcamp'].includes(state.map)&&ny>=15&&[11,12].includes(nx)){travelScene('finalfield',11,1,'down','最終章 — 誰のための勇者か','最終決戦の相手へ向かう','両軍がぶつかる前線へ戻った。');return}
  if(isBlocked(nx,ny)){draw();return}state.trail.unshift([state.x,state.y]);state.trail=state.trail.slice(0,5);state.x=nx;state.y=ny;handleStep();draw()}
