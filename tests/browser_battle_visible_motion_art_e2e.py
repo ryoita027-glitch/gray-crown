@@ -4,7 +4,7 @@
 Real Chromium, not a source-only assertion; screenshots are evidence generated
 by this script only after successful execution. Test NOT run by patch author.
 """
-import contextlib, http.server, threading
+import contextlib, http.server, threading, base64, json, mimetypes, re
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 from browser_launch import launch_chromium
@@ -22,6 +22,46 @@ def local_game():
  try:yield f"http://127.0.0.1:{server.server_port}/index.html"
  finally:server.shutdown();server.server_close()
 
+
+def bundled_offline_game():
+ """Run the exact checkout without local HTTP, which restricted browsers can block."""
+ html=(ROOT/"index.html").read_text(encoding="utf-8")
+ css=(ROOT/"css/game.css").read_text(encoding="utf-8")
+ assets={}
+ for file in (ROOT/"assets").rglob("*"):
+  if file.is_file() and file.suffix.lower() in {".png",".jpg",".jpeg",".webp",".svg",".wav",".ogg"}:
+   rel=file.relative_to(ROOT).as_posix()
+   mime=mimetypes.guess_type(file.name)[0] or "application/octet-stream"
+   assets[rel]="data:"+mime+";base64,"+base64.b64encode(file.read_bytes()).decode()
+ for rel,data in assets.items():
+  css=css.replace("../"+rel,data)
+ html=re.sub(r'<link[^>]*href="css/game\.css"[^>]*>',lambda _: "<style>"+css+"</style>",html)
+ setup="""
+ <script>
+ const offlineImages=__IMAGE_MAP__;
+ const oldSrc=Object.getOwnPropertyDescriptor(HTMLImageElement.prototype,'src');
+ Object.defineProperty(HTMLImageElement.prototype,'src',{
+  get(){return oldSrc.get.call(this)},
+  set(url){return oldSrc.set.call(this,offlineImages[url]||url)}
+ });
+ const rewriteImages=()=>{
+  for(const img of document.images){
+   const name=img.getAttribute('src');
+   if(offlineImages[name])img.src=offlineImages[name];
+  }
+ };
+ new MutationObserver(rewriteImages).observe(document,{subtree:true,childList:true,
+   attributes:true,attributeFilter:['src']});
+ </script>
+ """.replace("__IMAGE_MAP__",json.dumps(assets,ensure_ascii=False))
+ html=html.replace("<body>","<body>"+setup,1)
+ def script_sub(match):
+  rel=match.group(1)
+  script=(ROOT/rel).read_text(encoding="utf-8")
+  return "<script>\n"+script.replace("</script>","<\\/script>")+"\n</script>"
+ html=re.sub(r'<script src="([^"]+)"></script>',script_sub,html)
+ return html
+
 def main():
  OUT.mkdir(parents=True,exist_ok=True)
  with local_game() as url,sync_playwright() as pw:
@@ -31,7 +71,11 @@ def main():
     page=browser.new_page(viewport={"width":width,"height":850})
     errors=[]
     page.on("pageerror",lambda err:errors.append(str(err)))
-    page.goto(url,wait_until="networkidle")
+    try:
+     page.goto(url,wait_until="networkidle",timeout=8000)
+    except Exception:
+     # Works in admin-restricted Chrome and uses the same repository files.
+     page.set_content(bundled_offline_game(),wait_until="load",timeout=45000)
     page.locator("#titleNewGame").click()
     page.evaluate("GC.Dialogue.closeDialogue(false)")
     page.wait_for_timeout(400)
