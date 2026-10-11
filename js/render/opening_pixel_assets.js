@@ -158,6 +158,13 @@ const OpeningPixelAssets=(()=>{
   if(job==='merchant'){P(c,'#7d6348',3,20+held,6,8);P(c,'#cfb184',4,20+held,4,3)}
   if(job==='smith'){P(c,'#aab3b4',25,15+held,3,8);P(c,'#665247',23,16+held,7,4)}
   if(job==='elder'){P(c,'#968165',27,15,2,16)}
+  // Reserved, hand-directed details for villagers whose generic role outlines
+  // would otherwise look identical even when their palette is different.
+  if(id==='lulu'){P(c,'#edd19a',headX+headW-1,headY+1,4,3);P(c,'#b96e73',headX+headW,headY,2,2)}
+  if(id==='noa'){P(c,'#d8b8c2',headX-3,headY+4,3,5);P(c,'#8f7091',headX-3,headY+9,2,6)}
+  if(id==='baker'){P(c,'#f1e6d0',14,bodyTop+4,4,2);P(c,'#b48b67',15,bodyTop+8,2,2)}
+  if(id==='capitalInnHost'){P(c,'#e7c394',18,bodyTop+3,3,3);P(c,'#8a6054',20,bodyTop+7,4,2)}
+
  }
  function makeNpc(profile,id){
   const img=canvas(128,128);if(!img)return null;
