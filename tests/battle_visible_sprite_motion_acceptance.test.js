@@ -102,7 +102,7 @@ test('all named NPCs differ by source-drawn shape, not only by swapping palette'
 });
 test('standing workers do not shift their feet; idle civilians do not march in place',()=>{
  const source=read('js/render/opening_pixel_assets.js');
- assert.match(source,/working\?\[0,0\]/);
+ assert.match(source,/step=working\?0:/);
  assert.match(source,/frame=near&&working\?Math\.floor\(now\/460\)%4:0/);
  const worldLife=read('js/render/opening_worldlife.js');
  assert.match(worldLife,/!OpeningPixelAssets\.designs\[n\.id\]\)clothes/);
