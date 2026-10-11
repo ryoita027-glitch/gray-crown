@@ -3,8 +3,11 @@
  * This layer does not award rewards, set flags or generate new encounters. */
 (function(){
  const extras=Object.freeze({
-  road:[{id:'bandit',kind:'defeated',label:'ならず者への対処'},{id:'roadCache',kind:'treasure',label:'街道の物資'}],
-  cave:[{id:'chest1',kind:'treasure',label:'古砦の宝箱（西）'},{id:'chest2',kind:'treasure',label:'古砦の宝箱（東）'},
+  village:[{id:'early.orphanMedicine',kind:'choice',label:'孤児院の薬草相談'}],
+  road:[{id:'bandit',kind:'defeated',label:'ならず者への対処'},{id:'roadCache',kind:'treasure',label:'街道の物資'},
+   {id:'early.merchantCart',kind:'choice',label:'行商人の荷車'}],
+  cave:[{id:'early.caveBanner',kind:'choice',label:'古い軍旗の記憶'},
+   {id:'chest1',kind:'treasure',label:'古砦の宝箱（西）'},{id:'chest2',kind:'treasure',label:'古砦の宝箱（東）'},
    {id:'bats',kind:'defeated',label:'コウモリの群れ'},{id:'crawler',kind:'defeated',label:'石殻ムカデ'}],
   ashroad:[{id:'alpha2.ashroad.priest',kind:'event',label:'従軍僧の話'},
    {id:'alpha2.ashroad.burnedCart',kind:'event',label:'焼けた荷車'},
@@ -15,6 +18,7 @@
  });
  function done(p,s){
   if(p.kind==='event')return !!s.events?.completed?.[p.id];
+  if(p.kind==='choice')return !!s.events?.choices?.[p.id];
   if(p.kind==='treasure')return !!s.world?.treasures?.[p.id];
   return !!s.world?.defeatedSymbols?.[p.id]
  }

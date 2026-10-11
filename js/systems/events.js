@@ -225,10 +225,132 @@ function runTriggeredEvent(type,target,context={}){
    say('前線将校',response);return true
  }
  const def=findTriggeredEvent(type,target,context);if(!def)return false;if(def.id==='alpha.village.appointment'&&GC.RyuneActing?.runAppointment)return GC.RyuneActing.runAppointment(def,context);if(def.id==='alpha.capital.ceremony'&&typeof CapitalActing!=='undefined')return CapitalActing.runCeremony(def,context);GC.Log?.info('Story Event Start',{id:def.id,type,target,map:context.map??state.map});GC.Dev?.noteEvent?.(def.id);playEventDialogue(def,()=>{applyEventEffects(def,context);if(def.postLines?.length===0&&typeof canvas!=='undefined')canvas.focus()});return true}
+
+// Early-game choices are local, optional and save-schema-23 compatible.
+// Record a decision only once; all repeated conversations read that same history.
+
+function commitEarlyCaveBanner(choice){
+ const key='early.caveBanner';
+ if(state.events.choices[key]||!['names','raise'].includes(choice))return false;
+ state.events.choices[key]=choice;
+ setStructuredCondition('banner',true);
+ addJournal(choice==='names'
+  ?'古砦跡の古い軍旗の裏に残る兵の名前を、マーガレットが記録した。'
+  :'古砦跡の古い軍旗をカレンたちが柱へ結び直した。戦争以前の帰る場所の象徴を残した。');
+ renderHud();return true
+}
+function earlyCaveBannerVisit(){
+ const chosen=state.events.choices['early.caveBanner'];
+ if(chosen==='names')return say('マーガレット','「旗の裏の名前は手帳に写した。軍旗の模様より、そこにいた人の名前を忘れたくない」');
+ if(chosen==='raise')return say('カレン','「直した旗がまだ揺れてる。誰が見に来るかは分からないけど、ここで誰かが暮らしてた証拠だから」');
+ return saySequence([
+  {speaker:'ナレーション',text:'古い王国旗が、折れた支柱から垂れている。裏地に小さく縫い付けられたのは勝利の標語ではなく、兵たちの名前だった。'},
+  {speaker:'マーガレット',text:'「今の戦争より前のものね。名前を写せば、後で誰がここにいたか調べられる」'},
+  {speaker:'カレン',text:'「でも、このままじゃ崩れてしまう。誰かが帰れる場所だったって、残したい」'},
+  {speaker:'トリトン',text:'「どっちもできたらいいけど、獣が戻る前に一つ決めよう」'}
+ ],()=>say('カレン','「この旗をどうしよう？」',[
+  {label:'マーガレットと名前を写し取る',fn:()=>finishEarlyCaveBanner('names')},
+  {label:'破れた旗を結び直して残す',fn:()=>finishEarlyCaveBanner('raise')},
+  {label:'今はそのままにしておく',fn:()=>say('マーガレット','「後から戻ってもいいわ。ここにあることだけは覚えておこう」')}
+ ]))
+}
+function finishEarlyCaveBanner(choice){
+ if(!commitEarlyCaveBanner(choice))return say('マーガレット','「この旗については、もう私たちなりに決めたでしょう」');
+ return saySequence(choice==='names'
+  ?[{speaker:'マーガレット',text:'「“兵の名前”を先に。誰がどこの国のために戦ったかより、そこにいたことを残す」'},
+    {speaker:'ソフィ',text:'「何十年たっても、どこかで待っていた人がいるかもしれませんね」'}]
+  :[{speaker:'トリトン',text:'「これで風に持っていかれない。昔の兵士は、ここから帰れたのかな」'},
+    {speaker:'カレン',text:'「分からない。でも、帰ろうとした人がいた場所だって残せた」'}])
+}
+function commitEarlyOrphanMedicine(choice){
+ const key='early.orphanMedicine';
+ if(state.events.choices[key]||!['donate','reserve'].includes(choice))return false;
+ if(choice==='donate'&&(state.inventory['薬草']||0)<1)return false;
+ if(choice==='donate')state.inventory['薬草']--;
+ state.events.choices[key]=choice;
+ addJournal(choice==='donate'
+  ?'リュネ村の孤児院で、旅の薬草を1個渡した。ソフィは出発前にできることを選んだ。'
+  :'孤児院で薬草の不足を知ったが、旅で負傷者を治療できるよう手持ちの薬を残した。');
+ renderHud();return true
+}
+function earlyOrphanVisit(){
+ const decision=state.events.choices['early.orphanMedicine'];
+ if(decision==='donate')return saySequence([
+  {speaker:'孤児院の子',text:'「マルタさんが薬草を受け取ったよ。ソフィお姉ちゃん、ありがとう」'},
+  {speaker:'ソフィ',text:'「薬草だけで治るわけじゃないから、無理しないでね。マルタさんと相談しよう」'}]);
+ if(decision==='reserve')return saySequence([
+  {speaker:'孤児院の子',text:'「ソフィお姉ちゃん、今日は薄いスープでも温かいよ」'},
+  {speaker:'ソフィ',text:'「旅先で使える薬も探してきます。それまでマルタさんの言うことを聞いてね」'}]);
+ return saySequence([
+  {speaker:'孤児院の子',text:'「ソフィお姉ちゃん。テオが熱を出したの。薬草はもうないって」'},
+  {speaker:'ソフィ',text:'「……旅のために薬草を持ってきています。でも、私たちもこれから怪我をするかもしれない」'},
+  {speaker:'マーガレット',text:'「どちらを選んでも、後で困るかもしれない。だから決める理由を覚えておこう」'},
+  {speaker:'カレン',text:'「ソフィがどうしたいか、聞かせて」'}
+ ],()=>say('ソフィ','「今ある薬草をどうしましょう？」',[
+  ...((state.inventory['薬草']||0)>0?[{label:'薬草を1個、孤児院へ渡す',fn:()=>finishEarlyOrphanMedicine('donate')}]:[]),
+  {label:'旅の治療のため、薬草を残す',fn:()=>finishEarlyOrphanMedicine('reserve')},
+  {label:'今は決めず、村を見て回る',fn:()=>say('ソフィ','「急がず決めます。旅立つ前にまた来ます」')}
+ ]))
+}
+function finishEarlyOrphanMedicine(choice){
+ if(!commitEarlyOrphanMedicine(choice))return say('ソフィ','「薬草がありません。今ある分をもう一度確かめます」');
+ return saySequence(choice==='donate'
+  ?[{speaker:'ソフィ',text:'「これをマルタさんに。使い方も伝えます。テオのそばにいてあげてください」'},
+    {speaker:'トリトン',text:'「先に渡してよかったかは、旅に出たら分かる。でも今、助けが要る人がいたんだ」'},
+    {speaker:'マーガレット',text:'「道具が減った分、戦う時は慎重にね。数字はごまかせないわ」'}]
+  :[{speaker:'ソフィ',text:'「旅で怪我人が出たら、この一つが必要かもしれません。マルタさんには相談しておきます」'},
+    {speaker:'カレン',text:'「必要な時まで持っていくのも、誰かを守る選択だよ」'},
+    {speaker:'マーガレット',text:'「だからこそ、誰かが困っていたことも忘れないようにしよう」'}])
+}
+function commitEarlyMerchantChoice(choice){
+ const key='early.merchantCart';
+ if(state.events.choices[key]||!['repair','return'].includes(choice))return false;
+ state.events.choices[key]=choice;
+ if(choice==='repair')state.inventory['携帯食']=(state.inventory['携帯食']||0)+1;
+ else state.inventory['薬草']=(state.inventory['薬草']||0)+1;
+ addJournal(choice==='repair'
+  ?'街道で行商人の荷車を修理し、荷を王都へ運べるようにした。礼に携帯食を1個受け取った。'
+  :'行商人に危険な街道の引き返しを勧めた。商人は村へ向かい、礼に薬草を1個渡した。');
+ renderHud();return true
+}
+function earlyMerchantVisit(){
+ const prior=state.events.choices['early.merchantCart'];
+ if(prior==='repair')return say('行商人','「車軸は持ち直した。王都への荷は何とか運べそうだ。あんたらも獣には気をつけな」');
+ if(prior==='return')return say('行商人','「荷車は南へ向けた。危険を教えてくれて助かったよ。王都へ行くなら古砦の道も調べな」');
+ return saySequence([
+  {speaker:'行商人',text:'「やれやれ、荷車の軸が曲がった。食料を王都へ届けるはずが、このままじゃ狼の餌だ」'},
+  {speaker:'トリトン',text:'「固定具ならその場で直せる。少し時間はかかるけどな」'},
+  {speaker:'マーガレット',text:'「獣が出る道に無理やり荷を進めるべきかは、別の話ね」'},
+  {speaker:'行商人',text:'「東の古砦跡に抜け道があるとも聞くが、獣の声がする。どれも楽な道じゃない」'}
+ ],()=>say('カレン','「この荷車、どうする？」',[
+  {label:'トリトンと荷車を直し、王都への輸送を助ける',fn:()=>finishEarlyMerchantChoice('repair')},
+  {label:'危険を伝え、村へ引き返すよう勧める',fn:()=>finishEarlyMerchantChoice('return')},
+  {label:'今は判断を保留する',fn:()=>say('行商人','「迷ったらまた声をかけてくれ。荷はまだここにある」')}
+ ]))
+}
+function finishEarlyMerchantChoice(choice){
+ if(!commitEarlyMerchantChoice(choice))return say('行商人','「さっきの話はもう決めただろう？」');
+ return saySequence(choice==='repair'
+  ?[{speaker:'トリトン',text:'「よし、これで回る！　戦わないで役に立てるのはいいな」'},
+    {speaker:'行商人',text:'「助かった。礼に携帯食を一つ。お前たちが王都に着く頃には、俺も着けるといいんだが」'},
+    {speaker:'ソフィ',text:'「届ける人も受け取る人も、どうか無事で」'}]
+  :[{speaker:'マーガレット',text:'「北側は獣の痕跡が多い。積荷を守るだけなら戻る判断も合理的よ」'},
+    {speaker:'行商人',text:'「村なら受け取る人もいるだろう。礼に薬草を渡す。助言がなけりゃ進んでた」'},
+    {speaker:'カレン',text:'「王都の人には申し訳ないけど、商人さんの命も大切だ」'}])
+}
+function earlyCapitalEcho(){
+ const a=state.events.choices['early.orphanMedicine'],b=state.events.choices['early.merchantCart'];
+ const lines=[];
+ if(b==='repair')lines.push({speaker:'配給待ちの母親',text:'「街道の荷車が一台、やっと到着したそうです。今日の配給が少し増えるかもしれません」'});
+ if(b==='return')lines.push({speaker:'配給待ちの母親',text:'「街道から届くはずの荷が止まったんですって。でも危険な道なら、無理に通せとは言えないわ」'});
+ if(a==='donate')lines.push({speaker:'ソフィ',text:'「出発前、孤児院に薬草を残してきました。でもここでも薬が足りない。どこまで手を伸ばせるんでしょう」'});
+ if(a==='reserve')lines.push({speaker:'ソフィ',text:'「村には薬を必要とする子がいました。旅のために残した薬草、これからちゃんと役立てたいです」'});
+ return lines
+}
 function inlineNpcEvent(id){
  if(state.map==='village'){
   if(id==='father'){setStructuredCondition('father',true);addJournal('トリトンの父は「勝つより帰ってこい」と教えてきた。');return say('トリトンの父','「剣を持つなら、勝つことより帰ってくることを覚えろ。トリトンにも昔からそう教えてきた。……カレン、お前もだぞ」')}
-  if(id==='orphan'){setStructuredCondition('orphan',true);addJournal('孤児院では食料が不足している。');return saySequence([{speaker:'孤児院の子',text:'「ソフィお姉ちゃん、今日のご飯も薄いスープ？」'},{speaker:'ソフィ',text:'「……今日は私が何か探してきますね」'}])}
+  if(id==='orphan'){setStructuredCondition('orphan',true);return earlyOrphanVisit()}
   if(id==='mayor'){setStructuredCondition('mayor',true);addJournal('王都から来る食料輸送は以前の半分ほど。');return say('村長','「このまま戦争が続けば冬が厳しい。マーガレット、お前たち若い者まで巻き込まれなければいいが……」')}
   if(id==='messenger'){
    if(structuredCondition('appointed'))return say('王国使者','「支度が済んだら北門から王都へ向かってくれ。……無理に笑う必要はない。任命式では嫌でも笑わされるだろうからな」');
@@ -271,7 +393,7 @@ function inlineNpcEvent(id){
   if(id==='karenBrother')return saySequence([{speaker:'リオ',text:'「姉ちゃん、本当に魔王を倒しに行くの？」'},{speaker:'カレン',text:'「……まだ分かんない。でも、ちゃんと帰ってくるよ」'},{speaker:'リオ',text:'「じゃあ剣、錆びさせるなよ。帰ってきたら見せてもらうから」'}])
  }
  if(state.map==='orphanage'){
-  if(id==='caretaker')return say('世話役マルタ','「ソフィが送ってくれる米はありがたい。でもね、それを理由にあなたたちが死んでいいなんて、誰も思っていないよ」')
+  if(id==='caretaker')return say('世話役マルタ',state.events.choices['early.orphanMedicine']==='donate'?'「薬草をありがとう。テオの様子は私が見ておくよ。旅で使う分まで無理しないでおくれ」':state.events.choices['early.orphanMedicine']==='reserve'?'「薬が必要なのはここだけじゃない。旅で誰かを助けるなら、あの子にもそう伝えるよ」':'「ソフィが送ってくれる米はありがたい。でもね、それを理由にあなたたちが死んでいいなんて、誰も思っていないよ」')
   if(id==='theo')return say('テオ','「兵隊さんになるとパンを毎日もらえるって本当？」')
   if(id==='noa')return saySequence([{speaker:'ノア',text:'「勇者って、怪我しないの？」'},{speaker:'ソフィ',text:'「しますよ。だから治して、休んで、また歩くんです」'}])
   if(id==='emi')return say('エミ','「ソフィお姉ちゃんのベッド、帰ってくるまで使わないでおくね」')
@@ -300,7 +422,7 @@ function inlineNpcEvent(id){
   if(id==='bookSeller')return saySequence([{speaker:'古書店主',text:'「千年前の地図？ 王国式も帝国式もあるよ。ただし、どっちも“自分たちに都合のいい境界線”を引いてる」'},{speaker:'マーガレット',text:'「……地図そのものが主張なんですね」'},{speaker:'古書店主',text:'「地図は嘘をつかない、なんてのが一番危ない嘘さ」'}])
   if(id==='studentReader')return say('帝国の学生','「戦争が終わったら王国の大学にも行ってみたいんです。……今それ言うと、先生にすごく嫌な顔されるけど」')
  }
- if(state.map==='road'&&id==='merchant'){addJournal('王都への近道として古砦跡の抜け道を教わった。');return say('行商人','「王都へ行くならこのまま北だ。東の古砦跡は今は使われてないが、旅人が残した物資があるって噂もある。余裕があれば寄ってみるといい。<br><br>ただし獣の声がする。寄り道するかは自分で決めな」')}
+ if(state.map==='road'&&id==='merchant')return earlyMerchantVisit()
  if(state.map==='northroad'&&id==='scout'){return say('王国軍の斥候','「勇者一行か。古砦を抜けてきたのか？ 王都まではもう遠くない。北へ進めば城門だ」')}
  if(state.map==='capital'){
   if(id==='capitalOfficial'){
@@ -326,7 +448,7 @@ function inlineNpcEvent(id){
   if(id==='capitalFlowerGirl')return say('花売りの少女',structuredCondition('returnedKingdom')?'「前は勇者様の花飾りが一番売れたの。今は、お墓に供える白い花ばっかり」':'「勇者様！ 任命式の日は赤と白の花が飛ぶんだよ。王城の前、すっごくきれい！」')
   if(id==='capitalRecruit')return say('新兵',structuredCondition('returnedKingdom')?'「次の総攻撃、俺たちも出るそうです。勇者様……勝てば、本当に終わるんでしょうか」':'「勇者様と同じ前線に行けるなら光栄です。俺も聖地を取り戻してみせます！」')
   if(id==='capitalVendor')return capitalShop()
-  if(id==='rationMother')return saySequence([{speaker:'配給待ちの母親',text:structuredCondition('returnedKingdom')?'「勇者様。息子は前線から戻りました。片腕を失ったけど、生きてます。……それでも私は、勝ってよかったって言うべきなんでしょうか」':'「配給は一人パン二つまで。王都でこれなら、地方はもっとひどいんでしょうね」'},{speaker:'ソフィ',text:structuredCondition('returnedKingdom')?'「生きて帰ったことを喜んでいいと思います。それと戦争を喜ぶことは、同じじゃありません」':'「私たちの村では、小麦そのものが足りません」'},{speaker:'配給待ちの母親',text:structuredCondition('returnedKingdom')?'「……そうね。そう言ってもらえると、少し楽です」':'「なのに任命式にはあんなに花を使う。王都って、不思議なところね」'}])
+  if(id==='rationMother')return saySequence([{speaker:'配給待ちの母親',text:structuredCondition('returnedKingdom')?'「勇者様。息子は前線から戻りました。片腕を失ったけど、生きてます。……それでも私は、勝ってよかったって言うべきなんでしょうか」':'「配給は一人パン二つまで。王都でこれなら、地方はもっとひどいんでしょうね」'},{speaker:'ソフィ',text:structuredCondition('returnedKingdom')?'「生きて帰ったことを喜んでいいと思います。それと戦争を喜ぶことは、同じじゃありません」':'「私たちの村では、小麦そのものが足りません」'},{speaker:'配給待ちの母親',text:structuredCondition('returnedKingdom')?'「……そうね。そう言ってもらえると、少し楽です」':'「なのに任命式にはあんなに花を使う。王都って、不思議なところね」'}].concat(structuredCondition('returnedKingdom')?[]:earlyCapitalEcho()))
   if(id==='granz'){
    if(!structuredCondition('returnedKingdom')){
     if(!structuredCondition('capitalCeremony'))return say('総司令グランツ','「先に任命式を終えろ。国民に顔を見せることも、今のお前たちの任務だ」');
@@ -500,7 +622,7 @@ function inlineObjectEvent(id){
   if(id==='leverWest'){if(!structuredCondition('caveBats'))return say('カレン','「機構の周りにコウモリが群がってる。先に追い払おう」');if(structuredCondition('leverWest'))return say('西側の開閉機構','重いレバーはすでに下がっている。');setStructuredCondition('leverWest',true);sfx('lever');state.objective=structuredCondition('leverEast')?'中央の鉄格子へ戻る':'東側の開閉機構も探す';renderHud();draw();return say('西側の開閉機構','四人で力を合わせて錆びたレバーを下ろした。<br><br>砦の奥から「ガコン」と大きな音が響く。')}
   if(id==='leverEast'){if(!structuredCondition('caveCrawler'))return say('マーガレット','「あの石殻ムカデが機構の前に居座ってる。動かすなら先に何とかしないと」');if(structuredCondition('leverEast'))return say('東側の開閉機構','歯車はゆっくり回り続けている。');setStructuredCondition('leverEast',true);sfx('lever');state.objective=structuredCondition('leverWest')?'中央の鉄格子へ戻る':'西側の開閉機構も探す';renderHud();draw();return say('東側の開閉機構','錆びた歯車が軋みながら回り始めた。<br><br>マーガレット「これで中央の鉄格子が開くはず」')}
   if(id==='innerGate'){if(structuredCondition('leverWest')&&structuredCondition('leverEast'))return say('ナレーション','二つの機構が作動し、中央の鉄格子は開いている。');return say('マーガレット','「左右に二つの錠前機構がつながってる。西側と東側、両方を動かさないと開かないみたい」')}
-  if(id==='banner'){setStructuredCondition('banner',true);addJournal('古砦跡には、戦争以前の王国軍旗が残されていた。');return say('マーガレット','「これ、今の戦争で使われた物じゃない。ずっと前に放棄された砦みたい」<br><br>カレン「誰も使わなくなった道だから、獣が住み着いたんだね」')}
+  if(id==='banner')return earlyCaveBannerVisit()
   if(id==='rations'){setStructuredCondition('rations',true);return say('トリトン','「空の保存食箱だ。新しい足跡はない。兵士が潜んでるって感じじゃなさそうだな」')}
   if(id==='boss'&&!structuredCondition('bossDead')){if(!(structuredCondition('leverWest')&&structuredCondition('leverEast')))return say('マーガレット','「中央の鉄格子が閉じてる。左右の開閉機構を両方動かさないと奥へ行けないわ」');return say('カレン','「こいつが北の通路を塞いでる……！」',[{label:'戦う',fn:()=>startBattle('boss')},{label:'いったん下がる',fn:()=>say('マーガレット','「先に宝箱や脇道を調べてもいいわ」')}]);}
  }
@@ -513,7 +635,16 @@ function inlineObjectEvent(id){
   if(id==='capitalMarket')return capitalShop()
   if(id==='capitalFountain')return say('王都の大噴水','聖地エルシアの泉を模したという噴水。観光客向けの説明板には「奪われた故郷を忘れるな」と刻まれている。')
   if(id==='capitalBarracks')return say('王国軍兵舎','整列した新兵たちの掛け声が聞こえる。壁には「聖地奪還」「勇者と共に」の標語が貼られている。')
-  if(id==='victoryPoster'){setStructuredCondition('capitalYukiPropaganda',true);addJournal('王都では一年前のユウキ戦死を「四天王ユウキ討伐・王国大勝利」と宣伝している。');renderHud();return saySequence([{speaker:'戦勝ポスター',text:'「一年前の大勝利――四天王ユウキ討伐！ 英雄たちの意思を継ぎ、聖地奪還へ！」'},{speaker:'カレン',text:'「この人がユウキ……。敵の大将だったんだね」'},{speaker:'マーガレット',text:'「“英雄たち”って誰のことか、名前が書いてないのが少し変ね」'}])}
+  if(id==='victoryPoster'){
+   if(!structuredCondition('capitalYukiPropaganda')){setStructuredCondition('capitalYukiPropaganda',true);addJournal('王都では一年前のユウキ戦死を「四天王ユウキ討伐・王国大勝利」と宣伝している。');renderHud()}
+   const remembered=state.events.choices['early.caveBanner'];
+   return saySequence([
+    {speaker:'戦勝ポスター',text:'「一年前の大勝利――四天王ユウキ討伐！ 英雄たちの意思を継ぎ、聖地奪還へ！」'},
+    {speaker:'カレン',text:'「この人がユウキ……。敵の大将だったんだね」'},
+    {speaker:'マーガレット',text:'「“英雄たち”って誰のことか、名前が書いてないのが少し変ね」'}
+   ].concat(remembered==='names'?[{speaker:'マーガレット',text:'「古砦の軍旗には普通の兵士の名前が残っていた。このポスターには、勇者の名前すらない」'}]:
+    remembered==='raise'?[{speaker:'カレン',text:'「古砦では、誰かの帰る場所だった旗を直した。でもここでは旗の方が人より大事みたいだね」'}]:[]))
+  }
   if(id==='heroLedger'){
    if(!structuredCondition('returnedKingdom'))return say('王国軍・保管箱','封蝋に「軍務機密・勇者候補管理」とある。今の立場では勝手に開けられない。');
    if(structuredCondition('heroRecordsFound'))return say('歴代勇者台帳','名前の横に「戦死」「消息不明」「宣伝終了」。同じ言葉が何度も並んでいる。');
