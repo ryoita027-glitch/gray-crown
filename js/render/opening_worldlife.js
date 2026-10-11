@@ -27,14 +27,6 @@ const OpeningWorldLife=(()=>{
   R(c,'#614936',x+8,y+10,4,23);R(c,'#614936',x+65,y+9,4,26);
   wheel(c,x+22,y+35);wheel(c,x+55,y+35);
  }
- function townNotice(c,x,y){
-  R(c,'#554434',x,y+4,34,27);
-  R(c,'#a27f57',x+2,y+5,30,23);
-  R(c,'#d4c3a0',x+7,y+8,20,14);
-  R(c,'#725a47',x+10,y+12,14,2);
-  R(c,'#99836a',x+10,y+17,11,1);
-  R(c,'#5a4234',x+16,y+31,3,13);
- }
  function village(c){
   // Sense of daily life; props at authored NPC landmarks, not imaginary loot.
   // Baker's stand: physically distinct from the mayor's house.
