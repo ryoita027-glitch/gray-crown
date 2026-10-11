@@ -39,9 +39,12 @@ function renderBattle(){const b=state.battle;if(!b)return;$('turnLabel').textCon
   if(state.locked||!state.battle)return;
   if(GC.CommercialTactics.choose(state.battle,Number(btn.dataset.targetIndex))){sfx('select');renderBattle()}
  }));
- const tip=$('battleHelp');
- if(tip){const plan=checkpointEnemyIntent(b);tip.textContent=GC.CommercialTactics.hint(a,b)+
-  (plan?'　【次の敵攻撃】'+plan.target.name+'を狙う。'+plan.note:'')}
+ const tip=$('battleHelp');if(tip)tip.textContent=GC.CommercialTactics.hint(a,b);
+ const preview=$('battleForecast');if(preview){
+  const plan=checkpointEnemyIntent(b);
+  preview.classList.toggle('hidden',!plan);
+  preview.textContent=plan?'敵の予兆　'+plan.target.name+'への攻撃：'+plan.note:'';
+ }
 
  renderHud()}
 function battleLog(t){const box=$('battleLog');box.innerHTML+=`<div>${t}</div>`;box.scrollTop=box.scrollHeight}
