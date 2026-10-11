@@ -138,6 +138,47 @@ const OpeningWorldLife=(()=>{
   else return false;
   return true
  }
+ function clothes(c,id,x,y){
+  // Pixel costume accents atop the shared NPC body; distinct jobs at game scale.
+  if(id==='baker'){
+   R(c,'#d8cdb1',x+10,y+13,14,17);
+   R(c,'#a38d6b',x+11,y+16,12,1);
+   R(c,'#ece3cb',x+12,y+17,10,9);
+   R(c,'#766b57',x+12,y+25,10,2);
+  }else if(id==='farmer'){
+   R(c,'#575d44',x+10,y+15,13,16);
+   R(c,'#91936c',x+11,y+15,3,12);
+   R(c,'#91936c',x+19,y+15,3,12);
+   R(c,'#78634a',x+10,y-2,15,3);
+   R(c,'#bca37a',x+6,y+1,22,3);
+  }else if(id==='oldwoman'){
+   R(c,'#857a72',x+7,y+9,20,8);
+   R(c,'#c2b0a0',x+8,y+10,17,3);
+   R(c,'#62595a',x+9,y+17,15,11);
+  }else if(id==='merchant'){
+   R(c,'#655c4a',x+9,y+10,17,5);
+   R(c,'#a58c69',x+11,y+11,13,2);
+   R(c,'#7e6d54',x+9,y+18,18,4);
+   R(c,'#d1b78c',x+20,y+18,3,9);
+  }else if(id==='capitalVendor'){
+   R(c,'#bfac91',x+11,y+16,14,13);
+   R(c,'#8a6d53',x+12,y+19,12,3);
+  }else if(id==='rationMother'){
+   R(c,'#6e7369',x+8,y+11,19,9);
+   R(c,'#a6a18e',x+9,y+12,17,2);
+   R(c,'#70675e',x+11,y+17,15,12);
+  }else if(id==='capitalFlowerGirl'){
+   R(c,'#c4a58d',x+11,y+17,12,12);
+   R(c,'#8f6a6e',x+13,y+20,8,2);
+  }else if(id==='capitalRecruit'){
+   R(c,'#737a7d',x+9,y+16,16,14);
+   R(c,'#c6b593',x+10,y+17,14,2);
+   R(c,'#545a60',x+9,y+25,16,3);
+  }else if(id==='orphan'){
+   R(c,'#bea08a',x+12,y+17,11,11);
+   R(c,'#947e72',x+14,y+18,7,2)
+  }
+ }
  // Only named, already-placed people have role-specific props.
  // Tool placement deliberately does not block the NPC's face or outline.
  const living=new Set(['baker','farmer','oldwoman','orphan','merchant','capitalVendor','rationMother','capitalFlowerGirl','capitalRecruit']);
@@ -145,6 +186,7 @@ const OpeningWorldLife=(()=>{
   if(!api.enabled||!living.has(n.id)||!maps.has(map))return false;
   const x=n.x*32,y=n.y*32;
   const beat=Math.floor(now/1050)%4===1?1:0;
+  clothes(c,n.id,x,y);
   if(n.id==='baker'){
    // Tray of loaves makes the baker legible even without opening dialogue.
    R(c,'#725238',x+18,y+16-beat,19,5);
