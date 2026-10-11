@@ -610,6 +610,7 @@ function inlineObjectEvent(id){
   if(id==='bandit'&&!structuredCondition('roadBandit'))return say('街道のならず者','「荷物と金を置いていけ。こっちも腹が減ってるんだ」',[{label:'戦う',fn:()=>startSymbolEncounter('bandit','roadBandit')},{label:'離れる',fn:()=>say('マーガレット','「本道は通れる。無理に相手をする必要はないわ」')}]);
   if(id==='cave')return enterCave();
   if(id==='roadSign'){
+   if(isDefeated('wolf')&&!state.events.choices['early.wolfScout'])return say('古い道標','「王都　北」「旧砦　東」。足元には、もういない灰牙狼の足跡が残っている。');
    if(state.events.choices['early.wolfScout']==='read')return say('マーガレット','「足跡は覚えたわ。灰牙狼は最初に一番守りの薄い相手を狙う。カレンの庇うが使える」');
    return say('古い道標','「王都　北」「旧砦　東」。足元には新しい狼の足跡が続いている。',[
     {label:'足跡を調べて備える',fn:()=>{
