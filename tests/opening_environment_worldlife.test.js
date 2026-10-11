@@ -18,7 +18,7 @@ function maps(){
  return new Function('GC','COLS','ROWS',get('js/data/maps.js')+';return maps')({Data:{}},24,15)
 }
 function canWalk(m,x,y){
- return x>=0&&y>=0&&x<24&&y<15&&['G','P'].includes(m.tiles[y][x])
+ return x>=0&&y>=0&&x<24&&y<15&&['G','P','A'].includes(m.tiles[y][x])
 }
 function reachable(m,from,to){
  const q=[from],seen=new Set([from.join(',')]);let i=0;
