@@ -114,7 +114,7 @@ def faction_case(browser,url,route,choice,battle_id,expected_target):
    for action,next_actor in [("guard",1),("heavy",2),("prayer",3),("staffMargaret",0)]:
     page.wait_for_function("""actor => {
       const s=GC.State.get();return s.battle&&!s.locked&&s.battle.actor===actor
-    }""",next_actor,timeout=9000)
+    }""",arg=next_actor,timeout=9000)
     page.locator(f'#battleActions button[data-battle="{action}"]').click()
    page.wait_for_function("""() => {
      const s=GC.State.get();return s.battle&&!s.locked&&s.battle.turn>=2
