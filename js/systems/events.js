@@ -228,6 +228,40 @@ function runTriggeredEvent(type,target,context={}){
 
 // Early-game choices are local, optional and save-schema-23 compatible.
 // Record a decision only once; all repeated conversations read that same history.
+
+function commitEarlyCaveBanner(choice){
+ const key='early.caveBanner';
+ if(state.events.choices[key]||!['names','raise'].includes(choice))return false;
+ state.events.choices[key]=choice;
+ setStructuredCondition('banner',true);
+ addJournal(choice==='names'
+  ?'古砦跡の古い軍旗の裏に残る兵の名前を、マーガレットが記録した。'
+  :'古砦跡の古い軍旗をカレンたちが柱へ結び直した。戦争以前の帰る場所の象徴を残した。');
+ renderHud();return true
+}
+function earlyCaveBannerVisit(){
+ const chosen=state.events.choices['early.caveBanner'];
+ if(chosen==='names')return say('マーガレット','「旗の裏の名前は手帳に写した。軍旗の模様より、そこにいた人の名前を忘れたくない」');
+ if(chosen==='raise')return say('カレン','「直した旗がまだ揺れてる。誰が見に来るかは分からないけど、ここで誰かが暮らしてた証拠だから」');
+ return saySequence([
+  {speaker:'ナレーション',text:'古い王国旗が、折れた支柱から垂れている。裏地に小さく縫い付けられたのは勝利の標語ではなく、兵たちの名前だった。'},
+  {speaker:'マーガレット',text:'「今の戦争より前のものね。名前を写せば、後で誰がここにいたか調べられる」'},
+  {speaker:'カレン',text:'「でも、このままじゃ崩れてしまう。誰かが帰れる場所だったって、残したい」'},
+  {speaker:'トリトン',text:'「どっちもできたらいいけど、獣が戻る前に一つ決めよう」'}
+ ],()=>say('カレン','「この旗をどうしよう？」',[
+  {label:'マーガレットと名前を写し取る',fn:()=>finishEarlyCaveBanner('names')},
+  {label:'破れた旗を結び直して残す',fn:()=>finishEarlyCaveBanner('raise')},
+  {label:'今はそのままにしておく',fn:()=>say('マーガレット','「後から戻ってもいいわ。ここにあることだけは覚えておこう」')}
+ ]))
+}
+function finishEarlyCaveBanner(choice){
+ if(!commitEarlyCaveBanner(choice))return say('マーガレット','「この旗については、もう私たちなりに決めたでしょう」');
+ return saySequence(choice==='names'
+  ?[{speaker:'マーガレット',text:'「“兵の名前”を先に。誰がどこの国のために戦ったかより、そこにいたことを残す」'},
+    {speaker:'ソフィ',text:'「何十年たっても、どこかで待っていた人がいるかもしれませんね」'}]
+  :[{speaker:'トリトン',text:'「これで風に持っていかれない。昔の兵士は、ここから帰れたのかな」'},
+    {speaker:'カレン',text:'「分からない。でも、帰ろうとした人がいた場所だって残せた」'}])
+}
 function commitEarlyOrphanMedicine(choice){
  const key='early.orphanMedicine';
  if(state.events.choices[key]||!['donate','reserve'].includes(choice))return false;
@@ -588,7 +622,7 @@ function inlineObjectEvent(id){
   if(id==='leverWest'){if(!structuredCondition('caveBats'))return say('カレン','「機構の周りにコウモリが群がってる。先に追い払おう」');if(structuredCondition('leverWest'))return say('西側の開閉機構','重いレバーはすでに下がっている。');setStructuredCondition('leverWest',true);sfx('lever');state.objective=structuredCondition('leverEast')?'中央の鉄格子へ戻る':'東側の開閉機構も探す';renderHud();draw();return say('西側の開閉機構','四人で力を合わせて錆びたレバーを下ろした。<br><br>砦の奥から「ガコン」と大きな音が響く。')}
   if(id==='leverEast'){if(!structuredCondition('caveCrawler'))return say('マーガレット','「あの石殻ムカデが機構の前に居座ってる。動かすなら先に何とかしないと」');if(structuredCondition('leverEast'))return say('東側の開閉機構','歯車はゆっくり回り続けている。');setStructuredCondition('leverEast',true);sfx('lever');state.objective=structuredCondition('leverWest')?'中央の鉄格子へ戻る':'西側の開閉機構も探す';renderHud();draw();return say('東側の開閉機構','錆びた歯車が軋みながら回り始めた。<br><br>マーガレット「これで中央の鉄格子が開くはず」')}
   if(id==='innerGate'){if(structuredCondition('leverWest')&&structuredCondition('leverEast'))return say('ナレーション','二つの機構が作動し、中央の鉄格子は開いている。');return say('マーガレット','「左右に二つの錠前機構がつながってる。西側と東側、両方を動かさないと開かないみたい」')}
-  if(id==='banner'){setStructuredCondition('banner',true);addJournal('古砦跡には、戦争以前の王国軍旗が残されていた。');return say('マーガレット','「これ、今の戦争で使われた物じゃない。ずっと前に放棄された砦みたい」<br><br>カレン「誰も使わなくなった道だから、獣が住み着いたんだね」')}
+  if(id==='banner')return earlyCaveBannerVisit()
   if(id==='rations'){setStructuredCondition('rations',true);return say('トリトン','「空の保存食箱だ。新しい足跡はない。兵士が潜んでるって感じじゃなさそうだな」')}
   if(id==='boss'&&!structuredCondition('bossDead')){if(!(structuredCondition('leverWest')&&structuredCondition('leverEast')))return say('マーガレット','「中央の鉄格子が閉じてる。左右の開閉機構を両方動かさないと奥へ行けないわ」');return say('カレン','「こいつが北の通路を塞いでる……！」',[{label:'戦う',fn:()=>startBattle('boss')},{label:'いったん下がる',fn:()=>say('マーガレット','「先に宝箱や脇道を調べてもいいわ」')}]);}
  }
@@ -601,7 +635,16 @@ function inlineObjectEvent(id){
   if(id==='capitalMarket')return capitalShop()
   if(id==='capitalFountain')return say('王都の大噴水','聖地エルシアの泉を模したという噴水。観光客向けの説明板には「奪われた故郷を忘れるな」と刻まれている。')
   if(id==='capitalBarracks')return say('王国軍兵舎','整列した新兵たちの掛け声が聞こえる。壁には「聖地奪還」「勇者と共に」の標語が貼られている。')
-  if(id==='victoryPoster'){setStructuredCondition('capitalYukiPropaganda',true);addJournal('王都では一年前のユウキ戦死を「四天王ユウキ討伐・王国大勝利」と宣伝している。');renderHud();return saySequence([{speaker:'戦勝ポスター',text:'「一年前の大勝利――四天王ユウキ討伐！ 英雄たちの意思を継ぎ、聖地奪還へ！」'},{speaker:'カレン',text:'「この人がユウキ……。敵の大将だったんだね」'},{speaker:'マーガレット',text:'「“英雄たち”って誰のことか、名前が書いてないのが少し変ね」'}])}
+  if(id==='victoryPoster'){
+   if(!structuredCondition('capitalYukiPropaganda')){setStructuredCondition('capitalYukiPropaganda',true);addJournal('王都では一年前のユウキ戦死を「四天王ユウキ討伐・王国大勝利」と宣伝している。');renderHud()}
+   const remembered=state.events.choices['early.caveBanner'];
+   return saySequence([
+    {speaker:'戦勝ポスター',text:'「一年前の大勝利――四天王ユウキ討伐！ 英雄たちの意思を継ぎ、聖地奪還へ！」'},
+    {speaker:'カレン',text:'「この人がユウキ……。敵の大将だったんだね」'},
+    {speaker:'マーガレット',text:'「“英雄たち”って誰のことか、名前が書いてないのが少し変ね」'}
+   ].concat(remembered==='names'?[{speaker:'マーガレット',text:'「古砦の軍旗には普通の兵士の名前が残っていた。このポスターには、勇者の名前すらない」'}]:
+    remembered==='raise'?[{speaker:'カレン',text:'「古砦では、誰かの帰る場所だった旗を直した。でもここでは旗の方が人より大事みたいだね」'}]:[]))
+  }
   if(id==='heroLedger'){
    if(!structuredCondition('returnedKingdom'))return say('王国軍・保管箱','封蝋に「軍務機密・勇者候補管理」とある。今の立場では勝手に開けられない。');
    if(structuredCondition('heroRecordsFound'))return say('歴代勇者台帳','名前の横に「戦死」「消息不明」「宣伝終了」。同じ言葉が何度も並んでいる。');
