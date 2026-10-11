@@ -314,7 +314,7 @@ function commitEarlyMerchantChoice(choice){
 function earlyMerchantVisit(){
  const prior=state.events.choices['early.merchantCart'];
  if(prior==='repair')return say('行商人','「車軸は持ち直した。王都への荷は何とか運べそうだ。あんたらも獣には気をつけな」');
- if(prior==='return')return say('行商人','「荷車は南へ向けた。危険を教えてくれて助かったよ。王都へ行くなら古砦の道も調べな」');
+ if(prior==='return')return say('行商人','「荷車を南に向けて、一度荷を整理しているところだ。危険を教えてくれて助かったよ」');
  return saySequence([
   {speaker:'行商人',text:'「やれやれ、荷車の軸が曲がった。食料を王都へ届けるはずが、このままじゃ狼の餌だ」'},
   {speaker:'トリトン',text:'「固定具ならその場で直せる。少し時間はかかるけどな」'},

@@ -25,6 +25,8 @@
     "three-route-browser-test": "python tests/browser_three_routes_integration_e2e.py",
     "three-route-acceptance": "node tests/check-syntax.js && npm test && npm run three-route-browser-test",
     "early-game-browser-test": "python tests/browser_early_game_human_stakes_e2e.py",
-    "early-game-acceptance": "node tests/check-syntax.js && npm test && npm run early-game-browser-test"
+    "early-game-acceptance": "node tests/check-syntax.js && npm test && npm run early-game-browser-test",
+    "opening-art-browser-test": "python tests/browser_opening_worldlife_visual_e2e.py",
+    "opening-art-acceptance": "node tests/check-syntax.js && npm test && npm run opening-art-browser-test"
   }
 }

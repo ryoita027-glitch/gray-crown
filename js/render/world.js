@@ -26,6 +26,7 @@ function tileAt(mapId,x,y){const m=maps[mapId];if(!m||x<0||y<0||x>=COLS||y>=ROWS
 function objectCleared(id){if(TREASURE_DEFS[id]&&state.world.treasures[id])return true;return (id==='wolf'&&isDefeated('wolf'))||(id==='bandit'&&isDefeated('bandit'))||(id==='bats'&&isDefeated('bats'))||(id==='crawler'&&isDefeated('crawler'))||(id==='boss'&&isDefeated('boss'))||(id==='scavengerWolves'&&isDefeated('scavengerWolves'))||(id==='chest1'&&state.world.treasures.chest1)||(id==='chest2'&&state.world.treasures.chest2)||(id==='innerGate'&&getWorldSwitch('leverWest')&&getWorldSwitch('leverEast'))||((id==='imperialPatrol'&&isDefeated('imperialPatrol'))||((['fortGate','fortGateRight'].includes(id)&&getWorldSwitch('fortGateOpen'))||(['ashCache','frontierCache','empireCache','imperialCache','yukiCache','elsiaCache'].includes(id)&&state.world.treasures[id])))}
 function npcVisible(n){if(n.showWhen&&!structuredCondition(n.showWhen))return false;if(n.hideWhen&&structuredCondition(n.hideWhen))return false;return true}
 function isBlocked(x,y){
+ if(OpeningWorldLife.blocks(state.map,x,y))return true;
  const t=tileAt(state.map,x,y);if(['T','H','S','W','R','K','Z'].includes(t))return true;
  const m=maps[state.map];if(m.npcs.some(n=>npcVisible(n)&&n.x===x&&n.y===y))return true;
  for(const o of m.objects){if(o.x===x&&o.y===y){if(['gate','exit','northExit','southExit','roadSign','milestone','banner','rations'].includes(o.id))continue;if(objectCleared(o.id))continue;return true}}
@@ -260,7 +261,7 @@ function drawNpcCommercial(n,facing='down'){
    ctx.fillStyle=shade;ctx.fillRect(Math.round(cx-9*scale),Math.round(top+30*scale),18*scale,4*scale);
    ctx.fillStyle=accent;ctx.fillRect(Math.round(cx-7*scale),Math.round(top+29*scale),14*scale,2*scale);
   }
-  ctx.restore();CapitalEnvironment.npcAccent(ctx,state.map,n);AshFrontierEnvironment.npcAccent(ctx,state.map,n)
+  ctx.restore();CapitalEnvironment.npcAccent(ctx,state.map,n);AshFrontierEnvironment.npcAccent(ctx,state.map,n);OpeningWorldLife.villager(ctx,state.map,n,Date.now())
 }
 function drawNpc(n){const close=Math.abs(state.x-n.x)+Math.abs(state.y-n.y)<=2,face=close?facingBetween([n.x,n.y],[state.x,state.y],'down'):'down';drawNpcCommercial(n,face);if(close){ctx.font='bold 9px system-ui';const w=Math.max(28,ctx.measureText(n.name).width+8);const px=n.x*TILE+16-w/2,py=n.y*TILE-7;ctx.fillStyle='rgba(13,16,20,.88)';ctx.fillRect(px,py,w,13);ctx.strokeStyle='rgba(210,181,112,.28)';ctx.strokeRect(px+.5,py+.5,w-1,12);ctx.fillStyle='#efe6d2';ctx.textAlign='center';ctx.fillText(n.name,n.x*TILE+16,py+10);ctx.textAlign='start'}}
 function drawVillageDecor(){
@@ -554,7 +555,7 @@ function currentQuestTarget(){const candidate=GC.CommercialDiscovery?.questHint?
 function drawQuestMarker(){const q=currentQuestTarget();if(!q)return;const m=maps[state.map],item=q.kind==='npc'?m.npcs.find(n=>n.id===q.id&&npcVisible(n)):m.objects.find(o=>o.id===q.id&&visibleObject(o));if(!item)return;const px=item.x*TILE+16,py=item.y*TILE-8;ctx.fillStyle='rgba(26,20,11,.78)';ctx.beginPath();ctx.arc(px,py,8,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f2cf67';ctx.beginPath();ctx.moveTo(px,py-6);ctx.lineTo(px+5,py);ctx.lineTo(px,py+6);ctx.lineTo(px-5,py);ctx.closePath();ctx.fill();ctx.strokeStyle='#fff0ad';ctx.lineWidth=1;ctx.stroke()}
 function drawAreaIdentity(){/* area identity is rendered by the HTML world HUD */}
 function viewScale(){if(INTERIOR_MAPS.includes(state.map))return 1.18;if(['capital','imperialcity','borderland','watchfort','empirevillage','elsia'].includes(state.map))return 1.25;return 1.16}
-const VISUAL={lastActingFrame:0,map:null,camX:0,camY:0,playerX:0,playerY:0,followers:[[12,13],[13,13],[14,13]],raf:0,nextMoveAt:0};
+const VISUAL={lastActingFrame:0,lastWorldLifeFrame:0,worldLifeRunning:false,map:null,camX:0,camY:0,playerX:0,playerY:0,followers:[[12,13],[13,13],[14,13]],raf:0,nextMoveAt:0};
 function partyTrailPoints(){
  // Followers follow their actual route history at fixed intervals:
  // 2, 4 and 6 steps behind Karen. Never reorder points into a zig-zag.
@@ -590,6 +591,14 @@ function partyTrailPoints(){
 }
 function cameraForMap(){const o=GC.Cinematic?.cameraTarget?.(),scale=o?.scale||viewScale(),vw=canvas.width/scale,vh=canvas.height/scale,worldW=COLS*TILE,worldH=ROWS*TILE,fx=Number.isFinite(o?.x)?o.x:state.x,fy=Number.isFinite(o?.y)?o.y:state.y,cx=fx*TILE+TILE/2,cy=fy*TILE+TILE/2;return{scale,x:Math.max(0,Math.min(worldW-vw,cx-vw/2)),y:Math.max(0,Math.min(worldH-vh,cy-vh/2))}}
 function drawScene(){
+ // Idle micro-actions are 5fps maximum; camera and controls remain responsive.
+ const lifeNow=Date.now();
+ if(VISUAL.worldLifeRunning&&VISUAL.map===state.map&&
+    Math.abs(state.x-VISUAL.playerX)<.005&&Math.abs(state.y-VISUAL.playerY)<.005&&
+    lifeNow-VISUAL.lastWorldLifeFrame<200){
+  cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene);return
+ }
+ VISUAL.lastWorldLifeFrame=lifeNow;
  // Dialogue's approved sheet poses need ~12fps, not an expensive full 60fps
  // terrain repaint while the player is paused reading long character lines.
  if(GC.CommercialActing?.active?.()&&VISUAL.map===state.map){
@@ -605,12 +614,14 @@ function drawScene(){
  const ease=.22;VISUAL.camX+=(target.x-VISUAL.camX)*ease;VISUAL.camY+=(target.y-VISUAL.camY)*ease;VISUAL.playerX+=(state.x-VISUAL.playerX)*.48;VISUAL.playerY+=(state.y-VISUAL.playerY)*.48;const trailPoints=partyTrailPoints();for(let i=0;i<3;i++){const t=trailPoints[i]||trailPoints[trailPoints.length-1]||[state.x,state.y];if(!VISUAL.followers[i])VISUAL.followers[i]=[t[0],t[1]];VISUAL.followers[i][0]+=(t[0]-VISUAL.followers[i][0])*.42;VISUAL.followers[i][1]+=(t[1]-VISUAL.followers[i][1])*.42;}
  ctx.save();ctx.scale(target.scale,target.scale);ctx.translate(-VISUAL.camX,-VISUAL.camY);drawMapUnderlay(m);
  for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){drawTile(m.tiles[y][x],x,y);drawTileDetail(m.tiles[y][x],x,y)}drawTerrainBlend(m);drawVerticalSliceGround(m);
- if(state.map==='village'){if(RyuneEnvironment.enabled)RyuneEnvironment.drawVillage(ctx);else{drawVillageDecor();villageHouses.forEach(drawHouse)}}if(INTERIOR_MAPS.includes(state.map)){if(RyuneEnvironment.enabled&&RyuneEnvironment.rooms.has(state.map))RyuneEnvironment.drawInterior(ctx,state.map);else drawInteriorDecor();CapitalEnvironment.interior(ctx,state.map);}drawRegionDecor();AshFrontierEnvironment.accents(ctx,state.map);CapitalEnvironment.street(ctx,state.map);m.objects.forEach(drawObject);const cinematicActive=GC.Cinematic?.isActive?.()===true,controlledNpcs=new Set(GC.Cinematic?.controlledNpcIds?.()||[]);m.npcs.filter(n=>npcVisible(n)&&!controlledNpcs.has(n.id)).forEach(drawNpc);drawQuestMarker();
+ if(state.map==='village'){if(RyuneEnvironment.enabled)RyuneEnvironment.drawVillage(ctx);else{drawVillageDecor();villageHouses.forEach(drawHouse)}}if(INTERIOR_MAPS.includes(state.map)){if(RyuneEnvironment.enabled&&RyuneEnvironment.rooms.has(state.map))RyuneEnvironment.drawInterior(ctx,state.map);else drawInteriorDecor();CapitalEnvironment.interior(ctx,state.map);}drawRegionDecor();AshFrontierEnvironment.accents(ctx,state.map);CapitalEnvironment.street(ctx,state.map);OpeningWorldLife.ground(ctx,state.map,state.events.choices);m.objects.forEach(drawObject);const cinematicActive=GC.Cinematic?.isActive?.()===true,controlledNpcs=new Set(GC.Cinematic?.controlledNpcIds?.()||[]);m.npcs.filter(n=>npcVisible(n)&&!controlledNpcs.has(n.id)).forEach(drawNpc);drawQuestMarker();
  if(cinematicActive){GC.Cinematic?.drawActors?.(ctx,{drawCharacterSprite,drawHeroSpriteSheet,drawNpcCommercial})}else{const leaderMoving=Math.abs(state.x-VISUAL.playerX)>.015||Math.abs(state.y-VISUAL.playerY)>.015,phase=leaderMoving?Date.now()/82:0;drawPartyRuntime(leaderMoving,phase);drawInteractionMarker()}GC.Dev?.drawWorldOverlay?.(ctx);ctx.restore();drawAreaIdentity();$('locationLabel').textContent=m.name;if($('safetyLabel')){const safe=encounterSafeZone();$('safetyLabel').textContent=safe?'● 安全地帯':'▲ 危険地帯';$('safetyLabel').classList.toggle('danger',!safe)};
  const followerTargets=partyTrailPoints(),followerMoving=VISUAL.followers.some((p,i)=>{const t=followerTargets[i]||p;return Math.abs(t[0]-p[0])>.01||Math.abs(t[1]-p[1])>.01});const moving=cinematicActive||Math.abs(target.x-VISUAL.camX)>.08||Math.abs(target.y-VISUAL.camY)>.08||Math.abs(state.x-VISUAL.playerX)>.01||Math.abs(state.y-VISUAL.playerY)>.01||followerMoving;
  const f=front(),interactableNpc=m.npcs.find(n=>npcVisible(n)&&n.x===f.x&&n.y===f.y),interactableObject=m.objects.find(o=>o.x===f.x&&o.y===f.y&&visibleObject(o));
  GC.CommercialUX?.update?.(state.map,interactableNpc,interactableObject);
- if(moving||GC.CommercialActing?.active?.()){cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene)}
+ const worldLifeMotion=!isInputLocked()&&OpeningWorldLife.shouldBreathe(state.map,state.x,state.y,m.npcs);
+ VISUAL.worldLifeRunning=!!worldLifeMotion;
+ if(moving||GC.CommercialActing?.active?.()||worldLifeMotion){cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene)}
 }
 function draw(){cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene)}
 
