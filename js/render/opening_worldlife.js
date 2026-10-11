@@ -186,7 +186,9 @@ const OpeningWorldLife=(()=>{
   if(!api.enabled||!living.has(n.id)||!maps.has(map))return false;
   const x=n.x*32,y=n.y*32;
   const beat=Math.floor(now/1050)%4===1?1:0;
-  clothes(c,n.id,x,y);
+  // The dedicated NPC atlas already includes distinct garments.
+  // Only the old fallback renderer needs the historic costume overlay.
+  if(typeof OpeningPixelAssets==='undefined'||!OpeningPixelAssets.designs[n.id])clothes(c,n.id,x,y);
   if(n.id==='baker'){
    // Tray of loaves makes the baker legible even without opening dialogue.
    R(c,'#725238',x+18,y+16-beat,19,5);
