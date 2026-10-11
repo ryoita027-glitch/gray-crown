@@ -125,13 +125,22 @@ test('merchant cart and village bakery counters are solid, without closing the m
  ])assert.equal(reachable(m[map],from,to),true,map+': '+from+' => '+to);
 });
 
+test('capital market has consistent solid booth footprints, without blocking the avenue',()=>{
+ const life=worldLife(),city=maps().capital;
+ for(const [x,y] of [[3,7],[7,7],[17,8]])assert.equal(life.blocks('capital',x,y),true);
+ assert.equal(life.blocks('capital',11,7),false);
+ assert.equal(life.blocks('village',3,7),false);
+ assert.equal(reachable(city,[11,13],[12,7]),true);
+ assert.equal(reachable(city,[11,13],[4,8]),true);
+});
 test('opening renderer respects draw order and the 5fps idle cap',()=>{
  const html=get('index.html'),world=get('js/render/world.js');
  assert.ok(html.indexOf('js/render/opening_worldlife.js')>0);
  assert.ok(html.indexOf('js/render/opening_worldlife.js')<html.indexOf('js/render/world.js'));
- assert.match(world,/OpeningWorldLife\.ground\(ctx,state\.map\);m\.objects\.forEach\(drawObject\)/);
+ assert.match(world,/OpeningWorldLife\.ground\(ctx,state\.map,state\.events\.choices\);m\.objects\.forEach\(drawObject\)/);
  assert.match(world,/OpeningWorldLife\.villager\(ctx,state\.map,n,Date\.now\(\)\)/);
  assert.match(world,/lifeNow-VISUAL\.lastWorldLifeFrame<200/);
+ assert.match(world,/OpeningWorldLife\.blocks\(state\.map,x,y\)/);
  assert.match(world,/OpeningWorldLife\.shouldBreathe\(state\.map,state\.x,state\.y,m\.npcs\)/);
 });
 
