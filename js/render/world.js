@@ -194,6 +194,10 @@ function colorMix(hex,amount){
 }
 function npcHash(id){let h=0;for(const ch of String(id||''))h=(h*31+ch.charCodeAt(0))>>>0;return h}
 function drawNpcCommercial(n,facing='down'){
+ // Render independent 4-direction, 4-pose pixel sprites where authored.
+ // Do not paint the old generic body on top.
+ if(OpeningPixelAssets.drawNpc(ctx,n,facing,
+  Math.abs(state.x-n.x)+Math.abs(state.y-n.y)<=5?Date.now():0))return;
  const s=NPC_STYLE[n.id]||{body:'#756b5f',accent:'#a58d6d',hair:'#4b4037'},h=npcHash(n.id),scale=s.small?.86:1;
  const px=n.x*TILE,py=n.y*TILE,cx=px+16,footY=py+30,body=s.body||'#756b5f',accent=s.accent||'#a58d6d',hair=s.hair||'#4b4037';
  const dark=colorMix(body,-.48),shade=colorMix(body,-.22),light=colorMix(body,.16),hairDark=colorMix(hair,-.34),skin='#d9b294',skinShade='#b9826f';
@@ -571,7 +575,7 @@ function partyTrailPoints(){
   // For first 3 moves of a new map use the walking history only when
   // actual steps have been taken. Map transition seeds are not true paths.
   const history=trail[i];
-  if(Array.isArray(history)&&i<trail.length&&state.worldStepsOnMap>=3&&insert(history[0],history[1]))continue;
+  if(Array.isArray(history)&&i<trail.length&&i<(state.worldStepsOnMap||0)&&insert(history[0],history[1]))continue;
   const last=out.length?out[out.length-1]:[state.x,state.y],center=[last[0]+behind[0],last[1]+behind[1]];
   let placed=false;
   for(let radius=0;radius<=4&&!placed;radius++){
@@ -597,7 +601,7 @@ function drawScene(){
   VISUAL.lastActingFrame=t
  }
  ctx.clearRect(0,0,canvas.width,canvas.height);const m=maps[state.map],target=cameraForMap();
- if(VISUAL.map!==state.map){VISUAL.map=state.map;VISUAL.camX=target.x;VISUAL.camY=target.y;VISUAL.playerX=state.x;VISUAL.playerY=state.y;VISUAL.followers=partyTrailPoints().map(p=>[p[0],p[1]])}
+ if(VISUAL.map!==state.map){VISUAL.map=state.map;VISUAL.camX=target.x;VISUAL.camY=target.y;VISUAL.playerX=state.x;VISUAL.playerY=state.y;VISUAL.followers=partyTrailPoints().map(p=>[p[0],p[1]]);VISUAL.followerPhases=[0,0,0];VISUAL.followerFaces=[state.dir,state.dir,state.dir]}
  const ease=.22;
  VISUAL.camX+=(target.x-VISUAL.camX)*ease;VISUAL.camY+=(target.y-VISUAL.camY)*ease;
  const oldX=VISUAL.playerX,oldY=VISUAL.playerY;
