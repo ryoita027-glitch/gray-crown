@@ -63,6 +63,38 @@ test('named villagers have job-specific pixel acting, while unnamed people do no
  assert.equal(life.villager(fakeCanvas(),'village',{id:'granz',x:8,y:5},0),false);
 });
 
+test('merchant cart changes presentation after the player helps, without changing their choice',()=>{
+ const life=worldLife(),signatures=[];
+ for(const decision of [undefined,'repair','return']){
+  const choices=decision?{'early.merchantCart':decision}:{};
+  const prior=JSON.stringify(choices),canvas=fakeCanvas();
+  life.ground(canvas,'road',choices);
+  assert.equal(JSON.stringify(choices),prior);
+  signatures.push(canvas.shapes.map(t=>t.join(',')).join('|'));
+ }
+ assert.equal(new Set(signatures).size,3);
+});
+
+test('four named residences use different architecture, not just different wall paint',()=>{
+ const ryune=new Function(get('js/render/ryune_environment.js')+';return houseIdentity')();
+ const signatures=new Set();
+ for(const kind of ['village','orphanage','mayorhouse','cottage']){
+  const canvas=fakeCanvas();
+  ryune(canvas,kind,96,64);
+  assert.ok(canvas.shapes.length>8,kind);
+  signatures.add(canvas.shapes.map(t=>t.join(',')).join('|'));
+ }
+ assert.equal(signatures.size,4);
+});
+
+test('work animation is very small, contextual and does not relocate NPC hitboxes',()=>{
+ const life=worldLife(),n={id:'baker',x:8,y:6},original=JSON.stringify(n);
+ const early=fakeCanvas(),late=fakeCanvas();
+ life.villager(early,'village',n,0);
+ life.villager(late,'village',n,1100);
+ assert.notEqual(JSON.stringify(early.shapes),JSON.stringify(late.shapes));
+ assert.equal(JSON.stringify(n),original);
+});
 test('worldlife micro-actions are proximity-scoped, opt-out and do not force animations elsewhere',()=>{
  const life=worldLife();
  const baker=[{id:'baker',x:8,y:6}];
