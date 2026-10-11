@@ -600,3 +600,8 @@ body:has(.battle-panel:not(.hidden)) .party-battle-line{left:5%;bottom:38px}
 /* Clear feedback that Break really prevented an enemy action. */
 #enemyVisual.staggered{filter:saturate(.56) brightness(.82) drop-shadow(0 0 8px rgba(247,198,112,.5))}
 #battlePanel:has(#enemyVisual.staggered) #stageEnemyState{color:#ffe4a8;font-weight:800}
+
+/* The current asset generators mostly shift a base pose by 1px for idle.
+   Keep inactive characters stable to avoid four uncanny simultaneous jitters. */
+.battle-hero.sprite .battle-sprite-frame{animation:none}
+.battle-hero.sprite.active:not(.strike) .battle-sprite-frame{animation:gcBattleIdleFrames 1.8s steps(1,end) infinite}
