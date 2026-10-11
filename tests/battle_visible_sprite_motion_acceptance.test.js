@@ -57,7 +57,7 @@ test('rapid corner input finishes each orthogonal walking segment before turning
  goal=api.enqueueWalkGoal(queue,goal,[1,0]);
  api.advanceWalkQueue(point,queue,.16);
  goal=api.enqueueWalkGoal(queue,goal,[1,1]);
- for(let i=0;i<5;i++){
+ for(let i=0;i<6;i++){
   assert.equal(point[1],0,'character diagonally cut the corner before reaching x=1');
   api.advanceWalkQueue(point,queue,.16)
  }
