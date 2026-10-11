@@ -64,6 +64,31 @@ def main():
     assert len({tuple(x) for x in positions["trail"]})==3,positions
     assert positions["phase"]>0,positions
     page.locator("#game").screenshot(path=str(OUT/f"road_walking_{width}.png"))
+    # Show real city architecture, population and palette in the same UI.
+    page.evaluate("""() => {
+      const s=GC.State.get();s.map='capital';s.x=12;s.y=9;s.dir='up';
+      s.trail=[];s.worldStepsOnMap=0;
+      GC.Render.World.VISUAL.map=null;GC.Render.World.draw()
+    }""")
+    page.wait_for_timeout(260)
+    assert page.evaluate("!!OpeningPixelAssets.getNpcAtlas('capitalVendor')"),"capital merchant art not painted"
+    page.locator("#game").screenshot(path=str(OUT/f"capital_{width}.png"))
+    # Catalog all NPC drawings at original 32px pixels (4x visual scale):
+    # no stock portraits or recolored single picture may pass as unique.
+    page.evaluate("""() => {
+      let gallery=document.getElementById('npcReviewGrid');
+      if(gallery)gallery.remove();
+      gallery=document.createElement('canvas');
+      gallery.id='npcReviewGrid';gallery.width=7*42;gallery.height=5*42;
+      gallery.style.cssText='width:1176px;height:840px;image-rendering:pixelated;background:#243039;display:block';
+      const g=gallery.getContext('2d');g.imageSmoothingEnabled=false;
+      Object.keys(OpeningPixelAssets.designs).forEach((id,i)=>{
+        OpeningPixelAssets.drawNpc(g,{id,x:(i%7)*42/32,y:Math.floor(i/7)*42/32},'down',0);
+      });
+      document.body.appendChild(gallery)
+    }""")
+    page.locator("#npcReviewGrid").screenshot(path=str(OUT/f"npc_all_35_{width}.png"))
+    page.evaluate("document.getElementById('npcReviewGrid').remove()")
     page.evaluate("startBattle('wolves')")
     page.wait_for_timeout(800)
     page.wait_for_function("""() => {
@@ -85,6 +110,15 @@ def main():
     assert all(x["displayed"]!="none" and x["opacity"]!="0" for x in images),images
     assert all(x["natural"][0]>=192 and x["natural"][1]>=192 for x in images),images
     assert all(x["frame"]==[48,48] and x["overflow"]=="hidden" for x in images),images
+    # Each hero must be separately visible and not touch the adjacent cell.
+    hero_boxes=[]
+    for i in range(4):
+     hero=page.locator(f"#battleHero{i}")
+     bb=hero.bounding_box()
+     assert bb and bb["width"]==48 and bb["height"]==48,(i,bb)
+     hero.screenshot(path=str(OUT/f"battle_hero{i}_{width}.png"))
+     hero_boxes.append(bb)
+    assert all(hero_boxes[i]["x"]+hero_boxes[i]["width"]<=hero_boxes[i+1]["x"] for i in range(3)),hero_boxes
     page.locator("#battlePanel").screenshot(path=str(OUT/f"battle_all_heroes_{width}.png"))
     assert not errors,errors
     print("PASS",width,"px: NPC atlas, house tile, follower stepping, 4 non-empty images, 48px clip")
