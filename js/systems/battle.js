@@ -26,15 +26,15 @@ function battleAction(type){if(state.locked||!state.battle)return;const b=state.
  if(!acted)return;
  // Same-target coordination rewards consecutive different hero attacks.
  // Stored only in the transient encounter; no save schema or boss stats change.
- if(d>0&&e.hp>=0){
-  if(b.comboTarget===e&&b.comboActor!==a.id){
+ if(d>0&&e.hp>0){
+  if(b.comboTarget===e&&b.comboActor!==a.id&&b.comboActor!=null){
    const extra=Math.min(3,e.hp);
    if(extra>0){e.hp-=extra;battleLog('連携成功！ '+a.name+'が仲間の作った隙を突き、追加'+extra+'ダメージ。');sfx('rally')}
   }
   b.comboTarget=e;b.comboActor=a.id;
  }else if(type!=='guard'&&type!=='rally'){b.comboTarget=null;b.comboActor=null}
  renderBattleStage();battleImpact(actorIndex,d,moraleLoss,visual,()=>{if(e.hp<=0){if(!livingEnemies().length)return battleWin();return nextActor()}if(e.morale!=null&&e.morale<=0)return battleSurrender();nextActor()})}
-function nextActor(){const b=state.battle;if(!b)return;b.actor++;if(b.actor>=state.party.length){b.actor=0;enemyTurn()}else renderBattle()}
+function nextActor(){const b=state.battle;if(!b)return;b.actor++;if(b.actor>=state.party.length){b.actor=0;b.comboTarget=null;b.comboActor=null;enemyTurn()}else renderBattle()}
 // Prevent 3 quick consecutive hits on one ally in a multi-enemy round.
 function selectEnemyTarget(alive,b,random=Math.random){
  const alternatives=alive.filter(p=>p.id!==b.lastTarget);
@@ -46,7 +46,7 @@ function selectEnemyTarget(alive,b,random=Math.random){
 }
 function enemyTurn(){const b=state.battle,bd=battles[b.id],foes=livingEnemies().slice();state.locked=true;let i=0;const step=()=>{if(i>=foes.length){state.party.forEach(p=>{p.guard=false;if(p.buff)p.buff=Math.max(0,p.buff-1)});if(state.party.every(p=>p.hp<=0))return battleLose();b.turn++;b.actor=0;state.locked=false;renderBattle();return}const e=foes[i++];if(bd.boss&&e.phase===1&&e.hp<e.maxHp*.65){e.phase=2;e.atk+=2;battleLog(`<strong class="boss-phase">PHASE II — ${bd.phase2||'攻勢が変化した'}</strong>`)}else if(bd.boss&&e.phase===2&&e.hp<e.maxHp*.3){e.phase=3;e.atk+=3;e.def+=1;battleLog(`<strong class="boss-phase">FINAL PHASE — ${bd.phase3||'全力を解放した'}</strong>`)}const alive=state.party.filter(p=>p.hp>0);if(!alive.length)return battleLose();// Telegraph tactical danger while preserving original fair target-selection rules.
  if(bd.boss&&e.phase>=2)battleLog('警戒：'+e.name+'が攻勢を強めている。防御と回復を確認しよう。');
- const originallyTargeted=selectEnemyTarget(alive,b);const t=GC.CommercialTactics?.protect?.(state.party,originallyTargeted)||originallyTargeted;let d=damageFormula(e.atk,t.def);if(t.guard)d=Math.max(1,Math.floor(d/2));if(GC.Dev?.settings?.invincible)d=0;t.hp=Math.max(0,t.hp-d);if(t!==originallyTargeted)battleLog(`${t.name}が${originallyTargeted.name}を庇った！ ${e.name}の攻撃を引き受け、${d}ダメージ。`);sfx('guard');else battleLog(`${e.name}の攻撃。${t.name}に${d}ダメージ。`);const ev=$('enemyVisual');if(ev){ev.classList.remove('shake');void ev.offsetWidth;ev.classList.add('shake')}battlePop('-'+d,'ally');sfx('hit');renderBattle();setTimeout(step,360)};step()}
+ const originallyTargeted=selectEnemyTarget(alive,b);const t=GC.CommercialTactics?.protect?.(state.party,originallyTargeted)||originallyTargeted;let d=damageFormula(e.atk,t.def);if(t.guard)d=Math.max(1,Math.floor(d/2));if(GC.Dev?.settings?.invincible)d=0;t.hp=Math.max(0,t.hp-d);if(t!==originallyTargeted)battleLog(`${t.name}が${originallyTargeted.name}を庇った！ ${e.name}の攻撃を引き受け、${d}ダメージ。`);if(t!==originallyTargeted)sfx('guard');else battleLog(`${e.name}の攻撃。${t.name}に${d}ダメージ。`);const ev=$('enemyVisual');if(ev){ev.classList.remove('shake');void ev.offsetWidth;ev.classList.add('shake')}battlePop('-'+d,'ally');sfx('hit');renderBattle();setTimeout(step,360)};step()}
 function battleWin(outcome='defeat'){const id=state.battle.id,bd=battles[id],r=bd.reward;GC.Log?.info('Battle End',{id,outcome});const scriptedEvent=findTriggeredEvent('battleWin',id,{outcome,map:state.map});if(scriptedEvent)applyEventEffects(scriptedEvent,{outcome,map:state.map});if(bd.boss)showBossCinematic(bd,true);const rewardGold=outcome==='surrender'?Math.floor(r.gold*.65):r.gold;state.gold+=rewardGold;const levelMessages=[];state.party.forEach(p=>{p.exp+=r.exp;const ups=applyLevelUps(p);for(const up of ups)levelMessages.push({name:p.name,...up})});battleLog(`${outcome==='surrender'?'戦闘終了':'勝利'}！ ${rewardGold}G、経験値${r.exp}を獲得。`);for(const u of levelMessages)battleLog(`<strong class="level-up">LEVEL UP! ${u.name} Lv.${u.level}　HP+${u.hp} MP+${u.mp} 攻撃+${u.atk} 防御+${u.def} 素早さ+${u.spd}</strong>`);if(r.drop&&Math.random()<r.drop.chance){state.inventory[r.drop.item]=(state.inventory[r.drop.item]||0)+1;battleLog(`${r.drop.item}を1個手に入れた。`)}
  if(id==='roadBandit'){markDefeated('bandit',true);addJournal(outcome==='surrender'?'街道のならず者を降伏させ、命を奪わず戦闘を終えた。':'街道のならず者との戦闘に勝利した。')}
  if(id==='bats'){markDefeated('bats',true);addJournal('古砦跡の入口付近に巣食うコウモリを追い払った。')}
