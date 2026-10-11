@@ -446,7 +446,17 @@ function inlineNpcEvent(id){
   }
   if(id==='capitalCitizen')return say('王都市民',structuredCondition('returnedKingdom')?'「勇者様……前よりずっと疲れた顔をしてる。戦争は、まだ終わらないんですか？」':'「勇者様！ 魔王を倒して、聖地を取り戻してください！」')
   if(id==='capitalFlowerGirl')return say('花売りの少女',structuredCondition('returnedKingdom')?'「前は勇者様の花飾りが一番売れたの。今は、お墓に供える白い花ばっかり」':'「勇者様！ 任命式の日は赤と白の花が飛ぶんだよ。王城の前、すっごくきれい！」')
-  if(id==='capitalRecruit')return say('新兵',structuredCondition('returnedKingdom')?'「次の総攻撃、俺たちも出るそうです。勇者様……勝てば、本当に終わるんでしょうか」':'「勇者様と同じ前線に行けるなら光栄です。俺も聖地を取り戻してみせます！」')
+  if(id==='capitalRecruit'){
+   if(structuredCondition('returnedKingdom'))return say('新兵','「次の総攻撃、俺たちも出るそうです。勇者様……勝てば、本当に終わるんでしょうか」');
+   const roadDecision=state.events?.choices?.['moral.lethal.roadBandit'];
+   if(!roadDecision)return say('新兵','「勇者様と同じ前線に行けるなら光栄です。俺も聖地を取り戻してみせます！」');
+   return saySequence([
+    {speaker:'新兵',text:'「勇者様と同じ前線に行けるなら光栄です。俺も聖地を取り戻してみせます！」'},
+    roadDecision==='kill'
+     ?{speaker:'カレン',text:'「……戦いで勝つことと、正しいことは同じじゃない。私もまだ、答えられない」'}
+     :{speaker:'ソフィ',text:'「どうか、武器を下ろした人を傷つけずに済む道も覚えていてください」'}
+   ])
+  }
   if(id==='capitalVendor')return capitalShop()
   if(id==='rationMother')return saySequence([{speaker:'配給待ちの母親',text:structuredCondition('returnedKingdom')?'「勇者様。息子は前線から戻りました。片腕を失ったけど、生きてます。……それでも私は、勝ってよかったって言うべきなんでしょうか」':'「配給は一人パン二つまで。王都でこれなら、地方はもっとひどいんでしょうね」'},{speaker:'ソフィ',text:structuredCondition('returnedKingdom')?'「生きて帰ったことを喜んでいいと思います。それと戦争を喜ぶことは、同じじゃありません」':'「私たちの村では、小麦そのものが足りません」'},{speaker:'配給待ちの母親',text:structuredCondition('returnedKingdom')?'「……そうね。そう言ってもらえると、少し楽です」':'「なのに任命式にはあんなに花を使う。王都って、不思議なところね」'}].concat(structuredCondition('returnedKingdom')?[]:earlyCapitalEcho()))
   if(id==='granz'){
