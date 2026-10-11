@@ -110,6 +110,68 @@ function companionAftermath(route){
  };
  return scenes[route]?.[path]||[{speaker:'ナレーション',text:'四人はまだ互いの結末を決めていない。語られていない選択は、勝手に埋められない。'}]
 }
+// Choice-aware routes reach a distinct tactical roadblock BEFORE meeting a ruler.
+// The four variants block movement, not the player's allegiance or existing saves.
+function finalConfrontationBattleId(route,decision){
+ const variants={
+  kingdom:{evacuate:'kingdomEvacuation',orders:'kingdomOrders'},
+  empire:{protect:'empireProtect',advance:'empireAdvance'}
+ };
+ return variants[route]?.[decision]||null
+}
+function runFinalRouteConfrontation(route){
+ if(state.finalChoice!==route)return say('ナレーション','まず中央の決断地点で進む道を選ぼう。');
+ const decision=state.events?.choices?.['route.companions.'+route];
+ if(!decision)return routeCompanionScene(route);
+ const battleId=finalConfrontationBattleId(route,decision);
+ if(!battleId)return say('マーガレット','「一度作戦を確認しましょう。誰を守るのか決まっていない」');
+ const completed='final.route.'+route+'.checkpoint';
+ if(!isEventComplete(completed)){
+  const openings={
+   kingdomEvacuation:[
+    {speaker:'ソフィ',text:'「あの封鎖班の先が避難路です。まず人々の通る道を開けましょう」'},
+    {speaker:'帝国の封鎖兵',text:'「民間人かどうか確認するまで通せない。引き返せ」'},
+    {speaker:'カレン',text:'「待てない人たちがいる。道を開けて。殺し合いをするためじゃない」'}
+   ],
+   kingdomOrders:[
+    {speaker:'トリトン',text:'「正面の警戒隊を止めれば、帝国本陣に話を通せる」'},
+    {speaker:'帝国前衛指揮兵',text:'「この先へ武装した王国の勇者を通すわけにはいかない」'},
+    {speaker:'マーガレット',text:'「どちらも退かないなら、戦闘を短く終わらせるしかない」'}
+   ],
+   empireProtect:[
+    {speaker:'ソフィ',text:'「護送されている王国兵を見ました。降伏している人たちへの攻撃は止めたいです」'},
+    {speaker:'王国の護送兵',text:'「帝国に寝返った勇者に、命令される筋合いはない！」'},
+    {speaker:'マーガレット',text:'「私たちが守りたいのは、旗ではなく降伏した人の命よ」'}
+   ],
+   empireAdvance:[
+    {speaker:'トリトン',text:'「あの伝令を止めれば、王国の追撃命令が前線へ届かない」'},
+    {speaker:'王国追撃指揮兵',text:'「命令を妨げるなら、勇者であろうと排除する！」'},
+    {speaker:'カレン',text:'「追撃が続けば、また焼けた村が増える。ここで止める」'}
+   ]
+  };
+  return saySequence(openings[battleId],()=>startBattle(battleId))
+ }
+ const consequences={
+  kingdom:{
+   evacuate:{speaker:'ソフィ',text:'「避難路が開きました。これで戦いの前に逃げられる人がいます」'},
+   orders:{speaker:'トリトン',text:'「前衛は退いた。でも後ろの人まで守れたかは、まだ分からない」'}
+  },
+  empire:{
+   protect:{speaker:'マーガレット',text:'「降伏者の保護を明文化する。帝国に協力しても、すべてを任せるわけじゃない」'},
+   advance:{speaker:'トリトン',text:'「追撃の伝令は止めた。次に来る命令まで、止められるとは限らない」'}
+  }
+ };
+ const lines=route==='kingdom'
+  ?[{speaker:'皇帝シオン',text:'「王国の勇者。前衛を越えて来た以上、退けとは言わない」'},
+    {speaker:'カレン',text:'「王国が正しかったから来たんじゃない。今、守らなければならない人がいるから来た」'},
+    consequences.kingdom[decision],
+    {speaker:'皇帝シオン',text:'「ならば立場は明確だ。だが、目の前の人間を国家の名と混同するな」'}]
+  :[{speaker:'総司令グランツ',text:'「まさか君たちが、こちらの守備を越えて来るとは」'},
+    {speaker:'カレン',text:'「故郷を嫌いになったわけじゃない。だからこそ、この戦争を止める」'},
+    consequences.empire[decision],
+    {speaker:'総司令グランツ',text:'「それも君たちが選んだ勇者の形か。……しかし軍の命令は止まらない」'}];
+ return saySequence(lines,()=>playRouteAftermath(route))
+}
 function grayCrownMorality(){const v=state.events?.choices||{};const lethal=Object.keys(v).filter(k=>k.startsWith('moral.lethal.')&&v[k]==='kill').length;const spared=Object.keys(v).filter(k=>k.startsWith('moral.lethal.')&&v[k]==='spare').length;return{lethal,spared,ashCrownUnlocked:lethal>=1,route:'uncommitted'}}
 function recordGrayCrownMoralChoice(id,decision){if(!['kill','spare'].includes(decision))return false;const key='moral.lethal.'+id;if(state.events.choices[key])return false;state.events.choices[key]=decision;addJournal(decision==='kill'?'自ら命を奪った。戦闘の勝敗とは異なる、取り返せない選択。':'抵抗できない敵を追撃せず、命を奪わなかった。');renderHud();return true}
 function finishSeradGravesChoice(choice){
@@ -341,8 +403,8 @@ function inlineNpcEvent(id){
   if(!(structuredCondition('finalKingdomPlan')&&structuredCondition('finalEmpirePlan')))return say('マーガレット','「決める前に両軍の作戦を確認しよう。王国側と帝国側、それぞれの前線を見ておきたい」');
   return say('カレン','「王国が戦争を始めた。でも、帝国の反攻で今の王国民まで潰していいわけじゃない。逆に王国の総攻撃を通せば、聖域の人たちがまた戦場になる。……ここからは、私たちが誰を守るために剣を使うか決める」',[{label:'アルディナ王国側に立つ',fn:()=>{state.finalChoice='kingdom';state.objective='北へ進み、帝国本陣へ向かう';addJournal('最終局面で、故郷と王国民を守るためアルディナ王国側に立つと決めた。');renderHud();say('トリトン','「決めたなら行こう。誰かに決められた勇者じゃなく、私たちで選んだんだ」',[],()=>routeCompanionScene('kingdom'))}},{label:'レグノア帝国側に立つ',fn:()=>{state.finalChoice='empire';state.objective='北へ進み、王国軍総司令部へ向かう';addJournal('最終局面で、聖域侵攻と勇者制度を止めるためレグノア帝国側に協力すると決めた。');renderHud();say('マーガレット','「自分の国に剣を向けることになる。それでも、ここまで見てきたものを無かったことにはできない」',[],()=>routeCompanionScene('empire'))}},...(grayCrownMorality().ashCrownUnlocked?[{label:'両国に従わず、灰冠の道を選ぶ',fn:()=>{saySequence([{speaker:'マーガレット',text:'「両国を倒した後に何が残るの？　王国も帝国も、そこに住む人たちまで敵なの？」'},{speaker:'ソフィ',text:'「私たちが守ると約束した人たちは、どうなるんですか」'},{speaker:'トリトン',text:'「カレン。ここから先は、間違えたで済まないぞ」'}],()=>say('カレン','「これは誰かに選ばされた勇者の道じゃない。私自身の責任になる」',[{label:'灰冠の道に進む（取り消せない決意）',fn:()=>{state.finalChoice='ashcrown';state.events.choices['moral.ashcrownCommitment']='confirmed';state.objective='灰冠ルート・未完成';addJournal('仲間の反対を聞いたうえで、両国の支配を拒絶し、灰冠の道を選んだ。');renderHud();say('マーガレット','「……それでも進むなら、私も黙って従うことはできない」',[],()=>routeCompanionScene('ashcrown'))}},{label:'決断を保留する',fn:()=>{addJournal('灰冠への決断を保留し、誰を守るべきか考え直した。');say('カレン','「まだ戻れる。みんなで考えよう」')}}]))}}]:[])])
  }
- if(state.map==='imperialcamp'&&id==='shion')return saySequence([{speaker:'皇帝シオン',text:'「王国の勇者。ここまで来た以上、退けとは言わない」'},{speaker:'カレン',text:'「私たちは王国が正しかったからここにいるんじゃない。今、王国の人たちを守るために来た」'},{speaker:'皇帝シオン',text:'「ならば立場は明確だ」'}],()=>playRouteAftermath('kingdom'))
- if(state.map==='royalcamp'&&id==='granzFinal')return saySequence([{speaker:'総司令グランツ',text:'「まさか君たちがこちらへ剣を向けるとはな」'},{speaker:'カレン',text:'「国を嫌いになったわけじゃない。だから、これ以上同じことを続けさせたくない」'},{speaker:'総司令グランツ',text:'「それもまた、君が選んだ勇者の形か」'}],()=>playRouteAftermath('empire'))
+ if(state.map==='imperialcamp'&&id==='shion')return runFinalRouteConfrontation('kingdom')
+ if(state.map==='royalcamp'&&id==='granzFinal')return runFinalRouteConfrontation('empire')
 
 }
 
