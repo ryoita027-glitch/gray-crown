@@ -63,7 +63,14 @@ for(const [choice,phrase] of [['names','旗の裏の名前'],['raise','直した
   h.evaluate("state.map='cave';objectEvent('banner')");
   assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),new RegExp(phrase));
   h.evaluate("state.map='capital';objectEvent('victoryPoster')");
-  const dialogue=h.evaluate('DIALOGUE_TYPE.fullHTML');
+  const dialogue=h.evaluate(`(()=>{
+   const shown=[DIALOGUE_TYPE.fullHTML];let limit=8;
+   while(dialogueContinue&&limit-->0){
+    const next=dialogueContinue;closeDialogue(false);next();
+    shown.push(DIALOGUE_TYPE.fullHTML)
+   }
+   return shown.join(' ')
+  })()`);
   assert.match(dialogue,choice==='names'?/普通の兵士の名前/:/帰る場所だった旗/);
  });
 }
