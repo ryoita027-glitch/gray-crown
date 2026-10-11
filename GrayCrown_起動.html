@@ -5,6 +5,33 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>灰冠の勇者たち</title>
   <link rel="stylesheet" href="css/game.css" />
+<script>
+/* Gray Crown embedded asset mapping: one-file, offline-first distribution */
+window.__GC_INLINE_ASSETS__=Object.create(null);
+const gc_asset_path=(value)=>String(value).replace(/(?:\.\.\/)?assets\/[\w\-/.]+\.(?:png|jpg|jpeg|webp|ogg|wav|svg)/gi,
+ match=>window.__GC_INLINE_ASSETS__[match.replace(/^\.\.\//,'')]||match);
+(function(){
+ const img=Object.getOwnPropertyDescriptor(HTMLImageElement.prototype,'src');
+ if(img&&img.set)Object.defineProperty(HTMLImageElement.prototype,'src',{configurable:true,
+  get(){return img.get.call(this)},set(value){return img.set.call(this,gc_asset_path(value))}});
+ const orig=HTMLImageElement.prototype.setAttribute;
+ HTMLImageElement.prototype.setAttribute=function(k,v){
+  return orig.call(this,k,String(k).toLowerCase()==='src'?gc_asset_path(v):v)};
+ const style=Object.getOwnPropertyDescriptor(CSSStyleDeclaration.prototype,'backgroundImage');
+ if(style&&style.set)Object.defineProperty(CSSStyleDeclaration.prototype,'backgroundImage',
+  {configurable:true,get:style.get,set(v){return style.set.call(this,gc_asset_path(v))}});
+ function hydrate(){
+  for(const el of document.querySelectorAll('img[src*="assets/"],[style*="assets/"]')){
+   let key=el.tagName==='IMG'?'src':'style',old=el.getAttribute(key),next=gc_asset_path(old);
+   if(old!==next)el.setAttribute(key,next);
+  }
+ }
+ new MutationObserver(hydrate).observe(document.documentElement,
+  {subtree:true,childList:true,attributes:true,attributeFilter:['src','style']});
+ document.addEventListener('DOMContentLoaded',hydrate);
+})();
+</script>
+<!-- GC_INLINE_ASSET_INSERT -->
 </head>
 <body>
   <div id="app">
