@@ -50,7 +50,7 @@ npm run frontier2-e2e
 npm run check
   JavaScript構文 + Node回帰 + 全Browser Gate。
 
-詳細は FRONTIER_SECTION2_DESIGN_v23.txt / CHANGELOG_v23.txt / TEST_REPORT_v23.txt / BUG_REPORT_v23.txt / KNOWN_ISSUES_v23.txt / NEXT_TASKS_v23.txt を参照してください。
+詳細は docs/history/FRONTIER_SECTION2_DESIGN_v23.txt / docs/history/CHANGELOG_v23.txt / docs/history/TEST_REPORT_v23.txt / docs/history/BUG_REPORT_v23.txt / docs/history/KNOWN_ISSUES_v23.txt / docs/history/NEXT_TASKS_v23.txt を参照してください。
 Visual Foundation note:
 - Game baseline: v23
 - Character Visual Patch: rev 23.1
@@ -61,3 +61,5 @@ Visual Foundation note:
 Current project status:
 - Authoritative current-state summary: docs/audit/CURRENT_PROJECT_STATE.md
 - Production remains main / v23; Pixel-native work remains experimental until explicitly adopted.
+
+File organization note: Legacy root TXT reports moved to docs/history/ on the documentation-cleanup branch. Game runtime files unchanged.
