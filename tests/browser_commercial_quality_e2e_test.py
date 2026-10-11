@@ -80,7 +80,7 @@ def main():
      page.wait_for_function("""hp => {
        const b=GC.State.get().battle;
        return b&&b.enemies[1].hp<hp
-     }""",before[1],timeout=8000)
+     }""",arg=before[1],timeout=8000)
      after=page.evaluate("GC.State.get().battle.enemies.map(e=>e.hp)")
      require(after[0]==before[0] and after[1]<before[1],
              'normal battle button damaged selected second enemy, not first',
