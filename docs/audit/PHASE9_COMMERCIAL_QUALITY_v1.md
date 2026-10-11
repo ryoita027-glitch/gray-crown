@@ -39,3 +39,15 @@ Only additive helper `js/render/commercial_quality.js`, battle renderer/UI, smal
 - **Safety:** The event-added display is optional and nonpersistent; disabling `CommercialQuality.enabled` bypasses role notes and discovery prompts, but does not reverse cap+4 balancing or targeting. Full rollback remains the separate PR branch, not a flag used as a substitute for functional testing.
 - **Regression sources:** `tests/commercial_quality.test.js` includes selected living enemy/fallback/invalid/locked guard, advice, labels and cap tests. Static syntax validation of battle renderer, battle system, event router, audio module, commercial UI and test source returned PASS in independent V8, including direct enemy focus smoke. **These results are explicitly not a real current-SHA Playwright/Node suite pass.**
 - **Open S1 QA:** full existing `npm test` + `npm run check`, Story 00–19 real journeys, Save23 old backup compatibility, 390px screenshots and all accepted sprite image actual browser loads must be measured on an exact branch checkout. **No marketability or commercial-quality guarantee is justified until human art and fun assessment too.**
+
+## 2026-10-11 — actual four-protagonist acting integration
+
+Prior world renderer loaded all four approved 48px WALK atlases but the world party always displayed the walk sheet even when characters stood still. This was a confirmed integration-level limitation, not evidence that the original drawn source assets were faulty.
+
+Phase9 `js/render/world.js` now preloads **the same accepted idle/talk atlases** for each Karen/Triton/Sophie/Margaret, selecting `walk` while walking, `idle` at rest, and `talk` for the character speaking in a dialogue. `js/systems/dialogue.js` uses bounded, approximately six-times-per-second world refreshes **only during hero text typing**, switching back to idle on closing. Existing `48×48` cell size, source 4-direction atlas rows, 44px display, foot anchor, fallback atlas and all pixel data are unchanged. This is a genuine integration of art assets, **not** an image redraw or completion of new facial expression art.
+
+The previous official 2026-10-08 artifact includes each hero's `idle` and `talk` atlases at 192×192 px (4 frames × four directions) and `walk` at 288×192 px (6 frames × four directions). Added Node tests inspect the actual PNG header dimensions, original animation-load references, and re-render hooks, so a broken atlas path/size can be caught automatically.
+
+**Remaining art S1:** inspect exact-current branch real Chromium captures for cutout edges, hero proportions, idle/talk pose cadence, UI portrait quality and diverse faces. The output cannot yet be truthfully described as commercial-quality original illustration until those are inspected and optionally redesigned with user approval.
+
+**Remaining game design S1:** targeting and capped rally may change actual battle outcomes, so use a complete same-SHA normal-input route and verify old save compatibility. The mere presence of extra decisions is not evidence the combat is now balanced or enjoyable.
