@@ -38,7 +38,7 @@ const OpeningWorldLife=(()=>{
  function village(c){
   // Sense of daily life; props at authored NPC landmarks, not imaginary loot.
   // Baker's stand: physically distinct from the mayor's house.
-  const [bx,by]=at(7,6);
+  const [bx,by]=at(7,5);
   R(c,'#544434',bx+1,by+21,62,8);R(c,'#b68b59',bx+2,by+15,60,8);
   for(let k=0;k<4;k++){let x=bx+8+k*13;R(c,'#ab8050',x,by+11,10,6);R(c,'#e3ba77',x+1,by+11,7,2)}
   R(c,'#ead5a4',bx+5,by+5,54,3);
@@ -63,7 +63,7 @@ const OpeningWorldLife=(()=>{
   R(c,'#806c8a',ox+9,oy+26,5,5);
   R(c,'#d3c09b',ox+10,oy+27,3,2);
   // Village notice board is at the square rather than a floating HUD label.
-  townNotice(c,9*32+1,8*32+2);
+  // No new solid board on a walkable square; the village door signs suffice.
   // Small footprints into lived-in door thresholds.
   for(const [x,y] of [[5,11],[18,11],[18,4],[4,4]]){
    R(c,'#988c70',x*32+7,y*32+26,9,2);
@@ -80,14 +80,14 @@ const OpeningWorldLife=(()=>{
    }
    R(c,'#c4b28c',px+12,py+23,8,1)
   }
-  cart(c,6*32+6,7*32+5);
+  c.save();c.translate(5*32+4,7*32+3);c.scale(.72,.72);cart(c,0,0);c.restore();
   // Lumber and tied parcels near the road's original merchant position.
   const [x,y]=at(8,8);
   R(c,'#584d3b',x+17,y+18,12,9);
   R(c,'#a48b64',x+19,y+16,9,10);
   R(c,'#c7aa78',x+21,y+17,4,2);
   // Weathered direction marker with no false clickable entrance.
-  townNotice(c,9*32+7,3*32+2);
+  // The existing roadSign interactive object is the actual signpost.
   // Sparse, recognizable milestones: extra detail concentrated at bends.
   for(const [tx,ty] of [[5,11],[17,5],[15,12]]){
    const [px,py]=at(tx,ty);
@@ -125,7 +125,7 @@ const OpeningWorldLife=(()=>{
    R(c,'#e4d7bb',x+11,y+24,11,1)
   }
   // Municipal announcement board ties into the existing propaganda object.
-  townNotice(c,14*32+9,5*32+6);
+  // Use the existing victoryPoster object: no impassable-looking false board.
  }
  function ground(c,map){if(!api.enabled)return false;
   if(map==='village')village(c);
