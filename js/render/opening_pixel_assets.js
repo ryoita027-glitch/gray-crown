@@ -182,7 +182,7 @@ const OpeningPixelAssets=(()=>{
   // Static villagers do not march in place. Workers animate arms while
   // feet stay planted; individual moving NPCs will use walk frames later.
   const working=['baker','farmer','merchant','capitalVendor','capitalFlowerGirl',
-   'capitalSmith','armoryApprentice','clerk'].includes(n.id);
+   'capitalSmith','armoryApprentice','clerk','capitalInnHost'].includes(n.id);
   const frame=near&&working?Math.floor(now/460)%4:0;
   c.save();c.imageSmoothingEnabled=false;
   c.drawImage(sheet,frame*32,(dirs[dir]??0)*32,32,32,n.x*32,n.y*32,32,32);
