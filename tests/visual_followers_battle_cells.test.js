@@ -12,7 +12,7 @@ function isolatedTrail(){
  const s=src('js/render/world.js');
  const begin=s.indexOf('function partyTrailPoints(){'),end=s.indexOf('\nfunction cameraForMap()',begin);
  assert.ok(begin>0&&end>begin);
- return new Function('state','COLS','ROWS','isBlocked',s.slice(begin,end)+';return partyTrailPoints');
+ return new Function('state','COLS','ROWS','isBlocked',s.slice(begin,end)+';return partyTrailPoints()');
 }
 test('a simple straight route yields three actual, equally spaced followers',()=>{
  const state={x:8,y:3,dir:'up',trail:Array.from({length:9},(_,i)=>[8,i+4])};
