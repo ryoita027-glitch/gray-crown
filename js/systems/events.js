@@ -64,12 +64,22 @@ function routeCompanionScene(route){
    const key='route.companions.'+route;
    if(state.events.choices[key])return;
    state.events.choices[key]=c.id;
+   if(route==='ashcrown')setWorldSwitch('ashcrownPartySeparated',true);
    addJournal('最終章・'+({kingdom:'王国',empire:'帝国',ashcrown:'灰冠'}[route])+'の道：'+c.entry);
-   renderHud();say(c.speaker,c.reply);
+   renderHud();if(route==='ashcrown')draw();say(c.speaker,c.reply);
  }}))));
  return true
 }
 // Companion fates are narrative aftermath, not removal from the active battle party.
+// A route-scoped active roster. Never remove saved party members or their experience.
+function activeRouteParty(s=state){
+ const full=s.party||[];
+ if(s.finalChoice!=='ashcrown')return full;
+ const choice=s.events?.choices?.['route.companions.ashcrown'];
+ if(choice!=='release'&&choice!=='demand')return full;
+ const allowed=choice==='release'?new Set(['karen','triton']):new Set(['karen']);
+ return full.filter(member=>allowed.has(member.id))
+}
 function companionAftermath(route){
  const path=state.events?.choices?.['route.companions.'+route]||'unresolved';
  const scenes={
