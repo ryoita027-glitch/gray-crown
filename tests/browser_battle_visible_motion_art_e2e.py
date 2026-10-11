@@ -39,6 +39,15 @@ def bundled_offline_game():
  setup="""
  <script>
  const offlineImages=__IMAGE_MAP__;
+ // about:blank has an opaque origin in restricted Chromium; reproduce local
+ // storage behavior without relying on an HTTP or file origin.
+ let temporarySavedData={};
+ Object.defineProperty(window,'localStorage',{configurable:true,value:{
+  getItem:k=>temporarySavedData[k]??null,
+  setItem:(k,v)=>temporarySavedData[k]=String(v),
+  removeItem:k=>delete temporarySavedData[k],
+  clear:()=>{temporarySavedData={}}
+ }});
  const oldSrc=Object.getOwnPropertyDescriptor(HTMLImageElement.prototype,'src');
  Object.defineProperty(HTMLImageElement.prototype,'src',{
   get(){return oldSrc.get.call(this)},
