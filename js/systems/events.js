@@ -637,6 +637,7 @@ function inlineObjectEvent(id){
   if(id==='rations'){
    if(state.events.choices['early.caveSupplies'])return say('トリトン','「残っていた携帯食はもう拾った。あとは空箱だな」');
    state.events.choices['early.caveSupplies']='taken';
+   setStructuredCondition('rations',true);
    state.inventory['携帯食']=(state.inventory['携帯食']||0)+1;
    addJournal('古砦の保存食箱から封の残った携帯食を1個見つけた。');
    renderHud();sfx('discovery');
