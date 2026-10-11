@@ -1,7 +1,0 @@
-# Gray Crown CI dependency lock
-# Versions captured from successful GitHub Actions run 37434067582 on 2026-10-06.
-pillow==12.3.0
-playwright==1.63.0
-greenlet==3.5.6
-pyee==13.0.1
-typing-extensions==4.16.0
