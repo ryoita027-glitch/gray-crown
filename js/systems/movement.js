@@ -32,7 +32,7 @@ function returnVillage(){
  useMapTransition('roadToVillage');state.objective='村で準備する／北門から旅を再開する';renderHud();
  const known=state.events.choices['early.orphanMedicine'];
  say('ナレーション',known==='donate'
-  ?'北門をくぐってリュネ村へ戻った。孤児院の窓に明かりが見える。薬を渡した日から、何もかもが急に変わったわけではない。'
+  ?'北門をくぐってリュネ村へ戻った。孤児院の窓に明かりが見える。薬を渡しても、何もかもが急に変わるわけではない。'
   :known==='reserve'
   ?'北門をくぐってリュネ村へ戻った。孤児院の窓に明かりが見える。薬草を残した日の判断について、ソフィは今も考えている。'
   :'北門をくぐり、リュネ村へ戻った。村の人々は旅立つ前と同じように、それぞれの生活を続けている。')
