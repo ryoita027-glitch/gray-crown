@@ -16,7 +16,7 @@ test('protective audio is conditional, combos stop at enemy turn, and dead foes 
  const src=fs.readFileSync(path.resolve(__dirname,'../js/systems/battle.js'),'utf8');
  assert.match(src,/if\(t!==originallyTargeted\)sfx\('guard'\);else/);
  assert.match(src,/b\.actor=0;b\.comboTarget=null;b\.comboActor=null;enemyTurn\(\)/);
- assert.match(src,/if\(d>0&&e\.hp>0\)/);
+ assert.match(src,/if\(d>0&&e\.hp>0&&e\.hp<e\.maxHp\)/);
  const h=createHarness();
  h.evaluate("startBattle('bats');state.locked=false");
  assert.equal(h.evaluate('state.battle.comboTarget'),null);

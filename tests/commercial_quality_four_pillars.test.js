@@ -46,7 +46,7 @@ test('Karen guard intercept is real, only while the defender is alive and active
  })()`);
  assert.deepEqual(Array.from(x),['karen','sophie','sophie']);
  const src=fs.readFileSync(path.resolve(__dirname,'../js/systems/battle.js'),'utf8');
- assert.ok(src.includes('originallyTargeted=selectEnemyTarget'));
+ assert.ok(src.includes('originallyTargeted=focus?.target||selectEnemyTarget('));
  assert.ok(src.includes('GC.CommercialTactics?.protect?.'));
  assert.ok(src.includes('t.guard'));
 });

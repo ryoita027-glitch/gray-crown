@@ -21,6 +21,8 @@
     "prototype-check": "npm run verify-hygiene && npm run verify-authority && npm run verify-python-syntax && npm run verify-karen-assets && npm run generate-triton-assets && npm run verify-triton-assets && npm run verify-triton-completion && npm run generate-sophie-assets && npm run verify-sophie-lock && npm run verify-sophie-assets && node tests/check-syntax.js && npm test && npm run prototype-browser-test",
     "generate-sophie-assets": "python tools/generate_sophie_prototype_assets.py --out assets/characters/sophie",
     "verify-sophie-assets": "python tools/verify_sophie_prototype_assets.py",
-    "verify-sophie-lock": "python tools/verify_sophie_direction_lock.py"
+    "verify-sophie-lock": "python tools/verify_sophie_direction_lock.py",
+    "three-route-browser-test": "python tests/browser_three_routes_integration_e2e.py",
+    "three-route-acceptance": "node tests/check-syntax.js && npm test && npm run three-route-browser-test"
   }
 }
