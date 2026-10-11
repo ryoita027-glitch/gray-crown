@@ -564,7 +564,7 @@ function currentQuestTarget(){const candidate=GC.CommercialDiscovery?.questHint?
 function drawQuestMarker(){const q=currentQuestTarget();if(!q)return;const m=maps[state.map],item=q.kind==='npc'?m.npcs.find(n=>n.id===q.id&&npcVisible(n)):m.objects.find(o=>o.id===q.id&&visibleObject(o));if(!item)return;const px=item.x*TILE+16,py=item.y*TILE-8;ctx.fillStyle='rgba(26,20,11,.78)';ctx.beginPath();ctx.arc(px,py,8,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f2cf67';ctx.beginPath();ctx.moveTo(px,py-6);ctx.lineTo(px+5,py);ctx.lineTo(px,py+6);ctx.lineTo(px-5,py);ctx.closePath();ctx.fill();ctx.strokeStyle='#fff0ad';ctx.lineWidth=1;ctx.stroke()}
 function drawAreaIdentity(){/* area identity is rendered by the HTML world HUD */}
 function viewScale(){if(INTERIOR_MAPS.includes(state.map))return 1.18;if(['capital','imperialcity','borderland','watchfort','empirevillage','elsia'].includes(state.map))return 1.25;return 1.16}
-const VISUAL={lastActingFrame:0,map:null,camX:0,camY:0,playerX:0,playerY:0,travelPhase:0,followers:[[12,13],[13,13],[14,13]],followerPhases:[0,0,0],followerFaces:['down','down','down'],raf:0,ambientTimer:0,nextMoveAt:0};
+const VISUAL={lastActingFrame:0,map:null,camX:0,camY:0,playerX:0,playerY:0,travelPhase:0,followers:[[12,13],[13,13],[14,13]],followerPhases:[0,0,0],followerFaces:['down','down','down'],leaderQueue:[],leaderGoal:null,followerQueues:[[],[],[]],followerGoals:[null,null,null],raf:0,ambientTimer:0,nextMoveAt:0};
 function partyTrailPoints(){
  // A follower owns each previous whole step. No 2/4/6 tile teleporting.
  const trail=Array.isArray(state.trail)?state.trail:[],used=new Set([state.x+','+state.y]),out=[];
@@ -587,6 +587,28 @@ function partyTrailPoints(){
  }
  return out
 }
+// Fixed-speed pixel movement toward consecutive orthogonal waypoints.
+ // Queues retain the turn corner when keyboard input arrives faster than draw.
+function advanceWalkQueue(point,queue,amount=.16){
+ let traveled=0,dx=0,dy=0;
+ while(queue.length){
+  const t=queue[0],vx=t[0]-point[0],vy=t[1]-point[1],distance=Math.hypot(vx,vy);
+  if(distance<.002){point[0]=t[0];point[1]=t[1];queue.shift();continue}
+  const step=Math.min(amount,distance);
+  dx=vx/distance*step;dy=vy/distance*step;
+  point[0]+=dx;point[1]+=dy;traveled=step;
+  if(distance<=amount+.002){point[0]=t[0];point[1]=t[1];queue.shift()}
+  break
+ }
+ return {distance:traveled,dx,dy}
+}
+function enqueueWalkGoal(queue,previous,next){
+ if(!next||!Number.isFinite(next[0])||!Number.isFinite(next[1]))return previous;
+ if(previous&&previous[0]===next[0]&&previous[1]===next[1])return previous;
+ queue.push([next[0],next[1]]);
+ if(queue.length>12)queue.splice(0,queue.length-12);
+ return [next[0],next[1]]
+}
 function cameraForMap(){const o=GC.Cinematic?.cameraTarget?.(),scale=o?.scale||viewScale(),vw=canvas.width/scale,vh=canvas.height/scale,worldW=COLS*TILE,worldH=ROWS*TILE,fx=Number.isFinite(o?.x)?o.x:state.x,fy=Number.isFinite(o?.y)?o.y:state.y,cx=fx*TILE+TILE/2,cy=fy*TILE+TILE/2;return{scale,x:Math.max(0,Math.min(worldW-vw,cx-vw/2)),y:Math.max(0,Math.min(worldH-vh,cy-vh/2))}}
 function drawScene(){
  // Do not skip camera or actor frames to throttle villagers.
@@ -601,30 +623,34 @@ function drawScene(){
   VISUAL.lastActingFrame=t
  }
  ctx.clearRect(0,0,canvas.width,canvas.height);const m=maps[state.map],target=cameraForMap();
- if(VISUAL.map!==state.map){VISUAL.map=state.map;VISUAL.camX=target.x;VISUAL.camY=target.y;VISUAL.playerX=state.x;VISUAL.playerY=state.y;VISUAL.followers=partyTrailPoints().map(p=>[p[0],p[1]]);VISUAL.followerPhases=[0,0,0];VISUAL.followerFaces=[state.dir,state.dir,state.dir]}
+ if(VISUAL.map!==state.map){VISUAL.map=state.map;VISUAL.camX=target.x;VISUAL.camY=target.y;VISUAL.playerX=state.x;VISUAL.playerY=state.y;VISUAL.followers=partyTrailPoints().map(p=>[p[0],p[1]]);VISUAL.followerPhases=[0,0,0];VISUAL.followerFaces=[state.dir,state.dir,state.dir];
+ VISUAL.leaderQueue=[];VISUAL.leaderGoal=[state.x,state.y];
+ VISUAL.followerQueues=[[],[],[]];VISUAL.followerGoals=VISUAL.followers.map(p=>[...p])}
  const ease=.22;
  VISUAL.camX+=(target.x-VISUAL.camX)*ease;VISUAL.camY+=(target.y-VISUAL.camY)*ease;
- const oldX=VISUAL.playerX,oldY=VISUAL.playerY;
- VISUAL.playerX+=(state.x-VISUAL.playerX)*.38;VISUAL.playerY+=(state.y-VISUAL.playerY)*.38;
- const advanced=Math.hypot(VISUAL.playerX-oldX,VISUAL.playerY-oldY);
+ VISUAL.leaderGoal=enqueueWalkGoal(VISUAL.leaderQueue,VISUAL.leaderGoal,[state.x,state.y]);
+ const leader=[VISUAL.playerX,VISUAL.playerY],advance=advanceWalkQueue(leader,VISUAL.leaderQueue,.16);
+ VISUAL.playerX=leader[0];VISUAL.playerY=leader[1];
+ const advanced=advance.distance;
  if(advanced>.001)VISUAL.travelPhase+=advanced*5.1;
  const trailPoints=partyTrailPoints();
  for(let i=0;i<3;i++){
   const t=trailPoints[i]||trailPoints[trailPoints.length-1]||[state.x,state.y];
   if(!VISUAL.followers[i])VISUAL.followers[i]=[t[0],t[1]];
-  const f=VISUAL.followers[i],dx=t[0]-f[0],dy=t[1]-f[1];
-  const nextX=f[0]+dx*.36,nextY=f[1]+dy*.36;
-  if(Math.abs(nextX-f[0])+Math.abs(nextY-f[1])>.003){
+  const f=VISUAL.followers[i],queue=VISUAL.followerQueues[i]||(VISUAL.followerQueues[i]=[]);
+  VISUAL.followerGoals[i]=enqueueWalkGoal(queue,VISUAL.followerGoals[i],t);
+  const movement=advanceWalkQueue(f,queue,.155);
+  if(movement.distance>.003){
+   const dx=movement.dx,dy=movement.dy;
    VISUAL.followerFaces[i]=Math.abs(dx)>=Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');
-   VISUAL.followerPhases[i]+=Math.hypot(nextX-f[0],nextY-f[1])*5.1;
+   VISUAL.followerPhases[i]+=movement.distance*5.1;
   }
-  f[0]=nextX;f[1]=nextY;
  }
  ctx.save();ctx.scale(target.scale,target.scale);ctx.translate(-VISUAL.camX,-VISUAL.camY);drawMapUnderlay(m);
  for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){drawTile(m.tiles[y][x],x,y);drawTileDetail(m.tiles[y][x],x,y)}drawTerrainBlend(m);drawVerticalSliceGround(m);
  if(state.map==='village'){if(RyuneEnvironment.enabled)RyuneEnvironment.drawVillage(ctx);else{drawVillageDecor();villageHouses.forEach(drawHouse)}}if(INTERIOR_MAPS.includes(state.map)){if(RyuneEnvironment.enabled&&RyuneEnvironment.rooms.has(state.map))RyuneEnvironment.drawInterior(ctx,state.map);else drawInteriorDecor();CapitalEnvironment.interior(ctx,state.map);}drawRegionDecor();AshFrontierEnvironment.accents(ctx,state.map);CapitalEnvironment.street(ctx,state.map);OpeningWorldLife.ground(ctx,state.map,state.events.choices);m.objects.forEach(drawObject);const cinematicActive=GC.Cinematic?.isActive?.()===true,controlledNpcs=new Set(GC.Cinematic?.controlledNpcIds?.()||[]);m.npcs.filter(n=>npcVisible(n)&&!controlledNpcs.has(n.id)).forEach(drawNpc);drawQuestMarker();
- if(cinematicActive){GC.Cinematic?.drawActors?.(ctx,{drawCharacterSprite,drawHeroSpriteSheet,drawNpcCommercial})}else{const leaderMoving=Math.abs(state.x-VISUAL.playerX)>.015||Math.abs(state.y-VISUAL.playerY)>.015,phase=leaderMoving?VISUAL.travelPhase:0;drawPartyRuntime(leaderMoving,phase);drawInteractionMarker()}GC.Dev?.drawWorldOverlay?.(ctx);ctx.restore();drawAreaIdentity();$('locationLabel').textContent=m.name;if($('safetyLabel')){const safe=encounterSafeZone();$('safetyLabel').textContent=safe?'● 安全地帯':'▲ 危険地帯';$('safetyLabel').classList.toggle('danger',!safe)};
- const followerTargets=partyTrailPoints(),followerMoving=VISUAL.followers.some((p,i)=>{const t=followerTargets[i]||p;return Math.abs(t[0]-p[0])>.01||Math.abs(t[1]-p[1])>.01});const moving=cinematicActive||Math.abs(target.x-VISUAL.camX)>.08||Math.abs(target.y-VISUAL.camY)>.08||Math.abs(state.x-VISUAL.playerX)>.01||Math.abs(state.y-VISUAL.playerY)>.01||followerMoving;
+ if(cinematicActive){GC.Cinematic?.drawActors?.(ctx,{drawCharacterSprite,drawHeroSpriteSheet,drawNpcCommercial})}else{const leaderMoving=VISUAL.leaderQueue.length>0||Math.abs(state.x-VISUAL.playerX)>.015||Math.abs(state.y-VISUAL.playerY)>.015,phase=leaderMoving?VISUAL.travelPhase:0;drawPartyRuntime(leaderMoving,phase);drawInteractionMarker()}GC.Dev?.drawWorldOverlay?.(ctx);ctx.restore();drawAreaIdentity();$('locationLabel').textContent=m.name;if($('safetyLabel')){const safe=encounterSafeZone();$('safetyLabel').textContent=safe?'● 安全地帯':'▲ 危険地帯';$('safetyLabel').classList.toggle('danger',!safe)};
+ const followerTargets=partyTrailPoints(),followerMoving=VISUAL.followers.some((p,i)=>{const t=followerTargets[i]||p;return Math.abs(t[0]-p[0])>.01||Math.abs(t[1]-p[1])>.01});const moving=cinematicActive||VISUAL.leaderQueue.length>0||VISUAL.followerQueues.some(q=>q.length>0)||Math.abs(target.x-VISUAL.camX)>.08||Math.abs(target.y-VISUAL.camY)>.08||Math.abs(state.x-VISUAL.playerX)>.01||Math.abs(state.y-VISUAL.playerY)>.01||followerMoving;
  const f=front(),interactableNpc=m.npcs.find(n=>npcVisible(n)&&n.x===f.x&&n.y===f.y),interactableObject=m.objects.find(o=>o.x===f.x&&o.y===f.y&&visibleObject(o));
  GC.CommercialUX?.update?.(state.map,interactableNpc,interactableObject);
  const worldLifeMotion=!isInputLocked()&&OpeningWorldLife.shouldBreathe(state.map,state.x,state.y,m.npcs);
