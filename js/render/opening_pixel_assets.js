@@ -55,67 +55,122 @@ const OpeningPixelAssets=(()=>{
   P(c,'#352d32',x-1,y-1,w+2,h+2);P(c,col,x,y,w,h)
  }
  // All pixels drawn in logical 32x32 cell coordinates.
- function person(c,profile,dir,frame){
-  const [hair,coat,skin,job,style]=profile;
-  const flip=frame===1?1:frame===3?-1:0;
-  const side=dir===1||dir===2,back=dir===3;
-  // Anatomical action frame: leg and forearm position changes, head fixed.
-  const working=['baker','farmer','smith','florist','scribe','merchant'].includes(job);
-  const [leftFoot,rightFoot]=working?[0,0]:[[0,0],[2,-1],[0,0],[-1,2]][frame];
-  const shoulder=job==='fighter'?8:job==='child'?5:6;
-  const bodyW=job==='child'?11:job==='elder'?15:14;
-  const center=16;
-  P(c,'#3d3334',center-7+leftFoot,25,5,5);
-  P(c,'#3d3334',center+2+rightFoot,25,5,5);
-  P(c,'#a59a83',center-6+leftFoot,27,3,2);
-  P(c,'#a59a83',center+3+rightFoot,27,3,2);
-  part(c,coat,center-(bodyW>>1),16,bodyW,11);
-  P(c,'#b7a183',center-(bodyW>>1),17,bodyW,2);
-  if(job==='baker'||job==='caretaker'||job==='smith')P(c,'#dacdb9',center-5,19,10,8);
-  if(job==='fighter')P(c,'#b9b8b2',center-7,19,14,3);
-  if(job==='merchant')P(c,'#ad8e67',center-7,17,4,10);
-  if(job==='florist')P(c,'#bc8191',center-5,19,10,5);
-  if(job==='scribe')P(c,'#a9a195',center-5,20,10,1);
-  // arms move oppositely with readable elbows, not translation of whole body
-  const la=frame===1?-3:frame===3?2:0,ra=frame===1?2:frame===3?-3:0;
-  part(c,coat,center-shoulder-3,17+la,4,9);
-  part(c,coat,center+shoulder-1,17+ra,4,9);
-  P(c,skin,center-shoulder-2,24+la,2,3);
-  P(c,skin,center+shoulder,24+ra,2,3);
-  // stable, individually shaped hair silhouette.
-  part(c,hair,9,4,14,13);
-  if(style==='long') {P(c,hair,8,10,4,14);P(c,hair,20,10,4,14)}
-  if(style==='bob'||style==='scarf'){P(c,hair,7,10,5,9);P(c,hair,20,10,5,9)}
-  if(style==='twin'){P(c,hair,5,11,5,8);P(c,hair,22,11,5,8)}
-  if(style==='messy'){P(c,hair,7,5,5,5);P(c,hair,20,4,5,7)}
-  if(style==='bun'){P(c,hair,19,3,7,7)}
-  if(style==='hat'||style==='hood'){P(c,style==='hat'?'#ae925e':coat,6,3,20,6);P(c,'#54453a',10,1,13,4)}
-  P(c,back?hair:skin,10,9,12,8);
-  if(side){P(c,hair,dir===1?17:8,10,5,8);P(c,'#493e38',dir===1?12:19,13,2,2)}
-  else if(!back){P(c,'#55443b',12,13,2,2);P(c,'#55443b',18,13,2,2);P(c,'#b77a6d',15,16,3,1)}
-  else{P(c,hair,10,9,12,8)}
-  if(style==='scar'&&!back)P(c,'#ac7c72',18,11,2,4);
-  // Specific occupational props independently articulated from frame to frame.
-  if(job==='baker'){P(c,'#7b5b42',23,17+ra,7,3);P(c,'#cf9c63',24,14+ra,5,4)}
-  if(job==='farmer'){P(c,'#9b835e',25,5,2,23);P(c,'#6c7152',23,4,7,3)}
-  if(job==='courier'){P(c,'#d9c6a4',22,19+ra,7,5);P(c,'#9c6c59',24,21+ra,3,1)}
-  if(job==='florist'){P(c,'#7b653f',24,19+ra,5,7);P(c,'#a15d6c',23,16+ra,5,4);P(c,'#7f9b6b',25,15+ra,2,4)}
-  if(job==='merchant'){P(c,'#776450',4,17+la,6,10);P(c,'#b6a17a',5,18+la,4,3)}
-  if(job==='smith'){P(c,'#a2a8aa',24,13+ra,3,10);P(c,'#675245',21,14+ra,9,4)}
-  if(job==='elder'){P(c,'#90795a',25,14,2,16)}
+ function tint(color,amount){
+  const n=parseInt(color.slice(1),16),f=x=>Math.min(255,Math.max(0,(x+amount)|0));
+  return '#'+[f(n>>16),f((n>>8)&255),f(n&255)].map(v=>v.toString(16).padStart(2,'0')).join('')
  }
- function makeNpc(profile){
+ function person(c,profile,dir,frame,id=''){
+  const [hair,coat,skin,job,style]=profile;
+  const side=dir===1||dir===2,back=dir===3,child=job==='child',
+   old=job==='elder',armed=job==='fighter',working=['baker','farmer','smith','florist','scribe','merchant'].includes(job);
+  let seed=0;for(const letter of id)seed=(seed*33+letter.charCodeAt(0))>>>0;
+  const variation=seed%4,headW=child?10:variation===0?11:variation===1?13:12,
+   headX=16-Math.floor(headW/2),headY=child?8:7;
+  const bodyW=armed?16:child?10:old?15:variation===3?12:14,bodyX=16-Math.floor(bodyW/2),bodyTop=child?18:16;
+  const front=dir===0,step=working?0:[0,2,0,-2][frame],
+   armL=frame===1?-3:frame===3?2:0,armR=frame===1?2:frame===3?-3:0;
+  const ink=tint(hair,-65),skinShadow=tint(skin,-27),coatLight=tint(coat,26),coatShade=tint(coat,-24),hairLight=tint(hair,25);
+  // Back layers establish hair silhouette BEFORE the body and face.
+  if(['long','twin','bob','scarf'].includes(style)){
+   P(c,ink,headX-3,headY+3,headW+6,17);
+   P(c,hair,headX-2,headY+4,headW+4,16);
+   if(style==='long')P(c,hair,headX+headW-1,headY+12,4,13);
+   if(style==='twin'){
+    P(c,ink,headX-5,headY+8,5,13);P(c,hair,headX-4,headY+9,3,11);
+    P(c,ink,headX+headW,headY+7,6,14);P(c,hair,headX+headW+1,headY+8,4,12);
+   }
+  }
+  // Shoes and legs are independently posed. Idle workers stay grounded.
+  const lx=11+step,rx=18-step;
+  P(c,'#2e3037',lx-1,24,6,7);P(c,'#2e3037',rx-1,24,6,7);
+  P(c,coatShade,lx,24,4,4);P(c,coatShade,rx,24,4,4);
+  P(c,'#68584d',lx-1,29,6,2);P(c,'#68584d',rx-1,29,6,2);
+  // Outfit silhouette differs between child, healer, warrior and trades.
+  P(c,'#2f353c',bodyX-1,bodyTop-1,bodyW+2,12);
+  P(c,coat,bodyX,bodyTop,bodyW,10);
+  P(c,coatLight,bodyX+1,bodyTop+1,2,7);
+  P(c,coatShade,bodyX+bodyW-3,bodyTop+1,2,8);
+  if(old){P(c,coat,bodyX-1,bodyTop+8,bodyW+2,5);P(c,coatShade,bodyX,bodyTop+10,bodyW,2)}
+  if(child){P(c,coat,bodyX+1,bodyTop+7,bodyW-2,4)}
+  if(armed){P(c,'#aeb2ac',bodyX,bodyTop+3,bodyW,3);P(c,coatShade,bodyX+bodyW/2-1,bodyTop+3,3,9)}
+  if(job==='baker'||job==='caretaker'||job==='smith'){
+   P(c,'#ead9b7',13,bodyTop+3,7,8);P(c,'#b7a78c',13,bodyTop+9,7,2);
+  }else if(job==='merchant'||job==='courier'){P(c,'#c5a46c',bodyX+3,bodyTop+1,3,10)}
+  else if(job==='scribe'){P(c,'#d5c5a4',bodyX+1,bodyTop+1,bodyW-2,2)}
+  else if(job==='florist'){P(c,'#cf8b9b',bodyX+2,bodyTop+4,bodyW-4,4)}
+  else if(variation===1){P(c,'#d1c0a0',bodyX+2,bodyTop+5,bodyW-4,2)}
+  else if(variation===2){P(c,coatLight,bodyX+bodyW-4,bodyTop+2,3,7)}
+  // Forearms have two distinct drawn joints per work frame.
+  const lw=armed?5:4,lh=old?7:9,shoulder=bodyW/2+2;
+  part(c,coat,16-shoulder-lw,bodyTop+2+armL,lw,lh);
+  part(c,coat,16+shoulder,bodyTop+2+armR,lw,lh);
+  P(c,skinShadow,16-shoulder-lw+1,bodyTop+lh+armL,3,3);
+  P(c,skin,16+shoulder+1,bodyTop+lh+armR,3,3);
+  // Face with deliberate cheek contour instead of identical rectangle heads.
+  P(c,ink,headX-2,headY-2,headW+4,12);
+  P(c,hair,headX-1,headY-1,headW+2,11);
+  if(style==='messy'){
+   P(c,ink,headX-3,headY-2,5,4);P(c,hair,headX-2,headY-3,4,4);
+   P(c,hairLight,headX+headW-2,headY-3,4,3);
+  }
+  if(style==='bun'){
+   P(c,ink,headX+headW-2,headY-5,7,8);
+   P(c,hair,headX+headW-1,headY-4,5,6);
+  }
+  if(style==='part'){P(c,hairLight,headX+2,headY-1,headW-5,2)}
+  if(style==='scarf'||style==='hood'){
+   P(c,coatShade,headX-3,headY,4,14);
+   P(c,coatShade,headX+headW-1,headY,4,14);
+  }
+  P(c,back?hair:skinShadow,headX,headY+3,headW,9);
+  if(!back){
+   P(c,skin,headX+1,headY+3,headW-2,7);
+   P(c,skinShadow,headX+1,headY+9,headW-2,1);
+  }
+  if(side){
+   P(c,hair,dir===1?headX+headW-3:headX,headY+4,3,8);
+   P(c,'#4d3839',dir===1?headX+2:headX+headW-4,headY+7,2,2);
+   P(c,skinShadow,dir===1?headX:headX+headW-1,headY+8,2,2);
+  }else if(front){
+   const eyeOffset=variation%2;
+   const eyeColor=variation===2?'#544149':'#483c3b';
+   P(c,eyeColor,headX+2,headY+7,2,2);P(c,eyeColor,headX+headW-4,headY+7,2,2);
+   if(!child&&variation===0){P(c,ink,headX+2,headY+5,3,1);P(c,ink,headX+headW-5,headY+5,3,1)}
+   if(!old&&variation===1){P(c,skinShadow,headX+2,headY+9,2,1);P(c,skinShadow,headX+headW-4,headY+9,2,1)}
+   P(c,variation===3?'#8f615a':'#936959',headX+Math.floor(headW/2),headY+10,2,1);
+  }
+  // Hair is the main identifier; pupils and brows never override the fringe.
+  if(style==='bob'||style==='long'||style==='scarf'){P(c,hair,headX-2,headY+4,3,8);P(c,hair,headX+headW-1,headY+4,3,8)}
+  if(style==='short'){P(c,hair,headX,headY+3,headW,3);P(c,hairLight,headX+1,headY+2,Math.max(3,headW-6),1)}
+  if(style==='twin'){P(c,hair,headX,headY+2,headW,4);P(c,hairLight,headX+2,headY+2,Math.max(3,headW-8),1)}
+  if(style==='hat'){
+   P(c,'#453f38',headX-6,headY,headW+12,3);
+   P(c,'#b09a69',headX-4,headY-5,headW+8,6);
+   P(c,'#e1c58e',headX-2,headY-2,headW+4,1);
+  }
+  if(style==='scar'&&front)P(c,'#ae7c6f',headX+headW-5,headY+6,2,4);
+  // Props communicate occupations but do not cover faces.
+  const held=frame===1?-1:frame===3?1:0;
+  if(job==='baker'){P(c,'#6d533d',24,21+held,6,3);P(c,'#dfb579',25,18+held,5,4)}
+  if(job==='farmer'){P(c,'#92744f',26,5,2,24);P(c,'#8d9870',24,4,7,3)}
+  if(job==='courier'){P(c,'#ddcda7',23,19+held,6,5);P(c,'#a4775c',24,21+held,4,1)}
+  if(job==='florist'){P(c,'#795b40',25,21+held,5,6);P(c,'#ca7e92',24,17+held,5,4);P(c,'#799669',26,15+held,2,5)}
+  if(job==='merchant'){P(c,'#7d6348',3,20+held,6,8);P(c,'#cfb184',4,20+held,4,3)}
+  if(job==='smith'){P(c,'#aab3b4',25,15+held,3,8);P(c,'#665247',23,16+held,7,4)}
+  if(job==='elder'){P(c,'#968165',27,15,2,16)}
+ }
+ function makeNpc(profile,id){
   const img=canvas(128,128);if(!img)return null;
   const c=img.getContext('2d');c.imageSmoothingEnabled=false;
   for(let dir=0;dir<4;dir++)for(let frame=0;frame<4;frame++){
-   c.save();c.translate(frame*32,dir*32);person(c,profile,dir,frame);c.restore()
+   c.save();c.translate(frame*32,dir*32);person(c,profile,dir,frame,id);c.restore()
   }
   return img
  }
  function drawNpc(c,n,dir='down',now=0){
   const profile=designs[n.id];if(!profile)return false;
   let sheet=npcCache.get(n.id);
-  if(!sheet){sheet=makeNpc(profile);if(!sheet)return false;npcCache.set(n.id,sheet)}
+  if(!sheet){sheet=makeNpc(profile,n.id);if(!sheet)return false;npcCache.set(n.id,sheet)}
   const near=now>0&&!((typeof matchMedia==='function')&&matchMedia('(prefers-reduced-motion:reduce)').matches);
   // Static villagers do not march in place. Workers animate arms while
   // feet stay planted; individual moving NPCs will use walk frames later.
