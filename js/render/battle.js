@@ -39,7 +39,9 @@ function renderBattle(){const b=state.battle;if(!b)return;$('turnLabel').textCon
   if(state.locked||!state.battle)return;
   if(GC.CommercialTactics.choose(state.battle,Number(btn.dataset.targetIndex))){sfx('select');renderBattle()}
  }));
- const tip=$('battleHelp');if(tip)tip.textContent=GC.CommercialTactics.hint(a,b);
+ const tip=$('battleHelp');if(tip)tip.textContent=GC.CommercialTactics.hint(a,b)+
+  (b.counterWindow&&b.counterWindow.turn===b.turn&&b.counterWindow.enemy.hp>0?
+   '　反撃の好機：予告攻撃を庇った！ 次の攻撃に追加5ダメージ（1回限り）。':'');
  const preview=$('battleForecast');if(preview){
   const plan=checkpointEnemyIntent(b);
   preview.classList.toggle('hidden',!plan);
