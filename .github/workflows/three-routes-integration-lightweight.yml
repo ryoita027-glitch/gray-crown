@@ -1,8 +1,7 @@
 name: Three Routes Integration - Lightweight Gate
+# Temporarily manual-only: GitHub runner fails before any step starts.
+# Re-enable scoped push checks after billing/runner status is resolved.
 on:
-  push:
-    branches:
-      - integration/three-routes-quality-gate-20261011
   workflow_dispatch:
 permissions:
   contents: read
