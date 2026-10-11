@@ -23,6 +23,8 @@
     "verify-sophie-assets": "python tools/verify_sophie_prototype_assets.py",
     "verify-sophie-lock": "python tools/verify_sophie_direction_lock.py",
     "three-route-browser-test": "python tests/browser_three_routes_integration_e2e.py",
-    "three-route-acceptance": "node tests/check-syntax.js && npm test && npm run three-route-browser-test"
+    "three-route-acceptance": "node tests/check-syntax.js && npm test && npm run three-route-browser-test",
+    "early-game-browser-test": "python tests/browser_early_game_human_stakes_e2e.py",
+    "early-game-acceptance": "node tests/check-syntax.js && npm test && npm run early-game-browser-test"
   }
 }
