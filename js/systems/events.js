@@ -609,7 +609,18 @@ function inlineObjectEvent(id){
   if(id==='wolf'&&!structuredCondition('roadWolf'))return startSymbolEncounter('wolf','wolves');
   if(id==='bandit'&&!structuredCondition('roadBandit'))return say('街道のならず者','「荷物と金を置いていけ。こっちも腹が減ってるんだ」',[{label:'戦う',fn:()=>startSymbolEncounter('bandit','roadBandit')},{label:'離れる',fn:()=>say('マーガレット','「本道は通れる。無理に相手をする必要はないわ」')}]);
   if(id==='cave')return enterCave();
-  if(id==='roadSign')return say('古い道標','「王都　北」「旧砦　東」<br><br>東を示す矢印だけが、新しく塗り直されている。')
+  if(id==='roadSign'){
+   if(state.events.choices['early.wolfScout']==='read')return say('マーガレット','「足跡は覚えたわ。灰牙狼は最初に一番守りの薄い相手を狙う。カレンの庇うが使える」');
+   return say('古い道標','「王都　北」「旧砦　東」。足元には新しい狼の足跡が続いている。',[
+    {label:'足跡を調べて備える',fn:()=>{
+      if(state.events.choices['early.wolfScout'])return;
+      state.events.choices['early.wolfScout']='read';
+      addJournal('街道の狼の足跡を調べ、最初の襲撃に備えた。');
+      renderHud();say('マーガレット','「狼は後衛に回り込む。カレン、庇う準備を。先に動きを読めば被害は減らせる」');
+    }},
+    {label:'先を急ぐ',fn:()=>say('トリトン','「急ごう。危なくなったら互いに守ればいい」')}
+   ])
+  }
  }
  if(state.map==='cave'){
   if(id==='caveRest')return limitedRecovery('caveRest','古砦の兵舎跡','使えそうな毛布と薬包が一組だけ残っている。','field','兵舎跡で短く休んだ。HPが全回復し、MPも少し戻った。')
@@ -623,7 +634,14 @@ function inlineObjectEvent(id){
   if(id==='leverEast'){if(!structuredCondition('caveCrawler'))return say('マーガレット','「あの石殻ムカデが機構の前に居座ってる。動かすなら先に何とかしないと」');if(structuredCondition('leverEast'))return say('東側の開閉機構','歯車はゆっくり回り続けている。');setStructuredCondition('leverEast',true);sfx('lever');state.objective=structuredCondition('leverWest')?'中央の鉄格子へ戻る':'西側の開閉機構も探す';renderHud();draw();return say('東側の開閉機構','錆びた歯車が軋みながら回り始めた。<br><br>マーガレット「これで中央の鉄格子が開くはず」')}
   if(id==='innerGate'){if(structuredCondition('leverWest')&&structuredCondition('leverEast'))return say('ナレーション','二つの機構が作動し、中央の鉄格子は開いている。');return say('マーガレット','「左右に二つの錠前機構がつながってる。西側と東側、両方を動かさないと開かないみたい」')}
   if(id==='banner')return earlyCaveBannerVisit()
-  if(id==='rations'){setStructuredCondition('rations',true);return say('トリトン','「空の保存食箱だ。新しい足跡はない。兵士が潜んでるって感じじゃなさそうだな」')}
+  if(id==='rations'){
+   if(state.events.choices['early.caveSupplies'])return say('トリトン','「残っていた携帯食はもう拾った。あとは空箱だな」');
+   state.events.choices['early.caveSupplies']='taken';
+   state.inventory['携帯食']=(state.inventory['携帯食']||0)+1;
+   addJournal('古砦の保存食箱から封の残った携帯食を1個見つけた。');
+   renderHud();sfx('discovery');
+   return say('トリトン','「箱はほぼ空だ。でも奥に一食分だけある。携帯食を1個手に入れた！」');
+  }
   if(id==='boss'&&!structuredCondition('bossDead')){if(!(structuredCondition('leverWest')&&structuredCondition('leverEast')))return say('マーガレット','「中央の鉄格子が閉じてる。左右の開閉機構を両方動かさないと奥へ行けないわ」');return say('カレン','「こいつが北の通路を塞いでる……！」',[{label:'戦う',fn:()=>startBattle('boss')},{label:'いったん下がる',fn:()=>say('マーガレット','「先に宝箱や脇道を調べてもいいわ」')}]);}
  }
  if(state.map==='northroad'){
