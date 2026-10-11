@@ -33,7 +33,7 @@ const CommercialQuality=(()=>{
   if(!battle)return{label:'',advice:'',actor:null};
   const actor=party[battle.actor];
   if(!actor)return{label:'',advice:'',actor:null};
-  const enemies=battle.enemies.filter(e=>e.hp>0),enemy=enemies[0],r=roles[actor.id]||roles.karen;
+  const enemies=battle.enemies.filter(e=>e.hp>0),enemy=battle.enemies[battle.focusEnemy]?.hp>0?battle.enemies[battle.focusEnemy]:enemies[0],r=roles[actor.id]||roles.karen;
   let advice=r.battle;
   const vulnerable=party.filter(p=>p.hp>0&&p.hp/p.maxHp<.55);
   if(actor.id==='sophie'&&vulnerable.length&&actor.mp>=6)
