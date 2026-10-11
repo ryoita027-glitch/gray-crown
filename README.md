@@ -4,7 +4,7 @@
 
 ## 何を開くべきか
 
-- **GitHub上で最後まで継承された開発候補:** [chore/clean-player-distribution-20261011](../../tree/chore/clean-player-distribution-20261011)（PR #69、PR #68以前の改善を含む。未承認・未統合）
+- **GitHub上で最後まで継承された開発候補:** [chore/clean-player-distribution-20261011](https://github.com/ryoita027-glitch/gray-crown/tree/chore/clean-player-distribution-20261011)（PR #69、PR #68以前の改善を含む。未承認・未統合）
 - **整理専用ブランチ:** `maintenance/repository-triage-20261011`（ゲーム本体はGitHubの上記候補から変更なし）
 - **最新ユーザーテスト版 v5:** `Gray_Crown_NPC_Hero_Recovery_v5.zip`。現時点でGitHubに未保存。*内容を検証してから統合する*。
 - **監査詳細:** [docs/audit/REPOSITORY_TRIAGE_20261011.md](docs/audit/REPOSITORY_TRIAGE_20261011.md)
