@@ -104,6 +104,27 @@ def faction_case(browser,url,route,choice,battle_id,expected_target):
   assert expected_target in forecast.inner_text(),forecast.inner_text()
   EVIDENCE.mkdir(parents=True,exist_ok=True)
   page.screenshot(path=str(EVIDENCE/f"combat_{route}_{choice}.png"))
+  if battle_id=="kingdomEvacuation":
+   # A full four-hero combat turn through actual UI buttons.
+   page.wait_for_function("GC.State.get().battle && !GC.State.get().locked")
+   initial=page.evaluate("""() => ({
+     karen:GC.State.get().party.find(p=>p.id==='karen').hp,
+     sophie:GC.State.get().party.find(p=>p.id==='sophie').hp
+   })""")
+   for action,next_actor in [("guard",1),("heavy",2),("prayer",3),("staffMargaret",0)]:
+    page.wait_for_function("""actor => {
+      const s=GC.State.get();return s.battle&&!s.locked&&s.battle.actor===actor
+    }""",next_actor,timeout=9000)
+    page.locator(f'#battleActions button[data-battle="{action}"]').click()
+   page.wait_for_function("""() => {
+     const s=GC.State.get();return s.battle&&!s.locked&&s.battle.turn>=2
+   }""",timeout=9000)
+   after=page.evaluate("""() => ({
+     karen:GC.State.get().party.find(p=>p.id==='karen').hp,
+     sophie:GC.State.get().party.find(p=>p.id==='sophie').hp
+   })""")
+   assert after["sophie"]==initial["sophie"],"Forecasted attack bypassed Karen guard"
+   assert after["karen"]<initial["karen"],"Karen did not intercept attack"
   clear_by_mercy(page)
   assert page.evaluate("grayCrownMorality().lethal")==0
   check_save_reload(page,route,choice,f"final.route.{route}.checkpoint")
