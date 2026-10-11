@@ -51,7 +51,7 @@
   const target=targetForHint(b);
   const comboReady=!!(target&&b?.comboTarget===target&&b.comboActor&&b.comboActor!==actor?.id&&actor?.hp>0);
   const coordination=comboReady?'　連携可能：同じ敵に攻撃すると追加ダメージ。':'';
-  return(hints[actor?.id]||'')+
+  return(actor?.id==='karen'&&activeRouteParty().length===1?'防御：自分への攻撃を軽減。号令：自身の攻撃を補助。':hints[actor?.id]||'')+
     (b?.enemies.filter(e=>e.hp>0).length>1?'　敵を選んでから行動できます。':'')+coordination+bossForecast(b)
  }
  function targetForHint(b){return b?target(b):null}
