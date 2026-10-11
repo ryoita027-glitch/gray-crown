@@ -33,6 +33,42 @@ function applyEventEffect(effect,context={}){
 }
 function applyEventEffects(def,context={}){for(const effect of def?.effects||[])applyEventEffect(effect,context);if(def?.id)GC.Log?.info('Story Event Effects',{id:def.id,stage:state.story.stage,context});GC.Dev?.noteEvent?.(def?.id||null);GC.Dev?.refresh?.();return def}
 function playEventDialogue(def,after=null){if(!def){after?.();return false}const finish=()=>{if(def.postLines?.length)saySequence(def.postLines,after);else after?.()};if(def.lines?.length)saySequence(def.lines,finish);else finish();return true}
+function routeCompanionScene(route){
+ const scenes={
+  kingdom:{
+   lines:[{speaker:'カレン',text:'「王国を守る。でも作戦書には、逃げられない人が書かれていない」'},
+          {speaker:'ソフィ',text:'「先に避難路を確かめたいです。軍の命令より遅くなるかもしれません」'},
+          {speaker:'トリトン',text:'「私が前に出る。時間を稼げるはずだ」'},
+          {speaker:'マーガレット',text:'「勝っても村が焼けたら、何のための勝利？」'}],
+   choices:[{id:'evacuate',label:'住民の避難を優先する',entry:'ソフィは避難路の確保を担い、トリトンは退却時間を稼ぐ。',speaker:'ソフィ',reply:'「先に人を守れるなら、私は迷いません」'},
+            {id:'orders',label:'王国軍の作戦を優先する',entry:'トリトンは前衛を引き受けるが、ソフィは避難の遅れを案じ続けた。',speaker:'マーガレット',reply:'「決めたなら、失われるものも記録しておく」'}]
+  },
+  empire:{
+   lines:[{speaker:'マーガレット',text:'「王国に刃を向けるのと、王国人を敵と決めるのは違う」'},
+          {speaker:'ソフィ',text:'「降伏した王国兵も、帰る家があるはずです」'},
+          {speaker:'トリトン',text:'「故郷の兵士と向き合うことになる。それでも、無駄な戦いは終わらせたい」'}],
+   choices:[{id:'protect',label:'降伏者の保護を条件にする',entry:'ソフィが保護を申し出て、マーガレットは帝国側の作戦記録に条件を書き込んだ。',speaker:'マーガレット',reply:'「帝国に協力するからこそ、要求できることがある」'},
+            {id:'advance',label:'まず軍の進撃を止める',entry:'トリトンは戦線を止める役を引き受け、ソフィは捕虜の処遇を後から確認することにした。',speaker:'トリトン',reply:'「止める戦いなら、私が先に立つ」'}]
+  },
+  ashcrown:{
+   lines:[{speaker:'マーガレット',text:'「王国も帝国も倒す。それを私たちの同意だと思わないで」'},
+          {speaker:'ソフィ',text:'「私は傷ついた人を置いていけません。カレンの命令でも」'},
+          {speaker:'トリトン',text:'「幼馴染だから、間違った時も一緒にいるとは約束してない」'}],
+   choices:[{id:'release',label:'仲間に去る自由を認める',entry:'ソフィは傷ついた人々の元へ向かい、マーガレットは独立して戦いの記録を残す。トリトンはカレンを見届けるため残った。',speaker:'カレン',reply:'「……行って。私が選んだことまで背負わなくていい」'},
+            {id:'demand',label:'最後まで従うよう求める',entry:'ソフィは従うことを拒み、マーガレットも距離を置いた。トリトンだけがカレンに向き合っている。',speaker:'トリトン',reply:'「命令には従わない。止める必要があるなら、止める」'}]
+  }
+ };
+ const scene=scenes[route];if(!scene)return false;
+ if(state.events.choices['route.companions.'+route])return false;
+ saySequence(scene.lines,()=>say('カレン',route==='ashcrown'?'「……三人に、どう答える？」':'「私たちの進み方を決めよう」',scene.choices.map(c=>({label:c.label,fn:()=>{
+   const key='route.companions.'+route;
+   if(state.events.choices[key])return;
+   state.events.choices[key]=c.id;
+   addJournal('最終章・'+({kingdom:'王国',empire:'帝国',ashcrown:'灰冠'}[route])+'の道：'+c.entry);
+   renderHud();say(c.speaker,c.reply);
+ }}))));
+ return true
+}
 function grayCrownMorality(){const v=state.events?.choices||{};const lethal=Object.keys(v).filter(k=>k.startsWith('moral.lethal.')&&v[k]==='kill').length;const spared=Object.keys(v).filter(k=>k.startsWith('moral.lethal.')&&v[k]==='spare').length;return{lethal,spared,ashCrownUnlocked:lethal>=1,route:'uncommitted'}}
 function recordGrayCrownMoralChoice(id,decision){if(!['kill','spare'].includes(decision))return false;const key='moral.lethal.'+id;if(state.events.choices[key])return false;state.events.choices[key]=decision;addJournal(decision==='kill'?'自ら命を奪った。戦闘の勝敗とは異なる、取り返せない選択。':'抵抗できない敵を追撃せず、命を奪わなかった。');renderHud();return true}
 function finishSeradGravesChoice(choice){
@@ -262,7 +298,7 @@ function inlineNpcEvent(id){
  if(state.map==='returnroad'&&id==='returnScout')return say('王国軍伝令','「勇者一行！？ 生きていたのか。王都ではもう……いや、総司令部へ急げ。君たちに見せられない記録を処分しているという噂がある」')
  if(state.map==='finalfield'&&id==='decisionGuide'){
   if(!(structuredCondition('finalKingdomPlan')&&structuredCondition('finalEmpirePlan')))return say('マーガレット','「決める前に両軍の作戦を確認しよう。王国側と帝国側、それぞれの前線を見ておきたい」');
-  return say('カレン','「王国が戦争を始めた。でも、帝国の反攻で今の王国民まで潰していいわけじゃない。逆に王国の総攻撃を通せば、聖域の人たちがまた戦場になる。……ここからは、私たちが誰を守るために剣を使うか決める」',[{label:'アルディナ王国側に立つ',fn:()=>{state.finalChoice='kingdom';state.objective='北へ進み、帝国本陣へ向かう';addJournal('最終局面で、故郷と王国民を守るためアルディナ王国側に立つと決めた。');renderHud();say('トリトン','「決めたなら行こう。誰かに決められた勇者じゃなく、私たちで選んだんだ」')}},{label:'レグノア帝国側に立つ',fn:()=>{state.finalChoice='empire';state.objective='北へ進み、王国軍総司令部へ向かう';addJournal('最終局面で、聖域侵攻と勇者制度を止めるためレグノア帝国側に協力すると決めた。');renderHud();say('マーガレット','「自分の国に剣を向けることになる。それでも、ここまで見てきたものを無かったことにはできない」')}},...(grayCrownMorality().ashCrownUnlocked?[{label:'両国に従わず、灰冠の道を選ぶ',fn:()=>{saySequence([{speaker:'マーガレット',text:'「両国を倒した後に何が残るの？　王国も帝国も、そこに住む人たちまで敵なの？」'},{speaker:'ソフィ',text:'「私たちが守ると約束した人たちは、どうなるんですか」'},{speaker:'トリトン',text:'「カレン。ここから先は、間違えたで済まないぞ」'}],()=>say('カレン','「これは誰かに選ばされた勇者の道じゃない。私自身の責任になる」',[{label:'灰冠の道に進む（取り消せない決意）',fn:()=>{state.finalChoice='ashcrown';state.events.choices['moral.ashcrownCommitment']='confirmed';state.objective='灰冠ルート・未完成';addJournal('仲間の反対を聞いたうえで、両国の支配を拒絶し、灰冠の道を選んだ。');renderHud();say('マーガレット','「……それでも進むなら、私も黙って従うことはできない」')}},{label:'決断を保留する',fn:()=>{addJournal('灰冠への決断を保留し、誰を守るべきか考え直した。');say('カレン','「まだ戻れる。みんなで考えよう」')}}]))}}]:[])])
+  return say('カレン','「王国が戦争を始めた。でも、帝国の反攻で今の王国民まで潰していいわけじゃない。逆に王国の総攻撃を通せば、聖域の人たちがまた戦場になる。……ここからは、私たちが誰を守るために剣を使うか決める」',[{label:'アルディナ王国側に立つ',fn:()=>{state.finalChoice='kingdom';state.objective='北へ進み、帝国本陣へ向かう';addJournal('最終局面で、故郷と王国民を守るためアルディナ王国側に立つと決めた。');renderHud();say('トリトン','「決めたなら行こう。誰かに決められた勇者じゃなく、私たちで選んだんだ」',[],()=>routeCompanionScene('kingdom'))}},{label:'レグノア帝国側に立つ',fn:()=>{state.finalChoice='empire';state.objective='北へ進み、王国軍総司令部へ向かう';addJournal('最終局面で、聖域侵攻と勇者制度を止めるためレグノア帝国側に協力すると決めた。');renderHud();say('マーガレット','「自分の国に剣を向けることになる。それでも、ここまで見てきたものを無かったことにはできない」',[],()=>routeCompanionScene('empire'))}},...(grayCrownMorality().ashCrownUnlocked?[{label:'両国に従わず、灰冠の道を選ぶ',fn:()=>{saySequence([{speaker:'マーガレット',text:'「両国を倒した後に何が残るの？　王国も帝国も、そこに住む人たちまで敵なの？」'},{speaker:'ソフィ',text:'「私たちが守ると約束した人たちは、どうなるんですか」'},{speaker:'トリトン',text:'「カレン。ここから先は、間違えたで済まないぞ」'}],()=>say('カレン','「これは誰かに選ばされた勇者の道じゃない。私自身の責任になる」',[{label:'灰冠の道に進む（取り消せない決意）',fn:()=>{state.finalChoice='ashcrown';state.events.choices['moral.ashcrownCommitment']='confirmed';state.objective='灰冠ルート・未完成';addJournal('仲間の反対を聞いたうえで、両国の支配を拒絶し、灰冠の道を選んだ。');renderHud();say('マーガレット','「……それでも進むなら、私も黙って従うことはできない」',[],()=>routeCompanionScene('ashcrown'))}},{label:'決断を保留する',fn:()=>{addJournal('灰冠への決断を保留し、誰を守るべきか考え直した。');say('カレン','「まだ戻れる。みんなで考えよう」')}}]))}}]:[])])
  }
  if(state.map==='imperialcamp'&&id==='shion')return saySequence([{speaker:'皇帝シオン',text:'「王国の勇者。ここまで来た以上、退けとは言わない」'},{speaker:'カレン',text:'「私たちは王国が正しかったからここにいるんじゃない。今、王国の人たちを守るために来た」'},{speaker:'皇帝シオン',text:'「ならば立場は明確だ」'}],()=>showWorldSkeletonEnding('kingdom'))
  if(state.map==='royalcamp'&&id==='granzFinal')return saySequence([{speaker:'総司令グランツ',text:'「まさか君たちがこちらへ剣を向けるとはな」'},{speaker:'カレン',text:'「国を嫌いになったわけじゃない。だから、これ以上同じことを続けさせたくない」'},{speaker:'総司令グランツ',text:'「それもまた、君が選んだ勇者の形か」'}],()=>showWorldSkeletonEnding('empire'))
