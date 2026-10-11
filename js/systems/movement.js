@@ -58,7 +58,45 @@ function playRouteAftermath(route){
  });
  return true
 }
-function showWorldSkeletonEnding(route){if(route==='ashcrown'){completeEvent('worldSkeletonCleared',true);state.objective='灰冠ルート構造到達（最終章は未制作）';renderHud();say('ナレーション','<div class="ending"><h2>灰冠 — 空の玉座</h2><p>王国も帝国も、軍旗を掲げる者は消えた。カレンは灰を払った冠を拾い、誰も残らない玉座に座る。</p><p>守る人々のいない土地で、何を治めるというのか。</p><p class="ending-note">物語構造確認用・未完成エンディング</p></div>');return}completeEvent('worldSkeletonCleared',true);setWorldSwitch('cleared',true);state.objective='全章マップ骨組み到達（各章の本実装はこれから）';renderHud();say('ナレーション',`<div class="ending"><h2>Architecture Refactor v19</h2><p>${route==='kingdom'?'王国側に立ち、皇帝シオンへ向かうルート':'帝国側に協力し、総司令グランツへ向かうルート'}まで到達しました。</p><p>序章から最終章までの主要地域が一本につながっています。</p><p><strong>次の制作段階：</strong>各地域の建物内部・住民・サブイベントを順番に肉付けする。</p><p class="ending-note">これは物語の結末ではなく、全体構造確認用の仮ゴールです。</p></div>`)}
+function showWorldSkeletonEnding(route){
+ const selected=state.events?.choices?.['route.companions.'+route];
+ const previews={
+  kingdom:{
+   title:'王国ルート — 白旗の行方',
+   scene:selected==='evacuate'
+    ?'城門の向こうでは、避難路を渡る家族の足音が続いていた。戦況を記す旗には載らない、小さな勝利。'
+    :'王国軍の報告書には前衛突破とだけ記された。その紙に、逃げられなかった人々の名前はまだない。',
+   karen:'「王国を守ると言った。でも、守る相手を国王に決めてもらうつもりはない」',
+   conclusion:'白い旗の下で、勇者が選んだのは命令ではなく自分たちの責任だった。'
+  },
+  empire:{
+   title:'帝国ルート — 裏切りの名前',
+   scene:selected==='protect'
+    ?'救護幕舎には、赤と青の布が並んでいた。降伏した兵士たちの名簿には国籍と同じだけ帰る場所がある。'
+    :'追撃の伝令が途絶え、前線に短い静寂が訪れる。明日また軍が動くかもしれない。それでも今日は止めた。',
+   karen:'「王国を捨てたんじゃない。王国の人を守る方法が、王国の命令と違っただけ」',
+   conclusion:'裏切り者と呼ばれても、見てきた命を無かったことにはしない。'
+  },
+  ashcrown:{
+   title:'灰冠ルート — 空の玉座',
+   scene:selected==='release'
+    ?'最後の扉の前で、トリトンが立ち止まった。幼いころから並んでいた足音が、ここで初めて別の方向を向く。'
+    :'宮殿へ続く石段には、カレン一人の足音しか響かない。命令に従う仲間は、もう誰もいない。',
+   karen:'「私が王になる。……でも、誰を守るためだった？」',
+   conclusion:'王国も帝国も、その名の下の戦いは終わった。誰も祝わない広間で、カレンは灰に覆われた冠を手に取る。'
+  }
+ };
+ const p=previews[route];if(!p)return false;
+ if(!isEventComplete('worldSkeletonCleared')){
+  completeEvent('worldSkeletonCleared',true);
+  addJournal('最終章・'+p.title+'へ到達（物語プレビュー・未完成）');
+ }
+ setWorldSwitch('cleared',true);
+ state.objective='最終章の仮エピローグ到達：本編結末は未実装';
+ renderHud();
+ say('ナレーション','<div class="ending"><h2>'+p.title+'</h2><p>'+p.scene+'</p><p>カレン '+p.karen+'</p><p>'+p.conclusion+'</p><p class="ending-note">ここは未完成エンディングの演出プレビューです。王国・帝国との決着や灰冠への過程は、今後の正式な物語で制作します。</p></div>');
+ return true
+}
 
 function move(dir){if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started)return;if(isInputLocked()||state.battle)return;state.dir=dir;const now=Date.now();if(now<VISUAL.nextMoveAt){draw();return}VISUAL.nextMoveAt=now+(GC.Dev?.settings?.moveDelay??88);let nx=state.x,ny=state.y;if(dir==='up')ny--;if(dir==='down')ny++;if(dir==='left')nx--;if(dir==='right')nx++;
  // 序盤の可逆マップ遷移
