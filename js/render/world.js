@@ -565,7 +565,7 @@ function partyTrailPoints(){
  for(let follower=0;follower<3;follower++){
   const priority=1+follower*2;let placed=false;
   // Keep the ordering by time traveled. Never sort history across turns.
-  for(let k=priority;k<trail.length&&k<=priority+2;k++){
+  for(let k=priority;trail.length>=8&&k<trail.length&&k<=priority+2;k++){
    const p=trail[k];if(Array.isArray(p)&&add(p[0],p[1])){placed=true;break}
   }
   if(placed)continue;
