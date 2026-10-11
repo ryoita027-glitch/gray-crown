@@ -42,7 +42,7 @@ test('battle roster uses root-resolved <img> with 48px clipping and a visible fa
 test('walking frame indices advance by traveled distance rather than wall-clock time',()=>{
  const code=read('js/render/world.js'),movement=read('js/systems/movement.js');
  assert.match(code,/VISUAL\.travelPhase\+=advanced\*5\.1/);
- assert.match(code,/VISUAL\.followerPhases\[i\]\+=Math\.hypot/);
+ assert.match(code,/VISUAL\.followerPhases\[i\]\+=movement\.distance\*5\.1/);
  assert.doesNotMatch(code,/leaderMoving\?Date\.now\(\)\/82/);
  assert.doesNotMatch(code,/worldLifeRunning&&VISUAL\.map===state\.map/);
  assert.match(movement,/worldStepsOnMap=\(state\.worldStepsOnMap\|\|0\)\+1/);
