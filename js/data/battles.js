@@ -13,7 +13,7 @@ const battles={
  imperialRaid:{name:'レグノア帝国・街道斥候隊',faction:'empire',enemies:[{name:'帝国斥候兵A',faction:'empire',hp:62,maxHp:62,atk:12,def:6},{name:'帝国斥候兵B',faction:'empire',hp:58,maxHp:58,atk:11,def:6}],reward:{gold:26,exp:28}},
  vanguardCaptain:{name:'帝国前衛隊長ヴァルク',faction:'empire',boss:true,epithet:'国境前衛隊長',quote:'「ここは英雄譚の舞台じゃない。前線だ」',phase2:'「まだだ！ 隊列を崩すな！」',phase3:'「なるほど……勇者の名は飾りだけじゃないか」',enemies:[{name:'ヴァルク',faction:'empire',hp:150,maxHp:150,atk:16,def:9,phase:1}],reward:{gold:35,exp:50}},
  battlefieldWolves:{name:'戦場に寄った灰森狼',enemies:[{name:'灰森狼A',art:'wolf',hp:48,maxHp:48,atk:11,def:4},{name:'灰森狼B',art:'wolf',hp:44,maxHp:44,atk:10,def:4},{name:'灰森狼C',art:'wolf',hp:38,maxHp:38,atk:10,def:3}],reward:{gold:0,exp:22,drop:{item:'薬草',chance:.18}}},
- zenithEncounter:{name:'ゼニス',faction:'empire',boss:true,epithet:'帝国四将・静謐の刃',quote:'「感情を捨てろとは言わない。だが判断まで渡すな」',phase2:'「戦い方が変わった。帝国で見たものが君たちを変えたか」',phase3:'「ここからは四将として応じる」',enemies:[{name:'ゼニス',faction:'empire',hp:210,maxHp:210,atk:19,def:11,phase:1}],reward:{gold:0,exp:80}}
-,ashcrownCheckpoint:{name:'灰冠への道を塞ぐ国境守備兵',faction:'kingdom',enemies:[{name:'国境の守備兵',art:'bandit',human:true,faction:'kingdom',hp:56,maxHp:56,atk:9,def:4,morale:40,maxMorale:40}],reward:{gold:0,exp:12}}
+ zenithEncounter:{name:'ゼニス',faction:'empire',boss:true,epithet:'帝国四将・静謐の刃',quote:'「感情を捨てろとは言わない。だが判断まで渡すな」',phase2:'「戦い方が変わった。帝国で見たものが君たちを変えたか」',phase3:'「ここからは四将として応じる」',enemies:[{name:'ゼニス',faction:'empire',hp:210,maxHp:210,atk:19,def:11,phase:1}],reward:{gold:0,exp:80}},
+ ashcrownCheckpoint:{name:'灰冠への道を塞ぐ国境守備兵',faction:'kingdom',enemies:[{name:'国境の守備兵',art:'bandit',human:true,faction:'kingdom',hp:56,maxHp:56,atk:9,def:4,morale:40,maxMorale:40}],reward:{gold:0,exp:12}}
 };
 GC.Data=GC.Data||{};GC.Data.Battles={battles};
