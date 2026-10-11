@@ -31,7 +31,7 @@ function applyEventEffect(effect,context={}){
   default:throw new Error('Unknown event effect: '+effect.type)
  }
 }
-function applyEventEffects(def,context={}){for(const effect of def?.effects||[])applyEventEffect(effect,context);if(def?.id)GC.Log?.info('Story Event Effects',{id:def.id,stage:state.story.stage,context});GC.Dev?.noteEvent?.(def?.id||null);GC.Dev?.refresh?.();return def}
+function applyEventEffects(def,context={}){for(const effect of def?.effects||[])applyEventEffect(effect,context);if(def?.id)GC.Log?.info('Story Event Effects',{id:def.id,stage:state.story.stage,context});if(def?.id&&typeof CommercialQuality!=='undefined'&&CommercialQuality.enabled)CommercialQuality.showDiscovery(def.id);GC.Dev?.noteEvent?.(def?.id||null);GC.Dev?.refresh?.();return def}
 function playEventDialogue(def,after=null){if(!def){after?.();return false}const finish=()=>{if(def.postLines?.length)saySequence(def.postLines,after);else after?.()};if(def.lines?.length)saySequence(def.lines,finish);else finish();return true}
 function runTriggeredEvent(type,target,context={}){const def=findTriggeredEvent(type,target,context);if(!def)return false;if(def.id==='alpha.village.appointment'&&GC.RyuneActing?.runAppointment)return GC.RyuneActing.runAppointment(def,context);if(def.id==='alpha.capital.ceremony'&&typeof CapitalActing!=='undefined')return CapitalActing.runCeremony(def,context);GC.Log?.info('Story Event Start',{id:def.id,type,target,map:context.map??state.map});GC.Dev?.noteEvent?.(def.id);playEventDialogue(def,()=>{applyEventEffects(def,context);if(def.postLines?.length===0&&typeof canvas!=='undefined')canvas.focus()});return true}
 function inlineNpcEvent(id){

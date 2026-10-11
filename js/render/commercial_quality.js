@@ -74,6 +74,31 @@ const CommercialQuality=(()=>{
    if(label){label.title=role.role+' — '+role.verb}
   }
  }
- const api={enabled:true,roles,mapCues,brief,tactical,skillHint,enhanceHud};
+
+ const discoveries=Object.freeze({
+  'alpha2.ashroad.refugee':'避難民の証言を記録',
+  'alpha2.ashroad.burnedCart':'徴発された荷車を調査',
+  'alpha2.ashroad.homestead':'焼けた農家の痕跡を発見',
+  'alpha2.ashroad.shrine':'帰還を願う祠の札を発見',
+  'alpha2.ashroad.orders':'軍の命令書を入手',
+  'alpha2.ashroad.patrolVictory':'帝国斥候との接触を記録',
+  'alpha2.frontier.briefing':'前線の戦況を把握',
+  'alpha2.frontier.hospital':'野戦病院の状況を記録',
+  'alpha2.frontier.cache':'補給品を回収',
+  'alpha2.frontier.vanguardVictory':'前線戦闘記録を更新'
+ });
+ let toastTimer=0;
+ function showDiscovery(id){
+  const description=discoveries[id];
+  if(!description||typeof document==='undefined')return false;
+  const el=document.getElementById('commercialDiscovery');
+  if(!el)return false;
+  if(toastTimer)clearTimeout(toastTimer);
+  el.textContent='記録更新  ·  '+description;
+  el.classList.add('active');
+  toastTimer=setTimeout(()=>{el.classList.remove('active');toastTimer=0},2900);
+  return true;
+ }
+ const api={enabled:true,roles,mapCues,discoveries,brief,tactical,skillHint,enhanceHud,showDiscovery};
  return api;
 })();

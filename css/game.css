@@ -530,6 +530,10 @@ body:has(.battle-panel:not(.hidden)) .party-battle-line{left:5%;bottom:38px}
 #enemyCards .enemy.combat-target{border-color:#efc77b;background:rgba(183,125,59,.16);box-shadow:inset 3px 0 #e4b86f}
 #enemyCards .enemy[data-enemy-target]:focus-visible{outline:2px solid #f7e3a0;outline-offset:3px}
 #enemyCards .enemy.down{opacity:.48;cursor:default}
+#commercialDiscovery{position:fixed;right:20px;bottom:24px;z-index:60;max-width:min(350px,calc(100vw - 36px));padding:11px 14px;background:rgba(24,35,43,.97);color:#ece2bf;border:1px solid rgba(220,184,111,.65);border-left:4px solid #d7b76e;border-radius:5px;box-shadow:0 8px 25px rgba(0,0,0,.3);pointer-events:none;opacity:0;transform:translateY(12px);transition:opacity .18s,transform .18s;font-size:.81rem;line-height:1.5}
+#commercialDiscovery.active{opacity:1;transform:translateY(0)}
+@media(max-width:520px){#commercialDiscovery{right:9px;bottom:12px;font-size:.73rem}}
+@media(prefers-reduced-motion:reduce){#commercialDiscovery{transition:none}}
 @media(max-width:520px){#commercialBattleAdvice{font-size:.71rem;padding:7px 8px}.commercial-field-note{font-size:.7rem}}
 /* Phase 4 optional boss-stage hierarchy, scoped to its existing battle UI. */
 .battle-stage[data-boss="true"] .enemy-art.horned-beast{transform:scale(1.18);transform-origin:50% 90%;filter:drop-shadow(0 9px 0 rgba(20,22,26,.65))}
