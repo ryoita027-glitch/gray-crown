@@ -196,7 +196,7 @@ function npcHash(id){let h=0;for(const ch of String(id||''))h=(h*31+ch.charCodeA
 function drawNpcCommercial(n,facing='down'){
  // Render independent 4-direction, 4-pose pixel sprites where authored.
  // Do not paint the old generic body on top.
- if(OpeningPixelAssets.drawNpc(ctx,n,facing,
+ if(typeof OpeningPixelAssets!=='undefined'&&OpeningPixelAssets.drawNpc(ctx,n,facing,
   Math.abs(state.x-n.x)+Math.abs(state.y-n.y)<=5?Date.now():0))return;
  const s=NPC_STYLE[n.id]||{body:'#756b5f',accent:'#a58d6d',hair:'#4b4037'},h=npcHash(n.id),scale=s.small?.86:1;
  const px=n.x*TILE,py=n.y*TILE,cx=px+16,footY=py+30,body=s.body||'#756b5f',accent=s.accent||'#a58d6d',hair=s.hair||'#4b4037';
