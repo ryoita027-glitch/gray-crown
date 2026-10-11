@@ -204,13 +204,55 @@ const OpeningPixelAssets=(()=>{
    // Layered 4-pixel roof stairs are bespoke per residence.
    P(a,'#35363a',1,40,101,60);P(a,wall,4,43,96,56);
    P(a,'#d7c8aa',6,44,92,3);
-   for(let z=0;z<7;z++){
-    const yy=34-z*4,xx=z*6;
-    P(a,'#473d3a',xx,yy+4,104-xx*2,6);
-    P(a,z%2?roof:roofHighlight,xx+1,yy,102-xx*2,6);
+   if(kind==='orphanage'){
+    // Low, broad shelter instead of a private-house gable.
+    for(let z=0;z<5;z++){
+     P(a,'#333f39',z*3,37-z*3,104-z*6,6);
+     P(a,z%2?roofHighlight:roof,z*3+1,35-z*3,102-z*6,5)
+    }
+    P(a,'#52684f',6,40,92,9);
+    P(a,'#a2b48a',10,42,84,3);
+    for(let x of [12,88])P(a,'#65785d',x,48,4,46);
+   }else if(kind==='mayorhouse'){
+    // Official residence: flanking low wings and a raised center tower.
+    for(let z=0;z<4;z++){
+     P(a,'#435060',z*3,42-z*4,104-z*6,6);
+     P(a,z%2?roofHighlight:roof,z*3+1,40-z*4,102-z*6,5)
+    }
+    P(a,'#53687b',30,15,44,43);
+    for(let z=0;z<6;z++){
+     P(a,'#3e4859',30+z*3,16-z*3,44-z*6,6);
+     P(a,z%2?roof:roofHighlight,31+z*3,14-z*3,42-z*6,4)
+    }
+    P(a,'#9caeae',44,20,16,19);
+    P(a,'#4f5d69',51,20,2,19);
+   }else if(kind==='cottage'){
+    // Asymmetric roof, an extension and kitchen chimney.
+    P(a,'#5a473b',2,35,99,14);
+    for(let z=0;z<7;z++){
+     const left=z*4,right=z*8;
+     P(a,'#4c3c37',left,38-z*4,102-left-right,6);
+     P(a,z%2?roof:roofHighlight,left+1,36-z*4,100-left-right,5)
+    }
+    P(a,'#755b45',74,45,24,23);
+    P(a,'#b49d7e',78,49,16,16);
+   }else{
+    // Classic family-home, symmetrical steep timber roof.
+    for(let z=0;z<7;z++){
+     const yy=34-z*4,xx=z*6;
+     P(a,'#473d3a',xx,yy+4,104-xx*2,6);
+     P(a,z%2?roof:roofHighlight,xx+1,yy,102-xx*2,6);
+    }
    }
    P(a,beam,7,44,5,55);P(a,beam,91,44,5,55);
-   for(const wx of [19,69]){P(a,beam,wx-3,57,21,24);P(a,'#9db7b4',wx,60,15,17);P(a,'#d7dfc9',wx+2,61,5,5);P(a,beam,wx+7,60,2,17)}
+   const windows=kind==='orphanage'?[15,44,73]:kind==='cottage'?[18]:kind==='mayorhouse'?[15,72]:[19,69];
+   for(const wx of windows){
+    const ww=kind==='orphanage'?13:15;
+    P(a,beam,wx-3,57,ww+6,24);
+    P(a,'#87a4a0',wx,60,ww,17);
+    P(a,'#d7dfc9',wx+2,61,Math.max(3,ww-9),5);
+    P(a,beam,wx+Math.floor(ww/2),60,2,17);
+   }
    P(a,'#554238',40,69,25,31);P(a,'#8e6b4c',43,72,19,28);P(a,'#d9b981',57,83,3,3);
    P(a,beam,7,95,90,5);
    if(kind==='orphanage'){P(a,'#6a8a64',10,48,84,9);P(a,'#d9c99c',17,49,70,3);P(a,'#8e986d',73,86,17,6);P(a,'#655946',70,92,21,3)}
