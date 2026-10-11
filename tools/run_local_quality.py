@@ -40,6 +40,7 @@ FULL_BROWSER = [
     ["python", "tests/browser_vertical_slice_e2e_test.py"],
     ["python", "tests/browser_capital_first_arc_e2e_test.py"],
     ["python", "tests/browser_ashroad_serad_e2e_test.py"],
+    ["python", "tests/browser_commercial_quality_e2e_test.py"],
 ]
 
 def main() -> int:

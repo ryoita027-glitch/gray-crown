@@ -103,6 +103,7 @@
               </div>
               <div id="enemyCards" class="card-grid compact-enemy-cards"></div>
               <div id="partyCards" class="card-grid"></div>
+              <div id="commercialBattleAdvice" role="status" aria-live="polite"></div>
               <div id="battleActions" class="battle-actions"></div>
               <div id="battleLog" class="battle-log"></div>
             </section>
@@ -175,6 +176,7 @@
   </aside>
 
   <!-- v19 architecture: classic scripts keep file:// launch working while responsibilities stay separated. -->
+  <div id="commercialDiscovery" role="status" aria-live="polite" aria-atomic="true"></div>
   <script src="js/core/dom.js"></script>
   <script src="js/core/log.js"></script>
   <script src="js/systems/story.js"></script>
@@ -189,6 +191,7 @@
   <script src="js/data/events.js"></script>
   <script src="js/data/battles.js"></script>
   <script src="js/systems/dialogue.js"></script>
+  <script src="js/render/commercial_quality.js"></script>
   <script src="js/render/ui.js"></script>
   <script src="js/systems/exploration.js"></script>
   <script src="js/systems/events.js"></script>
