@@ -118,6 +118,19 @@ test('each house has its own cached tile image; no rendered PNG is shifted to im
  }
  assert.equal(sheets.length,4);
 });
+test('four buildings use different constructed roof shapes, not only colored copies',()=>{
+ const {module:art}=pixelAssets(),window={save(){},restore(){},drawImage(){}};
+ const outlines=new Map();
+ for(const kind of ['village','orphanage','mayorhouse','cottage']){
+  art.drawHouse(window,kind,0,0);
+  const tile=art.getHouseTile(kind);
+  const geometry=tile.operations.filter(o=>o[0]==='rect').map(o=>o.slice(2).join(',')).join('|');
+  assert.ok(geometry.length>100,kind);
+  if(outlines.has(geometry))throw Error(kind+' has same architectural geometry as '+outlines.get(geometry));
+  outlines.set(geometry,kind);
+ }
+ assert.equal(outlines.size,4);
+});
 test('new renderer is layered into the running game before world render and fallbacks work',()=>{
  const html=read('index.html'),world=read('js/render/world.js'),ryune=read('js/render/ryune_environment.js');
  assert.ok(html.indexOf('js/render/opening_pixel_assets.js')<html.indexOf('js/render/world.js'));
