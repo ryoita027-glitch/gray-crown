@@ -3032,16 +3032,1834 @@ const RoadCaveQuality=(()=>{
 })();
 
 </script>
-  <script src="js/render/capital_environment.js"></script>
-  <script src="js/render/ash_frontier_environment.js"></script>
-  <script src="js/render/opening_pixel_assets.js"></script>
-  <script src="js/render/opening_worldlife.js"></script>
-  <script src="js/render/world.js"></script>
-  <script src="js/systems/commercial_acting.js"></script>
-  <script src="js/systems/commercial_ux.js"></script>
-  <script src="js/systems/commercial_discovery.js"></script>
-  <script src="js/systems/cinematic.js"></script>
-  <script src="js/systems/ryune_acting.js"></script>
+  <script>
+'use strict';
+/* Capital v1: presentation-only, isolated from world/save/story. Every drawing
+   coordinate refers to existing 24x15/32px maps. Never invent heraldry. */
+const CapitalEnvironment=(()=>{
+ const mapsSupported=new Set(['capital','capitalinn','capitalarmory']);
+ const W=32;
+ const box=(c,color,x,y,w,h)=>{c.fillStyle=color;c.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h))};
+ const hash=(x,y,k=0)=>{let n=(Math.imul(x+31,73856093)^Math.imul(y+47,19349663)^Math.imul(k+13,83492791))>>>0;return n^(n>>>16)};
+ const on=()=>api.enabled;
+ const palettes={
+  capital:{stone:'#b2aea5',stone2:'#c9c2b4',mortar:'#777a77',road:'#918f8a',shade:'#676e70',roof:'#69505b',market:'#9c6954',garrison:'#58606b'},
+  capitalinn:{floor:'#725b49',seam:'#4b4039',wall:'#b29b7b'},
+  capitalarmory:{floor:'#666468',seam:'#48494f',wall:'#98918a'}
+ };
+ function paintTile(c,map,ch,x,y){
+  if(!on()||!mapsSupported.has(map))return false;
+  const px=x*W,py=y*W,h=hash(x,y);
+  if(map==='capital'){
+   if(ch==='A'){
+    box(c,(x<10&&y>5)?'#a49a89':(x>14&&y>5)?'#848b8c':'#a5a5a0',px,py,32,32);
+    box(c,'#737777',px,py+(y%2?13:15),32,1);
+    box(c,'#c6c1b6',px+1,py+1,30,1);
+    box(c,'#858883',px+(y%2?7:22),py,1,14);
+    box(c,'#858883',px+(y%2?22:7),py+16,1,16);
+    if(h%7===0)box(c,'#ddd5c2',px+6,py+6,9,1);
+    return true;
+   }
+   if(ch==='H'||ch==='K'){
+    box(c,ch==='H'?'#777783':'#4a5159',px,py,32,32);
+    box(c,ch==='H'?'#b4ac9f':'#697079',px+2,py+3,28,22);
+    box(c,'#46464e',px+2,py+25,28,5);
+    box(c,'#c7bca9',px+4,py+3,24,3);
+    if((x+y)%3===0){box(c,'#5d646a',px+10,py+10,12,11);box(c,'#a1b2b4',px+12,py+10,8,5)}
+    return true;
+   }
+   if(ch==='G'){
+    box(c,'#606f61',px,py,32,32);
+    box(c,'#758265',px+3,py+4,24,24);
+    if(h%3===0){box(c,'#506d54',px+8,py+8,14,12);box(c,'#a7a083',px+14,py+15,4,3)}
+    return true;
+   }
+   return false;
+  }
+  if(ch==='F'||ch==='W'){
+   const p=palettes[map];
+   box(c,ch==='W'?p.wall:p.floor,px,py,32,32);
+   if(ch==='W'){box(c,'#6b6260',px,py+25,32,7);box(c,'#c2b59f',px+2,py+3,28,2)}
+   else{
+    box(c,p.seam,px,py+26,32,1);box(c,p.seam,px+((x+y)%2?13:24),py,1,26);
+    if(h%6===0)box(c,'#a28d72',px+4,py+12,9,1);
+   }
+   return true;
+  }
+  return false
+ }
+ function street(c,map){
+  if(!on()||map!=='capital')return false;
+  // Palace / terrace height differs from western trade stalls and eastern logistics.
+  for(const [x,y,w,height,wall,roof] of [
+   [2,2,3,2,'#bcb5a6','#875f58'],[19,2,3,2,'#adb3b4','#53616c'],
+   [4,1,6,2,'#c9c3b7','#776068'],[14,1,6,2,'#c3c1b9','#5e666e']]){
+   box(c,'#4d5054',x*W+2,y*W+height*W-5,w*W-4,7);
+   for(let col=0;col<w;col++){box(c,wall,(x+col)*W+3,y*W+4,27,25);
+    box(c,'#605d60',(x+col)*W+8,y*W+10,9,10);
+    box(c,'#a2b4b5',(x+col)*W+9,y*W+11,7,5)}
+   box(c,roof,x*W,y*W+1,w*W,7);
+   for(let col=0;col<w;col++)box(c,'#b3ada5',(x+col)*W+2,y*W-3,16,4);
+  }
+  // Neutral ceremony drapery: not a royal crest.
+  for(const x of [9,14]){
+   box(c,'#504b4d',x*W+15,4*W,3,52);
+   box(c,'#814e54',x*W+18,4*W+5,13,32);
+   box(c,'#cbb78e',x*W+19,4*W+7,11,3)
+  }
+  // Square has a stepped approach and two queued viewing areas. Keep
+  // every walkable tile visually open; queue dots are pavement inlays.
+  for(const y of [3,4,5])box(c,'#c7c1b4',11*W+2,y*W+29,61,2);
+  for(const [x,y] of [[8,6],[16,6],[8,8],[15,8]]){box(c,'#8a8279',x*W+3,y*W+23,24,4);box(c,'#d7c49c',x*W+9,y*W+23,8,2)}
+  // Market and rationing use different materials and display grammars.
+  for(const [x,y,color] of [[3,7,'#936354'],[5,9,'#9d7e54'],[7,7,'#668189']]){
+   box(c,'#574639',x*W+3,y*W+9,26,20);
+   box(c,color,x*W+2,y*W+6,28,7);
+   box(c,'#d9c8a9',x*W+6,y*W+12,5,5);
+   box(c,'#7c5942',x*W+7,y*W+20,18,6)
+  }
+  // Supply stacks are only decorations, not interactable new objects.
+  for(const [x,y] of [[18,7],[20,8],[18,10]]){box(c,'#555b5e',x*W+4,y*W+17,21,9);box(c,'#a6a397',x*W+6,y*W+15,19,6);box(c,'#736c64',x*W+9,y*W+18,3,3)}
+  // Sparse small trade goods; no fake doors/loot.
+  for(const [x,y] of [[3,10],[6,8],[19,9]]){box(c,'#846e53',x*W+9,y*W+23,10,4);box(c,'#d0b887',x*W+11,y*W+20,5,3)}
+  // Completed ceremony changes the square without a new saved flag.
+  // Small discarded petals are not interactable and never alter navigation.
+  if(typeof isEventComplete==='function'&&isEventComplete('alpha.capital.ceremony')&&
+     !(typeof getWorldSwitch==='function'&&getWorldSwitch('returnedKingdom'))){
+   for(const [x,y] of [[10,7],[11,6],[14,7],[12,9],[15,8]]){
+    box(c,'#b96966',x*W+5,y*W+21,4,2);
+    box(c,'#e5dcca',x*W+21,y*W+12,3,2)
+   }
+  }
+  return true
+ }
+ function interior(c,map){
+  if(!on()||!['capitalinn','capitalarmory'].includes(map))return false;
+  const inn=map==='capitalinn',floor=inn?'#7a5649':'#535b62';
+  box(c,floor,8*W,7*W,8*W,3*W);
+  for(let y=7;y<=9;y++)for(let x=8;x<=15;x++)if((x+y)%2===0)box(c,'rgba(208,188,159,.18)',x*W+3,y*W+4,21,1);
+  // Fixed furnishings mirror original interaction IDs; no new map objects.
+  box(c,inn?'#745a42':'#545b62',17*W+3,5*W+16,27,9);
+  box(c,'#b6a088',17*W+5,5*W+14,23,3);
+  for(const x of [5,17]){
+   box(c,inn?'#60503b':'#414b51',x*W+4,4*W+3,26,28);
+   for(let row=0;row<3;row++)box(c,inn?'#c4aa7e':'#9b9b91',x*W+7,4*W+7+row*8,19,2);
+  }
+  if(inn){
+   // Real inns look like rented quarters: reservations, folded blankets,
+   // bowlware, a visible counter and communal table.
+   box(c,'#5d4435',10*W+3,7*W+10,4*W-6,13);
+   box(c,'#dbc7a4',10*W+13,7*W+12,13,2);box(c,'#d9c4a1',12*W+7,7*W+12,13,2);
+   for(const x of [6,18]){box(c,'#b9a385',x*W+6,10*W+9,20,3);box(c,'#d5c6b0',x*W+8,10*W+7,8,2)}
+  }else{
+   // Maintenance rather than invented definitive weapon silhouettes.
+   box(c,'#404449',10*W+5,7*W+8,4*W-10,24);
+   box(c,'#a88c64',10*W+8,7*W+11,4*W-16,4);
+   for(let x=0;x<4;x++){box(c,'#8c9a9e',17*W+5+x*6,4*W+5,3,18);box(c,'#d2b88a',17*W+4+x*6,4*W+19,5,3)}
+   box(c,'#9a653d',6*W+7,5*W+14,22,7);
+  }
+  // Door return marker does not mask the actual exit collision.
+  box(c,'#d1b687',11*W+5,12*W+16,53,3);
+  return true
+ }
+ function objectAccent(c,map,o){
+  if(!on()||map!=='capital')return;
+  const x=o.x*W,y=o.y*W;
+  if(o.id==='capitalInnDoor'||o.id==='capitalArmoryDoor'){
+   box(c,'#4d3c35',x+3,y+24,26,5);
+   box(c,'#e3c68a',x+5,y+24,22,2);
+  }else if(o.id==='victoryPoster'){
+   box(c,'#e0d7b9',x+6,y+5,20,23);box(c,'#9c5257',x+8,y+8,16,3);
+   box(c,'#656368',x+9,y+15,14,2);box(c,'#656368',x+9,y+20,11,2);
+  }else if(o.id==='heroLedger'){
+   box(c,'#6a6256',x+4,y+20,25,7);box(c,'#c5af85',x+7,y+17,20,3);
+  }
+ }
+ function npcAccent(c,map,n){
+  if(!on()||!mapsSupported.has(map))return;
+  const x=n.x*W+16,y=n.y*W+30;
+  if(n.id==='capitalOfficial'){
+   box(c,'#e2d0a5',x-9,y-17,18,3);box(c,'#6e343c',x-11,y-14,4,12);
+  }else if(n.id==='capitalRecruit'||n.id==='offDutySoldier'){
+   box(c,'#4f5362',x-9,y-15,18,4);box(c,'#c7b98c',x-8,y-15,16,2);
+  }else if(n.id==='capitalVendor'||n.id==='capitalInnHost'){
+   box(c,'#bb9566',x-10,y-7,20,6);box(c,'#e2cca4',x-5,y-13,10,3);
+  }else if(n.id==='capitalSmith'||n.id==='armoryApprentice'){
+   box(c,'#514a43',x-10,y-14,20,17);box(c,'#bd9164',x-6,y-10,12,3);
+  }else if(n.id==='capitalFlowerGirl'){
+   box(c,'#b78a65',x-11,y-8,8,8);box(c,'#a85960',x-9,y-10,4,4);
+  }else if(n.id==='rationMother'){
+   box(c,'#746b60',x-9,y-6,18,6);box(c,'#d5bf9b',x+3,y-14,6,6)
+  }else if(n.id==='granz'){
+   box(c,'#a79b82',x-10,y-15,20,3);box(c,'#54494a',x-9,y-13,18,3);
+  }
+ }
+ const api={enabled:true,mapsSupported,paintTile,street,interior,objectAccent,npcAccent,palettes};
+ return api
+})();
+</script>
+  <script>
+'use strict';
+/* Gray Crown Phase 8 — ash road and Serad materials, presentation ONLY.
+ * Canvas integer-pixel primitives; never mutates maps, saves, events,
+ * collision, story flags, scripts or locked original character PNGs.
+ * No new kingdom rank crests, religion, culture or definitive weapon art.
+ */
+const AshFrontierEnvironment=(()=>{
+ const targets=new Set(['ashroad','frontier','frontierfield']);
+ const TILE_PX=32;
+ const pix=(ctx,c,x,y,w,h)=>{
+  ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));
+ };
+ const hash=(x,y,seed=1)=>{
+  let h=(Math.imul(x+19,73856093)^Math.imul(y+103,19349663)^Math.imul(seed+7,83492791))>>>0;
+  return Math.imul(h^(h>>>13),1274126177)>>>0;
+ };
+ const inScope=m=>api.enabled&&targets.has(m);
+ // Physical poles and supply sacks are drawn ONLY on existing blocked
+ // tiles (T / H); flat track marks on passable D/B/M are not obstacles.
+ const blockedDecorationCells=Object.freeze({
+  ashroad:Object.freeze([[0,3],[23,3],[0,10],[23,11],[0,9],[23,9]]),
+  frontier:Object.freeze([[3,9],[5,9],[3,10]])
+ });
+ const palette=Object.freeze({
+  ashroad:Object.freeze({ground:'#76695a',ash:'#625b54',path:'#a19077',edge:'#393934',dirt:'#817361'}),
+  frontier:Object.freeze({ground:'#61635d',mud:'#666258',path:'#928977',edge:'#3d4041',canvas:'#999081'}),
+  frontierfield:Object.freeze({ground:'#676157',mud:'#746352',path:'#998677',edge:'#414341',debris:'#54493f'})
+ });
+ function paintTile(ctx,map,ch,x,y){
+  if(!inScope(map))return false;
+  const a=x*TILE_PX,b=y*TILE_PX,r=hash(x,y),p=palette[map];
+  // Broad material clusters and sparse micro-details avoid a stamped 32px
+  // checkerboard. Every logical cell is nevertheless still 32px collision.
+  const area=hash(Math.floor(x/3),Math.floor(y/2),11);
+  if(ch==='D'){
+   // Full-bleed earth: an inset 30x30 fill would draw false grid joints.
+   pix(ctx,map==='ashroad'?(area%3===0?'#ae9677':'#b39a7a'):
+                (area%3===0?'#a19886':'#aaa08a'),a,b,32,32);
+   if((r&3)===0)pix(ctx,p.edge,a+((r>>>7)%20)+3,b+((r>>>3)%21)+4,5,1);
+   if((r&7)<=2)pix(ctx,p.mud||p.ash||p.dirt,a+(r%20)+2,b+((r>>>9)%21)+4,7,1);
+   return true;
+  }
+  if(map==='ashroad'&&(ch==='B'||ch==='T')){
+   const burnt=ch==='T';
+   pix(ctx,burnt?(area%3===0?'#41423b':p.edge):
+       (area%4===0?'#70665a':p.ground),a,b,32,32);
+   // Ash wisps remain a surface stain. Physical charred posts are drawn
+   // separately and only on existing non-traversable T cells.
+   if(r%4===0)pix(ctx,burnt?'#656158':'#817568',a+((r>>>5)%19)+3,b+((r>>>10)%22)+4,9,2);
+   if(r%7===0)pix(ctx,'#8b7966',a+((r>>>11)%21)+3,b+((r>>>16)%24)+3,4,1);
+   return true;
+  }
+  if((map==='frontier'||map==='frontierfield')&&['M','B','K','H'].includes(ch)){
+   const wall=ch==='K'||ch==='H';
+   pix(ctx,wall?(area%3===0?'#484a47':p.edge):
+       (area%3===0?'#706b60':p.ground),a,b,32,32);
+   // Retain rough, readable defensive masonry, but no 28x24 inset
+   // rectangle on every square and no regular grid of false floor seams.
+   if(wall){
+    if((r&1)===0)pix(ctx,'#77766c',a+((r>>>4)%17)+5,b+((r>>>12)%20)+4,9,2);
+    if((r&7)===1)pix(ctx,'#aaa395',a+((r>>>10)%19)+4,b+21,6,2);
+   }else{
+    if((r&3)===0)pix(ctx,p.mud,a+((r>>>3)%19)+4,b+((r>>>7)%19)+4,10,2);
+    if((r&7)===2)pix(ctx,'#978470',a+((r>>>13)%23)+3,b+((r>>>17)%23)+3,5,1);
+   }
+   return true;
+  }
+  return false;
+ }
+ function accents(ctx,map){
+  if(!inScope(map))return false;
+  if(map==='ashroad'){
+   // Blackened fields are still fields, not random combat furniture.
+   for(const [x,y] of [[0,3],[23,3],[0,10],[23,11]]){
+    pix(ctx,'#3e3c34',x*32+4,y*32+19,23,3);
+    pix(ctx,'#514738',x*32+12,y*32+6,4,16);
+    pix(ctx,'#827364',x*32+16,y*32+11,2,3);
+   }
+   // Fading wagon ruts indicate the original center north-south route.
+   for(const y of [2,4,6,8,10,12]){
+    for(const off of [-8,8])pix(ctx,'#776755',11*32+16+off,y*32+6,2,18);
+   }
+   // Neutral bundles by the eastern refugee/priest route; no path blocking.
+   for(const [x,y] of [[0,9],[23,9]]){
+    pix(ctx,'#594a3d',x*32+5,y*32+24,21,3);
+    pix(ctx,'#aa9580',x*32+8,y*32+18,15,6);
+   }
+  }
+  if(map==='frontier'){
+   // Supply/triage lines: spatially separated without inventing military insignia.
+   for(const [x,y] of [[3,9],[5,9],[3,10]]){
+    pix(ctx,'#4c4437',x*32+4,y*32+23,24,4);
+    pix(ctx,'#b9b09f',x*32+6,y*32+16,20,7);
+    pix(ctx,'#756c59',x*32+6,y*32+19,20,2);
+   }
+   for(const [x,y] of [[7,7],[14,7],[7,11]]){
+    pix(ctx,'#524a40',x*32+2,y*32+26,28,3);
+    pix(ctx,'#867a65',x*32+2,y*32+23,28,3);
+   }
+  }
+  if(map==='frontierfield'){
+   for(const [x,y] of [[6,4],[9,8],[15,10],[19,7]]){
+    pix(ctx,'#453f38',x*32+9,y*32+22,16,3);
+    pix(ctx,'#887867',x*32+11,y*32+18,6,4);
+   }
+   // Two kinds of torn neutral fabric tell the retreat story, no official standards.
+   for(const [x,y,c] of [[6,7,'#86676b'],[18,8,'#697885']]){
+    pix(ctx,'#5a5249',x*32+14,y*32+14,2,12);pix(ctx,c,x*32+16,y*32+14,10,4);
+   }
+  }
+  return true
+ }
+ function objectAccent(ctx,map,o){
+  if(!inScope(map)||!o)return false;
+  const x=o.x*32,y=o.y*32;
+  if(map==='ashroad'&&o.id==='burnedCart'){
+   pix(ctx,'#38342f',x+3,y+23,26,3);
+   pix(ctx,'#7b6150',x+6,y+17,20,4);
+  }else if(map==='ashroad'&&o.id==='scorchedOrders'){
+   pix(ctx,'#4c443b',x+8,y+27,17,2);
+  }else if(map==='frontier'&&o.id==='fieldHospital'){
+   pix(ctx,'#b6a98e',x+3,y+24,26,3);
+   pix(ctx,'#5a6259',x+5,y+20,22,4);
+  }else if(map==='frontier'&&o.id==='frontierCache'){
+   pix(ctx,'#625742',x+4,y+25,24,3);
+  }else if(map==='frontierfield'&&o.id==='stretcherTracks'){
+   pix(ctx,'#786754',x+7,y+29,19,1);
+  }else return false;
+  return true
+ }
+ function npcAccent(ctx,map,n){
+  if(!inScope(map)||!n)return false;
+  const id=n.id,cx=n.x*32+16,y=n.y*32+30;
+  const ui=(p,q,w,h,color)=>pix(ctx,color,cx+p,y+q,w,h);
+  if(id==='refugee'){ui(-9,-7,18,6,'#766259');ui(3,-18,6,8,'#d6b894')}
+  else if(id==='fieldPriest'){ // Unmarked relief apron, no formal religious sign.
+   ui(-10,-10,20,12,'#c6bca9');ui(-6,-6,12,3,'#776b5f')}
+  else if(id==='frontierOfficer'){ui(-11,-15,22,3,'#62534e');ui(-7,-5,14,2,'#a99672')}
+  else if(id==='frontierMedic'){ui(-9,-9,18,10,'#9eaa9c');ui(-11,-6,4,7,'#d7c4a6')}
+  else if(id==='kingdomGuard'||id==='imperialGuard'){ui(-10,-13,20,4,'#5b5d62');ui(-7,-13,14,2,'#adaca1')}
+  else if(id==='frontierScout'){ui(-11,-15,22,3,'#7c7263');ui(-5,-4,10,2,'#b69c7b')}
+  else if(id==='woundedImperial'){ui(-10,-6,20,6,'#7b7069');ui(3,-10,8,5,'#bca9a2')}
+  else return false;
+  return true
+ }
+ const api={enabled:true,targets,palette,blockedDecorationCells,paintTile,accents,objectAccent,npcAccent};
+ return api
+})();
+
+</script>
+  <script>
+'use strict';
+/*
+ * Opening pixel-native source atlas. Runtime generated, not stock imagery or
+ * shifted screenshots. Each named resident has an individual authored profile;
+ * four direction rows x four independently articulated leg/arm frames.
+ * Houses have separate 104x108 offscreen tile compositions cached by name.
+ */
+const OpeningPixelAssets=(()=>{
+ const designs={
+  father:['#3f3840','#5f7185','#bda48f','fighter','short'],
+  orphan:['#a88665','#9a8f70','#d6b799','child','bob'],
+  mayor:['#b3a5a2','#556779','#d4af93','elder','part'],
+  messenger:['#65574b','#912f39','#d3ac8c','courier','part'],
+  mika:['#98715c','#c2a08a','#e4b894','child','twin'],
+  ren:['#483a36','#6c8a73','#d6b18c','child','short'],
+  lulu:['#bd9a70','#ae7790','#e0b48e','child','bob'],
+  baker:['#765547','#ead9bc','#d9aa81','baker','bun'],
+  farmer:['#a89262','#6f8561','#cfa382','farmer','hat'],
+  oldwoman:['#c5c2b3','#80706e','#d7b397','elder','bun'],
+  veteran:['#55515a','#657080','#c3a18f','fighter','scar'],
+  karenMother:['#8b5b4d','#bd9779','#dab79b','civil','bun'],
+  karenFather:['#42362f','#79694a','#d8ad8c','civil','short'],
+  karenBrother:['#96644c','#6a8373','#ddb08d','child','messy'],
+  caretaker:['#a29680','#7d957f','#dfbea0','caretaker','bun'],
+  theo:['#c5a879','#89a0a0','#e0b994','child','short'],
+  noa:['#775144','#a389ae','#d9b08c','child','bob'],
+  emi:['#a88964','#c99e7f','#e0b38e','child','twin'],
+  margaretMother:['#c8b6ca','#7c6b93','#d4aa93','civil','long'],
+  clerk:['#766e5e','#65817e','#d1ab8c','scribe','short'],
+  soldierMother:['#6f584d','#827f83','#d1a889','civil','bun'],
+  soldierSister:['#74564e','#9b7d87','#d8ad93','child','long'],
+  merchant:['#a08363','#796b55','#d2a486','merchant','hat'],
+  scout:['#5d493c','#698276','#cfa88a','fighter','hood'],
+  capitalOfficial:['#5b5256','#696b85','#d7b393','scribe','part'],
+  capitalCitizen:['#875f4f','#748b91','#dcb596','civil','part'],
+  capitalFlowerGirl:['#ba8b65','#b57384','#e3b797','florist','twin'],
+  capitalRecruit:['#67564a','#596b8e','#d7ab90','fighter','short'],
+  capitalVendor:['#715241','#ab8a65','#dcac88','merchant','bun'],
+  rationMother:['#756b63','#7a8077','#d4ab94','caretaker','scarf'],
+  granz:['#474954','#596376','#c49f85','fighter','part'],
+  capitalInnHost:['#865e48','#9b7f5f','#d9b596','baker','bun'],
+  offDutySoldier:['#423f48','#6e748b','#c9a48d','fighter','short'],
+  capitalSmith:['#5e4440','#776760','#d3a787','smith','short'],
+  armoryApprentice:['#947560','#7b8392','#d8ae8d','smith','messy']
+ };
+ const dirs={down:0,left:1,right:2,up:3};
+ const npcCache=new Map(),houseCache=new Map();
+ const P=(c,color,x,y,w,h)=>{c.fillStyle=color;c.fillRect(x|0,y|0,w|0,h|0)};
+ function canvas(w,h){
+  if(typeof document==='undefined'||!document.createElement)return null;
+  const el=document.createElement('canvas');if(typeof el.getContext!=='function')return null;el.width=w;el.height=h;
+  return el
+ }
+ function part(c,col,x,y,w,h){
+  P(c,'#352d32',x-1,y-1,w+2,h+2);P(c,col,x,y,w,h)
+ }
+ // All pixels drawn in logical 32x32 cell coordinates.
+ function tint(color,amount){
+  const n=parseInt(color.slice(1),16),f=x=>Math.min(255,Math.max(0,(x+amount)|0));
+  return '#'+[f(n>>16),f((n>>8)&255),f(n&255)].map(v=>v.toString(16).padStart(2,'0')).join('')
+ }
+ function person(c,profile,dir,frame,id=''){
+  const [hair,coat,skin,job,style]=profile;
+  const side=dir===1||dir===2,back=dir===3,child=job==='child',
+   old=job==='elder',armed=job==='fighter',working=['baker','farmer','smith','florist','scribe','merchant'].includes(job);
+  let seed=0;for(const letter of id)seed=(seed*33+letter.charCodeAt(0))>>>0;
+  const variation=seed%4,headW=child?10:variation===0?11:variation===1?13:12,
+   headX=16-Math.floor(headW/2),headY=child?8:7;
+  const bodyW=armed?16:child?10:old?15:variation===3?12:14,bodyX=16-Math.floor(bodyW/2),bodyTop=child?18:16;
+  const front=dir===0,step=working?0:[0,2,0,-2][frame],
+   armL=frame===1?-3:frame===3?2:0,armR=frame===1?2:frame===3?-3:0;
+  const ink=tint(hair,-65),skinShadow=tint(skin,-27),coatLight=tint(coat,26),coatShade=tint(coat,-24),hairLight=tint(hair,25);
+  // Back layers establish hair silhouette BEFORE the body and face.
+  if(['long','twin','bob','scarf'].includes(style)){
+   P(c,ink,headX-3,headY+3,headW+6,17);
+   P(c,hair,headX-2,headY+4,headW+4,16);
+   if(style==='long')P(c,hair,headX+headW-1,headY+12,4,13);
+   if(style==='twin'){
+    P(c,ink,headX-5,headY+8,5,13);P(c,hair,headX-4,headY+9,3,11);
+    P(c,ink,headX+headW,headY+7,6,14);P(c,hair,headX+headW+1,headY+8,4,12);
+   }
+  }
+  // Shoes and legs are independently posed. Idle workers stay grounded.
+  const lx=11+step,rx=18-step;
+  P(c,'#2e3037',lx-1,24,6,7);P(c,'#2e3037',rx-1,24,6,7);
+  P(c,coatShade,lx,24,4,4);P(c,coatShade,rx,24,4,4);
+  P(c,'#68584d',lx-1,29,6,2);P(c,'#68584d',rx-1,29,6,2);
+  // Outfit silhouette differs between child, healer, warrior and trades.
+  P(c,'#2f353c',bodyX-1,bodyTop-1,bodyW+2,12);
+  P(c,coat,bodyX,bodyTop,bodyW,10);
+  P(c,coatLight,bodyX+1,bodyTop+1,2,7);
+  P(c,coatShade,bodyX+bodyW-3,bodyTop+1,2,8);
+  if(old){P(c,coat,bodyX-1,bodyTop+8,bodyW+2,5);P(c,coatShade,bodyX,bodyTop+10,bodyW,2)}
+  if(child){P(c,coat,bodyX+1,bodyTop+7,bodyW-2,4)}
+  if(armed){P(c,'#aeb2ac',bodyX,bodyTop+3,bodyW,3);P(c,coatShade,bodyX+bodyW/2-1,bodyTop+3,3,9)}
+  if(job==='baker'||job==='caretaker'||job==='smith'){
+   P(c,'#ead9b7',13,bodyTop+3,7,8);P(c,'#b7a78c',13,bodyTop+9,7,2);
+  }else if(job==='merchant'||job==='courier'){P(c,'#c5a46c',bodyX+3,bodyTop+1,3,10)}
+  else if(job==='scribe'){P(c,'#d5c5a4',bodyX+1,bodyTop+1,bodyW-2,2)}
+  else if(job==='florist'){P(c,'#cf8b9b',bodyX+2,bodyTop+4,bodyW-4,4)}
+  else if(variation===1){P(c,'#d1c0a0',bodyX+2,bodyTop+5,bodyW-4,2)}
+  else if(variation===2){P(c,coatLight,bodyX+bodyW-4,bodyTop+2,3,7)}
+  // Forearms have two distinct drawn joints per work frame.
+  const lw=armed?5:4,lh=old?7:9,shoulder=bodyW/2+2;
+  part(c,coat,16-shoulder-lw,bodyTop+2+armL,lw,lh);
+  part(c,coat,16+shoulder,bodyTop+2+armR,lw,lh);
+  P(c,skinShadow,16-shoulder-lw+1,bodyTop+lh+armL,3,3);
+  P(c,skin,16+shoulder+1,bodyTop+lh+armR,3,3);
+  // Face with deliberate cheek contour instead of identical rectangle heads.
+  P(c,ink,headX-2,headY-2,headW+4,12);
+  P(c,hair,headX-1,headY-1,headW+2,11);
+  if(style==='messy'){
+   P(c,ink,headX-3,headY-2,5,4);P(c,hair,headX-2,headY-3,4,4);
+   P(c,hairLight,headX+headW-2,headY-3,4,3);
+  }
+  if(style==='bun'){
+   P(c,ink,headX+headW-2,headY-5,7,8);
+   P(c,hair,headX+headW-1,headY-4,5,6);
+  }
+  if(style==='part'){P(c,hairLight,headX+2,headY-1,headW-5,2)}
+  if(style==='scarf'||style==='hood'){
+   P(c,coatShade,headX-3,headY,4,14);
+   P(c,coatShade,headX+headW-1,headY,4,14);
+  }
+  P(c,back?hair:skinShadow,headX,headY+3,headW,9);
+  if(!back){
+   P(c,skin,headX+1,headY+3,headW-2,7);
+   P(c,skinShadow,headX+1,headY+9,headW-2,1);
+  }
+  if(side){
+   P(c,hair,dir===1?headX+headW-3:headX,headY+4,3,8);
+   P(c,'#4d3839',dir===1?headX+2:headX+headW-4,headY+7,2,2);
+   P(c,skinShadow,dir===1?headX:headX+headW-1,headY+8,2,2);
+  }else if(front){
+   const eyeOffset=variation%2;
+   const eyeColor=variation===2?'#544149':'#483c3b';
+   P(c,eyeColor,headX+2,headY+7,2,2);P(c,eyeColor,headX+headW-4,headY+7,2,2);
+   if(!child&&variation===0){P(c,ink,headX+2,headY+5,3,1);P(c,ink,headX+headW-5,headY+5,3,1)}
+   if(!old&&variation===1){P(c,skinShadow,headX+2,headY+9,2,1);P(c,skinShadow,headX+headW-4,headY+9,2,1)}
+   P(c,variation===3?'#8f615a':'#936959',headX+Math.floor(headW/2),headY+10,2,1);
+  }
+  // Hair is the main identifier; pupils and brows never override the fringe.
+  if(style==='bob'||style==='long'||style==='scarf'){P(c,hair,headX-2,headY+4,3,8);P(c,hair,headX+headW-1,headY+4,3,8)}
+  if(style==='short'){P(c,hair,headX,headY+3,headW,3);P(c,hairLight,headX+1,headY+2,Math.max(3,headW-6),1)}
+  if(style==='twin'){P(c,hair,headX,headY+2,headW,4);P(c,hairLight,headX+2,headY+2,Math.max(3,headW-8),1)}
+  if(style==='hat'){
+   P(c,'#453f38',headX-6,headY,headW+12,3);
+   P(c,'#b09a69',headX-4,headY-5,headW+8,6);
+   P(c,'#e1c58e',headX-2,headY-2,headW+4,1);
+  }
+  if(style==='scar'&&front)P(c,'#ae7c6f',headX+headW-5,headY+6,2,4);
+  // Props communicate occupations but do not cover faces.
+  const held=frame===1?-1:frame===3?1:0;
+  if(job==='baker'){P(c,'#6d533d',24,21+held,6,3);P(c,'#dfb579',25,18+held,5,4)}
+  if(job==='farmer'){P(c,'#92744f',26,5,2,24);P(c,'#8d9870',24,4,7,3)}
+  if(job==='courier'){P(c,'#ddcda7',23,19+held,6,5);P(c,'#a4775c',24,21+held,4,1)}
+  if(job==='florist'){P(c,'#795b40',25,21+held,5,6);P(c,'#ca7e92',24,17+held,5,4);P(c,'#799669',26,15+held,2,5)}
+  if(job==='merchant'){P(c,'#7d6348',3,20+held,6,8);P(c,'#cfb184',4,20+held,4,3)}
+  if(job==='smith'){P(c,'#aab3b4',25,15+held,3,8);P(c,'#665247',23,16+held,7,4)}
+  if(job==='elder'){P(c,'#968165',27,15,2,16)}
+  // Reserved, hand-directed details for villagers whose generic role outlines
+  // would otherwise look identical even when their palette is different.
+  if(id==='lulu'){P(c,'#edd19a',headX+headW-1,headY+1,4,3);P(c,'#b96e73',headX+headW,headY,2,2)}
+  if(id==='noa'){P(c,'#d8b8c2',headX-3,headY+4,3,5);P(c,'#8f7091',headX-3,headY+9,2,6)}
+  if(id==='baker'){P(c,'#f1e6d0',14,bodyTop+4,4,2);P(c,'#b48b67',15,bodyTop+8,2,2)}
+  if(id==='capitalInnHost'){P(c,'#e7c394',18,bodyTop+3,3,3);P(c,'#8a6054',20,bodyTop+7,4,2)}
+
+ }
+ function makeNpc(profile,id){
+  const img=canvas(128,128);if(!img)return null;
+  const c=img.getContext('2d');c.imageSmoothingEnabled=false;
+  for(let dir=0;dir<4;dir++)for(let frame=0;frame<4;frame++){
+   c.save();c.translate(frame*32,dir*32);person(c,profile,dir,frame,id);c.restore()
+  }
+  return img
+ }
+ function drawNpc(c,n,dir='down',now=0){
+  const profile=designs[n.id];if(!profile)return false;
+  let sheet=npcCache.get(n.id);
+  if(!sheet){sheet=makeNpc(profile,n.id);if(!sheet)return false;npcCache.set(n.id,sheet)}
+  const near=now>0&&!((typeof matchMedia==='function')&&matchMedia('(prefers-reduced-motion:reduce)').matches);
+  // Static villagers do not march in place. Workers animate arms while
+  // feet stay planted; individual moving NPCs will use walk frames later.
+  const working=['baker','farmer','merchant','capitalVendor','capitalFlowerGirl',
+   'capitalSmith','armoryApprentice','clerk','capitalInnHost'].includes(n.id);
+  const frame=near&&working?Math.floor(now/460)%4:0;
+  c.save();c.imageSmoothingEnabled=false;
+  c.drawImage(sheet,frame*32,(dirs[dir]??0)*32,32,32,n.x*32,n.y*32,32,32);
+  c.restore();return true
+ }
+ const roofs={
+  village:['#a45d4c','#dbbe94','#795a46','#b98461'],
+  orphanage:['#657659','#d7c5a5','#5b6853','#a2b087'],
+  mayorhouse:['#586a80','#c6bda9','#536072','#8795a5'],
+  cottage:['#84654d','#cfb899','#66513c','#ad8664']
+ };
+ function drawHouse(c,kind,x,y){
+  const k=roofs[kind];if(!k)return false;
+  let tile=houseCache.get(kind);
+  if(!tile){
+   tile=canvas(104,108);if(!tile)return false;
+   const a=tile.getContext('2d');a.imageSmoothingEnabled=false;
+   const [roof,wall,beam,roofHighlight]=k;
+   // Layered 4-pixel roof stairs are bespoke per residence.
+   P(a,'#35363a',1,40,101,60);P(a,wall,4,43,96,56);
+   P(a,'#d7c8aa',6,44,92,3);
+   if(kind==='orphanage'){
+    // Low, broad shelter instead of a private-house gable.
+    for(let z=0;z<5;z++){
+     P(a,'#333f39',z*3,37-z*3,104-z*6,6);
+     P(a,z%2?roofHighlight:roof,z*3+1,35-z*3,102-z*6,5)
+    }
+    P(a,'#52684f',6,40,92,9);
+    P(a,'#a2b48a',10,42,84,3);
+    for(let x of [12,88])P(a,'#65785d',x,48,4,46);
+   }else if(kind==='mayorhouse'){
+    // Official residence: flanking low wings and a raised center tower.
+    for(let z=0;z<4;z++){
+     P(a,'#435060',z*3,42-z*4,104-z*6,6);
+     P(a,z%2?roofHighlight:roof,z*3+1,40-z*4,102-z*6,5)
+    }
+    P(a,'#53687b',30,15,44,43);
+    for(let z=0;z<6;z++){
+     P(a,'#3e4859',30+z*3,16-z*3,44-z*6,6);
+     P(a,z%2?roof:roofHighlight,31+z*3,14-z*3,42-z*6,4)
+    }
+    P(a,'#9caeae',44,20,16,19);
+    P(a,'#4f5d69',51,20,2,19);
+   }else if(kind==='cottage'){
+    // Asymmetric roof, an extension and kitchen chimney.
+    P(a,'#5a473b',2,35,99,14);
+    for(let z=0;z<7;z++){
+     const left=z*4,right=z*8;
+     P(a,'#4c3c37',left,38-z*4,102-left-right,6);
+     P(a,z%2?roof:roofHighlight,left+1,36-z*4,100-left-right,5)
+    }
+    P(a,'#755b45',74,45,24,23);
+    P(a,'#b49d7e',78,49,16,16);
+   }else{
+    // Classic family-home, symmetrical steep timber roof.
+    for(let z=0;z<7;z++){
+     const yy=34-z*4,xx=z*6;
+     P(a,'#473d3a',xx,yy+4,104-xx*2,6);
+     P(a,z%2?roof:roofHighlight,xx+1,yy,102-xx*2,6);
+    }
+   }
+   P(a,beam,7,44,5,55);P(a,beam,91,44,5,55);
+   const windows=kind==='orphanage'?[15,44,73]:kind==='cottage'?[18]:kind==='mayorhouse'?[15,72]:[19,69];
+   for(const wx of windows){
+    const ww=kind==='orphanage'?13:15;
+    P(a,beam,wx-3,57,ww+6,24);
+    P(a,'#87a4a0',wx,60,ww,17);
+    P(a,'#d7dfc9',wx+2,61,Math.max(3,ww-9),5);
+    P(a,beam,wx+Math.floor(ww/2),60,2,17);
+   }
+   P(a,'#554238',40,69,25,31);P(a,'#8e6b4c',43,72,19,28);P(a,'#d9b981',57,83,3,3);
+   P(a,beam,7,95,90,5);
+   if(kind==='orphanage'){P(a,'#6a8a64',10,48,84,9);P(a,'#d9c99c',17,49,70,3);P(a,'#8e986d',73,86,17,6);P(a,'#655946',70,92,21,3)}
+   if(kind==='mayorhouse'){P(a,'#495866',30,8,44,28);P(a,'#a7b6b5',37,12,29,20);P(a,'#6c8790',49,13,3,19);P(a,'#c9c1ad',31,100,43,5)}
+   if(kind==='cottage'){P(a,'#594940',73,1,15,31);P(a,'#b59a77',76,4,9,27);P(a,'#51403c',71,0,20,5);for(let j=0;j<3;j++)P(a,'#7b8d63',12+j*10,93,6,7)}
+   if(kind==='village'){P(a,'#6d5541',12,14,14,23);P(a,'#ba9676',15,17,8,19);for(let j=0;j<4;j++)P(a,'#8f6a4f',73+j*6,92,6,7)}
+   houseCache.set(kind,tile)
+  }
+  c.save();c.imageSmoothingEnabled=false;c.drawImage(tile,x,y);c.restore();return true
+ }
+ const api={designs,drawNpc,drawHouse,dirs,getNpcAtlas:id=>npcCache.get(id),getHouseTile:id=>houseCache.get(id)};
+ return api
+})();
+
+</script>
+  <script>
+'use strict';
+/*
+ * Authored opening world-life details: village, road, capital.
+ * Decorative only: the map, tile collisions, character positions and saved
+ * progress are owned by existing systems. No new invisible obstacles.
+ * Deliberate landmarks are positioned against pre-existing story locations.
+ */
+const OpeningWorldLife=(()=>{
+ const maps=new Set(['village','road','capital']);
+ const R=(c,col,x,y,w,h)=>{c.fillStyle=col;c.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h))};
+ const at=(x,y)=>[x*32,y*32];
+ function basket(c,x,y,kind='full'){
+  R(c,'#504230',x+1,y+8,20,8);R(c,'#a47c4d',x+3,y+7,16,7);
+  R(c,'#d5b17b',x+5,y+11,12,1);R(c,'#634b36',x+3,y+8,2,6);R(c,'#634b36',x+16,y+8,2,6);
+  if(kind==='full')for(const [xx,yy] of [[5,5],[11,3],[15,6]]){R(c,'#c39b5e',x+xx,y+yy,5,4);R(c,'#ebca88',x+xx+1,y+yy,2,1)}
+ }
+ function wheel(c,x,y){
+  R(c,'#47382d',x-6,y-6,13,13);R(c,'#a0875c',x-4,y-4,9,9);R(c,'#5c4635',x-2,y-2,5,5);R(c,'#dec391',x,y,2,2)
+ }
+ function cart(c,x,y,condition='broken'){
+  // Side view, stationed off the intended central road route.
+  R(c,'#363b34',x+2,y+32,74,5);
+  R(c,'#6c533d',x+10,y+11,56,25);R(c,'#ab8659',x+10,y+12,56,17);
+  for(let k=0;k<5;k++)R(c,k%2?'#896845':'#bd9a6b',x+13,y+16+k*3,51,2);
+  R(c,'#674c35',x+14,y+4,17,11);R(c,'#9d7f59',x+16,y+6,13,5);
+  R(c,'#6a5d45',x+35,y+3,20,12);R(c,'#bbb08d',x+37,y+4,16,6);
+  if(condition==='repair'){
+   R(c,'#c1a276',x+12,y+12,51,3);
+   R(c,'#5f694b',x+33,y+2,3,26);
+   R(c,'#c8b68e',x+29,y+7,12,3);
+  }else if(condition==='return'){
+   R(c,'#80745c',x+3,y+12,12,11);
+   R(c,'#cdb78b',x+5,y+10,8,4);
+  }else{
+   // The visibly loose wooden brace is repaired or packed after the choice.
+   R(c,'#4e4134',x+64,y+18,10,3);
+   R(c,'#b5a075',x+66,y+13,3,8)
+  }
+  R(c,'#614936',x+8,y+10,4,23);R(c,'#614936',x+65,y+9,4,26);
+  wheel(c,x+22,y+35);wheel(c,x+55,y+35);
+ }
+ function village(c){
+  // Sense of daily life; props at authored NPC landmarks, not imaginary loot.
+  // Baker's stand: physically distinct from the mayor's house.
+  const [bx,by]=at(7,5);
+  R(c,'#544434',bx+1,by+21,62,8);R(c,'#b68b59',bx+2,by+15,60,8);
+  for(let k=0;k<4;k++){let x=bx+8+k*13;R(c,'#ab8050',x,by+11,10,6);R(c,'#e3ba77',x+1,by+11,7,2)}
+  R(c,'#ead5a4',bx+5,by+5,54,3);
+  // Agricultural character of the village, crops rowed along the western field.
+  for(let x=1;x<=3;x++)for(let y=8;y<=11;y++){
+   const px=x*32+8,py=y*32+10;
+   R(c,'#5b6547',px+1,py+12,17,4);
+   for(let k=0;k<3;k++){
+    R(c,'#355f3f',px+2+k*6,py+2,2,11);
+    R(c,'#79935e',px+k*6,py+4,5,4)
+   }
+  }
+  // Shared life around the well: buckets, filled water trough; no overlay on exit.
+  const [wx,wy]=at(12,9);
+  R(c,'#544632',wx+24,wy+26,13,4);
+  R(c,'#9b7c53',wx+25,wy+16,11,12);
+  R(c,'#658386',wx+27,wy+18,7,2);
+  // Child's scattered play props outside the orphanage frontage.
+  const [ox,oy]=at(18,6);
+  R(c,'#a77b4a',ox+21,oy+24,7,6);
+  R(c,'#dbbf85',ox+23,oy+25,3,2);
+  R(c,'#806c8a',ox+9,oy+26,5,5);
+  R(c,'#d3c09b',ox+10,oy+27,3,2);
+  // Village notice board is at the square rather than a floating HUD label.
+  // No new solid board on a walkable square; the village door signs suffice.
+  // Small footprints into lived-in door thresholds.
+  for(const [x,y] of [[5,11],[18,11],[18,4],[4,4]]){
+   R(c,'#988c70',x*32+7,y*32+26,9,2);
+   R(c,'#b9ad8c',x*32+17,y*32+22,6,2)
+  }
+ }
+ function road(c,choices={}){
+  // Wheel ruts, erosion and roadside drainage give a true used-trade-route read.
+  for(const [x,y] of [[11,13],[11,11],[11,9],[10,8],[11,6],[12,4],[12,3]]){
+   const [px,py]=at(x,y);
+   for(const dx of [7,22]){
+    R(c,'#776c55',px+dx,py+5,2,19);
+    R(c,'#aa9673',px+dx+1,py+8,1,9);
+   }
+   R(c,'#c4b28c',px+12,py+23,8,1)
+  }
+  c.save();c.translate(5*32+4,7*32+3);c.scale(.72,.72);cart(c,0,0,choices['early.merchantCart']);c.restore();
+  // Lumber and tied parcels near the road's original merchant position.
+  const [x,y]=at(8,8);
+  R(c,'#584d3b',x+17,y+18,12,9);
+  R(c,'#a48b64',x+19,y+16,9,10);
+  R(c,'#c7aa78',x+21,y+17,4,2);
+  // Weathered direction marker with no false clickable entrance.
+  // The existing roadSign interactive object is the actual signpost.
+  // Sparse, recognizable milestones: extra detail concentrated at bends.
+  for(const [tx,ty] of [[5,11],[18,8],[19,2]]){
+   const [px,py]=at(tx,ty);
+   R(c,'#4d584a',px+6,py+23,20,6);
+   R(c,'#818577',px+11,py+12,11,15);
+   R(c,'#b5ad90',px+13,py+12,7,3);
+   R(c,'#6c735f',px+11,py+21,11,2)
+  }
+ }
+ function capital(c){
+  // City shows prosperity and scarcity in neighboring, distinctly designed areas.
+  // Market booth cloth, fruit baskets, rope, and packaging all on existing stalls.
+  for(const [tx,ty,cloth] of [[3,7,'#a76655'],[5,9,'#aa8d58'],[7,7,'#628792']]){
+   const [x,y]=at(tx,ty);
+   R(c,'#4a4136',x+1,y+10,30,17);
+   R(c,cloth,x+1,y+3,30,9);
+   for(let k=0;k<3;k++)R(c,k%2?'#e1cfac':'#c8b086',x+3+k*10,y+3,8,3);
+   R(c,'#d2b58a',x+4,y+15,24,3);
+   for(const ox of [7,14,21]){
+    R(c,'#ad7749',x+ox,y+18,6,4);
+    R(c,'#d9a875',x+ox+1,y+18,4,1)
+   }
+  }
+  // Ration line: restrained chalk and worn queue marks, not invented residents.
+  for(const [tx,ty] of [[15,9],[16,9],[17,9],[15,10],[16,10]]){
+   const [x,y]=at(tx,ty);
+   R(c,'#d1c5b3',x+6,y+25,18,2);
+   R(c,'#827a71',x+8,y+28,14,1);
+  }
+  basket(c,17*32+5,8*32+9,'empty');
+  // Palatial side of the square retains rich stone inlays.
+  for(const [tx,ty] of [[9,4],[12,4],[15,4]]){
+   const [x,y]=at(tx,ty);
+   R(c,'#cfc7b8',x+9,y+25,15,2);
+   R(c,'#e4d7bb',x+11,y+24,11,1)
+  }
+  // Municipal announcement board ties into the existing propaganda object.
+  // Use the existing victoryPoster object: no impassable-looking false board.
+ }
+ function ground(c,map,choices={}){if(!api.enabled)return false;
+  if(map==='village')village(c);
+  else if(map==='road')road(c,choices);
+  else if(map==='capital')capital(c);
+  else return false;
+  return true
+ }
+ function clothes(c,id,x,y){
+  // Pixel costume accents atop the shared NPC body; distinct jobs at game scale.
+  if(id==='baker'){
+   R(c,'#d8cdb1',x+10,y+13,14,17);
+   R(c,'#a38d6b',x+11,y+16,12,1);
+   R(c,'#ece3cb',x+12,y+17,10,9);
+   R(c,'#766b57',x+12,y+25,10,2);
+  }else if(id==='farmer'){
+   R(c,'#575d44',x+10,y+15,13,16);
+   R(c,'#91936c',x+11,y+15,3,12);
+   R(c,'#91936c',x+19,y+15,3,12);
+   R(c,'#78634a',x+10,y-2,15,3);
+   R(c,'#bca37a',x+6,y+1,22,3);
+  }else if(id==='oldwoman'){
+   R(c,'#857a72',x+7,y+9,20,8);
+   R(c,'#c2b0a0',x+8,y+10,17,3);
+   R(c,'#62595a',x+9,y+17,15,11);
+  }else if(id==='merchant'){
+   R(c,'#655c4a',x+9,y+10,17,5);
+   R(c,'#a58c69',x+11,y+11,13,2);
+   R(c,'#7e6d54',x+9,y+18,18,4);
+   R(c,'#d1b78c',x+20,y+18,3,9);
+  }else if(id==='capitalVendor'){
+   R(c,'#bfac91',x+11,y+16,14,13);
+   R(c,'#8a6d53',x+12,y+19,12,3);
+  }else if(id==='rationMother'){
+   R(c,'#6e7369',x+8,y+11,19,9);
+   R(c,'#a6a18e',x+9,y+12,17,2);
+   R(c,'#70675e',x+11,y+17,15,12);
+  }else if(id==='capitalFlowerGirl'){
+   R(c,'#c4a58d',x+11,y+17,12,12);
+   R(c,'#8f6a6e',x+13,y+20,8,2);
+  }else if(id==='capitalRecruit'){
+   R(c,'#737a7d',x+9,y+16,16,14);
+   R(c,'#c6b593',x+10,y+17,14,2);
+   R(c,'#545a60',x+9,y+25,16,3);
+  }else if(id==='orphan'){
+   R(c,'#bea08a',x+12,y+17,11,11);
+   R(c,'#947e72',x+14,y+18,7,2)
+  }
+ }
+ // Only named, already-placed people have role-specific props.
+ // Tool placement deliberately does not block the NPC's face or outline.
+ const living=new Set(['baker','farmer','oldwoman','orphan','merchant','capitalVendor','rationMother','capitalFlowerGirl','capitalRecruit']);
+ function villager(c,map,n,now=0){
+  if(!api.enabled||!living.has(n.id)||!maps.has(map))return false;
+  const x=n.x*32,y=n.y*32;
+  const beat=Math.floor(now/1050)%4===1?1:0;
+  // The dedicated NPC atlas already includes distinct garments.
+  // Only the old fallback renderer needs the historic costume overlay.
+  if(typeof OpeningPixelAssets==='undefined'||!OpeningPixelAssets.designs[n.id])clothes(c,n.id,x,y);
+  if(n.id==='baker'){
+   // Tray of loaves makes the baker legible even without opening dialogue.
+   R(c,'#725238',x+18,y+16-beat,19,5);
+   for(let i=0;i<3;i++){R(c,'#d29b61',x+20+i*5,y+12-beat,5,5);R(c,'#e6c08b',x+21+i*5,y+13-beat,3,1)}
+  }else if(n.id==='farmer'){
+   R(c,'#725539',x+4,y-12+beat,3,30);
+   R(c,'#b9ab88',x-1,y-16+beat,14,6);
+   R(c,'#4b563d',x+3,y+15,5,4)
+  }else if(n.id==='oldwoman'){
+   R(c,'#5b4935',x+26,y+10,3,27);
+   R(c,'#b0946d',x+25,y+8,5,4)
+  }else if(n.id==='orphan'){
+   R(c,'#9a675d',x+21,y+15+beat,6,6);
+   R(c,'#d8af8d',x+23,y+13+beat,3,3)
+  }else if(n.id==='merchant'){
+   // Non-looping ledger pose and a sack show merchant identity.
+   R(c,'#7f6750',x+20,y+18,12,9);
+   R(c,'#d9c5a1',x+20,y+9-beat,10,8);
+   R(c,'#8c745d',x+22,y+12-beat,6,1)
+  }else if(n.id==='capitalVendor'){
+   basket(c,x+17,y+10);
+  }else if(n.id==='rationMother'){
+   basket(c,x+17,y+15,'empty');
+   R(c,'#c1ac8b',x+19,y+14-beat,6,3)
+  }else if(n.id==='capitalFlowerGirl'){
+   R(c,'#ab7951',x+19,y+16,9,10);
+   for(const dx of [20,25]){R(c,'#5c8252',x+dx+1,y+10-beat,2,8);R(c,'#a85e6c',x+dx-1,y+9-beat,5,4)}
+  }else if(n.id==='capitalRecruit'){
+   R(c,'#8b8272',x+23,y+12,3,17);
+   R(c,'#c8c2af',x+21,y+10,7,3)
+  }
+  return true
+ }
+ // Indoor workshops also have genuinely working NPCs. Ordinary stationary
+ // civilians must not trigger wasteful, in-place walking cycles.
+ const ambientWorkplaces=new Set(['village','road','capital','capitalarmory','capitalinn','mayorhouse']);
+ const animatedWorkers=new Set(['baker','farmer','merchant','capitalVendor','capitalFlowerGirl',
+  'capitalSmith','armoryApprentice','clerk','capitalInnHost']);
+ function shouldBreathe(map,playerX,playerY,npcs){
+  if(!api.enabled||!ambientWorkplaces.has(map))return false;
+  if(typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches)return false;
+  return Array.isArray(npcs)&&npcs.some(n=>animatedWorkers.has(n.id)&&Math.abs(n.x-playerX)+Math.abs(n.y-playerY)<=5)
+ }
+ // These stalls were already represented as solid-looking art in the old capital.
+ // Preserve map symbols but align physical movement with that presentation.
+ function blocks(map,x,y){
+  return map==='capital'&&((x===3&&y===7)||(x===7&&y===7)||(x===17&&y===8))
+ }
+ const api={enabled:true,maps,ground,villager,living,shouldBreathe,blocks};
+ return api
+})();
+
+</script>
+  <script>
+'use strict';
+const COLORS={grass:'#6f8059',grass2:'#62724f',path:'#b49a6c',tree:'#496345',trunk:'#6c513c',gold:'#c9aa61',skin:'#ddb99e',shadow:'rgba(0,0,0,.22)',cave:'#3c3b41'};
+const HERO_SPRITES={image:null,ready:false,frameW:32,frameH:32,columns:3,directions:{down:0,left:1,right:2,up:3},characters:{karen:0,triton:1,sophie:2,margaret:3}};
+const HERO_RUNTIME={frameW:48,frameH:48,display:44,anchor:[24,44],directions:{down:0,left:1,right:2,up:3},images:{}};
+if(typeof Image!=='undefined'){
+ const fallback=new Image();HERO_SPRITES.image=fallback;fallback.onload=()=>{HERO_SPRITES.ready=true};fallback.onerror=()=>{HERO_SPRITES.ready=false};fallback.src='assets/hero_party_walk.png';
+ for(const id of Object.keys(HERO_SPRITES.characters)){const rec={image:new Image(),ready:false,error:false};rec.image.onload=()=>{rec.ready=true;rec.error=false};rec.image.onerror=()=>{rec.ready=false;rec.error=true};rec.image.src='assets/characters/'+id+'/'+id+'_walk.png';HERO_RUNTIME.images[id]=rec}
+}
+function heroWalkFrame(motion){if(!motion)return 0;const cycle=[0,1,2,3,4,5,4,3,2,1];return cycle[Math.floor(motion)%cycle.length]}
+function drawHeroMarker(cx,topY){ctx.fillStyle='#f0d178';ctx.beginPath();ctx.moveTo(cx,topY-3);ctx.lineTo(cx+5,topY-9);ctx.lineTo(cx,topY-14);ctx.lineTo(cx-5,topY-9);ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(66,46,20,.86)';ctx.lineWidth=1;ctx.stroke()}
+function drawHeroSpriteSheet(x,y,heroId,leader,facing,motion){
+ const frame=heroWalkFrame(motion),row=HERO_RUNTIME.directions[facing]??0,px=Math.round(x*TILE),py=Math.round(y*TILE),footX=px+16,footY=py+30;
+ const rec=HERO_RUNTIME.images[heroId];
+ if(rec?.ready&&rec.image){
+  const size=HERO_RUNTIME.display,scale=size/HERO_RUNTIME.frameW,dx=Math.round(footX-HERO_RUNTIME.anchor[0]*scale),dy=Math.round(footY-HERO_RUNTIME.anchor[1]*scale);
+  ctx.save();ctx.fillStyle='rgba(16,18,18,.28)';ctx.beginPath();ctx.ellipse(footX,footY-1,10,4,0,0,Math.PI*2);ctx.fill();ctx.imageSmoothingEnabled=false;
+  ctx.drawImage(rec.image,frame*48,row*48,48,48,dx,dy,size,size);ctx.restore();
+  if(leader)drawHeroMarker(footX,dy);return true
+ }
+ const cfg=HERO_SPRITES;if(!cfg.ready||!cfg.image||cfg.characters[heroId]===undefined)return false;
+ const fallbackFrame=motion?[0,1,2,1][Math.floor(motion)%4]:1,fallbackRow=cfg.characters[heroId]*4+(cfg.directions[facing]??0);
+ ctx.save();ctx.imageSmoothingEnabled=false;ctx.drawImage(cfg.image,fallbackFrame*32,fallbackRow*32,32,32,px,py,32,32);ctx.restore();if(leader)drawHeroMarker(px+16,py);return true
+}
+function heroRuntimeStatus(){const out={};for(const id of Object.keys(HERO_SPRITES.characters)){const rec=HERO_RUNTIME.images[id];out[id]={ready:!!rec?.ready,error:!!rec?.error,naturalWidth:rec?.image?.naturalWidth||0,naturalHeight:rec?.image?.naturalHeight||0}}return out}
+function tileAt(mapId,x,y){const m=maps[mapId];if(!m||x<0||y<0||x>=COLS||y>=ROWS)return'S';return m.tiles[y][x]}
+function objectCleared(id){if(TREASURE_DEFS[id]&&state.world.treasures[id])return true;return (id==='wolf'&&isDefeated('wolf'))||(id==='bandit'&&isDefeated('bandit'))||(id==='bats'&&isDefeated('bats'))||(id==='crawler'&&isDefeated('crawler'))||(id==='boss'&&isDefeated('boss'))||(id==='scavengerWolves'&&isDefeated('scavengerWolves'))||(id==='chest1'&&state.world.treasures.chest1)||(id==='chest2'&&state.world.treasures.chest2)||(id==='innerGate'&&getWorldSwitch('leverWest')&&getWorldSwitch('leverEast'))||((id==='imperialPatrol'&&isDefeated('imperialPatrol'))||((['fortGate','fortGateRight'].includes(id)&&getWorldSwitch('fortGateOpen'))||(['ashCache','frontierCache','empireCache','imperialCache','yukiCache','elsiaCache'].includes(id)&&state.world.treasures[id])))}
+function npcVisible(n){if(n.showWhen&&!structuredCondition(n.showWhen))return false;if(n.hideWhen&&structuredCondition(n.hideWhen))return false;return true}
+function isBlocked(x,y){
+ if(OpeningWorldLife.blocks(state.map,x,y))return true;
+ const t=tileAt(state.map,x,y);if(['T','H','S','W','R','K','Z'].includes(t))return true;
+ const m=maps[state.map];if(m.npcs.some(n=>npcVisible(n)&&n.x===x&&n.y===y))return true;
+ for(const o of m.objects){if(o.x===x&&o.y===y){if(['gate','exit','northExit','southExit','roadSign','milestone','banner','rations'].includes(o.id))continue;if(objectCleared(o.id))continue;return true}}
+ return false
+}
+
+function drawTile(ch,x,y){if(AshFrontierEnvironment.enabled&&AshFrontierEnvironment.paintTile(ctx,state.map,ch,x,y))return;if(CapitalEnvironment.enabled&&CapitalEnvironment.paintTile(ctx,state.map,ch,x,y))return;if(RoadCaveQuality.enabled&&RoadCaveQuality.paintTile(ctx,state.map,ch,x,y,maps[state.map]))return;if(RyuneEnvironment.enabled&&RyuneEnvironment.paintTile(ctx,state.map,ch,x,y,maps[state.map]))return;const px=x*TILE,py=y*TILE,h=((x*1103515245)^(y*12345))>>>0;
+ const dot=(c1,c2)=>{ctx.fillStyle=c1;ctx.fillRect(px-.65,py-.65,TILE+1.3,TILE+1.3);ctx.fillStyle=c2;ctx.globalAlpha=.62;ctx.beginPath();ctx.ellipse(px+5+(h%20),py+7+((h>>4)%18),3+((h>>9)%4),2+((h>>12)%3),0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1};
+ if(ch==='G'||ch==='H')dot(state.map==='empirevillage'?'#66755e':COLORS.grass,state.map==='empirevillage'?'#53664d':COLORS.grass2)
+ else if(ch==='P'){ctx.fillStyle=COLORS.path;ctx.fillRect(px-.65,py-.65,TILE+1.3,TILE+1.3);ctx.fillStyle='rgba(73,57,38,.13)';ctx.fillRect(px+4+(h%5),py+7,5,2);ctx.fillRect(px+18,py+18+((h>>5)%3),7,2);ctx.fillRect(px+10,py+27,3,2);ctx.fillStyle='rgba(236,215,165,.12)';ctx.fillRect(px+7,py+13,3,1);ctx.fillRect(px+23,py+8,2,1);ctx.fillStyle='rgba(72,92,55,.13)';ctx.fillRect(px,py+((h>>8)%24),2,5);ctx.fillRect(px+30,py+((h>>12)%23),2,6)}
+ else if(ch==='D'){ctx.fillStyle='#927550';ctx.fillRect(px-.65,py-.65,TILE+1.3,TILE+1.3);ctx.fillStyle='rgba(48,35,25,.18)';ctx.fillRect(px+3,py+6,9,2);ctx.fillRect(px+16,py+17,11,2);ctx.fillRect(px+8,py+27,7,2)}
+ else if(ch==='A'){ctx.fillStyle='#8f8f8c';ctx.fillRect(px-.65,py-.65,TILE+1.3,TILE+1.3);ctx.strokeStyle='rgba(50,52,55,.2)';ctx.lineWidth=1;const gy=y*TILE;for(let yy=Math.ceil(gy/16)*16;yy<gy+TILE;yy+=16){ctx.beginPath();ctx.moveTo(px,yy);ctx.lineTo(px+TILE,yy);ctx.stroke()}const row=Math.floor(gy/16);for(let xx=Math.ceil((px-(row%2)*16)/32)*32+(row%2)*16;xx<px+TILE;xx+=32){ctx.beginPath();ctx.moveTo(xx,py);ctx.lineTo(xx,py+TILE);ctx.stroke()}}
+ else if(ch==='E'){ctx.fillStyle='#65717a';ctx.fillRect(px-.65,py-.65,TILE+1.3,TILE+1.3);ctx.fillStyle='rgba(31,39,44,.14)';ctx.beginPath();ctx.ellipse(px+6+(h%22),py+7+((h>>5)%20),5,2,0,0,Math.PI*2);ctx.fill()}
+ else if(ch==='B'){ctx.fillStyle='#5d5145';ctx.fillRect(px-.65,py-.65,TILE+1.3,TILE+1.3);ctx.fillStyle='#3f3730';ctx.fillRect(px+4,py+5,8,3);ctx.fillRect(px+18,py+21,10,3);ctx.fillStyle='rgba(151,105,63,.22)';ctx.fillRect(px+12,py+12,3,3)}
+ else if(ch==='M'){ctx.fillStyle='#625b50';ctx.fillRect(px-.65,py-.65,TILE+1.3,TILE+1.3);ctx.fillStyle='#4d473f';ctx.beginPath();ctx.ellipse(px+9,py+9,7,3,0,0,Math.PI*2);ctx.ellipse(px+22,py+23,6,3,0,0,Math.PI*2);ctx.fill()}
+ else if(ch==='Q'){ctx.fillStyle='#8d967e';ctx.fillRect(px-.65,py-.65,TILE+1.3,TILE+1.3);ctx.fillStyle='#b7b4a2';ctx.fillRect(px+3,py+22,12,2);ctx.fillRect(px+20,py+8,7,2);ctx.fillStyle='#6f8068';ctx.fillRect(px+8,py+10,2,6)}
+ else if(ch==='R'){ctx.fillStyle='#3f6c7b';ctx.fillRect(px-.65,py-.65,TILE+1.3,TILE+1.3);ctx.strokeStyle='rgba(210,236,236,.28)';ctx.beginPath();ctx.moveTo(px+2,py+10);ctx.quadraticCurveTo(px+9,py+6,px+16,py+10);ctx.quadraticCurveTo(px+23,py+14,px+30,py+10);ctx.moveTo(px+2,py+24);ctx.quadraticCurveTo(px+10,py+20,px+18,py+24);ctx.quadraticCurveTo(px+24,py+27,px+30,py+24);ctx.stroke()}
+ else if(ch==='Z'){ctx.fillStyle='#171b20';ctx.fillRect(px-.65,py-.65,TILE+1.3,TILE+1.3);const h=((x*92821)^(y*68917))>>>0;ctx.fillStyle='#222a31';ctx.beginPath();ctx.moveTo(px,py+5+(h%8));ctx.lineTo(px+9,py+1);ctx.lineTo(px+16,py+10+(h%6));ctx.lineTo(px+24,py+3);ctx.lineTo(px+32,py+8+(h%7));ctx.lineTo(px+32,py+32);ctx.lineTo(px,py+32);ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(118,139,151,.16)';ctx.beginPath();ctx.moveTo(px+4,py+10);ctx.lineTo(px+28,py+17);ctx.stroke()}
+ else if(ch==='K'){ctx.fillStyle='#4b4c4d';ctx.fillRect(px-.65,py-.65,TILE+1.3,TILE+1.3);ctx.fillStyle='#676766';ctx.fillRect(px+3,py+4,26,8);ctx.fillStyle='#343536';ctx.fillRect(px,py+25,TILE,7);ctx.strokeStyle='rgba(210,210,205,.12)';ctx.strokeRect(px+4,py+4,24,20)}
+ else if(ch==='T'){
+  ctx.fillStyle=COLORS.grass;ctx.fillRect(px-.65,py-.65,TILE+1.3,TILE+1.3);
+  ctx.fillStyle='rgba(20,36,22,.18)';ctx.beginPath();ctx.ellipse(px+16,py+27,11,4,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#5c4635';ctx.fillRect(px+13,py+16,7,14);ctx.fillStyle='#806044';ctx.fillRect(px+14,py+17,2,11);
+  const sway=(h%3)-1;
+  ctx.fillStyle='#344f36';ctx.beginPath();ctx.arc(px+8+sway,py+14,7,0,Math.PI*2);ctx.arc(px+15+sway,py+8,9,0,Math.PI*2);ctx.arc(px+23+sway,py+13,8,0,Math.PI*2);ctx.arc(px+17+sway,py+17,9,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#496747';ctx.beginPath();ctx.arc(px+11+sway,py+9,5,0,Math.PI*2);ctx.arc(px+20+sway,py+10,5,0,Math.PI*2);ctx.arc(px+14+sway,py+15,5,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='rgba(125,150,91,.35)';ctx.fillRect(px+10+sway,py+6,4,2);ctx.fillRect(px+19+sway,py+8,3,2)
+ }
+ else if(ch==='C'){ctx.fillStyle=COLORS.cave;ctx.fillRect(px-.65,py-.65,TILE+1.3,TILE+1.3);ctx.fillStyle='rgba(255,255,255,.045)';ctx.fillRect(px+5,py+6,5,3);ctx.fillRect(px+21,py+20,4,2);ctx.fillStyle='rgba(0,0,0,.12)';ctx.fillRect(px,py+28,TILE,4)}
+ else if(ch==='F'){ctx.fillStyle='#8a6b49';ctx.fillRect(px-.65,py-.65,TILE+1.3,TILE+1.3);ctx.fillStyle='rgba(255,255,255,.035)';ctx.fillRect(px+3+(h%17),py+8+((h>>5)%16),10,1);ctx.fillStyle='rgba(56,35,20,.07)';ctx.beginPath();ctx.ellipse(px+8+(h%18),py+9+((h>>4)%15),7,2,0,0,Math.PI*2);ctx.fill()}
+ else if(ch==='W'){ctx.fillStyle='#56483c';ctx.fillRect(px-.65,py-.65,TILE+1.3,TILE+1.3);ctx.fillStyle='#6d5a49';ctx.fillRect(px+2,py+3,28,11);ctx.fillStyle='#3d342d';ctx.fillRect(px,py+25,TILE,7);ctx.fillStyle='rgba(255,255,255,.055)';ctx.fillRect(px+4,py+5,22,2)}
+ else if(ch==='S'){ctx.fillStyle='#222329';ctx.fillRect(px-.65,py-.65,TILE+1.3,TILE+1.3);ctx.fillStyle='#30323a';ctx.fillRect(px,py,TILE,6);ctx.fillStyle='rgba(255,255,255,.025)';ctx.fillRect(px+4,py+12,12,2)}
+}
+function drawTileDetail(ch,x,y){if(AshFrontierEnvironment.enabled&&AshFrontierEnvironment.targets.has(state.map))return;if(CapitalEnvironment.enabled&&CapitalEnvironment.mapsSupported.has(state.map))return;if(RoadCaveQuality.enabled&&RoadCaveQuality.active.has(state.map))return;if(RyuneEnvironment.enabled&&RyuneEnvironment.targets.has(state.map))return;const px=x*TILE,py=y*TILE,h=((x*73856093)^(y*19349663))>>>0;
+ if(ch==='G'||ch==='Q'){ctx.fillStyle='rgba(238,223,164,.16)';if(h%3===0){ctx.fillRect(px+7+(h%11),py+7,2,5);ctx.fillRect(px+9+(h%11),py+5,1,7)}if(h%5===0){ctx.fillStyle='rgba(54,88,51,.34)';ctx.fillRect(px+22,py+20,2,6);ctx.fillRect(px+19,py+24,7,2)}}
+ if(['A','E'].includes(ch)){ctx.strokeStyle='rgba(26,29,31,.18)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(px+4+(h%7),py+8);ctx.lineTo(px+14+(h%9),py+11);ctx.lineTo(px+20+(h%5),py+7);ctx.stroke();ctx.fillStyle='rgba(255,255,255,.05)';ctx.fillRect(px+3,py+3,10,1)}
+ if(['D','B','M'].includes(ch)){ctx.fillStyle='rgba(31,25,21,.16)';ctx.fillRect(px+5+(h%13),py+9,5,2);ctx.fillRect(px+17,py+22+(h%5),7,2);if(h%4===0){ctx.fillStyle='rgba(174,139,91,.18)';ctx.fillRect(px+12,py+15,3,3)}}
+ if(ch==='R'){ctx.strokeStyle='rgba(235,248,248,.14)';ctx.beginPath();ctx.moveTo(px+3,py+5+(h%9));ctx.quadraticCurveTo(px+12,py+1+(h%8),px+27,py+6+(h%9));ctx.stroke()}
+ if(ch==='F'){ctx.fillStyle='rgba(255,236,192,.08)';ctx.fillRect(px+2,py+4,28,2);ctx.fillStyle='rgba(50,29,19,.14)';ctx.fillRect(px+15,py+2,2,28)}
+ if(ch==='Z'){ctx.strokeStyle='rgba(193,215,224,.08)';ctx.beginPath();ctx.moveTo(px+3,py+6+(h%9));ctx.lineTo(px+14,py+11);ctx.lineTo(px+28,py+5+(h%11));ctx.stroke()}
+}
+function drawTerrainBlend(m){if(AshFrontierEnvironment.enabled&&AshFrontierEnvironment.targets.has(state.map))return;if(CapitalEnvironment.enabled&&CapitalEnvironment.mapsSupported.has(state.map))return;if(RoadCaveQuality.enabled&&RoadCaveQuality.active.has(state.map))return;if(RyuneEnvironment.enabled&&RyuneEnvironment.targets.has(state.map))return;
+ const walk=new Set(['G','Q','P','D','A','E','B','M','F']);
+ for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){
+  const ch=m.tiles[y][x],px=x*TILE,py=y*TILE;if(!walk.has(ch))continue;
+  const right=x+1<COLS?m.tiles[y][x+1]:null,down=y+1<ROWS?m.tiles[y+1][x]:null;
+  if(right===ch){ctx.fillStyle='rgba(255,255,255,.012)';ctx.fillRect(px+TILE-2,py,4,TILE)}
+  if(down===ch){ctx.fillStyle='rgba(0,0,0,.012)';ctx.fillRect(px,py+TILE-2,TILE,4)}
+ }
+ // Commercial pass: no giant translucent ovals. Use restrained micro-texture
+ // so the ground supports the characters instead of looking procedurally stained.
+ const seed=state.map.length*31;
+ for(let i=0;i<54;i++){
+  const sx=(i*137+seed*17)%(COLS*TILE),sy=(i*83+seed*29)%(ROWS*TILE),w=2+(i%4),h=1+(i%2);
+  ctx.fillStyle=i%3===0?'rgba(232,218,172,.045)':'rgba(35,48,35,.05)';
+  ctx.fillRect(Math.round(sx),Math.round(sy),w,h)
+ }
+}
+function drawMapUnderlay(m){let c='#617556';if(INTERIOR_MAPS.includes(state.map))c='#8a6b49';else if(state.map==='capital')c='#858783';else if(state.map==='road')c='#657a59';else if(state.map==='village')c='#647a58';ctx.fillStyle=c;ctx.fillRect(-4,-4,COLS*TILE+8,ROWS*TILE+8)}
+function drawVerticalSliceGround(m){if(AshFrontierEnvironment.enabled&&AshFrontierEnvironment.targets.has(state.map))return;if(CapitalEnvironment.enabled&&CapitalEnvironment.mapsSupported.has(state.map))return;if(RoadCaveQuality.enabled&&RoadCaveQuality.active.has(state.map))return;if(RyuneEnvironment.enabled&&RyuneEnvironment.targets.has(state.map))return;
+ const map=state.map;
+ if(map==='village'){
+  // broad, irregular footpath shoulders hide the square tile seam
+  ctx.save();ctx.globalAlpha=.24;ctx.fillStyle='#b59a6a';for(let y=1;y<14;y++){const wob=(y%4-1.5)*3;ctx.beginPath();ctx.ellipse(12*TILE+wob, y*TILE+16,37+(y%3)*4,22,0,0,Math.PI*2);ctx.fill()}ctx.restore();
+  // small patches and flower clusters crossing tile borders
+  for(let i=0;i<18;i++){const x=(i*41+57)%720+24,y=(i*73+91)%390+35;ctx.fillStyle=i%3?'rgba(55,84,48,.26)':'rgba(198,171,89,.28)';ctx.beginPath();ctx.ellipse(x,y,7+(i%4)*3,3+(i%3)*2,(i%5)*.25,0,Math.PI*2);ctx.fill()}
+ }
+ if(map==='road'){
+  // Continuous travelled-road surface. Collision still follows the tile map,
+  // but presentation no longer exposes square 32px path stamps.
+  const centers=[12,12,11,11,10,10,10,11,12,12,11,11,12,12,12];
+  const path=(width,stroke)=>{ctx.strokeStyle=stroke;ctx.lineWidth=width;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();for(let y=0;y<centers.length;y++){const x=centers[y]*TILE+16,yy=y*TILE+16;if(!y)ctx.moveTo(x,yy);else ctx.lineTo(x,yy)}ctx.stroke()};
+  path(92,'rgba(74,72,48,.34)');path(82,'#ad9569');path(72,'#b9a174');
+  // Irregular shoulder pixels and compacted center patches.
+  for(let i=0;i<42;i++){const y=(i*37)%450+8,ri=Math.max(0,Math.min(14,Math.floor(y/TILE))),cx=centers[ri]*TILE+16,side=i%2?1:-1;ctx.fillStyle=i%3?'rgba(64,88,52,.31)':'rgba(95,72,43,.19)';ctx.fillRect(Math.round(cx+side*(41+(i%5)*3)),Math.round(y),2+(i%3),3+(i%4))}
+  // Wheel ruts follow the same actual route.
+  for(const off of [-10,10]){ctx.strokeStyle='rgba(91,68,43,.30)';ctx.lineWidth=2;ctx.beginPath();for(let y=0;y<centers.length;y++){const x=centers[y]*TILE+16+off,yy=y*TILE+16;if(!y)ctx.moveTo(x,yy);else ctx.lineTo(x,yy)}ctx.stroke()}
+ } if(map==='capital'){
+  // large paving bands and gutters ignore tile boundaries and make the plaza one continuous material
+  ctx.fillStyle='rgba(242,229,196,.055)';ctx.fillRect(9*TILE,4*TILE,6*TILE,9*TILE);ctx.fillStyle='rgba(54,58,61,.17)';ctx.fillRect(11*TILE-4,4*TILE,3,10*TILE);ctx.fillRect(13*TILE+1,4*TILE,3,10*TILE);
+  ctx.strokeStyle='rgba(211,190,145,.13)';ctx.lineWidth=2;for(let y=5;y<13;y+=2){ctx.beginPath();ctx.moveTo(8*TILE,y*TILE+10);ctx.lineTo(16*TILE,y*TILE+10);ctx.stroke()}
+ }
+ if(INTERIOR_MAPS.includes(map)){
+  // long planks run across multiple logical cells, removing the checkerboard feeling indoors
+  ctx.strokeStyle='rgba(64,42,27,.18)';ctx.lineWidth=1;for(let y=3;y<=12;y++){const yy=y*TILE+((y%2)*7);ctx.beginPath();ctx.moveTo(4*TILE+5,yy);ctx.lineTo(20*TILE-5,yy);ctx.stroke();for(let x=5+(y%3);x<20;x+=4){ctx.beginPath();ctx.moveTo(x*TILE+7,yy-15);ctx.lineTo(x*TILE+7,yy);ctx.stroke()}}
+ }
+}
+function drawHouse(h){const px=h.x*TILE,py=h.y*TILE,w=TILE*3;
+ // deep shadow and stone foundation
+ ctx.fillStyle='rgba(0,0,0,.28)';ctx.fillRect(px+10,py+38,w-2,58);ctx.fillStyle='#6b6257';ctx.fillRect(px+8,py+78,w-16,14);
+ // wall with timber frame
+ ctx.fillStyle=h.wall;ctx.fillRect(px+7,py+31,w-14,58);ctx.fillStyle='rgba(255,247,220,.09)';ctx.fillRect(px+10,py+34,w-20,5);
+ ctx.fillStyle='#584234';ctx.fillRect(px+9,py+39,w-18,4);ctx.fillRect(px+39,py+33,4,56);ctx.fillRect(px+70,py+33,4,56);
+ // layered roof and shingles
+ ctx.fillStyle='rgba(0,0,0,.25)';ctx.beginPath();ctx.moveTo(px-5,py+39);ctx.lineTo(px+w/2,py+3);ctx.lineTo(px+w+6,py+39);ctx.closePath();ctx.fill();
+ ctx.fillStyle=h.roof;ctx.beginPath();ctx.moveTo(px-3,py+34);ctx.lineTo(px+w/2,py+1);ctx.lineTo(px+w+3,py+34);ctx.closePath();ctx.fill();
+ ctx.strokeStyle='rgba(45,29,24,.28)';ctx.lineWidth=1;for(let yy=13;yy<34;yy+=7){ctx.beginPath();ctx.moveTo(px+15-(yy-13)*.5,py+yy);ctx.lineTo(px+w-15+(yy-13)*.5,py+yy);ctx.stroke()}
+ for(let xx=17;xx<w-10;xx+=16){ctx.beginPath();ctx.moveTo(px+xx,py+18);ctx.lineTo(px+xx+7,py+28);ctx.stroke()}
+ // chimney
+ ctx.fillStyle='#65534a';ctx.fillRect(px+w-27,py+7,13,25);ctx.fillStyle='#837166';ctx.fillRect(px+w-29,py+5,17,5);
+ // door and windows
+ ctx.fillStyle='#6d523a';ctx.fillRect(px+40,py+57,20,32);ctx.fillStyle='#31251d';ctx.fillRect(px+55,py+73,3,3);
+ for(const wx of [16,66]){ctx.fillStyle='#b8d8df';ctx.fillRect(px+wx,py+50,20,16);ctx.fillStyle='rgba(246,213,128,.2)';ctx.fillRect(px+wx+3,py+53,14,10);ctx.strokeStyle='#5d5042';ctx.lineWidth=2;ctx.strokeRect(px+wx,py+50,20,16);ctx.beginPath();ctx.moveTo(px+wx+10,py+50);ctx.lineTo(px+wx+10,py+66);ctx.moveTo(px+wx,py+58);ctx.lineTo(px+wx+20,py+58);ctx.stroke()}
+ // crates, flower box, sign
+ ctx.fillStyle='#775538';ctx.fillRect(px+10,py+72,19,13);ctx.strokeStyle='#a77b4e';ctx.strokeRect(px+10,py+72,19,13);ctx.fillStyle='#72503a';ctx.fillRect(px+66,py+68,21,7);ctx.fillStyle='#d3a958';for(const dx of [70,77,84]){ctx.fillRect(px+dx,py+64,3,4)}
+ // no floating building-name plate: doors and in-world signs carry navigation now
+ ctx.fillStyle='#5a4430';ctx.fillRect(px+35,py+86,30,4);ctx.fillStyle='rgba(220,196,143,.18)';ctx.fillRect(px+38,py+86,24,1)}
+function drawCharacterSprite(x,y,style={},leader=false,facing='down',motion=0){
+ if(style.heroId&&drawHeroSpriteSheet(x,y,style.heroId,leader,facing,motion))return;
+ const px=x*TILE,py=y*TILE,small=style.small?.84:1,walk=Math.sin(motion)*2.2,bob=Math.abs(Math.sin(motion))*1.1,side=facing==='left'||facing==='right',back=facing==='up',flip=facing==='left'?-1:1;
+ const cx=px+16,baseY=py+1-bob,skin=COLORS.skin,body=style.body||'#776a5e',accent=style.accent||'#c2ad86',hair=style.hair||'#443b34';
+ ctx.fillStyle='rgba(16,18,18,.34)';ctx.beginPath();ctx.ellipse(cx,py+29,side?9:10,4,0,0,Math.PI*2);ctx.fill();
+ if(side){
+  // legs read clearly as a side walk instead of a front-facing slide
+  ctx.fillStyle='#37312d';ctx.fillRect(cx-5+walk*.35,baseY+23,4,7);ctx.fillRect(cx+2-walk*.35,baseY+23,4,7);
+  ctx.fillStyle=body;ctx.fillRect(cx-6,baseY+13,12,12);ctx.fillStyle=accent;ctx.fillRect(cx-6,baseY+13,12,4);
+  if(style.cape){ctx.fillStyle='#263f67';ctx.beginPath();ctx.moveTo(cx-flip*5,baseY+15);ctx.lineTo(cx-flip*9,baseY+27);ctx.lineTo(cx-flip*3,baseY+25);ctx.closePath();ctx.fill()}
+  // arm swing and profile face
+  ctx.fillStyle=skin;ctx.fillRect(cx+flip*4,baseY+17+walk*.25,4,8);ctx.fillRect(cx-flip*7,baseY+17-walk*.25,4,7);
+  ctx.fillStyle=skin;ctx.beginPath();ctx.arc(cx+flip*2,baseY+9,7*small,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=hair;ctx.beginPath();ctx.arc(cx+flip*1,baseY+7,7*small,Math.PI,Math.PI*2);ctx.fill();ctx.fillRect(cx-6,baseY+3,11,4);
+  ctx.fillStyle='#4e3a33';ctx.fillRect(cx+flip*7-(flip<0?2:0),baseY+9,2,2);
+  if(style.hat){ctx.fillStyle='#5a4632';ctx.fillRect(cx-9,baseY+3,18,3);ctx.fillRect(cx-5,baseY,11,5)}
+  if(style.weapon==='sword'){ctx.strokeStyle='#d7dbe0';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx-flip*5,baseY+14);ctx.lineTo(cx-flip*10,baseY+27);ctx.stroke()}
+  if(style.weapon==='staff'){ctx.strokeStyle='#6c5135';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx-flip*7,baseY+10);ctx.lineTo(cx-flip*7,baseY+29);ctx.stroke()}
+ }else{
+  const legA=walk*.5,legB=-walk*.5;
+  ctx.fillStyle='#37312d';ctx.fillRect(px+10+legA,baseY+23,5,7);ctx.fillRect(px+18+legB,baseY+23,5,7);
+  ctx.fillStyle=body;ctx.fillRect(px+9,baseY+13,14,12);ctx.fillStyle=accent;ctx.fillRect(px+9,baseY+13,14,4);
+  // arms visibly alternate while moving
+  ctx.fillStyle=skin;ctx.fillRect(px+6,baseY+16+walk*.28,4,8);ctx.fillRect(px+23,baseY+16-walk*.28,4,8);
+  if(style.cape){ctx.fillStyle='#263f67';ctx.fillRect(px+7,baseY+15,3,12);ctx.fillRect(px+22,baseY+15,3,12)}
+  ctx.fillStyle=skin;ctx.beginPath();ctx.arc(px+16,baseY+9,7*small,0,Math.PI*2);ctx.fill();ctx.fillStyle=hair;ctx.beginPath();ctx.arc(px+16,baseY+7,7*small,Math.PI,Math.PI*2);ctx.fill();ctx.fillRect(px+10,baseY+3,12,4);
+  if(back){ctx.fillStyle=hair;ctx.beginPath();ctx.arc(px+16,baseY+10,6*small,0,Math.PI*2);ctx.fill();ctx.fillStyle=body;ctx.fillRect(px+10,baseY+14,12,5)}
+  else{ctx.fillStyle='#493b35';ctx.fillRect(px+12,baseY+9,2,2);ctx.fillRect(px+19,baseY+9,2,2)}
+  if(style.hat){ctx.fillStyle='#5a4632';ctx.fillRect(px+7,baseY+3,18,3);ctx.fillRect(px+10,baseY,12,5)}
+  if(style.weapon==='sword'){ctx.strokeStyle='#d7dbe0';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(px+24,baseY+13);ctx.lineTo(px+29,baseY+26);ctx.stroke()}
+  if(style.weapon==='staff'){ctx.strokeStyle='#6c5135';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(px+6,baseY+10);ctx.lineTo(px+7,baseY+29);ctx.stroke();ctx.fillStyle=accent;ctx.beginPath();ctx.arc(px+6,baseY+8,3,0,Math.PI*2);ctx.fill()}
+ }
+ if(leader){ctx.fillStyle='#f0d178';ctx.beginPath();ctx.moveTo(cx,py-5);ctx.lineTo(cx+5,py-11);ctx.lineTo(cx,py-16);ctx.lineTo(cx-5,py-11);ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(66,46,20,.8)';ctx.lineWidth=1;ctx.stroke()}
+}
+function facingBetween(a,b,fallback='down'){if(!a||!b)return fallback;const dx=b[0]-a[0],dy=b[1]-a[1];if(Math.abs(dx)>Math.abs(dy))return dx<0?'left':'right';if(dy!==0)return dy<0?'up':'down';return fallback}
+function drawLeaderWorldMarker(x,y){const px=Math.round(x*TILE),py=Math.round(y*TILE),footX=px+16,footY=py+30;ctx.save();ctx.strokeStyle='rgba(228,195,111,.74)';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(footX,footY-1,11,4,0,0,Math.PI*2);ctx.stroke();ctx.strokeStyle='rgba(255,238,178,.28)';ctx.beginPath();ctx.ellipse(footX,footY-1,8,2.5,0,0,Math.PI*2);ctx.stroke();ctx.restore()}
+function drawPartyRuntime(leaderMoving,phase){
+ const actors=[],trailPoints=partyTrailPoints(),visibleParty=activeRouteParty();
+ for(let i=Math.min(visibleParty.length-2,trailPoints.length-1);i>=0;i--){
+ const p=trailPoints[i],vp=VISUAL.followers[i]||p,member=visibleParty[i+1],
+  moving=Math.hypot(p[0]-vp[0],p[1]-vp[1])>.022;
+ actors.push({x:vp[0],y:vp[1],style:PARTY_STYLE[member?.id]||PARTY_STYLE.triton,
+  facing:VISUAL.followerFaces[i]||state.dir,motion:moving?VISUAL.followerPhases[i]:0,leader:false});
+}
+ actors.push({x:VISUAL.playerX,y:VISUAL.playerY,style:PARTY_STYLE.karen,facing:state.dir,motion:leaderMoving?VISUAL.travelPhase:0,leader:true});
+ actors.sort((a,b)=>(a.y-b.y)||(a.x-b.x)||(a.leader?1:-1));
+ for(const a of actors){
+  const expressed=a.style?.heroId&&GC.CommercialActing?.draws?.(a.style.heroId,ctx,a.x,a.y,a.facing);
+  if(!expressed)drawCharacterSprite(a.x,a.y,a.style,false,a.facing,a.motion);
+ }
+ drawLeaderWorldMarker(VISUAL.playerX,VISUAL.playerY)
+}
+function colorMix(hex,amount){
+ const h=(hex||'#777777').replace('#','');if(h.length!==6)return hex||'#777777';
+ const n=parseInt(h,16),r=n>>16,g=(n>>8)&255,b=n&255,t=amount<0?0:255,p=Math.abs(amount);
+ const q=v=>Math.max(0,Math.min(255,Math.round(v+(t-v)*p)));
+ return '#'+[q(r),q(g),q(b)].map(v=>v.toString(16).padStart(2,'0')).join('')
+}
+function npcHash(id){let h=0;for(const ch of String(id||''))h=(h*31+ch.charCodeAt(0))>>>0;return h}
+function drawNpcCommercial(n,facing='down'){
+ // Render independent 4-direction, 4-pose pixel sprites where authored.
+ // Do not paint the old generic body on top.
+ if(typeof OpeningPixelAssets!=='undefined'&&OpeningPixelAssets.drawNpc(ctx,n,facing,
+  Math.abs(state.x-n.x)+Math.abs(state.y-n.y)<=5?Date.now():0))return;
+ const s=NPC_STYLE[n.id]||{body:'#756b5f',accent:'#a58d6d',hair:'#4b4037'},h=npcHash(n.id),scale=s.small?.86:1;
+ const px=n.x*TILE,py=n.y*TILE,cx=px+16,footY=py+30,body=s.body||'#756b5f',accent=s.accent||'#a58d6d',hair=s.hair||'#4b4037';
+ const dark=colorMix(body,-.48),shade=colorMix(body,-.22),light=colorMix(body,.16),hairDark=colorMix(hair,-.34),skin='#d9b294',skinShade='#b9826f';
+ ctx.save();ctx.imageSmoothingEnabled=false;
+ ctx.fillStyle='rgba(9,12,14,.26)';ctx.beginPath();ctx.ellipse(cx,footY,9*scale,3.2*scale,0,0,Math.PI*2);ctx.fill();
+ const ox=Math.round(cx-14*scale),top=Math.round(footY-35*scale);
+ // cloak / rear silhouette
+ if(s.cape){ctx.fillStyle=colorMix(body,-.34);ctx.beginPath();ctx.moveTo(cx-10*scale,top+17*scale);ctx.lineTo(cx+10*scale,top+17*scale);ctx.lineTo(cx+13*scale,footY-5);ctx.lineTo(cx-13*scale,footY-5);ctx.closePath();ctx.fill()}
+ // legs and boots
+ ctx.fillStyle='#2d2a29';ctx.fillRect(Math.round(cx-7*scale),Math.round(footY-9*scale),5*scale,9*scale);ctx.fillRect(Math.round(cx+2*scale),Math.round(footY-9*scale),5*scale,9*scale);
+ ctx.fillStyle='#493a31';ctx.fillRect(Math.round(cx-8*scale),Math.round(footY-3*scale),6*scale,3*scale);ctx.fillRect(Math.round(cx+2*scale),Math.round(footY-3*scale),6*scale,3*scale);
+ // torso with readable outline + accent band
+ ctx.fillStyle=dark;ctx.fillRect(Math.round(cx-10*scale),Math.round(top+16*scale),20*scale,18*scale);
+ ctx.fillStyle=body;ctx.fillRect(Math.round(cx-8*scale),Math.round(top+17*scale),16*scale,16*scale);
+ ctx.fillStyle=light;ctx.fillRect(Math.round(cx-7*scale),Math.round(top+18*scale),14*scale,3*scale);
+ ctx.fillStyle=accent;ctx.fillRect(Math.round(cx-8*scale),Math.round(top+23*scale),16*scale,3*scale);
+ // arms / hands
+ ctx.fillStyle=shade;ctx.fillRect(Math.round(cx-12*scale),Math.round(top+19*scale),5*scale,12*scale);ctx.fillRect(Math.round(cx+7*scale),Math.round(top+19*scale),5*scale,12*scale);
+ ctx.fillStyle=skin;ctx.fillRect(Math.round(cx-12*scale),Math.round(top+29*scale),4*scale,4*scale);ctx.fillRect(Math.round(cx+8*scale),Math.round(top+29*scale),4*scale,4*scale);
+ // head + ears
+ ctx.fillStyle=hairDark;ctx.fillRect(Math.round(cx-9*scale),Math.round(top+2*scale),18*scale,14*scale);
+ ctx.fillStyle=skinShade;ctx.fillRect(Math.round(cx-8*scale),Math.round(top+6*scale),16*scale,12*scale);
+ ctx.fillStyle=skin;ctx.fillRect(Math.round(cx-7*scale),Math.round(top+6*scale),14*scale,10*scale);
+ // hair cap / side locks vary by NPC id
+ ctx.fillStyle=hair;ctx.fillRect(Math.round(cx-8*scale),Math.round(top+2*scale),16*scale,6*scale);
+ if(h%3===0){ctx.fillRect(Math.round(cx-9*scale),Math.round(top+5*scale),4*scale,10*scale);ctx.fillRect(Math.round(cx+5*scale),Math.round(top+5*scale),4*scale,10*scale)}
+ else if(h%3===1){ctx.fillRect(Math.round(cx-8*scale),Math.round(top+5*scale),5*scale,7*scale);ctx.fillRect(Math.round(cx+4*scale),Math.round(top+5*scale),4*scale,5*scale)}
+ else{ctx.fillRect(Math.round(cx-9*scale),Math.round(top+5*scale),3*scale,8*scale);ctx.fillRect(Math.round(cx+6*scale),Math.round(top+5*scale),3*scale,8*scale)}
+ // face at gameplay scale. Nearby NPCs turn toward the player instead of
+ // remaining permanently front-facing.
+ if(facing==='up'){
+  ctx.fillStyle=hair;ctx.fillRect(Math.round(cx-7*scale),Math.round(top+7*scale),14*scale,9*scale);
+  ctx.fillStyle=hairDark;ctx.fillRect(Math.round(cx-5*scale),Math.round(top+14*scale),10*scale,3*scale)
+ }else if(facing==='left'||facing==='right'){
+  const dir=facing==='left'?-1:1;
+  ctx.fillStyle='#473a34';ctx.fillRect(Math.round(cx+dir*2*scale),Math.round(top+11*scale),2*scale,2*scale);
+  ctx.fillStyle='rgba(255,255,255,.62)';ctx.fillRect(Math.round(cx+dir*2*scale),Math.round(top+10*scale),1*scale,1*scale);
+  ctx.fillStyle=hair;ctx.fillRect(Math.round(cx-dir*8*scale),Math.round(top+6*scale),5*scale,9*scale);
+  if(h%4!==0){ctx.fillStyle='#9c645d';ctx.fillRect(Math.round(cx+dir*3*scale),Math.round(top+15*scale),2*scale,1*scale)}
+ }else{
+  ctx.fillStyle='#473a34';ctx.fillRect(Math.round(cx-4*scale),Math.round(top+11*scale),2*scale,2*scale);ctx.fillRect(Math.round(cx+3*scale),Math.round(top+11*scale),2*scale,2*scale);
+  ctx.fillStyle='rgba(255,255,255,.62)';ctx.fillRect(Math.round(cx-4*scale),Math.round(top+10*scale),1*scale,1*scale);
+  if(h%4!==0){ctx.fillStyle='#9c645d';ctx.fillRect(Math.round(cx-1*scale),Math.round(top+15*scale),3*scale,1*scale)}
+ }
+ // role accessories
+ if(s.hat){ctx.fillStyle=colorMix(hair,-.15);ctx.fillRect(Math.round(cx-11*scale),Math.round(top+1*scale),22*scale,3*scale);ctx.fillRect(Math.round(cx-7*scale),Math.round(top-2*scale),14*scale,5*scale)}
+ if(s.weapon==='sword'){ctx.strokeStyle='#aeb8bf';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx+10*scale,top+20*scale);ctx.lineTo(cx+14*scale,footY-2);ctx.stroke()}
+ if(s.weapon==='staff'){ctx.strokeStyle='#765438';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx-11*scale,top+12*scale);ctx.lineTo(cx-12*scale,footY);ctx.stroke();ctx.fillStyle=accent;ctx.fillRect(Math.round(cx-14*scale),Math.round(top+9*scale),5*scale,5*scale)}
+ // Selected high-contact villagers gain distinct posture/work silhouettes.
+  // These are presentation accents, not new costume/canon claims.
+  if(n.id==='messenger'){
+   ctx.fillStyle=accent;ctx.fillRect(Math.round(cx-12*scale),Math.round(top+17*scale),5*scale,3*scale);
+   ctx.fillRect(Math.round(cx+7*scale),Math.round(top+17*scale),5*scale,3*scale);
+  }else if(n.id==='mayor'){
+   ctx.fillStyle=accent;ctx.fillRect(Math.round(cx-9*scale),Math.round(top+18*scale),18*scale,2*scale);
+   ctx.fillStyle=hair;ctx.fillRect(Math.round(cx-10*scale),Math.round(top+5*scale),5*scale,8*scale);
+  }else if(n.id==='father'||n.id==='karenFather'){
+   ctx.fillStyle=dark;ctx.fillRect(Math.round(cx-13*scale),Math.round(top+19*scale),5*scale,5*scale);
+   ctx.fillRect(Math.round(cx+8*scale),Math.round(top+19*scale),5*scale,5*scale);
+  }else if(n.id==='caretaker'||n.id==='karenMother'){
+   ctx.fillStyle=accent;ctx.fillRect(Math.round(cx-6*scale),Math.round(top+28*scale),12*scale,3*scale);
+   ctx.fillStyle=skin;ctx.fillRect(Math.round(cx-3*scale),Math.round(top+27*scale),6*scale,3*scale);
+  }else if(n.id==='mika'||n.id==='orphan'||n.id==='theo'){
+   ctx.fillStyle=hair;ctx.fillRect(Math.round(cx-9*scale),Math.round(top+4*scale),4*scale,7*scale);
+   ctx.fillStyle=accent;ctx.fillRect(Math.round(cx-6*scale),Math.round(top+23*scale),12*scale,2*scale);
+  }else if(n.id==='baker'){
+   ctx.fillStyle=accent;ctx.fillRect(Math.round(cx-6*scale),Math.round(top+26*scale),12*scale,8*scale);
+   ctx.fillStyle=shade;ctx.fillRect(Math.round(cx-4*scale),Math.round(top+30*scale),8*scale,2*scale);
+  }else if(n.id==='farmer'){
+   ctx.fillStyle=shade;ctx.fillRect(Math.round(cx-9*scale),Math.round(top+30*scale),18*scale,4*scale);
+   ctx.fillStyle=accent;ctx.fillRect(Math.round(cx-7*scale),Math.round(top+29*scale),14*scale,2*scale);
+  }
+  ctx.restore();CapitalEnvironment.npcAccent(ctx,state.map,n);AshFrontierEnvironment.npcAccent(ctx,state.map,n);OpeningWorldLife.villager(ctx,state.map,n,Date.now())
+}
+function drawNpc(n){const close=Math.abs(state.x-n.x)+Math.abs(state.y-n.y)<=2,face=close?facingBetween([n.x,n.y],[state.x,state.y],'down'):'down';drawNpcCommercial(n,face);if(close){ctx.font='bold 9px system-ui';const w=Math.max(28,ctx.measureText(n.name).width+8);const px=n.x*TILE+16-w/2,py=n.y*TILE-7;ctx.fillStyle='rgba(13,16,20,.88)';ctx.fillRect(px,py,w,13);ctx.strokeStyle='rgba(210,181,112,.28)';ctx.strokeRect(px+.5,py+.5,w-1,12);ctx.fillStyle='#efe6d2';ctx.textAlign='center';ctx.fillText(n.name,n.x*TILE+16,py+10);ctx.textAlign='start'}}
+function drawVillageDecor(){
+ // 畑
+ for(let x=1;x<=2;x++)for(let y=7;y<=12;y++){ctx.fillStyle='#776448';ctx.fillRect(x*TILE+3,y*TILE+5,26,22);ctx.strokeStyle='#a58b5c';ctx.beginPath();ctx.moveTo(x*TILE+6,y*TILE+10);ctx.lineTo(x*TILE+26,y*TILE+10);ctx.moveTo(x*TILE+6,y*TILE+18);ctx.lineTo(x*TILE+26,y*TILE+18);ctx.stroke()}
+ // 井戸脇の洗濯物
+ ctx.strokeStyle='#6e5944';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(14*TILE,7*TILE+8);ctx.lineTo(16*TILE,7*TILE+8);ctx.stroke();ctx.fillStyle='#e4d7bd';ctx.fillRect(14*TILE+8,7*TILE+9,14,12);ctx.fillStyle='#8aa1ba';ctx.fillRect(15*TILE+6,7*TILE+9,14,12);
+ // 花
+ for(const [x,y] of [[13,12],[14,12],[16,5],[17,5],[8,12]]){ctx.fillStyle='#d6ba61';ctx.fillRect(x*TILE+14,y*TILE+14,4,4);ctx.fillStyle='#55754b';ctx.fillRect(x*TILE+15,y*TILE+18,2,7)}
+ // 荷車と小さな露店
+ ctx.fillStyle='#77573b';ctx.fillRect(13*TILE+4,6*TILE+20,27,7);ctx.fillRect(13*TILE+9,6*TILE+10,18,10);ctx.fillStyle='#2f302e';ctx.beginPath();ctx.arc(13*TILE+9,6*TILE+28,5,0,Math.PI*2);ctx.arc(13*TILE+27,6*TILE+28,5,0,Math.PI*2);ctx.fill();ctx.fillStyle='#b47758';ctx.fillRect(14*TILE+5,8*TILE+8,24,4);ctx.fillStyle='#d5c18e';ctx.fillRect(14*TILE+7,8*TILE+12,20,9);ctx.fillStyle='#6f5037';ctx.fillRect(14*TILE+8,8*TILE+21,3,8);ctx.fillRect(14*TILE+24,8*TILE+21,3,8);
+ // 鶏
+ for(const [x,y] of [[3,12],[4,12],[3,11]]){ctx.fillStyle='#e7dfcf';ctx.beginPath();ctx.arc(x*TILE+16,y*TILE+18,5,0,Math.PI*2);ctx.fill();ctx.fillStyle='#c86854';ctx.fillRect(x*TILE+20,y*TILE+15,3,3);ctx.fillStyle='#c9a84f';ctx.fillRect(x*TILE+13,y*TILE+23,2,4);ctx.fillRect(x*TILE+18,y*TILE+23,2,4)}
+ // 柵
+ ctx.fillStyle='#785d3f';for(let x=1;x<=8;x++){ctx.fillRect(x*TILE+4,13*TILE+4,4,20)}ctx.fillRect(TILE+4,13*TILE+12,TILE*7,4);
+ // 村の中央広場：井戸を囲む踏み固めた土とベンチ
+ ctx.fillStyle='rgba(154,123,78,.26)';ctx.beginPath();ctx.ellipse(12*TILE+16,9*TILE+17,76,49,-.08,0,Math.PI*2);ctx.fill();ctx.fillStyle='#6f553a';ctx.fillRect(9*TILE+4,9*TILE+27,54,6);ctx.fillRect(14*TILE+4,9*TILE+27,54,6);
+ // 木製案内板と小さな街灯
+ ctx.fillStyle='#5d462f';ctx.fillRect(10*TILE+12,6*TILE+5,5,31);ctx.fillStyle='#b49361';ctx.fillRect(9*TILE+25,6*TILE+7,54,15);ctx.fillStyle='#e6d6ad';ctx.font='bold 8px system-ui';ctx.fillText('北：王都街道',9*TILE+31,6*TILE+18);
+ for(const [x,y] of [[10,8],[14,8]]){ctx.fillStyle='#493e35';ctx.fillRect(x*TILE+15,y*TILE+6,3,25);ctx.fillStyle='#d7ba68';ctx.beginPath();ctx.arc(x*TILE+16,y*TILE+5,5,0,Math.PI*2);ctx.fill()}
+ // 作物の種類を分ける
+ for(let y=8;y<=11;y++){ctx.fillStyle='#6d8b52';for(let x=1;x<=2;x++){ctx.beginPath();ctx.arc(x*TILE+10,y*TILE+12,4,0,Math.PI*2);ctx.arc(x*TILE+22,y*TILE+19,4,0,Math.PI*2);ctx.fill()}}
+}
+function drawInteriorDecor(){
+ const bed=(x,y,blanket='#8d6559')=>{const px=x*TILE,py=y*TILE;ctx.fillStyle='#503d2e';ctx.fillRect(px+2,py+4,28,24);ctx.fillStyle='#d8c7a5';ctx.fillRect(px+5,py+6,22,7);ctx.fillStyle=blanket;ctx.fillRect(px+5,py+13,22,12)};
+ const table=(x,y,w=2)=>{const px=x*TILE,py=y*TILE;ctx.fillStyle='#6e4f34';ctx.fillRect(px+3,py+8,TILE*w-6,15);ctx.fillStyle='#4d3727';ctx.fillRect(px+7,py+23,4,8);ctx.fillRect(px+TILE*w-11,py+23,4,8)};
+ const shelf=(x,y)=>{const px=x*TILE,py=y*TILE;ctx.fillStyle='#513b2a';ctx.fillRect(px+3,py+2,26,28);ctx.fillStyle='#c0a66d';for(let i=0;i<3;i++){ctx.fillRect(px+6,py+7+i*8,20,3)}ctx.fillStyle='#7d4d42';ctx.fillRect(px+7,py+4,4,6);ctx.fillStyle='#536b75';ctx.fillRect(px+13,py+4,5,6);ctx.fillStyle='#77628d';ctx.fillRect(px+20,py+4,4,6)};
+ const hearth=(x,y)=>{const px=x*TILE,py=y*TILE;ctx.fillStyle='#514a45';ctx.fillRect(px+3,py+5,26,25);ctx.fillStyle='#251d19';ctx.fillRect(px+8,py+13,16,13);ctx.fillStyle='#d27a3c';ctx.beginPath();ctx.moveTo(px+16,py+24);ctx.lineTo(px+11,py+17);ctx.lineTo(px+16,py+12);ctx.lineTo(px+21,py+18);ctx.closePath();ctx.fill()};
+ const rug=(x,y,w,h,c='#765361')=>{ctx.fillStyle=c;ctx.fillRect(x*TILE+4,y*TILE+5,w*TILE-8,h*TILE-10);ctx.strokeStyle='rgba(238,216,170,.35)';ctx.strokeRect(x*TILE+7,y*TILE+8,w*TILE-14,h*TILE-16)};
+ const chair=(x,y)=>{const px=x*TILE,py=y*TILE;ctx.fillStyle='rgba(0,0,0,.22)';ctx.fillRect(px+9,py+13,16,15);ctx.fillStyle='#684c35';ctx.fillRect(px+10,py+10,14,10);ctx.fillRect(px+11,py+20,3,10);ctx.fillRect(px+21,py+20,3,10)};
+ const crate=(x,y)=>{const px=x*TILE,py=y*TILE;ctx.fillStyle='rgba(0,0,0,.22)';ctx.fillRect(px+7,py+9,23,22);ctx.fillStyle='#7d5c3c';ctx.fillRect(px+5,py+6,23,22);ctx.strokeStyle='#b08a5d';ctx.strokeRect(px+6,py+7,21,20);ctx.beginPath();ctx.moveTo(px+7,py+8);ctx.lineTo(px+26,py+26);ctx.moveTo(px+26,py+8);ctx.lineTo(px+7,py+26);ctx.stroke()};
+ const pot=(x,y)=>{const px=x*TILE,py=y*TILE;ctx.fillStyle='#927056';ctx.beginPath();ctx.ellipse(px+16,py+20,9,7,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#b48d69';ctx.fillRect(px+9,py+10,14,8);ctx.fillStyle='#51463a';ctx.fillRect(px+11,py+9,10,3)};
+ // 全室共通の生活感：梁・窓・小物・椅子。空の大部屋に見えないようにする。
+ ctx.fillStyle='rgba(49,34,24,.36)';for(const yy of [3,6,9])ctx.fillRect(4*TILE,yy*TILE-3,16*TILE,4);
+ for(const xx of [6,11,16]){ctx.fillStyle='#8eb0bc';ctx.fillRect(xx*TILE+7,2*TILE+9,18,12);ctx.strokeStyle='#dfd0aa';ctx.strokeRect(xx*TILE+6,2*TILE+8,20,14);ctx.beginPath();ctx.moveTo(xx*TILE+16,2*TILE+8);ctx.lineTo(xx*TILE+16,2*TILE+22);ctx.stroke()}
+ chair(8,7);chair(15,7);crate(18,10);pot(5,10);pot(18,8);
+ ctx.fillStyle='rgba(242,190,93,.18)';ctx.beginPath();ctx.arc(12*TILE+16,5*TILE+7,27,0,Math.PI*2);ctx.fill();ctx.fillStyle='#d5ad64';ctx.fillRect(12*TILE+13,5*TILE+4,6,7);
+ if(state.map==='karenhome'){rug(8,6,7,3,'#7f544b');bed(5,4,'#a35c59');bed(17,4,'#6c7589');table(10,7,3);hearth(17,9);shelf(5,9)}
+ if(state.map==='orphanage'){rug(8,6,8,4,'#687a64');for(const p of [[5,4],[7,4],[16,4],[18,4]])bed(p[0],p[1],'#7b8596');table(9,7,5);hearth(17,9);shelf(5,9)}
+ if(state.map==='mayorhouse'){rug(8,6,7,3,'#685877');table(9,7,4);shelf(17,4);shelf(5,4);hearth(17,9);ctx.fillStyle='#d6c49a';ctx.fillRect(10*TILE+7,7*TILE+11,42,21);ctx.strokeStyle='#6f5841';ctx.strokeRect(10*TILE+7,7*TILE+11,42,21)}
+ if(state.map==='cottage'){rug(9,7,6,2,'#705b50');bed(5,4,'#64778c');bed(7,4,'#8f665f');table(10,7,3);hearth(17,9);shelf(17,4)}
+ if(state.map==='capitalinn'){rug(8,6,8,4,'#7b5a4b');table(9,7,5);hearth(17,9);shelf(5,4);bed(17,4,'#8d4b52')}
+ if(state.map==='capitalarmory'){rug(9,7,6,2,'#565b63');table(10,7,3);shelf(17,4);shelf(5,4);ctx.fillStyle='#59606a';for(let i=0;i<4;i++){ctx.fillRect(17*TILE+6+i*5,5*TILE+4,3,24)}ctx.fillStyle='#a77745';ctx.fillRect(6*TILE+4,5*TILE+9,24,13)}
+ if(state.map==='imperialinn'){rug(8,6,8,4,'#516875');table(9,7,5);hearth(17,9);shelf(5,4);bed(17,4,'#577b8a')}
+ if(state.map==='imperialbooks'){rug(8,6,8,4,'#4d5d6a');for(const xx of [5,17]){shelf(xx,4);shelf(xx,8)}table(10,7,3)}
+ // 生活小物：食器、壁絵、収納、窓辺の植物
+ ctx.fillStyle='#6d5138';ctx.fillRect(5*TILE+6,10*TILE+5,42,14);ctx.fillStyle='#c9b48a';for(let i=0;i<3;i++){ctx.beginPath();ctx.arc(5*TILE+15+i*12,10*TILE+7,4,0,Math.PI*2);ctx.fill()}
+ ctx.fillStyle='#54473c';for(const x of [8,13,17]){ctx.fillRect(x*TILE+7,3*TILE+6,20,14);ctx.strokeStyle='#b69c69';ctx.strokeRect(x*TILE+7,3*TILE+6,20,14)}
+ ctx.fillStyle='#496a4e';for(const x of [6,18]){ctx.beginPath();ctx.arc(x*TILE+16,11*TILE+12,6,0,Math.PI*2);ctx.fill();ctx.fillStyle='#876344';ctx.fillRect(x*TILE+12,11*TILE+17,8,7);ctx.fillStyle='#496a4e'}
+ // 出入口の敷物
+ ctx.fillStyle='#49372a';ctx.fillRect(11*TILE+2,12*TILE+14,60,12);ctx.fillStyle='#b6935f';ctx.fillRect(11*TILE+8,12*TILE+17,48,6)
+}
+function drawRegionDecor(){if(RoadCaveQuality.enabled&&RoadCaveQuality.active.has(state.map)){RoadCaveQuality.drawAccents(ctx,state.map);return}
+ const house=(x,y,roof,wall,w=3)=>{const px=x*TILE,py=y*TILE,W=TILE*w;ctx.fillStyle='rgba(0,0,0,.22)';ctx.fillRect(px+7,py+35,W-2,60);ctx.fillStyle=wall;ctx.fillRect(px+7,py+31,W-14,61);ctx.fillStyle=roof;ctx.beginPath();ctx.moveTo(px-3,py+35);ctx.lineTo(px+W/2,py+2);ctx.lineTo(px+W+3,py+35);ctx.closePath();ctx.fill();ctx.fillStyle='#4d382b';ctx.fillRect(px+W/2-9,py+58,18,34);ctx.fillStyle='#b8d0d5';ctx.fillRect(px+13,py+48,18,14);ctx.fillRect(px+W-31,py+48,18,14)};
+ const flag=(x,y,c)=>{ctx.fillStyle='#5f4b35';ctx.fillRect(x*TILE+15,y*TILE,4,50);ctx.fillStyle=c;ctx.fillRect(x*TILE+19,y*TILE+4,36,18);ctx.fillStyle='rgba(242,222,168,.75)';ctx.fillRect(x*TILE+30,y*TILE+9,8,8)};
+ const tent=(x,y,c='#8a806b')=>{ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(x*TILE,y*TILE+25);ctx.lineTo(x*TILE+16,y*TILE+4);ctx.lineTo(x*TILE+32,y*TILE+25);ctx.closePath();ctx.fill();ctx.fillStyle='#4a4238';ctx.fillRect(x*TILE+14,y*TILE+16,5,9)};
+ const stall=(x,y,c='#8d3d46')=>{const px=x*TILE,py=y*TILE;ctx.fillStyle='#684a32';ctx.fillRect(px+4,py+18,25,9);ctx.fillStyle=c;ctx.fillRect(px+2,py+6,29,10);ctx.fillStyle='#e6d6ac';ctx.fillRect(px+5,py+8,5,6);ctx.fillRect(px+15,py+8,5,6);ctx.fillRect(px+25,py+8,4,6)};
+ if(state.map==='road'){
+  // dense forest walls with different heights, fallen trunks and an old roadside shrine
+  for(const [x,y,r] of [[3,3,20],[5,5,16],[19,3,22],[21,6,17],[4,10,18],[20,11,19]]){ctx.fillStyle='rgba(33,55,35,.65)';ctx.beginPath();ctx.arc(x*TILE+16,y*TILE+13,r,0,Math.PI*2);ctx.fill();ctx.fillStyle='rgba(76,101,58,.55)';ctx.beginPath();ctx.arc(x*TILE+10,y*TILE+8,r*.55,0,Math.PI*2);ctx.fill()}
+  ctx.fillStyle='#654a32';ctx.save();ctx.translate(6*TILE+10,10*TILE+23);ctx.rotate(-.28);ctx.fillRect(0,0,82,7);ctx.restore();
+  ctx.fillStyle='#70685c';ctx.fillRect(17*TILE+7,5*TILE+11,20,18);ctx.fillStyle='#433b34';ctx.fillRect(17*TILE+11,5*TILE+2,12,13);ctx.fillStyle='#cdb877';ctx.fillRect(17*TILE+13,5*TILE+7,8,5);
+  // wheel ruts follow the actual winding road rather than exposing a tile grid.
+  const rc=[12,12,11,11,10,10,10,11,12,12,11,11,12,12,12];ctx.strokeStyle='rgba(73,59,39,.25)';ctx.lineWidth=2.5;for(const off of [-.55,.55]){ctx.beginPath();for(let y=1;y<14;y++){const xx=(rc[y]+off)*TILE+16,yy=y*TILE+16;if(y===1)ctx.moveTo(xx,yy);else ctx.lineTo(xx,yy)}ctx.stroke()}
+  for(let i=0;i<14;i++){const yy=(i*43)%420+26,c=rc[Math.max(0,Math.min(14,Math.floor(yy/TILE)))];const x=(c+(i%2?1.8:-1.7))*TILE+(i%3)*5;ctx.fillStyle='#817866';ctx.beginPath();ctx.ellipse(x,yy,4+(i%3)*2,2+(i%2),0,0,Math.PI*2);ctx.fill()}
+ }
+ if(state.map==='capital'){
+
+  // 上層の屋根並みと遠景窓。城だけが浮かないよう街並みを作る。
+  for(const [x,w,roof] of [[1,4,'#74424a'],[5,3,'#6b3c45'],[16,3,'#4f5967'],[19,4,'#485664']]){const px=x*TILE;ctx.fillStyle='rgba(0,0,0,.2)';ctx.fillRect(px,2*TILE+30,w*TILE,46);ctx.fillStyle=roof;ctx.beginPath();ctx.moveTo(px-3,2*TILE+31);ctx.lineTo(px+w*TILE/2,2*TILE+5);ctx.lineTo(px+w*TILE+3,2*TILE+31);ctx.closePath();ctx.fill();ctx.fillStyle='#c8c0ad';ctx.fillRect(px+7,2*TILE+32,w*TILE-14,43);for(let q=0;q<w;q++){ctx.fillStyle='#8db0b6';ctx.fillRect(px+q*TILE+11,2*TILE+42,10,13)}}
+  // 式典用の長旗と石畳の紋章
+  for(const x of [9,14]){ctx.fillStyle='#5e4934';ctx.fillRect(x*TILE+15,4*TILE+2,3,54);ctx.fillStyle='#913f48';ctx.fillRect(x*TILE+18,4*TILE+4,22,34);ctx.fillStyle='#d5bd78';ctx.beginPath();ctx.arc(x*TILE+29,4*TILE+20,5,0,Math.PI*2);ctx.fill()}
+  ctx.strokeStyle='rgba(207,183,126,.26)';ctx.lineWidth=3;ctx.beginPath();ctx.arc(12*TILE+16,8*TILE+16,37,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(12*TILE+16,8*TILE+16,48,0,Math.PI*2);ctx.stroke();
+  // 北：王城外壁と正門。巨大な一枚絵ではなく、街から続く城門として見せる。
+  ctx.fillStyle='rgba(0,0,0,.2)';ctx.fillRect(4*TILE,1*TILE+10,16*TILE,68);
+  ctx.fillStyle='#b9b5aa';ctx.fillRect(4*TILE,1*TILE+2,16*TILE,58);
+  ctx.fillStyle='#d2cec1';for(let x=4;x<20;x+=2)ctx.fillRect(x*TILE+3,1*TILE-4,49,13);
+  ctx.fillStyle='#6e3d46';ctx.fillRect(10*TILE+7,1*TILE+19,3*TILE+18,41);ctx.fillStyle='#32292a';ctx.fillRect(11*TILE+5,1*TILE+29,54,31);
+  ctx.fillStyle='#d0b667';ctx.fillRect(12*TILE+8,1*TILE+35,8,12);
+  for(const tx of [5,18]){ctx.fillStyle='#99988f';ctx.fillRect(tx*TILE,1*TILE-12,42,83);ctx.fillStyle='#c4c1b7';ctx.fillRect(tx*TILE-4,1*TILE-15,50,11);ctx.fillStyle='#793f48';ctx.fillRect(tx*TILE+14,1*TILE-28,5,20)}
+  // 王城前テラス：階段、像、植え込み。式典空間だが空白にはしない。
+  ctx.fillStyle='#aaa69c';for(let i=0;i<4;i++)ctx.fillRect(7*TILE+i*5,5*TILE+i*3,10*TILE-i*10,4);
+  for(const x of [8,15]){ctx.fillStyle='#747571';ctx.fillRect(x*TILE+12,5*TILE+4,9,26);ctx.fillStyle='#c8c2b0';ctx.beginPath();ctx.arc(x*TILE+16,5*TILE,7,0,Math.PI*2);ctx.fill()}
+  for(const [x,y] of [[7,6],[16,6],[10,9],[13,9]]){ctx.fillStyle='#435d45';ctx.beginPath();ctx.arc(x*TILE+16,y*TILE+17,13,0,Math.PI*2);ctx.fill();ctx.fillStyle='#697b53';ctx.beginPath();ctx.arc(x*TILE+11,y*TILE+12,7,0,Math.PI*2);ctx.fill()}
+  // 中央噴水。周囲にベンチを置いて人の居場所を作る。
+  ctx.fillStyle='#626a6e';ctx.beginPath();ctx.arc(12*TILE+16,8*TILE+16,18,0,Math.PI*2);ctx.fill();ctx.fillStyle='#aac7cd';ctx.beginPath();ctx.arc(12*TILE+16,8*TILE+16,12,0,Math.PI*2);ctx.fill();ctx.fillStyle='#d5cdb7';ctx.fillRect(12*TILE+14,8*TILE-2,4,25);ctx.fillStyle='#71563b';for(const [x,y] of [[9,8],[14,8]])ctx.fillRect(x*TILE+3,y*TILE+24,54,6);
+  // 西：市場。布屋根、樽、荷車、配給列。
+  for(const [x,y,c] of [[2,6,'#9a4b50'],[4,7,'#b07645'],[6,6,'#56758a'],[3,9,'#806080'],[7,9,'#6d7c55']])stall(x,y,c);
+  ctx.fillStyle='#78593a';for(const [x,y] of [[2,10],[5,10],[7,7]]){ctx.fillRect(x*TILE+5,y*TILE+17,22,11);ctx.strokeStyle='#ad8755';ctx.strokeRect(x*TILE+5,y*TILE+17,22,11)}
+  ctx.fillStyle='#7b6042';ctx.fillRect(5*TILE+4,11*TILE+18,5*TILE,6);ctx.fillStyle='#d9c28f';for(let i=0;i<7;i++)ctx.fillRect(5*TILE+10+i*20,11*TILE+11,13,7);
+  // 東：軍務街。赤白の旗、補給箱、訓練場。市場と色・形を分ける。
+  ctx.fillStyle='#596777';ctx.fillRect(17*TILE,10*TILE+5,4*TILE+20,61);ctx.fillStyle='#c3beb0';ctx.fillRect(17*TILE+5,10*TILE+10,4*TILE+10,12);
+  for(const [x,y] of [[16,8],[19,8],[20,11]]){ctx.fillStyle='#5f4b36';ctx.fillRect(x*TILE+5,y*TILE+15,23,14);ctx.strokeStyle='#9b7a4e';ctx.strokeRect(x*TILE+5,y*TILE+15,23,14)}
+  ctx.fillStyle='#775f46';ctx.fillRect(16*TILE+15,7*TILE+8,4,30);ctx.fillStyle='#a98a63';ctx.fillRect(16*TILE+9,7*TILE+13,16,13);flag(18,6,'#8d3d46');flag(21,6,'#8d3d46');
+  // 街路灯と地区看板
+  for(const [x,y] of [[6,7],[17,7],[10,11],[14,11]]){ctx.fillStyle='#4b4440';ctx.fillRect(x*TILE+15,y*TILE+8,3,23);ctx.fillStyle='#d2b76c';ctx.beginPath();ctx.arc(x*TILE+16,y*TILE+7,5,0,Math.PI*2);ctx.fill()}
+  const sign=(x,y,t)=>{ctx.fillStyle='rgba(45,36,28,.9)';ctx.fillRect(x*TILE+2,y*TILE+7,62,18);ctx.strokeStyle='#b89b67';ctx.strokeRect(x*TILE+2,y*TILE+7,62,18);ctx.fillStyle='#eadfbe';ctx.font='bold 9px system-ui';ctx.textAlign='center';ctx.fillText(t,x*TILE+33,y*TILE+19);ctx.textAlign='start'};
+  sign(2,12,'中央市場');sign(18,12,'軍務街');sign(10,4,'王城正門');
+ }
+ if(state.map==='ashroad'){
+  for(const [x,y] of [[2,2],[18,2],[6,11]]){ctx.fillStyle='#3a3029';ctx.fillRect(x*TILE+8,y*TILE+15,18,7);ctx.fillStyle='#5d4a38';ctx.fillRect(x*TILE+15,y*TILE+3,4,16)}
+  ctx.fillStyle='#46372d';ctx.fillRect(3*TILE,3*TILE+20,90,45);ctx.fillStyle='#2f2925';ctx.beginPath();ctx.moveTo(3*TILE-4,3*TILE+22);ctx.lineTo(4*TILE+14,3*TILE-4);ctx.lineTo(6*TILE+6,3*TILE+22);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='#8f8678';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(19*TILE,8*TILE+28);ctx.lineTo(21*TILE,8*TILE+8);ctx.stroke();ctx.beginPath();ctx.arc(20*TILE,8*TILE+9,18,Math.PI,0);ctx.stroke()
+ }
+ if(state.map==='frontier'){
+  for(const p of [[3,3],[18,3],[3,10],[18,10]])tent(p[0],p[1]);flag(10,1,'#8d3d46');
+  ctx.fillStyle='#4d4438';for(const y of [6,12]){ctx.fillRect(TILE,y*TILE+19,10*TILE,5);ctx.fillRect(13*TILE,y*TILE+19,10*TILE,5)}
+  ctx.fillStyle='#c6c1ae';ctx.fillRect(2*TILE+8,9*TILE+8,4*TILE,55);ctx.fillStyle='#7b8e73';ctx.fillRect(3*TILE+8,9*TILE+15,20,8);ctx.fillStyle='#f0e8d1';ctx.font='bold 10px system-ui';ctx.fillText('野戦病院',2*TILE+14,11*TILE+20);
+  if(isEventComplete('alpha2.frontier.complete')){ctx.fillStyle='#5c4a39';for(const [x,y] of [[14,6],[15,6],[16,6]])ctx.fillRect(x*TILE+4,y*TILE+20,26,5);ctx.strokeStyle='#9a8970';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(14*TILE+5,6*TILE+10);ctx.lineTo(17*TILE-5,6*TILE+25);ctx.stroke();for(const [x,y] of [[6,10],[7,10],[8,10]]){ctx.fillStyle='#d2c8ad';ctx.fillRect(x*TILE+3,y*TILE+16,26,7);ctx.fillStyle='#6b5b48';ctx.fillRect(x*TILE+5,y*TILE+23,22,3)}}
+ }
+ if(state.map==='frontierfield'){
+  // churned battlefield: abandoned stakes, torn cloth and stretcher ruts; no active army occupies the map.
+  ctx.strokeStyle='rgba(63,48,36,.45)';ctx.lineWidth=3;for(const off of [-5,5]){ctx.beginPath();ctx.moveTo(12*TILE+off,14*TILE);ctx.lineTo(12*TILE+off,2*TILE);ctx.stroke()}
+  for(const [x,y] of [[3,3],[20,3],[4,11],[19,11]]){ctx.fillStyle='#4d443a';ctx.fillRect(x*TILE+4,y*TILE+20,26,5);ctx.fillStyle='#74634e';ctx.fillRect(x*TILE+9,y*TILE+8,4,18);ctx.fillRect(x*TILE+22,y*TILE+11,4,15)}
+  ctx.fillStyle='#7e3f46';ctx.fillRect(6*TILE+5,7*TILE+19,18,4);ctx.fillStyle='#354f78';ctx.fillRect(17*TILE+8,8*TILE+20,16,4);
+  ctx.fillStyle='rgba(40,32,27,.32)';for(const [x,y] of [[9,4],[14,4],[7,8],[16,10]]){ctx.beginPath();ctx.ellipse(x*TILE+16,y*TILE+19,18,7,0,0,Math.PI*2);ctx.fill()}
+ }
+ if(state.map==='empirevillage'){
+  house(8,2,'#425e6b','#b9b09a');house(16,2,'#546b67','#bcb49e',4);house(16,9,'#4c6670','#c2b8a0',4);house(8,9,'#5c5d6f','#c7bca2');
+  // 水車
+  ctx.fillStyle='#66503b';ctx.fillRect(4*TILE+10,5*TILE+8,34,52);ctx.strokeStyle='#8e7755';ctx.lineWidth=4;ctx.beginPath();ctx.arc(5*TILE+16,6*TILE+18,18,0,Math.PI*2);ctx.stroke();for(let a=0;a<8;a++){ctx.beginPath();ctx.moveTo(5*TILE+16,6*TILE+18);ctx.lineTo(5*TILE+16+Math.cos(a*Math.PI/4)*18,6*TILE+18+Math.sin(a*Math.PI/4)*18);ctx.stroke()}
+  for(const [x,y] of [[2,3],[3,4],[18,12],[20,12]]){ctx.fillStyle='#486247';ctx.beginPath();ctx.arc(x*TILE+16,y*TILE+15,12,0,Math.PI*2);ctx.fill();ctx.fillStyle='#b98048';ctx.fillRect(x*TILE+9,y*TILE+10,4,4);ctx.fillRect(x*TILE+20,y*TILE+16,4,4)}
+ }
+ if(state.map==='imperialcity'){
+  // 青灰色の石造建築。王都より背が高く、運河に面して縦長の窓が多い。
+  house(2,1,'#365469','#aeb2ae',6);house(16,1,'#415e73','#b4b6b0',6);house(2,11,'#3e586a','#b8b7ad',5);house(17,11,'#365966','#bbb9ae',5);
+  // 運河。橋は地図の通行可能マスと一致させ、柵で渡り道が読めるようにする。
+  for(const y of [5,10]){
+   ctx.strokeStyle='rgba(202,221,224,.38)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(TILE,y*TILE+8);ctx.lineTo(23*TILE,y*TILE+8);ctx.moveTo(TILE,y*TILE+23);ctx.lineTo(23*TILE,y*TILE+23);ctx.stroke();
+   for(const x of [4,11,18]){ctx.fillStyle='#8e8c82';ctx.fillRect(x*TILE,y*TILE+3,2*TILE,26);ctx.fillStyle='#5c6264';ctx.fillRect(x*TILE,y*TILE+2,2*TILE,4);ctx.fillRect(x*TILE,y*TILE+26,2*TILE,4)}
+  }
+  // 小舟と荷揚げ場。
+  for(const [x,y] of [[7,5],[15,10],[20,5]]){ctx.fillStyle='#584536';ctx.beginPath();ctx.moveTo(x*TILE+3,y*TILE+16);ctx.lineTo(x*TILE+29,y*TILE+12);ctx.lineTo(x*TILE+25,y*TILE+23);ctx.lineTo(x*TILE+8,y*TILE+25);ctx.closePath();ctx.fill();ctx.strokeStyle='#9d825c';ctx.beginPath();ctx.moveTo(x*TILE+16,y*TILE+5);ctx.lineTo(x*TILE+16,y*TILE+20);ctx.stroke()}
+  // 公文書館と運河市場。
+  ctx.fillStyle='#93999a';ctx.fillRect(7*TILE+4,6*TILE+2,3*TILE-8,61);ctx.fillStyle='#425b70';ctx.fillRect(7*TILE+22,6*TILE-17,52,24);ctx.fillStyle='#d4c99f';ctx.font='bold 10px system-ui';ctx.textAlign='center';ctx.fillText('地方公文書館',8*TILE+16,7*TILE+27);ctx.textAlign='start';
+  for(const [x,y,c] of [[18,7,'#466a82'],[20,8,'#6f586f'],[16,8,'#557566']])stall(x,y,c);
+  for(const x of [9,14])flag(x,1,'#354f78');
+  // 店の扉がどの建物か分かる看板。
+  ctx.fillStyle='#2e4655';ctx.fillRect(6*TILE+4,12*TILE+1,66,18);ctx.fillStyle='#d5d8cc';ctx.font='bold 9px system-ui';ctx.textAlign='center';ctx.fillText('水鳥亭',7*TILE+16,12*TILE+13);ctx.textAlign='start';
+  ctx.fillStyle='#4b3f58';ctx.fillRect(15*TILE+2,12*TILE+1,72,18);ctx.fillStyle='#e0d3b5';ctx.font='bold 9px system-ui';ctx.textAlign='center';ctx.fillText('運河古書店',16*TILE+16,12*TILE+13);ctx.textAlign='start';
+ }
+ if(state.map==='yukiroad'){
+  ctx.fillStyle='#514a42';for(const [x,y,w] of [[2,2,6],[15,2,6],[2,11,7],[15,11,6]])ctx.fillRect(x*TILE,y*TILE,w*TILE,5);
+  ctx.fillStyle='#77736b';for(const [x,y] of [[5,8],[18,10],[6,3]]){ctx.fillRect(x*TILE+9,y*TILE+8,14,20);ctx.fillStyle='#9a958c';ctx.fillRect(x*TILE+12,y*TILE+11,8,3);ctx.fillStyle='#77736b'}
+  flag(18,4,'#354f78')
+ }
+ if(state.map==='elsia'){
+  // 西＝古代遺構、東＝現在の住居
+  ctx.strokeStyle='#d8d0b6';ctx.lineWidth=4;for(const x of [3,5,7]){ctx.beginPath();ctx.arc(x*TILE+16,4*TILE+18,22,Math.PI,0);ctx.stroke();ctx.fillStyle='#8f8a7b';ctx.fillRect(x*TILE+1,4*TILE+18,5,38);ctx.fillRect(x*TILE+27,4*TILE+18,5,38)}
+  house(17,9,'#6b685f','#cbc3a9',5);ctx.fillStyle='#6c8d87';ctx.beginPath();ctx.arc(5*TILE+16,10*TILE+16,13,0,Math.PI*2);ctx.fill();ctx.fillStyle='#c6d7cf';ctx.beginPath();ctx.arc(5*TILE+16,10*TILE+16,8,0,Math.PI*2);ctx.fill()
+ }
+ if(state.map==='returnroad'){
+  ctx.fillStyle='#79806e';ctx.beginPath();ctx.moveTo(3*TILE,8*TILE);ctx.lineTo(7*TILE,5*TILE);ctx.lineTo(7*TILE,9*TILE);ctx.closePath();ctx.fill();ctx.fillStyle='#9fa38e';ctx.fillRect(4*TILE,7*TILE+12,3*TILE,4)
+ }
+ if(state.map==='finalfield'){flag(5,4,'#8d3d46');flag(17,4,'#354f78');for(const p of [[3,3],[18,3]])tent(p[0],p[1],p[0]<10?'#80675d':'#60717f')}
+ if(state.map==='imperialcamp'){flag(10,2,'#354f78');flag(13,2,'#354f78')}
+ if(state.map==='royalcamp'){flag(10,2,'#8d3d46');flag(13,2,'#8d3d46')}
+ if(state.map==='borderland'){
+  ctx.fillStyle='#57514a';ctx.fillRect(2*TILE+5,10*TILE+3,5*TILE-10,18);ctx.fillStyle='#777069';for(const xx of [3,6]){ctx.fillRect(xx*TILE+5,9*TILE+10,18,48);ctx.fillStyle='#a29a8e';ctx.fillRect(xx*TILE+2,9*TILE+7,24,8);ctx.fillStyle='#777069'}
+  ctx.fillStyle='#6b5741';ctx.fillRect(4*TILE+3,10*TILE+8,78,4);ctx.fillStyle='#9b7b55';for(let i=0;i<5;i++)ctx.fillRect(4*TILE+8+i*14,10*TILE+3,4,14);
+  for(const [x,y] of [[2,7],[9,8],[21,7],[15,11]]){ctx.fillStyle='#78654b';ctx.beginPath();ctx.ellipse(x*TILE+16,y*TILE+21,18,7,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#4f463d';ctx.fillRect(x*TILE+13,y*TILE+7,6,14)}
+  ctx.fillStyle='#5e4a34';ctx.fillRect(13*TILE+13,8*TILE+7,5,26);ctx.fillStyle='#b09a70';ctx.fillRect(13*TILE+18,8*TILE+9,32,11);ctx.fillStyle='#4c4033';ctx.font='bold 7px system-ui';ctx.fillText('ベルド砦 ↑',13*TILE+21,8*TILE+17);
+  house(3,1,'#725147','#c7b68f',5);house(16,1,'#665249','#c8b994',5);
+  ctx.fillStyle='#674b32';ctx.fillRect(8*TILE+3,3*TILE+18,72,7);for(const xx of [8,9,10]){ctx.fillStyle='#92704b';ctx.fillRect(xx*TILE+5,3*TILE+9,23,8)}
+  ctx.strokeStyle='#6f5940';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(15*TILE,4*TILE+4);ctx.lineTo(19*TILE,4*TILE+4);ctx.stroke();ctx.fillStyle='#d8c6a5';ctx.fillRect(15*TILE+10,4*TILE+5,18,12);ctx.fillStyle='#7e94a6';ctx.fillRect(17*TILE+2,4*TILE+5,18,12);
+  ctx.fillStyle='#6f573e';for(let x=2;x<22;x+=2){ctx.fillRect(x*TILE+5,7*TILE+24,4,12)}ctx.fillRect(2*TILE+5,7*TILE+29,20*TILE,3)
+ }
+ if(state.map==='relayvillage'){house(5,4,'#725147','#c7b68f',5);ctx.fillStyle='rgba(20,20,20,.45)';ctx.fillRect(4*TILE,9*TILE,16*TILE,2*TILE)}
+ if(state.map==='watchfort'){
+  ctx.fillStyle='#686660';ctx.fillRect(2*TILE,7*TILE+8,6*TILE,6*TILE-14);ctx.fillRect(16*TILE,7*TILE+8,6*TILE,6*TILE-14);
+  ctx.fillStyle='#85827a';for(const x of [2,7,16,21]){ctx.fillRect(x*TILE+2,7*TILE-4,28,42);ctx.fillStyle='#a39e91';ctx.fillRect(x*TILE-1,7*TILE-7,34,8);ctx.fillStyle='#85827a'}
+  ctx.fillStyle='#5d5145';ctx.fillRect(8*TILE,10*TILE+22,8*TILE,5);ctx.fillStyle='#8f3e46';ctx.fillRect(10*TILE+5,8*TILE+5,5,42);ctx.fillRect(13*TILE+22,8*TILE+5,5,42);flag(9,7,'#8d3d46');flag(14,7,'#8d3d46');
+  ctx.fillStyle='#66645f';ctx.fillRect(18*TILE+4,7*TILE+4,44,80);ctx.fillStyle='#949087';ctx.fillRect(18*TILE,7*TILE,52,12);ctx.fillStyle='#493b30';ctx.fillRect(19*TILE+14,8*TILE+4,6,48);ctx.fillStyle='#d1843c';ctx.beginPath();ctx.arc(19*TILE+17,8*TILE+3,10,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#11161b';ctx.fillRect(TILE,1*TILE,22*TILE,5*TILE);ctx.fillStyle='#222b32';ctx.beginPath();ctx.moveTo(TILE,1*TILE);ctx.lineTo(8*TILE,5*TILE);ctx.lineTo(10*TILE,1*TILE);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(23*TILE,1*TILE);ctx.lineTo(16*TILE,5*TILE);ctx.lineTo(14*TILE,1*TILE);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#8d8b82';ctx.fillRect(11*TILE,0,2*TILE,7*TILE);ctx.fillStyle='#b5b0a2';for(let y=0;y<7;y++){ctx.fillRect(11*TILE+2,y*TILE+3,4,24);ctx.fillRect(13*TILE-6,y*TILE+3,4,24)}
+  ctx.strokeStyle='#555b60';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(11*TILE+7,0);ctx.lineTo(11*TILE+7,7*TILE);ctx.moveTo(13*TILE-7,0);ctx.lineTo(13*TILE-7,7*TILE);ctx.stroke();flag(13,2,'#354f78');ctx.fillStyle='#b5aa8d';ctx.fillRect(10*TILE+5,6*TILE+5,24,24)
+ }
+ if(state.map==='ravine'){ctx.fillStyle='#15191b';ctx.fillRect(5*TILE,2*TILE,14*TILE,10*TILE)}
+
+}
+function drawObject(o){AshFrontierEnvironment.objectAccent(ctx,state.map,o);CapitalEnvironment.objectAccent(ctx,state.map,o);if(RoadCaveQuality.enabled&&RoadCaveQuality.active.has(state.map))RoadCaveQuality.objectBackdrop(ctx,state.map,o);if(RyuneEnvironment.enabled&&RyuneEnvironment.drawObject(ctx,state.map,o))return;const px=o.x*TILE,py=o.y*TILE;
+ if(o.id==='store'){ctx.fillStyle='#916f45';ctx.fillRect(px+4,py+12,12,14);ctx.fillRect(px+16,py+8,12,18);ctx.strokeStyle='#5b4229';ctx.strokeRect(px+4.5,py+12.5,11,13);ctx.strokeRect(px+16.5,py+8.5,11,17);ctx.fillStyle='#d4c39d';ctx.beginPath();ctx.ellipse(px+10,py+9,6,5,0,0,Math.PI*2);ctx.ellipse(px+24,py+6,6,5,0,0,Math.PI*2);ctx.fill()}
+ if(o.id==='well'){ctx.fillStyle='#676b70';ctx.beginPath();ctx.ellipse(px+16,py+17,13,8,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#252c31';ctx.beginPath();ctx.ellipse(px+16,py+16,8,4,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#7b5e3f';ctx.fillRect(px+5,py+2,3,17);ctx.fillRect(px+24,py+2,3,17);ctx.fillRect(px+5,py+2,22,3)}
+ if(o.id==='home'){ctx.fillStyle='#72553c';ctx.fillRect(px+5,py+20,22,6);ctx.fillStyle='#c7aa72';ctx.fillRect(px+8,py+22,16,2);ctx.fillStyle='#efe1bc';ctx.font='bold 8px system-ui';ctx.textAlign='center';ctx.fillText('自宅',px+16,py+17);ctx.textAlign='start'}
+ if(['doorOrphanage','doorMayor','doorCottage'].includes(o.id)){ctx.fillStyle='#6a5038';ctx.fillRect(px+4,py+21,24,5);ctx.fillStyle='#c9ac76';ctx.fillRect(px+7,py+22,18,2)}
+ if(['capitalInnDoor','capitalArmoryDoor','imperialInnDoor','imperialBookDoor'].includes(o.id)){const imperial=o.id.startsWith('imperial');ctx.fillStyle=imperial?'#415e6d':'#76503d';ctx.fillRect(px+6,py+5,20,24);ctx.fillStyle=imperial?'#b8c9ce':'#d8bf8d';ctx.fillRect(px+10,py+9,12,4);ctx.fillStyle='#e8ddbf';ctx.font='bold 7px system-ui';ctx.textAlign='center';const label=o.id.includes('Inn')?'宿':o.id.includes('Armory')?'武具':'古書';ctx.fillText(label,px+16,py+19);ctx.textAlign='start'}
+ if(o.id==='indoorExit'){ctx.fillStyle='#5b4330';ctx.fillRect(px+4,py+19,24,7);ctx.fillStyle='#c6a26a';ctx.fillRect(px+7,py+21,18,2)}
+ if(['restBed','familyTable','orphanPantry','toyChest','mayorBooks','warMap','soldierLetter','emptyBed'].includes(o.id)){ctx.fillStyle='rgba(241,205,117,.9)';ctx.beginPath();ctx.arc(px+16,py+7,3,0,Math.PI*2);ctx.fill()}
+ if(['innRest','imperialInnRest','fortRest','caveRest'].includes(o.id)){ctx.fillStyle='#526a60';ctx.fillRect(px+4,py+7,24,20);ctx.fillStyle='#d8eadc';ctx.fillRect(px+13,py+10,6,14);ctx.fillRect(px+9,py+14,14,6);ctx.strokeStyle='rgba(201,231,210,.55)';ctx.strokeRect(px+4,py+7,24,20)}
+ if(['fieldHospital','borderCampfire','sacredSpring','innRest','imperialInnRest','fortRest','caveRest','restBed'].includes(o.id)){const limited=RECOVERY_LIMITS[o.id]!==undefined,remain=limited?recoveryRemaining(o.id):null;ctx.save();ctx.globalAlpha=remain===0?.42:.92;ctx.strokeStyle=remain===0?'#777b78':'#8fd1b2';ctx.lineWidth=2;ctx.beginPath();ctx.arc(px+16,py-2,7,0,Math.PI*2);ctx.stroke();ctx.fillStyle=remain===0?'#8b8e8c':'#d9f3df';ctx.font='bold 9px system-ui';ctx.textAlign='center';ctx.fillText('+',px+16,py+1);if(limited){ctx.fillStyle='#f3ead0';ctx.font='bold 7px system-ui';ctx.fillText(String(remain),px+25,py+1)}ctx.restore();ctx.textAlign='start'}
+ if(o.id==='stretcherTracks'){ctx.strokeStyle='#5b4635';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(px+7,py+30);ctx.lineTo(px+11,py+3);ctx.moveTo(px+22,py+30);ctx.lineTo(px+19,py+3);ctx.stroke();ctx.fillStyle='#88745d';ctx.fillRect(px+13,py+9,5,4)}
+ if(o.id==='imperialSatchel'){ctx.fillStyle='#344d66';ctx.fillRect(px+6,py+12,21,15);ctx.fillStyle='#a6b4bc';ctx.fillRect(px+8,py+10,17,5);ctx.fillStyle='#574638';ctx.fillRect(px+14,py+5,5,8)}
+ if(o.id==='withdrawalOrders'){ctx.fillStyle='#d6cfb6';ctx.save();ctx.translate(px+16,py+16);ctx.rotate(-.16);ctx.fillRect(-10,-8,20,17);ctx.fillStyle='#44566a';ctx.fillRect(-7,-5,14,2);ctx.fillRect(-7,0,11,2);ctx.restore()}
+ if(o.id==='fieldGraves'){ctx.fillStyle='#6e675e';ctx.fillRect(px+11,py+8,10,22);ctx.fillStyle='#8d8579';ctx.fillRect(px+7,py+11,18,4)}
+ if(o.id==='brokenSignalPost'){ctx.strokeStyle='#5d4b37';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(px+6,py+27);ctx.lineTo(px+25,py+4);ctx.stroke();ctx.fillStyle='#5d4b37';ctx.fillRect(px+14,py+11,16,4)}
+ if(o.id==='scavengerWolves'&&!isDefeated('scavengerWolves'))drawBeast(px,py,'wolf');
+ if(o.id==='gate'){const gx=px;ctx.fillStyle='#666b70';ctx.fillRect(gx+2,py,8,32);ctx.fillRect(gx+54,py,8,32);ctx.fillStyle='#8b704c';ctx.fillRect(gx+7,py+3,50,6);ctx.fillRect(gx+9,py+8,4,24);ctx.fillRect(gx+51,py+8,4,24);ctx.fillStyle='#d8c28e';ctx.fillRect(gx+19,py+10,27,13);ctx.fillStyle='#433729';ctx.font='bold 10px system-ui';ctx.textAlign='center';ctx.fillText('北門',gx+32,py+20);ctx.textAlign='start'}
+ if(['exit','northExit','southExit'].includes(o.id)){ctx.fillStyle='#686c71';ctx.fillRect(px+2,py,8,32);ctx.fillRect(px+54,py,8,32);ctx.fillRect(px+2,py,60,6);ctx.fillStyle='#17191d';ctx.fillRect(px+10,py+7,44,25);if(o.id==='northExit'&&!isDefeated('boss')){ctx.fillStyle='#78634b';for(let i=0;i<6;i++)ctx.fillRect(px+11+i*7,py+6,3,25)}}
+ if(o.id==='cave'){ctx.fillStyle='#59575c';ctx.beginPath();ctx.arc(px+16,py+18,15,Math.PI,0);ctx.fill();ctx.fillRect(px+1,py+18,30,12);ctx.fillStyle='#14151a';ctx.beginPath();ctx.arc(px+16,py+19,10,Math.PI,0);ctx.fill();ctx.fillRect(px+6,py+19,20,11);ctx.fillStyle='#81765c';ctx.fillRect(px+2,py+27,28,3)}
+ if(o.id==='wolf'&&!isDefeated('wolf')){drawBeast(px,py,'wolf')}
+ if(o.id==='bandit'&&!isDefeated('bandit')){drawCharacterSprite(o.x,o.y,{body:'#665040',accent:'#b79a72',hair:'#4b3b34',weapon:'sword'},false,'down');ctx.fillStyle='#c56659';ctx.beginPath();ctx.arc(px+25,py+3,4,0,Math.PI*2);ctx.fill()}
+ if(o.id==='bats'&&!isDefeated('bats')){drawBeast(px,py,'bats')}
+ if(o.id==='crawler'&&!isDefeated('crawler')){drawBeast(px,py,'crawler')}
+ if((o.id==='chest1'&&!state.world.treasures.chest1)||(o.id==='chest2'&&!state.world.treasures.chest2)){ctx.fillStyle='#8a5f35';ctx.fillRect(px+6,py+10,20,14);ctx.fillStyle=COLORS.gold;ctx.fillRect(px+6,py+10,20,4);ctx.fillRect(px+15,py+14,3,7)}
+ if(TREASURE_DEFS[o.id]&&!state.treasures[o.id]){ctx.fillStyle='#765535';ctx.fillRect(px+6,py+11,20,13);ctx.fillStyle='#c8a65b';ctx.fillRect(px+6,py+10,20,4);ctx.fillRect(px+15,py+14,4,7)}
+ if(o.id==='boss'&&!isDefeated('boss')){drawBeast(px,py,'boss')}
+ if(o.id==='leverWest'||o.id==='leverEast'){ctx.fillStyle='#5d6066';ctx.fillRect(px+8,py+8,16,18);ctx.fillStyle='#2d3035';ctx.fillRect(px+11,py+11,10,12);ctx.strokeStyle=(o.id==='leverWest'?getWorldSwitch('leverWest'):getWorldSwitch('leverEast'))?'#d2b96b':'#9a7657';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(px+16,py+17);ctx.lineTo(px+((o.id==='leverWest'?getWorldSwitch('leverWest'):getWorldSwitch('leverEast'))?22:10),py+7);ctx.stroke();ctx.fillStyle='#d4c178';ctx.beginPath();ctx.arc(px+16,py+17,3,0,Math.PI*2);ctx.fill()}
+ if(o.id==='innerGate'&&!(getWorldSwitch('leverWest')&&getWorldSwitch('leverEast'))){ctx.fillStyle='rgba(26,28,31,.7)';ctx.fillRect(px+1,py+2,30,28);ctx.fillStyle='#81745d';for(let i=0;i<5;i++)ctx.fillRect(px+4+i*6,py+3,3,27);ctx.fillRect(px+2,py+5,28,3);ctx.fillRect(px+2,py+24,28,3)}
+ if(o.id==='banner'){ctx.fillStyle='#80634d';ctx.fillRect(px+6,py+3,3,26);ctx.fillStyle='#7d3840';ctx.fillRect(px+9,py+5,17,15);ctx.fillStyle='#d0b26d';ctx.fillRect(px+15,py+8,4,8)}
+ if(o.id==='rations'){ctx.fillStyle='#65513b';ctx.fillRect(px+4,py+12,24,14);ctx.strokeStyle='#92744f';ctx.strokeRect(px+5,py+13,22,12);ctx.fillStyle='#3c342b';ctx.fillRect(px+9,py+7,14,6)}
+ if(o.id==='burnedCart'){ctx.fillStyle='#4b3729';ctx.fillRect(px+4,py+15,23,8);ctx.strokeStyle='#2e2823';ctx.lineWidth=3;ctx.beginPath();ctx.arc(px+8,py+26,5,0,Math.PI*2);ctx.arc(px+24,py+26,5,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#2c2723';ctx.fillRect(px+10,py+8,4,10)}
+ if(o.id==='victoryPoster'){ctx.fillStyle='#e5dcc5';ctx.fillRect(px+4,py+5,24,23);ctx.strokeStyle='#8d3d46';ctx.lineWidth=2;ctx.strokeRect(px+4,py+5,24,23);ctx.fillStyle='#8d3d46';ctx.fillRect(px+8,py+9,16,4);ctx.fillStyle='#6d6255';ctx.fillRect(px+8,py+16,16,2);ctx.fillRect(px+8,py+21,12,2)}
+ if(o.id==='heroLedger'){ctx.fillStyle='#514335';ctx.fillRect(px+5,py+7,22,20);ctx.fillStyle='#d7c8a4';ctx.fillRect(px+8,py+10,16,14);ctx.fillStyle='#7f3d43';ctx.fillRect(px+10,py+12,12,3);ctx.fillStyle='#645a4b';ctx.fillRect(px+10,py+18,10,2)}
+ if(o.id==='scorchedOrders'){ctx.fillStyle='#c9b992';ctx.fillRect(px+6,py+8,20,16);ctx.fillStyle='#4b3f35';ctx.fillRect(px+9,py+12,14,2);ctx.fillRect(px+9,py+17,11,2);ctx.fillStyle='#3a3029';ctx.fillRect(px+5,py+22,22,5)}
+ if(o.id==='imperialPatrol'&&!isDefeated('imperialPatrol')){drawCharacterSprite(o.x,o.y,{body:'#2f4b69',accent:'#b6c5cf',hair:'#373a40',weapon:'sword'},false,'down');ctx.fillStyle='#354f78';ctx.fillRect(px+24,py+2,5,16);ctx.fillStyle='#b6c5cf';ctx.fillRect(px+29,py+4,10,7)}
+ if(o.id==='yukiRibbon'){ctx.fillStyle='#5c4a39';ctx.fillRect(px+14,py+4,4,24);ctx.fillStyle='#354f78';ctx.fillRect(px+6,py+7,20,10);ctx.fillStyle='#c7d1d7';ctx.fillRect(px+11,py+11,10,2)}
+
+ if(o.id==='yukiMemorial'){ctx.fillStyle='#77746d';ctx.fillRect(px+7,py+5,18,25);ctx.fillStyle='#b9b29d';ctx.fillRect(px+11,py+10,10,3);ctx.fillRect(px+13,py+16,6,2)}
+ if(o.id==='elsiaTablet'){ctx.fillStyle='#aaa38f';ctx.fillRect(px+5,py+6,22,24);ctx.fillStyle='#d0c7ab';for(let i=0;i<3;i++)ctx.fillRect(px+9,py+11+i*5,14,2)}
+ if(['ashCache','frontierCache','empireCache','imperialCache','yukiCache','elsiaCache'].includes(o.id)){ctx.fillStyle='#6f5439';ctx.fillRect(px+5,py+11,22,16);ctx.fillStyle='#9b7b4d';ctx.fillRect(px+7,py+8,18,6);ctx.strokeStyle='#342a21';ctx.strokeRect(px+5,py+11,22,16)}
+ if(o.id==='royalCastle'){ctx.fillStyle='#c9b66e';ctx.fillRect(px+10,py+8,12,18);ctx.fillStyle='#7d3f48';ctx.fillRect(px+13,py+11,6,8)}
+ if(['capitalMarket','imperialMarket'].includes(o.id)){ctx.fillStyle='#765037';ctx.fillRect(px+4,py+19,24,7);ctx.fillStyle=o.id==='capitalMarket'?'#a44d51':'#4e6e84';ctx.fillRect(px+3,py+7,26,9)}
+ if(o.id==='capitalFountain'||o.id==='sacredSpring'){ctx.fillStyle='#68757b';ctx.beginPath();ctx.arc(px+16,py+18,12,0,Math.PI*2);ctx.fill();ctx.fillStyle='#9fc8cf';ctx.beginPath();ctx.arc(px+16,py+18,7,0,Math.PI*2);ctx.fill()}
+ if(['capitalBarracks','fieldHospital','imperialArchive'].includes(o.id)){ctx.fillStyle='#74685a';ctx.fillRect(px+5,py+8,22,19);ctx.fillStyle='#d6caa7';ctx.fillRect(px+9,py+12,14,5)}
+ if(o.id==='watchTower'){ctx.fillStyle='#5a4938';ctx.fillRect(px+13,py+4,6,25);ctx.fillRect(px+5,py+5,22,5);ctx.fillStyle='#8a7657';ctx.fillRect(px+8,py+1,16,5)}
+ if(o.id==='waterMill'){ctx.strokeStyle='#8e7755';ctx.lineWidth=3;ctx.beginPath();ctx.arc(px+16,py+17,12,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#66503b';ctx.fillRect(px+13,py+7,6,20)}
+ if(o.id==='empireShrine'||o.id==='ruinedShrine'||o.id==='oldSanctum'){ctx.fillStyle='#8e8879';ctx.fillRect(px+8,py+10,16,18);ctx.fillStyle='#b0a993';ctx.fillRect(px+5,py+8,22,4);ctx.fillRect(px+11,py+4,10,5)}
+ if(o.id==='canalMonument'){ctx.fillStyle='#92989a';ctx.fillRect(px+11,py+5,10,24);ctx.fillStyle='#c4c0aa';ctx.fillRect(px+8,py+4,16,5)}
+ if(o.id==='tornLetter'){ctx.fillStyle='#d6c9a8';ctx.fillRect(px+7,py+9,18,14);ctx.strokeStyle='#776b59';ctx.strokeRect(px+7,py+9,18,14)}
+ if(o.id==='brokenStandard'){ctx.fillStyle='#5a4534';ctx.fillRect(px+14,py+5,4,24);ctx.fillStyle='#405d80';ctx.fillRect(px+18,py+6,10,9)}
+ if(o.id==='mountainOverlook'){ctx.fillStyle='#807a68';ctx.fillRect(px+3,py+20,26,7);ctx.fillStyle='#b6b199';ctx.fillRect(px+7,py+17,18,4)}
+ if(['kingdomLine','empireLine'].includes(o.id)){ctx.fillStyle=o.id==='kingdomLine'?'#8d3d46':'#354f78';ctx.fillRect(px+5,py+8,22,13);ctx.fillStyle='#5d4b37';ctx.fillRect(px+14,py+4,4,25)}
+ if(o.id==='borderGrave'){ctx.fillStyle='#807a70';ctx.fillRect(px+10,py+7,12,22);ctx.fillStyle='#a39b88';ctx.fillRect(px+7,py+10,18,4)}
+ if(o.id==='oldCheckpoint'){ctx.fillStyle='#5e4937';ctx.fillRect(px+5,py+4,5,26);ctx.fillRect(px+23,py+4,5,26);ctx.fillRect(px+5,py+6,23,4)}
+ if(o.id==='relayWell'){ctx.fillStyle='#74787a';ctx.beginPath();ctx.ellipse(px+16,py+18,13,8,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#28353b';ctx.beginPath();ctx.ellipse(px+16,py+17,8,4,0,0,Math.PI*2);ctx.fill()}
+ if(o.id==='relayBoard'){ctx.fillStyle='#684e36';ctx.fillRect(px+7,py+4,18,20);ctx.fillRect(px+14,py+24,4,7);ctx.fillStyle='#cfbd92';ctx.fillRect(px+10,py+7,12,10)}
+ if(o.id==='signalFire'){ctx.fillStyle='#5d4b3b';ctx.fillRect(px+4,py+22,24,5);ctx.fillStyle='#d27639';ctx.beginPath();ctx.moveTo(px+16,py+23);ctx.lineTo(px+10,py+11);ctx.lineTo(px+16,py+5);ctx.lineTo(px+23,py+14);ctx.closePath();ctx.fill()}
+ if(o.id==='fortMap'){ctx.fillStyle='#604a36';ctx.fillRect(px+5,py+6,22,21);ctx.fillStyle='#d7c8a3';ctx.fillRect(px+8,py+9,16,14)}
+ if(o.id==='brokenWagon'){ctx.fillStyle='#5f4734';ctx.fillRect(px+3,py+16,26,8);ctx.strokeStyle='#272421';ctx.lineWidth=3;ctx.beginPath();ctx.arc(px+8,py+27,6,0,Math.PI*2);ctx.arc(px+25,py+27,6,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#8b6b47';ctx.fillRect(px+7,py+8,20,9)}
+ if(o.id==='borderCampfire'){ctx.fillStyle='#3a2f29';ctx.beginPath();ctx.arc(px+16,py+22,12,0,Math.PI*2);ctx.fill();ctx.fillStyle='#8e5a32';ctx.fillRect(px+9,py+20,17,4);ctx.fillStyle='#e2943f';ctx.beginPath();ctx.moveTo(px+16,py+20);ctx.lineTo(px+10,py+12);ctx.lineTo(px+16,py+5);ctx.lineTo(px+23,py+13);ctx.closePath();ctx.fill()}
+ if(['fortGate','fortGateRight'].includes(o.id)&&!getWorldSwitch('fortGateOpen')){ctx.fillStyle='#4e4640';ctx.fillRect(px-10,py+4,52,26);ctx.fillStyle='#866c50';for(let i=0;i<6;i++)ctx.fillRect(px-6+i*9,py+4,4,26);ctx.fillStyle='#c0a16d';ctx.fillRect(px-10,py+4,52,4)}
+ if(o.id==='ravineLookout'||o.id==='bridgeMarker'){ctx.fillStyle='#70685d';ctx.fillRect(px+7,py+20,20,7);ctx.fillStyle='#c7b990';ctx.fillRect(px+10,py+8,14,12)}
+ if(o.id==='roadSign'||o.id==='milestone'){ctx.fillStyle='#73583b';ctx.fillRect(px+14,py+7,4,22);ctx.fillStyle='#b09262';ctx.fillRect(px+3,py+4,26,12);ctx.fillStyle='#403329';ctx.font='bold 8px system-ui';ctx.textAlign='center';ctx.fillText(o.id==='roadSign'?'古砦→':'王都 近道',px+16,py+13);ctx.textAlign='start'}
+}
+function drawBeast(px,py,type){ctx.fillStyle=COLORS.shadow;ctx.beginPath();ctx.ellipse(px+16,py+27,12,4,0,0,Math.PI*2);ctx.fill();if(type==='wolf'){ctx.fillStyle='#5b6260';ctx.beginPath();ctx.ellipse(px+16,py+18,12,8,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#3c413f';ctx.beginPath();ctx.moveTo(px+8,py+11);ctx.lineTo(px+11,py+3);ctx.lineTo(px+14,py+12);ctx.fill();ctx.beginPath();ctx.moveTo(px+18,py+11);ctx.lineTo(px+22,py+3);ctx.lineTo(px+24,py+12);ctx.fill();ctx.fillStyle='#d8c374';ctx.fillRect(px+22,py+16,2,2)}
+ if(type==='bats'){ctx.fillStyle='#65586b';for(const ox of [7,18]){ctx.beginPath();ctx.moveTo(px+ox,py+14);ctx.lineTo(px+ox-7,py+7);ctx.lineTo(px+ox-3,py+20);ctx.lineTo(px+ox+4,py+16);ctx.lineTo(px+ox+10,py+7);ctx.lineTo(px+ox+8,py+21);ctx.closePath();ctx.fill()}}
+ if(type==='crawler'){ctx.fillStyle='#65705a';ctx.beginPath();ctx.ellipse(px+16,py+18,12,8,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#3e4738';for(let i=0;i<4;i++){ctx.fillRect(px+5+i*7,py+24,3,5)}ctx.fillStyle='#d4a95d';ctx.fillRect(px+21,py+14,3,3)}
+ if(type==='boss'){ctx.fillStyle='#6d685b';ctx.beginPath();ctx.ellipse(px+16,py+18,14,10,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#3b3933';ctx.beginPath();ctx.moveTo(px+4,py+13);ctx.lineTo(px+9,py+3);ctx.lineTo(px+13,py+13);ctx.moveTo(px+18,py+13);ctx.lineTo(px+23,py+3);ctx.lineTo(px+28,py+14);ctx.fill();ctx.fillStyle='#c98255';ctx.fillRect(px+22,py+16,3,3);ctx.strokeStyle='#998e78';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(px+3,py+12);ctx.lineTo(px+29,py+12);ctx.stroke()}}
+
+function front(){let x=state.x,y=state.y;if(state.dir==='up')y--;if(state.dir==='down')y++;if(state.dir==='left')x--;if(state.dir==='right')x++;return{x,y}}
+function visibleObject(o){return !objectCleared(o.id)}
+function drawInteractionMarker(){const f=front(),m=maps[state.map];let target=m.npcs.find(n=>npcVisible(n)&&n.x===f.x&&n.y===f.y);if(!target)target=m.objects.find(o=>o.x===f.x&&o.y===f.y&&visibleObject(o));if(!target&&state.map==='village'&&f.y===0&&[11,12].includes(f.x))target={x:f.x,y:f.y};if(!target)return;const cx=target.x*TILE+16,cy=Math.max(12,target.y*TILE+2);ctx.fillStyle='#f1d077';ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+5,cy+5);ctx.lineTo(cx,cy+10);ctx.lineTo(cx-5,cy+5);ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(0,0,0,.55)';ctx.stroke()}
+function currentQuestTarget(){const candidate=GC.CommercialDiscovery?.questHint?.(state.map);if(candidate)return candidate;
+ if(state.map==='capital'&&!getWorldSwitch('returnedKingdom')){
+  if(!isEventComplete('alpha.capital.ceremony'))return{id:'capitalOfficial',kind:'npc'};
+  if(!isEventComplete('alpha.capital.whiteStagNight'))return{id:'capitalInnDoor',kind:'object'};
+  if(!isEventComplete('warBriefing'))return{id:'granz',kind:'npc'};
+ }
+ if(state.map==='capitalinn'&&isEventComplete('alpha.capital.ceremony')&&!isEventComplete('alpha.capital.whiteStagNight'))return{id:'innRest',kind:'object'};
+ if(state.map==='frontier'){
+  if(!isEventComplete('alpha2.frontier.briefing'))return{id:'frontierOfficer',kind:'npc'};
+  if(!isEventComplete('alpha2.frontier.hospital'))return{id:'frontierMedic',kind:'npc'};
+  if(!isEventComplete('alpha2.frontier.vanguardVictory'))return{id:'vanguardCaptain',kind:'npc'};
+  if(!isEventComplete('alpha2.frontier.complete'))return{id:'frontierOfficer',kind:'npc'};
+  if(!isEventComplete('alpha2.frontier2.order'))return{id:'frontierOfficer',kind:'npc'};
+  if(!isEventComplete('alpha2.frontier2.aftermath'))return{id:'frontierMedic',kind:'npc'};
+  if(isEventComplete('alpha2.frontier2.scavengerVictory')&&!isEventComplete('alpha2.frontier2.complete'))return{id:'frontierOfficer',kind:'npc'};
+ }
+ if(state.map==='frontierfield'){
+  if(!isEventComplete('alpha2.frontier2.fieldBriefing'))return{id:'frontierScout',kind:'npc'};
+  if(!isEventComplete('alpha2.frontier2.tracks'))return{id:'stretcherTracks',kind:'object'};
+  if(!isEventComplete('alpha2.frontier2.satchel'))return{id:'imperialSatchel',kind:'object'};
+  if(!isEventComplete('alpha2.frontier2.orders'))return{id:'withdrawalOrders',kind:'object'};
+  if(!isEventComplete('alpha2.frontier2.discovery'))return{id:'woundedImperial',kind:'npc'};
+ }
+ if(state.map==='borderland'){
+  if(!isEventComplete('borderBriefed'))return{id:'borderScout',kind:'npc'};
+  if(!isEventComplete('borderMerchantAsked')&&!isEventComplete('borderMerchantHelped'))return{id:'lostMerchant',kind:'npc'};
+  if(isEventComplete('borderMerchantAsked')&&!getWorldSwitch('borderSparePin'))return{id:'oldCheckpoint',kind:'object'};
+  if(getWorldSwitch('borderSparePin')&&!isEventComplete('borderMerchantHelped'))return{id:'lostMerchant',kind:'npc'};
+  if(isEventComplete('borderMerchantHelped')&&!isEventComplete('borderRested'))return{id:'relayHost',kind:'npc'};
+ }
+ if(state.map==='watchfort'){
+  if(!isEventComplete('fortBriefed'))return{id:'fortCommander',kind:'npc'};
+  if(!isEventComplete('fortMapSeen'))return{id:'fortMap',kind:'object'};
+  if(!getWorldSwitch('fortGateOpen'))return{id:'fortCommander',kind:'npc'};
+  if(!isEventComplete('metKlein'))return{id:'klein',kind:'npc'};
+ }
+ return null
+}
+function drawQuestMarker(){const q=currentQuestTarget();if(!q)return;const m=maps[state.map],item=q.kind==='npc'?m.npcs.find(n=>n.id===q.id&&npcVisible(n)):m.objects.find(o=>o.id===q.id&&visibleObject(o));if(!item)return;const px=item.x*TILE+16,py=item.y*TILE-8;ctx.fillStyle='rgba(26,20,11,.78)';ctx.beginPath();ctx.arc(px,py,8,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f2cf67';ctx.beginPath();ctx.moveTo(px,py-6);ctx.lineTo(px+5,py);ctx.lineTo(px,py+6);ctx.lineTo(px-5,py);ctx.closePath();ctx.fill();ctx.strokeStyle='#fff0ad';ctx.lineWidth=1;ctx.stroke()}
+function drawAreaIdentity(){/* area identity is rendered by the HTML world HUD */}
+function viewScale(){if(INTERIOR_MAPS.includes(state.map))return 1.18;if(['capital','imperialcity','borderland','watchfort','empirevillage','elsia'].includes(state.map))return 1.25;return 1.16}
+const VISUAL={lastActingFrame:0,map:null,camX:0,camY:0,playerX:0,playerY:0,travelPhase:0,followers:[[12,13],[13,13],[14,13]],followerPhases:[0,0,0],followerFaces:['down','down','down'],leaderQueue:[],leaderGoal:null,followerQueues:[[],[],[]],followerGoals:[null,null,null],raf:0,ambientTimer:0,nextMoveAt:0};
+function partyTrailPoints(){
+ // A follower owns each previous whole step. No 2/4/6 tile teleporting.
+ const trail=Array.isArray(state.trail)?state.trail:[],used=new Set([state.x+','+state.y]),out=[];
+ const behind={down:[0,-1],up:[0,1],left:[1,0],right:[-1,0]}[state.dir]||[0,-1];
+ const valid=(x,y)=>x>=0&&y>=0&&x<COLS&&y<ROWS&&!['T','H','S','W','R','K','Z'].includes(tileAt(state.map,x,y));
+ const insert=(x,y)=>{let key=x+','+y;if(!Number.isInteger(x)||!Number.isInteger(y)||!valid(x,y)||used.has(key))return false;used.add(key);out.push([x,y]);return true};
+ for(let i=0;i<3;i++){
+  // For first 3 moves of a new map use the walking history only when
+  // actual steps have been taken. Map transition seeds are not true paths.
+  const history=trail[i];
+  if(Array.isArray(history)&&i<trail.length&&i<(state.worldStepsOnMap||0)&&insert(history[0],history[1]))continue;
+  const last=out.length?out[out.length-1]:[state.x,state.y],center=[last[0]+behind[0],last[1]+behind[1]];
+  let placed=false;
+  for(let radius=0;radius<=4&&!placed;radius++){
+   const offsets=[];
+   for(let dx=-radius;dx<=radius;dx++)for(let dy=-radius;dy<=radius;dy++)if(Math.abs(dx)+Math.abs(dy)===radius)offsets.push([dx,dy]);
+   offsets.sort((a,b)=>Math.abs(a[0]*behind[1]-a[1]*behind[0])-Math.abs(b[0]*behind[1]-b[1]*behind[0]));
+   for(const [dx,dy] of offsets){if(insert(center[0]+dx,center[1]+dy)){placed=true;break}}
+  }
+ }
+ return out
+}
+// Fixed-speed pixel movement toward consecutive orthogonal waypoints.
+ // Queues retain the turn corner when keyboard input arrives faster than draw.
+function advanceWalkQueue(point,queue,amount=.16){
+ let traveled=0,dx=0,dy=0;
+ while(queue.length){
+  const t=queue[0],vx=t[0]-point[0],vy=t[1]-point[1],distance=Math.hypot(vx,vy);
+  if(distance<.002){point[0]=t[0];point[1]=t[1];queue.shift();continue}
+  const step=Math.min(amount,distance);
+  dx=vx/distance*step;dy=vy/distance*step;
+  point[0]+=dx;point[1]+=dy;traveled=step;
+  if(distance<=amount+.002){point[0]=t[0];point[1]=t[1];queue.shift()}
+  break
+ }
+ return {distance:traveled,dx,dy}
+}
+function enqueueWalkGoal(queue,previous,next){
+ if(!next||!Number.isFinite(next[0])||!Number.isFinite(next[1]))return previous;
+ if(previous&&previous[0]===next[0]&&previous[1]===next[1])return previous;
+ queue.push([next[0],next[1]]);
+ if(queue.length>12)queue.splice(0,queue.length-12);
+ return [next[0],next[1]]
+}
+function cameraForMap(){const o=GC.Cinematic?.cameraTarget?.(),scale=o?.scale||viewScale(),vw=canvas.width/scale,vh=canvas.height/scale,worldW=COLS*TILE,worldH=ROWS*TILE,fx=Number.isFinite(o?.x)?o.x:state.x,fy=Number.isFinite(o?.y)?o.y:state.y,cx=fx*TILE+TILE/2,cy=fy*TILE+TILE/2;return{scale,x:Math.max(0,Math.min(worldW-vw,cx-vw/2)),y:Math.max(0,Math.min(worldH-vh,cy-vh/2))}}
+function drawScene(){
+ // Do not skip camera or actor frames to throttle villagers.
+ // Dialogue's approved sheet poses need ~12fps, not an expensive full 60fps
+ // terrain repaint while the player is paused reading long character lines.
+ if(GC.CommercialActing?.active?.()&&VISUAL.map===state.map){
+  const t=Date.now();
+  if(t-VISUAL.lastActingFrame<80){
+   cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene);
+   return
+  }
+  VISUAL.lastActingFrame=t
+ }
+ ctx.clearRect(0,0,canvas.width,canvas.height);const m=maps[state.map],target=cameraForMap();
+ if(VISUAL.map!==state.map){VISUAL.map=state.map;VISUAL.camX=target.x;VISUAL.camY=target.y;VISUAL.playerX=state.x;VISUAL.playerY=state.y;VISUAL.followers=partyTrailPoints().map(p=>[p[0],p[1]]);VISUAL.followerPhases=[0,0,0];VISUAL.followerFaces=[state.dir,state.dir,state.dir];
+ VISUAL.leaderQueue=[];VISUAL.leaderGoal=[state.x,state.y];
+ VISUAL.followerQueues=[[],[],[]];VISUAL.followerGoals=VISUAL.followers.map(p=>[...p])}
+ const ease=.22;
+ VISUAL.camX+=(target.x-VISUAL.camX)*ease;VISUAL.camY+=(target.y-VISUAL.camY)*ease;
+ VISUAL.leaderGoal=enqueueWalkGoal(VISUAL.leaderQueue,VISUAL.leaderGoal,[state.x,state.y]);
+ const leader=[VISUAL.playerX,VISUAL.playerY],advance=advanceWalkQueue(leader,VISUAL.leaderQueue,.16);
+ VISUAL.playerX=leader[0];VISUAL.playerY=leader[1];
+ const advanced=advance.distance;
+ if(advanced>.001)VISUAL.travelPhase+=advanced*5.1;
+ const trailPoints=partyTrailPoints();
+ for(let i=0;i<3;i++){
+  const t=trailPoints[i]||trailPoints[trailPoints.length-1]||[state.x,state.y];
+  if(!VISUAL.followers[i])VISUAL.followers[i]=[t[0],t[1]];
+  const f=VISUAL.followers[i],queue=VISUAL.followerQueues[i]||(VISUAL.followerQueues[i]=[]);
+  VISUAL.followerGoals[i]=enqueueWalkGoal(queue,VISUAL.followerGoals[i],t);
+  const movement=advanceWalkQueue(f,queue,.155);
+  if(movement.distance>.003){
+   const dx=movement.dx,dy=movement.dy;
+   VISUAL.followerFaces[i]=Math.abs(dx)>=Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');
+   VISUAL.followerPhases[i]+=movement.distance*5.1;
+  }
+ }
+ ctx.save();ctx.scale(target.scale,target.scale);ctx.translate(-VISUAL.camX,-VISUAL.camY);drawMapUnderlay(m);
+ for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){drawTile(m.tiles[y][x],x,y);drawTileDetail(m.tiles[y][x],x,y)}drawTerrainBlend(m);drawVerticalSliceGround(m);
+ if(state.map==='village'){if(RyuneEnvironment.enabled)RyuneEnvironment.drawVillage(ctx);else{drawVillageDecor();villageHouses.forEach(drawHouse)}}if(INTERIOR_MAPS.includes(state.map)){if(RyuneEnvironment.enabled&&RyuneEnvironment.rooms.has(state.map))RyuneEnvironment.drawInterior(ctx,state.map);else drawInteriorDecor();CapitalEnvironment.interior(ctx,state.map);}drawRegionDecor();AshFrontierEnvironment.accents(ctx,state.map);CapitalEnvironment.street(ctx,state.map);OpeningWorldLife.ground(ctx,state.map,state.events.choices);m.objects.forEach(drawObject);const cinematicActive=GC.Cinematic?.isActive?.()===true,controlledNpcs=new Set(GC.Cinematic?.controlledNpcIds?.()||[]);m.npcs.filter(n=>npcVisible(n)&&!controlledNpcs.has(n.id)).forEach(drawNpc);drawQuestMarker();
+ if(cinematicActive){GC.Cinematic?.drawActors?.(ctx,{drawCharacterSprite,drawHeroSpriteSheet,drawNpcCommercial})}else{const leaderMoving=VISUAL.leaderQueue.length>0||Math.abs(state.x-VISUAL.playerX)>.015||Math.abs(state.y-VISUAL.playerY)>.015,phase=leaderMoving?VISUAL.travelPhase:0;drawPartyRuntime(leaderMoving,phase);drawInteractionMarker()}GC.Dev?.drawWorldOverlay?.(ctx);ctx.restore();drawAreaIdentity();$('locationLabel').textContent=m.name;if($('safetyLabel')){const safe=encounterSafeZone();$('safetyLabel').textContent=safe?'● 安全地帯':'▲ 危険地帯';$('safetyLabel').classList.toggle('danger',!safe)};
+ const followerTargets=partyTrailPoints(),followerMoving=VISUAL.followers.some((p,i)=>{const t=followerTargets[i]||p;return Math.abs(t[0]-p[0])>.01||Math.abs(t[1]-p[1])>.01});const moving=cinematicActive||VISUAL.leaderQueue.length>0||VISUAL.followerQueues.some(q=>q.length>0)||Math.abs(target.x-VISUAL.camX)>.08||Math.abs(target.y-VISUAL.camY)>.08||Math.abs(state.x-VISUAL.playerX)>.01||Math.abs(state.y-VISUAL.playerY)>.01||followerMoving;
+ const f=front(),interactableNpc=m.npcs.find(n=>npcVisible(n)&&n.x===f.x&&n.y===f.y),interactableObject=m.objects.find(o=>o.x===f.x&&o.y===f.y&&visibleObject(o));
+ GC.CommercialUX?.update?.(state.map,interactableNpc,interactableObject);
+ const worldLifeMotion=!isInputLocked()&&OpeningWorldLife.shouldBreathe(state.map,state.x,state.y,m.npcs);
+ if(moving||GC.CommercialActing?.active?.()){
+  cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene);
+ }else if(worldLifeMotion){
+  clearTimeout(VISUAL.ambientTimer);
+  VISUAL.ambientTimer=setTimeout(()=>draw(),200);
+ }
+}
+function draw(){clearTimeout(VISUAL.ambientTimer);cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene)}
+
+GC.Render=GC.Render||{};GC.Render.World={draw,drawScene,renderHud:()=>renderHud(),VISUAL,drawCharacterSprite,drawHeroSpriteSheet,heroRuntimeStatus,drawPartyRuntime};
+
+</script>
+  <script>
+'use strict';
+/* Presentation only. Existing approved 48px PNG animations are the art source.
+ * No redraw, regeneration, canonical pose change, position or save mutation. */
+(function(){
+ const heroBySpeaker=Object.freeze({'カレン':'karen','トリトン':'triton','ソフィ':'sophie','マーガレット':'margaret'});
+ const traits=Object.freeze({
+  karen:{delay:0,tempo:0,kind:'forward'},triton:{delay:70,tempo:100,kind:'grounded'},
+  sophie:{delay:90,tempo:180,kind:'gentle'},margaret:{delay:220,tempo:260,kind:'measured'}
+ });
+ let cue=null,actor=null;
+ let enabled=true;
+ function onLine(speaker,text){
+  const id=heroBySpeaker[speaker]||null;
+  const now=Date.now();
+  cue=id?{id,map:state.map,created:now,
+    surprise:/[！？!?]/.test(String(text||''))&&id!=='margaret',
+    text:String(text||'')}:null;
+  actor=null;
+  GC.Render?.World?.draw?.();
+  return cue?.id||null;
+ }
+ function onClose(){cue=null;actor=null;GC.Render?.World?.draw?.()}
+ function active(){const reduced=typeof window!=='undefined'&&typeof window.matchMedia==='function'&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;return enabled&&!reduced&&!!cue&&state.map===cue.map&&!state.battle&&!GC.Cinematic?.isActive?.()}
+ function draws(id,c,x,y,facing,now=Date.now()){
+  if(!active()||cue.id!==id||!GC.Animation?.drawActor)return false;
+  const trait=traits[id],elapsed=now-cue.created;
+  const pose=elapsed<trait.delay?'idle':
+   cue.surprise&&elapsed<trait.delay+360?'surprise':'talk';
+  if(!actor||actor.character!==id){
+   actor=GC.Animation.createActor(id,{id:'conversation.'+id,x,y,facing,animation:pose,startedAt:now,
+     renderScale:44/48,renderMode:'pixel48-medium',prototypeTemporary:true});
+  }
+  actor.x=x;actor.y=y;actor.facing=facing;
+  if(actor.animation!==pose)GC.Animation.setAnimation(actor,pose,{now});
+  return GC.Animation.drawActor(c,actor,now);
+ }
+ function inspect(){return{enabled,active:active(),hero:cue?.id||null,pose:actor?.animation||null,map:cue?.map||null}}
+ const api={traits,onLine,onClose,active,draws,inspect,get enabled(){return enabled},set enabled(v){enabled=!!v;if(!enabled)onClose()}};
+ GC.CommercialActing=api;
+})();
+
+</script>
+  <script>
+'use strict';
+/* Discovery affordance, not a fabricated quest objective or reward.
+   It reads only existing map coordinates and the original front() cell. */
+(function(){
+ const labels=Object.freeze({
+  messenger:'王国使者',mayor:'村長',capitalOfficial:'王都の任命担当',granz:'総司令グランツ',
+  capitalInnDoor:'白鹿亭',capitalArmoryDoor:'兵装店',innRest:'白鹿亭の寝台',
+  refugee:'避難民',fieldPriest:'従軍僧',scorchedOrders:'焼けた命令書',
+  burnedHomestead:'焼けた家屋',burnedCart:'焼けた荷車',ruinedShrine:'道端の祠',
+  imperialPatrol:'帝国軍斥候',frontierOfficer:'前線将校',frontierMedic:'衛生兵',
+  vanguardCaptain:'帝国前衛隊長ヴァルク',fieldHospital:'野戦病院',
+  watchTower:'見張り台',frontierCache:'補給箱',frontierNotice:'前線の掲示'
+ });
+ const action=(kind,o)=>o?
+   (kind==='npc'?'話す':'調べる')+'：'+(o.name||labels[o.id]||'気になるもの')+' · Enter':
+   '移動：WASD / 矢印　　調べる：Enter';
+ let previous=null;
+ function update(map,targetNpc,targetObject){
+  const el=typeof $==='function'?$('qualityHint'):null;
+  if(!el)return false;
+  const next=targetNpc?action('npc',targetNpc):targetObject?action('object',targetObject):action(null,null);
+  if(next!==previous){el.textContent=next;previous=next}
+  return !!(targetNpc||targetObject)
+ }
+ GC.CommercialUX={labels,action,update};
+})();
+
+</script>
+  <script>
+'use strict';
+/* Optional discovery from existing original story flags and treasure records.
+ * This layer does not award rewards, set flags or generate new encounters. */
+(function(){
+ const extras=Object.freeze({
+  village:[{id:'early.orphanMedicine',kind:'choice',label:'孤児院の薬草相談'}],
+  road:[{id:'bandit',kind:'defeated',label:'ならず者への対処'},{id:'roadCache',kind:'treasure',label:'街道の物資'},
+   {id:'early.merchantCart',kind:'choice',label:'行商人の荷車'},
+   {id:'early.wolfScout',kind:'choice',label:'狼の足跡を調べる'}],
+  cave:[{id:'early.caveBanner',kind:'choice',label:'古い軍旗の記憶'},
+   {id:'early.caveSupplies',kind:'choice',label:'古砦の備蓄食'},
+   {id:'chest1',kind:'treasure',label:'古砦の宝箱（西）'},{id:'chest2',kind:'treasure',label:'古砦の宝箱（東）'},
+   {id:'bats',kind:'defeated',label:'コウモリの群れ'},{id:'crawler',kind:'defeated',label:'石殻ムカデ'}],
+  ashroad:[{id:'alpha2.ashroad.priest',kind:'event',label:'従軍僧の話'},
+   {id:'alpha2.ashroad.burnedCart',kind:'event',label:'焼けた荷車'},
+   {id:'alpha2.ashroad.homestead',kind:'event',label:'焼けた農家'},
+   {id:'alpha2.ashroad.shrine',kind:'event',label:'道端の祠'},
+   {id:'ashCache',kind:'treasure',label:'避難路の荷袋'}],
+  frontier:[{id:'frontierCache',kind:'treasure',label:'前線補給箱'}]
+ });
+ function done(p,s){
+  if(p.kind==='event')return !!s.events?.completed?.[p.id];
+  if(p.kind==='choice')return !!s.events?.choices?.[p.id];
+  if(p.kind==='treasure')return !!s.world?.treasures?.[p.id];
+  return !!s.world?.defeatedSymbols?.[p.id]
+ }
+ function progress(map,s=state){
+  const all=extras[map]||[],complete=all.filter(p=>done(p,s));
+  return {map,total:all.length,found:complete.length,remaining:all.filter(p=>!done(p,s)).map(p=>p.label)}
+ }
+ function questHint(map){
+  if(map==='village'&&!isEventComplete('alpha.village.appointment'))return{id:'messenger',kind:'npc'};
+  if(map==='road'&&!isDefeated('wolf'))return{id:'wolf',kind:'object'};
+  if(map==='cave'){
+   if(!getWorldSwitch('leverWest'))return{id:'leverWest',kind:'object'};
+   if(!getWorldSwitch('leverEast'))return{id:'leverEast',kind:'object'};
+   if(!isDefeated('boss'))return{id:'boss',kind:'object'};
+  }
+  if(map==='ashroad'){
+   if(!isEventComplete('alpha2.ashroad.refugee'))return{id:'refugee',kind:'npc'};
+   if(!isEventComplete('alpha2.ashroad.orders'))return{id:'scorchedOrders',kind:'object'};
+   if(!isEventComplete('alpha2.ashroad.patrolVictory'))return{id:'imperialPatrol',kind:'object'};
+  }
+  return null
+ }
+ function update(){
+  const node=typeof $==='function'?$('discoveryHud'):null;
+  if(!node)return null;
+  const p=progress(state.map);
+  if(!p.total){node.textContent='';node.classList.add('hidden');return p}
+  node.classList.remove('hidden');
+  node.textContent='寄り道の発見 '+p.found+' / '+p.total+'（任意）';
+  node.setAttribute('title',p.remaining.length?'まだ調べられること：'+p.remaining.join('／'):'このエリアの寄り道はすべて発見済み');
+  return p
+ }
+ GC.CommercialDiscovery={extras,done,progress,questHint,update};
+})();
+
+</script>
+  <script>
+'use strict';
+(function(){
+ const CINEMATIC={active:false,name:null,actors:new Map(),camera:null,commandIndex:-1,currentCommand:null,mode:null,renderMode:'pixel48-full',cancelled:false,previousLocked:false};
+ const PROTOTYPE_RENDER_SCALES=Object.freeze({'pixel48':1,'pixel48-full':1,'pixel48-medium':44/48,'pixel48-compact':41/48,'legacy32':1});
+ function renderScaleForMode(mode){return PROTOTYPE_RENDER_SCALES[mode]??1}
+ const CANCEL_WAITERS=new Set();
+ function isActive(){return CINEMATIC.active}
+ function cameraTarget(){return CINEMATIC.active?CINEMATIC.camera:null}
+ function controlledNpcIds(){return CINEMATIC.active?[...CINEMATIC.actors.values()].filter(a=>a.controlNpc).map(a=>a.id):[]}
+ function getRenderActors(){return CINEMATIC.active?[...CINEMATIC.actors.values()].filter(a=>a.visible!==false).sort((a,b)=>(a.layer||0)-(b.layer||0)):[]}
+ function actor(id){return CINEMATIC.actors.get(id)||null}
+ function addActor(spec){const renderMode=spec.renderMode||'pixel48-full',a=GC.Animation.createActor(spec.character||spec.id,{...spec,renderMode,renderScale:spec.renderScale??renderScaleForMode(renderMode)});a.controlNpc=!!spec.controlNpc;a.renderMode=renderMode;a.renderScale=spec.renderScale??renderScaleForMode(renderMode);a.styleId=spec.styleId||spec.id;CINEMATIC.actors.set(a.id,a);return a}
+ function resetTransient(){CINEMATIC.active=false;CINEMATIC.name=null;CINEMATIC.actors.clear();CINEMATIC.camera=null;CINEMATIC.commandIndex=-1;CINEMATIC.currentCommand=null;CINEMATIC.mode=null;CINEMATIC.cancelled=false;CINEMATIC.previousLocked=false;CANCEL_WAITERS.clear()}
+ function signalCancel(){for(const cancelWaiter of [...CANCEL_WAITERS])cancelWaiter();CANCEL_WAITERS.clear()}
+ function wait(ms){return new Promise(resolve=>{let settled=false;const finish=value=>{if(settled)return;settled=true;CANCEL_WAITERS.delete(onCancel);resolve(value)},timer=setTimeout(()=>finish(true),Math.max(0,Number(ms)||0)),onCancel=()=>{clearTimeout(timer);finish(false)};CANCEL_WAITERS.add(onCancel)})}
+ function dialogueWait(cmd){if(CINEMATIC.mode==='motionOnly')return wait(cmd.motionOnlyMs||850);return new Promise(resolve=>{let settled=false;const finish=value=>{if(settled)return;settled=true;CANCEL_WAITERS.delete(onCancel);resolve(value)},onCancel=()=>{GC.Dialogue?.closeDialogue?.(false);finish(false)};CANCEL_WAITERS.add(onCancel);say(cmd.speaker,cmd.text,[],()=>finish(true),{portraitMode:CINEMATIC.mode==='portraitOff'?'disabled':'enabled'})})}
+ function tweenActor(a,toX,toY,duration=400){if(!a)return Promise.resolve(false);const sx=a.x,sy=a.y,dx=toX-sx,dy=toY-sy,d=Math.max(1,Number(duration)||1);return new Promise(resolve=>{let start=null;const step=ts=>{if(!CINEMATIC.active||CINEMATIC.cancelled){resolve(false);return}if(start===null)start=ts;const t=Math.min(1,(ts-start)/d),ease=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;a.x=sx+dx*ease;a.y=sy+dy*ease;draw();if(t>=1)resolve(true);else requestAnimationFrame(step)};requestAnimationFrame(step)})}
+ function directionToward(a,b){if(!a||!b)return'down';const dx=b.x-a.x,dy=b.y-a.y;if(Math.abs(dx)>Math.abs(dy))return dx<0?'left':'right';return dy<0?'up':'down'}
+ function focusActors(ids,scale=null,offsetX=0,offsetY=0){const list=(ids||[]).map(actor).filter(Boolean);if(!list.length){CINEMATIC.camera=null;return}const x=list.reduce((s,a)=>s+a.x,0)/list.length,y=list.reduce((s,a)=>s+a.y,0)/list.length;CINEMATIC.camera={active:true,x:x+offsetX,y:y+offsetY,scale:scale||viewScale()};draw()}
+ function drawActors(c,helpers={}){for(const a of getRenderActors()){if(a.renderMode.startsWith('pixel48')&&GC.Animation.drawActor(c,a))continue;const motion=['walk','run','approach','react','laugh'].includes(a.animation)?Date.now()/82:0;if(a.controlNpc&&helpers.drawNpcCommercial){helpers.drawNpcCommercial({id:a.styleId||a.id,x:a.x,y:a.y},a.facing);continue}if(a.renderMode==='legacy32'&&helpers.drawHeroSpriteSheet){helpers.drawHeroSpriteSheet(a.x,a.y,'karen',false,a.facing,motion);continue}if(helpers.drawCharacterSprite){const style=GC.Data?.NPCs?.NPC_STYLE?.[a.styleId]||GC.Data?.NPCs?.PARTY_STYLE?.[a.styleId]||{},bob=a.animation==='react'?-.10*Math.abs(Math.sin(Date.now()/95)):0;helpers.drawCharacterSprite(a.x,a.y+bob,style,false,a.facing,motion)}}}
+ async function runCommand(cmd,scene){
+  if(!cmd)return true;
+  if(cmd.type==='wait')return await wait(cmd.ms);
+  if(cmd.type==='move'){const a=actor(cmd.actor);if(!a)return true;GC.Animation.setAnimation(a,cmd.animation||'walk',{facing:cmd.facing||a.facing});const moved=await tweenActor(a,cmd.x,cmd.y,cmd.duration);if(!moved||CINEMATIC.cancelled)return false;GC.Animation.setAnimation(a,cmd.after||'idle');return true}
+  if(cmd.type==='turn'){const a=actor(cmd.actor);if(!a)return true;let facing=cmd.facing;if(cmd.target)facing=directionToward(a,actor(cmd.target));GC.Animation.setFacing(a,facing);GC.Animation.setAnimation(a,cmd.animation||'turn');if(!(await wait(cmd.duration||220)))return false;GC.Animation.setAnimation(a,cmd.after||'idle');return true}
+  if(cmd.type==='animate'){const a=actor(cmd.actor);if(!a)return true;let def=null;if(a.renderMode==='procedural32'){a.animation=cmd.animation||'idle';a.startedAt=Date.now()}else def=GC.Animation.setAnimation(a,cmd.animation,{facing:cmd.facing||a.facing});if(cmd.hold===true)return true;const duration=cmd.duration??(def&&def.loop===false?Math.ceil((def.frames?.length||1)/(def.fps||1)*1000):350);if(!(await wait(duration)))return false;if(cmd.after!==false){if(a.renderMode==='procedural32')a.animation=cmd.after||'idle';else GC.Animation.setAnimation(a,cmd.after||'idle')}return true}
+  if(cmd.type==='camera'){if(cmd.action==='return'){CINEMATIC.camera=null;draw();return true}focusActors(cmd.actors||[cmd.actor],cmd.scale,cmd.offsetX||0,cmd.offsetY||0);return true}
+  if(cmd.type==='sound'){GC.Audio?.sfx?.(cmd.name);return true}
+  if(cmd.type==='music'){if(cmd.action==='pause')GC.Audio?.pauseMusic?.();else if(cmd.action==='resume')GC.Audio?.resumeMusic?.();else if(cmd.theme)GC.Audio?.setMusic?.(cmd.theme);return true}
+  if(cmd.type==='say'){if(scene?.id==='alpha.village.appointment.acting')GC.RyuneActing?.beforeDialogue?.(cmd);if(scene?.id==='alpha.capital.ceremony.acting')CapitalActing?.beforeDialogue?.(cmd);return await dialogueWait(cmd)}
+  return true
+ }
+ async function startScene(scene,opts={}){
+  if(CINEMATIC.active||!scene)return false;
+  CINEMATIC.actors.clear();CINEMATIC.previousLocked=!!state.locked;CINEMATIC.active=true;CINEMATIC.name=scene.id||'scene';CINEMATIC.mode=opts.mode||'portraitOn';CINEMATIC.renderMode=opts.renderMode||'pixel48-full';CINEMATIC.cancelled=false;
+  for(const spec of scene.actors||[])addActor({...spec,renderMode:spec.id==='karen'?CINEMATIC.renderMode:spec.renderMode});
+  acquireInputLock('cinematic');state.locked=true;draw();
+  try{
+   for(let i=0;i<(scene.commands||[]).length;i++){if(CINEMATIC.cancelled||!CINEMATIC.active)break;CINEMATIC.commandIndex=i;CINEMATIC.currentCommand=scene.commands[i];const ok=await runCommand(scene.commands[i],scene);if(ok===false||CINEMATIC.cancelled||!CINEMATIC.active)break}
+   return !CINEMATIC.cancelled;
+  }finally{
+   CINEMATIC.camera=null;CINEMATIC.active=false;CINEMATIC.currentCommand=null;CINEMATIC.actors.clear();state.locked=CINEMATIC.previousLocked;CINEMATIC.previousLocked=false;releaseInputLock('cinematic');draw();canvas?.focus?.()
+  }
+ }
+ function cancel(){if(!CINEMATIC.active)return false;CINEMATIC.cancelled=true;CINEMATIC.camera=null;CINEMATIC.active=false;signalCancel();CINEMATIC.currentCommand=null;CINEMATIC.actors.clear();state.locked=CINEMATIC.previousLocked;releaseInputLock('cinematic');draw();return true}
+ const KAREN_PIXEL_PROTOTYPE=Object.freeze({
+ id:'prototype.karen.pixel_acting',
+ prototypeTemporary:true,
+ actors:[
+  {id:'karen',character:'karen',x:10.3,y:7,facing:'right',animation:'idle',layer:2},
+  {id:'mika',character:'mika',styleId:'mika',x:17,y:7,facing:'left',animation:'idle',renderMode:'procedural32',controlNpc:true,layer:1}
+ ],
+ commands:[
+  {type:'camera',actors:['karen','mika'],scale:1.30,offsetX:-.25},
+  {type:'wait',ms:450},
+  {type:'sound',name:'step'},
+  {type:'move',actor:'karen',x:14.5,y:7,duration:1900,animation:'walk'},
+  {type:'wait',ms:250},
+  {type:'turn',actor:'karen',target:'mika',duration:180},
+  {type:'animate',actor:'karen',animation:'surprise',duration:420},
+  {type:'sound',name:'reaction'},
+  {type:'wait',ms:350},
+  {type:'move',actor:'karen',x:15.5,y:7,duration:600,animation:'approach'},
+  {type:'animate',actor:'karen',animation:'talk',hold:true},
+  {type:'say',speaker:'カレン',text:'「ミカ！ こんなところにいたんだ」',motionOnlyMs:850},
+  {type:'animate',actor:'karen',animation:'idle',hold:true},
+  {type:'animate',actor:'mika',animation:'react',duration:260},
+  {type:'say',speaker:'ミカ',text:'「カレン、また走ってたの？」',motionOnlyMs:850},
+  {type:'animate',actor:'karen',animation:'talk',hold:true},
+  {type:'say',speaker:'カレン',text:'「うん。ちょっとそこまで！」',motionOnlyMs:850},
+  {type:'animate',actor:'karen',animation:'idle',hold:true},
+  {type:'say',speaker:'ミカ',text:'「“ちょっと”で、その勢い？」',motionOnlyMs:850},
+  {type:'animate',actor:'karen',animation:'laugh',duration:650},
+  {type:'animate',actor:'mika',animation:'react',duration:320},
+  {type:'animate',actor:'karen',animation:'talk',hold:true},
+  {type:'say',speaker:'カレン',text:'「はは、ごめん！ またあとで！」',motionOnlyMs:850},
+  {type:'animate',actor:'karen',animation:'idle',hold:true},
+  {type:'wait',ms:350},
+  {type:'turn',actor:'karen',facing:'left',duration:180},
+  {type:'sound',name:'step'},
+  {type:'move',actor:'karen',x:4.1,y:7,duration:1800,animation:'run'},
+  {type:'wait',ms:350},
+  {type:'camera',action:'return'}
+ ]
+});
+function validateScene(scene=KAREN_PIXEL_PROTOTYPE){const errors=[],allowed=new Set(['wait','move','turn','animate','say','camera','sound','music','fade']),ids=new Set((scene?.actors||[]).map(a=>a.id));for(const [idx,cmd] of (scene?.commands||[]).entries()){if(!allowed.has(cmd.type))errors.push('command '+idx+': unknown '+cmd.type);if(cmd.actor&&!ids.has(cmd.actor))errors.push('command '+idx+': missing actor '+cmd.actor);if(cmd.target&&!ids.has(cmd.target))errors.push('command '+idx+': missing target '+cmd.target)}return{ok:errors.length===0,errors}}
+async function startKarenPrototype(opts={}){if(CINEMATIC.active)return false;const mode=opts.mode||'portraitOn',renderMode=opts.renderMode||'pixel48-full';if(!['portraitOn','portraitOff','motionOnly'].includes(mode))throw new Error('Unknown Karen prototype mode: '+mode);if(!['pixel48','pixel48-full','pixel48-medium','pixel48-compact','legacy32'].includes(renderMode))throw new Error('Unknown Karen prototype render mode: '+renderMode);const prev={map:state.map,x:state.x,y:state.y,dir:state.dir,trail:(state.trail||[]).map(p=>[p[0],p[1]])};setMap('village',12,10,'up',[[12,11],[11,11],[10,11]]);try{return await startScene(KAREN_PIXEL_PROTOTYPE,{mode,renderMode})}finally{setMap(prev.map,prev.x,prev.y,prev.dir,prev.trail);VISUAL.map=null;draw()}}
+
+GC.Cinematic={state:CINEMATIC,PROTOTYPE_RENDER_SCALES,renderScaleForMode,isActive,cameraTarget,controlledNpcIds,getRenderActors,actor,addActor,drawActors,startScene,startKarenPrototype,KAREN_PIXEL_PROTOTYPE,validateScene,cancel,wait,tweenActor,directionToward,focusActors,resetTransient};
+})();
+</script>
+  <script>
+'use strict';
+/* Ryune acting v1. EVENT_DEFS remains the sole authority for dialogue and effects.
+   Poses/moves happen during visible dialogue, preserving continuous input rhythm. */
+(function(){
+ const EVENT_ID='alpha.village.appointment';
+ const ACTING_ID=EVENT_ID+'.acting';
+ const ACTING_V1=Object.freeze({
+  karen:{pace:270,signature:'fast approach and whole-body answer',weight:'forward'},
+  triton:{pace:430,signature:'planted protective shift',weight:'grounded'},
+  sophie:{pace:490,signature:'small careful approach and steady hands',weight:'careful'},
+  margaret:{pace:640,signature:'gaze before a measured answer',weight:'measured'}
+ });
+ const SPEAKERS={'カレン':'karen','トリトン':'triton','ソフィ':'sophie','マーガレット':'margaret','王国使者':'messenger'};
+ // Line indices in EVENT_DEFS, not replicated dialogue text. Movement changes only
+ // temporary actor render positions, never world x/y, trail, map or save data.
+ const choreography=Object.freeze({
+  0:{focus:['messenger','karen','triton','sophie','margaret'],sound:'step'},
+  1:{focus:['messenger','karen','triton'],move:[['karen',11.8,7.75,270,'approach']]},
+  2:{look:[['triton','messenger']]},
+  4:{look:[['margaret','messenger']],still:['margaret']},
+  6:{move:[['sophie',13.05,7.95,490,'approach']]},
+  8:{focus:['karen','triton','sophie','margaret'],still:['sophie','margaret']},
+  9:{look:[['margaret','karen']]},
+  11:{move:[['sophie',12.8,8.0,430,'approach']]},
+  12:{look:[['margaret','sophie']],still:['margaret']},
+  14:{move:[['karen',12.2,7.6,270,'approach']]},
+  15:{look:[['margaret','karen']],still:['margaret']},
+  16:{move:[['karen',11.65,8.0,260,'walk']],look:[['karen','margaret']]},
+  17:{move:[['triton',10.25,8.0,430,'walk']],look:[['triton','karen']]},
+  18:{look:[['sophie','karen']]},
+  19:{still:['margaret']},
+  20:{focus:['karen','triton','sophie','margaret'],look:[['karen','sophie']]},
+  21:{look:[['triton','karen']]}
+ });
+ let mode='portraitOn',running=false;
+ function setPortraitMode(next){if(!['portraitOn','portraitOff'].includes(next)||running||GC.Cinematic?.isActive?.())return false;mode=next;return true}
+ function getSnapshot(){return{running,mode,scene:GC.Cinematic?.state?.name||null,
+  actors:(GC.Cinematic?.getRenderActors?.()||[]).map(a=>({id:a.id,x:a.x,y:a.y,facing:a.facing,animation:a.animation,scale:a.renderScale})),
+  lineIndex:GC.Cinematic?.state?.currentCommand?.lineIndex??null}}
+ function sceneFor(def){
+  const messenger=maps.village.npcs.find(n=>n.id==='messenger');
+  if(!messenger)throw new Error('Ryune messenger missing from map');
+  const actors=[
+   {id:'karen',character:'karen',x:11.15,y:8.0,facing:'up',animation:'idle',renderMode:'pixel48-medium',layer:2},
+   {id:'triton',character:'triton',x:9.35,y:8.1,facing:'right',animation:'idle',renderMode:'pixel48-medium',layer:2},
+   {id:'sophie',character:'sophie',x:13.3,y:8.35,facing:'up',animation:'idle',renderMode:'pixel48-medium',layer:2},
+   {id:'margaret',character:'margaret',x:15.35,y:8.15,facing:'left',animation:'idle',renderMode:'pixel48-medium',layer:2},
+   {id:'messenger',character:'messenger',styleId:'messenger',x:messenger.x,y:messenger.y,facing:'down',animation:'idle',renderMode:'procedural32',controlNpc:true,layer:1}
+  ];
+  return{id:ACTING_ID,actors,commands:[
+   {type:'camera',actors:['messenger','karen','triton','sophie','margaret'],scale:1.12},
+   ...def.lines.map((line,lineIndex)=>({type:'say',speaker:line.speaker,text:line.text,lineIndex})),
+   {type:'camera',action:'return'}
+  ]}
+ }
+ function beforeDialogue(cmd){
+  if(!running)return;
+  const cue=choreography[cmd.lineIndex]||{},speakerId=SPEAKERS[cmd.speaker]||null;
+  for(const a of GC.Cinematic.getRenderActors()){
+   if(a.renderMode==='procedural32'){a.animation=a.id===speakerId?'talk':'idle';continue}
+   const isMeasured=a.id==='margaret'&&[4,12,19].includes(cmd.lineIndex);
+   GC.Animation.setAnimation(a,a.id===speakerId&&!isMeasured?'talk':'idle');
+  }
+  for(const [who,target] of cue.look||[]){
+   const a=GC.Cinematic.actor(who),b=GC.Cinematic.actor(target);
+   if(a&&b)GC.Animation.setFacing(a,GC.Cinematic.directionToward(a,b));
+  }
+  for(const who of cue.still||[]){
+   const a=GC.Cinematic.actor(who);
+   if(a&&who!==speakerId)GC.Animation.setAnimation(a,'idle',{restart:false});
+  }
+  for(const [who,x,y,duration,animation] of cue.move||[]){
+   const a=GC.Cinematic.actor(who);if(!a)continue;
+   GC.Animation.setAnimation(a,animation);
+   GC.Cinematic.tweenActor(a,x,y,duration).then(ok=>{
+    if(ok&&GC.Cinematic.isActive()&&a.animation===animation)GC.Animation.setAnimation(a,'idle');
+   });
+  }
+  if(cue.focus)GC.Cinematic.focusActors(cue.focus,1.12);
+  if(cue.sound)GC.Audio?.sfx?.(cue.sound);
+  GC.Render.World.draw();
+ }
+ function runAppointment(def,context){
+  if(running||GC.Cinematic?.isActive?.()||state.locked||state.battle||state.map!=='village')return true;
+  if(def?.id!==EVENT_ID||isEventComplete(EVENT_ID))return false;
+  const scene=sceneFor(def),valid=GC.Cinematic.validateScene(scene);
+  if(!valid.ok)throw new Error('Invalid Ryune acting: '+valid.errors.join(', '));
+  running=true;
+  GC.Log?.info('Story Event Start',{id:def.id,type:'npc',target:'messenger',map:'village',acting:'ryune-v1',mode});
+  GC.Dev?.noteEvent?.(def.id);
+  GC.Cinematic.startScene(scene,{mode,renderMode:'pixel48-medium'})
+   .then(ok=>{if(ok&&running&&state.map==='village'&&!isEventComplete(EVENT_ID))applyEventEffects(def,context)})
+   .catch(error=>GC.Log?.error('Ryune Acting aborted safely; no event effects',{error:String(error)}))
+   .finally(()=>{running=false;GC.Render.World.draw()});
+  return true
+ }
+ GC.RyuneActing={EVENT_ID,ACTING_ID,ACTING_V1,SPEAKERS,choreography,setPortraitMode,
+  getPortraitMode:()=>mode,getSnapshot,sceneFor,beforeDialogue,runAppointment,isRunning:()=>running};
+})();
+
+</script>
   <script src="js/systems/capital_acting.js"></script>
   <script src="js/systems/commercial_tactics.js"></script>
   <script src="js/systems/commercial_soundscape.js"></script>
