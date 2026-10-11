@@ -596,3 +596,7 @@ body:has(.battle-panel:not(.hidden)) .party-battle-line{left:5%;bottom:38px}
  .battle-hero.sprite,.battle-hero.sprite.strike{animation:none!important;transform:none!important}
  .battle-hero.sprite .battle-sprite-frame{animation:none!important}
 }
+
+/* Clear feedback that Break really prevented an enemy action. */
+#enemyVisual.staggered{filter:saturate(.56) brightness(.82) drop-shadow(0 0 8px rgba(247,198,112,.5))}
+#battlePanel:has(#enemyVisual.staggered) #stageEnemyState{color:#ffe4a8;font-weight:800}
