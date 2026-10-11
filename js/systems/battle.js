@@ -34,6 +34,22 @@ function battleAction(type){if(state.locked||!state.battle)return;const b=state.
   b.comboTarget=e;b.comboActor=a.id;
  }else{b.comboTarget=null;b.comboActor=null}
  renderBattleStage();battleImpact(actorIndex,d,moraleLoss,visual,()=>{if(e.hp<=0){if(!livingEnemies().length)return battleWin();return nextActor()}if(e.morale!=null&&e.morale<=0)return battleSurrender();nextActor()})}
+// Announced *before* player actions for route-specific checkpoint encounters.
+// Uses the same prediction for the HUD and the real incoming strike.
+function checkpointEnemyIntent(b){
+ if(!b)return null;
+ const patterns={
+  kingdomEvacuation:{order:['sophie','triton'],bonus:2,note:'避難路の支援役を狙う。カレンの庇うで守れる。'},
+  kingdomOrders:{order:['karen','margaret'],bonus:3,note:'前衛を崩す強打。庇うか事前に回復を。'},
+  empireProtect:{order:['sophie','karen'],bonus:1,note:'捕虜の治療担当を牽制。庇うで援護できる。'},
+  empireAdvance:{order:['triton','karen'],bonus:3,note:'追撃を止める前衛へ集中攻撃。回復と防御を計画しよう。'}
+ };
+ const pattern=patterns[b.id];if(!pattern)return null;
+ const living=activeRouteParty().filter(p=>p.hp>0);if(!living.length)return null;
+ const preferred=pattern.order[(Math.max(1,b.turn)-1)%pattern.order.length];
+ const target=living.find(p=>p.id===preferred)||living.slice().sort((a,c)=>a.hp/a.maxHp-c.hp/c.maxHp)[0];
+ return {target,bonus:pattern.bonus,note:pattern.note}
+}
 function nextActor(){const b=state.battle;if(!b)return;b.actor++;if(b.actor>=activeRouteParty().length){b.actor=0;b.comboTarget=null;b.comboActor=null;enemyTurn()}else renderBattle()}
 // Prevent 3 quick consecutive hits on one ally in a multi-enemy round.
 function selectEnemyTarget(alive,b,random=Math.random){
@@ -46,8 +62,22 @@ function selectEnemyTarget(alive,b,random=Math.random){
 }
 function enemyTurn(){const b=state.battle,bd=battles[b.id],foes=livingEnemies().slice();state.locked=true;let i=0;const step=()=>{if(i>=foes.length){activeRouteParty().forEach(p=>{p.guard=false;if(p.buff)p.buff=Math.max(0,p.buff-1)});if(activeRouteParty().every(p=>p.hp<=0))return battleLose();b.turn++;b.actor=0;state.locked=false;renderBattle();return}const e=foes[i++];if(bd.boss&&e.phase===1&&e.hp<e.maxHp*.65){e.phase=2;e.atk+=2;battleLog(`<strong class="boss-phase">PHASE II — ${bd.phase2||'攻勢が変化した'}</strong>`)}else if(bd.boss&&e.phase===2&&e.hp<e.maxHp*.3){e.phase=3;e.atk+=3;e.def+=1;battleLog(`<strong class="boss-phase">FINAL PHASE — ${bd.phase3||'全力を解放した'}</strong>`)}const alive=activeRouteParty().filter(p=>p.hp>0);if(!alive.length)return battleLose();// Telegraph tactical danger while preserving original fair target-selection rules.
  if(bd.boss&&e.phase>=2)battleLog('警戒：'+e.name+'が攻勢を強めている。防御と回復を確認しよう。');
- const originallyTargeted=selectEnemyTarget(alive,b);const t=GC.CommercialTactics?.protect?.(activeRouteParty(),originallyTargeted)||originallyTargeted;let d=damageFormula(e.atk,t.def);if(t.guard)d=Math.max(1,Math.floor(d/2));if(GC.Dev?.settings?.invincible)d=0;t.hp=Math.max(0,t.hp-d);if(t!==originallyTargeted)battleLog(`${t.name}が${originallyTargeted.name}を庇った！ ${e.name}の攻撃を引き受け、${d}ダメージ。`);if(t!==originallyTargeted)sfx('guard');else battleLog(`${e.name}の攻撃。${t.name}に${d}ダメージ。`);const ev=$('enemyVisual');if(ev){ev.classList.remove('shake');void ev.offsetWidth;ev.classList.add('shake')}battlePop('-'+d,'ally');sfx('hit');renderBattle();setTimeout(step,360)};step()}
+ const focus=checkpointEnemyIntent(b);const originallyTargeted=focus?.target||selectEnemyTarget(alive,b);const t=GC.CommercialTactics?.protect?.(activeRouteParty(),originallyTargeted)||originallyTargeted;let d=damageFormula(e.atk+(focus?.bonus||0),t.def);if(t.guard)d=Math.max(1,Math.floor(d/2));if(GC.Dev?.settings?.invincible)d=0;t.hp=Math.max(0,t.hp-d);if(t!==originallyTargeted)battleLog(`${t.name}が${originallyTargeted.name}を庇った！ ${e.name}の攻撃を引き受け、${d}ダメージ。`);if(t!==originallyTargeted)sfx('guard');else battleLog(`${e.name}の攻撃。${t.name}に${d}ダメージ。`);const ev=$('enemyVisual');if(ev){ev.classList.remove('shake');void ev.offsetWidth;ev.classList.add('shake')}battlePop('-'+d,'ally');sfx('hit');renderBattle();setTimeout(step,360)};step()}
 function battleWin(outcome='defeat'){const id=state.battle.id,bd=battles[id],r=bd.reward;GC.Log?.info('Battle End',{id,outcome});const scriptedEvent=findTriggeredEvent('battleWin',id,{outcome,map:state.map});if(scriptedEvent)applyEventEffects(scriptedEvent,{outcome,map:state.map});if(bd.boss)showBossCinematic(bd,true);const rewardGold=outcome==='surrender'?Math.floor(r.gold*.65):r.gold;state.gold+=rewardGold;const levelMessages=[];activeRouteParty().forEach(p=>{p.exp+=r.exp;const ups=applyLevelUps(p);for(const up of ups)levelMessages.push({name:p.name,...up})});battleLog(`${outcome==='surrender'?'戦闘終了':'勝利'}！ ${rewardGold}G、経験値${r.exp}を獲得。`);for(const u of levelMessages)battleLog(`<strong class="level-up">LEVEL UP! ${u.name} Lv.${u.level}　HP+${u.hp} MP+${u.mp} 攻撃+${u.atk} 防御+${u.def} 素早さ+${u.spd}</strong>`);if(r.drop&&Math.random()<r.drop.chance){state.inventory[r.drop.item]=(state.inventory[r.drop.item]||0)+1;battleLog(`${r.drop.item}を1個手に入れた。`)}
+ const finalRouteBattle={
+  kingdomEvacuation:{route:'kingdom',choice:'evacuate',context:'避難路を確保するため帝国の封鎖兵を退けた。'},
+  kingdomOrders:{route:'kingdom',choice:'orders',context:'帝国本陣の前衛警戒隊を退け、交渉の道を開いた。'},
+  empireProtect:{route:'empire',choice:'protect',context:'降伏者を護送する王国兵の抵抗を収めた。'},
+  empireAdvance:{route:'empire',choice:'advance',context:'追撃命令を届ける王国の伝令隊を止めた。'}
+ }[id];
+ if(finalRouteBattle){
+  const key='final.route.'+finalRouteBattle.route+'.checkpoint';
+  if(state.finalChoice===finalRouteBattle.route&&
+     state.events?.choices?.['route.companions.'+finalRouteBattle.route]===finalRouteBattle.choice){
+   completeEvent(key,true);
+   addJournal(finalRouteBattle.context+(outcome==='surrender'?'相手は降伏して武器を下ろした。':'戦闘不能となった相手の死亡は確定していない。'));
+  }
+ }
  if(id==='ashcrownCheckpoint'){
   completeEvent('ashcrownCheckpointCleared',true);
   addJournal(outcome==='surrender'
@@ -60,6 +90,14 @@ function battleWin(outcome='defeat'){const id=state.battle.id,bd=battles[id],r=b
  if(id==='boss'){markDefeated('boss',true);state.objective='古砦跡の北出口を目指す';addJournal('古砦跡の主・灰角獣を倒し、北側の鉄柵が開いた。')}
  if(id==='zenithEncounter'){completeEvent('metZenith',true);state.objective='北側の帰還路から王国へ戻る';addJournal('ゼニスとの対決を経て、王国の歴史的主張に根拠があることと、現在の住民を追い出す正当性は別問題だという認識を共有した。');draw()}
  const won=id,wasRandom=!!battles[id].random;resetEncounterCounter();const ev=$('enemyVisual');if(ev&&outcome!=='surrender')ev.classList.add('defeated');state.battle=null;state.locked=true;const finishBattle=()=>{restoreBattleReturn();state.symbolEncounter=null;$('battlePanel').classList.add('hidden');if(ev)ev.classList.remove('defeated');renderHud();draw();const afterLevel=()=>{state.locked=false;if(scriptedEvent)playEventDialogue(scriptedEvent);
+ else if(['kingdomEvacuation','kingdomOrders','empireProtect','empireAdvance'].includes(won)){
+  saySequence([
+   {speaker:'ナレーション',text:outcome==='surrender'?'相手は武器を置き、進路を譲った。':'敵兵は戦う力を失い、進路が開いた。'},
+   {speaker:'カレン',text:'「先へ進もう。私たちは勝敗だけを伝えに来たんじゃない」'},
+   {speaker:'ナレーション',text:'指揮官へ話しかけ、交渉を続けよう。'}
+  ])
+ }
+
  else if(won==='ashcrownCheckpoint')saySequence([
  {speaker:'ナレーション',text:outcome==='surrender'?'守備兵は武器を下ろし、道から退いた。':'守備兵は戦う力を失い、道を塞ぐことができなくなった。'},
  {speaker:'カレン',text:'「この先で何を失うのか、もう誰も教えてくれない」'},

@@ -40,6 +40,12 @@ function renderBattle(){const b=state.battle;if(!b)return;$('turnLabel').textCon
   if(GC.CommercialTactics.choose(state.battle,Number(btn.dataset.targetIndex))){sfx('select');renderBattle()}
  }));
  const tip=$('battleHelp');if(tip)tip.textContent=GC.CommercialTactics.hint(a,b);
+ const preview=$('battleForecast');if(preview){
+  const plan=checkpointEnemyIntent(b);
+  preview.classList.toggle('hidden',!plan);
+  preview.textContent=plan?'敵の予兆　'+plan.target.name+'への攻撃：'+plan.note:'';
+ }
+
  renderHud()}
 function battleLog(t){const box=$('battleLog');box.innerHTML+=`<div>${t}</div>`;box.scrollTop=box.scrollHeight}
 function showLevelUpSummary(list,onClose){if(!list.length){onClose();return}const box=$('levelUpPanel');$('levelUpList').innerHTML=list.map(u=>`<div class="level-card"><div class="level-card-head"><strong>${u.name}</strong><span>Lv.${u.level}</span></div><div class="level-stat-grid"><span>最大HP <b>+${u.hp}</b></span><span>最大MP <b>+${u.mp}</b></span><span>攻撃 <b>+${u.atk}</b></span><span>防御 <b>+${u.def}</b></span><span>素早さ <b>+${u.spd}</b></span></div></div>`).join('');box.classList.remove('hidden');const close=()=>{box.classList.add('hidden');$('levelUpContinue').onclick=null;onClose()};$('levelUpContinue').onclick=close}

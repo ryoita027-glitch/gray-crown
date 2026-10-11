@@ -537,6 +537,9 @@ body:has(.battle-panel:not(.hidden)) .party-battle-line{left:5%;bottom:38px}
 .battle-target-picker button.selected,.battle-target-picker button[aria-pressed="true"]{border-color:#e7c47e;background:#403829;color:#fff1d1;box-shadow:inset 0 0 0 1px #bb9b65}
 .battle-target-picker button:focus-visible{outline:3px solid #efd28b;outline-offset:2px}
 .card.enemy.targeted{border-color:#dabb7b!important;box-shadow:inset 3px 0 #e1c17d}
+.battle-forecast{margin:8px 0 6px;padding:9px 12px;border-left:3px solid #dcac6a;background:#363027;color:#ffe7c4;font-size:.83rem;line-height:1.55;border-radius:4px;font-weight:600}
+.battle-forecast.hidden{display:none!important}
+@media(max-width:520px){.battle-forecast{font-size:.77rem;padding:8px 10px}}
 .battle-command-help{margin:5px 0 9px;color:#d0d5d9;font-size:.79rem;line-height:1.5;min-height:18px}
 @media(max-width:520px){.battle-target-picker{gap:4px}.battle-target-picker button{flex:1 1 46%;min-height:44px;font-size:.75rem;padding:6px}.battle-command-help{font-size:.73rem}}
 
