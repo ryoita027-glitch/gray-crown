@@ -88,6 +88,25 @@ test('every resident of Ryune and the initial capital has an individual pixel sp
  const signatures=new Set(Object.values(art.designs).map(x=>x.join('|')));
  assert.equal(signatures.size,Object.keys(art.designs).length);
 });
+test('all named NPCs differ by source-drawn shape, not only by swapping palette',()=>{
+ const {module:art}=pixelAssets(),frameSignatures=new Map();
+ for(const id of Object.keys(art.designs)){
+  art.drawNpc({save(){},restore(){},drawImage(){}},{id,x:0,y:0},'down',0);
+  const atlas=art.getNpcAtlas(id);
+  const geometry=atlas.operations.filter(o=>o[0]==='rect').map(o=>o.slice(2).join(',')).join('|');
+  assert.ok(geometry.length>50,id+' did not draw geometry');
+  if(frameSignatures.has(geometry))throw Error(id+' still shares an identical silhouette with '+frameSignatures.get(geometry));
+  frameSignatures.set(geometry,id);
+ }
+ assert.equal(frameSignatures.size,35);
+});
+test('standing workers do not shift their feet; idle civilians do not march in place',()=>{
+ const source=read('js/render/opening_pixel_assets.js');
+ assert.match(source,/working\?\[0,0\]/);
+ assert.match(source,/frame=near&&working\?Math\.floor\(now\/460\)%4:0/);
+ const worldLife=read('js/render/opening_worldlife.js');
+ assert.match(worldLife,/!OpeningPixelAssets\.designs\[n\.id\]\)clothes/);
+});
 test('each house has its own cached tile image; no rendered PNG is shifted to imply animation',()=>{
  const {module:art,sheets}=pixelAssets(),display={save(){},restore(){},drawImage(){}};
  for(const kind of ['village','orphanage','mayorhouse','cottage']){
