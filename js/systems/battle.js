@@ -13,8 +13,8 @@ function damageFormula(atk,def,bonus=0,variance=RPG_RULES.damage.variance){retur
 function battleAction(type){if(state.locked||!state.battle)return;const b=state.battle,a=currentActor(),e=livingEnemies()[0];if(!e)return;const actorIndex=b.actor;let d=0,moraleLoss=0,visual='physical',acted=true;
  if(type==='attack'){d=damageFormula(a.atk+(a.buff||0),e.def);if(GC.Dev?.settings?.instantVictory)d=e.hp;e.hp=Math.max(0,e.hp-d);moraleLoss=applyMoraleDamage(e,d*.42);battleLog(`${a.name}の剣撃！ ${e.name}に${d}ダメージ。`)}
  else if(type==='staffSophie'||type==='staffMargaret'){d=damageFormula(a.atk,e.def,SKILLS[type].power);e.hp=Math.max(0,e.hp-d);moraleLoss=applyMoraleDamage(e,d*.35);battleLog(`${a.name}の杖撃！ ${e.name}に${d}ダメージ。`)}
- else if(type==='guard'){a.guard=true;visual='heal';battleLog(`${a.name}は仲間を庇う構えを取った。`)}
- else if(type==='rally'){state.party.forEach(p=>p.buff=(p.buff||0)+SKILLS.rally.value);visual='heal';battleLog(`${a.name}の号令！ 全員の攻撃力が一時的に上がる。`)}
+ else if(type==='guard'){a.guard=true;visual='heal';battleLog(`${a.name}は身を固めた。次に受ける攻撃を軽減する。`)}
+ else if(type==='rally'){state.party.forEach(p=>p.buff=Math.min(4,(p.buff||0)+SKILLS.rally.value));visual='heal';battleLog(`${a.name}の号令！ 全員の攻撃力が一時的に上がる。`)}
  else if(type==='heavy'){d=damageFormula(a.atk+(a.buff||0),e.def,SKILLS.heavy.power);e.hp=Math.max(0,e.hp-d);moraleLoss=applyMoraleDamage(e,d*.55);battleLog(`${a.name}の強撃！ ${e.name}に${d}ダメージ。`)}
  else if(type==='break'){d=damageFormula(a.atk,e.def,SKILLS.break.power);e.hp=Math.max(0,e.hp-d);e.def=Math.max(1,e.def-SKILLS.break.defDown);moraleLoss=applyMoraleDamage(e,10+d*.45);battleLog(`${a.name}が防御を崩した。${d}ダメージ、防御低下。`)}
  else if(type==='fire'||type==='ice'){const sk=SKILLS[type];if(a.mp<sk.mp){battleLog('MPが足りない。');return}a.mp-=sk.mp;d=sk.power+Math.floor(Math.random()*(sk.variance+1));e.hp=Math.max(0,e.hp-d);if(type==='ice')e.atk=Math.max(4,e.atk-SKILLS.ice.atkDown);moraleLoss=applyMoraleDamage(e,d*.3);visual='magic';battleLog(`${a.name}の${type==='fire'?'火球':'氷槍'}！ ${e.name}に${d}ダメージ。`)}

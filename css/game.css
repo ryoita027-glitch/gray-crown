@@ -517,6 +517,16 @@ body:has(.battle-panel:not(.hidden)) .party-battle-line{left:5%;bottom:38px}
  .battle-hero{filter:none}
 }
 
+.commercial-field-note{margin-top:10px;padding:8px 10px;border-left:2px solid #bca978;background:rgba(16,23,29,.35);color:#b9c3c5;font-size:.74rem;line-height:1.55}
+.party-row[data-hero="karen"]{border-left:3px solid #c47870;padding-left:8px}
+.party-row[data-hero="triton"]{border-left:3px solid #819ca8;padding-left:8px}
+.party-row[data-hero="sophie"]{border-left:3px solid #acbca0;padding-left:8px}
+.party-row[data-hero="margaret"]{border-left:3px solid #b6a0cc;padding-left:8px}
+#commercialBattleAdvice{font-size:.78rem;line-height:1.5;background:#1c2830;color:#e5dfcf;border:1px solid rgba(209,181,128,.36);border-radius:5px;padding:8px 10px;margin:9px 0;min-height:2.5em}
+#battleActions button{min-height:40px;transition:background-color .13s,border-color .13s}
+#battleActions button:not([disabled]):hover{border-color:#e2c78c;background:#3b4348}
+#battleActions button:disabled{opacity:.5;cursor:not-allowed}
+@media(max-width:520px){#commercialBattleAdvice{font-size:.71rem;padding:7px 8px}.commercial-field-note{font-size:.7rem}}
 /* Phase 4 optional boss-stage hierarchy, scoped to its existing battle UI. */
 .battle-stage[data-boss="true"] .enemy-art.horned-beast{transform:scale(1.18);transform-origin:50% 90%;filter:drop-shadow(0 9px 0 rgba(20,22,26,.65))}
 .battle-stage[data-boss="true"] .enemy-stage-ui{border-color:rgba(208,164,105,.6)}
