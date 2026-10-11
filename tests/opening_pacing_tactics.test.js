@@ -44,6 +44,17 @@ test('first wolf tell permits Karen to protect Sophie; ordinary wolf victory is 
  assert.ok(h.evaluate("state.party.find(p=>p.id==='karen').hp")<karen);
  assert.equal(h.evaluate('grayCrownMorality().lethal'),0);
 });
+test('cave crawler is a different tactical lesson: break hard shell or soften damage',()=>{
+ const h=createHarness();
+ h.evaluate("startBattle('crawler');state.locked=false");
+ const plan=h.evaluate('checkpointEnemyIntent(state.battle)');
+ assert.equal(plan.target.id,'triton');
+ assert.match(plan.note,/崩し/);
+ assert.match(plan.note,/氷槍/);
+ assert.match(h.getElement('battleForecast').textContent,/トリトン/);
+ h.evaluate('state.battle.turn=2;renderBattle()');
+ assert.equal(h.evaluate('checkpointEnemyIntent(state.battle)'),null);
+});
 test('the cave has one very short optional supply discovery without infinite farming',()=>{
  const h=createHarness();
  const original=h.evaluate("state.inventory['携帯食']||0");
