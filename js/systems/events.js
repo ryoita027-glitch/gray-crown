@@ -33,7 +33,40 @@ function applyEventEffect(effect,context={}){
 }
 function applyEventEffects(def,context={}){for(const effect of def?.effects||[])applyEventEffect(effect,context);if(def?.id)GC.Log?.info('Story Event Effects',{id:def.id,stage:state.story.stage,context});GC.Dev?.noteEvent?.(def?.id||null);GC.Dev?.refresh?.();return def}
 function playEventDialogue(def,after=null){if(!def){after?.();return false}const finish=()=>{if(def.postLines?.length)saySequence(def.postLines,after);else after?.()};if(def.lines?.length)saySequence(def.lines,finish);else finish();return true}
-function runTriggeredEvent(type,target,context={}){const def=findTriggeredEvent(type,target,context);if(!def)return false;if(def.id==='alpha.village.appointment'&&GC.RyuneActing?.runAppointment)return GC.RyuneActing.runAppointment(def,context);if(def.id==='alpha.capital.ceremony'&&typeof CapitalActing!=='undefined')return CapitalActing.runCeremony(def,context);GC.Log?.info('Story Event Start',{id:def.id,type,target,map:context.map??state.map});GC.Dev?.noteEvent?.(def.id);playEventDialogue(def,()=>{applyEventEffects(def,context);if(def.postLines?.length===0&&typeof canvas!=='undefined')canvas.focus()});return true}
+function finishSeradGravesChoice(choice){
+ const lines={
+  care:[{speaker:'ナレーション',text:'四人は崩れた土を直し、どの墓にも同じ大きさの小石を置いた。'},
+        {speaker:'ソフィ',text:'「誰かが覚えていたと、伝わればいいのですが」'},
+        {speaker:'マーガレット',text:'「少なくとも私たちは、忘れない」'}],
+  record:[{speaker:'マーガレット',text:'「色、位置、杭の数を書きます。名前が分かれば、後から結びつけられるかもしれない」'},
+          {speaker:'カレン',text:'「うん。ちゃんと持って帰ろう」'}],
+  leave:[{speaker:'トリトン',text:'「立ち止まり続けたら、今生きてる人を守れない。……それも本当だ」'},
+         {speaker:'ソフィ',text:'「それでも、ここがあったことは覚えておきます」'}]
+ };
+ completeEvent('optional.serad.graves');
+ addJournal('セラド前線の仮埋葬地点で、四人は'+({care:'墓を整えた。',record:'記録を残した。',leave:'今は進むことを選んだ。'}[choice]||'立ち止まった。'));
+ sfx('discovery');renderHud();saySequence(lines[choice]||lines.leave);
+}
+function runTriggeredEvent(type,target,context={}){
+ // Optional interactive memory at the existing Serad battlefield grave marker.
+ // Reuses this map object; no new entity, gate, reward or canon outcome.
+ if(type==='object'&&target==='fieldGraves'&&(context.map??state.map)==='frontierfield'){
+  const done=isEventComplete('optional.serad.graves');
+  if(done){say('仮埋葬地点','名前のない墓には、国の色すら付いていない。四人が置いた小石だけが残っている。');return true}
+  saySequence([
+   {speaker:'ナレーション',text:'戦場の端に、赤と青の布が混じる浅い墓が並ぶ。色のない杭も少なくない。'},
+   {speaker:'ソフィ',text:'「名前も分からない人を、このままにしていいんでしょうか」'},
+   {speaker:'トリトン',text:'「敵か味方かも分からない。今ここで、何ができる？」'}
+  ],()=>{
+   say('カレン','「少しだけでも、ここでできることを決めよう」',[
+    {label:'四人で墓のまわりを整える',fn:()=>finishSeradGravesChoice('care')},
+    {label:'記録を手帳に残す',fn:()=>finishSeradGravesChoice('record')},
+    {label:'今は何もせず進む',fn:()=>finishSeradGravesChoice('leave')}
+   ])
+  });
+  return true
+ }
+ const def=findTriggeredEvent(type,target,context);if(!def)return false;if(def.id==='alpha.village.appointment'&&GC.RyuneActing?.runAppointment)return GC.RyuneActing.runAppointment(def,context);if(def.id==='alpha.capital.ceremony'&&typeof CapitalActing!=='undefined')return CapitalActing.runCeremony(def,context);GC.Log?.info('Story Event Start',{id:def.id,type,target,map:context.map??state.map});GC.Dev?.noteEvent?.(def.id);playEventDialogue(def,()=>{applyEventEffects(def,context);if(def.postLines?.length===0&&typeof canvas!=='undefined')canvas.focus()});return true}
 function inlineNpcEvent(id){
  if(state.map==='village'){
   if(id==='father'){setStructuredCondition('father',true);addJournal('トリトンの父は「勝つより帰ってこい」と教えてきた。');return say('トリトンの父','「剣を持つなら、勝つことより帰ってくることを覚えろ。トリトンにも昔からそう教えてきた。……カレン、お前もだぞ」')}
