@@ -247,7 +247,6 @@ function earlyCaveBannerVisit(){
   {speaker:'ナレーション',text:'古い王国旗が、折れた支柱から垂れている。裏地に小さく縫い付けられたのは勝利の標語ではなく、兵たちの名前だった。'},
   {speaker:'マーガレット',text:'「今の戦争より前のものね。名前を写せば、後で誰がここにいたか調べられる」'},
   {speaker:'カレン',text:'「でも、このままじゃ崩れてしまう。誰かが帰れる場所だったって、残したい」'},
-  {speaker:'トリトン',text:'「どっちもできたらいいけど、獣が戻る前に一つ決めよう」'}
  ],()=>say('カレン','「この旗をどうしよう？」',[
   {label:'マーガレットと名前を写し取る',fn:()=>finishEarlyCaveBanner('names')},
   {label:'破れた旗を結び直して残す',fn:()=>finishEarlyCaveBanner('raise')},
@@ -284,7 +283,6 @@ function earlyOrphanVisit(){
  return saySequence([
   {speaker:'孤児院の子',text:'「ソフィお姉ちゃん。テオが熱を出したの。薬草はもうないって」'},
   {speaker:'ソフィ',text:'「……旅のために薬草を持ってきています。でも、私たちもこれから怪我をするかもしれない」'},
-  {speaker:'マーガレット',text:'「どちらを選んでも、後で困るかもしれない。だから決める理由を覚えておこう」'},
   {speaker:'カレン',text:'「ソフィがどうしたいか、聞かせて」'}
  ],()=>say('ソフィ','「今ある薬草をどうしましょう？」',[
   ...((state.inventory['薬草']||0)>0?[{label:'薬草を1個、孤児院へ渡す',fn:()=>finishEarlyOrphanMedicine('donate')}]:[]),
@@ -320,7 +318,6 @@ function earlyMerchantVisit(){
  return saySequence([
   {speaker:'行商人',text:'「やれやれ、荷車の軸が曲がった。食料を王都へ届けるはずが、このままじゃ狼の餌だ」'},
   {speaker:'トリトン',text:'「固定具ならその場で直せる。少し時間はかかるけどな」'},
-  {speaker:'マーガレット',text:'「獣が出る道に無理やり荷を進めるべきかは、別の話ね」'},
   {speaker:'行商人',text:'「東の古砦跡に抜け道があるとも聞くが、獣の声がする。どれも楽な道じゃない」'}
  ],()=>say('カレン','「この荷車、どうする？」',[
   {label:'トリトンと荷車を直し、王都への輸送を助ける',fn:()=>finishEarlyMerchantChoice('repair')},
