@@ -183,6 +183,11 @@ const OpeningWorldLife=(()=>{
   if(typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches)return false;
   return Array.isArray(npcs)&&npcs.some(n=>living.has(n.id)&&Math.abs(n.x-playerX)+Math.abs(n.y-playerY)<=5)
  }
- const api={enabled:true,maps,ground,villager,living,shouldBreathe};
+ // These stalls were already represented as solid-looking art in the old capital.
+ // Preserve map symbols but align physical movement with that presentation.
+ function blocks(map,x,y){
+  return map==='capital'&&((x===3&&y===7)||(x===7&&y===7)||(x===17&&y===8))
+ }
+ const api={enabled:true,maps,ground,villager,living,shouldBreathe,blocks};
  return api
 })();
