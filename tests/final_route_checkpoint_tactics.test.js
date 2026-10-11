@@ -20,7 +20,7 @@ test('each route and ethical stance resolves to its exclusive playable encounter
   h.evaluate("startBattle('"+id+"');state.locked=false");
   assert.equal(h.evaluate('state.battle.id'),id);
   assert.equal(h.evaluate('checkpointEnemyIntent(state.battle).target.id'),target);
-  assert.match(h.getElement('battleHelp').textContent,new RegExp(target==='sophie'?'ソフィ':target==='triton'?'トリトン':'カレン'));
+  assert.match(h.getElement('battleForecast').textContent,new RegExp(target==='sophie'?'ソフィ':target==='triton'?'トリトン':'カレン'));
   h.evaluate('state.battle=null;state.battleReturn=null');
  }
  assert.equal(h.evaluate("finalConfrontationBattleId('empire','orders')"),null);
@@ -34,7 +34,8 @@ test('forecast attack strikes the announced ally when not guarded',()=>{
  h.evaluate('enemyTurn()');
  const after=h.evaluate('state.party.find(p=>p.id===\'sophie\').hp');
  assert.ok(after<before);
- assert.equal(h.getElement('battleHelp').textContent.includes('ソフィ'),true);
+ assert.equal(h.getElement('battleForecast').textContent.includes('ソフィ'),true);
+ assert.equal(h.getElement('battleForecast').classList.contains('hidden'),false);
 });
 
 test('Karen can intercept the exact forecast attack to protect Sophie',()=>{
