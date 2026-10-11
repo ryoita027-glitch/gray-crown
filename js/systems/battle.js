@@ -28,7 +28,7 @@ function applyGuardOpening(b,e,damage){
 function battleAction(type){if(state.locked||!state.battle)return;const b=state.battle,a=currentActor(),e=GC.CommercialTactics?.target?.(b)||livingEnemies()[0];if(!e)return;if(!GC.CommercialTactics.actionAvailable(type,a))return;const actorIndex=b.actor;let d=0,moraleLoss=0,visual='physical',acted=true;
  if(type==='attack'){d=damageFormula(a.atk+(a.buff||0),e.def);if(GC.Dev?.settings?.instantVictory)d=e.hp;e.hp=Math.max(0,e.hp-d);moraleLoss=applyMoraleDamage(e,d*.42);battleLog(`${a.name}の剣撃！ ${e.name}に${d}ダメージ。`)}
  else if(type==='staffSophie'||type==='staffMargaret'){d=damageFormula(a.atk,e.def,SKILLS[type].power);e.hp=Math.max(0,e.hp-d);moraleLoss=applyMoraleDamage(e,d*.35);battleLog(`${a.name}の杖撃！ ${e.name}に${d}ダメージ。`)}
- else if(type==='guard'){a.guard=true;visual='heal';battleLog(`${a.name}は仲間を庇う構えを取った。`);sfx('guard')}
+ else if(type==='guard'){a.guard=true;visual='heal';battleLog(activeRouteParty().length===1?`${a.name}は防御の構えを取った。`:`${a.name}は仲間を庇う構えを取った。`);sfx('guard')}
  else if(type==='rally'){activeRouteParty().forEach(p=>p.buff=(p.buff||0)+SKILLS.rally.value);visual='heal';battleLog(`${a.name}の号令！ 全員の攻撃力が一時的に上がる。`);battleLog('カレン「全員、顔を上げて！　私たちなら進める！」');sfx('rally')}
  else if(type==='heavy'){d=damageFormula(a.atk+(a.buff||0),e.def,SKILLS.heavy.power);e.hp=Math.max(0,e.hp-d);moraleLoss=applyMoraleDamage(e,d*.55);battleLog(`${a.name}の強撃！ ${e.name}に${d}ダメージ。`)}
  else if(type==='break'){d=damageFormula(a.atk,e.def,SKILLS.break.power);e.hp=Math.max(0,e.hp-d);e.def=Math.max(1,e.def-SKILLS.break.defDown);moraleLoss=applyMoraleDamage(e,10+d*.45);battleLog(`${a.name}が防御を崩した。${d}ダメージ、防御低下。`);battleLog('トリトン「今だ、隙ができた！」')}
