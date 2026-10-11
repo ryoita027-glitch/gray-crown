@@ -30,7 +30,7 @@
   if(enemy.phase===2&&enemy.hp<enemy.maxHp*.3)
    return'　注意：次の敵行動から最終段階へ移ります。';
   if(enemy.phase===2||enemy.phase===3)
-   return'　現在、強化された攻勢を受けています。';
+   return'　強化された攻勢に警戒。カレンの庇う・ソフィの回復・マーガレットの氷槍で対応できます。';
   return''
  }
  function hint(actor,b){

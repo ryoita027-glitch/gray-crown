@@ -44,6 +44,9 @@ function finishSeradGravesChoice(choice){
          {speaker:'ソフィ',text:'「それでも、ここがあったことは覚えておきます」'}]
  };
  completeEvent('optional.serad.graves');
+ setWorldSwitch('optionalSeradGravesCare',choice==='care');
+ setWorldSwitch('optionalSeradGravesRecord',choice==='record');
+ setWorldSwitch('optionalSeradGravesLeave',choice==='leave');
  addJournal('セラド前線の仮埋葬地点で、四人は'+({care:'墓を整えた。',record:'記録を残した。',leave:'今は進むことを選んだ。'}[choice]||'立ち止まった。'));
  sfx('discovery');renderHud();saySequence(lines[choice]||lines.leave);
 }
@@ -52,7 +55,12 @@ function runTriggeredEvent(type,target,context={}){
  // Reuses this map object; no new entity, gate, reward or canon outcome.
  if(type==='object'&&target==='fieldGraves'&&(context.map??state.map)==='frontierfield'){
   const done=isEventComplete('optional.serad.graves');
-  if(done){say('仮埋葬地点','名前のない墓には、国の色すら付いていない。四人が置いた小石だけが残っている。');return true}
+  if(done){
+   const memory=getWorldSwitch('optionalSeradGravesCare')?'あの日整えた土の上に、小石が残っている。':
+    getWorldSwitch('optionalSeradGravesRecord')?'マーガレットの手帳には、杭の位置と布の色が記されている。':
+    '四人が通り過ぎた墓は、あの日と同じ場所に残っている。';
+   say('仮埋葬地点',memory);return true
+  }
   saySequence([
    {speaker:'ナレーション',text:'戦場の端に、赤と青の布が混じる浅い墓が並ぶ。色のない杭も少なくない。'},
    {speaker:'ソフィ',text:'「名前も分からない人を、このままにしていいんでしょうか」'},
