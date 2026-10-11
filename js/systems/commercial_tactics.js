@@ -15,6 +15,20 @@
  function index(b){target(b);return selected}
  function options(b){target(b);return b?b.enemies.map((e,i)=>({index:i,name:e.name,hp:e.hp,maxHp:e.maxHp,alive:e.hp>0,selected:i===selected})):[]}
  function protect(party,original){return party.find(p=>p.hp>0&&p.guard===true)||original}
+ // Suppress ineffective commands; showing a disabled button is less frustrating
+ // than spending a resource or a full turn for zero benefit.
+ function actionAvailable(id,actor,party=activeRouteParty(),inventory=state.inventory){
+  if(!actor||actor.hp<=0)return false;
+  const alive=party.filter(p=>p.hp>0);
+  if((SKILLS[id]?.mp||0)>actor.mp)return false;
+  const needsHp=alive.some(p=>p.hp<p.maxHp);
+  const needsMp=alive.some(p=>p.mp<p.maxMp);
+  if(id==='heal'||id==='prayer')return needsHp;
+  if(id==='item')return (inventory['薬草']||0)>0&&needsHp;
+  if(id==='manaItem')return (inventory['魔力草']||0)>0&&needsMp;
+  if(id==='foodItem')return (inventory['携帯食']||0)>0&&(actor.hp<actor.maxHp||actor.mp<actor.maxMp);
+  return true
+ }
  const hints=Object.freeze({
   karen:'庇う：次の敵ターン、仲間への攻撃を引き受けて軽減。号令：全員の攻撃補助。',
   triton:'強撃：高威力。崩し：敵の防御と士気を削る。',
@@ -41,5 +55,5 @@
     (b?.enemies.filter(e=>e.hp>0).length>1?'　敵を選んでから行動できます。':'')+coordination+bossForecast(b)
  }
  function targetForHint(b){return b?target(b):null}
- GC.CommercialTactics={target,choose,index,options,protect,hint,bossForecast,reset(){current=null;selected=-1}};
+ GC.CommercialTactics={target,choose,index,options,protect,hint,bossForecast,actionAvailable,reset(){current=null;selected=-1}};
 })();
