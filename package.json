@@ -30,6 +30,7 @@
     "opening-art-acceptance": "node tests/check-syntax.js && npm test && npm run opening-art-browser-test",
     "battle-sprite-browser-test": "python tests/browser_battle_visible_motion_art_e2e.py",
     "visual-playability-acceptance": "node tests/check-syntax.js && npm test && npm run battle-sprite-browser-test",
-    "build:play": "python tools/build_player_release.py"
+    "build:play": "python tools/build_player_release.py",
+    "build:single": "python tools/build_standalone_html.py"
   }
 }
