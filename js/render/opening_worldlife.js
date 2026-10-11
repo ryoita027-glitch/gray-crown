@@ -174,6 +174,11 @@ const OpeningWorldLife=(()=>{
   }
   return true
  }
- const api={enabled:true,maps,ground,villager,living};
+ function shouldBreathe(map,playerX,playerY,npcs){
+  if(!api.enabled||!maps.has(map))return false;
+  if(typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches)return false;
+  return Array.isArray(npcs)&&npcs.some(n=>living.has(n.id)&&Math.abs(n.x-playerX)+Math.abs(n.y-playerY)<=5)
+ }
+ const api={enabled:true,maps,ground,villager,living,shouldBreathe};
  return api
 })();
