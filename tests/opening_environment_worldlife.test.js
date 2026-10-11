@@ -75,13 +75,17 @@ test('merchant cart changes presentation after the player helps, without changin
  assert.equal(new Set(signatures).size,3);
 });
 
-test('four named residences use different architecture, not just different wall paint',()=>{
- const ryune=new Function(get('js/render/ryune_environment.js')+';return houseIdentity')();
+test('four named residences receive independently authored architectural details',()=>{
+ const source=get('js/render/ryune_environment.js');
+ assert.match(source,/houseIdentity\(c,kind,x,y\)/);
  const signatures=new Set();
- for(const kind of ['village','orphanage','mayorhouse','cottage']){
+ for(const [kind,x,y] of [
+  ['village',3,2],['orphanage',18,2],['mayorhouse',3,9],['cottage',18,9]
+ ]){
+  const ryune=new Function('villageHouses',source+';return RyuneEnvironment')([{x,y}]);
   const canvas=fakeCanvas();
-  ryune(canvas,kind,96,64);
-  assert.ok(canvas.shapes.length>8,kind);
+  ryune.drawVillage(canvas);
+  assert.ok(canvas.shapes.length>20,kind);
   signatures.add(canvas.shapes.map(t=>t.join(',')).join('|'));
  }
  assert.equal(signatures.size,4);
