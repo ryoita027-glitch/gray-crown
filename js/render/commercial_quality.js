@@ -71,7 +71,7 @@ const CommercialQuality=(()=>{
    const el=p.children[i],role=roles[hero.id];if(!el||!role)continue;
    el.dataset.hero=hero.id;
    const label=el.querySelector('.party-head strong');
-   if(label){label.title=role.role+' — '+role.verb}
+   if(label){label.title=role.role+' — '+role.verb}let tagline=el.querySelector('[data-hero-identity]');if(!tagline){tagline=document.createElement('div');tagline.dataset.heroIdentity=hero.id;tagline.className='commercial-hero-identity';el.appendChild(tagline)}tagline.textContent=role.role+' · '+role.verb
   }
  }
 
