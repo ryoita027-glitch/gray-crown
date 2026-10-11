@@ -10,8 +10,8 @@ function encounterSafeZone(map=state.map,x=state.x,y=state.y){
 function rollEncounterThreshold(map=state.map){const [min,max]=encounterRange(map);return min+Math.floor(Math.random()*(max-min+1))}
 function resetEncounterCounter(map=state.map){state.encounterSteps=0;state.nextEncounterAt=rollEncounterThreshold(map)}
 function setMap(map,x,y,dir,trail){const from=state.map;state.map=map;state.x=x;state.y=y;state.dir=dir;state.trail=trail;markVisited(map,true);resetEncounterCounter(map);if(!state.battle)setMusic(mapMusicTheme(map));GC.Log?.info('Map Transition',{from,to:map,x,y,dir});renderHud();draw();GC.Dev?.refresh?.()}
-function enterInterior(mapId,doorX,doorY){state.interiorReturn={map:state.map,x:doorX,y:Math.min(ROWS-2,doorY+1),dir:'up'};setMap(mapId,11,11,'up',[[12,11],[13,11],[14,11]]);if(mapId==='capitalinn'&&isEventComplete('alpha.capital.ceremony')&&!isEventComplete('alpha.capital.whiteStagNight'))advanceStory(STORY_STAGES.WHITE_STAG,null,'白鹿亭で四人の夜を過ごす');say('ナレーション',`${maps[mapId].name}に入った。`)}
-function leaveInterior(){const r=state.interiorReturn||{map:'village',x:12,y:12,dir:'up'};state.interiorReturn=null;setMap(r.map,r.x,r.y,r.dir,[[r.x+1,r.y],[r.x+2,r.y],[r.x+3,r.y]]);say('ナレーション','外へ出た。')}
+function enterInterior(mapId,doorX,doorY){const firstVisit=!state.world.visited?.[mapId];state.interiorReturn={map:state.map,x:doorX,y:Math.min(ROWS-2,doorY+1),dir:'up'};setMap(mapId,11,11,'up',[[12,11],[13,11],[14,11]]);if(mapId==='capitalinn'&&isEventComplete('alpha.capital.ceremony')&&!isEventComplete('alpha.capital.whiteStagNight'))advanceStory(STORY_STAGES.WHITE_STAG,null,'白鹿亭で四人の夜を過ごす');if(firstVisit)say('ナレーション',`${maps[mapId].name}に入った。`)}
+function leaveInterior(){const r=state.interiorReturn||{map:'village',x:12,y:12,dir:'up'};state.interiorReturn=null;setMap(r.map,r.x,r.y,r.dir,[[r.x+1,r.y],[r.x+2,r.y],[r.x+3,r.y]])}
 function leaveVillage(){
  advanceStory(STORY_STAGES.ROAD,null,'街道を北へ進み、道を塞ぐ灰牙狼を越える');
  useMapTransition('villageToRoad');renderHud();
@@ -37,8 +37,8 @@ function returnVillage(){
   ?'北門をくぐってリュネ村へ戻った。孤児院の窓に明かりが見える。薬草を残した日の判断について、ソフィは今も考えている。'
   :'北門をくぐり、リュネ村へ戻った。村の人々は旅立つ前と同じように、それぞれの生活を続けている。')
 }
-function enterCave(){useMapTransition('roadToCave');state.objective=isDefeated('boss')?'古砦跡の北出口を目指す':'古砦跡を探索し、北側の抜け道を探す';state.chapter='第一章 — 古砦跡';renderHud();say('マーガレット','「地図ではこの先に旧街道があるはず。……戦争で使われなくなってから、獣の巣になってるみたいね」')}
-function leaveCave(){useMapTransition('caveToRoad');state.objective='街道を進む／必要なら村へ戻る';renderHud();say('ナレーション','古砦跡の入口へ戻った。ここから南へ行けばリュネ村にも戻れる。')}
+function enterCave(){const firstVisit=!state.world.visited?.cave;useMapTransition('roadToCave');state.objective=isDefeated('boss')?'古砦跡の北出口を目指す':'古砦跡を探索し、北側の抜け道を探す';state.chapter='第一章 — 古砦跡';renderHud();if(firstVisit)say('マーガレット','「地図ではこの先に旧街道があるはず。……戦争で使われなくなってから、獣の巣になってるみたいね」')}
+function leaveCave(){useMapTransition('caveToRoad');state.objective='街道を進む／必要なら村へ戻る';renderHud()}
 function enterNorthRoad(source='cave'){markVisited('northroad',true);setWorldSwitch('northRoadFromRoad',source==='road');if(source==='road')useMapTransition('roadToNorthRoad');else setMap('northroad',11,13,'up',[[12,13],[13,13],[14,13]]);state.chapter='第一章 — 白い旗';if(source==='road')advanceStory(STORY_STAGES.CAPITAL_APPROACH,null,'高台の道を北へ進み、王都へ入る');else{state.objective='王国軍の斥候に話を聞く';renderHud()}say('ナレーション',source==='road'?'森の街道を抜けると、王都へ続く高台の道へ出た。|遠くに白い城壁が見える。':'古砦跡を抜けると、王都へ続く旧街道に出た。遠くに王国軍の旗が見える。')}
 function returnCaveNorth(){if(getWorldSwitch('northRoadFromRoad')){useMapTransition('northRoadToRoad');state.objective='街道を探索する／北へ進む';renderHud();say('ナレーション','王都手前の高台から街道へ戻った。');return}setMap('cave',11,1,'down',[[12,1],[13,1],[14,1]]);state.objective='古砦跡を自由に探索できる';renderHud();say('ナレーション','古砦跡の北側へ戻った。')}
 
