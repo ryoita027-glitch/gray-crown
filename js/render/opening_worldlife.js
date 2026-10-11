@@ -17,13 +17,25 @@ const OpeningWorldLife=(()=>{
  function wheel(c,x,y){
   R(c,'#47382d',x-6,y-6,13,13);R(c,'#a0875c',x-4,y-4,9,9);R(c,'#5c4635',x-2,y-2,5,5);R(c,'#dec391',x,y,2,2)
  }
- function cart(c,x,y){
+ function cart(c,x,y,condition='broken'){
   // Side view, stationed off the intended central road route.
   R(c,'#363b34',x+2,y+32,74,5);
   R(c,'#6c533d',x+10,y+11,56,25);R(c,'#ab8659',x+10,y+12,56,17);
   for(let k=0;k<5;k++)R(c,k%2?'#896845':'#bd9a6b',x+13,y+16+k*3,51,2);
   R(c,'#674c35',x+14,y+4,17,11);R(c,'#9d7f59',x+16,y+6,13,5);
   R(c,'#6a5d45',x+35,y+3,20,12);R(c,'#bbb08d',x+37,y+4,16,6);
+  if(condition==='repair'){
+   R(c,'#c1a276',x+12,y+12,51,3);
+   R(c,'#5f694b',x+33,y+2,3,26);
+   R(c,'#c8b68e',x+29,y+7,12,3);
+  }else if(condition==='return'){
+   R(c,'#80745c',x+3,y+12,12,11);
+   R(c,'#cdb78b',x+5,y+10,8,4);
+  }else{
+   // The visibly loose wooden brace is repaired or packed after the choice.
+   R(c,'#4e4134',x+64,y+18,10,3);
+   R(c,'#b5a075',x+66,y+13,3,8)
+  }
   R(c,'#614936',x+8,y+10,4,23);R(c,'#614936',x+65,y+9,4,26);
   wheel(c,x+22,y+35);wheel(c,x+55,y+35);
  }
@@ -62,7 +74,7 @@ const OpeningWorldLife=(()=>{
    R(c,'#b9ad8c',x*32+17,y*32+22,6,2)
   }
  }
- function road(c){
+ function road(c,choices={}){
   // Wheel ruts, erosion and roadside drainage give a true used-trade-route read.
   for(const [x,y] of [[11,13],[11,11],[11,9],[10,8],[11,6],[12,4],[12,3]]){
    const [px,py]=at(x,y);
@@ -72,7 +84,7 @@ const OpeningWorldLife=(()=>{
    }
    R(c,'#c4b28c',px+12,py+23,8,1)
   }
-  c.save();c.translate(5*32+4,7*32+3);c.scale(.72,.72);cart(c,0,0);c.restore();
+  c.save();c.translate(5*32+4,7*32+3);c.scale(.72,.72);cart(c,0,0,choices['early.merchantCart']);c.restore();
   // Lumber and tied parcels near the road's original merchant position.
   const [x,y]=at(8,8);
   R(c,'#584d3b',x+17,y+18,12,9);
@@ -119,9 +131,9 @@ const OpeningWorldLife=(()=>{
   // Municipal announcement board ties into the existing propaganda object.
   // Use the existing victoryPoster object: no impassable-looking false board.
  }
- function ground(c,map){if(!api.enabled)return false;
+ function ground(c,map,choices={}){if(!api.enabled)return false;
   if(map==='village')village(c);
-  else if(map==='road')road(c);
+  else if(map==='road')road(c,choices);
   else if(map==='capital')capital(c);
   else return false;
   return true
