@@ -207,16 +207,878 @@ const gc_asset_path=(value)=>String(value).replace(/(?:\.\.\/)?assets\/[\w\-/.]+
   </aside>
 
   <!-- v19 architecture: classic scripts keep file:// launch working while responsibilities stay separated. -->
-  <script src="js/core/dom.js"></script>
-  <script src="js/core/log.js"></script>
-  <script src="js/systems/story.js"></script>
-  <script src="js/data/items.js"></script>
-  <script src="js/core/state.js"></script>
-  <script src="js/data/maps.js"></script>
-  <script src="js/data/npcs.js"></script>
-  <script src="js/data/animations.js"></script>
-  <script src="js/systems/animation.js"></script>
-  <script src="js/systems/audio.js"></script>
+  <script>
+'use strict';
+window.GC=window.GC||{};
+const $=id=>document.getElementById(id);
+const canvas=$('game'),ctx=canvas.getContext('2d');
+const TILE=32,COLS=24,ROWS=15;
+GC.DOM={$,canvas,ctx,TILE,COLS,ROWS};
+
+</script>
+  <script>
+'use strict';
+const LOG_LIMIT=300;
+const LOG_ENTRIES=[];
+function gcLog(type,message,data=null){
+ const entry={time:new Date().toISOString(),type:String(type||'info'),message:String(message||''),data:data??null};
+ LOG_ENTRIES.push(entry);if(LOG_ENTRIES.length>LOG_LIMIT)LOG_ENTRIES.splice(0,LOG_ENTRIES.length-LOG_LIMIT);
+ if(entry.type==='error'&&typeof console!=='undefined'&&console.error)console.error('[GrayCrown]',entry.message,entry.data??'');
+ else if(entry.type==='warn'&&typeof console!=='undefined'&&console.warn)console.warn('[GrayCrown]',entry.message,entry.data??'');
+ return entry
+}
+function getLogs(type=null){return type?LOG_ENTRIES.filter(e=>e.type===type):LOG_ENTRIES.slice()}
+function clearLogs(){LOG_ENTRIES.length=0}
+if(typeof window!=='undefined'&&typeof window.addEventListener==='function'){
+ window.addEventListener('error',e=>gcLog('error',e.message||'window error',{source:e.filename,line:e.lineno,col:e.colno}));
+ window.addEventListener('unhandledrejection',e=>gcLog('error','Unhandled promise rejection',{reason:String(e.reason)}));
+}
+GC.Log={log:gcLog,info:(m,d)=>gcLog('info',m,d),warn:(m,d)=>gcLog('warn',m,d),error:(m,d)=>gcLog('error',m,d),get:getLogs,clear:clearLogs,entries:LOG_ENTRIES};
+
+</script>
+  <script>
+'use strict';
+const STORY_STAGES=Object.freeze({
+ VILLAGE:'00_village',APPOINTED:'01_appointed',ROAD:'02_road',FIRST_BATTLE:'03_first_battle',
+ CAPITAL_APPROACH:'04_capital_approach',CAPITAL:'05_capital',CEREMONY:'06_ceremony',
+ WHITE_STAG:'07_white_stag',ALPHA_COMPLETE:'08_alpha_complete',
+ ASH_ROAD_ORDER:'09_ash_road_order',ASH_ROAD:'10_ash_road',ASH_ROAD_COMPLETE:'11_ash_road_complete',
+ FRONTIER_ARRIVAL:'12_frontier_arrival',FRONTIER_CRISIS:'13_frontier_crisis',FRONTIER_BATTLE_WON:'14_frontier_battle_won',FRONTIER_COMPLETE:'15_frontier_complete',
+ FRONTIER_AFTERMATH:'16_frontier_aftermath',FRONTIER_INVESTIGATION:'17_frontier_investigation',FRONTIER_DISCOVERY:'18_frontier_discovery',FRONTIER_SECOND_COMPLETE:'19_frontier_second_complete'
+});
+const STORY_FLOW=Object.freeze({
+ [STORY_STAGES.VILLAGE]:{objective:'村で王国使者の話を聞く'},
+ [STORY_STAGES.APPOINTED]:{objective:'北門から街道へ出る'},
+ [STORY_STAGES.ROAD]:{objective:'街道を北へ進み、道を塞ぐ灰牙狼を越える'},
+ [STORY_STAGES.FIRST_BATTLE]:{objective:'街道を北へ進み、王都へ向かう'},
+ [STORY_STAGES.CAPITAL_APPROACH]:{objective:'高台の道を北へ進み、王都へ入る'},
+ [STORY_STAGES.CAPITAL]:{objective:'王城前で任命式に出る'},
+ [STORY_STAGES.CEREMONY]:{objective:'王都を見て回り、白鹿亭で今夜休む'},
+ [STORY_STAGES.WHITE_STAG]:{objective:'白鹿亭で四人の夜を過ごす'},
+ [STORY_STAGES.ALPHA_COMPLETE]:{objective:'α1.0区間完了：翌朝、グランツへ会いに行く'},
+ [STORY_STAGES.ASH_ROAD_ORDER]:{objective:'王都北門から灰の街道へ向かう'},
+ [STORY_STAGES.ASH_ROAD]:{objective:'避難民の話を聞き、焼けた街道を調べる'},
+ [STORY_STAGES.ASH_ROAD_COMPLETE]:{objective:'灰の街道北端からセラド前線へ進む'},
+ [STORY_STAGES.FRONTIER_ARRIVAL]:{objective:'前線将校からセラドの戦況を聞く'},
+ [STORY_STAGES.FRONTIER_CRISIS]:{objective:'野戦病院を確認し、前線で何が起きているか知る'},
+ [STORY_STAGES.FRONTIER_BATTLE_WON]:{objective:'前線将校へ戦闘結果を報告する'},
+ [STORY_STAGES.FRONTIER_COMPLETE]:{objective:'前線将校から戦後の次任務を受ける'},
+ [STORY_STAGES.FRONTIER_AFTERMATH]:{objective:'野戦病院で戦後の負傷者状況を確認する'},
+ [STORY_STAGES.FRONTIER_INVESTIGATION]:{objective:'北防壁からセラド北側の戦闘跡を調査する'},
+ [STORY_STAGES.FRONTIER_DISCOVERY]:{objective:'負傷した帝国兵を守り、戦場狼を追い払う'},
+ [STORY_STAGES.FRONTIER_SECOND_COMPLETE]:{objective:'セラド前線・第2区間完了：北の旧関所方面を調べる準備をする'}
+});
+const STORY_ORDER=Object.freeze(Object.values(STORY_STAGES));
+
+const LEGACY_VISIT_FLAGS=Object.freeze({
+ leftVillage:'road',reachedNorthRoad:'northroad',reachedCapital:'capital',reachedAshRoad:'ashroad',
+ reachedFrontier:'frontier',reachedBorderland:'borderland',reachedRelay:'relayvillage',reachedWatchfort:'watchfort',
+ reachedRavine:'ravine',reachedEmpireVillage:'empirevillage',reachedImperialCity:'imperialcity',reachedElsia:'elsia',
+ reachedReturnRoad:'returnroad',reachedFinalField:'finalfield'
+});
+const LEGACY_DEFEAT_FLAGS=Object.freeze({roadWolf:'wolf',roadBandit:'bandit',caveBats:'bats',caveCrawler:'crawler',bossDead:'boss',imperialPatrolDefeated:'imperialPatrol',vanguardDefeated:'vanguardCaptain'});
+const LEGACY_TREASURE_FLAGS=Object.freeze({chest1:'chest1',chest2:'chest2',ashCache:'ashCache',frontierCache:'frontierCache',empireCache:'empireCache',imperialCache:'imperialCache',yukiCache:'yukiCache',elsiaCache:'elsiaCache'});
+const LEGACY_EVENT_FLAGS=new Set([
+ 'father','orphan','store','mayor','talkedWithKaren','appointed','capitalCeremony','warBriefing','capitalYukiPropaganda','capitalFirstNight','alphaHourComplete',
+ 'ashOrders','frontierBriefed','frontierHospitalSeen','borderBriefed','borderMerchantAsked','borderMerchantHelped','borderRested','fortBriefed','fortMapSeen',
+ 'metKlein','kleinBattleDone','empireYukiMention','heardYuki','yukiMemorial','yukiLetter','yukiWitness','yukiKleinLink','metZester',
+ 'elsiaResident','elsiaRecord','metZenith','heroRecordsFound','heroTruth','finalKingdomPlan','finalEmpirePlan','worldSkeletonCleared'
+]);
+const LEGACY_EVENT_ID=Object.freeze({
+ talkedWithKaren:'alpha.village.appointment',appointed:'alpha.village.appointment',capitalCeremony:'alpha.capital.ceremony',
+ capitalFirstNight:'alpha.capital.whiteStagNight',alphaHourComplete:'alpha.complete'
+});
+
+function storyIndex(stage){return STORY_ORDER.indexOf(stage)}
+function knownLegacyFlags(){return [...new Set([...Object.keys(LEGACY_VISIT_FLAGS),...Object.keys(LEGACY_DEFEAT_FLAGS),...Object.keys(LEGACY_TREASURE_FLAGS),...LEGACY_EVENT_FLAGS])].sort()}
+function deriveAlphaStageFromMilestones(s=state){
+ let idx=0;
+ const at=(stage)=>{idx=Math.max(idx,storyIndex(stage))};
+ if(s.events?.completed?.['alpha.village.appointment'])at(STORY_STAGES.APPOINTED);
+ if(s.world?.visited?.road)at(STORY_STAGES.ROAD);
+ if(s.world?.defeatedSymbols?.wolf||s.events?.completed?.['alpha.road.wolfVictory'])at(STORY_STAGES.FIRST_BATTLE);
+ if(s.world?.visited?.northroad)at(STORY_STAGES.CAPITAL_APPROACH);
+ if(s.world?.visited?.capital)at(STORY_STAGES.CAPITAL);
+ if(s.events?.completed?.['alpha.capital.ceremony'])at(STORY_STAGES.CEREMONY);
+ if(s.world?.visited?.capitalinn&&s.events?.completed?.['alpha.capital.ceremony'])at(STORY_STAGES.WHITE_STAG);
+ if(s.events?.completed?.['alpha.capital.whiteStagNight']||s.events?.completed?.['alpha.complete'])at(STORY_STAGES.ALPHA_COMPLETE);
+ if(s.events?.completed?.['alpha2.capital.granzBriefing'])at(STORY_STAGES.ASH_ROAD_ORDER);
+ if(s.world?.visited?.ashroad)at(STORY_STAGES.ASH_ROAD);
+ if(s.events?.completed?.['alpha2.ashroad.complete'])at(STORY_STAGES.ASH_ROAD_COMPLETE);
+ if(s.world?.visited?.frontier)at(STORY_STAGES.FRONTIER_ARRIVAL);
+ if(s.events?.completed?.['alpha2.frontier.hospital'])at(STORY_STAGES.FRONTIER_CRISIS);
+ if(s.events?.completed?.['alpha2.frontier.vanguardVictory'])at(STORY_STAGES.FRONTIER_BATTLE_WON);
+ if(s.events?.completed?.['alpha2.frontier.complete'])at(STORY_STAGES.FRONTIER_COMPLETE);
+ if(s.events?.completed?.['alpha2.frontier2.order'])at(STORY_STAGES.FRONTIER_AFTERMATH);
+ if(s.events?.completed?.['alpha2.frontier2.aftermath'])at(STORY_STAGES.FRONTIER_INVESTIGATION);
+ if(s.events?.completed?.['alpha2.frontier2.discovery'])at(STORY_STAGES.FRONTIER_DISCOVERY);
+ if(s.events?.completed?.['alpha2.frontier2.complete'])at(STORY_STAGES.FRONTIER_SECOND_COMPLETE);
+ return STORY_ORDER[Math.max(0,idx)]||STORY_STAGES.VILLAGE
+}
+function ensureAlphaStagePrerequisites(s=state,stage=s.story?.stage){
+ const repairs=[];const idx=Math.max(0,storyIndex(stage));
+ const set=(obj,key,value=true,label=key)=>{if(obj[key]!==value){obj[key]=value;repairs.push(label)}};
+ if(idx>=storyIndex(STORY_STAGES.APPOINTED))set(s.events.completed,'alpha.village.appointment',true,'event:alpha.village.appointment');
+ if(idx>=storyIndex(STORY_STAGES.ROAD))set(s.world.visited,'road',true,'visited:road');
+ if(idx>=storyIndex(STORY_STAGES.FIRST_BATTLE)){set(s.world.defeatedSymbols,'wolf',true,'defeated:wolf');set(s.events.completed,'alpha.road.wolfVictory',true,'event:alpha.road.wolfVictory')}
+ if(idx>=storyIndex(STORY_STAGES.CAPITAL_APPROACH))set(s.world.visited,'northroad',true,'visited:northroad');
+ if(idx>=storyIndex(STORY_STAGES.CAPITAL))set(s.world.visited,'capital',true,'visited:capital');
+ if(idx>=storyIndex(STORY_STAGES.CEREMONY))set(s.events.completed,'alpha.capital.ceremony',true,'event:alpha.capital.ceremony');
+ if(idx>=storyIndex(STORY_STAGES.WHITE_STAG))set(s.world.visited,'capitalinn',true,'visited:capitalinn');
+ if(idx>=storyIndex(STORY_STAGES.ALPHA_COMPLETE)){set(s.events.completed,'alpha.capital.whiteStagNight',true,'event:alpha.capital.whiteStagNight');set(s.events.completed,'alpha.complete',true,'event:alpha.complete')}
+ if(idx>=storyIndex(STORY_STAGES.ASH_ROAD_ORDER))set(s.events.completed,'alpha2.capital.granzBriefing',true,'event:alpha2.capital.granzBriefing');
+ if(idx>=storyIndex(STORY_STAGES.ASH_ROAD))set(s.world.visited,'ashroad',true,'visited:ashroad');
+ if(idx>=storyIndex(STORY_STAGES.ASH_ROAD_COMPLETE)){set(s.events.completed,'alpha2.ashroad.refugee',true,'event:alpha2.ashroad.refugee');set(s.events.completed,'alpha2.ashroad.orders',true,'event:alpha2.ashroad.orders');set(s.events.completed,'alpha2.ashroad.patrolVictory',true,'event:alpha2.ashroad.patrolVictory');set(s.events.completed,'alpha2.ashroad.complete',true,'event:alpha2.ashroad.complete');set(s.world.defeatedSymbols,'imperialPatrol',true,'defeated:imperialPatrol')}
+ if(idx>=storyIndex(STORY_STAGES.FRONTIER_ARRIVAL))set(s.world.visited,'frontier',true,'visited:frontier');
+ if(idx>=storyIndex(STORY_STAGES.FRONTIER_CRISIS)){set(s.events.completed,'alpha2.frontier.arrival',true,'event:alpha2.frontier.arrival');set(s.events.completed,'alpha2.frontier.briefing',true,'event:alpha2.frontier.briefing');set(s.events.completed,'alpha2.frontier.hospital',true,'event:alpha2.frontier.hospital')}
+ if(idx>=storyIndex(STORY_STAGES.FRONTIER_BATTLE_WON)){set(s.events.completed,'alpha2.frontier.vanguardVictory',true,'event:alpha2.frontier.vanguardVictory');set(s.world.defeatedSymbols,'vanguardCaptain',true,'defeated:vanguardCaptain')}
+ if(idx>=storyIndex(STORY_STAGES.FRONTIER_COMPLETE))set(s.events.completed,'alpha2.frontier.complete',true,'event:alpha2.frontier.complete');
+ if(idx>=storyIndex(STORY_STAGES.FRONTIER_AFTERMATH))set(s.events.completed,'alpha2.frontier2.order',true,'event:alpha2.frontier2.order');
+ if(idx>=storyIndex(STORY_STAGES.FRONTIER_INVESTIGATION))set(s.events.completed,'alpha2.frontier2.aftermath',true,'event:alpha2.frontier2.aftermath');
+ if(idx>=storyIndex(STORY_STAGES.FRONTIER_DISCOVERY)){set(s.world.visited,'frontierfield',true,'visited:frontierfield');set(s.events.completed,'alpha2.frontier2.fieldArrival',true,'event:alpha2.frontier2.fieldArrival');set(s.events.completed,'alpha2.frontier2.fieldBriefing',true,'event:alpha2.frontier2.fieldBriefing');set(s.events.completed,'alpha2.frontier2.tracks',true,'event:alpha2.frontier2.tracks');set(s.events.completed,'alpha2.frontier2.satchel',true,'event:alpha2.frontier2.satchel');set(s.events.completed,'alpha2.frontier2.orders',true,'event:alpha2.frontier2.orders');set(s.events.completed,'alpha2.frontier2.discovery',true,'event:alpha2.frontier2.discovery')}
+ if(idx>=storyIndex(STORY_STAGES.FRONTIER_SECOND_COMPLETE)){set(s.events.completed,'alpha2.frontier2.scavengerVictory',true,'event:alpha2.frontier2.scavengerVictory');set(s.events.completed,'alpha2.frontier2.complete',true,'event:alpha2.frontier2.complete');set(s.world.defeatedSymbols,'scavengerWolves',true,'defeated:scavengerWolves')}
+ return repairs
+}
+function syncMainQuest(s=state){
+ const idx=storyIndex(s.story.stage),alphaEnd=storyIndex(STORY_STAGES.ALPHA_COMPLETE);
+ if(idx<=alphaEnd){s.quests.main.id='alpha1';s.quests.main.step=s.story.stage;s.quests.main.status=idx>=alphaEnd?'completed':'active'}
+ else if(idx<=storyIndex(STORY_STAGES.ASH_ROAD_COMPLETE)){s.quests.main.id='alpha2_ashroad';s.quests.main.step=s.story.stage;s.quests.main.status=s.story.stage===STORY_STAGES.ASH_ROAD_COMPLETE?'completed':'active'}
+ else if(idx<=storyIndex(STORY_STAGES.FRONTIER_COMPLETE)){s.quests.main.id='alpha2_frontier_1';s.quests.main.step=s.story.stage;s.quests.main.status=s.story.stage===STORY_STAGES.FRONTIER_COMPLETE?'completed':'active'}
+ else{s.quests.main.id='alpha2_frontier_2';s.quests.main.step=s.story.stage;s.quests.main.status=s.story.stage===STORY_STAGES.FRONTIER_SECOND_COMPLETE?'completed':'active'}
+ return s.quests.main
+}
+function applyCanonicalAlphaStage(s=state,stage=STORY_STAGES.VILLAGE){
+ if(!STORY_ORDER.includes(stage))throw new Error('Unknown story stage: '+stage);
+ for(const id of ['alpha.village.appointment','alpha.road.wolfVictory','alpha.capital.ceremony','alpha.capital.whiteStagNight','alpha.complete','alpha2.capital.granzBriefing','alpha2.ashroad.refugee','alpha2.ashroad.orders','alpha2.ashroad.patrolVictory','alpha2.ashroad.complete','alpha2.frontier.arrival','alpha2.frontier.briefing','alpha2.frontier.hospital','alpha2.frontier.vanguardVictory','alpha2.frontier.complete','alpha2.frontier2.order','alpha2.frontier2.aftermath','alpha2.frontier2.fieldArrival','alpha2.frontier2.fieldBriefing','alpha2.frontier2.tracks','alpha2.frontier2.satchel','alpha2.frontier2.orders','alpha2.frontier2.discovery','alpha2.frontier2.scavengerVictory','alpha2.frontier2.complete'])delete s.events.completed[id];
+ for(const id of ['road','northroad','capital','capitalinn','ashroad','frontier','frontierfield'])delete s.world.visited[id];
+ delete s.world.defeatedSymbols.wolf;delete s.world.defeatedSymbols.imperialPatrol;delete s.world.defeatedSymbols.vanguardCaptain;delete s.world.defeatedSymbols.scavengerWolves;
+ s.story.stage=stage;s.story.objective=STORY_FLOW[stage]?.objective||s.story.objective;
+ const repairs=ensureAlphaStagePrerequisites(s,stage);syncMainQuest(s);return repairs
+}
+function reconcileStoryState(s=state){
+ const issues=[],repairs=[];
+ s.story??={stage:STORY_STAGES.VILLAGE,chapter:'序章 — 勇者になった日',objective:STORY_FLOW[STORY_STAGES.VILLAGE].objective};
+ s.quests??={main:{id:'alpha1',status:'active',step:STORY_STAGES.VILLAGE},active:{},completed:{}};
+ s.quests.main??={id:'alpha1',status:'active',step:STORY_STAGES.VILLAGE};
+ s.world??={};s.world.visited??={};s.world.defeatedSymbols??={};s.events??={};s.events.completed??={};
+ if(!STORY_ORDER.includes(s.story.stage)){issues.push('unknown story stage: '+String(s.story.stage));s.story.stage=deriveAlphaStageFromMilestones(s);repairs.push('story.stage')}
+ const derived=deriveAlphaStageFromMilestones(s);
+ if(storyIndex(derived)>storyIndex(s.story.stage)){issues.push(`story stage behind milestones: ${s.story.stage} < ${derived}`);s.story.stage=derived;repairs.push('story.stage->'+derived)}
+ const prereq=ensureAlphaStagePrerequisites(s,s.story.stage);if(prereq.length){issues.push('story stage missing prerequisites');repairs.push(...prereq)}
+ syncMainQuest(s);
+ if(!s.story.objective)s.story.objective=STORY_FLOW[s.story.stage]?.objective||'';
+ return{ok:issues.length===0,issues,repairs,stage:s.story.stage}
+}
+
+function getPath(obj,path){let cur=obj;for(const key of path){if(cur==null)return undefined;cur=cur[key]}return cur}
+function setPath(obj,path,value){let cur=obj;for(let i=0;i<path.length-1;i++){const key=path[i];cur[key]??={};cur=cur[key]}cur[path[path.length-1]]=value;return value}
+function legacyFlagPath(name){
+ if(LEGACY_VISIT_FLAGS[name])return['world','visited',LEGACY_VISIT_FLAGS[name]];
+ if(LEGACY_DEFEAT_FLAGS[name])return['world','defeatedSymbols',LEGACY_DEFEAT_FLAGS[name]];
+ if(LEGACY_TREASURE_FLAGS[name])return['world','treasures',LEGACY_TREASURE_FLAGS[name]];
+ if(LEGACY_EVENT_FLAGS.has(name))return['events','completed',LEGACY_EVENT_ID[name]||name];
+ return['world','switches',name]
+}
+function createLegacyFlagsProxy(owner){return new Proxy({}, {
+ get(_t,p){if(typeof p!=='string')return undefined;return !!getPath(owner,legacyFlagPath(p))},
+ set(_t,p,v){if(typeof p!=='string')return false;setPath(owner,legacyFlagPath(p),!!v);return true},
+ ownKeys(){const keys=new Set([...Object.keys(owner.world.switches||{}),...Object.keys(LEGACY_VISIT_FLAGS),...Object.keys(LEGACY_DEFEAT_FLAGS),...Object.keys(LEGACY_TREASURE_FLAGS),...LEGACY_EVENT_FLAGS]);return [...keys]},
+ getOwnPropertyDescriptor(){return{enumerable:true,configurable:true}}
+})}
+function attachStateCompatibility(s){
+ const alias=(name,get,set)=>Object.defineProperty(s,name,{enumerable:false,configurable:true,get,set});
+ alias('flags',()=>createLegacyFlagsProxy(s),()=>{});
+ alias('storyStage',()=>s.story.stage,v=>s.story.stage=v);
+ alias('chapter',()=>s.story.chapter,v=>s.story.chapter=v);
+ alias('objective',()=>s.story.objective,v=>s.story.objective=v);
+ alias('recoveryUses',()=>s.world.recoveryUses,v=>s.world.recoveryUses=v||{});
+ alias('treasures',()=>s.world.treasures,v=>s.world.treasures=v||{});
+ alias('shortcuts',()=>s.world.shortcuts,v=>s.world.shortcuts=v||{});
+ alias('finalChoice',()=>s.world.finalChoice,v=>s.world.finalChoice=v);
+ return s
+}
+function storyAtLeast(stage){return STORY_ORDER.indexOf(state.story.stage)>=STORY_ORDER.indexOf(stage)}
+function completeEvent(id,value=true){state.events.completed[id]=!!value;return !!value}
+function isEventComplete(id){return !!state.events.completed[id]}
+function markVisited(map,value=true){state.world.visited[map]=!!value;return !!value}
+function hasVisited(map){return !!state.world.visited[map]}
+function setWorldSwitch(id,value=true){state.world.switches[id]=value;return value}
+function getWorldSwitch(id){return state.world.switches[id]}
+function markDefeated(id,value=true){state.world.defeatedSymbols[id]=!!value;return !!value}
+function isDefeated(id){return !!state.world.defeatedSymbols[id]}
+function structuredCondition(name){const path=legacyFlagPath(name);return !!getPath(state,path)}
+function setStructuredCondition(name,value=true){const path=legacyFlagPath(name);setPath(state,path,!!value);return !!value}
+function advanceStory(stage,legacyPatch=null,objective=null){
+ if(!STORY_ORDER.includes(stage))throw new Error('Unknown story stage: '+stage);
+ if(legacyPatch)importLegacyFlags(state,legacyPatch);
+ const current=Math.max(0,STORY_ORDER.indexOf(state.story.stage)),next=STORY_ORDER.indexOf(stage);
+ if(next>=current){state.story.stage=stage;state.story.objective=objective||STORY_FLOW[stage]?.objective||state.story.objective;state.quests.main.step=stage}
+ else state.story.objective=STORY_FLOW[state.story.stage]?.objective||state.story.objective;
+ syncMainQuest(state);
+ if(typeof renderHud==='function')renderHud();
+ return state.story.stage
+}
+function inferStoryStage(src){
+ const direct=src?.story?.stage||src?.storyStage;if(direct&&STORY_ORDER.includes(direct))return direct;
+ const f=src?.flags||{};
+ if(f.reachedAshRoad)return STORY_STAGES.ASH_ROAD;if(f.warBriefing)return STORY_STAGES.ASH_ROAD_ORDER;if(f.alphaHourComplete||f.capitalFirstNight)return STORY_STAGES.ALPHA_COMPLETE;
+ if(f.capitalCeremony)return STORY_STAGES.CEREMONY;if(f.reachedCapital)return STORY_STAGES.CAPITAL;if(f.reachedNorthRoad)return STORY_STAGES.CAPITAL_APPROACH;
+ if(f.roadWolf)return STORY_STAGES.FIRST_BATTLE;if(f.leftVillage)return STORY_STAGES.ROAD;if(f.talkedWithKaren||f.appointed)return STORY_STAGES.APPOINTED;
+ return STORY_STAGES.VILLAGE
+}
+function importLegacyFlags(target,flags={}){for(const [key,value] of Object.entries(flags||{})){if(value)setPath(target,legacyFlagPath(key),true)}return target}
+GC.Story={STORY_STAGES,STORY_FLOW,STORY_ORDER,storyIndex,advanceStory,storyAtLeast,completeEvent,isEventComplete,markVisited,hasVisited,setWorldSwitch,getWorldSwitch,markDefeated,isDefeated,structuredCondition,setStructuredCondition,inferStoryStage,importLegacyFlags,attachStateCompatibility,createLegacyFlagsProxy,legacyFlagPath,knownLegacyFlags,deriveAlphaStageFromMilestones,ensureAlphaStagePrerequisites,applyCanonicalAlphaStage,reconcileStoryState,syncMainQuest};
+
+</script>
+  <script>
+'use strict';
+const MAX_LEVEL=30;
+const ITEM_DEFS=Object.freeze({
+ 薬草:{id:'薬草',kind:'consumable',label:'薬草'},
+ 魔力草:{id:'魔力草',kind:'consumable',label:'魔力草'},
+ 携帯食:{id:'携帯食',kind:'consumable',label:'携帯食'}
+});
+const RPG_RULES={
+ damage:{minimum:2,variance:5,defenseScale:1},
+ growth:{maxLevel:MAX_LEVEL,expMode:'cumulative'},
+ exploration:{minimumOptionalFeature:1,requireMainRouteBranch:true},
+ treasure:{flagNamespace:'treasures'},
+ transition:{preserveFacing:true,preserveReturnPoint:true}
+};
+const EXP_TABLE=Object.freeze(Array.from({length:MAX_LEVEL+1},(_,level)=>level>=MAX_LEVEL?Infinity:35*level*(level+1)/2));
+const SKILLS=Object.freeze({
+ attack:{id:'attack',owner:'karen',label:'剣撃',kind:'physical',power:0,mp:0},guard:{id:'guard',owner:'karen',label:'庇う',kind:'guard',mp:0},rally:{id:'rally',owner:'karen',label:'号令',kind:'buff',mp:0,value:2},
+ heavy:{id:'heavy',owner:'triton',label:'強撃',kind:'physical',power:8,mp:0},break:{id:'break',owner:'triton',label:'崩し',kind:'physicalDebuff',power:2,mp:0,defDown:2},
+ staffSophie:{id:'staffSophie',owner:'sophie',label:'杖撃',kind:'physical',power:-1,mp:0},heal:{id:'heal',owner:'sophie',label:'治癒',kind:'heal',power:26,mp:6},prayer:{id:'prayer',owner:'sophie',label:'祈り',kind:'partyHeal',power:10,mp:8},
+ staffMargaret:{id:'staffMargaret',owner:'margaret',label:'杖撃',kind:'physical',power:-1,mp:0},fire:{id:'fire',owner:'margaret',label:'火球',kind:'magic',power:24,variance:7,mp:7},ice:{id:'ice',owner:'margaret',label:'氷槍',kind:'magicDebuff',power:20,variance:5,mp:8,atkDown:2}
+});
+const BATTLE_LOADOUTS=Object.freeze({karen:['attack','guard','rally'],triton:['heavy','break'],sophie:['staffSophie','heal','prayer'],margaret:['staffMargaret','fire','ice']});
+const LEVEL_GROWTH={
+ karen:{hp:8,mp:3,atk:2,def:2,spd:1},
+ triton:{hp:10,mp:1,atk:3,def:2,spd:1},
+ sophie:{hp:6,mp:6,atk:1,def:2,spd:1},
+ margaret:{hp:5,mp:7,atk:2,def:1,spd:2}
+};
+
+const partyBase=[
+ {id:'karen',name:'カレン',job:'勇者',level:1,hp:64,maxHp:64,mp:20,maxMp:20,atk:14,def:10,spd:9,exp:0},
+ {id:'triton',name:'トリトン',job:'戦士',level:1,hp:78,maxHp:78,mp:12,maxMp:12,atk:18,def:12,spd:7,exp:0},
+ {id:'sophie',name:'ソフィ',job:'僧侶',level:1,hp:52,maxHp:52,mp:36,maxMp:36,atk:8,def:9,spd:8,exp:0},
+ {id:'margaret',name:'マーガレット',job:'魔法使い',level:1,hp:46,maxHp:46,mp:42,maxMp:42,atk:9,def:7,spd:10,exp:0}
+];
+function calculateBaseStatsAtLevel(id,level){const base=partyBase.find(p=>p.id===id),g=LEVEL_GROWTH[id];if(!base||!g)return null;const n=Math.max(0,Math.min(MAX_LEVEL,level)-1);return{maxHp:base.maxHp+g.hp*n,maxMp:base.maxMp+g.mp*n,atk:base.atk+g.atk*n,def:base.def+g.def*n,spd:base.spd+g.spd*n}}
+GC.Data=GC.Data||{};GC.Data.Items={MAX_LEVEL,ITEM_DEFS,RPG_RULES,EXP_TABLE,SKILLS,BATTLE_LOADOUTS,LEVEL_GROWTH,partyBase,calculateBaseStatsAtLevel};
+
+</script>
+  <script>
+'use strict';
+function createGameState(){
+ const s={
+  schema:23,map:'village',x:12,y:12,dir:'up',trail:[[12,13],[11,13],[10,13]],locked:false,battle:null,battleReturn:null,symbolEncounter:null,
+  encounterSteps:0,nextEncounterAt:18,interiorReturn:null,
+  story:{stage:STORY_STAGES.VILLAGE,chapter:'序章 — 勇者になった日',objective:'村を見て回ろう'},
+  quests:{main:{id:'alpha1',status:'active',step:STORY_STAGES.VILLAGE},active:{},completed:{}},
+  world:{visited:{village:true},switches:{},defeatedSymbols:{},recoveryUses:{},treasures:{},shortcuts:{},finalChoice:null},
+  events:{completed:{},choices:{}},journal:[],
+  party:partyBase.map(p=>({...p})),inventory:{薬草:3,魔力草:1,携帯食:0},gold:120
+ };
+ return attachStateCompatibility(s)
+}
+function newState(){return createGameState()}
+let state=createGameState();
+function replaceState(next){state=attachStateCompatibility(next);return state}
+function resetState(){state=createGameState();return state}
+GC.State={create:createGameState,get:()=>state,replace:replaceState,reset:resetState};
+
+</script>
+  <script>
+'use strict';
+const INTERIOR_MAPS=['karenhome','orphanage','mayorhouse','cottage','capitalinn','capitalarmory','imperialinn','imperialbooks'];
+function makeInteriorTiles(){
+ const rows=[];
+ for(let y=0;y<ROWS;y++){
+  const row=Array(COLS).fill('S');
+  if(y>=2&&y<=12){
+   for(let x=4;x<=19;x++)row[x]=(y===2||y===12||x===4||x===19)?'W':'F';
+   if(y===12){row[11]='F';row[12]='F'}
+  }
+  if(y===13){row[11]='F';row[12]='F'}
+  rows.push(row.join(''));
+ }
+ return rows
+}
+
+function makeRouteTiles(){return[
+ 'TTTTTTTTTTTPPTTTTTTTTTTT','TGGGGGGGGGGPPGGGGGGGGGGT','TGGGGGGGGGGPPGGGGGGGGGGT',
+ 'TGGGGGGGGGGPPGGGGGGGGGGT','TGGGGGGGGGGPPGGGGGGGGGGT','TGGGGGGGGGGPPGGGGGGGGGGT',
+ 'TGGGGGGGGGGPPGGGGGGGGGGT','TGGGGGGGGGGPPGGGGGGGGGGT','TGGGGGGGGGGPPGGGGGGGGGGT',
+ 'TGGGGGGGGGGPPGGGGGGGGGGT','TGGGGGGGGGGPPGGGGGGGGGGT','TGGGGGGGGGGPPGGGGGGGGGGT',
+ 'TGGGGGGGGGGPPGGGGGGGGGGT','TGGGGGGGGGGPPGGGGGGGGGGT','TTTTTTTTTTTPPTTTTTTTTTTT']}
+function makeTownTiles(){return[
+ 'TTTTTTTTTTTPPTTTTTTTTTTT','TGGGGGGGGGGPPGGGGGGGGGGT','TGGHHHGGGGGPPGGGGHHHGGGT',
+ 'TGGHHHGGGGGPPGGGGHHHGGGT','TGGHHHGGGGGPPGGGGHHHGGGT','TGGGGGGGGGGPPGGGGGGGGGGT',
+ 'TGGGGPPPPPPPPPPPPPGGGGGT','TGGGGPGGGGGPPGGGGPGGGGGT','TGGGGPGGGGGPPGGGGPGGGGGT',
+ 'TGGHHHGGGGGPPGGGGHHHGGGT','TGGHHHGGGGGPPGGGGHHHGGGT','TGGHHHGGGGGPPGGGGHHHGGGT',
+ 'TGGGGGGGGGGPPGGGGGGGGGGT','TGGGGGGGGGGPPGGGGGGGGGGT','TTTTTTTTTTTPPTTTTTTTTTTT']}
+function makeBattlefieldTiles(){return[
+ 'SSSSSSSSSSSPPSSSSSSSSSSS','SGGGGGGGGGGPPGGGGGGGGGGS','SGGGGGSSGGGPPGGGSSGGGGGS','SGGGGGGGGGGPPGGGGGGGGGGS','SGGGSSGGGGGPPGGGGGSSGGGS','SGGGGGGGGGGPPGGGGGGGGGGS','SGGGGGPPPPPPPPPPPPGGGGGS','SGGGGGGGGGGPPGGGGGGGGGGS','SGGGGGGGGGGPPGGGGGGGGGGS','SGGGSSGGGGGPPGGGGGSSGGGS','SGGGGGGGGGGPPGGGGGGGGGGS','SGGGGGSSGGGPPGGGSSGGGGGS','SGGGGGGGGGGPPGGGGGGGGGGS','SGGGGGGGGGGPPGGGGGGGGGGS','SSSSSSSSSSSPPSSSSSSSSSSS'
+]}
+
+function makeBlankRegion(fill='G',border='T'){
+ const g=Array.from({length:ROWS},()=>Array(COLS).fill(fill));
+ for(let x=0;x<COLS;x++){g[0][x]=border;g[ROWS-1][x]=border}
+ for(let y=0;y<ROWS;y++){g[y][0]=border;g[y][COLS-1]=border}
+ g[0][11]=g[0][12]='P';g[ROWS-1][11]=g[ROWS-1][12]='P';
+ return g
+}
+function paintRect(g,x,y,w,h,ch){for(let yy=y;yy<y+h;yy++)for(let xx=x;xx<x+w;xx++)if(g[yy]&&g[yy][xx]!==undefined)g[yy][xx]=ch}
+function paintH(g,x1,x2,y,ch){for(let x=x1;x<=x2;x++)if(g[y]&&g[y][x]!==undefined)g[y][x]=ch}
+function paintV(g,y1,y2,x,ch){for(let y=y1;y<=y2;y++)if(g[y]&&g[y][x]!==undefined)g[y][x]=ch}
+function finishTiles(g){return g.map(r=>r.join(''))}
+function makeRoadTilesV15(){
+ const g=makeBlankRegion('G','T');
+ const centers=[12,12,11,11,10,10,10,11,12,12,11,11,12,12,12];
+ for(let y=0;y<ROWS;y++){const c=centers[y];for(let x=c-1;x<=c+1;x++)if(g[y]&&x>0&&x<COLS-1)g[y][x]='P'}
+ // side clearings and worn detours: travel is not a ruler-straight corridor.
+ paintH(g,7,12,8,'P');paintV(g,5,8,7,'P');paintH(g,10,15,3,'P');
+ paintRect(g,3,4,2,3,'T');paintRect(g,5,7,2,2,'T');paintRect(g,18,7,2,3,'T');paintRect(g,3,10,3,2,'T');paintRect(g,19,2,2,2,'T');
+ return finishTiles(g)
+}
+function makeCapitalTiles(){
+ const g=makeBlankRegion('G','K');
+ // 中央大通りと王城前テラス
+ paintV(g,0,14,11,'A');paintV(g,0,14,12,'A');paintRect(g,7,3,10,5,'A');paintH(g,5,19,7,'A');
+ // 西の市場地区。広場と細い路地をずらして配置
+ paintRect(g,2,6,8,5,'A');paintH(g,2,12,12,'A');paintV(g,7,12,5,'A');paintH(g,4,10,9,'A');
+ // 東の軍務地区
+ paintRect(g,15,6,7,6,'A');paintH(g,12,21,12,'A');paintV(g,7,12,18,'A');
+ // 王城外壁と街区の建物。左右対称にしすぎない
+ paintRect(g,4,1,6,2,'H');paintRect(g,14,1,6,2,'H');
+ paintRect(g,2,2,3,3,'H');paintRect(g,19,2,3,3,'H');
+ paintRect(g,2,11,3,2,'H');paintRect(g,7,10,3,2,'H');paintRect(g,16,10,2,2,'H');paintRect(g,20,10,2,2,'H');
+ // 小庭と街路樹用の緑地
+ paintRect(g,6,5,1,2,'G');paintRect(g,17,4,1,2,'G');paintRect(g,10,9,1,2,'G');paintRect(g,13,9,1,2,'G');
+ return finishTiles(g)
+}
+function makeAshRoadTiles(){
+ const g=makeBlankRegion('B','T');paintV(g,0,14,11,'D');paintV(g,0,14,12,'D');paintH(g,3,12,5,'D');paintH(g,11,21,9,'D');paintV(g,5,10,4,'D');paintV(g,8,12,20,'D');paintRect(g,2,2,4,2,'B');paintRect(g,17,2,4,2,'B');return finishTiles(g)
+}
+function makeFrontierTiles(){
+ const g=makeBlankRegion('M','K');paintV(g,0,14,11,'D');paintV(g,0,14,12,'D');paintH(g,2,21,7,'D');paintH(g,4,19,11,'D');
+ paintRect(g,2,2,5,3,'M');paintRect(g,17,2,5,3,'M');paintRect(g,2,8,5,3,'H');paintRect(g,17,9,5,3,'M');return finishTiles(g)
+}
+function makeFrontierFieldTiles(){
+ const g=makeBlankRegion('B','K');
+ // セラド北側の戦闘跡。中央の退路と左右の崩れた陣地を歩いて調べる。
+ paintV(g,0,14,11,'D');paintV(g,0,14,12,'D');paintH(g,3,20,5,'D');paintH(g,5,18,10,'D');
+ paintV(g,5,10,5,'D');paintV(g,5,10,18,'D');
+ paintRect(g,2,2,4,2,'M');paintRect(g,18,2,4,2,'M');paintRect(g,2,11,4,2,'M');paintRect(g,18,11,4,2,'M');
+ return finishTiles(g)
+}
+function makeEmpireVillageTiles(){
+ const g=makeBlankRegion('G','T');paintV(g,0,14,11,'E');paintV(g,0,14,12,'E');paintH(g,7,21,7,'E');paintH(g,2,14,11,'E');
+ paintV(g,1,13,5,'R');paintV(g,1,13,6,'R');paintRect(g,5,6,2,2,'E');paintRect(g,5,10,2,2,'E');
+ paintRect(g,8,2,3,3,'H');paintRect(g,16,2,4,3,'H');paintRect(g,16,9,4,3,'H');paintRect(g,8,9,3,3,'H');return finishTiles(g)
+}
+function makeImperialCityTiles(){
+ const g=makeBlankRegion('E','K');
+ // 南北の主街路
+ paintV(g,0,14,11,'A');paintV(g,0,14,12,'A');
+ // 二本の運河で地区を分ける
+ paintH(g,1,22,5,'R');paintH(g,1,22,10,'R');
+ // 橋。ここだけ実際に渡れる
+ for(const bx of [4,11,18]){paintRect(g,bx,5,2,1,'A');paintRect(g,bx,10,2,1,'A')}
+ // 公文書館前広場と市場通り
+ paintRect(g,8,6,8,4,'A');paintH(g,2,21,7,'A');paintH(g,2,21,8,'A');
+ // 石造建築の塊。細い路地を残す
+ paintRect(g,2,1,6,4,'H');paintRect(g,16,1,6,4,'H');
+ paintRect(g,2,11,5,2,'H');paintRect(g,17,11,5,2,'H');
+ paintRect(g,2,6,3,1,'H');paintRect(g,19,6,3,1,'H');
+ // 運河沿いの遊歩道
+ paintH(g,1,22,4,'E');paintH(g,1,22,11,'E');
+ return finishTiles(g)
+}
+function makeYukiRoadTiles(){
+ const g=makeBlankRegion('B','K');paintV(g,0,14,11,'D');paintV(g,0,14,12,'D');paintH(g,3,12,5,'D');paintH(g,11,20,9,'D');paintV(g,5,10,4,'D');paintV(g,8,12,19,'D');return finishTiles(g)
+}
+function makeElsiaTiles(){
+ const g=makeBlankRegion('Q','K');paintV(g,0,14,11,'A');paintV(g,0,14,12,'A');paintRect(g,8,5,8,5,'A');paintH(g,3,20,7,'A');paintV(g,7,12,5,'A');paintV(g,7,12,19,'A');paintRect(g,2,2,5,3,'H');paintRect(g,17,9,5,3,'H');return finishTiles(g)
+}
+function makeReturnRoadTiles(){
+ const g=makeBlankRegion('K','K');
+ const pts=[[11,14],[11,13],[12,12],[13,11],[14,10],[15,9],[14,8],[13,7],[12,7],[11,7],[10,6],[9,5],[9,4],[10,3],[11,2],[11,1],[11,0]];
+ for(const [x,y] of pts){g[y][x]='D';if(x+1<COLS-1&&g[y][x+1]==='K')g[y][x+1]='D'}
+ paintH(g,5,11,7,'D');g[5][11]='D';paintRect(g,3,6,4,3,'G');paintRect(g,17,4,4,4,'G');return finishTiles(g)
+}
+function makeFinalFieldTiles(){
+ const g=makeBlankRegion('M','K');paintV(g,0,14,11,'D');paintV(g,0,14,12,'D');paintH(g,2,21,7,'D');paintRect(g,2,2,6,4,'B');paintRect(g,16,2,6,4,'E');return finishTiles(g)
+}
+
+function makeBorderlandTiles(){
+ const g=makeBlankRegion('B','K');
+ // 南：旧関所。中央：分岐する荒野。北：ハルム宿場。
+ paintV(g,10,14,11,'D');paintV(g,10,14,12,'D');
+ paintH(g,5,18,10,'D');paintV(g,6,10,5,'D');paintV(g,7,10,18,'D');
+ paintH(g,3,20,6,'D');paintV(g,2,6,7,'D');paintV(g,2,6,16,'D');
+ paintV(g,0,6,11,'P');paintV(g,0,6,12,'P');
+ // 宿場の建物と旧関所の崩れた壁
+ paintRect(g,3,1,5,3,'H');paintRect(g,16,1,5,3,'H');paintRect(g,3,11,4,2,'K');paintRect(g,17,11,4,2,'K');
+ // 荒地の岩場を道の外に置く
+ paintRect(g,1,5,3,3,'M');paintRect(g,20,6,3,3,'M');paintRect(g,8,8,2,2,'M');paintRect(g,14,11,2,2,'M');
+ return finishTiles(g)
+}
+function makeRelayTiles(){const g=makeBlankRegion('G','T');paintV(g,0,14,11,'P');paintV(g,0,14,12,'P');paintH(g,3,20,8,'P');paintRect(g,3,3,5,3,'H');paintRect(g,16,3,5,3,'H');paintRect(g,3,10,4,2,'H');paintRect(g,17,10,4,2,'H');return finishTiles(g)}
+function makeWatchfortTiles(){
+ const g=makeBlankRegion('M','K');
+ // 南半分は砦。北半分は門の先の峡谷橋。
+ paintV(g,8,14,11,'D');paintV(g,8,14,12,'D');paintH(g,3,20,11,'D');paintH(g,4,19,8,'D');
+ paintRect(g,2,7,6,6,'H');paintRect(g,16,7,6,6,'H');
+ // 城門前広場
+ paintRect(g,8,7,8,5,'A');
+ // 北は崖。中央二列だけ橋として残す
+ paintRect(g,1,1,22,5,'Z');
+ for(let y=0;y<=6;y++){g[y][11]='A';g[y][12]='A'}
+ paintH(g,8,15,6,'A');
+ // 見張り塔への脇道
+ paintV(g,6,10,18,'D');paintH(g,12,18,10,'D');
+ return finishTiles(g)
+}
+function makeRavineTiles(){const g=makeBlankRegion('K','K');for(let y=0;y<15;y++){g[y][11]='D';g[y][12]='D'}paintRect(g,2,3,6,8,'B');paintRect(g,16,3,6,8,'B');paintH(g,7,16,7,'D');paintH(g,8,15,7,'A');return finishTiles(g)}
+const maps={
+ village:{name:'リュネ村',tag:'畑と石井戸の故郷',tiles:[
+ 'TTTTTTTTTTTPPTTTTTTTTTTT',
+ 'TGGGGGGGGGGPPGGGGGGGGGGT',
+ 'TGGHHHGGGGGPPGGGGHHHGGGT',
+ 'TGGHHHGGGGGPPGGGGHHHGGGT',
+ 'TGGHHHGGGGGPPGGGGHHHGGGT',
+ 'TGGGGGGHHGGPPGGGGGGGGGGT',
+ 'TGGGGPPPPPPPPPPPPPGGGGGT',
+ 'TGGGGPGGGGGPPGGGGPGGGGGT',
+ 'TGGGGPGGGGGPPGGGGPGGGGGT',
+ 'TGGHHHGGGGGPPGGGGHHHGGGT',
+ 'TGGHHHGGGGGPPGGGGHHHGGGT',
+ 'TGGHHHGGGGGPPGGGGHHHGGGT',
+ 'TGGGGGGGGGGPPGGGGGGGGGGT',
+ 'TGGGGGGGGGGPPGGGGGGGGGGT',
+ 'TTTTTTTTTTTPPTTTTTTTTTTT'
+ ],npcs:[
+  {id:'father',x:5,y:6,name:'トリトンの父'},
+  {id:'orphan',x:18,y:6,name:'孤児院の子'},
+  {id:'mayor',x:6,y:9,name:'村長'},
+  {id:'messenger',x:12,y:6,name:'王国使者'},
+  {id:'mika',x:17,y:7,name:'ミカ'},
+  {id:'ren',x:19,y:7,name:'レン'},
+  {id:'lulu',x:20,y:5,name:'ルル'},
+  {id:'baker',x:8,y:6,name:'パン屋のエダ'},
+  {id:'farmer',x:7,y:12,name:'農夫のボル'},
+  {id:'oldwoman',x:15,y:12,name:'老婆ナナ'},
+  {id:'veteran',x:9,y:4,name:'帰還兵ガルド'}
+ ],objects:[
+  {id:'store',x:16,y:9},{id:'well',x:12,y:9},{id:'home',x:4,y:5},{id:'doorOrphanage',x:19,y:5},
+  {id:'doorMayor',x:4,y:12},{id:'doorCottage',x:19,y:12},{id:'gate',x:11,y:0}
+ ]},
+ karenhome:{name:'カレンの家',tiles:makeInteriorTiles(),npcs:[
+  {id:'karenMother',x:7,y:6,name:'カレンの母'},
+  {id:'karenFather',x:16,y:5,name:'カレンの父'},
+  {id:'karenBrother',x:14,y:8,name:'リオ'}
+ ],objects:[{id:'restBed',x:6,y:4},{id:'familyTable',x:11,y:7},{id:'indoorExit',x:11,y:12}]},
+ orphanage:{name:'リュネ孤児院',tiles:makeInteriorTiles(),npcs:[
+  {id:'caretaker',x:8,y:5,name:'世話役マルタ'},
+  {id:'theo',x:10,y:8,name:'テオ'},
+  {id:'noa',x:14,y:7,name:'ノア'},
+  {id:'emi',x:16,y:9,name:'エミ'}
+ ],objects:[{id:'orphanPantry',x:17,y:5},{id:'toyChest',x:6,y:9},{id:'indoorExit',x:11,y:12}]},
+ mayorhouse:{name:'村長宅',tiles:makeInteriorTiles(),npcs:[
+  {id:'margaretMother',x:7,y:5,name:'マーガレットの母'},
+  {id:'clerk',x:15,y:8,name:'村役場の書記'}
+ ],objects:[{id:'mayorBooks',x:17,y:4},{id:'warMap',x:10,y:7},{id:'indoorExit',x:11,y:12}]},
+ cottage:{name:'東の民家',tiles:makeInteriorTiles(),npcs:[
+  {id:'soldierMother',x:8,y:6,name:'兵士の母'},
+  {id:'soldierSister',x:15,y:8,name:'兵士の妹・ユナ'}
+ ],objects:[{id:'soldierLetter',x:16,y:4},{id:'emptyBed',x:6,y:4},{id:'indoorExit',x:11,y:12}]},
+ capitalinn:{name:'王都・白鹿亭',tag:'兵士と旅人が集う宿',tiles:makeInteriorTiles(),npcs:[
+  {id:'capitalInnHost',x:8,y:6,name:'白鹿亭の女将'},
+  {id:'offDutySoldier',x:15,y:8,name:'非番の王国兵'}
+ ],objects:[{id:'innCounter',x:17,y:5},{id:'innNotice',x:6,y:5},{id:'innRest',x:17,y:4},{id:'indoorExit',x:11,y:12}]},
+ capitalarmory:{name:'王都・兵装店',tag:'前線向けの武具と修理工房',tiles:makeInteriorTiles(),npcs:[
+  {id:'capitalSmith',x:8,y:6,name:'王都の鍛冶師'},
+  {id:'armoryApprentice',x:15,y:8,name:'鍛冶見習い'}
+ ],objects:[{id:'weaponRack',x:17,y:5},{id:'repairBench',x:6,y:5},{id:'indoorExit',x:11,y:12}]},
+ imperialinn:{name:'レグノア・水鳥亭',tag:'運河沿いの小さな宿',tiles:makeInteriorTiles(),npcs:[
+  {id:'imperialInnHost',x:8,y:6,name:'水鳥亭の主人'},
+  {id:'canalBoatman',x:15,y:8,name:'運河の船頭'}
+ ],objects:[{id:'canalMenu',x:17,y:5},{id:'travelMap',x:6,y:5},{id:'imperialInnRest',x:17,y:4},{id:'indoorExit',x:11,y:12}]},
+ imperialbooks:{name:'レグノア・運河古書店',tag:'戦争前の地図も扱う古書店',tiles:makeInteriorTiles(),npcs:[
+  {id:'bookSeller',x:8,y:6,name:'古書店主'},
+  {id:'studentReader',x:15,y:8,name:'帝国の学生'}
+ ],objects:[{id:'oldMaps',x:17,y:5},{id:'civilHistory',x:6,y:5},{id:'indoorExit',x:11,y:12}]},
+ road:{name:'王都への街道',tag:'森を抜ける交易路',tiles:makeRoadTilesV15(),npcs:[{id:'merchant',x:8,y:8,name:'行商人'}],objects:[{id:'wolf',x:11,y:5},{id:'bandit',x:14,y:3},{id:'cave',x:13,y:1},{id:'roadSign',x:10,y:2},{id:'roadCache',x:7,y:6}]},
+ cave:{name:'古砦跡',tag:'放棄された石造砦',tiles:[
+ 'SSSSSSSSSSSPPSSSSSSSSSSS',
+ 'SCCCCCCCCCCCCCCCCCCCCCCS',
+ 'SCCCCCCSSSSCCCCSSSSCCCCS',
+ 'SCCCCCCSCCCCCCCCCCSCCCCS',
+ 'SCCCCCCSCCCCCCCCCCSCCCCS',
+ 'SCCCCCCSCCSSSSSSCCSCCCCS',
+ 'SCCCCCCCCCCCCCCCCCCCCCCS',
+ 'SCCSSSSCCCCSSCCCCSSSSCCS',
+ 'SCCCCCCCCCCCCCCCCCCCCCCS',
+ 'SCCCCSSSSCCCCCCCCSSSSCCS',
+ 'SCCCCSCCCCCCCCCCCCCCSCCS',
+ 'SCCCCSCCCCSSSSCCCCCCSCCS',
+ 'SCCCCCCCCCCCCCCCCCCCCCCS',
+ 'SCCCCCCCCCCCCCCCCCCCCCCS',
+ 'SSSSSSSSSSSSPPSSSSSSSSSS'
+ ],npcs:[],objects:[
+   {id:'chest1',x:4,y:3},{id:'chest2',x:19,y:10},{id:'bats',x:4,y:8},{id:'crawler',x:20,y:6},
+   {id:'leverWest',x:3,y:8},{id:'leverEast',x:21,y:6},{id:'banner',x:3,y:6},{id:'caveRest',x:5,y:12},{id:'rations',x:20,y:12},{id:'innerGate',x:12,y:4},{id:'boss',x:12,y:3},{id:'exit',x:12,y:14},{id:'northExit',x:11,y:0}
+ ]},
+ northroad:{name:'王都への旧街道',tag:'城壁へ続く古道',tiles:makeRouteTiles(),npcs:[{id:'scout',x:12,y:3,name:'王国軍の斥候'}],objects:[{id:'southExit',x:11,y:14},{id:'milestone',x:9,y:6}]},
+ capital:{name:'アルディナ王都',tag:'白石の王城と大通り',tiles:makeCapitalTiles(),npcs:[
+  {id:'capitalOfficial',x:12,y:6,name:'王都係官',hideWhen:'capitalCeremony'},
+  {id:'capitalCitizen',x:9,y:8,name:'王都市民'},
+  {id:'capitalFlowerGirl',x:5,y:8,name:'花売りの少女'},
+  {id:'capitalRecruit',x:18,y:8,name:'新兵'},
+  {id:'capitalVendor',x:4,y:8,name:'市場商人マロ'},
+  {id:'rationMother',x:16,y:8,name:'配給待ちの母親'},
+  {id:'granz',x:8,y:5,name:'総司令グランツ'}
+ ],objects:[{id:'royalCastle',x:7,y:5},{id:'capitalMarket',x:5,y:9},{id:'capitalFountain',x:12,y:8},{id:'capitalBarracks',x:19,y:9},{id:'victoryPoster',x:15,y:6},{id:'heroLedger',x:20,y:11},{id:'capitalInnDoor',x:6,y:12},{id:'capitalArmoryDoor',x:18,y:12}]},
+ ashroad:{name:'灰の街道',tag:'焼けた農地と避難路',tiles:makeAshRoadTiles(),npcs:[
+  {id:'refugee',x:8,y:5,name:'避難民の母'},
+  {id:'fieldPriest',x:18,y:9,name:'従軍僧'}
+ ],objects:[{id:'burnedCart',x:17,y:9},{id:'burnedHomestead',x:4,y:5},{id:'ruinedShrine',x:20,y:9},{id:'scorchedOrders',x:18,y:5},{id:'imperialPatrol',x:11,y:4},{id:'ashCache',x:4,y:10}]},
+ frontier:{name:'王国前線拠点',tag:'泥の塹壕と野戦病院',tiles:makeFrontierTiles(),npcs:[
+  {id:'frontierOfficer',x:9,y:7,name:'前線将校'},{id:'vanguardCaptain',x:12,y:4,name:'帝国前衛隊長ヴァルク',hideWhen:'vanguardDefeated'},{id:'frontierMedic',x:5,y:11,name:'衛生兵'},{id:'kingdomGuard',x:9,y:4,name:'王国兵'},{id:'imperialGuard',x:15,y:4,name:'帝国兵',hideWhen:'vanguardDefeated'}
+ ],objects:[{id:'fieldHospital',x:4,y:10},{id:'watchTower',x:19,y:4},{id:'frontierCache',x:19,y:11},{id:'frontierBarricade',x:15,y:9},{id:'frontierNotice',x:7,y:11}]},
+ frontierfield:{name:'セラド北側・戦闘跡',tag:'退路の轍と置き去りの担架が残る無人地帯',tiles:makeFrontierFieldTiles(),npcs:[
+  {id:'frontierScout',x:8,y:11,name:'王国斥候'},{id:'woundedImperial',x:17,y:5,name:'負傷した帝国兵'}
+ ],objects:[{id:'stretcherTracks',x:5,y:9},{id:'imperialSatchel',x:18,y:9},{id:'withdrawalOrders',x:7,y:5},{id:'fieldGraves',x:4,y:4},{id:'brokenSignalPost',x:19,y:4},{id:'scavengerWolves',x:15,y:6}]},
+ borderland:{name:'ハルム国境地帯',tag:'旧関所・荒野・小さな宿場が続く境界地',tiles:makeBorderlandTiles(),npcs:[
+  {id:'borderScout',x:6,y:10,name:'王国の偵察兵'},
+  {id:'lostMerchant',x:18,y:10,name:'足止めされた商人'},
+  {id:'relayHost',x:7,y:6,name:'ハルム宿場の女将'},
+  {id:'relayChild',x:16,y:6,name:'宿場の子ども'}
+ ],objects:[{id:'borderGrave',x:3,y:6},{id:'oldCheckpoint',x:20,y:10},{id:'brokenWagon',x:19,y:9},{id:'borderCampfire',x:12,y:5},{id:'relayBoard',x:6,y:5}]},
+ relayvillage:{name:'ハルム中継集落',tag:'国境手前の小さな宿場',tiles:makeRelayTiles(),npcs:[{id:'relayHost',x:7,y:8,name:'宿場の女将'},{id:'relayChild',x:18,y:8,name:'宿場の子ども'}],objects:[{id:'relayWell',x:13,y:8},{id:'relayBoard',x:5,y:8}]},
+ watchfort:{name:'ベルド国境砦・ラゼル峡谷',tag:'王国最後の砦から国境橋へ続く要衝',tiles:makeWatchfortTiles(),npcs:[
+  {id:'fortCommander',x:8,y:11,name:'監視砦長'},
+  {id:'tiredGuard',x:15,y:11,name:'若い王国兵'},
+  {id:'klein',x:12,y:3,name:'クラインテッド',showWhen:'fortGateOpen'}
+ ],objects:[{id:'signalFire',x:18,y:8},{id:'fortMap',x:8,y:9},{id:'fortRest',x:10,y:11},{id:'fortGate',x:11,y:6},{id:'fortGateRight',x:12,y:6},{id:'ravineLookout',x:8,y:6},{id:'bridgeMarker',x:15,y:6}]},
+ ravine:{name:'ラゼル渓谷橋',tag:'王国と帝国を隔てる深い峡谷',tiles:makeRavineTiles(),npcs:[{id:'klein',x:12,y:5,name:'クラインテッド'}],objects:[{id:'ravineLookout',x:7,y:7},{id:'bridgeMarker',x:16,y:7}]},
+ empirevillage:{name:'レグノア辺境村',tag:'水路と果樹畑の国境村',tiles:makeEmpireVillageTiles(),npcs:[
+  {id:'empireInnkeeper',x:9,y:7,name:'帝国の宿主'},
+  {id:'empireChild',x:18,y:7,name:'帝国の子ども'},
+  {id:'empireFarmer',x:4,y:11,name:'果樹農家'}
+ ],objects:[{id:'waterMill',x:5,y:6},{id:'empireShrine',x:19,y:10},{id:'yukiRibbon',x:14,y:7},{id:'empireCache',x:3,y:11}]},
+ imperialcity:{name:'レグノア地方都市',tag:'青瓦と運河の石造都市',tiles:makeImperialCityTiles(),npcs:[
+  {id:'imperialCitizen',x:9,y:7,name:'帝国市民'},
+  {id:'recordKeeper',x:6,y:7,name:'記録係'},
+  {id:'canalVendor',x:18,y:9,name:'運河商人'}
+ ],objects:[{id:'imperialArchive',x:6,y:6},{id:'canalMonument',x:12,y:7},{id:'imperialMarket',x:19,y:9},{id:'imperialCache',x:4,y:9},{id:'imperialInnDoor',x:7,y:12},{id:'imperialBookDoor',x:16,y:12}]},
+ yukiroad:{name:'ユウキ旧戦場',tag:'風化した陣地と慰霊の丘',tiles:makeYukiRoadTiles(),npcs:[
+  {id:'oldImperialSoldier',x:8,y:5,name:'帝国の老兵'},
+  {id:'zester',x:12,y:4,name:'ゼスター'}
+ ],objects:[{id:'yukiMemorial',x:19,y:9},{id:'tornLetter',x:4,y:5},{id:'brokenStandard',x:19,y:5},{id:'yukiCache',x:4,y:10}]},
+ elsia:{name:'エルシア聖域',tag:'古代遺構と千年の暮らし',tiles:makeElsiaTiles(),npcs:[
+  {id:'elsiaResident',x:18,y:7,name:'聖域の住民'},
+  {id:'zenith',x:12,y:4,name:'ゼニス'},
+  {id:'elsiaElder',x:5,y:7,name:'聖域の老人'}
+ ],objects:[{id:'elsiaTablet',x:6,y:6},{id:'oldSanctum',x:4,y:5},{id:'sacredSpring',x:5,y:10},{id:'elsiaCache',x:20,y:11}]},
+ returnroad:{name:'王国への帰還路',tag:'崖沿いの迂回山道',tiles:makeReturnRoadTiles(),npcs:[{id:'returnScout',x:10,y:6,name:'王国軍伝令'}],objects:[{id:'mountainOverlook',x:5,y:7}]},
+ finalfield:{name:'エルシア総攻撃前線',tag:'赤旗と青旗が向かい合う無人地帯',tiles:makeFinalFieldTiles(),npcs:[{id:'decisionGuide',x:12,y:6,name:'決断の地点'}],objects:[{id:'kingdomLine',x:6,y:5},{id:'empireLine',x:18,y:5}]},
+ imperialcamp:{name:'帝国本陣前',tag:'青旗の帝国陣地',tiles:makeBattlefieldTiles(),npcs:[{id:'shion',x:12,y:4,name:'皇帝シオン'}],objects:[]},
+ royalcamp:{name:'王国軍総司令部前',tag:'赤旗の王国陣地',tiles:makeBattlefieldTiles(),npcs:[{id:'granzFinal',x:12,y:4,name:'総司令グランツ'}],objects:[]}
+
+};
+
+const TREASURE_DEFS=Object.freeze({
+ roadCache:{map:'road',item:'薬草',amount:1,label:'旅人の小箱'},
+ ashCache:{map:'ashroad',item:'薬草',amount:2,label:'捨てられた荷袋'},
+ frontierCache:{map:'frontier',item:'魔力草',amount:1,label:'前線補給箱'},
+ chest1:{map:'cave',item:'薬草',amount:2,label:'古い宝箱'},chest2:{map:'cave',item:'魔力草',amount:2,label:'古い宝箱'}
+});
+const MAP_FEATURES=Object.freeze({
+ village:{npcs:['father','orphan','mayor'],optional:['well','store'],shortcuts:['villageWestFieldLoop']},
+ road:{npcs:['merchant'],treasures:['roadCache'],shortcuts:['roadWestClearing']},
+ capital:{npcs:['capitalVendor','rationMother'],optional:['capitalInnDoor','capitalArmoryDoor'],shortcuts:['capitalMarketLane']},
+ karenhome:{npcs:['karenMother','karenFather','karenBrother'],optional:['familyTable','restBed'],shortcuts:['karenHomeRoomLoop']},
+ ashroad:{npcs:['refugee','fieldPriest'],treasures:['ashCache'],optional:['burnedCart','burnedHomestead','ruinedShrine','scorchedOrders','imperialPatrol']},
+ frontier:{npcs:['frontierOfficer','frontierMedic','kingdomGuard'],treasures:['frontierCache'],optional:['fieldHospital','watchTower','frontierBarricade','frontierNotice']},
+ frontierfield:{npcs:['frontierScout','woundedImperial'],optional:['stretcherTracks','imperialSatchel','withdrawalOrders','fieldGraves','brokenSignalPost','scavengerWolves']}
+});
+const SHORTCUT_DEFS=Object.freeze({
+ villageWestFieldLoop:{map:'village',label:'西畑を回る生活路'},
+ roadWestClearing:{map:'road',label:'街道西側の踏み跡'},
+ capitalMarketLane:{map:'capital',label:'市場横丁の抜け道'},
+ karenHomeRoomLoop:{map:'karenhome',label:'食卓まわりの回遊動線'}
+});
+const MAP_DESIGN_RULES=Object.freeze({minimumOptionalFeature:1,benchmarkMaps:['village','road','capital','karenhome']});
+function validateMapDesign(mapId){const m=maps[mapId],f=MAP_FEATURES[mapId]||{};if(!m)return{ok:false,errors:['map missing']};const count=(f.treasures?.length||0)+(f.npcs?.length||0)+(f.optional?.length||0)+(f.shortcuts?.length||0);const errors=[];if(count<MAP_DESIGN_RULES.minimumOptionalFeature)errors.push('optional exploration feature missing');if(m.tiles.length!==ROWS||m.tiles.some(r=>r.length!==COLS))errors.push('invalid map dimensions');return{ok:errors.length===0,errors,count}}
+function auditBenchmarkMaps(){return MAP_DESIGN_RULES.benchmarkMaps.map(id=>({id,...validateMapDesign(id)}))}
+const MAP_TRANSITIONS=Object.freeze({
+ villageToRoad:{from:'village',to:'road',x:11,y:13,dir:'up'},roadToVillage:{from:'road',to:'village',x:11,y:1,dir:'down'},roadToCave:{from:'road',to:'cave',x:12,y:13,dir:'up'},caveToRoad:{from:'cave',to:'road',x:13,y:2,dir:'down'},roadToNorthRoad:{from:'road',to:'northroad',x:11,y:13,dir:'up'},northRoadToRoad:{from:'northroad',to:'road',x:12,y:1,dir:'down'}
+});
+const villageHouses=[
+ {x:3,y:2,label:'カレン家',roof:'#874c42',wall:'#d6bd91'},
+ {x:18,y:2,label:'孤児院',roof:'#6f624c',wall:'#d8c69f'},
+ {x:3,y:9,label:'村長宅',roof:'#5e6575',wall:'#d2bd96'},
+ {x:18,y:9,label:'東の民家',roof:'#7f5744',wall:'#cfb589'}
+];
+GC.Data=GC.Data||{};GC.Data.Maps={maps,INTERIOR_MAPS,TREASURE_DEFS,MAP_FEATURES,SHORTCUT_DEFS,MAP_DESIGN_RULES,MAP_TRANSITIONS,villageHouses};
+
+</script>
+  <script>
+'use strict';
+const PARTY_STYLE={
+ karen:{heroId:'karen',body:'#b84f56',accent:'#ead8b1',hair:'#6b3d32',weapon:'sword'},
+ triton:{heroId:'triton',body:'#49698a',accent:'#aeb7bf',hair:'#342d2b',weapon:'sword'},
+ sophie:{heroId:'sophie',body:'#e7e0c8',accent:'#6f9b77',hair:'#d1aa6a',weapon:'staff'},
+ margaret:{heroId:'margaret',body:'#72568f',accent:'#b99ad1',hair:'#e4e7ec',weapon:'staff'}
+};
+const NPC_STYLE={
+ capitalVendor:{body:'#85623f',accent:'#d5bd78',hair:'#5d4230',hat:true},rationMother:{body:'#7b5a59',accent:'#d2b985',hair:'#59463f'},capitalInnHost:{body:'#8f6254',accent:'#dec394',hair:'#72503f'},offDutySoldier:{body:'#7f4148',accent:'#d8c69a',hair:'#4a3d36'},capitalSmith:{body:'#5e5149',accent:'#b4774f',hair:'#42352f'},armoryApprentice:{body:'#726457',accent:'#c8995d',hair:'#6d4d38'},
+ imperialInnHost:{body:'#506c78',accent:'#b9a579',hair:'#4f4842'},canalBoatman:{body:'#536977',accent:'#9fb4bd',hair:'#5a4a3e',hat:true},bookSeller:{body:'#5b6370',accent:'#b9a570',hair:'#92877a'},studentReader:{body:'#607381',accent:'#b7a981',hair:'#4b3e39'},
+ father:{body:'#765a45',accent:'#b79a72',hair:'#3d312a',weapon:'sword'},orphan:{body:'#a9796a',accent:'#d8c5a6',hair:'#704d37',small:true},
+ mayor:{body:'#68685f',accent:'#bd9b5e',hair:'#a9a49b'},messenger:{body:'#8d3d46',accent:'#f0dfb6',hair:'#40382f',cape:true},merchant:{body:'#6d5d48',accent:'#9b7b4d',hair:'#4e3e31',hat:true},
+ mika:{body:'#cc735c',accent:'#f0cf84',hair:'#5f3a28',small:true},ren:{body:'#54789b',accent:'#d9c887',hair:'#4b382d',small:true},lulu:{body:'#8d6ca0',accent:'#efe0b2',hair:'#8a603d',small:true},
+ baker:{body:'#b17f58',accent:'#eee0bd',hair:'#6b4938',hat:true},farmer:{body:'#60704e',accent:'#b99b62',hair:'#5b4937',hat:true},oldwoman:{body:'#7b6e7c',accent:'#d6c6a0',hair:'#d0cbc2'},
+ mother:{body:'#8f665f',accent:'#d6b48f',hair:'#594238'},veteran:{body:'#555f68',accent:'#8f7755',hair:'#383a3b'},scout:{body:'#8a4048',accent:'#ead9ad',hair:'#3d342f',cape:true},
+ karenMother:{body:'#9d675e',accent:'#e0c49c',hair:'#6d4635'},karenFather:{body:'#665748',accent:'#b48d5e',hair:'#4a352b'},karenBrother:{body:'#7f6d54',accent:'#d5b66f',hair:'#744536',small:true},
+ caretaker:{body:'#706b78',accent:'#d4c8aa',hair:'#847064'},theo:{body:'#637c91',accent:'#d9c07b',hair:'#543b2d',small:true},noa:{body:'#9b6c72',accent:'#e1bf83',hair:'#75513d',small:true},emi:{body:'#7d719b',accent:'#e8d19c',hair:'#9b6b44',small:true},
+ margaretMother:{body:'#665379',accent:'#c7a9d2',hair:'#4b364f'},clerk:{body:'#5f6770',accent:'#bea66f',hair:'#43382f'},soldierMother:{body:'#8f665f',accent:'#d6b48f',hair:'#594238'},soldierSister:{body:'#6b738c',accent:'#d8bc87',hair:'#5b4337'},
+ capitalOfficial:{body:'#8b4148',accent:'#ead8a8',hair:'#4a4038',cape:true},capitalCitizen:{body:'#756756',accent:'#c6ae80',hair:'#665144'},granz:{body:'#6f3138',accent:'#d8c395',hair:'#6b6862',cape:true},
+ refugee:{body:'#795c58',accent:'#bfa779',hair:'#74594d'},fieldPriest:{body:'#d4cfbd',accent:'#826c55',hair:'#6b645d',weapon:'staff'},frontierOfficer:{body:'#843941',accent:'#e0c98f',hair:'#463b34',weapon:'sword'},frontierScout:{body:'#7b3b43',accent:'#d8c38f',hair:'#493d35',weapon:'sword'},woundedImperial:{body:'#334d69',accent:'#aebdc7',hair:'#48413c'},vanguardCaptain:{body:'#304965',accent:'#c0ccd3',hair:'#272d35',cape:true,weapon:'sword'},borderScout:{body:'#7d3d44',accent:'#d9c491',hair:'#4b4037'},lostMerchant:{body:'#6d604e',accent:'#ba9d66',hair:'#59483b',hat:true},relayHost:{body:'#8c6852',accent:'#d5bd8a',hair:'#684b3d'},relayChild:{body:'#7c7763',accent:'#ddc879',hair:'#76513c',small:true},fortCommander:{body:'#76373f',accent:'#d7c18b',hair:'#55443b',cape:true},tiredGuard:{body:'#844049',accent:'#dcca99',hair:'#53423a'},kingdomGuard:{body:'#8b3e46',accent:'#efe0b6',hair:'#4a3a32',weapon:'sword'},imperialGuard:{body:'#2f4b69',accent:'#b6c5cf',hair:'#373a40',weapon:'sword'},
+ klein:{body:'#273d59',accent:'#b7c4cf',hair:'#3b3332',cape:true,weapon:'sword'},empireInnkeeper:{body:'#687369',accent:'#c1ac7f',hair:'#5c493c'},empireChild:{body:'#60798b',accent:'#d6bd79',hair:'#8a684b',small:true},
+ imperialCitizen:{body:'#66707a',accent:'#aa9b78',hair:'#544944'},recordKeeper:{body:'#5f6371',accent:'#b9a570',hair:'#61534c'},oldImperialSoldier:{body:'#59646b',accent:'#927a59',hair:'#b3afa6'},zester:{body:'#2d4557',accent:'#aebbc2',hair:'#51483f',cape:true,weapon:'sword'},
+ elsiaResident:{body:'#6e7166',accent:'#c5ad7f',hair:'#745a47'},zenith:{body:'#304a66',accent:'#9fb8c6',hair:'#4b4b53',cape:true,weapon:'sword'},returnScout:{body:'#863d45',accent:'#e4cf9b',hair:'#4a3e36',cape:true},decisionGuide:{body:'#575b63',accent:'#c4b58b',hair:'#77736c'},
+ shion:{body:'#344a66',accent:'#c4ab68',hair:'#30333a',cape:true,weapon:'sword'},granzFinal:{body:'#4b5360',accent:'#9b835d',hair:'#6b6862',cape:true,weapon:'sword'}
+};
+
+const PORTRAITS={
+ 'カレン':{hair:'#733e34',body:'#b84f56',accent:'#ead8b1',eyes:'#51362f',hairStyle:'long'},
+ 'トリトン':{hair:'#332c2a',body:'#49698a',accent:'#aeb7bf',eyes:'#30343b',hairStyle:'short'},
+ 'ソフィ':{hair:'#d1aa6a',body:'#e7e0c8',accent:'#6f9b77',eyes:'#526b55',hairStyle:'soft'},
+ 'マーガレット':{hair:'#e4e7ec',body:'#72568f',accent:'#b99ad1',eyes:'#554064',hairStyle:'long'},
+ '王国使者':{hair:'#40382f',body:'#8d3d46',accent:'#f0dfb6',eyes:'#3a342f',hairStyle:'short'},
+ '村長':{hair:'#aaa49a',body:'#68685f',accent:'#bd9b5e',eyes:'#49433f',hairStyle:'old'},
+ 'トリトンの父':{hair:'#3d312a',body:'#765a45',accent:'#b79a72',eyes:'#463b34',hairStyle:'short'},
+ '孤児院の子':{hair:'#704d37',body:'#a9796a',accent:'#d8c5a6',eyes:'#4d4037',hairStyle:'soft'},
+ 'ミカ':{hair:'#5f3a28',body:'#cc735c',accent:'#f0cf84',eyes:'#4e3428',hairStyle:'short'},
+ 'レン':{hair:'#4b382d',body:'#54789b',accent:'#d9c887',eyes:'#41372f',hairStyle:'short'},
+ 'ルル':{hair:'#8a603d',body:'#8d6ca0',accent:'#efe0b2',eyes:'#544238',hairStyle:'soft'},
+ 'パン屋のエダ':{hair:'#6b4938',body:'#b17f58',accent:'#eee0bd',eyes:'#47382f',hairStyle:'cap'},
+ '農夫のボル':{hair:'#5b4937',body:'#60704e',accent:'#b99b62',eyes:'#40372f',hairStyle:'cap'},
+ '老婆ナナ':{hair:'#d0cbc2',body:'#7b6e7c',accent:'#d6c6a0',eyes:'#5d5551',hairStyle:'old'},
+ '帰還兵ガルド':{hair:'#383a3b',body:'#555f68',accent:'#8f7755',eyes:'#36383a',hairStyle:'short'},
+ '行商人':{hair:'#4e3e31',body:'#6d5d48',accent:'#9b7b4d',eyes:'#40352d',hairStyle:'cap'},
+ '王国軍の斥候':{hair:'#3d342f',body:'#8a4048',accent:'#ead9ad',eyes:'#383431',hairStyle:'short'},
+ 'カレンの母':{hair:'#6d4635',body:'#9d675e',accent:'#e0c49c',eyes:'#543c33',hairStyle:'long'},
+ 'カレンの父':{hair:'#4a352b',body:'#665748',accent:'#b48d5e',eyes:'#3d332d',hairStyle:'short'},
+ 'リオ':{hair:'#744536',body:'#7f6d54',accent:'#d5b66f',eyes:'#4f382f',hairStyle:'soft'},
+ '世話役マルタ':{hair:'#847064',body:'#706b78',accent:'#d4c8aa',eyes:'#544943',hairStyle:'old'},
+ 'テオ':{hair:'#543b2d',body:'#637c91',accent:'#d9c07b',eyes:'#3f352e',hairStyle:'short'},
+ 'ノア':{hair:'#75513d',body:'#9b6c72',accent:'#e1bf83',eyes:'#533d33',hairStyle:'soft'},
+ 'エミ':{hair:'#9b6b44',body:'#7d719b',accent:'#e8d19c',eyes:'#594436',hairStyle:'soft'},
+ 'マーガレットの母':{hair:'#4b364f',body:'#665379',accent:'#c7a9d2',eyes:'#49374f',hairStyle:'long'},
+ '村役場の書記':{hair:'#43382f',body:'#5f6770',accent:'#bea66f',eyes:'#3b3530',hairStyle:'short'},
+ '兵士の母':{hair:'#594238',body:'#8f665f',accent:'#d6b48f',eyes:'#473a34',hairStyle:'long'},
+ '兵士の妹・ユナ':{hair:'#5b4337',body:'#6b738c',accent:'#d8bc87',eyes:'#493b35',hairStyle:'long'},
+ '王都係官':{hair:'#4a4038',body:'#8b4148',accent:'#ead8a8',eyes:'#3c3732',hairStyle:'short'},
+ '王都市民':{hair:'#665144',body:'#756756',accent:'#c6ae80',eyes:'#443b35',hairStyle:'soft'},
+ '花売りの少女':{hair:'#8a674c',body:'#9a6b72',accent:'#ead6a3',eyes:'#5e493b',hairStyle:'soft'},
+ '新兵':{hair:'#493c35',body:'#8b4148',accent:'#ead8a8',eyes:'#3c3732',hairStyle:'short'},
+ '総司令グランツ':{hair:'#6b6862',body:'#6f3138',accent:'#d8c395',eyes:'#3b3d42',hairStyle:'short'},
+ '避難民の母':{hair:'#74594d',body:'#795c58',accent:'#bfa779',eyes:'#4d4039',hairStyle:'long'},
+ '従軍僧':{hair:'#6b645d',body:'#d4cfbd',accent:'#826c55',eyes:'#4a4641',hairStyle:'short'},
+ '前線将校':{hair:'#463b34',body:'#843941',accent:'#e0c98f',eyes:'#37342f',hairStyle:'short'},
+ '王国斥候':{hair:'#493d35',body:'#7b3b43',accent:'#d8c38f',eyes:'#3f3732',hairStyle:'short'},
+ '負傷した帝国兵':{hair:'#48413c',body:'#334d69',accent:'#aebdc7',eyes:'#3a4046',hairStyle:'short'},
+ '王国兵':{hair:'#4b3a33',body:'#8b3e46',accent:'#efe0b6',eyes:'#38332f',hairStyle:'short'},
+ '帝国兵':{hair:'#373a40',body:'#2f4b69',accent:'#b6c5cf',eyes:'#34414b',hairStyle:'short'},
+ '衛生兵':{hair:'#6b5f57',body:'#d4d0c0',accent:'#7c8e73',eyes:'#49423d',hairStyle:'short'},
+ '帝国前衛隊長ヴァルク':{hair:'#272d35',body:'#304965',accent:'#c0ccd3',eyes:'#374755',hairStyle:'short'},
+ '王国の偵察兵':{hair:'#4b4037',body:'#7d3d44',accent:'#d9c491',eyes:'#423934',hairStyle:'short'},
+ '足止めされた商人':{hair:'#59483b',body:'#6d604e',accent:'#ba9d66',eyes:'#463c35',hairStyle:'cap'},
+ '宿場の女将':{hair:'#684b3d',body:'#8c6852',accent:'#d5bd8a',eyes:'#4c3e36',hairStyle:'soft'},
+ '宿場の子ども':{hair:'#76513c',body:'#7c7763',accent:'#ddc879',eyes:'#4d3e34',hairStyle:'soft'},
+ '監視砦長':{hair:'#55443b',body:'#76373f',accent:'#d7c18b',eyes:'#453a34',hairStyle:'short'},
+ '若い王国兵':{hair:'#53423a',body:'#844049',accent:'#dcca99',eyes:'#423833',hairStyle:'short'},
+ 'クラインテッド':{hair:'#3b3332',body:'#273d59',accent:'#b7c4cf',eyes:'#613c39',hairStyle:'long'},
+ '帝国の宿主':{hair:'#5c493c',body:'#687369',accent:'#c1ac7f',eyes:'#413a34',hairStyle:'soft'},
+ '帝国の子ども':{hair:'#8a684b',body:'#60798b',accent:'#d6bd79',eyes:'#4d4037',hairStyle:'soft'},
+ '果樹農家':{hair:'#5b4a3b',body:'#63715e',accent:'#b9a674',eyes:'#443a32',hairStyle:'cap'},
+ '帝国市民':{hair:'#544944',body:'#66707a',accent:'#aa9b78',eyes:'#403a37',hairStyle:'short'},
+ '記録係':{hair:'#61534c',body:'#5f6371',accent:'#b9a570',eyes:'#423a36',hairStyle:'short'},
+ '運河商人':{hair:'#5a493d',body:'#5a6c78',accent:'#bca271',eyes:'#423a34',hairStyle:'cap'},
+ '帝国の老兵':{hair:'#b3afa6',body:'#59646b',accent:'#927a59',eyes:'#4d4b47',hairStyle:'old'},
+ 'ゼスター':{hair:'#51483f',body:'#2d4557',accent:'#aebbc2',eyes:'#373b3d',hairStyle:'short'},
+ '聖域の住民':{hair:'#745a47',body:'#6e7166',accent:'#c5ad7f',eyes:'#493f37',hairStyle:'soft'},
+ '聖域の老人':{hair:'#c6c0b4',body:'#77736b',accent:'#c9b995',eyes:'#54504a',hairStyle:'old'},
+ 'ゼニス':{hair:'#4b4b53',body:'#304a66',accent:'#9fb8c6',eyes:'#36414a',hairStyle:'short'},
+ '王国軍伝令':{hair:'#4a3e36',body:'#863d45',accent:'#e4cf9b',eyes:'#3b3632',hairStyle:'short'},
+ '決断の地点':{hair:'#77736c',body:'#575b63',accent:'#c4b58b',eyes:'#454545',hairStyle:'old'},
+ '市場商人マロ':{hair:'#5d4230',body:'#85623f',accent:'#d5bd78',eyes:'#45372f',hairStyle:'cap'},
+ '配給待ちの母親':{hair:'#59463f',body:'#7b5a59',accent:'#d2b985',eyes:'#463a36',hairStyle:'soft'},
+ '白鹿亭の女将':{hair:'#72503f',body:'#8f6254',accent:'#dec394',eyes:'#4e3c34',hairStyle:'soft'},
+ '非番の王国兵':{hair:'#4a3d36',body:'#7f4148',accent:'#d8c69a',eyes:'#3c3733',hairStyle:'short'},
+ '王都の鍛冶師':{hair:'#42352f',body:'#5e5149',accent:'#b4774f',eyes:'#3c342f',hairStyle:'short'},
+ '鍛冶見習い':{hair:'#6d4d38',body:'#726457',accent:'#c8995d',eyes:'#4c3b31',hairStyle:'soft'},
+ '水鳥亭の主人':{hair:'#4f4842',body:'#506c78',accent:'#b9a579',eyes:'#3e3a37',hairStyle:'short'},
+ '運河の船頭':{hair:'#5a4a3e',body:'#536977',accent:'#9fb4bd',eyes:'#403a35',hairStyle:'cap'},
+ '古書店主':{hair:'#92877a',body:'#5b6370',accent:'#b9a570',eyes:'#4e4843',hairStyle:'old'},
+ '帝国の学生':{hair:'#4b3e39',body:'#607381',accent:'#b7a981',eyes:'#3e3935',hairStyle:'soft'},
+ '皇帝シオン':{hair:'#30333a',body:'#344a66',accent:'#c4ab68',eyes:'#344052',hairStyle:'long'}
+};
+function heroPortraitMarkup(speaker){
+ const commonStart=(bg1,bg2)=>`<svg viewBox="0 0 120 140" class="hero-portrait-svg" aria-hidden="true"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${bg1}"/><stop offset="1" stop-color="${bg2}"/></linearGradient><linearGradient id="skin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4d4bd"/><stop offset="1" stop-color="#d9a98f"/></linearGradient></defs><rect width="120" height="140" rx="10" fill="url(#bg)"/><circle cx="92" cy="25" r="38" fill="rgba(255,255,255,.055)"/><path d="M0 113 Q28 91 60 94 Q95 91 120 113 V140 H0Z" fill="rgba(0,0,0,.18)"/>`;
+ const face=`<path d="M43 39 Q60 26 77 39 L80 66 Q77 89 60 94 Q43 89 40 66Z" fill="url(#skin)"/><path d="M54 72 Q60 75 66 72" fill="none" stroke="#9f6258" stroke-width="2" stroke-linecap="round"/><path d="M50 59 Q54 56 58 59" fill="none" stroke="#5a4038" stroke-width="2.4" stroke-linecap="round"/><path d="M63 59 Q67 56 71 59" fill="none" stroke="#5a4038" stroke-width="2.4" stroke-linecap="round"/><circle cx="55" cy="60" r="1.7" fill="#2e2b2a"/><circle cx="68" cy="60" r="1.7" fill="#2e2b2a"/><path d="M60 62 Q58 68 61 68" fill="none" stroke="#bd856f" stroke-width="1.5" stroke-linecap="round"/>`;
+ if(speaker==='カレン')return commonStart('#5a2f34','#272f3f')+`<path d="M34 55 Q29 26 51 17 Q78 8 88 33 Q92 50 82 79 L76 62 Q80 43 69 32 Q55 23 42 38 L39 76 Q31 69 34 55Z" fill="#6c3a31"/><path d="M76 30 Q95 43 89 76 Q84 94 73 100 L76 72 Q84 54 76 30Z" fill="#5b302b"/><path d="M39 40 Q48 22 72 27 Q57 35 43 50Z" fill="#844739"/>${face}<path d="M48 54 Q54 50 58 53" stroke="#6b3d32" stroke-width="2" fill="none"/><path d="M63 53 Q69 50 73 54" stroke="#6b3d32" stroke-width="2" fill="none"/><path d="M40 88 Q51 98 60 98 Q71 98 81 88 L95 111 L86 140 H31 L23 111Z" fill="#a8434d"/><path d="M47 94 L60 105 L73 94 L78 111 L60 122 L42 111Z" fill="#efe0bd"/><path d="M31 113 L18 127 L28 140 H43 L42 111Z" fill="#7f333e"/><path d="M89 113 L102 127 L92 140 H77 L78 111Z" fill="#7f333e"/><circle cx="60" cy="110" r="4" fill="#d7b562"/><path d="M85 31 Q103 28 104 42 Q96 37 86 41Z" fill="#6c3a31"/><path d="M88 34 Q105 48 99 64" fill="none" stroke="#6c3a31" stroke-width="6" stroke-linecap="round"/>`+'</svg>';
+ if(speaker==='トリトン')return commonStart('#253c55','#20252d')+`<path d="M38 43 Q40 22 59 17 Q78 17 84 34 L79 50 Q73 34 58 32 Q44 34 41 49Z" fill="#2f2b2b"/><path d="M37 42 L32 54 L41 51 L38 65 L47 58 L45 38Z" fill="#252323"/><path d="M82 37 L90 48 L80 50 L84 61 L75 56 L76 34Z" fill="#252323"/>${face}<path d="M48 53 L58 51" stroke="#343238" stroke-width="2.4"/><path d="M63 51 L73 53" stroke="#343238" stroke-width="2.4"/><path d="M42 90 L60 100 L78 90 L97 111 L91 140 H29 L23 111Z" fill="#456988"/><path d="M49 96 L60 105 L71 96 L76 109 L60 117 L44 109Z" fill="#c2c9cf"/><path d="M25 111 Q37 103 47 109 L42 140 H20Z" fill="#7d8790"/><path d="M95 111 Q83 103 73 109 L78 140 H100Z" fill="#7d8790"/><path d="M31 114 L25 137" stroke="#d4d8da" stroke-width="4"/><path d="M89 114 L95 137" stroke="#d4d8da" stroke-width="4"/><path d="M28 117 L35 120" stroke="#6a4c34" stroke-width="5"/>`+'</svg>';
+ if(speaker==='ソフィ')return commonStart('#54664e','#2f3932')+`<path d="M38 45 Q35 23 56 16 Q76 14 85 34 Q90 55 80 82 L73 69 Q81 48 72 31 Q53 23 42 42 L43 76 Q35 66 38 45Z" fill="#c89f63"/><path d="M77 45 Q91 55 86 84 Q80 99 69 102 L72 75 Q81 60 77 45Z" fill="#b78c51"/><path d="M40 34 Q52 20 72 28 Q58 34 43 49Z" fill="#d9b476"/>${face}<path d="M49 54 Q54 52 58 54" stroke="#8a6a45" stroke-width="1.8" fill="none"/><path d="M63 54 Q68 52 72 54" stroke="#8a6a45" stroke-width="1.8" fill="none"/><path d="M46 73 Q60 81 74 73" stroke="#a86b60" stroke-width="1.5" fill="none"/><path d="M41 89 Q52 98 60 98 Q68 98 79 89 L94 111 L88 140 H32 L26 111Z" fill="#e8e0c9"/><path d="M41 91 L60 108 L79 91 L75 122 L60 132 L45 122Z" fill="#678e6c"/><path d="M30 115 Q42 107 47 114 L43 140 H21Z" fill="#d7d0bc"/><path d="M90 115 Q78 107 73 114 L77 140 H99Z" fill="#d7d0bc"/><circle cx="60" cy="114" r="5" fill="#c5ae70"/><path d="M82 72 Q96 82 90 103 Q86 112 78 116" fill="none" stroke="#b78c51" stroke-width="7" stroke-linecap="round"/><circle cx="91" cy="103" r="5" fill="#d5b16e"/>`+'</svg>';
+ if(speaker==='マーガレット')return commonStart('#3f3150','#202735')+`<path d="M34 55 Q32 27 50 17 Q74 6 87 31 Q93 48 85 83 L78 72 Q84 49 75 30 Q55 19 42 38 L40 81 Q31 70 34 55Z" fill="#e1e4e9"/><path d="M38 31 Q52 13 78 23 Q68 26 61 34 Q48 31 40 48Z" fill="#f3f4f6"/><path d="M79 34 Q96 51 89 91 Q85 105 75 111 L77 74 Q86 53 79 34Z" fill="#c9ced6"/>${face}<path d="M48 52 Q54 48 59 51" stroke="#b8bec8" stroke-width="2.2" fill="none"/><path d="M62 51 Q68 48 74 52" stroke="#b8bec8" stroke-width="2.2" fill="none"/><path d="M50 73 Q60 76 70 72" stroke="#94605e" stroke-width="1.5" fill="none"/><path d="M39 89 Q50 98 60 98 Q71 98 81 88 L96 112 L88 140 H31 L23 112Z" fill="#685083"/><path d="M45 92 L60 106 L76 92 L80 113 L60 126 L40 113Z" fill="#b69acb"/><path d="M53 106 L60 114 L67 106 L65 131 L55 131Z" fill="#332b3f"/><circle cx="60" cy="112" r="4" fill="#ccb86d"/><path d="M24 113 L12 132 L24 140 H42 L40 112Z" fill="#4e3a66"/><path d="M96 113 L108 132 L96 140 H78 L80 112Z" fill="#4e3a66"/>`+'</svg>';
+ return '';
+}
+function portraitMarkup(speaker){
+ if(['カレン','トリトン','ソフィ','マーガレット'].includes(speaker))return heroPortraitMarkup(speaker);
+ const p=PORTRAITS[speaker];
+ if(!p){
+  const icon=speaker==='ナレーション'?'◆':speaker==='システム'?'⚙':speaker.includes('宝箱')?'▣':speaker.includes('家')?'⌂':'◇';
+  return `<div class="portrait-symbol">${icon}</div>`
+ }
+ let hair='';
+ if(p.hairStyle==='long')hair=`<path fill="${p.hair}" d="M15 16h34v31h-7V24H22v23h-7z"/><rect x="20" y="10" width="24" height="10" fill="${p.hair}"/>`;
+ else if(p.hairStyle==='old')hair=`<rect x="18" y="10" width="28" height="8" fill="${p.hair}"/><rect x="15" y="16" width="8" height="12" fill="${p.hair}"/><rect x="41" y="16" width="8" height="12" fill="${p.hair}"/>`;
+ else if(p.hairStyle==='cap')hair=`<rect x="15" y="9" width="34" height="7" fill="${p.hair}"/><rect x="21" y="5" width="22" height="7" fill="${p.hair}"/><rect x="18" y="15" width="28" height="7" fill="${p.hair}"/>`;
+ else if(p.hairStyle==='soft')hair=`<rect x="18" y="9" width="28" height="8" fill="${p.hair}"/><rect x="14" y="15" width="10" height="13" fill="${p.hair}"/><rect x="40" y="15" width="10" height="13" fill="${p.hair}"/>`;
+ else hair=`<rect x="17" y="9" width="30" height="8" fill="${p.hair}"/><rect x="14" y="15" width="36" height="7" fill="${p.hair}"/>`;
+ return `<svg viewBox="0 0 64 72" class="portrait-svg" aria-hidden="true" shape-rendering="crispEdges"><rect width="64" height="72" fill="#272b31"/><rect x="4" y="4" width="56" height="64" rx="3" fill="#3a3532"/><path d="M8 72V60c0-9 9-15 24-15s24 6 24 15v12z" fill="${p.body}"/><rect x="25" y="42" width="14" height="12" fill="#d3ad91"/><rect x="17" y="16" width="30" height="31" fill="#ddb99e"/><rect x="14" y="25" width="4" height="11" fill="#c99f83"/><rect x="46" y="25" width="4" height="11" fill="#c99f83"/>${hair}<rect x="22" y="28" width="6" height="4" fill="${p.eyes}"/><rect x="37" y="28" width="6" height="4" fill="${p.eyes}"/><rect x="29" y="39" width="7" height="2" fill="#9b6658"/><rect x="10" y="57" width="44" height="6" fill="${p.accent}"/><rect x="4" y="4" width="56" height="3" fill="rgba(255,255,255,.08)"/></svg>`
+}
+GC.Data=GC.Data||{};GC.Data.NPCs={PARTY_STYLE,NPC_STYLE,PORTRAITS,portraitMarkup,heroPortraitMarkup};
+
+</script>
+  <script>
+'use strict';
+(function(){
+ const D={down:0,left:1,right:2,up:3},A=[24,44];
+ function def(character,name,frames,fps,loop){return{id:character+'.'+name,src:'assets/characters/'+character+'/'+character+'_'+name+'.png',frameW:48,frameH:48,frames:Array.from({length:frames},(_,i)=>i),fps,loop,directions:D,anchor:A,offset:[0,0],prototypeTemporary:true}}
+ const karen={
+  idle:def('karen','idle',4,4,true),walk:def('karen','walk',6,8,true),turn:def('karen','turn',3,12,false),talk:def('karen','talk',4,7,true),
+  surprise:def('karen','surprise',4,10,false),approach:def('karen','approach',4,10,false),laugh:def('karen','laugh',6,10,false),run:def('karen','run',6,11,true)
+ };
+ const triton={
+  idle:def('triton','idle',4,4,true),walk:def('triton','walk',6,7,true),turn:def('triton','turn',3,10,false),talk:def('triton','talk',4,6,true),
+  surprise:def('triton','surprise',4,9,false),approach:def('triton','approach',4,8,false),laugh:def('triton','laugh',6,9,false),run:def('triton','run',6,10,true)
+ };
+ const sophie={
+  idle:def('sophie','idle',4,4,true),walk:def('sophie','walk',6,7,true),turn:def('sophie','turn',3,9,false),talk:def('sophie','talk',4,6,true),
+  surprise:def('sophie','surprise',4,8,false),approach:def('sophie','approach',4,7,false),laugh:def('sophie','laugh',6,8,false),run:def('sophie','run',6,9,true)
+ };
+ const margaret={
+  idle:def('margaret','idle',4,4,true),walk:def('margaret','walk',6,6,true),turn:def('margaret','turn',3,8,false),talk:def('margaret','talk',4,6,true),
+  surprise:def('margaret','surprise',4,8,false),approach:def('margaret','approach',4,7,false),laugh:def('margaret','laugh',6,8,false),run:def('margaret','run',6,9,true)
+ };
+ const visualRules=Object.freeze({
+  prototypeTemporary:true,character:'karen',sourceCell:[48,48],logicalTile:32,anchor:[24,44],dominantHand:'left',swordHip:'right',stage:'A',
+  designDirection:'karen-chibi-direction-v1',reference:'docs/pixel/reference/karen_chibi_direction_v1.png',
+  hair:'large red-hair silhouette + low partial tie + loose hair',colorMass:'warm off-white + muted red + leather brown',
+  unresolved:['exactEyeColor','surname','formalWeaponDesign','formalWeaponName','stageBFinalHeroCostume','kingdomEmblem','heroCertificationMark','religiousEmblem']
+ });
+ const tritonVisualRules=Object.freeze({
+  prototypeTemporary:true,character:'triton',sourceCell:[48,48],logicalTile:32,anchor:[24,44],dominantHand:'right',stage:'A',
+  identity:'GROUND ANCHOR',designDirection:'triton-chibi-direction-lock-v1',reference:'docs/pixel/reference/triton_chibi_direction_lock_v1.png',
+  face:'readable narrow eyes + straight stable brows + restrained friendly idle mouth; distinct from Karen face template',
+  hair:'heavy dark unbound shoulder-length mass; face remains readable; tip lag only in motion',
+  colorMass:'off-white/gray upper + broad faded-blue waist/side horizontal block + sturdy leather',
+  posture:'broad shoulders + planted feet + low center of gravity + horizontal stability',
+  unresolved:['exactEyeColor','surname','formalWeaponDesign','formalWeaponName','stageBFinalHeroCostume','kingdomEmblem','heroCertificationMark','religiousEmblem']
+ });
+ const margaretVisualRules=Object.freeze({
+  prototypeTemporary:true,character:'margaret',sourceCell:[48,48],logicalTile:32,anchor:[24,44],dominantHand:'right',stage:'A',
+  designDirection:'margaret-chibi-direction-appeal-v7',reference:'docs/pixel/reference/margaret_chibi_direction_appeal_v7_48.png',
+  face:'readable violet eyes + gentle composed smile + cute protagonist-grade calm intelligence; never severe or blank',
+  hair:'silver-lavender high ponytail + face-framing bangs + old-gold clasp; strong clean silhouette with restrained sway',
+  colorMass:'deep indigo/plum + silver-lavender hair + ivory skin breaks + restrained old-gold and amethyst accents',
+  posture:'upright composed center of gravity + runtime-balanced chibi mass; no undersized narrow silhouette',
+  acting:'measured restrained motion; smaller whole-body amplitude than Karen; ponytail secondary to body read',
+  unresolved:['exactEyeColor','finalFourthCharacterColor','surname','formalWeaponDesign','formalWeaponName','stageBFinalHeroCostume','magicVisualLanguage','kingdomEmblem','heroCertificationMark','religiousEmblem']
+ });
+ const sophieVisualRules=Object.freeze({
+  prototypeTemporary:true,character:'sophie',sourceCell:[48,48],logicalTile:32,anchor:[24,44],dominantHand:'right',stage:'A',
+  identity:'STEADY HANDS',designDirection:'sophie-chibi-direction-appeal-v3',reference:'docs/pixel/reference/sophie_chibi_direction_appeal_v3_48.png',
+  face:'crisper calm green eyes + small warm smile; gentle readable expression distinct from Karen/Triton/Margaret',
+  hair:'honey/light golden-brown layered mass + practical gathered/braided structure; restrained lower-tip lag',
+  colorMass:'warm off-white/cream dominant + brown leather + muted green concentrated near hands and treatment storage',
+  posture:'smallest spatial footprint + soft adult body + calm narrow stance + both hands readable',
+  acting:'hands carry Talk/Approach/Surprise; smaller whole-body amplitude than Karen; lighter than Triton',
+  unresolved:['exactEyeColor','surname','formalWeaponDesign','formalWeaponName','stageBFinalHeroCostume','kingdomEmblem','heroCertificationMark','religiousEmblem']
+ });
+ GC.Data=GC.Data||{};
+ GC.Data.Animations={
+  definitions:Object.freeze({karen:Object.freeze(karen),triton:Object.freeze(triton),sophie:Object.freeze(sophie),margaret:Object.freeze(margaret)}),
+  visualRules,tritonVisualRules,sophieVisualRules,margaretVisualRules
+ };
+})();
+
+</script>
+  <script>
+'use strict';
+(function(){
+ const IMAGE_CACHE=new Map();
+ const RUNTIME_ALPHA_THRESHOLD=128;
+ function normalizeRuntimeAlpha(image){
+  if(typeof document==='undefined'||!image)return image;
+  const w=image.naturalWidth||image.width,h=image.naturalHeight||image.height;
+  if(!w||!h)return image;
+  const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+  const c=canvas.getContext('2d',{willReadFrequently:true});if(!c)return image;
+  c.clearRect(0,0,w,h);c.drawImage(image,0,0);
+  const data=c.getImageData(0,0,w,h),p=data.data;
+  for(let i=0;i<p.length;i+=4){if(p[i+3]>=RUNTIME_ALPHA_THRESHOLD)p[i+3]=255;else{p[i]=0;p[i+1]=0;p[i+2]=0;p[i+3]=0}}
+  c.putImageData(data,0,0);return canvas;
+ }
+ function defs(){return GC.Data?.Animations?.definitions||{}}
+ function characterDefs(character){return defs()[character]||{}}
+ function resolveDef(character,name){const set=characterDefs(character);return set[name]||set.idle||null}
+ function getAnimation(character,name){return resolveDef(character,name)}
+ function ensureImage(src){if(!src)return null;if(IMAGE_CACHE.has(src))return IMAGE_CACHE.get(src);const rec={src,image:null,ready:false,error:false};if(typeof Image!=='undefined'){const image=new Image();rec.image=image;image.onload=()=>{rec.image=normalizeRuntimeAlpha(image);rec.ready=true;rec.error=false};image.onerror=()=>{rec.ready=false;rec.error=true};image.src=src}IMAGE_CACHE.set(src,rec);return rec}
+ function overrideImage(src,dataUrl){const rec={src,image:null,ready:false,error:false};if(typeof Image!=='undefined'){const image=new Image();rec.image=image;image.onload=()=>{rec.ready=true;rec.error=false};image.onerror=()=>{rec.ready=false;rec.error=true};image.src=dataUrl}IMAGE_CACHE.set(src,rec);return rec}
+ function createActor(character,opts={}){return{id:opts.id||character,character,x:Number.isFinite(opts.x)?opts.x:0,y:Number.isFinite(opts.y)?opts.y:0,facing:opts.facing||'down',animation:opts.animation||'idle',startedAt:Number.isFinite(opts.startedAt)?opts.startedAt:Date.now(),renderMode:opts.renderMode||'pixel48-full',renderScale:Number.isFinite(opts.renderScale)&&opts.renderScale>0?opts.renderScale:1,visible:opts.visible!==false,layer:opts.layer||0,prototypeTemporary:opts.prototypeTemporary!==false}}
+ function setAnimation(actor,name,opts={}){if(!actor)return null;const set=characterDefs(actor.character),resolved=set[name]?name:(set.idle?'idle':Object.keys(set)[0]);if(resolved)actor.animation=resolved;if(opts.facing)actor.facing=opts.facing;if(opts.restart!==false)actor.startedAt=Number.isFinite(opts.now)?opts.now:Date.now();return resolveDef(actor.character,actor.animation)}
+ function setFacing(actor,facing){if(actor&&['down','left','right','up'].includes(facing))actor.facing=facing;return actor?.facing}
+ function frameInfo(actor,now=Date.now()){const def=resolveDef(actor?.character,actor?.animation);if(!def)return null;const frameCount=Math.max(1,Array.isArray(def.frames)?def.frames.length:Number(def.frameCount)||1),fps=Math.max(1,Number(def.fps)||1),elapsed=Math.max(0,now-(actor.startedAt||0)),raw=Math.floor(elapsed/(1000/fps)),index=def.loop===false?Math.min(frameCount-1,raw):(raw%frameCount),frame=Array.isArray(def.frames)?def.frames[index]??index:index;return{def,index,frame,finished:def.loop===false&&raw>=frameCount,durationMs:frameCount/fps*1000}}
+ function isFinished(actor,now=Date.now()){return !!frameInfo(actor,now)?.finished}
+ function renderGeometry(actor,def){const frameW=def?.frameW||48,frameH=def?.frameH||48,anchor=def?.anchor||[Math.floor(frameW/2),frameH-4],offset=def?.offset||[0,0],scale=Number.isFinite(actor?.renderScale)&&actor.renderScale>0?actor.renderScale:1,footX=actor.x*TILE+TILE/2,footY=actor.y*TILE+TILE,destW=Math.max(1,Math.round(frameW*scale)),destH=Math.max(1,Math.round(frameH*scale)),dx=Math.round(footX-anchor[0]*scale+offset[0]*scale),dy=Math.round(footY-anchor[1]*scale+offset[1]*scale);return{frameW,frameH,anchor,offset,scale,footX,footY,destW,destH,dx,dy}}
+ function drawActor(c,actor,now=Date.now()){if(!c||!actor||actor.visible===false)return false;const info=frameInfo(actor,now);if(!info)return false;const def=info.def,rec=ensureImage(def.src);if(!rec?.ready||!rec.image)return false;const g=renderGeometry(actor,def),directions=def.directions||{down:0,left:1,right:2,up:3},row=directions[actor.facing]??directions.down??0,shadowRx=Math.max(7,Math.round(10*g.scale)),shadowRy=Math.max(3,Math.round(4*g.scale));c.save();c.fillStyle='rgba(16,18,18,.30)';c.beginPath();c.ellipse(Math.round(g.footX),Math.round(g.footY-2),shadowRx,shadowRy,0,0,Math.PI*2);c.fill();c.imageSmoothingEnabled=false;c.drawImage(rec.image,info.frame*g.frameW,row*g.frameH,g.frameW,g.frameH,g.dx,g.dy,g.destW,g.destH);c.restore();return true}
+ function validateDefinition(def){const errors=[];if(!def||typeof def!=='object')return['definition missing'];if(!def.src)errors.push('src missing');if(def.frameW!==48||def.frameH!==48)errors.push('prototype cell must be 48x48');if(!Array.isArray(def.frames)||!def.frames.length)errors.push('frames missing');if(!(Number(def.fps)>0))errors.push('fps invalid');if(!def.directions||!['down','left','right','up'].every(k=>Number.isInteger(def.directions[k])))errors.push('directions invalid');if(!Array.isArray(def.anchor)||def.anchor.length!==2)errors.push('anchor invalid');return errors}
+ function validateAll(){const errors=[];for(const [character,set] of Object.entries(defs()))for(const [name,def] of Object.entries(set))for(const e of validateDefinition(def))errors.push(character+'.'+name+': '+e);return{ok:errors.length===0,errors}}
+ GC.Animation={IMAGE_CACHE,getAnimation,ensureImage,overrideImage,createActor,setAnimation,setFacing,frameInfo,isFinished,renderGeometry,drawActor,validateDefinition,validateAll};
+})();
+</script>
+  <script>
+'use strict';
+const AUDIO={enabled:true,ctx:null,master:null,theme:'village',timer:null,step:0};
+function ensureAudio(){if(!AUDIO.enabled||AUDIO.ctx)return;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;try{AUDIO.ctx=new AC();AUDIO.master=AUDIO.ctx.createGain();AUDIO.master.gain.value=.11;AUDIO.master.connect(AUDIO.ctx.destination);startMusicLoop()}catch(_){AUDIO.ctx=null;AUDIO.master=null}}
+function audioTone(freq=440,dur=.08,type='square',gain=.06,delay=0){if(!AUDIO.enabled||!AUDIO.ctx)return;const t=AUDIO.ctx.currentTime+delay,o=AUDIO.ctx.createOscillator(),g=AUDIO.ctx.createGain();o.type=type;o.frequency.setValueAtTime(freq,t);g.gain.setValueAtTime(gain,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);o.connect(g);g.connect(AUDIO.master);o.start(t);o.stop(t+dur)}
+function sfx(name){ensureAudio();if(!AUDIO.ctx)return;if(name==='slash'){audioTone(180,.045,'sawtooth',.15);audioTone(90,.07,'square',.08,.03)}else if(name==='hit'){audioTone(72,.09,'square',.16);audioTone(140,.045,'sawtooth',.08)}else if(name==='magic'){audioTone(520,.11,'sine',.08);audioTone(780,.14,'sine',.05,.05)}else if(name==='heal'){audioTone(440,.12,'sine',.06);audioTone(660,.16,'sine',.05,.08)}else if(name==='select'){audioTone(520,.035,'square',.035)}else if(name==='step'){audioTone(120,.035,'triangle',.035)}else if(name==='reaction'){audioTone(460,.05,'sine',.035);audioTone(620,.06,'sine',.022,.035)}else if(name==='pickup'){audioTone(494,.085,'sine',.045);audioTone(659,.11,'sine',.03,.08)}
+ else if(name==='ceremonyBell'){audioTone(440,.25,'sine',.052);audioTone(659,.4,'sine',.03,.17)}else if(name==='lever'){audioTone(180,.13,'triangle',.055);audioTone(112,.2,'square',.02,.09)}
+ else if(name==='discovery'){audioTone(330,.10,'sine',.026);audioTone(440,.18,'sine',.022,.10)}else if(name==='guard'){audioTone(220,.10,'triangle',.055);audioTone(164,.16,'sine',.032,.035)}else if(name==='rally'){audioTone(392,.09,'triangle',.035);audioTone(523,.16,'sine',.042,.07)}else if(name==='victory'){[523,659,784].forEach((f,i)=>audioTone(f,.22,'sine',.07,i*.1))}}
+function mapMusicTheme(map){if(map==='ashroad')return 'ashroad';if(map==='frontier')return 'frontier';if(map==='frontierfield')return 'frontierfield';if(map==='capitalinn')return 'capitalInn';if(map==='capitalarmory')return 'capitalArmory';if(map==='village'||INTERIOR_MAPS.includes(map))return 'village';if(map==='capital')return 'capital';if(map==='road'||map==='northroad')return 'road';if(map==='cave')return 'cave';return 'travel'}
+function setMusic(theme){AUDIO.theme=theme;if(AUDIO.ctx)startMusicLoop()}
+function startMusicLoop(){if(typeof clearInterval==='function'&&AUDIO.timer)clearInterval(AUDIO.timer);if(!AUDIO.enabled||!AUDIO.ctx||typeof setInterval!=='function')return;AUDIO.step=0;const seqs={ashroad:[165,147,196,147],frontier:[131,165,196,165],frontierfield:[123,147,131,110],village:[262,330,392,330],road:[220,294,330,294],capital:[262,392,440,392],capitalInn:[220,262,330,262],capitalArmory:[131,196,165,196],battle:[147,196,220,196],boss:[110,147,165,131],cave:[147,174,196,174],travel:[196,262,294,262]};AUDIO.timer=setInterval(()=>{
+ const note=GC.CommercialSoundscape?.beat?.(AUDIO.theme,AUDIO.step++);
+ if(note){
+  if(note.melody!=null)audioTone(note.melody,.29,note.voice,note.gain);
+  if(note.bass!=null)audioTone(note.bass,.38,'sine',note.gain*.62,.025);
+ }else{
+  const seq=seqs[AUDIO.theme]||seqs.travel,f=seq[(AUDIO.step-1)%seq.length];
+  audioTone(f,.33,'triangle',.018);if(AUDIO.step%2===0)audioTone(f/2,.42,'sine',.012)
+ }
+},430)}
+function toggleSound(){AUDIO.enabled=!AUDIO.enabled;const b=$('btnSound');if(b){b.setAttribute('aria-pressed',String(AUDIO.enabled));b.textContent=AUDIO.enabled?'♪ 音声 ON':'♪ 音声 OFF'}if(AUDIO.enabled){if(AUDIO.master)AUDIO.master.gain.value=.11;ensureAudio();setMusic(state.battle?(state.battle.id==='boss'?'boss':'battle'):mapMusicTheme(state.map))}else{if(AUDIO.master)AUDIO.master.gain.value=0;if(AUDIO.timer&&typeof clearInterval==='function')clearInterval(AUDIO.timer);AUDIO.timer=null}}
+GC.Audio={ensureAudio,audioTone,sfx,mapMusicTheme,setMusic,startMusicLoop,toggleSound,AUDIO};
+
+</script>
   <script src="js/systems/progression.js"></script>
   <script src="js/data/events.js"></script>
   <script src="js/data/battles.js"></script>
