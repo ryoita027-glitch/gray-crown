@@ -139,7 +139,8 @@ test('opening renderer respects draw order and the 5fps idle cap',()=>{
  assert.ok(html.indexOf('js/render/opening_worldlife.js')<html.indexOf('js/render/world.js'));
  assert.match(world,/OpeningWorldLife\.ground\(ctx,state\.map,state\.events\.choices\);m\.objects\.forEach\(drawObject\)/);
  assert.match(world,/OpeningWorldLife\.villager\(ctx,state\.map,n,Date\.now\(\)\)/);
- assert.match(world,/lifeNow-VISUAL\.lastWorldLifeFrame<200/);
+ assert.match(world,/VISUAL\.ambientTimer=setTimeout\(\(\)=>draw\(\),200\)/);
+ assert.doesNotMatch(world,/worldLifeRunning&&VISUAL\.map===state\.map/);
  assert.match(world,/OpeningWorldLife\.blocks\(state\.map,x,y\)/);
  assert.match(world,/OpeningWorldLife\.shouldBreathe\(state\.map,state\.x,state\.y,m\.npcs\)/);
 });

@@ -186,7 +186,9 @@ const OpeningWorldLife=(()=>{
   if(!api.enabled||!living.has(n.id)||!maps.has(map))return false;
   const x=n.x*32,y=n.y*32;
   const beat=Math.floor(now/1050)%4===1?1:0;
-  clothes(c,n.id,x,y);
+  // The dedicated NPC atlas already includes distinct garments.
+  // Only the old fallback renderer needs the historic costume overlay.
+  if(typeof OpeningPixelAssets==='undefined'||!OpeningPixelAssets.designs[n.id])clothes(c,n.id,x,y);
   if(n.id==='baker'){
    // Tray of loaves makes the baker legible even without opening dialogue.
    R(c,'#725238',x+18,y+16-beat,19,5);
@@ -220,10 +222,15 @@ const OpeningWorldLife=(()=>{
   }
   return true
  }
+ // Indoor workshops also have genuinely working NPCs. Ordinary stationary
+ // civilians must not trigger wasteful, in-place walking cycles.
+ const ambientWorkplaces=new Set(['village','road','capital','capitalarmory','capitalinn','mayorhouse']);
+ const animatedWorkers=new Set(['baker','farmer','merchant','capitalVendor','capitalFlowerGirl',
+  'capitalSmith','armoryApprentice','clerk','capitalInnHost']);
  function shouldBreathe(map,playerX,playerY,npcs){
-  if(!api.enabled||!maps.has(map))return false;
+  if(!api.enabled||!ambientWorkplaces.has(map))return false;
   if(typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches)return false;
-  return Array.isArray(npcs)&&npcs.some(n=>living.has(n.id)&&Math.abs(n.x-playerX)+Math.abs(n.y-playerY)<=5)
+  return Array.isArray(npcs)&&npcs.some(n=>animatedWorkers.has(n.id)&&Math.abs(n.x-playerX)+Math.abs(n.y-playerY)<=5)
  }
  // These stalls were already represented as solid-looking art in the old capital.
  // Preserve map symbols but align physical movement with that presentation.
