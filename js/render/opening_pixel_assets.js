@@ -48,7 +48,7 @@ const OpeningPixelAssets=(()=>{
  const P=(c,color,x,y,w,h)=>{c.fillStyle=color;c.fillRect(x|0,y|0,w|0,h|0)};
  function canvas(w,h){
   if(typeof document==='undefined'||!document.createElement)return null;
-  const el=document.createElement('canvas');el.width=w;el.height=h;
+  const el=document.createElement('canvas');if(typeof el.getContext!=='function')return null;el.width=w;el.height=h;
   return el
  }
  function part(c,col,x,y,w,h){
