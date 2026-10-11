@@ -74,6 +74,15 @@ function runTriggeredEvent(type,target,context={}){
   });
   return true
  }
+ if(type==='npc'&&target==='frontierOfficer'&&(context.map??state.map)==='frontier'&&
+    isEventComplete('alpha2.frontier2.complete')&&isEventComplete('optional.serad.graves')){
+   const response=getWorldSwitch('optionalSeradGravesCare')
+    ?'「仮埋葬地を整えたと聞いた。どちらの軍の墓か問わずに、か。……報告書には残らんが、忘れない」'
+    :getWorldSwitch('optionalSeradGravesRecord')
+    ?'「墓の記録を取ったのか。遺族が探しに来た時に照合できる。控えを預からせてくれ」'
+    : '「墓に立ち止まらなかったことを責めはしない。生存者を守るにも時間は要るからな」';
+   say('前線将校',response);return true
+ }
  const def=findTriggeredEvent(type,target,context);if(!def)return false;if(def.id==='alpha.village.appointment'&&GC.RyuneActing?.runAppointment)return GC.RyuneActing.runAppointment(def,context);if(def.id==='alpha.capital.ceremony'&&typeof CapitalActing!=='undefined')return CapitalActing.runCeremony(def,context);GC.Log?.info('Story Event Start',{id:def.id,type,target,map:context.map??state.map});GC.Dev?.noteEvent?.(def.id);playEventDialogue(def,()=>{applyEventEffects(def,context);if(def.postLines?.length===0&&typeof canvas!=='undefined')canvas.focus()});return true}
 function inlineNpcEvent(id){
  if(state.map==='village'){
