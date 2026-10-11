@@ -34,6 +34,13 @@ test('Ash Crown release keeps Karen and Triton while demand leaves Karen alone',
   assert.equal(visual.includes('トリトン'),choice==='release');
  }
 });
+test('older saves with prior Ash Crown decision but no new world switch still split the party',()=>{
+ const h=createHarness();
+ h.evaluate("state.finalChoice='ashcrown';state.events.choices['route.companions.ashcrown']='release'");
+ assert.equal(h.evaluate('activeRouteParty().map(p=>p.id).join(",")'),'karen,triton');
+ h.evaluate("state.events.choices['route.companions.ashcrown']='demand'");
+ assert.equal(h.evaluate('activeRouteParty().map(p=>p.id).join(",")'),'karen');
+});
 test('Ash Crown checkpoint can end by surrender without causing a moral kill',()=>{
  const h=separated('demand');
  h.evaluate("startBattle('ashcrownCheckpoint');state.locked=false;battleWin('surrender')");
