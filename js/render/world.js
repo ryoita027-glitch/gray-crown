@@ -554,7 +554,7 @@ function currentQuestTarget(){const candidate=GC.CommercialDiscovery?.questHint?
 function drawQuestMarker(){const q=currentQuestTarget();if(!q)return;const m=maps[state.map],item=q.kind==='npc'?m.npcs.find(n=>n.id===q.id&&npcVisible(n)):m.objects.find(o=>o.id===q.id&&visibleObject(o));if(!item)return;const px=item.x*TILE+16,py=item.y*TILE-8;ctx.fillStyle='rgba(26,20,11,.78)';ctx.beginPath();ctx.arc(px,py,8,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f2cf67';ctx.beginPath();ctx.moveTo(px,py-6);ctx.lineTo(px+5,py);ctx.lineTo(px,py+6);ctx.lineTo(px-5,py);ctx.closePath();ctx.fill();ctx.strokeStyle='#fff0ad';ctx.lineWidth=1;ctx.stroke()}
 function drawAreaIdentity(){/* area identity is rendered by the HTML world HUD */}
 function viewScale(){if(INTERIOR_MAPS.includes(state.map))return 1.18;if(['capital','imperialcity','borderland','watchfort','empirevillage','elsia'].includes(state.map))return 1.25;return 1.16}
-const VISUAL={lastActingFrame:0,map:null,camX:0,camY:0,playerX:0,playerY:0,followers:[[12,13],[13,13],[14,13]],raf:0,nextMoveAt:0};
+const VISUAL={lastActingFrame:0,lastWorldLifeFrame:0,worldLifeRunning:false,map:null,camX:0,camY:0,playerX:0,playerY:0,followers:[[12,13],[13,13],[14,13]],raf:0,nextMoveAt:0};
 function partyTrailPoints(){
  // Followers follow their actual route history at fixed intervals:
  // 2, 4 and 6 steps behind Karen. Never reorder points into a zig-zag.
@@ -590,6 +590,14 @@ function partyTrailPoints(){
 }
 function cameraForMap(){const o=GC.Cinematic?.cameraTarget?.(),scale=o?.scale||viewScale(),vw=canvas.width/scale,vh=canvas.height/scale,worldW=COLS*TILE,worldH=ROWS*TILE,fx=Number.isFinite(o?.x)?o.x:state.x,fy=Number.isFinite(o?.y)?o.y:state.y,cx=fx*TILE+TILE/2,cy=fy*TILE+TILE/2;return{scale,x:Math.max(0,Math.min(worldW-vw,cx-vw/2)),y:Math.max(0,Math.min(worldH-vh,cy-vh/2))}}
 function drawScene(){
+ // Idle micro-actions are 5fps maximum; camera and controls remain responsive.
+ const lifeNow=Date.now();
+ if(VISUAL.worldLifeRunning&&VISUAL.map===state.map&&
+    Math.abs(state.x-VISUAL.playerX)<.005&&Math.abs(state.y-VISUAL.playerY)<.005&&
+    lifeNow-VISUAL.lastWorldLifeFrame<200){
+  cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene);return
+ }
+ VISUAL.lastWorldLifeFrame=lifeNow;
  // Dialogue's approved sheet poses need ~12fps, not an expensive full 60fps
  // terrain repaint while the player is paused reading long character lines.
  if(GC.CommercialActing?.active?.()&&VISUAL.map===state.map){
@@ -610,7 +618,9 @@ function drawScene(){
  const followerTargets=partyTrailPoints(),followerMoving=VISUAL.followers.some((p,i)=>{const t=followerTargets[i]||p;return Math.abs(t[0]-p[0])>.01||Math.abs(t[1]-p[1])>.01});const moving=cinematicActive||Math.abs(target.x-VISUAL.camX)>.08||Math.abs(target.y-VISUAL.camY)>.08||Math.abs(state.x-VISUAL.playerX)>.01||Math.abs(state.y-VISUAL.playerY)>.01||followerMoving;
  const f=front(),interactableNpc=m.npcs.find(n=>npcVisible(n)&&n.x===f.x&&n.y===f.y),interactableObject=m.objects.find(o=>o.x===f.x&&o.y===f.y&&visibleObject(o));
  GC.CommercialUX?.update?.(state.map,interactableNpc,interactableObject);
- if(moving||GC.CommercialActing?.active?.()){cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene)}
+ const worldLifeMotion=!isInputLocked()&&OpeningWorldLife.shouldBreathe(state.map,state.x,state.y,m.npcs);
+ VISUAL.worldLifeRunning=!!worldLifeMotion;
+ if(moving||GC.CommercialActing?.active?.()||worldLifeMotion){cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene)}
 }
 function draw(){cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene)}
 
