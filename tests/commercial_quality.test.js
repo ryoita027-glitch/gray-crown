@@ -51,3 +51,31 @@ test('multi-enemy targeting selects a living enemy, defaults safely and rejects 
  h.evaluate("state.locked=false;state.battle=null");
  assert.equal(h.evaluate("GC.Battle.selectedEnemy()===null"),true);
 });
+
+test('all four approved 48px character sheets include genuine idle and talk frames',()=>{
+ const fs=require('node:fs'),path=require('node:path');
+ const root=path.resolve(__dirname,'..');
+ for(const name of ['karen','triton','sophie','margaret']){
+  for(const [motion,frames] of [['idle',4],['talk',4],['walk',6]]){
+   const png=fs.readFileSync(path.join(root,'assets','characters',name,name+'_'+motion+'.png'));
+   assert.equal(png.subarray(1,4).toString(),'PNG');
+   assert.equal(png.readUInt32BE(16),frames*48,name+' '+motion+' wrong frame width');
+   assert.equal(png.readUInt32BE(20),4*48,name+' '+motion+' wrong directional height');
+  }
+ }
+ const source=fs.readFileSync(path.join(root,'js/render/world.js'),'utf8');
+ assert.match(source,/HERO_RUNTIME\.acting\[id\]\[action\]=another/);
+ assert.match(source,/spokenHero===a\.id\?'talk':'idle'/);
+ const dialogue=fs.readFileSync(path.join(root,'js/systems/dialogue.js'),'utf8');
+ assert.match(dialogue,/GC\.Render\?\.World\?\.draw\?\.\(\)/);
+});
+test('discovery announcements derive only from existing canonical event IDs',()=>{
+ const h=createHarness();
+ const original=JSON.parse(JSON.stringify(h.evaluate(
+  "EVENT_DEFS.map(e=>e.id)"
+  )));
+ const added=JSON.parse(JSON.stringify(h.evaluate("Object.keys(CommercialQuality.discoveries)")));
+ for(const id of added)assert.ok(original.includes(id),'discovery references nonexistent canonical event '+id);
+ assert.ok(added.length>=8);
+ assert.equal(h.evaluate("CommercialQuality.showDiscovery('not-an-event')"),false);
+});
