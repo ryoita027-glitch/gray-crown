@@ -74,7 +74,7 @@ function routeCompanionScene(route){
 // A route-scoped active roster. Never remove saved party members or their experience.
 function activeRouteParty(s=state){
  const full=s.party||[];
- if(s.finalChoice!=='ashcrown'||!s.world?.switches?.ashcrownPartySeparated)return full;
+ if(s.finalChoice!=='ashcrown')return full;
  const choice=s.events?.choices?.['route.companions.ashcrown'];
  if(choice!=='release'&&choice!=='demand')return full;
  const allowed=choice==='release'?new Set(['karen','triton']):new Set(['karen']);
