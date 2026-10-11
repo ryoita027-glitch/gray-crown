@@ -21,7 +21,7 @@
 - Still uses the game's original 48px temporary protagonist sheets; this is mechanical repair, **not** hand-animated protagonist artwork.
 
 ### 3. Village residents and houses: distinct source atlases
-- New `js/render/opening_pixel_assets.js` defines individually authored hair, outfit color, class, silhouette and accessories for **34** early-area named resident IDs, covering the complete NPC lists in Ryune Village, its four buildings, road, capital, inn and armory. Generated **4 directions × 4 physically different arm/leg frames** at 32×32 per named NPC and cached in a single 128×128 Canvas sheet for that individual. This is editable source/at-runtime sprite data, **NOT delivered as pre-rendered PNG files**.
+- New `js/render/opening_pixel_assets.js` defines individually authored hair, outfit color, class, silhouette and accessories for **35** early-area named resident IDs, covering the complete NPC lists in Ryune Village, its four buildings, road, capital, inn and armory. Generated **4 directions × 4 physically different arm/leg frames** at 32×32 per named NPC and cached in a single 128×128 Canvas sheet for that individual. This is editable source/at-runtime sprite data, **NOT delivered as pre-rendered PNG files**.
 - Four distinct houses generate independent cached 104×108 tile images: family home, orphanage, mayor home, cottage. Each has distinct roof/drainage/window/frontage features and is called by existing `RyuneEnvironment`.
 - Fallback to the previous renderer if an Offscreen/DOM canvas is unavailable (e.g. existing headless Node harness). The test harness now loads the two opening art modules in production script order.
 
