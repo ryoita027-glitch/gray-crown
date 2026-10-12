@@ -31,6 +31,8 @@
     "battle-sprite-browser-test": "python tests/browser_battle_visible_motion_art_e2e.py",
     "visual-playability-acceptance": "node tests/check-syntax.js && npm test && npm run battle-sprite-browser-test",
     "build:play": "python tools/build_player_release.py",
-    "build:single": "python tools/build_standalone_html.py"
+    "build:single": "python tools/build_standalone_html.py",
+    "verify:release": "python -m unittest discover -s tests -p test_player_release_integrity.py",
+    "release:checked": "npm run verify:release && npm run build:play && npm run build:single"
   }
 }
