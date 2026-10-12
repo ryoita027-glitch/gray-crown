@@ -16,3 +16,6 @@ prototype_artifacts/
 Thumbs.db
 *.swp
 *.tmp
+
+# Player-only distributables generated locally
+dist/
