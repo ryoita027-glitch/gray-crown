@@ -131,7 +131,8 @@ function featuredResidentPortraitMarkup(speaker){
  const backdrops=['#445246','#4d493d','#554957','#4a5b69','#51434b',
   '#50634f','#4a6270','#546474','#77756c'];
  const backdrop=backdrops[i];
- const path='assets/npc/featured_residents_v1.png';
+ const legacy=typeof window!=='undefined'&&/(?:^|[?&])npcArt=legacy(?:&|$)/.test(window.location.search||'');
+ const path=legacy?'assets/npc/featured_residents_v1.png':'assets/npc/featured_residents_charm_v3.png';
  const source=(typeof window!=='undefined'&&window.__GC_INLINE_ASSETS__?.[path])||path;
  return `<svg class="portrait-svg resident-portrait" viewBox="0 0 64 72" aria-hidden="true" shape-rendering="crispEdges"><defs><clipPath id="${id}"><rect x="0" y="0" width="64" height="64"/></clipPath></defs><rect width="64" height="72" fill="${backdrop}"/><rect y="64" width="64" height="8" fill="#252c2b"/><g clip-path="url(#${id})"><image href="${source}" x="-${i*64}" y="0" width="576" height="256" style="image-rendering:pixelated"/></g></svg>`;
 }

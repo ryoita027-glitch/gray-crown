@@ -144,6 +144,7 @@ const OpeningPixelAssets=(()=>{
 
  // Nine bespoke resident silhouettes with four separately drawn directions.
  // Real transparent PNG pixel source, not another tint over the shared body.
+ const useLegacyArt=typeof window!=='undefined'&&/(?:^|[?&])npcArt=legacy(?:&|$)/.test(window.location.search||'');
  const featuredNames=['baker','farmer','oldwoman','mayor','messenger','ren',
   'capitalFlowerGirl','capitalRecruit','granz'];
  const featuredIndex=new Map(featuredNames.map((id,i)=>[id,i]));
@@ -166,7 +167,7 @@ const OpeningPixelAssets=(()=>{
      else GC?.Render?.World?.draw?.();
     };
     featuredSheet.onerror=()=>{featuredFailed=true;GC?.Log?.warn?.('Featured residents atlas failed to load')};
-    featuredSheet.src='assets/npc/featured_residents_v1.png';
+    featuredSheet.src=useLegacyArt?'assets/npc/featured_residents_v1.png':'assets/npc/featured_residents_charm_v3.png';
    }catch(e){featuredFailed=true;GC?.Log?.warn?.('Featured residents atlas unavailable',{detail:String(e)})}
   }
   if(!featuredReady)return false;
@@ -181,7 +182,7 @@ const OpeningPixelAssets=(()=>{
      else GC?.Log?.warn?.('Resident gesture PNG has unexpected dimensions');
     };
     actionSheet.onerror=()=>{actionsFailed=true;GC?.Log?.warn?.('Resident gesture PNG unavailable')};
-    actionSheet.src='assets/npc/featured_resident_actions_v2.png';
+    actionSheet.src=useLegacyArt?'assets/npc/featured_resident_actions_v2.png':'assets/npc/featured_resident_actions_charm_v3.png';
    }catch(e){actionsFailed=true;GC?.Log?.warn?.('Resident gesture PNG blocked',{detail:String(e)})}
   }
   let pose=0;
@@ -196,7 +197,8 @@ const OpeningPixelAssets=(()=>{
  }
  function featuredStatus(){return {requested:featuredRequested,ready:featuredReady,
   failed:featuredFailed,count:featuredNames.length,
-  gesturesRequested:actionsRequested,gesturesReady:actionsReady,gesturesFailed:actionsFailed}}
+  gesturesRequested:actionsRequested,gesturesReady:actionsReady,gesturesFailed:actionsFailed,
+  artVersion:useLegacyArt?'classic-v1':'concept-charm-v3'}}
  const dirs={down:0,left:1,right:2,up:3};
  const npcCache=new Map(),houseCache=new Map();
  const P=(c,color,x,y,w,h)=>{c.fillStyle=color;c.fillRect(x|0,y|0,w|0,h|0)};
