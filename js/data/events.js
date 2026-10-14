@@ -544,10 +544,10 @@ const EVENT_DEFS=Object.freeze([
    lines:[
     {speaker:'畑の畝',text:'乾いた土の間に、まばらな青い芽が残っている。収穫を待つ畑と、すでに空になった畝が隣り合っている。'},
     {speaker:'トリトン',text:'「この辺り、前はもっと土が柔らかかったよな。水を引く溝を見直せば、まだ少しは育つかも」'},
-    {speaker:'マーガレット',text:'「東の小川も見ておきましょう。原因も分からないまま手を入れたら、畑を傷めるだけ」'}
+    {speaker:'マーガレット',text:'「今見たことはボルに伝えられるわ。小川の様子も分かれば、もう少し原因を絞れそうね」'}
    ],effects:[
     {type:'completeEvent',id:'ryune.fields.inspect'},
-    {type:'journal',text:'リュネ村の西畑では一部の畝が乾いていた。東の小川の様子も確認することにした。'}
+    {type:'journal',text:'リュネ村の西畑では一部の畝が乾いていた。ボルへの報告は今でもできる。小川を確かめれば情報が増える。'}
    ]},
   {id:'ryune.fields.inspect.repeat',priority:10,trigger:{type:'object',map:'ryunefields',target:'fieldFurrows'},
    when:[{eventComplete:'ryune.fields.inspect'}],lines:[{speaker:'畑の畝',text:'まばらな芽を傷つけないよう、踏み跡の横から畝を眺めた。'}]},
@@ -556,10 +556,10 @@ const EVENT_DEFS=Object.freeze([
    lines:[
     {speaker:'小川の水辺',text:'小川は浅い。橋の下の水路には泥と小枝がたまり、水がゆっくり流れている。'},
     {speaker:'ソフィ',text:'「水がなくなったわけじゃないんですね。畑までちゃんと届いていないのかも」'},
-    {speaker:'カレン',text:'「村へ帰ったら、見たことを伝えよう。私たちだけで勝手に掘るより、みんなで考えた方がいい」'}
+    {speaker:'カレン',text:'「戻ったらボルに伝えよう。私たちだけで勝手に掘るわけにはいかないからね」'}
    ],effects:[
     {type:'completeEvent',id:'ryune.brook.inspect'},
-    {type:'journal',text:'村東側の小川には水が残っているが、橋の下には泥と小枝がたまっていた。西畑の状態と合わせて農夫へ伝える。'}
+    {type:'journal',text:'村東側の小川には水が残り、橋の下に泥と小枝がたまっていた。畑へ行かなくても農夫への報告はできる。'}
    ]},
   {id:'ryune.brook.inspect.repeat',priority:10,trigger:{type:'object',map:'ryunebrook',target:'brookWater'},
    when:[{eventComplete:'ryune.brook.inspect'}],lines:[{speaker:'小川の水辺',text:'水は細く流れている。むやみに水路へ入らず、村の人に状況を伝えることにした。'}]},
@@ -606,7 +606,34 @@ const EVENT_DEFS=Object.freeze([
     {type:'openTreasure',id:'outskirtsThanks'},
     {type:'journal',text:'西畑と東の小川の様子を農夫ボルへ報告し、旅の携帯食を受け取った。'}
    ]},
-  // World follow-up is visible only after a VOLUNTARY full local report.
+  // If the player independently explores the other side LATER, Boru can
+  // accept a second piece of evidence WITHOUT paying a second ration or
+  // pretending the previously-unvisited site was already measured.
+  {id:'ryune.outskirts.followup.fields',priority:60,
+   trigger:{type:'npc',map:'village',target:'farmer'},
+   when:[{eventComplete:'ryune.outskirts.reward'},
+    {eventComplete:'ryune.fields.inspect'},
+    {eventIncomplete:'ryune.outskirts.reported.fields'}],
+   lines:[
+    {speaker:'農夫のボル',text:'「西の畝の話も分かった。今度は畑側の高さを測って、川の記録と合わせてみるよ」'},
+    {speaker:'トリトン',text:'「無理に掘らないでね。苗が残ってるところはまだ生きてる」'}
+   ],effects:[
+    {type:'completeEvent',id:'ryune.outskirts.reported.fields'},
+    {type:'journal',text:'後から確認した西畑の乾いた畝について、ボルへ追加で伝えた。'}
+   ]},
+  {id:'ryune.outskirts.followup.brook',priority:60,
+   trigger:{type:'npc',map:'village',target:'farmer'},
+   when:[{eventComplete:'ryune.outskirts.reward'},
+    {eventComplete:'ryune.brook.inspect'},
+    {eventIncomplete:'ryune.outskirts.reported.brook'}],
+   lines:[
+    {speaker:'農夫のボル',text:'「橋の下の水位の話も助かる。畑と照らし合わせて、少しずつ確かめていくよ」'},
+    {speaker:'ソフィ',text:'「水を動かす前に、作業する人の足場にも気をつけてくださいね」'}
+   ],effects:[
+    {type:'completeEvent',id:'ryune.outskirts.reported.brook'},
+    {type:'journal',text:'後から確認した小川の泥詰まりについて、ボルへ追加で伝えた。'}
+   ]},
+  // World follow-up is visible only after a VOLUNTARY report for that site.
   // Residents remember information; no magical instant irrigation repair.
   {id:'ryune.fields.worker.afterReport',priority:35,
    trigger:{type:'npc',map:'ryunefields',target:'fieldWorker'},
