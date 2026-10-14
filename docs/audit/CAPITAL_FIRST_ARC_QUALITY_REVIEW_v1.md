@@ -118,3 +118,23 @@ A prior **debug/assisted map-jump** screenshot was also captured *separately*, o
 - These corrections are isolated to the Phase-7 Draft branch; Phase-5's separate Draft branch remains unchanged.
 
 **Extended authentic historical baseline (not latest PR45):** after the original village→wolf→capital→12-line ceremony, keyboard/pointer-only exploration successfully entered and exited both `capitalinn` and `capitalarmory`, then used the actual game's Save function, reopened the old build in an independent in-memory browser tab with **the actual game-authored save bytes**, and Continue restored the exact saved map and Story stage. A 390×844 mobile capture reported document width exactly 390px (no horizontal scroll). **12 unaltered historical screenshots**, `results.json`, and provenance text were retained in the 2026-10-10 conversation as a `gray_crown_reference_browser_evidence.zip` file. Total 65 player movement keypresses, 104 dialogue advances, 1 genuine wolves battle, 0 browser page errors. This adds valuable **historical before-reference** evidence, but does **not** verify the current Phase7 renderer or current SHA.\n\n**Remaining critical item:** this container did **not** execute the current Phase-7 HEAD's full HTML/JS. GitHub repository access through the connected plugin provided the actual SHA and code for auditing, but a complete current private checkout was not mountable/downloadable into the test runtime through that connector. Therefore the latest capital environment / Pixel Acting screenshots, Stage 06 scene-runner animation in actual Chromium, local game save/Continue and real upstream Phase-5 cave/boss E2E are still unverified. Obtain a ZIP of **the exact current Draft branch** or run `tools/run_local_quality.py --mode full --with-v23` on a cloned PC before lifting any S0/S1 or making a commercial signoff. No reliance on Actions quota.
+
+
+## 8. 2026-10-14 — Phase 7 QA launcher repair (NOT an acceptance PASS)
+
+Latest branch audit found that the existing Actions-free quality launcher `tools/run_local_quality.py` contained a **literal backslash-n sequence after a `return 1` statement** (outside a string), making the Python file syntactically invalid. It blocked all documented `--mode quick|capital|full` local commands before they could execute any project gate. This is a **reproduced source-level tool defect**, not an inferred gameplay defect.
+
+Changes on this same Phase 7 Draft PR:
+- Fix the malformed statement separator in `tools/run_local_quality.py`, preserving all verification steps and `--with-v23` handling.
+- Add `tests/local_quality_runner.test.js`, which checks Python AST parsing and the CLI `--help` startup (without invoking expensive tests). It is picked up automatically by `npm test`. If Python 3 is absent, the test reports SKIP explicitly rather than pretending the Python gate passed.
+
+**Verification boundary:** the GitHub text source and exact malformed sequence were inspected, and the replacement was committed. **The patched script, `npm run check`, the Node test, original capital Playwright E2E, main-v23 save migration and actual before/after Chromium screenshots have NOT been executed at this updated commit** because a complete runnable checkout is unavailable here, and the repository's hosted Actions runner was previously blocked. A static source fix is not a Python execution or full acceptance PASS.
+
+**Current verdict remains REVISE / HOLD.** Preserve existing Phase 7 art/ceremony work and reversible `CapitalEnvironment.enabled` A/B. Do not merge this PR or overwrite later descendant PRs. Next evidence must be collected using a complete checkout at the updated PR HEAD:
+
+```powershell
+py -3 tools/run_local_quality.py --mode quick --install
+py -3 tools/run_local_quality.py --mode full --install --with-v23
+```
+
+Retain the generated `results.json`, real screenshots, JS/browser logs, successful same-HEAD run IDs when Actions are available, and explicit user approval for Pixel-native/Capital aesthetics. Account-side Actions/quota/policy blockage tracked in Issue #46 remains a separate gate.
