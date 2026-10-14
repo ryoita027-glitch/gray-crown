@@ -465,6 +465,10 @@ const EVENT_DEFS=Object.freeze([
  },
  {id:'alpha2.frontier2.complete.repeat',priority:40,trigger:{type:'npc',map:'frontier',target:'frontierOfficer'},when:[{eventComplete:'alpha2.frontier2.complete'}],lines:[{speaker:'前線将校',text:'「北の旧関所へ出る準備をしておけ。出発命令はまだだ。今は記録と装備を整理しろ」'}]}
 
+  {id:'ryune.village.westSign',priority:10,trigger:{type:'object',map:'village',target:'westFieldPath'},
+   lines:[{speaker:'西畑への小道',text:'リュネ村の西畑へ続く道。畑の作業を見たいなら、ここから西へ進める。'}]},
+  {id:'ryune.village.eastSign',priority:10,trigger:{type:'object',map:'village',target:'eastBrookPath'},
+   lines:[{speaker:'小川への道',text:'リュネ村の東の小川へ続く道。川辺には橋と細い歩道がある。'}]},
   // Side excursions are optional and never advance, delay or rewrite the royal appointment.
   {id:'ryune.fields.inspect',priority:70,trigger:{type:'object',map:'ryunefields',target:'fieldFurrows'},
    when:[{eventIncomplete:'ryune.fields.inspect'}],
