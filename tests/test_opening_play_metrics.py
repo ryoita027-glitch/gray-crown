@@ -72,5 +72,32 @@ class TestEvidenceIsNotFabricated(unittest.TestCase):
         self.assertIn('human reader',out['review_signals'][0]['action'])
 
 
+    def test_actual_wolf_comparison_is_not_claimed_from_unverified_samples(self):
+        fake={'tested_commit':REV,'sample_size_per_strategy':1,
+              'first_wolf_results':[
+              {'mode':'attack','wall_seconds':3.7,
+               'normal_ui_commands':[{'hero':'karen','button':'attack'}],
+               'recorded_battle':{'id':'wolves','rounds':2,'damageTaken':2}},
+              {'mode':'guard','wall_seconds':4.8,
+               'normal_ui_commands':[{'hero':'karen','button':'guard'}],
+               'recorded_battle':{'id':'wolves','rounds':3,'damageTaken':1}}
+              ]}
+        observed=metrics.compare_wolf_samples(fake,REV)
+        self.assertEqual(len(observed['observations']),2)
+        self.assertIn('Not causal',observed['warning'])
+        fake['tested_commit']='b'*40
+        with self.assertRaisesRegex(ValueError,'another or unknown'):
+            metrics.compare_wolf_samples(fake,REV)
+    def test_guard_sample_must_actually_defend(self):
+        fake={'tested_commit':REV,'sample_size_per_strategy':1,
+              'first_wolf_results':[
+              {'mode':mode,'wall_seconds':1.0,
+               'normal_ui_commands':[{'hero':'karen','button':'attack'}],
+               'recorded_battle':{'id':'wolves','rounds':2,'damageTaken':0}}
+              for mode in ('guard','attack')]}
+        with self.assertRaisesRegex(ValueError,'never actually used Karen guard'):
+            metrics.compare_wolf_samples(fake,REV)
+
+
 if __name__=='__main__':
     unittest.main()
