@@ -135,3 +135,27 @@ test('rendering is presentation-only and does not modify world state or Save sch
  assert.equal(after,prior);
  assert.equal(h.GC.Save.SAVE_SCHEMA,23);
 });
+
+test('real indoor workers use nearby synchronized hand tools, not fake walking',()=>{
+ const sourceCode=source('js/render/opening_worldlife.js');
+ const normal=new Function(sourceCode+';return OpeningWorldLife')();
+ const reduced=new Function('matchMedia',sourceCode+
+  ';return OpeningWorldLife')(()=>({matches:true}));
+ for(const [map,id] of [
+  ['mayorhouse','clerk'],['capitalinn','capitalInnHost'],
+  ['capitalarmory','capitalSmith'],['capitalarmory','armoryApprentice']]){
+  const resident={id,x:10,y:8},original=JSON.stringify(resident);
+  const still=rectangles(),busy=rectangles(),quiet=rectangles();
+  assert.equal(normal.workplace(still,map,resident,0),true,id);
+  assert.equal(normal.workplace(busy,map,resident,1750),true,id);
+  assert.equal(reduced.workplace(quiet,map,resident,1750),true,id);
+  assert.notEqual(JSON.stringify(still.rect),JSON.stringify(busy.rect),
+   id+' must have a restrained, real, short movement');
+  assert.equal(JSON.stringify(still.rect),JSON.stringify(quiet.rect),
+   id+' reduced-motion is always the still pose');
+  assert.equal(JSON.stringify(resident),original,'no fake walking coordinates');
+ }
+ assert.equal(normal.workplace(rectangles(),'village',{id:'brookKeeper',x:10,y:8},8000),false);
+ const world=source('js/render/world.js');
+ assert.match(world,/OpeningWorldLife\.workplace\(ctx,state\.map,n,/);
+});
