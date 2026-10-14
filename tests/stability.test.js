@@ -103,7 +103,7 @@ test('portable export/import moves a valid v23 save without changing story or th
  assert.equal(stateOf(h).gold,301);
  assert.equal(stateOf(h).schema,23);
  assert.equal(stateOf(h).story.stage,parsed.story.stage);
- assert.deepEqual(stateOf(h).inventory,parsed.inventory);
+ assert.deepEqual(JSON.parse(JSON.stringify(stateOf(h).inventory)),parsed.inventory);
  const backup=JSON.parse(h.storage.getItem(h.GC.Save.SAVE_BACKUP_KEY));
  assert.equal(backup.gold,99,'the previous local save must survive import');
 });
@@ -117,6 +117,8 @@ test('portable save import rejects unrelated JSON, future schema, re-ordered her
   '{"unrelated":"object"}',
   JSON.stringify({...data,schema:100}),
   JSON.stringify({...data,party:[...data.party].reverse()}),
+  JSON.stringify({...data,party:data.party.map((p,i)=>i===0?{...p,name:'<img onerror=alert(1)>'}:p)}),
+  JSON.stringify({...data,inventory:{...data.inventory,'<img src=x>':4}}),
   JSON.stringify({...data,map:'__unknown_map'}),
   'x'.repeat(2*1024*1024+1)
  ]){
@@ -143,4 +145,18 @@ test('portable export is unavailable during dialogue just like ordinary manual S
  h.GC.Dialogue.say('テスト','イベント中の保存はできません');
  assert.equal(h.GC.Save.exportPortableSaveText(),null);
  assert.equal(h.GC.Save.importPortableSaveText(JSON.stringify({schema:23})),false);
+});
+
+test('adventure menu escapes imported or corrupt save strings instead of treating them as HTML',()=>{
+ const h=createHarness(),state=stateOf(h);
+ state.objective='<img src=x onerror=alert(1)>';
+ state.party[0].name='<svg/onload=alert(1)>';
+ state.inventory['<script>alert(1)</script>']=4;
+ h.GC.Menu.openMenu();
+ const html=h.getElement('modalContent').innerHTML;
+ assert.ok(html.includes('&lt;img src=x'), 'objective must render as harmless text');
+ assert.ok(html.includes('&lt;svg/'), 'party labels must render as harmless text');
+ assert.ok(html.includes('&lt;script&gt;'), 'inventory labels must render as harmless text');
+ assert.ok(!html.includes('<script>alert(1)</script>'));
+ assert.ok(!html.includes('<img src=x onerror=alert(1)>'));
 });
