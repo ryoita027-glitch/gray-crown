@@ -33,7 +33,12 @@
    !state.events.completed['ryune.outskirts.reward']&&
    (!!state.events.completed['ryune.fields.inspect']||
     !!state.events.completed['ryune.brook.inspect']);
-  const next=canReport?'伝える：農夫ボルに見てきた様子を話す · Enter':
+  const canFollowUp=map==='village'&&targetNpc?.id==='farmer'&&
+   state.events.completed['ryune.outskirts.reward']&&(
+    (state.events.completed['ryune.fields.inspect']&&!state.events.completed['ryune.outskirts.reported.fields'])||
+    (state.events.completed['ryune.brook.inspect']&&!state.events.completed['ryune.outskirts.reported.brook']));
+  const next=canFollowUp?'伝える：農夫ボルに追加の観察を話す · Enter':
+   canReport?'伝える：農夫ボルに見てきた様子を話す · Enter':
    targetNpc?action('npc',targetNpc):targetObject?action('object',targetObject):action(null,null);
   if(next!==previous){el.textContent=next;previous=next}
   return !!(targetNpc||targetObject)
