@@ -9,6 +9,7 @@ import http.server
 import json
 import time
 import threading
+import subprocess
 from collections import deque
 from pathlib import Path
 from playwright.sync_api import sync_playwright
@@ -22,6 +23,17 @@ STATS={'play_seconds':0,'battles':[],'steps':0,'dialogue_advance_keys':0,'dialog
 EVENT='alpha.village.appointment'
 DIRECTIONS=((0,-1,'ArrowUp'),(1,0,'ArrowRight'),(0,1,'ArrowDown'),(-1,0,'ArrowLeft'))
 WAIT_MS=145
+
+def source_head():
+ """Pin browser evidence to exactly the checked-out source revision."""
+ try:
+  sha=subprocess.check_output(['git','rev-parse','--verify','HEAD'],cwd=ROOT,
+    stderr=subprocess.DEVNULL,text=True).strip()
+ except (OSError,subprocess.CalledProcessError) as exc:
+  raise AssertionError('Actual browser quality evidence requires a Git checkout') from exc
+ check(len(sha)==40 and all(x in '0123456789abcdef' for x in sha),
+  'Invalid tested Git commit id: '+repr(sha))
+ return sha
 
 class Quiet(http.server.SimpleHTTPRequestHandler):
  def log_message(self,*args):pass
@@ -48,7 +60,10 @@ def snapshot(page):
  }}""")
 
 def checkpoint(page,label):
- info=snapshot(page);STATS['checkpoints'].append({'name':label,'state':info})
+ info=snapshot(page);STATS['checkpoints'].append({'name':label,'state':info,
+  'keyboard_steps_to_here':STATS['steps'],
+  'dialogue_keys_to_here':STATS['dialogue_advance_keys'],
+  'seconds_to_here':round(time.perf_counter()-STATS['started_at'],2)})
  return info
 
 def shot(page,name):
@@ -386,6 +401,8 @@ def play(page,url):
 
 def main():
  errors=[]
+ STATS['tested_commit']=source_head()
+ STATS['started_at']=time.perf_counter()
  try:
   with served() as url:
    with sync_playwright() as p:
