@@ -12,7 +12,7 @@ test('all 9 important residents have distinct in-game pixel portraits',()=>{
  for(let i=0;i<names.length;i++){
   const p=npc.portraitMarkup(names[i]);
   assert.match(p,/class="portrait-svg resident-portrait"/);
-  assert.match(p,/featured_residents_charm_v3.png/);
+  assert.match(p,/featured_residents_charm_v5.png/);
   assert.ok(p.includes('x="-'+(i*64)+'"'),names[i]);
   assert.match(p,/image-rendering:pixelated/);
   assert.match(p,/width="576" height="256"/);
@@ -21,13 +21,13 @@ test('all 9 important residents have distinct in-game pixel portraits',()=>{
 });
 test('one-file offline release embeds the same portrait pixels instead of broken relative SVG href',()=>{
  const GC={Data:{}};
- const mock={'assets/npc/featured_residents_charm_v3.png':'data:image/png;base64,VERIFIED_FAKE_ATLAS'};
+ const mock={'assets/npc/featured_residents_charm_v5.png':'data:image/png;base64,VERIFIED_FAKE_ATLAS'};
  const npc=new Function('GC','window',src+';return GC.Data.NPCs')(GC,
   {__GC_INLINE_ASSETS__:mock});
  for(const name of names){
   const p=npc.portraitMarkup(name);
   assert.match(p,/href="data:image\/png;base64,VERIFIED_FAKE_ATLAS"/);
-  assert.doesNotMatch(p,/href="assets\/npc\/featured_residents_charm_v3\.png"/);
+  assert.doesNotMatch(p,/href="assets\/npc\/featured_residents_charm_v5\.png"/);
  }
 });
 test('other NPC and hero portraits keep their original safe rendering',()=>{

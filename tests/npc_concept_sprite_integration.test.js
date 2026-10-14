@@ -60,7 +60,7 @@ const sample=(p,id,row)=>{
  return {count,hash};
 };
 test('the nine 48px real-game sprites render four distinct, transparent direction cells',()=>{
- const a=unpack(asset('featured_residents_charm_v3.png'),432,192);
+ const a=unpack(asset('featured_residents_charm_v5.png'),432,192);
  for(let i=0;i<9;i++){
   const views=[0,1,2,3].map(row=>sample(a,i,row));
   for(const v of views)assert.ok(v.count>=50,cast[i]+' missing directional art');
@@ -68,7 +68,7 @@ test('the nine 48px real-game sprites render four distinct, transparent directio
  }
 });
 test('nine action pairs have local pixel changes but identical anchored silhouettes',()=>{
- const a=unpack(asset('featured_resident_actions_charm_v3.png'),432,96);
+ const a=unpack(asset('featured_resident_actions_charm_v5.png'),432,96);
  for(let i=0;i<9;i++){
   const a0=sample(a,i,0),a1=sample(a,i,1);
   assert.ok(a0.count>=50&&a1.count>=50,'painting present '+cast[i]);
@@ -80,7 +80,7 @@ function artRuntime(query){
  const requests=[],draws=[];
  class I{
   naturalWidth=432;naturalHeight=192;
-  set src(p){requests.push(p);this.naturalHeight=p.includes('_actions_')?96:192;this.onload?.()}
+  set src(p){requests.push(p);this.naturalHeight=p.includes('_actions_')?96:p.includes('featured_residents_v1')?128:192;this.naturalWidth=p.includes('featured_residents_v1')?288:432;this.onload?.()}
  }
  const GC={Data:{},Render:{World:{draw(){}}},Log:{warn(){}}};
  const win={location:{search:query}};
@@ -93,15 +93,15 @@ function artRuntime(query){
 }
 test('default runtime loads concept-born native sprites and same-game dialogue portraits',()=>{
  const r=artRuntime('');
- assert.equal(r.renderer.featuredStatus().artVersion,'concept-charm-v3');
+ assert.equal(r.renderer.featuredStatus().artVersion,'concept-charm-v5');
  for(const [i,id] of cast.entries()){
   r.renderer.drawNpc(r.canvas,{id,x:8,y:4},'down',0);
   assert.equal(r.draws.at(-1)[1],i*48,'correct indexed identity '+id);
  }
- assert.ok(r.requests.includes('assets/npc/featured_residents_charm_v3.png'));
- assert.ok(r.requests.includes('assets/npc/featured_resident_actions_charm_v3.png'));
+ assert.ok(r.requests.includes('assets/npc/featured_residents_charm_v5.png'));
+ assert.ok(r.requests.includes('assets/npc/featured_resident_actions_charm_v5.png'));
  for(const s of ['パン屋のエダ','農夫のボル','老婆ナナ','村長','王国使者','レン','花売りの少女','新兵','総司令グランツ'])
-  assert.match(r.npc.portraitMarkup(s),/featured_residents_charm_v3\.png/);
+  assert.match(r.npc.portraitMarkup(s),/featured_residents_charm_v5\.png/);
  assert.match(r.npc.portraitMarkup('カレン'),/hero-portrait-svg/);
  assert.match(r.npc.portraitMarkup('マーガレット'),/hero-portrait-svg/);
 });
@@ -118,4 +118,25 @@ test('one-file builder can embed new assets without changing hero visual source'
  assert.match(build,/ASSET = re.compile/);
  assert.match(build,/assets\//);
  assert.ok(!runner.includes('hero_party_walk'), 'do not rewrite any hero art');
+});
+
+test('legacy AB really paints the earlier 32px native identity instead of falling back to the shared toy renderer',()=>{
+ const r=artRuntime('?npcArt=legacy');
+ assert.equal(r.renderer.drawNpc(r.canvas,{id:'baker',x:6,y:6},'down',0),true);
+ const d=r.draws.at(-1);
+ assert.equal(d[1],0);assert.equal(d[2],0);
+ assert.equal(d[3],32);assert.equal(d[4],32);
+ assert.equal(d[7],32);assert.equal(d[8],32);
+ assert.match(r.npc.portraitMarkup('パン屋のエダ'),/width="576" height="256"/);
+});
+test('new in-dialogue face composition uses actual character-pixel head instead of miniature full-body',()=>{
+ const r=artRuntime('');
+ for(let i=0;i<9;i++){
+  const speakers=['パン屋のエダ','農夫のボル','老婆ナナ','村長','王国使者','レン','花売りの少女','新兵','総司令グランツ'];
+  const portrait=r.npc.portraitMarkup(speakers[i]);
+  assert.match(portrait,/width="864" height="384"/);
+  assert.ok(portrait.includes('x="-'+(i*96+16)+'"'),'correct actor face '+speakers[i]);
+  assert.match(portrait,/y="-3"/);
+ }
+ assert.equal(r.npc.portraitMarkup('カレン').includes('hero-portrait-svg'),true);
 });

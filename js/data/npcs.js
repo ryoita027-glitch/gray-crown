@@ -123,7 +123,8 @@ function featuredResidentPortraitMarkup(speaker){
  if(i===undefined)return null;
  const id='residentPortraitCrop'+i;
  // The atlas has 9 columns x 4 directions, each 48x48.
- // Scale the front-facing 48px source to 64px ONLY, with exact nearest-neighbor geometry.
+ // The new in-dialogue head-and-shoulders view magnifies the SAME 48px
+ // game sprite instead of showing a tiny full-body or fabricated plastic face.
  // Do not stretch the torso independently or overlay a second generic face.
  // The dark uniforms disappeared against the prior identical charcoal cards.
  // Each subdued district-colored backing supplies silhouette contrast, not
@@ -132,9 +133,14 @@ function featuredResidentPortraitMarkup(speaker){
   '#50634f','#4a6270','#546474','#77756c'];
  const backdrop=backdrops[i];
  const legacy=typeof window!=='undefined'&&/(?:^|[?&])npcArt=legacy(?:&|$)/.test(window.location.search||'');
- const path=legacy?'assets/npc/featured_residents_v1.png':'assets/npc/featured_residents_charm_v3.png';
+ const path=legacy?'assets/npc/featured_residents_v1.png':'assets/npc/featured_residents_charm_v5.png';
  const source=(typeof window!=='undefined'&&window.__GC_INLINE_ASSETS__?.[path])||path;
- return `<svg class="portrait-svg resident-portrait" viewBox="0 0 64 72" aria-hidden="true" shape-rendering="crispEdges"><defs><clipPath id="${id}"><rect x="0" y="0" width="64" height="64"/></clipPath></defs><rect width="64" height="72" fill="${backdrop}"/><rect y="64" width="64" height="8" fill="#252c2b"/><g clip-path="url(#${id})"><image href="${source}" x="-${i*64}" y="0" width="576" height="256" style="image-rendering:pixelated"/></g></svg>`;
+ // 48px per NPC. At 2x magnification, remove 16px either side to place the
+ // individual eyes, hair and cheeks in the UI's 64px aperture. The old atlas
+ // intentionally retains its older full-body view for honest side-by-side AB.
+ const x=legacy?-(i*64):-(i*96+16),y=legacy?0:-3;
+ const width=legacy?576:864,height=legacy?256:384;
+ return `<svg class="portrait-svg resident-portrait" viewBox="0 0 64 72" aria-hidden="true" shape-rendering="crispEdges"><defs><clipPath id="${id}"><rect x="0" y="0" width="64" height="64"/></clipPath></defs><rect width="64" height="72" fill="${backdrop}"/><rect y="64" width="64" height="8" fill="#252c2b"/><g clip-path="url(#${id})"><image href="${source}" x="${x}" y="${y}" width="${width}" height="${height}" style="image-rendering:pixelated"/></g></svg>`;
 }
 function portraitMarkup(speaker){
  const featured=featuredResidentPortraitMarkup(speaker);
