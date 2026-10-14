@@ -111,3 +111,5 @@ The two Ryune side exit hint posts were moved from inaccessible transfer tiles a
 The added `tests/ryune_outskirts.test.js` now asserts: five memory scene effects are only `completeEvent`, no extra quest prerequisites exist, original appointment remains accessible, the north gate still works **with zero field/brook investigations completed**, and both signposts and side exits remain reachable.
 
 These are source-level changes and test definitions. Same-HEAD Node execution, Chromium acceptance and visual approval are still pending, not claimed PASS.
+
+**Village life animation:** the two minor residents in the west field and east brook now perform subdued working/looking gestures via the existing authored 4-frame NPC atlas. The game only refreshes those gestures while a player is nearby, respects reduced-motion preferences, and never changes NPC collision positions or starts a cutscene. Node source tests now assert near/far animation triggering. No new gameplay requirement is attached to those animations.
