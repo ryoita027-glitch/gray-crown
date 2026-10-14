@@ -115,8 +115,15 @@ def battle(page,limit=170):
   page.wait_for_timeout(180)
  check(not page.locator('#battlePanel').is_visible(),'battle did not visually close: '+battle_id)
  settle(page)
+ balance=page.evaluate("""id=>{
+  const rows=GC.Log?.get?.()||[];
+  const rec=rows.filter(x=>x.message==='Local Battle Balance'&&x.data?.id===id).at(-1);
+  return rec?.data||null
+ }""",battle_id)
+ check(balance is not None,'real battle metrics missing for '+battle_id)
  out={'id':battle_id,'commands':commands,'seconds':round(time.perf_counter()-start,2),
-      'result':snapshot(page)['defeated'],'party_hp':snapshot(page)['hp']}
+      'result':snapshot(page)['defeated'],'party_hp':snapshot(page)['hp'],
+      'local_balance':balance}
  STATS['battles'].append(out)
  check(any(v>0 for v in snapshot(page)['hp']),'party wiped after supposed victory')
  return out

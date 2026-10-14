@@ -39,6 +39,7 @@
     "ryune-microacting-browser-test": "python tests/browser_ryune_microacting_e2e_test.py",
     "ryune-microacting-acceptance": "node tests/check-syntax.js && npm test && npm run ryune-microacting-browser-test",
     "release:browser-e2e": "python tests/browser_player_distribution_e2e_test.py",
-    "release:technical-candidate": "npm run check && npm run release:checked && npm run release:browser-e2e && npm run three-route-browser-test"
+    "release:technical-candidate": "npm run check && npm run release:checked && npm run release:browser-e2e && npm run three-route-browser-test",
+    "product:local-quality": "npm run release:technical-candidate && python tests/browser_vertical_slice_e2e_test.py && npm run visual-playability-acceptance && npm run opening-art-acceptance"
   }
 }

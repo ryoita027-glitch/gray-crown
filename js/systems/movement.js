@@ -67,7 +67,7 @@ function enterFinalBranch(){if(state.finalChoice==='kingdom')travelScene('imperi
    {speaker:'カレン',text:'「退くことはできない。でも、あなたを殺すために来たわけじゃない」'}],()=>startBattle('ashcrownCheckpoint'));
   return
  }
- playRouteAftermath('ashcrown');return
+ runFinalActNegotiation('ashcrown');return
 }if(state.finalChoice==='empire')travelScene('royalcamp',11,13,'up','最終章 — 帝国側','王国軍総司令部でグランツと向き合う','侵攻と勇者制度を終わらせるため、四人は自国の軍へ剣を向ける。')}
 function playRouteAftermath(route){
  if(!['kingdom','empire','ashcrown'].includes(route))return false;
@@ -110,6 +110,13 @@ function showWorldSkeletonEnding(route){
   }
  };
  const p=previews[route];if(!p)return false;
+ // Reflect what the player actually demanded without declaring that a ruler,
+ // army or civilian accepted the request. This is still a PROVISIONAL ending.
+ const approachId=state.events?.choices?.['route.final.'+route];
+ const knownApproach=FINAL_ACT_APPROACHES[route]?.choices.find(c=>c.id===approachId);
+ const approachText=knownApproach?
+  '<p class="ending-request"><strong>最後に示した条件：</strong>'+knownApproach.note+'</p>':'';
+
  if(!isEventComplete('worldSkeletonCleared')){
   completeEvent('worldSkeletonCleared',true);
   addJournal('最終章・'+p.title+'へ到達（物語プレビュー・未完成）');
@@ -117,7 +124,7 @@ function showWorldSkeletonEnding(route){
  setWorldSwitch('cleared',true);
  state.objective='最終章の仮エピローグ到達：本編結末は未実装';
  renderHud();
- say('ナレーション','<div class="ending"><h2>'+p.title+'</h2><p>'+p.scene+'</p><p>カレン '+p.karen+'</p><p>'+p.conclusion+'</p><p class="ending-note">ここは未完成エンディングの演出プレビューです。王国・帝国との決着や灰冠への過程は、今後の正式な物語で制作します。</p></div>');
+ say('ナレーション','<div class="ending"><h2>'+p.title+'</h2><p>'+p.scene+'</p>'+approachText+'<p>カレン '+p.karen+'</p><p>'+p.conclusion+'</p><p class="ending-note">ここは未完成エンディングの演出プレビューです。王国・帝国との決着や灰冠への過程は、今後の正式な物語で制作します。</p></div>');
  return true
 }
 
@@ -143,9 +150,9 @@ function move(dir){if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started
  if(state.map==='ashroad'&&ny>=15&&[11,12].includes(nx)){travelScene('capital',11,1,'down','第二章 — 灰の街道','前線へ向かう／王都へ戻る','王都へ戻った。');return}
  if(state.map==='ashroad'&&ny<0&&[11,12].includes(nx)){if(isEventComplete('alpha2.ashroad.complete')){enterFrontier();return}if(!isEventComplete('alpha2.ashroad.patrolVictory')){say('カレン','「前方に帝国軍の斥候がいる。街道を抜けるなら、避けては通れない」');return}if(!isEventComplete('alpha2.ashroad.refugee')){say('ソフィ','「先へ行く前に、避難してきた人の話を聞いておきたいです」');return}if(!isEventComplete('alpha2.ashroad.orders')){say('マーガレット','「焼け跡に残った命令書を確認しましょう。何を狙った攻撃なのか知っておきたい」');return}runTriggeredEvent('boundary','north',{map:'ashroad'});return}
  if(state.map==='frontier'&&ny>=15&&[11,12].includes(nx)){enterAshRoad();return}
- if(state.map==='frontier'&&ny<0&&[11,12].includes(nx)){if(!isEventComplete('alpha2.frontier.complete')){say('セラド北防壁','追撃命令は出ていない。前線将校へ報告し、この区間の任務を終えよう。');return}if(!isEventComplete('alpha2.frontier2.order')){say('カレン','「先に前線将校から、戦後の次の指示を聞こう」');return}if(!isEventComplete('alpha2.frontier2.aftermath')){say('ソフィ','「北へ出る前に、野戦病院の状況を確認しましょう」');return}if(isEventComplete('alpha2.frontier2.complete')){say('カレン','「次は北の旧関所。でも出発命令はまだだ。今はセラドで準備しよう」');return}enterFrontierField();return}
+ if(state.map==='frontier'&&ny<0&&[11,12].includes(nx)){if(!isEventComplete('alpha2.frontier.complete')){say('セラド北防壁','追撃命令は出ていない。前線将校へ報告し、この区間の任務を終えよう。');return}if(!isEventComplete('alpha2.frontier2.order')){say('カレン','「先に前線将校から、戦後の次の指示を聞こう」');return}if(!isEventComplete('alpha2.frontier2.aftermath')){say('ソフィ','「北へ出る前に、野戦病院の状況を確認しましょう」');return}if(isEventComplete('alpha2.frontier2.complete')){enterBorderland();return}enterFrontierField();return}
  if(state.map==='frontierfield'&&ny>=15&&[11,12].includes(nx)){returnFrontierFromField();return}
- if(state.map==='frontierfield'&&ny<0&&[11,12].includes(nx)){say('マーガレット',isEventComplete('alpha2.frontier2.complete')?'「北の旧関所へ進むのは次の区間。今はセラドへ戻って準備を整えましょう」':'「任務は戦闘跡の確認まで。これ以上北へ進む前に、残った痕跡を調べてセラドへ報告しましょう」');return}
+ if(state.map==='frontierfield'&&ny<0&&[11,12].includes(nx)){say('マーガレット',isEventComplete('alpha2.frontier2.complete')?'「旧関所へはセラド北防壁から行ける。ここは調査済みよ。前線の道を使いましょう」':'「任務は戦闘跡の確認まで。これ以上北へ進む前に、残った痕跡を調べてセラドへ報告しましょう」');return}
  if(state.map==='borderland'&&ny>=15&&[11,12].includes(nx)){enterFrontier();return}
  if(state.map==='borderland'&&ny<0&&[11,12].includes(nx)){if(!(isEventComplete('borderBriefed')&&isEventComplete('borderMerchantHelped')&&isEventComplete('borderRested'))){say('カレン','「まだここでやることがある。偵察兵、足止めされた商人、それから今夜の休息……全部済ませてから進もう」');return}enterWatchfort();return}
  if(state.map==='relayvillage'&&ny>=15&&[11,12].includes(nx)){enterBorderland();return}
