@@ -32,6 +32,14 @@ def inspect(browser,url,kind,w,h):
           ['karen','triton','sophie','margaret'].every(
             id=>GC.Render.World.heroRuntimeStatus()[id]?.ready)
         """,timeout=20000)
+        # If the external PNG is absent, screenshotting a generic fallback
+        # would falsely claim the named characters were redesigned.
+        page.wait_for_function("""() =>
+          typeof OpeningPixelAssets!=='undefined' &&
+          OpeningPixelAssets.featuredStatus().ready
+        """,timeout=20000)
+        assert page.evaluate("OpeningPixelAssets.featuredStatus().count===9")
+        assert not page.evaluate("OpeningPixelAssets.featuredStatus().failed")
         for place,(x,y) in PLACES:
             # Explicit visual fixture: NOT a route playthrough, and no game
             # events/quests/loot are completed to fake story progression.
@@ -66,6 +74,8 @@ def main():
       'count':sum(len(x['screenshots']) for x in rows),
       'views':rows,
       'human_art_review':'PENDING. Compare roof silhouettes, residents, door clarity, sprite feet, 390px UI.',
+      'featured_resident_atlas':'assets/npc/featured_residents_v1.png',
+      'featured_residents_required_ready':True,
       'paid_release_approved':False
     }
     assert manifest['count']==12
