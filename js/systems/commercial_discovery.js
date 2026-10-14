@@ -30,8 +30,15 @@
   return !!s.world?.defeatedSymbols?.[p.id]
  }
  function progress(map,s=state){
-  const all=extras[map]||[],complete=all.filter(p=>done(p,s));
-  return {map,total:all.length,found:complete.length,remaining:all.filter(p=>!done(p,s)).map(p=>p.label)}
+  // Never advertise "report both excursions" before the player has actually
+  // discovered BOTH places. It is optional local follow-up, not a quest gate.
+  const visible=(extras[map]||[]).filter(p=>p.id!=='ryune.outskirts.reward'||
+   (!!s.events?.completed?.['ryune.fields.inspect']&&
+    !!s.events?.completed?.['ryune.brook.inspect'])||
+    !!s.events?.completed?.['ryune.outskirts.reward']);
+  const complete=visible.filter(p=>done(p,s));
+  return {map,total:visible.length,found:complete.length,
+   remaining:visible.filter(p=>!done(p,s)).map(p=>p.label)}
  }
  function questHint(map){
   if(map==='village'&&!isEventComplete('alpha.village.appointment'))return{id:'messenger',kind:'npc'};
@@ -55,7 +62,7 @@
   if(!p.total){node.textContent='';node.classList.add('hidden');return p}
   node.classList.remove('hidden');
   node.textContent='寄り道の発見 '+p.found+' / '+p.total+'（任意）';
-  node.setAttribute('title',p.remaining.length?'まだ調べられること：'+p.remaining.join('／'):'このエリアの寄り道はすべて発見済み');
+  node.setAttribute('title',p.remaining.length?'気が向いたら調べられる場所：'+p.remaining.join('／'):'このエリアの寄り道はすべて発見済み');
   return p
  }
  GC.CommercialDiscovery={extras,done,progress,questHint,update};
