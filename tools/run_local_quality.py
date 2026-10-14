@@ -137,7 +137,8 @@ def main() -> int:
                 return 1
 
         # Developer-safe quick path: no browser download, minimal CPU and zero Actions.
-        if not run("no-auto-hosted-actions", ["python", "tools/verify_no_auto_ci_phase7.py"]): return 1\n        if not run("repo-hygiene", ["python", "tools/verify_repo_hygiene.py"]): return 1
+        if not run("no-auto-hosted-actions", ["python", "tools/verify_no_auto_ci_phase7.py"]): return 1
+        if not run("repo-hygiene", ["python", "tools/verify_repo_hygiene.py"]): return 1
         if not run("source-of-truth", ["python", "tools/verify_project_authority.py"]): return 1
         if not run("source-syntax", ["python", "-m", "compileall", "-q", "tools", "tests"]): return 1
         if not run("javascript-syntax", ["node", "tests/check-syntax.js"]): return 1
