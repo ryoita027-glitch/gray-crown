@@ -102,7 +102,7 @@ test('new finds save/restore with schema 23 and preserve the four protagonist sh
  assert.equal(h.evaluate("GC.Audio.mapMusicTheme('ryunefields')"),'village');
 });
 
-test('all Ryune family moments are optional, one-time and never gate the north exit',()=>{
+test('optional memories preserve the original first inspection and never gate the north exit',()=>{
  const h=createHarness(),state=h.GC.State.get();
  const destinations=[
   ['ryune.memory.well','village','well'],
@@ -114,28 +114,40 @@ test('all Ryune family moments are optional, one-time and never gate the north e
  const before={story:state.story.stage,objective:state.story.objective,
                gold:state.gold,inventory:clone(state.inventory)};
  for(const [id,map,target] of destinations){
+  // The first click belongs to the existing, often story-significant inspect text.
+  assert.equal(h.GC.Events.findTriggeredEvent('object',target,{map}),null,
+   'original inspect must not be overridden by memory '+id);
+  h.evaluate("setWorldSwitch("+JSON.stringify('ryune.baseViewed.'+target)+",true)");
+  // One return-home line is context-sensitive; it must not occur pre-appointment.
+  if(target==='familyTable'){
+   assert.equal(h.GC.Events.findTriggeredEvent('object',target,{map}),null,
+    'no return-from-journey conversation before the royal appointment');
+   state.story.stage='01_appointed';
+  }
   const def=h.GC.Events.findTriggeredEvent('object',target,{map});
-  assert.equal(def?.id,id,'optional first encounter '+id);
-  assert.equal(def.when.length,1,'only one-time condition, no quest gate '+id);
-  assert.equal(def.when[0].eventIncomplete,id);
+  assert.equal(def?.id,id,'optional follow-up '+id);
+  assert.ok(def.when.some(c=>c.worldSwitchTruthy==='ryune.baseViewed.'+target),
+   'existing inspection must be visited first '+id);
+  assert.ok(def.when.some(c=>c.eventIncomplete===id),'one-time only '+id);
   assert.deepEqual(clone(def.effects),[{type:'completeEvent',id}],
-   'no reward, quest requirement, forced story advance, or main objective '+id);
+   'no quest requirement, item reward, forced story advance or objective '+id);
+  assert.ok(def.lines.length<=3,'keep side conversation brief '+id);
   h.GC.Events.applyEventEffects(def);
   assert.equal(h.GC.Events.findTriggeredEvent('object',target,{map}),null,
-   'after first memory, original inspect text is available '+id);
+   'repeat returns to the existing original inspect '+id);
+  if(target==='familyTable')state.story.stage=before.story;
  }
  assert.equal(state.story.stage,before.story);
  assert.equal(state.story.objective,before.objective);
  assert.equal(state.gold,before.gold);
  assert.deepEqual(clone(state.inventory),before.inventory);
  assert.equal(h.GC.Events.findTriggeredEvent('npc','messenger',{map:'village'}).id,
-  'alpha.village.appointment','royal envoy remains normally accessible');
- // A test setup with the original appointment completed but ZERO optional
- // west/east investigation or farmer reward must still permit departure.
+  'alpha.village.appointment','original envoy remains normally accessible');
+ // Even if every side area and NPC is ignored, appointment -> original north gate works.
  h.evaluate("ALPHA_SESSION.started=true;state.map='village';state.x=11;state.y=1;"+
    "state.events.completed['alpha.village.appointment']=true;"+
    "state.story.stage=STORY_STAGES.APPOINTED;VISUAL.nextMoveAt=0;move('up')");
- assert.equal(state.map,'road','north gate does not consult optional discoveries');
+ assert.equal(state.map,'road','north gate ignores all optional discoveries');
  assert.equal(state.story.stage,'02_road');
  assert.equal(h.evaluate("!!state.events.completed['ryune.outskirts.reward']"),false);
 });
@@ -153,14 +165,19 @@ test('both optional path signs can be read without obstructing either walkable e
  }
 });
 
-test('optional chores use ambient animation only near an NPC and do not alter the map',()=>{
+test('only farm work animates slowly; brook watcher stands still',()=>{
  const h=createHarness();
- for(const [id,worker] of [['ryunefields','fieldWorker'],['ryunebrook','brookKeeper']]){
-  const npc=h.evaluate("maps['"+id+"'].npcs[0]");
-  assert.equal(npc.id,worker);
-  assert.equal(h.evaluate("OpeningPixelAssets.designs['"+worker+"']!==undefined"),true);
-  assert.equal(h.evaluate("OpeningWorldLife.shouldBreathe('"+id+"',"+
-   npc.x+","+npc.y+",maps['"+id+"'].npcs)"),true);
-  assert.equal(h.evaluate("OpeningWorldLife.shouldBreathe('"+id+"',0,14,maps['"+id+"'].npcs)"),false);
- }
+ const farm=h.evaluate("maps.ryunefields.npcs[0]"),brook=h.evaluate("maps.ryunebrook.npcs[0]");
+ assert.equal(h.evaluate("OpeningWorldLife.shouldBreathe('ryunefields',"+
+  farm.x+","+farm.y+",maps.ryunefields.npcs)"),true);
+ assert.equal(h.evaluate("OpeningWorldLife.shouldBreathe('ryunefields',0,14,maps.ryunefields.npcs)"),false);
+ assert.equal(h.evaluate("OpeningWorldLife.shouldBreathe('ryunebrook',"+
+  brook.x+","+brook.y+",maps.ryunebrook.npcs)"),false);
+ assert.equal(h.evaluate("OpeningPixelAssets.designs.brookKeeper!==undefined"),true);
+ const original=h.evaluate("OpeningPixelAssets.drawNpc.toString()");
+ assert.ok(original.includes("n.id==='fieldWorker'"),'only farmhand has an authored sparse gesture');
+ assert.ok(original.includes("Math.floor(now/800)%11===3"),
+  'one restrained frame per roughly nine-second cycle');
+ assert.ok(!original.match(/'fieldWorker','brookKeeper'\]\.includes/),
+  'brook watcher must not walk in place');
 });
