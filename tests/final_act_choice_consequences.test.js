@@ -59,8 +59,10 @@ test('final decision cannot be entered without the exact route checkpoint and co
   const h=createHarness();
   assert.equal(h.evaluate("runFinalActNegotiation('"+route+"')"),false,'unselected route');
   h.evaluate("state.finalChoice='"+route+"'");
-  assert.notEqual(h.evaluate("runFinalActNegotiation('"+route+"')"),true,
-   'no direct final approach before the companion decision');
+  assert.equal(h.evaluate("runFinalActNegotiation('"+route+"')"),true,
+   'without a companion commitment, only the existing companion conversation starts');
+  assert.equal(h.evaluate("state.events.choices['route.final."+route+"']"),undefined,
+   'the late-stage decision remains unselected');
   h.evaluate("state.events.choices['route.companions."+route+"']='"+ROUTES[route].companion+"'");
   assert.equal(h.evaluate("runFinalActNegotiation('"+route+"')"),false,
    'checkpoint cannot be bypassed by dialog');
