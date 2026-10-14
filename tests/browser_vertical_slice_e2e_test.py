@@ -9,6 +9,7 @@ import http.server
 import json
 import time
 import threading
+import subprocess
 from collections import deque
 from pathlib import Path
 from playwright.sync_api import sync_playwright
@@ -22,6 +23,17 @@ STATS={'play_seconds':0,'battles':[],'steps':0,'dialogue_advance_keys':0,'dialog
 EVENT='alpha.village.appointment'
 DIRECTIONS=((0,-1,'ArrowUp'),(1,0,'ArrowRight'),(0,1,'ArrowDown'),(-1,0,'ArrowLeft'))
 WAIT_MS=145
+
+def source_head():
+ """Pin browser evidence to exactly the checked-out source revision."""
+ try:
+  sha=subprocess.check_output(['git','rev-parse','--verify','HEAD'],cwd=ROOT,
+    stderr=subprocess.DEVNULL,text=True).strip()
+ except (OSError,subprocess.CalledProcessError) as exc:
+  raise AssertionError('Actual browser quality evidence requires a Git checkout') from exc
+ check(len(sha)==40 and all(x in '0123456789abcdef' for x in sha),
+  'Invalid tested Git commit id: '+repr(sha))
+ return sha
 
 class Quiet(http.server.SimpleHTTPRequestHandler):
  def log_message(self,*args):pass
@@ -48,7 +60,10 @@ def snapshot(page):
  }}""")
 
 def checkpoint(page,label):
- info=snapshot(page);STATS['checkpoints'].append({'name':label,'state':info})
+ info=snapshot(page);STATS['checkpoints'].append({'name':label,'state':info,
+  'keyboard_steps_to_here':STATS['steps'],
+  'dialogue_keys_to_here':STATS['dialogue_advance_keys'],
+  'seconds_to_here':round(time.perf_counter()-STATS['started_at'],2)})
  return info
 
 def shot(page,name):
@@ -281,6 +296,14 @@ def play(page,url):
   page.keyboard.press('ArrowUp');page.wait_for_timeout(WAIT_MS);STATS['steps']+=1
  check(snapshot(page)['battle']=='wolves','story wolf encounter missing')
  shot(page,'04_wolf_battle')
+ if page.evaluate("GC.State.get().locked"):
+  check(page.locator('#battleActions button:not([disabled])').count()==0,
+   'wolf encounter intro still advertises unusable buttons')
+ page.wait_for_function("() => !GC.State.get().locked && GC.State.get().battle?.id==='wolves'",timeout=5000)
+ check(page.locator('#battleActions button:not([disabled])').count()>0,
+  'wolf input never visibly unlocked after opening animation')
+ page.wait_for_timeout(280)  # screenshot AFTER the dark encounter-card overlay
+ shot(page,'04b_wolf_actionable')
  battle(page)
  check('wolf' in snapshot(page)['defeated'],'wolf did not persist as defeated')
  save_via_menu(page,'road after wolf')
@@ -354,6 +377,14 @@ def play(page,url):
   option.click();page.wait_for_timeout(170)
  check(snapshot(page)['battle']=='boss','boss did not trigger through normal interaction')
  shot(page,'09_boss_battle')
+ if page.evaluate("GC.State.get().locked"):
+  check(page.locator('#battleActions button:not([disabled])').count()==0,
+   'boss cinematic still advertises unusable actions')
+ page.wait_for_function("() => !GC.State.get().locked && GC.State.get().battle?.id==='boss'",timeout=5000)
+ check(page.locator('#battleActions button:not([disabled])').count()>0,
+  'boss battle buttons never became actionable')
+ page.wait_for_timeout(320)
+ shot(page,'09b_boss_actionable')
  battle(page)
  check('boss' in snapshot(page)['defeated'],'boss victory did not persist')
  shot(page,'10_boss_won')
@@ -386,6 +417,8 @@ def play(page,url):
 
 def main():
  errors=[]
+ STATS['tested_commit']=source_head()
+ STATS['started_at']=time.perf_counter()
  try:
   with served() as url:
    with sync_playwright() as p:

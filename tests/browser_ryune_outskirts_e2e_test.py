@@ -114,6 +114,7 @@ def main():
     'maps':['village','ryunefields','ryunebrook'],'save_schema':saved['schema'],
     'screenshots':7,'real_play_elapsed_seconds':round(time.perf_counter()-start_clock,2),
     'real_keyboard_walk_steps':first.STATS['steps'],
+    'tested_commit':first.source_head(),
     'optional_event_count':3,'after_report_revisits':2,
     'notes':'No Dev Mode, seeded wins, teleporting or mandatory side quest',
     'errors':errors},ensure_ascii=False,indent=2),encoding='utf-8')
