@@ -324,12 +324,31 @@ const RyuneEnvironment=(()=>{
   const x=obj.x*32,y=obj.y*32;
   if(map==='village'){
    if(obj.id==='well'){
-    rect(c,'#465756',x+2,y+18,28,10);rect(c,'#92958b',x+3,y+12,26,13);
-    rect(c,'#414e4c',x+7,y+14,18,6);
-    rect(c,'#a5a59a',x+5,y+9,23,4);
-    rect(c,'#6e5b42',x+4,y,3,13);rect(c,'#6e5b42',x+25,y,3,13);
-    rect(c,'#8e704d',x+3,y,26,4);
-    rect(c,'#b49a65',x+17,y+3,2,7);
+    // Village focal point: the ONLY common well. 32x32 pixel-native, no
+    // false extra collision on neighboring walkable squares.
+    rect(c,'#64664f',x+3,y+29,26,2);rect(c,'#8c805e',x+5,y+30,22,2);
+    // Stone ring is octagonal, not a flat grey rectangular crate.
+    rect(c,'#595f5e',x+5,y+16,22,14);
+    rect(c,'#727a76',x+2,y+20,28,8);
+    rect(c,'#b9b7a5',x+5,y+17,23,4);
+    rect(c,'#d0c9b3',x+7,y+15,19,3);
+    rect(c,'#424e50',x+8,y+20,17,6);
+    rect(c,'#31565e',x+10,y+21,13,3);
+    rect(c,'#84958f',x+11,y+21,6,1);
+    rect(c,'#aba998',x+3,y+23,5,4);
+    rect(c,'#9fa69c',x+25,y+23,4,4);
+    rect(c,'#8d9b78',x+5,y+25,5,2);
+    // Timber posts, simple peaked shelter and suspended water bucket.
+    rect(c,'#594331',x+5,y+7,4,11);rect(c,'#98714b',x+6,y+8,2,10);
+    rect(c,'#594331',x+24,y+7,4,11);rect(c,'#98714b',x+25,y+8,2,10);
+    rect(c,'#594331',x+4,y+4,24,5);
+    rect(c,'#ad8657',x+6,y+2,20,5);
+    rect(c,'#c8a574',x+10,y+1,12,3);
+    rect(c,'#67503a',x+14,y+5,5,4);
+    rect(c,'#d4bd8f',x+16,y+8,1,10);
+    rect(c,'#7b5c40',x+12,y+14,10,8);
+    rect(c,'#ac8b62',x+14,y+14,6,4);
+    rect(c,'#544433',x+13,y+20,8,2);
     return true;
    }
    if(obj.id==='store'){
