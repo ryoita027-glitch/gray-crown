@@ -40,6 +40,7 @@
   return false
  }
  function onLine(speaker,text){
+  if(scene&&scene.map!==state.map)closeMoment(scene.id);
   const id=speakerHero[speaker]||null,now=Date.now();
   // A single dialogue page determines a single gesture; no punctuation-driven
   // generic surprise on every exclamation mark.
@@ -51,7 +52,9 @@
  }
  function onClose(){cue=null;actors.clear();partyLayout.clear();GC.Render?.World?.draw?.()}
  function active(){
-  return enabled&&!reducedMotion()&&!!cue&&state.map===cue.map&&!state.battle&&
+  // Stop repainting the entire 768x480 world once the short gesture ends.
+  return enabled&&!reducedMotion()&&!!cue&&Date.now()-cue.created<1750&&
+   state.map===cue.map&&!state.battle&&
    !GC.Cinematic?.isActive?.()
  }
  // Called with the already sorted on-screen party from drawPartyRuntime.
@@ -69,9 +72,9 @@
   const trait=traits[id];if(!trait)return null;
   // Contextual gesture, never a random facial/whole-body reaction.
   if(id===contextCue.id){
-   const isWryK={test:contextCue.momentId==='ryune.memory.well'&&id==='karen'&&
-    contextCue.text.includes('たぶん')};
-   if(isWryK.test&&elapsed>=trait.delay+340&&elapsed<trait.delay+860)
+   const gentleJoke=contextCue.momentId==='ryune.memory.well'&&id==='karen'&&
+    contextCue.text.includes('たぶん');
+   if(gentleJoke&&elapsed>=trait.delay+340&&elapsed<trait.delay+860)
     return{pose:'laugh',kind:'speaker',facing:null};
    // At the soldier's family letter, the lines are quiet and brief.
    const subdued=contextCue.momentId==='ryune.memory.soldierLetter';
