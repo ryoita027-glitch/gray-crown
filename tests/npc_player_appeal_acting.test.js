@@ -3,7 +3,7 @@ const test=require('node:test'),assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),zlib=require('node:zlib');
 const src=fs.readFileSync(path.join(__dirname,'../js/render/opening_pixel_assets.js'),'utf8');
 const lifeSrc=fs.readFileSync(path.join(__dirname,'../js/render/opening_worldlife.js'),'utf8');
-const art=fs.readFileSync(path.join(__dirname,'../assets/npc/featured_resident_actions_v2.png'));
+const art=fs.readFileSync(path.join(__dirname,'../assets/npc/featured_resident_actions_charm_v3.png'));
 function pngPixels(){
  assert.deepEqual([...art.subarray(0,8)],[137,80,78,71,13,10,26,10]);
  assert.equal(art.readUInt32BE(16),432);assert.equal(art.readUInt32BE(20),96);
@@ -58,7 +58,7 @@ function runtime(reduced=false,failActions=false){
   naturalWidth=432;naturalHeight=192;
   set src(value){
    sources.push(value);
-   if(value.includes('actions_v2')){
+   if(value.includes('actions_charm_v3')){
     if(failActions){this.onerror?.();return}
     this.naturalHeight=96;
    }
