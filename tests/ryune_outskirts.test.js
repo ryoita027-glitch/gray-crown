@@ -98,8 +98,8 @@ test('new finds save/restore with schema 23 and preserve the four protagonist sh
  assert.equal(new Set(ids).size,4);
  assert.equal(h.evaluate("OpeningPixelAssets.designs.fieldWorker!==undefined"),true);
  assert.equal(h.evaluate("OpeningPixelAssets.designs.brookKeeper!==undefined"),true);
- assert.equal(h.evaluate("GC.Audio.mapMusicTheme('ryunebrook')"),'village');
- assert.equal(h.evaluate("GC.Audio.mapMusicTheme('ryunefields')"),'village');
+ assert.equal(h.evaluate("GC.Audio.mapMusicTheme('ryunebrook')"),'ryuneBrook');
+ assert.equal(h.evaluate("GC.Audio.mapMusicTheme('ryunefields')"),'ryuneFields');
 });
 
 test('optional memories preserve the original first inspection and never gate the north exit',()=>{
