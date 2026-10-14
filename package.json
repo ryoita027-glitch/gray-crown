@@ -41,6 +41,7 @@
     "release:browser-e2e": "python tests/browser_player_distribution_e2e_test.py",
     "release:technical-candidate": "npm run check && npm run release:checked && npm run release:browser-e2e && npm run three-route-browser-test",
     "product:local-quality": "npm run release:technical-candidate && python tests/browser_vertical_slice_e2e_test.py && npm run visual-playability-acceptance && npm run opening-art-acceptance",
-    "opening:play-evidence": "npm run ryune-outskirts-acceptance && python tests/browser_vertical_slice_e2e_test.py && python tools/analyze_opening_play_metrics.py"
+    "opening:play-evidence": "npm run ryune-outskirts-acceptance && npm run ryune-farewell-browser-test && python tests/browser_vertical_slice_e2e_test.py && python tools/analyze_opening_play_metrics.py",
+    "ryune-farewell-browser-test": "python tests/browser_ryune_farewell_e2e_test.py"
   }
 }
