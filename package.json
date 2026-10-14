@@ -10,7 +10,7 @@
     "verify-triton-completion": "python tools/verify_triton_completion_state.py",
     "build-triton-completion-evidence": "python tools/build_karen_triton_completion_evidence.py",
     "check": "npm run verify-hygiene && npm run verify-authority && npm run verify-python-syntax && node tests/check-syntax.js && npm test && npm run browser-test",
-    "browser-test": "python tests/browser_v21_gate.py && python tests/browser_alpha2_frontier_e2e_test.py && python tests/browser_alpha2_frontier_second_e2e_test.py",
+    "browser-test": "python tests/browser_v21_gate.py && python tests/browser_alpha2_frontier_e2e_test.py && python tests/browser_alpha2_frontier_second_e2e_test.py && npm run ryune-outskirts-browser-test",
     "frontier-e2e": "python tests/browser_alpha2_frontier_e2e_test.py",
     "frontier2-e2e": "python tests/browser_alpha2_frontier_second_e2e_test.py",
     "generate-karen-assets": "python tools/generate_karen_prototype_assets.py --out assets/characters/karen",
@@ -33,6 +33,8 @@
     "build:play": "python tools/build_player_release.py",
     "build:single": "python tools/build_standalone_html.py",
     "verify:release": "python -m unittest discover -s tests -p test_player_release_integrity.py",
-    "release:checked": "npm run verify:release && npm run build:play && npm run build:single"
+    "release:checked": "npm run verify:release && npm run build:play && npm run build:single",
+    "ryune-outskirts-browser-test": "python tests/browser_ryune_outskirts_e2e_test.py",
+    "ryune-outskirts-acceptance": "node tests/check-syntax.js && npm test && npm run ryune-outskirts-browser-test"
   }
 }
