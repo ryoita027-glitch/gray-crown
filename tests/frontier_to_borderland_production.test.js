@@ -52,3 +52,14 @@ test('no route ending, companion split or reward is forced by crossing the new s
  assert.equal(st.events.completed.worldSkeletonCleared,undefined);
  assert.equal(st.world.treasures.fieldCache,undefined);
 });
+
+test('existing watchfort gate is a real blocked passage until the commander unlocks it',()=>{
+ const h=createHarness();
+ h.evaluate("ALPHA_SESSION.started=true;state.map='watchfort';state.x=11;state.y=7");
+ assert.equal(h.evaluate('isBlocked(11,6)'),true);
+ assert.equal(h.evaluate("npcVisible(maps.watchfort.npcs.find(n=>n.id==='klein'))"),false);
+ h.evaluate("setWorldSwitch('fortGateOpen',true)");
+ assert.equal(h.evaluate('isBlocked(11,6)'),false,'opened gate collision must clear');
+ assert.equal(h.evaluate('isBlocked(12,6)'),false,'both halves of the opened portcullis');
+ assert.equal(h.evaluate("npcVisible(maps.watchfort.npcs.find(n=>n.id==='klein'))"),true);
+});
