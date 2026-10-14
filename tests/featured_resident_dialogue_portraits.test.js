@@ -19,6 +19,17 @@ test('all 9 important residents have distinct in-game pixel portraits',()=>{
   assert.doesNotMatch(p,/M8 72V60/,'old single template portrait must not override');
  }
 });
+test('one-file offline release embeds the same portrait pixels instead of broken relative SVG href',()=>{
+ const GC={Data:{}};
+ const mock={'assets/npc/featured_residents_v1.png':'data:image/png;base64,VERIFIED_FAKE_ATLAS'};
+ const npc=new Function('GC','window',src+';return GC.Data.NPCs')(GC,
+  {__GC_INLINE_ASSETS__:mock});
+ for(const name of names){
+  const p=npc.portraitMarkup(name);
+  assert.match(p,/href="data:image\/png;base64,VERIFIED_FAKE_ATLAS"/);
+  assert.doesNotMatch(p,/href="assets\/npc\/featured_residents_v1\.png"/);
+ }
+});
 test('other NPC and hero portraits keep their original safe rendering',()=>{
  const npc=runtime();
  assert.match(npc.portraitMarkup('カレン'),/hero-portrait-svg/);
