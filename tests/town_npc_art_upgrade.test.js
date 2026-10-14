@@ -146,9 +146,10 @@ test('real indoor workers use nearby synchronized hand tools, not fake walking',
   ['capitalarmory','capitalSmith'],['capitalarmory','armoryApprentice']]){
   const resident={id,x:10,y:8},original=JSON.stringify(resident);
   const still=rectangles(),busy=rectangles(),quiet=rectangles();
+  const pulseNow=2400-(id.length*127)%1900;
   assert.equal(normal.workplace(still,map,resident,0),true,id);
-  assert.equal(normal.workplace(busy,map,resident,1750),true,id);
-  assert.equal(reduced.workplace(quiet,map,resident,1750),true,id);
+  assert.equal(normal.workplace(busy,map,resident,pulseNow),true,id);
+  assert.equal(reduced.workplace(quiet,map,resident,pulseNow),true,id);
   assert.notEqual(JSON.stringify(still.rect),JSON.stringify(busy.rect),
    id+' must have a restrained, real, short movement');
   assert.equal(JSON.stringify(still.rect),JSON.stringify(quiet.rect),
