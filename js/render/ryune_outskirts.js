@@ -98,6 +98,14 @@ const RyuneOutskirts=(()=>{
   }
  }
  function drawObject(c,map,o,alreadyTaken=false){
+  if(map==='village'&&(o.id==='westFieldPath'||o.id==='eastBrookPath')){
+   const x=o.x*W,y=o.y*W;
+   pixel(c,'#574536',x+14,y+6,4,26);
+   pixel(c,o.id==='westFieldPath'?'#c1a26f':'#89acb6',x+4,y+5,25,8);
+   pixel(c,'#e2d2a3',x+7,y+7,18,2);
+   pixel(c,'#483d35',x+15,y+22,7,3);
+   return true
+  }
   if(!maps.has(map))return false;
   // Once collected, the supply spot is walkable again: do not leave a solid-looking crate.
   if(alreadyTaken&&(o.id==='fieldCache'||o.id==='brookCache'))return true;
