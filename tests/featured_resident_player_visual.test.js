@@ -9,7 +9,7 @@ const sourceFile=fs.readFileSync(path.join(__dirname,'../js/render/opening_pixel
 function featureRuntime(){
  const captures=[];
  class FakeImage{
-  naturalWidth=288;naturalHeight=128;
+  naturalWidth=432;naturalHeight=192;
   set src(v){captures.push(['src',v]);this.onload?.()}
  }
  const GC={Render:{World:{draw(){captures.push(['loaded','world-redraw'])}}},Log:{}};
@@ -18,11 +18,11 @@ function featureRuntime(){
  const c={save(){},restore(){},imageSmoothingEnabled:false,drawImage(...args){images.push(args)}};
  return {a,c,captures,images};
 }
-test('authored resident atlas is a real PNG with precise 9×4×32px dimensions',()=>{
+test('authored resident atlas is a real PNG with precise 9×4×48px dimensions',()=>{
  const b=fs.readFileSync(pathname);
  assert.deepEqual([...b.slice(0,8)],[137,80,78,71,13,10,26,10]);
- assert.equal(b.readUInt32BE(16),288);
- assert.equal(b.readUInt32BE(20),128);
+ assert.equal(b.readUInt32BE(16),432);
+ assert.equal(b.readUInt32BE(20),192);
  assert.ok(b.length>700,'real pixel art asset, not a placeholder');
 });
 // Fail CLOSED on corrupt PNGs. A valid magic header + IHDR does not mean the
@@ -54,15 +54,15 @@ test('all PNG chunks verify, compressed pixels fully decode and every resident f
  assert.equal(seenEnd,true,'IEND missing');
  assert.equal(p,png.length,'trailing bytes after final PNG chunk');
  assert.ok(head&&head.length===13);
- assert.equal(head.readUInt32BE(0),288);
- assert.equal(head.readUInt32BE(4),128);
+ assert.equal(head.readUInt32BE(0),432);
+ assert.equal(head.readUInt32BE(4),192);
  assert.equal(head[8],8,'one pixel per palette-index byte');
  assert.equal(head[9],3,'PNG must remain indexed-color with transparency');
  assert.ok(idat.length,'PNG compressed content missing');
  const scanlines=zlib.inflateSync(Buffer.concat(idat));
- assert.equal(scanlines.length,128*(288+1),
+ assert.equal(scanlines.length,192*(432+1),
   'truncated or incomplete scanlines: browsers may refuse entire NPC sprite');
- for(let y=0;y<128;y++)assert.ok(scanlines[y*289]<=4,'invalid PNG row filter');
+ for(let y=0;y<192;y++)assert.ok(scanlines[y*433]<=4,'invalid PNG row filter');
 });
 test('nine featured residents use their own four-direction image, not generic palette bodies',()=>{
  const {a,c,captures,images}=featureRuntime();
@@ -73,9 +73,9 @@ test('nine featured residents use their own four-direction image, not generic pa
    assert.equal(a.drawNpc(c,n,dir,0),true);
    const draw=images.at(-1);
    assert.ok(draw,'authored PNG must be drawn');
-   assert.equal(draw[1],i*32,'person-specific x from atlas');
-   assert.equal(draw[2],row*32,'direction-specific y from atlas');
-   assert.deepEqual(draw.slice(3),[32,32,128,192,32,32]);
+   assert.equal(draw[1],i*48,'person-specific x from atlas');
+   assert.equal(draw[2],row*48,'direction-specific y from atlas');
+   assert.deepEqual(draw.slice(3),[48,48,120,176,48,48]);
   }
  assert.deepEqual(a.featuredStatus(),
   {requested:true,ready:true,failed:false,count:9});
