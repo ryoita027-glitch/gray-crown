@@ -59,15 +59,16 @@ test('four independent optional goodbyes do not gate departure or corrupt an ear
  assert.equal(old.events.completed[key],undefined,'older saves stay compatible');
 });
 
-test('village HUD does not advertise an unearned two-area reporting errand',()=>{
+test('village offers a small optional report after ONE observation, without a two-map checklist',()=>{
  const h=createHarness(),s=h.GC.State.get(),d=h.GC.CommercialDiscovery;
  assert.equal(d.progress('village').total,1,'only already approachable orphanage choice appears');
  s.events.completed['ryune.fields.inspect']=true;
- assert.equal(d.progress('village').total,1,'one excursion must not reveal a two-area task');
+ assert.equal(d.progress('village').total,2,'one real observation opens a report, without requiring both side maps');
+ assert.ok(d.progress('village').remaining.some(t=>t.includes('畑か小川')));
  s.events.completed['ryune.brook.inspect']=true;
  const ready=d.progress('village');
  assert.equal(ready.total,2);
- assert.ok(ready.remaining.some(t=>t.includes('畑と小川')));
+ assert.ok(ready.remaining.some(t=>t.includes('畑か小川')));
  s.events.completed['ryune.outskirts.reward']=true;
  assert.equal(d.progress('village').found,1);
  assert.equal(h.GC.State.get().story.stage,'00_village','HUD has no story effects');

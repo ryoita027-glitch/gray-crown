@@ -4,7 +4,7 @@
 (function(){
  const extras=Object.freeze({
   village:[{id:'early.orphanMedicine',kind:'choice',label:'孤児院の薬草相談'},
-   {id:'ryune.outskirts.reward',kind:'event',label:'畑と小川の見回りを報告'}],
+   {id:'ryune.outskirts.reward',kind:'event',label:'畑か小川の観察をボルに伝える'}],
   ryunefields:[{id:'ryune.fields.inspect',kind:'event',label:'畑の土を調べる'},
    {id:'fieldCache',kind:'treasure',label:'畑の道具箱'}],
   ryunebrook:[{id:'ryune.brook.inspect',kind:'event',label:'小川の水量を調べる'},
@@ -30,10 +30,10 @@
   return !!s.world?.defeatedSymbols?.[p.id]
  }
  function progress(map,s=state){
-  // Never advertise "report both excursions" before the player has actually
-  // discovered BOTH places. It is optional local follow-up, not a quest gate.
+  // A single authentic field or creek observation can now be shared with
+  // Boru. No "visit both maps" chore masquerading as optional exploration.
   const visible=(extras[map]||[]).filter(p=>p.id!=='ryune.outskirts.reward'||
-   (!!s.events?.completed?.['ryune.fields.inspect']&&
+   (!!s.events?.completed?.['ryune.fields.inspect']||
     !!s.events?.completed?.['ryune.brook.inspect'])||
     !!s.events?.completed?.['ryune.outskirts.reward']);
   const complete=visible.filter(p=>done(p,s));
@@ -61,7 +61,7 @@
   const p=progress(state.map);
   if(!p.total){node.textContent='';node.classList.add('hidden');return p}
   node.classList.remove('hidden');
-  node.textContent='寄り道の発見 '+p.found+' / '+p.total+'（任意）';
+  node.textContent=p.remaining.length?'寄り道（任意）・気になる場所を調べる':'寄り道の発見（任意）';
   node.setAttribute('title',p.remaining.length?'気が向いたら調べられる場所：'+p.remaining.join('／'):'このエリアの寄り道はすべて発見済み');
   return p
  }

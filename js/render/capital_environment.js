@@ -93,6 +93,34 @@ const CapitalEnvironment=(()=>{
     box(c,'#806653',x+4,y+5,w-8,9);
     box(c,'#b5a58e',x+6,y+7,w-12,3);
    }
+
+   // Build larger readable masses INSIDE the existing blocked facades.
+   // These silhouettes replace tint-only differences at 1x play scale.
+   if(formal){
+    box(c,'#494d50',x+2,y+7,w-4,5);
+    box(c,'#ebdfc8',x+4,y+2,w-8,10);
+    box(c,'#a6a197',x+4,y+12,w-8,3);
+    for(let i=0;i<f.w;i++){
+     box(c,'#e6d9c4',x+8+i*W,y+18,5,h-35);
+     box(c,'#545e60',x+14+i*W,y+21,11,h-42);
+    }
+   }else if(military){
+    box(c,'#2f3e47',x+2,y+10,w-4,7);
+    for(let i=0;i<f.w;i++){
+     box(c,'#495963',x+4+i*W,y+1,19,14);
+     box(c,'#a0aaa8',x+8+i*W,y+2,10,3);
+    }
+   }else if(market){
+    box(c,'#6b473a',x+2,y+3,w-4,10);
+    box(c,'#b67b5d',x+5,y+5,w-10,7);
+    for(let i=0;i<f.w;i++)
+     box(c,i%2?'#d7b38d':'#944e4b',x+3+i*W,y+14,26,10);
+   }else{
+    box(c,'#54473d',x+3,y+5,w-6,10);
+    box(c,'#c9ad87',x+7,y+7,w-14,4);
+    for(let i=0;i<f.w;i++)
+     box(c,'#655448',x+7+i*W,y+18,5,h-36);
+   }
    // Window trim never suggests an extra enterable gate.
    for(let i=0;i<f.w;i++){
     const xx=x+10+i*W,yy=y+25;

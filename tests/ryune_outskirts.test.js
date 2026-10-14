@@ -62,7 +62,7 @@ test('real move() performs four reversible side-map edge transitions without adv
  assert.equal(h.evaluate("state.schema"),23);
 });
 
-test('field and brook investigations are optional, the one-time ration is gated and not duplicated',()=>{
+test('field and brook investigations are optional, either observation can be reported once without duplicate food',()=>{
  const h=createHarness(),e=h.GC.Events;
  assert.equal(e.findTriggeredEvent('npc','farmer',{map:'village'}),null);
  const initial=h.evaluate("state.inventory['携帯食']");
@@ -70,13 +70,16 @@ test('field and brook investigations are optional, the one-time ration is gated 
  const brook=clone(h.evaluate("EVENT_DEFS.find(d=>d.id==='ryune.brook.inspect')"));
  assert.equal(e.findTriggeredEvent('object','fieldFurrows',{map:'ryunefields'}).id,field.id);
  e.applyEventEffects(field);
- assert.equal(e.findTriggeredEvent('npc','farmer',{map:'village'}),null);
+ assert.equal(e.findTriggeredEvent('npc','farmer',{map:'village'})?.id,'ryune.outskirts.fieldReport',
+  'one field observation already earns a useful report');
  e.applyEventEffects(brook);
  const reward=e.findTriggeredEvent('npc','farmer',{map:'village'});
  assert.equal(reward.id,'ryune.outskirts.reward');
  e.applyEventEffects(reward);
  assert.equal(h.evaluate("state.inventory['携帯食']"),initial+1);
  assert.equal(h.evaluate("!!state.world.treasures.outskirtsThanks"),true);
+ assert.equal(h.evaluate("!!state.events.completed['ryune.outskirts.reported.fields']"),true);
+ assert.equal(h.evaluate("!!state.events.completed['ryune.outskirts.reported.brook']"),true);
  assert.equal(e.findTriggeredEvent('npc','farmer',{map:'village'}),null);
  assert.equal(e.findTriggeredEvent('object','fieldFurrows',{map:'ryunefields'}).id,'ryune.fields.inspect.repeat');
  assert.equal(e.findTriggeredEvent('object','brookWater',{map:'ryunebrook'}).id,'ryune.brook.inspect.repeat');
@@ -175,9 +178,9 @@ test('only farm work animates slowly; brook watcher stands still',()=>{
   brook.x+","+brook.y+",maps.ryunebrook.npcs)"),false);
  assert.equal(h.evaluate("OpeningPixelAssets.designs.brookKeeper!==undefined"),true);
  const original=h.evaluate("OpeningPixelAssets.drawNpc.toString()");
- assert.ok(original.includes("n.id==='fieldWorker'"),'only farmhand has an authored sparse gesture');
- assert.ok(original.includes("Math.floor(now/800)%11===3"),
-  'one restrained frame per roughly nine-second cycle');
+ assert.ok(original.includes("'fieldWorker'].includes(n.id)"),'farmhand is in the authored sparse work-gesture roster');
+ assert.ok(original.includes('OpeningWorldLife.workPhase(n.id,now)'),
+  'one restrained frame timed by the actual sparse work-motion scheduler');
  assert.ok(!original.match(/'fieldWorker','brookKeeper'\]\.includes/),
   'brook watcher must not walk in place');
 });

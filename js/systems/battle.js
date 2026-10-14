@@ -3,7 +3,7 @@ function captureBattleReturn(){state.battleReturn={map:state.map,x:state.x,y:sta
 function restoreBattleReturn(){const r=state.battleReturn;if(!r||!maps[r.map]){state.battleReturn=null;return}state.map=r.map;state.x=r.x;state.y=r.y;state.dir=r.dir;state.trail=Array.isArray(r.trail)?r.trail:[[r.x+1,r.y],[r.x+2,r.y],[r.x+3,r.y]];state.battleReturn=null;VISUAL.map=null;setMusic(mapMusicTheme(state.map))}
 function startSymbolEncounter(objectId,battleId){if(state.battle||objectCleared(objectId))return false;state.symbolEncounter={objectId,battleId,map:state.map};captureBattleReturn();startBattle(battleId,true);return true}
 function startBattle(id,fromSymbol=false){if(!$('dialogueBox').classList.contains('hidden'))closeDialogue(false);GC.Log?.info('Battle Start',{id,map:state.map,fromSymbol});if(!state.battleReturn)captureBattleReturn();if(!fromSymbol)state.symbolEncounter=null;state.locked=true;const ev=$('enemyVisual');if(ev)ev.classList.remove('hit','shake','surrender');const bdef=battles[id];GC.CommercialTactics?.reset?.();state.battle={id,turn:1,actor:0,comboTarget:null,comboActor:null,counterWindow:null,enemies:bdef.enemies.map(e=>({...e,morale:e.morale??null,maxMorale:e.maxMorale??e.morale??null})),log:[],outcome:null,
- metrics:{startedAt:Date.now(),actions:{},rounds:0,enemyAttacks:0,damageTaken:0,
+ metrics:{startedAt:Date.now(),actions:{},rounds:0,enemyAttacks:0,damageTaken:0,guardedAllies:0,
   openingHp:activeRouteParty().reduce((sum,p)=>sum+p.hp,0),
   openingMp:activeRouteParty().reduce((sum,p)=>sum+p.mp,0)}};
  setMusic(id==='boss'?'boss':'battle');$('battleLog').innerHTML='';$('battleTitle').textContent=bdef.name;$('battlePanel').classList.remove('hidden');if(bdef.boss)showBossCinematic(bdef,false);else if(!bdef.random)showBattleIntro(bdef.name);battleLog(`―― ${bdef.name}との戦闘！`);renderBattle();const openingBattle=state.battle;setTimeout(()=>{if(state.battle!==openingBattle)return;state.locked=false;renderBattle()},bdef.boss?1480:bdef.random?180:680)}
@@ -111,12 +111,25 @@ function enemyTurn(){const b=state.battle,bd=battles[b.id],foes=livingEnemies().
  if(e.staggered>0){e.staggered--;battleLog(e.name+'は体勢を崩して行動できない！');renderBattle();setTimeout(step,220);return}
  if(bd.boss&&e.phase===1&&e.hp<e.maxHp*.65){e.phase=2;e.atk+=2;battleLog(`<strong class="boss-phase">PHASE II — ${bd.phase2||'攻勢が変化した'}</strong>`)}else if(bd.boss&&e.phase===2&&e.hp<e.maxHp*.3){e.phase=3;e.atk+=3;e.def+=1;battleLog(`<strong class="boss-phase">FINAL PHASE — ${bd.phase3||'全力を解放した'}</strong>`)}const alive=activeRouteParty().filter(p=>p.hp>0);if(!alive.length)return battleLose();// Telegraph tactical danger while preserving original fair target-selection rules.
  if(bd.boss&&e.phase>=2)battleLog('警戒：'+e.name+'が攻勢を強めている。防御と回復を確認しよう。');
- const focus=checkpointEnemyIntent(b);const originallyTargeted=focus?.target||selectEnemyTarget(alive,b);const t=GC.CommercialTactics?.protect?.(activeRouteParty(),originallyTargeted)||originallyTargeted;let d=damageFormula(e.atk+(focus?.bonus||0),t.def);if(focus?.scouted)d=Math.max(1,d-2);if(t.guard)d=Math.max(1,Math.floor(d/2));if(GC.Dev?.settings?.invincible)d=0;t.hp=Math.max(0,t.hp-d);if(b.metrics){b.metrics.enemyAttacks++;b.metrics.damageTaken+=d}
+ const focus=checkpointEnemyIntent(b);const originallyTargeted=focus?.target||selectEnemyTarget(alive,b);const t=GC.CommercialTactics?.protect?.(activeRouteParty(),originallyTargeted)||originallyTargeted;let d=damageFormula(e.atk+(focus?.bonus||0),t.def);if(focus?.scouted)d=Math.max(1,d-2);if(t.guard)d=Math.max(1,Math.floor(d/2));if(GC.Dev?.settings?.invincible)d=0;t.hp=Math.max(0,t.hp-d);if(b.metrics){b.metrics.enemyAttacks++;b.metrics.damageTaken+=d;if(t!==originallyTargeted&&t.guard)b.metrics.guardedAllies++}
  if(t!==originallyTargeted)battleLog(`${t.name}が${originallyTargeted.name}を庇った！ ${e.name}の攻撃を引き受け、${d}ダメージ。`);if(t!==originallyTargeted&&t.guard&&focus){
   b.counterWindow={enemy:e,turn:b.turn+1};
   battleLog('守りの連携！ 敵に隙が生まれた。次の味方ターンの攻撃で反撃できる。');
  }
  if(t!==originallyTargeted)sfx('guard');else battleLog(`${e.name}の攻撃。${t.name}に${d}ダメージ。`);const ev=$('enemyVisual');if(ev){ev.classList.remove('shake');void ev.offsetWidth;ev.classList.add('shake')}battlePop('-'+d,'ally');sfx('hit');renderBattle();setTimeout(step,360)};step()}
+// Replace ONE existing closing line of the eight-line first-wolf scene,
+// only after a real guarded interception or a genuine footprint inspection.
+// Do not lengthen the mandatory scene or pretend guarding worked when it did not.
+function openingWolfReaction(def,metrics,scouted){
+ if(def?.id!=='alpha.road.wolfVictory'||!def.lines?.length)return def;
+ let closing=null;
+ if((metrics?.guardedAllies||0)>0)closing=
+  {speaker:'カレン',text:'「ソフィを守れた。怖かったけど……次も声を聞き逃さない」'};
+ else if(scouted)closing=
+  {speaker:'マーガレット',text:'「足跡を調べてよかった。戦う前に分かることも、ちゃんとあるのね」'};
+ if(!closing)return def;
+ return {...def,lines:[...def.lines.slice(0,-1),closing]};
+}
 function battleWin(outcome='defeat'){const b=state.battle,id=b.id,bd=battles[id],r=bd.reward;GC.Log?.info('Battle End',{id,outcome});
  if(b.metrics)GC.Log?.info('Local Battle Balance',{
   id,map:state.map,outcome,rounds:b.turn,
@@ -126,7 +139,7 @@ function battleWin(outcome='defeat'){const b=state.battle,id=b.id,bd=battles[id]
   openingHp:b.metrics.openingHp,remainingHp:activeRouteParty().reduce((sum,p)=>sum+p.hp,0),
   openingMp:b.metrics.openingMp,remainingMp:activeRouteParty().reduce((sum,p)=>sum+p.mp,0),
   heroes:activeRouteParty().map(p=>p.id)
- });const scriptedEvent=findTriggeredEvent('battleWin',id,{outcome,map:state.map});if(scriptedEvent)applyEventEffects(scriptedEvent,{outcome,map:state.map});if(bd.boss)showBossCinematic(bd,true);const rewardGold=outcome==='surrender'?Math.floor(r.gold*.65):r.gold;state.gold+=rewardGold;const levelMessages=[];activeRouteParty().forEach(p=>{p.exp+=r.exp;const ups=applyLevelUps(p);for(const up of ups)levelMessages.push({name:p.name,...up})});battleLog(`${outcome==='surrender'?'戦闘終了':'勝利'}！ ${rewardGold}G、経験値${r.exp}を獲得。`);for(const u of levelMessages)battleLog(`<strong class="level-up">LEVEL UP! ${u.name} Lv.${u.level}　HP+${u.hp} MP+${u.mp} 攻撃+${u.atk} 防御+${u.def} 素早さ+${u.spd}</strong>`);if(r.drop&&Math.random()<r.drop.chance){state.inventory[r.drop.item]=(state.inventory[r.drop.item]||0)+1;battleLog(`${r.drop.item}を1個手に入れた。`)}
+ });const scriptedEvent=findTriggeredEvent('battleWin',id,{outcome,map:state.map});const aftermath=openingWolfReaction(scriptedEvent,b.metrics,state.events.choices['early.wolfScout']==='read');if(scriptedEvent)applyEventEffects(scriptedEvent,{outcome,map:state.map});if(bd.boss)showBossCinematic(bd,true);const rewardGold=outcome==='surrender'?Math.floor(r.gold*.65):r.gold;state.gold+=rewardGold;const levelMessages=[];activeRouteParty().forEach(p=>{p.exp+=r.exp;const ups=applyLevelUps(p);for(const up of ups)levelMessages.push({name:p.name,...up})});battleLog(`${outcome==='surrender'?'戦闘終了':'勝利'}！ ${rewardGold}G、経験値${r.exp}を獲得。`);for(const u of levelMessages)battleLog(`<strong class="level-up">LEVEL UP! ${u.name} Lv.${u.level}　HP+${u.hp} MP+${u.mp} 攻撃+${u.atk} 防御+${u.def} 素早さ+${u.spd}</strong>`);if(r.drop&&Math.random()<r.drop.chance){state.inventory[r.drop.item]=(state.inventory[r.drop.item]||0)+1;battleLog(`${r.drop.item}を1個手に入れた。`)}
  const finalRouteBattle={
   kingdomEvacuation:{route:'kingdom',choice:'evacuate',context:'避難路を確保するため帝国の封鎖兵を退けた。'},
   kingdomOrders:{route:'kingdom',choice:'orders',context:'帝国本陣の前衛警戒隊を退け、交渉の道を開いた。'},
@@ -152,7 +165,7 @@ function battleWin(outcome='defeat'){const b=state.battle,id=b.id,bd=battles[id]
  if(id==='crawler'){markDefeated('crawler',true);addJournal('古砦跡の奥で石殻ムカデを退けた。')}
  if(id==='boss'){markDefeated('boss',true);state.objective='古砦跡の北出口を目指す';addJournal('古砦跡の主・灰角獣を倒し、北側の鉄柵が開いた。')}
  if(id==='zenithEncounter'){completeEvent('metZenith',true);state.objective='北側の帰還路から王国へ戻る';addJournal('ゼニスとの対決を経て、王国の歴史的主張に根拠があることと、現在の住民を追い出す正当性は別問題だという認識を共有した。');draw()}
- const won=id,wasRandom=!!battles[id].random;resetEncounterCounter();const ev=$('enemyVisual');if(ev&&outcome!=='surrender')ev.classList.add('defeated');state.battle=null;state.locked=true;const finishBattle=()=>{restoreBattleReturn();state.symbolEncounter=null;$('battlePanel').classList.add('hidden');if(ev)ev.classList.remove('defeated');renderHud();draw();const afterLevel=()=>{state.locked=false;if(scriptedEvent)playEventDialogue(scriptedEvent);
+ const won=id,wasRandom=!!battles[id].random;resetEncounterCounter();const ev=$('enemyVisual');if(ev&&outcome!=='surrender')ev.classList.add('defeated');state.battle=null;state.locked=true;const finishBattle=()=>{restoreBattleReturn();state.symbolEncounter=null;$('battlePanel').classList.add('hidden');if(ev)ev.classList.remove('defeated');renderHud();draw();const afterLevel=()=>{state.locked=false;if(scriptedEvent)playEventDialogue(aftermath);
  else if(['kingdomEvacuation','kingdomOrders','empireProtect','empireAdvance'].includes(won)){
   saySequence([
    {speaker:'ナレーション',text:outcome==='surrender'?'相手は武器を置き、進路を譲った。':'敵兵は戦う力を失い、進路が開いた。'},
