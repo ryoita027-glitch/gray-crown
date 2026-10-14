@@ -563,6 +563,36 @@ const EVENT_DEFS=Object.freeze([
    ]},
   {id:'ryune.brook.inspect.repeat',priority:10,trigger:{type:'object',map:'ryunebrook',target:'brookWater'},
    when:[{eventComplete:'ryune.brook.inspect'}],lines:[{speaker:'小川の水辺',text:'水は細く流れている。むやみに水路へ入らず、村の人に状況を伝えることにした。'}]},
+  // One observation is worth taking home. Requiring TWO large walks for a
+  // single ration felt like mandatory checklist work, despite being optional.
+  // Either safe observation may be reported first, with the SAME one-time food
+  // reward. A second visit is only for curiosity, never for extra loot.
+  {id:'ryune.outskirts.fieldReport',priority:80,trigger:{type:'npc',map:'village',target:'farmer'},
+   when:[{eventComplete:'ryune.fields.inspect'},{eventIncomplete:'ryune.brook.inspect'},
+    {eventIncomplete:'ryune.outskirts.reward'}],
+   lines:[
+    {speaker:'農夫のボル',text:'「畑の乾いた場所を見てくれたのか。助かる。畝の踏み跡を避けて、まず溝を測ってみるよ」'},
+    {speaker:'マーガレット',text:'「小川の状況はまだ分かりません。水路を掘る前に、水の入り口を確認してください」'},
+    {speaker:'農夫のボル',text:'「分かった。旅の食べ物を少し持っていきな。無理に川まで行かなくていい」'}
+   ],effects:[
+    {type:'completeEvent',id:'ryune.outskirts.reward'},
+    {type:'completeEvent',id:'ryune.outskirts.reported.fields'},
+    {type:'openTreasure',id:'outskirtsThanks'},
+    {type:'journal',text:'西畑の乾いた畝についてボルに報告した。小川は未調査なので水路の原因は断定していない。携帯食を受け取った。'}
+   ]},
+  {id:'ryune.outskirts.brookReport',priority:80,trigger:{type:'npc',map:'village',target:'farmer'},
+   when:[{eventComplete:'ryune.brook.inspect'},{eventIncomplete:'ryune.fields.inspect'},
+    {eventIncomplete:'ryune.outskirts.reward'}],
+   lines:[
+    {speaker:'農夫のボル',text:'「橋の下に泥がたまってるのか。なるほど。まず水位を測らないといけねえな」'},
+    {speaker:'ソフィ',text:'「畑の土はまだ確かめていません。水が足りない理由を一つに決めないでくださいね」'},
+    {speaker:'農夫のボル',text:'「そうする。ありがとう。これは道中の食べ物だ。畑まで見てくる必要はないよ」'}
+   ],effects:[
+    {type:'completeEvent',id:'ryune.outskirts.reward'},
+    {type:'completeEvent',id:'ryune.outskirts.reported.brook'},
+    {type:'openTreasure',id:'outskirtsThanks'},
+    {type:'journal',text:'小川の水量についてボルに報告した。畑は未調査なので原因は断定していない。携帯食を受け取った。'}
+   ]},
   {id:'ryune.outskirts.reward',priority:90,trigger:{type:'npc',map:'village',target:'farmer'},
    when:[{eventComplete:'ryune.fields.inspect'},{eventComplete:'ryune.brook.inspect'},{eventIncomplete:'ryune.outskirts.reward'}],
    lines:[
@@ -571,6 +601,8 @@ const EVENT_DEFS=Object.freeze([
     {speaker:'農夫のボル',text:'「分かってる。これはほんの礼だ。旅先で腹が減ったら食べな」'}
    ],effects:[
     {type:'completeEvent',id:'ryune.outskirts.reward'},
+    {type:'completeEvent',id:'ryune.outskirts.reported.fields'},
+    {type:'completeEvent',id:'ryune.outskirts.reported.brook'},
     {type:'openTreasure',id:'outskirtsThanks'},
     {type:'journal',text:'西畑と東の小川の様子を農夫ボルへ報告し、旅の携帯食を受け取った。'}
    ]},
@@ -578,19 +610,19 @@ const EVENT_DEFS=Object.freeze([
   // Residents remember information; no magical instant irrigation repair.
   {id:'ryune.fields.worker.afterReport',priority:35,
    trigger:{type:'npc',map:'ryunefields',target:'fieldWorker'},
-   when:[{eventComplete:'ryune.outskirts.reward'}],
+   when:[{eventComplete:'ryune.outskirts.reported.fields'}],
    lines:[{speaker:'畑の手伝い人',text:'「ボルから聞いたよ。まず溝の高さを測るんだ。苗を踏まないよう、細い目印だけ立ててある」'}]},
   {id:'ryune.brook.keeper.afterReport',priority:35,
    trigger:{type:'npc',map:'ryunebrook',target:'brookKeeper'},
-   when:[{eventComplete:'ryune.outskirts.reward'}],
+   when:[{eventComplete:'ryune.outskirts.reported.brook'}],
    lines:[{speaker:'川辺の見回り人',text:'「水位の印を付けたよ。流れが戻るかは、何日か見ないと分からないね」'}]},
   {id:'ryune.fields.cart.afterReport',priority:35,
    trigger:{type:'object',map:'ryunefields',target:'fieldCart'},
-   when:[{eventComplete:'ryune.outskirts.reward'}],
+   when:[{eventComplete:'ryune.outskirts.reported.fields'}],
    lines:[{speaker:'畑の荷車',text:'縄と測り棒が荷台に置かれている。溝の深さを確かめてから直すつもりらしい。'}]},
   {id:'ryune.brook.stones.afterReport',priority:35,
    trigger:{type:'object',map:'ryunebrook',target:'brookStones'},
-   when:[{eventComplete:'ryune.outskirts.reward'}],
+   when:[{eventComplete:'ryune.outskirts.reported.brook'}],
    lines:[{speaker:'川辺の石積み',text:'水の高さを確かめる目印が増えている。石積みはまだそのままだ。'}]},
   {id:'ryune.fields.worker',priority:15,trigger:{type:'npc',map:'ryunefields',target:'fieldWorker'},
    lines:[{speaker:'畑の手伝い人',text:'「畝の間を踏まないでおくれよ。村へ戻るなら東側の道をまっすぐだ。乾いた場所が気になったら見ていって」'}]},
