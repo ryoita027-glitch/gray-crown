@@ -99,6 +99,8 @@ const RyuneOutskirts=(()=>{
  }
  function drawObject(c,map,o,alreadyTaken=false){
   if(!maps.has(map))return false;
+  // Once collected, the supply spot is walkable again: do not leave a solid-looking crate.
+  if(alreadyTaken&&(o.id==='fieldCache'||o.id==='brookCache'))return true;
   const x=o.x*W,y=o.y*W;
   if(o.id==='fieldFurrows'){
    pixel(c,'#423e30',x+5,y+20,23,4);
