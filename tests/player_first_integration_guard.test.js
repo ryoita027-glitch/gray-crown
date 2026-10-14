@@ -38,3 +38,12 @@ test('the capital remains art-directed without altering map collision data',()=>
  for(const word of ['formal','military','market'])assert.ok(city.includes(word));
  assert.match(read('js/data/maps.js'),/capital:\{name:'アルディナ王都'/);
 });
+
+test('Boru explains one optional reason to explore before travel and responds after reports',()=>{
+ const npc=read('js/systems/events.js');
+ assert.match(npc,/id==='farmer'/);
+ assert.match(npc,/西の畝か東の小川、どちらか一つ/);
+ assert.match(npc,/旅支度が先なら/);
+ assert.match(npc,/isEventComplete\('ryune\.outskirts\.reward'\)/);
+ assert.match(npc,/何も分からなかった昨日よりは前に進めそうだ/);
+});
