@@ -101,3 +101,54 @@ test('new finds save/restore with schema 23 and preserve the four protagonist sh
  assert.equal(h.evaluate("GC.Audio.mapMusicTheme('ryunebrook')"),'village');
  assert.equal(h.evaluate("GC.Audio.mapMusicTheme('ryunefields')"),'village');
 });
+
+test('all Ryune family moments are optional, one-time and never gate the north exit',()=>{
+ const h=createHarness(),state=h.GC.State.get();
+ const destinations=[
+  ['ryune.memory.well','village','well'],
+  ['ryune.memory.familyTable','karenhome','familyTable'],
+  ['ryune.memory.toyChest','orphanage','toyChest'],
+  ['ryune.memory.mayorBooks','mayorhouse','mayorBooks'],
+  ['ryune.memory.soldierLetter','cottage','soldierLetter']
+ ];
+ const before={story:state.story.stage,objective:state.story.objective,
+               gold:state.gold,inventory:clone(state.inventory)};
+ for(const [id,map,target] of destinations){
+  const def=h.GC.Events.findTriggeredEvent('object',target,{map});
+  assert.equal(def?.id,id,'optional first encounter '+id);
+  assert.equal(def.when.length,1,'only one-time condition, no quest gate '+id);
+  assert.equal(def.when[0].eventIncomplete,id);
+  assert.deepEqual(clone(def.effects),[{type:'completeEvent',id}],
+   'no reward, quest requirement, forced story advance, or main objective '+id);
+  h.GC.Events.applyEventEffects(def);
+  assert.equal(h.GC.Events.findTriggeredEvent('object',target,{map}),null,
+   'after first memory, original inspect text is available '+id);
+ }
+ assert.equal(state.story.stage,before.story);
+ assert.equal(state.story.objective,before.objective);
+ assert.equal(state.gold,before.gold);
+ assert.deepEqual(clone(state.inventory),before.inventory);
+ assert.equal(h.GC.Events.findTriggeredEvent('npc','messenger',{map:'village'}).id,
+  'alpha.village.appointment','royal envoy remains normally accessible');
+ // A test setup with the original appointment completed but ZERO optional
+ // west/east investigation or farmer reward must still permit departure.
+ h.evaluate("ALPHA_SESSION.started=true;state.map='village';state.x=11;state.y=1;"+
+   "state.events.completed['alpha.village.appointment']=true;"+
+   "state.story.stage=STORY_STAGES.APPOINTED;VISUAL.nextMoveAt=0;move('up')");
+ assert.equal(state.map,'road','north gate does not consult optional discoveries');
+ assert.equal(state.story.stage,'02_road');
+ assert.equal(h.evaluate("!!state.events.completed['ryune.outskirts.reward']"),false);
+});
+
+test('both optional path signs can be read without obstructing either walkable exit',()=>{
+ const h=createHarness(),m=mapInfo(h,'village');
+ const signs=m.objects.filter(o=>['westFieldPath','eastBrookPath'].includes(o.id));
+ assert.deepEqual(signs.map(o=>o.id),['westFieldPath','eastBrookPath']);
+ assert.deepEqual(signs.map(o=>[o.x,o.y]),[[2,7],[21,7]]);
+ assert.equal(reaches(m,[12,12],[1,8]),true);
+ assert.equal(reaches(m,[12,12],[22,8]),true);
+ for(const sign of signs){
+  assert.equal(reaches(m,[12,12],sign),true,'sign should be interactable');
+  assert.ok(h.GC.Events.findTriggeredEvent('object',sign.id,{map:'village'}));
+ }
+});
