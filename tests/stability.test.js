@@ -86,3 +86,61 @@ test('save nearest-safe-tile continues rejecting real water tiles and occupied N
   assert.notDeepEqual(Array.from(p),[x,y],map+' must reject blocked tile');
  }
 });
+
+test('portable export/import moves a valid v23 save without changing story or the player inventory',()=>{
+ const h=createHarness();h.evaluate('ALPHA_SESSION.started=true');
+ stateOf(h).gold=301;
+ assert.equal(h.GC.Save.save(true),true);
+ const original=h.GC.Save.exportPortableSaveText();
+ assert.equal(typeof original,'string');
+ const parsed=JSON.parse(original);
+ assert.equal(parsed.schema,23);
+ assert.equal(parsed.gold,301);
+ assert.equal(parsed.story.stage,stateOf(h).story.stage);
+ stateOf(h).gold=99;
+ assert.equal(h.GC.Save.save(true),true);
+ assert.equal(h.GC.Save.importPortableSaveText(original),true);
+ assert.equal(stateOf(h).gold,301);
+ assert.equal(stateOf(h).schema,23);
+ assert.equal(stateOf(h).story.stage,parsed.story.stage);
+ assert.deepEqual(stateOf(h).inventory,parsed.inventory);
+ const backup=JSON.parse(h.storage.getItem(h.GC.Save.SAVE_BACKUP_KEY));
+ assert.equal(backup.gold,99,'the previous local save must survive import');
+});
+
+test('portable save import rejects unrelated JSON, future schema, re-ordered heroes and oversized files',()=>{
+ const h=createHarness();h.evaluate('ALPHA_SESSION.started=true');
+ assert.equal(h.GC.Save.save(true),true);
+ const original=h.storage.getItem(h.GC.Save.SAVE_KEY);
+ const data=JSON.parse(original);
+ for(const raw of [
+  '{"unrelated":"object"}',
+  JSON.stringify({...data,schema:100}),
+  JSON.stringify({...data,party:[...data.party].reverse()}),
+  JSON.stringify({...data,map:'__unknown_map'}),
+  'x'.repeat(2*1024*1024+1)
+ ]){
+  assert.equal(h.GC.Save.importPortableSaveText(raw),false);
+  assert.equal(h.storage.getItem(h.GC.Save.SAVE_KEY),original,
+   'invalid imports must not overwrite the current player save');
+ }
+});
+
+test('portable import migrates historical schema while retaining local backup',()=>{
+ const h=createHarness();h.evaluate('ALPHA_SESSION.started=true');
+ stateOf(h).gold=93;
+ h.GC.Save.save(true);
+ const older=JSON.parse(h.GC.Save.exportPortableSaveText());
+ older.schema=22;older.gold=478;
+ assert.equal(h.GC.Save.importPortableSaveText(JSON.stringify(older)),true);
+ assert.equal(stateOf(h).gold,478);
+ assert.equal(stateOf(h).schema,23);
+ assert.equal(JSON.parse(h.storage.getItem(h.GC.Save.SAVE_BACKUP_KEY)).gold,93);
+});
+
+test('portable export is unavailable during dialogue just like ordinary manual Save',()=>{
+ const h=createHarness();h.evaluate('ALPHA_SESSION.started=true');
+ h.GC.Dialogue.say('テスト','イベント中の保存はできません');
+ assert.equal(h.GC.Save.exportPortableSaveText(),null);
+ assert.equal(h.GC.Save.importPortableSaveText(JSON.stringify({schema:23})),false);
+});
