@@ -266,11 +266,129 @@ const OpeningPixelAssets=(()=>{
   signature(c,id,dir,frame,coat,skin);
 
  }
+ // First six memorable Ryune silhouettes are deliberately drawn as six
+ // DIFFERENT sprites, not generic `person()` plus a color/role overlay.
+ // 32x32, four directions, planted feet; a few localized arm pixels animate.
+ function distinctRyune(c,profile,dir,frame,id){
+  if(!['baker','farmer','mayor','veteran','messenger','ren','lulu'].includes(id))return false;
+  const [hair,coat,skin]=profile,back=dir===3,side=dir===1||dir===2,front=dir===0;
+  const ink='#342f31',dark=tint(coat,-36),light=tint(coat,26),
+        face=tint(skin,-25),shine=tint(hair,30),arm=frame===1?-1:frame===3?1:0;
+  const p=(col,x,y,w,h)=>P(c,col,x,y,w,h);
+  const feet=(left=9,right=19)=>{
+   p(ink,left,27,5,4);p(ink,right,27,5,4);
+   p('#625448',left,29,5,2);p('#625448',right,29,5,2)
+  };
+  const eyes=(x,y,gap=6)=>{
+   if(back)return;
+   if(side){p('#4c3936',dir===1?x+1:x+gap,y,2,2);return}
+   p('#514141',x,y,2,2);p('#514141',x+gap,y,2,2);
+   p('#9e6e5e',x+Math.floor(gap/2)+1,y+3,2,1)
+  };
+  const head=(x,y,w,h)=>{
+   p(ink,x-1,y-1,w+2,h+2);
+   p(back?hair:face,x,y,w,h);
+   if(!back){p(skin,x+1,y+1,w-2,h-2);p(face,x+1,y+h-2,w-2,1)}
+  };
+  const fringe=(x,y,w)=>{
+   p(hair,x,y,w,4);
+   p(shine,x+2,y+1,Math.max(2,w-6),1);
+   if(back)p(hair,x,y+4,w,7)
+  };
+  switch(id){
+   case 'baker':{
+    // Soft cloud-like toque, broad apron, tan pastry tray: visually round.
+    feet(9,19);p(ink,6,15,21,13);p(coat,7,16,19,11);
+    p('#ece5ce',7,17,19,12);p('#f9e9ce',11,18,12,10);
+    p('#ac8260',11,26,12,2);p(coat,4,17,4,9);
+    p(coat,25,17+arm,4,8);
+    head(10,7,12,10);fringe(10,5,12);eyes(12,11,5);
+    // Three separated puffs; a flat 'white hat bar' looks like an error.
+    p('#a39b88',8,3,17,5);p('#f2eadb',9,2,6,5);
+    p('#f2eadb',14,0,8,6);p('#f2eadb',21,3,5,5);
+    p('#d5c8b1',9,7,17,2);
+    p('#6c4c32',25,20+arm,7,4);
+    p('#dda667',26,16+arm,5,4);p('#f1cb8b',27,16+arm,3,1);
+    break
+   }
+   case 'farmer':{
+    // Wide brim + sloped work shoulders + canvas overalls + grounded hoe.
+    feet(9,19);p(ink,6,16,22,12);p('#5b6949',7,17,21,10);
+    p('#ad966d',10,18,13,10);
+    p('#546448',12,18,4,10);p('#546448',20,18,3,10);
+    p('#554b3d',4,18,5,10);
+    head(10,8,12,10);fringe(10,7,12);eyes(12,13,6);
+    p(ink,2,8,28,3);p('#bd9c64',4,3,24,8);
+    p('#dcc18a',8,2,16,3);p('#88704e',4,9,24,2);
+    p('#665236',26,14,2,15);p('#8b9b6c',23,12,9,4);
+    p('#c4a380',23,21+arm,4,4);
+    break
+   }
+   case 'mayor':{
+    // Distinct thin dignified spine, grey swept hair and an open registry.
+    feet(10,18);p(ink,8,14,17,16);p('#516275',9,15,15,14);
+    p('#8495a4',11,17,4,10);p('#bdb7a8',15,16,5,12);
+    p('#425263',7,18,4,10);p('#425263',23,18,4,10);
+    head(11,6,11,12);eyes(13,12,5);
+    p('#e3ddd0',8,6,16,4);p('#a09c94',9,3,15,5);
+    p('#d0c9bd',8,6,4,9);p('#e2d9c6',19,6,5,9);
+    p('#6e5239',22,20+arm,9,8);p('#e1cfaa',23,19+arm,8,6);
+    p('#8c7b5e',24,21+arm,6,1);
+    break
+   }
+   case 'veteran':{
+    // Asymmetric broken-down mantle and one stiff shoulder.
+    feet(9,19);p(ink,5,15,24,14);p('#525963',6,16,20,12);
+    p('#343c46',4,16,7,13);p('#81878b',4,16,10,4);
+    p('#a09a87',13,19,15,3);p('#494c55',23,17,4,12);
+    head(10,7,13,11);fringe(10,5,13);eyes(13,13,6);
+    p('#c7b8a8',10,7,3,4);
+    if(front){p('#9f7268',20,14,2,4);p('#e1cbb1',18,13,1,3)}
+    p('#a19d92',24,19,2,11);p('#6c6050',26,23,3,7);
+    break
+   }
+   case 'messenger':{
+    // Long angular burgundy split coat, envelope, high collar.
+    feet(9,19);p(ink,5,15,22,15);p('#6d3340',6,15,21,14);
+    p('#a65155',8,17,6,12);p('#57323c',21,17,6,12);
+    p('#d5bc8c',12,17,10,3);p('#5d4541',6,14,5,6);
+    head(10,7,12,10);fringe(10,5,12);eyes(12,12,6);
+    p('#6f4043',6,7,4,11);p('#7a4d4a',22,7,4,11);
+    p('#e4d0aa',24,21+arm,8,6);p('#ac6f56',25,22+arm,6,1);
+    break
+   }
+   case 'ren':{
+    // Noticeably lower head, cropped tunic, thin training stick.
+    p('#57483b',11,27,4,4);p('#57483b',18,27,4,4);
+    p(ink,9,20,14,9);p('#63836a',10,21,12,7);
+    p('#d4b88d',14,21,4,8);
+    head(11,12,11,10);fringe(10,10,13);eyes(13,17,5);
+    p('#493933',11,10,5,4);p(coat,7,22,3,5);
+    p('#987e54',26,16,2,14);p('#c2aa78',25,15,4,3);
+    break
+   }
+   case 'lulu':{
+    // Short, fuller outfit + twin puff hair, NOT a mini adult silhouette.
+    p('#514045',11,28,4,3);p('#514045',18,28,4,3);
+    p(ink,8,21,17,8);p('#a87091',9,22,15,6);
+    p('#d1a5b8',11,23,11,3);p('#8f5e7d',10,27,13,2);
+    head(11,12,11,10);eyes(13,18,5);
+    p(hair,9,10,14,5);p(shine,12,10,7,2);
+    p(ink,5,13,6,9);p(hair,6,12,5,8);
+    p(ink,22,12,6,9);p(hair,23,11,4,9);
+    p('#e7bb9f',26,23,4,4);p('#e7bb9f',5,23,4,4);
+    p('#cf8e96',25,13,3,3);
+    break
+   }
+  }
+  return true
+ }
+
  function makeNpc(profile,id){
   const img=canvas(128,128);if(!img)return null;
   const c=img.getContext('2d');c.imageSmoothingEnabled=false;
   for(let dir=0;dir<4;dir++)for(let frame=0;frame<4;frame++){
-   c.save();c.translate(frame*32,dir*32);person(c,profile,dir,frame,id);c.restore()
+   c.save();c.translate(frame*32,dir*32);if(!distinctRyune(c,profile,dir,frame,id))person(c,profile,dir,frame,id);c.restore()
   }
   return img
  }
@@ -366,6 +484,6 @@ const OpeningPixelAssets=(()=>{
   }
   c.save();c.imageSmoothingEnabled=false;c.drawImage(tile,x,y);c.restore();return true
  }
- const api={designs,identities,drawNpc,drawHouse,dirs,getNpcAtlas:id=>npcCache.get(id),getHouseTile:id=>houseCache.get(id)};
+ const api={designs,identities,drawNpc,drawHouse,distinctRyune,dirs,getNpcAtlas:id=>npcCache.get(id),getHouseTile:id=>houseCache.get(id)};
  return api
 })();
