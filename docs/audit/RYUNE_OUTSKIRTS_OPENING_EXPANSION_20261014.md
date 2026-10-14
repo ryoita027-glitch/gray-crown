@@ -91,3 +91,23 @@ Retain browser captures under `prototype_artifacts/ryune_outskirts_v1/`; verify 
 This is a **Draft opening candidate**, not a main merge and not a mandate to change later approved lore. All previous PR branches and PNGs preserved. To roll back safely, close/unmerge this Draft PR or switch to its immutable base PR #69 head. No force push, branch deletion or Save schema migration is needed.
 
 Suggested next incremental polish if accepted: add more varied villager interactions and small environmental details *within these two maps* based on actual observed players; avoid adding empty new maps just to increase map count.
+
+## User refinement: side content is strictly optional (2026-10-14)
+
+**Do not turn village life, character conversations, childhood recollections, or outskirts investigations into progression requirements.** The normal route is exactly as before: speak to the royal messenger, then depart through the original north village gate. Players may ignore both side maps and every added conversation with no Story-stage or objective penalty. There is no forced tutorial, no quest-list requirement, no gate condition, no obligatory reward collection, and no mandate to clear the two new areas before starting the journey.
+
+Five one-time **optional, short interactions** using existing already-visible points were added:
+
+- Village well `ryune.memory.well`: all four childhood friends remember fetching water together.
+- Karen family table `ryune.memory.familyTable`: ordinary homecoming promise.
+- Orphanage toy chest `ryune.memory.toyChest`: Sophie and Karen reflect on children's play.
+- Mayor's bookcase `ryune.memory.mayorBooks`: Margaret and Triton reflect on her reading habits.
+- East cottage soldier letter `ryune.memory.soldierLetter`: Triton and Karen consider people waiting for someone to return.
+
+Each triggers only once and writes **only its own `events.completed` flag**. No gold, items, achievements, Story stages, world switches, party stats, or main quest objectives are changed. After each memory, the existing normal inspect dialogue is restored. All five are accessible independent of whether the messenger has been met.
+
+The two Ryune side exit hint posts were moved from inaccessible transfer tiles at `(0,8)` and `(23,8)` to readable, non-entrance tiles `(2,7)` and `(21,7)`. Their distinct pixel signposts now render through the normal game canvas and are not on the footpaths at `(1,8)` and `(22,8)`.
+
+The added `tests/ryune_outskirts.test.js` now asserts: five memory scene effects are only `completeEvent`, no extra quest prerequisites exist, original appointment remains accessible, the north gate still works **with zero field/brook investigations completed**, and both signposts and side exits remain reachable.
+
+These are source-level changes and test definitions. Same-HEAD Node execution, Chromium acceptance and visual approval are still pending, not claimed PASS.
