@@ -51,6 +51,11 @@ test('only authored optional scenes allow exactly one nearby listener to look at
  a.onClose();
  assert.equal(a.inspect().moment,'ryune.memory.well','between lines the optional context remains');
  a.onLine('トリトン','「ああ、覚えてる」');
+ // Each new world frame rebinds live party positions after onClose.
+ a.beginFrame([
+  {style:{heroId:'karen'},x:10,y:7,facing:'down'},
+  {style:{heroId:'triton'},x:11.6,y:7,facing:'down'}
+ ]);
  assert.equal(a.cuePlan('karen',300).kind,'listener');
  assert.equal(a.closeMoment('ryune.memory.well'),true);
  assert.equal(a.inspect().moment,null);
