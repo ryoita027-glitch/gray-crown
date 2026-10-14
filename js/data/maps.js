@@ -198,7 +198,7 @@ const maps={
   {id:'veteran',x:9,y:4,name:'帰還兵ガルド'}
  ],objects:[
   {id:'store',x:16,y:9},{id:'well',x:12,y:9},{id:'home',x:4,y:5},{id:'doorOrphanage',x:19,y:5},
-  {id:'doorMayor',x:4,y:12},{id:'doorCottage',x:19,y:12},{id:'gate',x:11,y:0}
+  {id:'doorMayor',x:4,y:12},{id:'doorCottage',x:19,y:12},{id:'westFieldPath',x:0,y:8},{id:'eastBrookPath',x:23,y:8},{id:'gate',x:11,y:0}
  ]},
  ryunefields:{name:'リュネ西の畑',tag:'畑仕事と村の食卓',tiles:makeRyuneOutskirtsTiles('fields'),
    npcs:[{id:'fieldWorker',x:11,y:5,name:'畑の手伝い人'}],
