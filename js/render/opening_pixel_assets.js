@@ -193,8 +193,8 @@ const OpeningPixelAssets=(()=>{
   const side=dir===1||dir===2,back=dir===3,child=job==='child',
    old=job==='elder',armed=job==='fighter',working=['baker','farmer','smith','florist','scribe','merchant'].includes(job);
   let seed=0;for(const letter of id)seed=(seed*33+letter.charCodeAt(0))>>>0;
-  const variation=seed%4,headW=child?10:variation===0?11:variation===1?13:12,
-   headX=16-Math.floor(headW/2),headY=child?8:7;
+  const variation=seed%4,headW=child?14:variation===0?15:variation===1?16:14,
+   headX=16-Math.floor(headW/2),headY=child?6:5;
   const bodyW=armed?16:child?10:old?15:variation===3?12:14,bodyX=16-Math.floor(bodyW/2),bodyTop=child?18:16;
   const front=dir===0,step=working?0:[0,2,0,-2][frame],
    armL=frame===1?-3:frame===3?2:0,armR=frame===1?2:frame===3?-3:0;
@@ -236,8 +236,8 @@ const OpeningPixelAssets=(()=>{
   P(c,skinShadow,16-shoulder-lw+1,bodyTop+lh+armL,3,3);
   P(c,skin,16+shoulder+1,bodyTop+lh+armR,3,3);
   // Face with deliberate cheek contour instead of identical rectangle heads.
-  P(c,ink,headX-2,headY-2,headW+4,12);
-  P(c,hair,headX-1,headY-1,headW+2,11);
+  P(c,ink,headX-2,headY-2,headW+4,14);
+  P(c,hair,headX-1,headY-1,headW+2,12);
   if(style==='messy'){
    P(c,ink,headX-3,headY-2,5,4);P(c,hair,headX-2,headY-3,4,4);
    P(c,hairLight,headX+headW-2,headY-3,4,3);
@@ -251,22 +251,33 @@ const OpeningPixelAssets=(()=>{
    P(c,coatShade,headX-3,headY,4,14);
    P(c,coatShade,headX+headW-1,headY,4,14);
   }
-  P(c,back?hair:skinShadow,headX,headY+3,headW,9);
+  P(c,back?hair:skinShadow,headX,headY+3,headW,11);
   if(!back){
-   P(c,skin,headX+1,headY+3,headW-2,7);
-   P(c,skinShadow,headX+1,headY+9,headW-2,1);
+   P(c,skin,headX+1,headY+3,headW-2,9);
+   P(c,skinShadow,headX+2,headY+11,headW-4,1);
+   // Taper the cheeks into a rounded lower jaw instead of a flat box.
+   P(c,skin,headX+3,headY+11,headW-6,2);
   }
   if(side){
-   P(c,hair,dir===1?headX+headW-3:headX,headY+4,3,8);
-   P(c,'#4d3839',dir===1?headX+2:headX+headW-4,headY+7,2,2);
-   P(c,skinShadow,dir===1?headX:headX+headW-1,headY+8,2,2);
+   P(c,hair,dir===1?headX+headW-3:headX,headY+4,3,9);
+   P(c,'#4d3839',dir===1?headX+3:headX+headW-5,headY+8,2,2);
+   P(c,'#ffefe0',dir===1?headX+3:headX+headW-5,headY+8,1,1);
+   P(c,skinShadow,dir===1?headX:headX+headW-1,headY+9,2,2);
   }else if(front){
-   const eyeOffset=variation%2;
    const eyeColor=variation===2?'#544149':'#483c3b';
-   P(c,eyeColor,headX+2,headY+7,2,2);P(c,eyeColor,headX+headW-4,headY+7,2,2);
-   if(!child&&variation===0){P(c,ink,headX+2,headY+5,3,1);P(c,ink,headX+headW-5,headY+5,3,1)}
-   if(!old&&variation===1){P(c,skinShadow,headX+2,headY+9,2,1);P(c,skinShadow,headX+headW-4,headY+9,2,1)}
-   P(c,variation===3?'#8f615a':'#936959',headX+Math.floor(headW/2),headY+10,2,1);
+   const leftEye=headX+3,rightEye=headX+headW-5;
+   P(c,eyeColor,leftEye,headY+8,2,child?3:2);
+   P(c,eyeColor,rightEye,headY+8,2,child?3:2);
+   if(child||variation===1){P(c,'#fff2e2',leftEye,headY+8,1,1);P(c,'#fff2e2',rightEye,headY+8,1,1)}
+   if(variation===0||job==='fighter'){
+    P(c,ink,leftEye-1,headY+6,3,1);P(c,ink,rightEye,headY+6,3,1)
+   }
+   if(old){P(c,skinShadow,leftEye-1,headY+10,2,1);P(c,skinShadow,rightEye+1,headY+10,2,1)}
+   else {P(c,'#d18d8e',headX+1,headY+10,2,1);P(c,'#d18d8e',headX+headW-3,headY+10,2,1)}
+   // Eyebrows and mouths are character expressions, not identical face stamps.
+   const mouth=headX+Math.floor(headW/2)-1;
+   P(c,variation===3?'#8f615a':'#9d6162',mouth,headY+12,child?4:3,1);
+   if(child||variation===1)P(c,'#ffd0bb',mouth+1,headY+13,2,1);
   }
   // Hair is the main identifier; pupils and brows never override the fringe.
   if(style==='bob'||style==='long'||style==='scarf'){P(c,hair,headX-2,headY+4,3,8);P(c,hair,headX+headW-1,headY+4,3,8)}
