@@ -126,7 +126,7 @@ function openingWolfReaction(def,metrics,scouted){
  if((metrics?.guardedAllies||0)>0)closing=
   {speaker:'カレン',text:'「ソフィを守れた。怖かったけど……次も声を聞き逃さない」'};
  else if(scouted)closing=
-  {speaker:'マーガレット',text:'「足跡を調べてよかった。戦う前に分かることも、ちゃんとあるのね」'};
+  {speaker:'マーガレット',text:'「足跡を読めても、三人が動いてくれなきゃ意味がなかった。……次も一緒に考えましょう」'};
  if(!closing)return def;
  return {...def,lines:[...def.lines.slice(0,-1),closing]};
 }

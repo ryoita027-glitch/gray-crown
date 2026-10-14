@@ -50,6 +50,7 @@
     "town:visual-acceptance": "npm run town:art-unit && npm run town:visual-capture",
     "opening:one-trip-e2e": "python tests/browser_ryune_one_trip_value_e2e.py",
     "opening:relevance-unit": "node --test tests/opening_player_visible_relevance.test.js",
-    "opening:player-first-unit": "npm run opening:relevance-unit && node --test tests/featured_resident_player_visual.test.js tests/featured_resident_dialogue_portraits.test.js tests/player_first_integration_guard.test.js"
+    "opening:player-first-unit": "npm run opening:relevance-unit && node --test tests/featured_resident_player_visual.test.js tests/featured_resident_dialogue_portraits.test.js tests/player_first_integration_guard.test.js && npm run story:margaret-belonging",
+    "story:margaret-belonging": "node --test tests/margaret_belonging_character_arc.test.js"
   }
 }
