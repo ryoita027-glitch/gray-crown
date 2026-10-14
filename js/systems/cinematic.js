@@ -27,7 +27,7 @@
   if(cmd.type==='camera'){if(cmd.action==='return'){CINEMATIC.camera=null;draw();return true}focusActors(cmd.actors||[cmd.actor],cmd.scale,cmd.offsetX||0,cmd.offsetY||0);return true}
   if(cmd.type==='sound'){GC.Audio?.sfx?.(cmd.name);return true}
   if(cmd.type==='music'){if(cmd.action==='pause')GC.Audio?.pauseMusic?.();else if(cmd.action==='resume')GC.Audio?.resumeMusic?.();else if(cmd.theme)GC.Audio?.setMusic?.(cmd.theme);return true}
-  if(cmd.type==='say'){if(scene?.id==='alpha.village.appointment.acting')GC.RyuneActing?.beforeDialogue?.(cmd);return await dialogueWait(cmd)}
+  if(cmd.type==='say'){if(scene?.id==='alpha.village.appointment.acting')GC.RyuneActing?.beforeDialogue?.(cmd);if(scene?.id==='alpha.capital.ceremony.acting')CapitalActing?.beforeDialogue?.(cmd);return await dialogueWait(cmd)}
   return true
  }
  async function startScene(scene,opts={}){

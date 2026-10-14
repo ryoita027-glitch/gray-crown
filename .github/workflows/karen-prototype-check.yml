@@ -1,26 +1,9 @@
 name: Gray Crown Triton Completion CI
+# Manual-only on this development candidate: preserve original test jobs.
+# Avoid burning GitHub-hosted minutes on every Draft PR update.
 on:
-  push:
-    branches: [main]
-    paths:
-      - "**"
-      - "!docs/**"
-      - "docs/pixel/reference/**"
-      - "docs/audit/**"
-      - "docs/visual/SOURCE_OF_TRUTH_STATUS.md"
-      - "!README.txt"
-      - "!*.txt"
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
-    paths:
-      - "**"
-      - "!docs/**"
-      - "docs/pixel/reference/**"
-      - "docs/audit/**"
-      - "docs/visual/SOURCE_OF_TRUTH_STATUS.md"
-      - "!README.txt"
-      - "!*.txt"
   workflow_dispatch:
+
 concurrency:
   group: gray-crown-triton-completion-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
