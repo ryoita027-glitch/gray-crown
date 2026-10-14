@@ -265,9 +265,10 @@ function finishSeradGravesChoice(choice){
 function ryuneWorksiteChoice(){
  const key='ryune.worksite.action',existing=state.events.choices[key];
  if(existing){
-  return say('川辺の石積み',existing==='clear'
+  say('川辺の石積み',existing==='clear'
    ?'トリトンが岸辺から外した小枝は、乾いた場所へまとめてある。川底の泥はまだ残っている。'
-   :'マーガレットが付けた二つの水位の印。雨の後にも同じ高さで確かめられる。')
+   :'マーガレットが付けた二つの水位の印。雨の後にも同じ高さで確かめられる。');
+  return true
  }
  const commit=kind=>{
   if(state.events.choices[key]||!['clear','measure'].includes(kind))return false;
@@ -282,25 +283,27 @@ function ryuneWorksiteChoice(){
    :[{speaker:'マーガレット',text:'「橋の上下で印の高さを揃えた。何日か経ってからなら違いが分かる」'},
      {speaker:'カレン',text:'「直す場所も、ちゃんと見つかるといいな」'}])
  };
- return saySequence([
+ saySequence([
   {speaker:'川辺の石積み',text:'橋の下に枝が引っかかっている。岸から届く枝と、川底に沈んだ泥は別に考えた方がよさそうだ。'},
   {speaker:'マーガレット',text:'「大がかりな修理は村のみんなと。今ここでできるのは、危険のない範囲だけね」'}
  ],()=>say('カレン','「せっかく見に来たんだし、どうする？」',[
   {label:'トリトンと岸辺の小枝だけ片づける',fn:()=>commit('clear')},
   {label:'マーガレットと水位を記録する',fn:()=>commit('measure')},
   {label:'今日は手をつけずに戻る',fn:()=>say('ソフィ','「無理をしないのも大切です。村の人に相談しましょう」')}
- ]))
+ ]));
+ return true
 }
 function ryuneWorksiteFarmerFollowUp(){
  if(isEventComplete('ryune.worksite.boruAcknowledged'))return false;
  const kind=state.events.choices['ryune.worksite.action'];
  if(!kind)return false;
- return saySequence([
+ saySequence([
   {speaker:'農夫のボル',text:kind==='clear'
    ?'「枝を岸からどけたのか。川底まで入らなくてよかった。あとはこっちでやる」'
    :'「水位の印をつけてくれたのか。畑に引く前に、雨の日にも見ておこう」'},
   {speaker:'カレン',text:'「また帰ってきたら、どうなったか教えてね」'}
- ],()=>completeEvent('ryune.worksite.boruAcknowledged'))
+ ],()=>completeEvent('ryune.worksite.boruAcknowledged'));
+ return true
 }
 
 function runTriggeredEvent(type,target,context={}){
