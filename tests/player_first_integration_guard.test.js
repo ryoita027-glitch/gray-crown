@@ -34,7 +34,7 @@ test('players are never asked to use the old two-excursion completion gate',()=>
 });
 test('the capital remains art-directed without altering map collision data',()=>{
  const city=read('js/render/capital_environment.js');
- assert.match(city,/Silhouette-first architecture/);
+ assert.match(city,/These silhouettes replace tint-only differences at 1x play scale/);
  for(const word of ['formal','military','market'])assert.ok(city.includes(word));
  assert.match(read('js/data/maps.js'),/capital:\{name:'アルディナ王都'/);
 });
