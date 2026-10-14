@@ -106,3 +106,21 @@ test('no sprite file or canonical save-stage edits are introduced by this micro-
  assert.match(eventSource,/const optionalActing=GC\.CommercialActing\?\.openMoment\?\.\(def\.id\)/);
  assert.match(eventSource,/if\(optionalActing\)GC\.CommercialActing\?\.closeMoment\?\.\(def\.id\)/);
 });
+
+test('reduced-motion and combat suppress all optional posing without altering state',()=>{
+ const h=createHarness(),a=h.GC.CommercialActing,state=h.GC.State.get();
+ const original={map:state.map,story:state.story.stage,x:state.x,y:state.y,schema:state.schema};
+ assert.equal(a.openMoment('ryune.brook.inspect'),true);
+ a.onLine('ソフィ','「川を見てみます」');
+ assert.equal(a.inspect().active,true);
+ h.evaluate("window.matchMedia=()=>({matches:true})");
+ assert.equal(a.inspect().active,false,'the OS reduced-motion preference is honored');
+ assert.equal(a.draws('sophie',{},0,0,'left'),false,'the game uses its default idle art');
+ h.evaluate("delete window.matchMedia");
+ assert.equal(a.inspect().active,true);
+ h.evaluate("state.battle={id:'dummy'}");
+ assert.equal(a.inspect().active,false,'never animate over combat');
+ h.evaluate("state.battle=null");
+ assert.equal(a.closeMoment('ryune.brook.inspect'),true);
+ assert.deepEqual({map:state.map,story:state.story.stage,x:state.x,y:state.y,schema:state.schema},original);
+});
