@@ -8,6 +8,8 @@ const PARTY_STYLE={
 const NPC_STYLE={
  capitalVendor:{body:'#85623f',accent:'#d5bd78',hair:'#5d4230',hat:true},rationMother:{body:'#7b5a59',accent:'#d2b985',hair:'#59463f'},capitalInnHost:{body:'#8f6254',accent:'#dec394',hair:'#72503f'},offDutySoldier:{body:'#7f4148',accent:'#d8c69a',hair:'#4a3d36'},capitalSmith:{body:'#5e5149',accent:'#b4774f',hair:'#42352f'},armoryApprentice:{body:'#726457',accent:'#c8995d',hair:'#6d4d38'},
  imperialInnHost:{body:'#506c78',accent:'#b9a579',hair:'#4f4842'},canalBoatman:{body:'#536977',accent:'#9fb4bd',hair:'#5a4a3e',hat:true},bookSeller:{body:'#5b6370',accent:'#b9a570',hair:'#92877a'},studentReader:{body:'#607381',accent:'#b7a981',hair:'#4b3e39'},
+ fieldWorker:{body:'#73875a',accent:'#d6bd88',hair:'#796349',hat:true},
+ brookKeeper:{body:'#718a7d',accent:'#c1c6aa',hair:'#606354'},
  father:{body:'#765a45',accent:'#b79a72',hair:'#3d312a',weapon:'sword'},orphan:{body:'#a9796a',accent:'#d8c5a6',hair:'#704d37',small:true},
  mayor:{body:'#68685f',accent:'#bd9b5e',hair:'#a9a49b'},messenger:{body:'#8d3d46',accent:'#f0dfb6',hair:'#40382f',cape:true},merchant:{body:'#6d5d48',accent:'#9b7b4d',hair:'#4e3e31',hat:true},
  mika:{body:'#cc735c',accent:'#f0cf84',hair:'#5f3a28',small:true},ren:{body:'#54789b',accent:'#d9c887',hair:'#4b382d',small:true},lulu:{body:'#8d6ca0',accent:'#efe0b2',hair:'#8a603d',small:true},
