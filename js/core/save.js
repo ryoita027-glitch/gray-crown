@@ -104,11 +104,15 @@ function importPortableSaveText(raw){
  let parsed,loaded;
  try{
   parsed=JSON.parse(raw);
+  const canonical=createGameState().party;
   const expected=['karen','triton','sophie','margaret'];
   if(!parsed||!Number.isInteger(parsed.schema)||parsed.schema<1||parsed.schema>SAVE_SCHEMA||
      !parsed.story||typeof parsed.story!=='object'||!parsed.world||typeof parsed.world!=='object'||
+     !parsed.inventory||typeof parsed.inventory!=='object'||Array.isArray(parsed.inventory)||
+     Object.keys(parsed.inventory).some(id=>!Object.hasOwn(ITEM_DEFS,id))||
      !Array.isArray(parsed.party)||parsed.party.length!==4||
-     !parsed.party.every((p,i)=>p&&p.id===expected[i])||!maps[parsed.map])return false;
+     !parsed.party.every((p,i)=>p&&p.id===expected[i]&&p.name===canonical[i].name&&p.job===canonical[i].job)||
+     !maps[parsed.map])return false;
   loaded=migrateLoaded(raw);
  }catch(e){GC.Log?.warn('Portable save validation failed',{error:String(e)});return false}
  const primary=localStorage.getItem(SAVE_KEY),backup=localStorage.getItem(SAVE_BACKUP_KEY);
