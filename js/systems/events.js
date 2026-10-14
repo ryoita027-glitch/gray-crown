@@ -541,7 +541,7 @@ function inlineObjectEvent(id){
  if(TREASURE_DEFS[id])return openTreasure(id);
  if(state.map==='village'){
   if(id==='store'){setStructuredCondition('store',true);addJournal('共同食料庫の備蓄は前年同期の半分以下。');return say('共同食料庫','棚の半分以上が空いている。帳簿では前年同期の半分以下まで備蓄が落ちていた。')}
-  if(id==='well')return say('村の井戸','何人もの桶が並んでいる。子どもたちの笑い声と、夕食の相談をする大人たちの声が聞こえる。')
+  if(id==='well'){setWorldSwitch('ryune.baseViewed.well',true);return say('村の井戸','何人もの桶が並んでいる。子どもたちの笑い声と、夕食の相談をする大人たちの声が聞こえる。')}
   if(id==='home')return enterInterior('karenhome',4,5)
   if(id==='doorOrphanage')return enterInterior('orphanage',19,5)
   if(id==='doorMayor')return enterInterior('mayorhouse',4,12)
@@ -596,12 +596,12 @@ function inlineObjectEvent(id){
    return offerPaidRest('白鹿亭の女将','白鹿亭',24)
   }
   if(id==='imperialInnRest')return offerPaidRest('水鳥亭の主人','水鳥亭',28)
-  if(id==='familyTable')return say('ナレーション','四人家族で使っている食卓。今は皿が四枚ではなく、少し小さな器が並ぶ日も増えた。')
+  if(id==='familyTable'){setWorldSwitch('ryune.baseViewed.familyTable',true);return say('ナレーション','四人家族で使っている食卓。今は皿が四枚ではなく、少し小さな器が並ぶ日も増えた。')}
   if(id==='orphanPantry')return say('世話役マルタ','「見ての通り、棚はだいぶ軽いよ。でも子どもたちの前では“まだ大丈夫”って顔をしてる」')
-  if(id==='toyChest')return say('ナレーション','木片で作った兵士と勇者の人形が入っている。帝国兵役の人形だけ、真っ黒に塗られていた。')
-  if(id==='mayorBooks')return say('マーガレット','「村の記録、租税台帳、古い地図……子どもの頃はここが私の図書館だったの」')
+  if(id==='toyChest'){setWorldSwitch('ryune.baseViewed.toyChest',true);return say('ナレーション','木片で作った兵士と勇者の人形が入っている。帝国兵役の人形だけ、真っ黒に塗られていた。')}
+  if(id==='mayorBooks'){setWorldSwitch('ryune.baseViewed.mayorBooks',true);return say('マーガレット','「村の記録、租税台帳、古い地図……子どもの頃はここが私の図書館だったの」')}
   if(id==='warMap')return say('マーガレット','「補給路に赤い印が増えてる。前線が近づいたんじゃなくて、戦争が生活の方へ伸びてきてるんだ」')
-  if(id==='soldierLetter')return say('兵士の妹・ユナ','「最後の手紙には“次は雪が降る前に帰れるかも”って。……もう春になったけど」')
+  if(id==='soldierLetter'){setWorldSwitch('ryune.baseViewed.soldierLetter',true);return say('兵士の妹・ユナ','「最後の手紙には“次は雪が降る前に帰れるかも”って。……もう春になったけど」')}
   if(id==='emptyBed')return say('兵士の母','「息子の寝床よ。帰った時にそのまま眠れるよう、毎週シーツだけは替えてるの」')
   if(id==='innCounter')return say('白鹿亭の帳場','兵士、商人、避難民。宿帳には王都の外から来た名前がびっしり並んでいる。')
   if(id==='innNotice')return say('宿の掲示板','「前線方面の荷馬車、護衛募集」「北部からの避難家族、空き部屋求む」――戦争が宿の壁まで来ている。')

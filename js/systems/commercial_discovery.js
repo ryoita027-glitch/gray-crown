@@ -3,7 +3,12 @@
  * This layer does not award rewards, set flags or generate new encounters. */
 (function(){
  const extras=Object.freeze({
-  village:[{id:'early.orphanMedicine',kind:'choice',label:'孤児院の薬草相談'}],
+  village:[{id:'early.orphanMedicine',kind:'choice',label:'孤児院の薬草相談'},
+   {id:'ryune.outskirts.reward',kind:'event',label:'畑と小川の見回りを報告'}],
+  ryunefields:[{id:'ryune.fields.inspect',kind:'event',label:'畑の土を調べる'},
+   {id:'fieldCache',kind:'treasure',label:'畑の道具箱'}],
+  ryunebrook:[{id:'ryune.brook.inspect',kind:'event',label:'小川の水量を調べる'},
+   {id:'brookCache',kind:'treasure',label:'川辺の採集袋'}],
   road:[{id:'bandit',kind:'defeated',label:'ならず者への対処'},{id:'roadCache',kind:'treasure',label:'街道の物資'},
    {id:'early.merchantCart',kind:'choice',label:'行商人の荷車'},
    {id:'early.wolfScout',kind:'choice',label:'狼の足跡を調べる'}],

@@ -7,6 +7,8 @@
  */
 const OpeningPixelAssets=(()=>{
  const designs={
+  fieldWorker:['#796349','#73875a','#d6af8f','farmer','hat'],
+  brookKeeper:['#606354','#718a7d','#d8b796','civil','short'],
   father:['#3f3840','#5f7185','#bda48f','fighter','short'],
   orphan:['#a88665','#9a8f70','#d6b799','child','bob'],
   mayor:['#b3a5a2','#556779','#d4af93','elder','part'],
@@ -182,8 +184,12 @@ const OpeningPixelAssets=(()=>{
   // Static villagers do not march in place. Workers animate arms while
   // feet stay planted; individual moving NPCs will use walk frames later.
   const working=['baker','farmer','merchant','capitalVendor','capitalFlowerGirl',
-   'capitalSmith','armoryApprentice','clerk','capitalInnHost'].includes(n.id);
-  const frame=near&&working?Math.floor(now/460)%4:0;
+   'capitalSmith','armoryApprentice','clerk','capitalInnHost','fieldWorker'].includes(n.id);
+  // Farmhand: one measured hand/tool adjustment per long idle cycle. Feet never move.
+  // Brook watcher and all non-worker residents hold a real standing pose.
+  const frame=n.id==='fieldWorker'
+   ?(near&&Math.floor(now/800)%11===3?1:0)
+   :(near&&working?Math.floor(now/460)%4:0);
   c.save();c.imageSmoothingEnabled=false;
   c.drawImage(sheet,frame*32,(dirs[dir]??0)*32,32,32,n.x*32,n.y*32,32,32);
   c.restore();return true
