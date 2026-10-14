@@ -3,7 +3,29 @@ const SAVE_KEY='gray-crown-vslice-save-v1';
 const SAVE_BACKUP_KEY=SAVE_KEY+'-backup';
 const SAVE_SCHEMA=23;
 function safeNumber(v,fallback,min=-Infinity,max=Infinity){return Number.isFinite(v)?Math.max(min,Math.min(max,v)):fallback}
-function nearestSafeTile(mapId,x,y){const m=maps[mapId];if(!m)return[11,13];const passThrough=new Set(['gate','exit','northExit','southExit','roadSign','milestone','banner','rations']);const blockedTile=(xx,yy)=>{const t=tileAt(mapId,xx,yy);if(['T','H','S','W','R','K','Z'].includes(t))return true;if(m.npcs.some(n=>n.x===xx&&n.y===yy))return true;if(m.objects.some(o=>o.x===xx&&o.y===yy&&!passThrough.has(o.id)))return true;return false};x=Math.max(0,Math.min(COLS-1,Math.floor(x)));y=Math.max(0,Math.min(ROWS-1,Math.floor(y)));if(!blockedTile(x,y))return[x,y];for(let r=1;r<12;r++)for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){if(Math.abs(dx)!==r&&Math.abs(dy)!==r)continue;const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<COLS&&yy<ROWS&&!blockedTile(xx,yy))return[xx,yy]}return INTERIOR_MAPS.includes(mapId)?[11,11]:[11,13]}
+function nearestSafeTile(mapId,x,y,saveState=state){
+ const m=maps[mapId];if(!m)return[11,13];
+ const passThrough=new Set(['gate','exit','northExit','southExit','roadSign','milestone','banner','rations']);
+ // A collected chest/forage spot is no longer solid. Crucially, load validation
+ // must inspect the *loaded* world's flags, not the old session still in memory.
+ const cleared=o=>TREASURE_DEFS[o.id]&&saveState?.world?.treasures?.[o.id]===true;
+ const blockedTile=(xx,yy)=>{
+  const t=tileAt(mapId,xx,yy);
+  if(['T','H','S','W','R','K','Z'].includes(t))return true;
+  if(m.npcs.some(n=>n.x===xx&&n.y===yy))return true;
+  if(m.objects.some(o=>o.x===xx&&o.y===yy&&!passThrough.has(o.id)&&!cleared(o)))return true;
+  return false
+ };
+ x=Math.max(0,Math.min(COLS-1,Math.floor(x)));
+ y=Math.max(0,Math.min(ROWS-1,Math.floor(y)));
+ if(!blockedTile(x,y))return[x,y];
+ for(let r=1;r<12;r++)for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){
+  if(Math.abs(dx)!==r&&Math.abs(dy)!==r)continue;
+  const xx=x+dx,yy=y+dy;
+  if(xx>=0&&yy>=0&&xx<COLS&&yy<ROWS&&!blockedTile(xx,yy))return[xx,yy]
+ }
+ return INTERIOR_MAPS.includes(mapId)?[11,11]:[11,13]
+}
 function mergeStructuredState(fresh,src){
  const loaded=createGameState();
  for(const key of ['map','x','y','dir','trail','locked','encounterSteps','nextEncounterAt','interiorReturn','journal','inventory','gold'])if(src[key]!==undefined)loaded[key]=src[key];
@@ -33,7 +55,7 @@ function validateLoadedState(loaded,fresh=createGameState()){
  loaded.map=maps[loaded.map]?loaded.map:'village';if(loaded.map==='relayvillage'){loaded.map='borderland';loaded.x=11;loaded.y=5}if(loaded.map==='ravine'){loaded.map='watchfort';loaded.x=11;loaded.y=8}
  loaded.world.visited[loaded.map]=true;loaded.battle=null;loaded.battleReturn=null;loaded.symbolEncounter=null;loaded.locked=false;
  loaded.encounterSteps=Number.isFinite(loaded.encounterSteps)?loaded.encounterSteps:0;loaded.nextEncounterAt=Number.isFinite(loaded.nextEncounterAt)?loaded.nextEncounterAt:rollEncounterThreshold(loaded.map);
- const pos=nearestSafeTile(loaded.map,loaded.x,loaded.y);loaded.x=pos[0];loaded.y=pos[1];if(!Array.isArray(loaded.trail)||loaded.trail.length<3)loaded.trail=[[loaded.x+1,loaded.y],[loaded.x+2,loaded.y],[loaded.x+3,loaded.y]];
+ const pos=nearestSafeTile(loaded.map,loaded.x,loaded.y,loaded);loaded.x=pos[0];loaded.y=pos[1];if(!Array.isArray(loaded.trail)||loaded.trail.length<3)loaded.trail=[[loaded.x+1,loaded.y],[loaded.x+2,loaded.y],[loaded.x+3,loaded.y]];
  return attachStateCompatibility(loaded)
 }
 function migrateLoaded(raw){const fresh=createGameState(),src=JSON.parse(raw);const loaded=mergeStructuredState(fresh,src);loaded.party.forEach(p=>applyLevelUps(p));const reconciled=reconcileStoryState(loaded);if(reconciled.repairs.length)GC.Log?.warn('Save story state repaired during migration',reconciled);loaded.schema=SAVE_SCHEMA;return validateLoadedState(loaded,fresh)}
