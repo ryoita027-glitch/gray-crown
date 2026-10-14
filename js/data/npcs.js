@@ -122,8 +122,8 @@ function featuredResidentPortraitMarkup(speaker){
  const i=FEATURED_RESIDENT_SPEAKERS[speaker];
  if(i===undefined)return null;
  const id='residentPortraitCrop'+i;
- // The atlas has 9 columns x 4 directions, each 32x32.
- // Scale the front-facing source ONLY, with exact nearest-neighbor geometry.
+ // The atlas has 9 columns x 4 directions, each 48x48.
+ // Scale the front-facing 48px source to 64px ONLY, with exact nearest-neighbor geometry.
  // Do not stretch the torso independently or overlay a second generic face.
  // The dark uniforms disappeared against the prior identical charcoal cards.
  // Each subdued district-colored backing supplies silhouette contrast, not

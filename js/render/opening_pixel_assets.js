@@ -156,7 +156,7 @@ const OpeningPixelAssets=(()=>{
    try{
     featuredSheet=new Image();
     featuredSheet.onload=()=>{
-     featuredReady=featuredSheet.naturalWidth===288&&featuredSheet.naturalHeight===128;
+     featuredReady=featuredSheet.naturalWidth===432&&featuredSheet.naturalHeight===192;
      featuredFailed=!featuredReady;
      if(featuredFailed)GC?.Log?.warn?.('Featured residents atlas wrong dimensions');
      else GC?.Render?.World?.draw?.();
@@ -167,7 +167,7 @@ const OpeningPixelAssets=(()=>{
   }
   if(!featuredReady)return false;
   c.save();c.imageSmoothingEnabled=false;
-  c.drawImage(featuredSheet,index*32,(dirs[dir]??0)*32,32,32,n.x*32,n.y*32,32,32);
+  c.drawImage(featuredSheet,index*48,(dirs[dir]??0)*48,48,48,n.x*32-8,n.y*32-16,48,48);
   c.restore();return true
  }
  function featuredStatus(){return {requested:featuredRequested,ready:featuredReady,
