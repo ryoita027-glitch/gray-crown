@@ -187,9 +187,8 @@ const OpeningPixelAssets=(()=>{
    'capitalSmith','armoryApprentice','clerk','capitalInnHost','fieldWorker'].includes(n.id);
   // Farmhand: one measured hand/tool adjustment per long idle cycle. Feet never move.
   // Brook watcher and all non-worker residents hold a real standing pose.
-  const frame=n.id==='fieldWorker'
-   ?(near&&Math.floor(now/800)%11===3?1:0)
-   :(near&&working?Math.floor(now/460)%4:0);
+  const frame=near&&working&&typeof OpeningWorldLife!=='undefined'
+   ?OpeningWorldLife.workPhase(n.id,now):0;
   c.save();c.imageSmoothingEnabled=false;
   c.drawImage(sheet,frame*32,(dirs[dir]??0)*32,32,32,n.x*32,n.y*32,32,32);
   c.restore();return true
