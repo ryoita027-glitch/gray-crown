@@ -87,6 +87,9 @@ test('foreground named people have independently drawn bodies, not just recolore
   assert.equal(sprites.distinctRyune(c,sprites.designs[id],0,0,id),true,id);
   assert.ok(pixels.length>18,id+' needs an actual crafted sprite');
   assert.ok(pixels.every(p=>p.slice(1).every(Number.isInteger)),id+' must stay pixel-native');
+  assert.ok(pixels.every(p=>p[1]>=0&&p[2]>=0&&p[3]>0&&p[4]>0&&
+        p[1]+p[3]<=32&&p[2]+p[4]<=32),
+   id+' must not bleed into adjacent atlas frame');
   const footprint=pixels.map(p=>p.slice(1).join(',')).join('|');
   shapes.push(footprint);
  }
@@ -94,4 +97,18 @@ test('foreground named people have independently drawn bodies, not just recolore
  const defaultPixels={fillRect(){}};
  assert.equal(sprites.distinctRyune(defaultPixels,sprites.designs['theo'],0,0,'theo'),false);
  // Distinct pixel geometry is necessary, but not sufficient for human art approval.
+});
+
+test('12 bespoke residents have genuine profile rendering and do not leak across atlas frames',()=>{
+ const h=createHarness(),sprites=h.evaluate('OpeningPixelAssets');
+ for(const id of ['baker','farmer','mayor','veteran','messenger','ren','lulu',
+   'capitalOfficial','capitalVendor','capitalFlowerGirl','capitalRecruit','granz']){
+  const view=dir=>{
+   const out=[],c={fillStyle:'',fillRect(x,y,w,z){out.push([this.fillStyle,x,y,w,z])}};
+   assert.equal(sprites.distinctRyune(c,sprites.designs[id],dir,0,id),true);
+   return out.map(x=>x.join(',')).join('|');
+  };
+  assert.notEqual(view(0),view(1),id+' front vs side must differ');
+  assert.notEqual(view(1),view(3),id+' side vs back must differ');
+ }
 });
