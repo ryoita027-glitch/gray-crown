@@ -76,5 +76,76 @@ function load(silent=false){
  try{next=migrateLoaded(primary||backup)}catch(e){GC.Log?.warn('Primary save load failed',{error:String(e)});if(!backup){if(!silent)say('システム','セーブデータを読み込めませんでした。');return false}try{next=migrateLoaded(backup);recovered=true}catch(e2){GC.Log?.error('Primary and backup save load failed',{primary:String(e),backup:String(e2)});if(!silent)say('システム','セーブデータとバックアップの両方を読み込めませんでした。');return false}}
  clearTransientPanels();replaceState(next);VISUAL.map=null;setMusic(mapMusicTheme(state.map));renderHud();draw();GC.Dev?.clearTaint?.();GC.Log?.info('Load',{map:state.map,x:state.x,y:state.y,stage:state.story.stage,recovered});if(!silent&&typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started)hideTitle();if(!silent)say('システム',recovered?'通常セーブが壊れていたため、バックアップから復旧しました。':'ロードしました。');return true}
 
+// Portable JSON is necessary for player ZIP/file:// releases: browser
+// localStorage belongs to the specific browser/origin, not the game folder.
+function exportPortableSaveText(){
+ if(!save(true))return null;
+ return localStorage.getItem(SAVE_KEY)
+}
+function downloadPortableSave(){
+ const raw=exportPortableSaveText();
+ if(!raw){say('システム','安全にセーブを書き出せません。操作可能な場所で再試行してください。');return false}
+ try{
+  const blob=new Blob([raw],{type:'application/json;charset=utf-8'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='GrayCrown_Save_v23_'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
+  say('システム','セーブを書き出しました。別のPCで遊ぶ時は「セーブを読み込む」を使ってください。');
+  return true
+ }catch(e){GC.Log?.error('Portable save export failed',{error:String(e)});
+  say('システム','セーブの書き出しに失敗しました。ブラウザのダウンロード設定を確認してください。');return false}
+}
+function importPortableSaveText(raw){
+ // Strict structural gate before migration: a generic JSON is not a valid save.
+ // Supports real earlier-version saves, but never silently imports future schema.
+ if(typeof raw!=='string'||raw.length>2*1024*1024) return false;
+ if(!canPersistNow('load'))return false;
+ let parsed,loaded;
+ try{
+  parsed=JSON.parse(raw);
+  const expected=['karen','triton','sophie','margaret'];
+  if(!parsed||!Number.isInteger(parsed.schema)||parsed.schema<1||parsed.schema>SAVE_SCHEMA||
+     !parsed.story||typeof parsed.story!=='object'||!parsed.world||typeof parsed.world!=='object'||
+     !Array.isArray(parsed.party)||parsed.party.length!==4||
+     !parsed.party.every((p,i)=>p&&p.id===expected[i])||!maps[parsed.map])return false;
+  loaded=migrateLoaded(raw);
+ }catch(e){GC.Log?.warn('Portable save validation failed',{error:String(e)});return false}
+ const primary=localStorage.getItem(SAVE_KEY),backup=localStorage.getItem(SAVE_BACKUP_KEY);
+ try{
+  // Persist the migrated *validated* schema, never raw untrusted file text.
+  const payload=JSON.stringify({...loaded,schema:SAVE_SCHEMA,locked:false,battle:null,
+    battleReturn:null,symbolEncounter:null});
+  if(primary)localStorage.setItem(SAVE_BACKUP_KEY,primary);
+  else if(!backup)localStorage.setItem(SAVE_BACKUP_KEY,payload);
+  localStorage.setItem(SAVE_KEY,payload);
+  if(!load(true))throw new Error('Imported save could not be loaded');
+  updateTitleContinue();
+  return true
+ }catch(e){
+  GC.Log?.error('Portable save import failed',{error:String(e)});
+  try{
+   if(primary===null)localStorage.removeItem(SAVE_KEY);else localStorage.setItem(SAVE_KEY,primary);
+   if(backup===null)localStorage.removeItem(SAVE_BACKUP_KEY);else localStorage.setItem(SAVE_BACKUP_KEY,backup)
+  }catch(_){}
+  return false
+ }
+}
+async function readPortableSaveFile(file){
+ if(!file||file.size>2*1024*1024){
+  say('システム','2MB以下のGray Crownセーブファイル（.json）を選んでください。');return false
+ }
+ if(!canPersistNow('load')){
+  say('システム','戦闘やイベントの途中ではセーブを読み込めません。');return false
+ }
+ if(!confirm('現在のセーブをバックアップして、選んだセーブデータへ切り替えますか？'))return false;
+ let ok=false;
+ try{ok=importPortableSaveText(await file.text())}
+ catch(e){GC.Log?.error('Portable save read failed',{error:String(e)})}
+ say('システム',ok?'外部セーブを読み込みました。元のセーブはバックアップに保存されています。':
+  'セーブの読み込みに失敗しました。形式やデータを確認してください。');
+ return ok
+}
+
 function restart(){if(!confirm('最初からやり直しますか？'))return;beginAlphaNewGame(true)}
-GC.Save={SAVE_KEY,SAVE_BACKUP_KEY,SAVE_SCHEMA,save,load,restart,migrateLoaded,serializeSave,validateLoadedState,nearestSafeTile,transientUiActive,canPersistNow,clearTransientPanels};
+GC.Save={SAVE_KEY,SAVE_BACKUP_KEY,SAVE_SCHEMA,save,load,restart,migrateLoaded,serializeSave,validateLoadedState,nearestSafeTile,transientUiActive,canPersistNow,clearTransientPanels,exportPortableSaveText,downloadPortableSave,importPortableSaveText,readPortableSaveFile};
