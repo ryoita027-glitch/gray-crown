@@ -222,11 +222,13 @@ const OpeningWorldLife=(()=>{
   }
   return true
  }
+ // The brook watcher surveys the stream from a fixed position, not a walking
+ // or hand-waving animation. Only the farm worker uses sparse working poses.
  // Indoor workshops also have genuinely working NPCs. Ordinary stationary
  // civilians must not trigger wasteful, in-place walking cycles.
  const ambientWorkplaces=new Set(['village','ryunefields','ryunebrook','road','capital','capitalarmory','capitalinn','mayorhouse']);
  const animatedWorkers=new Set(['baker','farmer','merchant','capitalVendor','capitalFlowerGirl',
-  'capitalSmith','armoryApprentice','clerk','capitalInnHost','fieldWorker','brookKeeper']);
+  'capitalSmith','armoryApprentice','clerk','capitalInnHost','fieldWorker']);
  function shouldBreathe(map,playerX,playerY,npcs){
   if(!api.enabled||!ambientWorkplaces.has(map))return false;
   if(typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches)return false;
