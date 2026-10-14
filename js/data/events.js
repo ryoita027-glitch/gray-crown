@@ -463,7 +463,7 @@ const EVENT_DEFS=Object.freeze([
   ],effects:[{type:'completeEvent',id:'alpha2.frontier2.complete'},{type:'advanceStory',stage:STORY_STAGES.FRONTIER_SECOND_COMPLETE,objective:'セラド前線・第2区間完了：北の旧関所方面を調べる準備をする'},{type:'journal',text:'帝国軍の撤退命令と王国側の初報に食い違いがある。さらに北の旧関所方面で王国偵察隊が未帰還となり、次に北へ進む理由が生まれた。'}],
   postLines:[{speaker:'ナレーション',text:'――[[セラド前線・第2区間 終了]]――<br>帝国軍は北へ集結し、王国の偵察隊も同じ方向で消息を絶った。答えはまだない。四人は、食い違う情報を確かめるため次の準備に入る。'}]
  },
- {id:'alpha2.frontier2.complete.repeat',priority:40,trigger:{type:'npc',map:'frontier',target:'frontierOfficer'},when:[{eventComplete:'alpha2.frontier2.complete'}],lines:[{speaker:'前線将校',text:'「北の旧関所へ出る準備をしておけ。出発命令はまだだ。今は記録と装備を整理しろ」'}]}
+ {id:'alpha2.frontier2.complete.repeat',priority:40,trigger:{type:'npc',map:'frontier',target:'frontierOfficer'},when:[{eventComplete:'alpha2.frontier2.complete'}],lines:[{speaker:'前線将校',text:'「北の旧関所へ出る準備をしておけ。出発命令はまだだ。今は記録と装備を整理しろ」'}]},
 
   {id:'ryune.village.westSign',priority:10,trigger:{type:'object',map:'village',target:'westFieldPath'},
    lines:[{speaker:'西畑への小道',text:'リュネ村の西畑へ続く道。畑の作業を見たいなら、ここから西へ進める。'}]},
