@@ -201,7 +201,7 @@ const maps={
   {id:'doorMayor',x:4,y:12},{id:'doorCottage',x:19,y:12},{id:'westFieldPath',x:2,y:7},{id:'eastBrookPath',x:21,y:7},{id:'gate',x:11,y:0}
  ]},
  ryunefields:{name:'リュネ西の畑',tag:'畑仕事と村の食卓',tiles:makeRyuneOutskirtsTiles('fields'),
-   npcs:[{id:'fieldWorker',x:11,y:5,name:'畑の手伝い人'}],
+   npcs:[{id:'fieldWorker',x:9,y:5,name:'畑の手伝い人'}],
    objects:[{id:'fieldFurrows',x:7,y:4},{id:'fieldCart',x:18,y:11},{id:'fieldCache',x:19,y:4}]},
   ryunebrook:{name:'リュネ東の小川',tag:'生活を支える水辺',tiles:makeRyuneOutskirtsTiles('brook'),
    npcs:[{id:'brookKeeper',x:18,y:10,name:'川辺の見回り人'}],
