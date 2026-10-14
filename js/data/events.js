@@ -465,5 +465,49 @@ const EVENT_DEFS=Object.freeze([
  },
  {id:'alpha2.frontier2.complete.repeat',priority:40,trigger:{type:'npc',map:'frontier',target:'frontierOfficer'},when:[{eventComplete:'alpha2.frontier2.complete'}],lines:[{speaker:'前線将校',text:'「北の旧関所へ出る準備をしておけ。出発命令はまだだ。今は記録と装備を整理しろ」'}]}
 
+  // Side excursions are optional and never advance, delay or rewrite the royal appointment.
+  {id:'ryune.fields.inspect',priority:70,trigger:{type:'object',map:'ryunefields',target:'fieldFurrows'},
+   when:[{eventIncomplete:'ryune.fields.inspect'}],
+   lines:[
+    {speaker:'畑の畝',text:'乾いた土の間に、まばらな青い芽が残っている。収穫を待つ畑と、すでに空になった畝が隣り合っている。'},
+    {speaker:'トリトン',text:'「この辺り、前はもっと土が柔らかかったよな。水を引く溝を見直せば、まだ少しは育つかも」'},
+    {speaker:'マーガレット',text:'「東の小川も見ておきましょう。原因も分からないまま手を入れたら、畑を傷めるだけ」'}
+   ],effects:[
+    {type:'completeEvent',id:'ryune.fields.inspect'},
+    {type:'journal',text:'リュネ村の西畑では一部の畝が乾いていた。東の小川の様子も確認することにした。'}
+   ]},
+  {id:'ryune.fields.inspect.repeat',priority:10,trigger:{type:'object',map:'ryunefields',target:'fieldFurrows'},
+   when:[{eventComplete:'ryune.fields.inspect'}],lines:[{speaker:'畑の畝',text:'まばらな芽を傷つけないよう、踏み跡の横から畝を眺めた。'}]},
+  {id:'ryune.brook.inspect',priority:70,trigger:{type:'object',map:'ryunebrook',target:'brookWater'},
+   when:[{eventIncomplete:'ryune.brook.inspect'}],
+   lines:[
+    {speaker:'小川の水辺',text:'小川は浅い。橋の下の水路には泥と小枝がたまり、水がゆっくり流れている。'},
+    {speaker:'ソフィ',text:'「水がなくなったわけじゃないんですね。畑までちゃんと届いていないのかも」'},
+    {speaker:'カレン',text:'「村へ帰ったら、見たことを伝えよう。私たちだけで勝手に掘るより、みんなで考えた方がいい」'}
+   ],effects:[
+    {type:'completeEvent',id:'ryune.brook.inspect'},
+    {type:'journal',text:'村東側の小川には水が残っているが、橋の下には泥と小枝がたまっていた。西畑の状態と合わせて農夫へ伝える。'}
+   ]},
+  {id:'ryune.brook.inspect.repeat',priority:10,trigger:{type:'object',map:'ryunebrook',target:'brookWater'},
+   when:[{eventComplete:'ryune.brook.inspect'}],lines:[{speaker:'小川の水辺',text:'水は細く流れている。むやみに水路へ入らず、村の人に状況を伝えることにした。'}]},
+  {id:'ryune.outskirts.reward',priority:90,trigger:{type:'npc',map:'village',target:'farmer'},
+   when:[{eventComplete:'ryune.fields.inspect'},{eventComplete:'ryune.brook.inspect'},{eventIncomplete:'ryune.outskirts.reward'}],
+   lines:[
+    {speaker:'農夫のボル',text:'「畑と川の両方を見てきてくれたのか。助かるよ。水を引く溝は、みんなで確かめてみる」'},
+    {speaker:'マーガレット',text:'「まだ原因は断定できません。水路を確認するときは、畑を傷めないようにしてください」'},
+    {speaker:'農夫のボル',text:'「分かってる。これはほんの礼だ。旅先で腹が減ったら食べな」'}
+   ],effects:[
+    {type:'completeEvent',id:'ryune.outskirts.reward'},
+    {type:'openTreasure',id:'outskirtsThanks'},
+    {type:'journal',text:'西畑と東の小川の様子を農夫ボルへ報告し、旅の携帯食を受け取った。'}
+   ]},
+  {id:'ryune.fields.worker',priority:15,trigger:{type:'npc',map:'ryunefields',target:'fieldWorker'},
+   lines:[{speaker:'畑の手伝い人',text:'「畝の間を踏まないでおくれよ。村へ戻るなら東側の道をまっすぐだ。乾いた場所が気になったら見ていって」'}]},
+  {id:'ryune.brook.keeper',priority:15,trigger:{type:'npc',map:'ryunebrook',target:'brookKeeper'},
+   lines:[{speaker:'川辺の見回り人',text:'「橋は通れるよ。足元だけ気をつけて。川の流れを調べるなら橋の手前の岸辺からどうぞ」'}]},
+  {id:'ryune.fields.cart',priority:15,trigger:{type:'object',map:'ryunefields',target:'fieldCart'},
+   lines:[{speaker:'畑の荷車',text:'籠と道具が積まれている。収穫を運ぶための荷車だが、今は修理用の木材を積んでいる。'}]},
+  {id:'ryune.brook.stones',priority:15,trigger:{type:'object',map:'ryunebrook',target:'brookStones'},
+   lines:[{speaker:'川辺の石積み',text:'小さな石が川岸を支えている。大雨のあとに補修した跡が残る。'}]},
 ]);
 GC.Data=GC.Data||{};GC.Data.Events={EVENT_DEFS};
