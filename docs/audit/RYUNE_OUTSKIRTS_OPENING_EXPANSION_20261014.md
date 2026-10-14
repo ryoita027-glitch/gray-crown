@@ -98,13 +98,13 @@ Suggested next incremental polish if accepted: add more varied villager interact
 
 Five one-time **optional, short interactions** using existing already-visible points were added:
 
-- Village well `ryune.memory.well`: all four childhood friends remember fetching water together.
+- Village well `ryune.memory.well`: a short Karen/Triton exchange about carrying water without spilling it.
 - Karen family table `ryune.memory.familyTable`: ordinary homecoming promise.
 - Orphanage toy chest `ryune.memory.toyChest`: Sophie and Karen reflect on children's play.
 - Mayor's bookcase `ryune.memory.mayorBooks`: Margaret and Triton reflect on her reading habits.
 - East cottage soldier letter `ryune.memory.soldierLetter`: Triton and Karen consider people waiting for someone to return.
 
-Each triggers only once and writes **only its own `events.completed` flag**. No gold, items, achievements, Story stages, world switches, party stats, or main quest objectives are changed. After each memory, the existing normal inspect dialogue is restored. All five are accessible independent of whether the messenger has been met.
+Each memory triggers only once and writes **only its own `events.completed` flag**. The initial existing inspection additionally writes an inert `ryune.baseViewed.*` world switch, solely to ensure that the original story-relevant description is shown first. These flags never advance Story, change character stats, gold, items or main quest objectives. The optional family-table dialogue about returning from the journey becomes available only after the original royal appointment (`STORY_STAGES.APPOINTED`); all five scenes remain optional and skipping them does not affect the main route.
 
 The two Ryune side exit hint posts were moved from inaccessible transfer tiles at `(0,8)` and `(23,8)` to readable, non-entrance tiles `(2,7)` and `(21,7)`. Their distinct pixel signposts now render through the normal game canvas and are not on the footpaths at `(1,8)` and `(22,8)`.
 
@@ -112,4 +112,15 @@ The added `tests/ryune_outskirts.test.js` now asserts: five memory scene effects
 
 These are source-level changes and test definitions. Same-HEAD Node execution, Chromium acceptance and visual approval are still pending, not claimed PASS.
 
-**Village life animation:** the two minor residents in the west field and east brook now perform subdued working/looking gestures via the existing authored 4-frame NPC atlas. The game only refreshes those gestures while a player is nearby, respects reduced-motion preferences, and never changes NPC collision positions or starts a cutscene. Node source tests now assert near/far animation triggering. No new gameplay requirement is attached to those animations.
+**Village life animation:** the farmhand stands adjacent to crops (9,5), with fixed feet and a single restrained work frame occurring briefly in an approximately nine-second cycle when nearby. The brook watcher remains stationary using its idle frame: no in-place march, unrelated arm-waving, or fake continuous work. The game respects reduced-motion preference, never changes NPC collision positions and does not start a cutscene. No new gameplay requirement is attached to animation.
+
+
+## Naturalness correction — concrete acceptance guard (2026-10-14)
+
+Source-level dialogue and animation review identified risks of **premature farewell promises**, **four speakers responding mechanically to every prop**, **an unrelated side scene hiding an important original worldbuilding line**, and **immobile NPCs using repeated walking frames**. The implementation was revised accordingly:
+
+1. The **original object inspection is always first** for `well`, `familyTable`, `toyChest`, `mayorBooks` and `soldierLetter`. Only a second investigation can trigger the short optional extra conversation, after which the original text remains repeatable. This protects the orphanage's propaganda toy detail, the soldier family's unanswered letter, the existing food-scarcity imagery and Margaret's archive context.
+2. Additional scenes contain only **2–3 short lines** and involve only the characters who would naturally comment. They introduce **no new canon facts** and do not insist that every protagonist talks.
+3. The `familyTable` conversation about returning from the journey requires `storyAtLeast:STORY_STAGES.APPOINTED`. No farewell statement is presented before the players have chosen to depart. Optional event-completion and passive first-inspection flags have no influence on that choice or north-gate movement.
+4. The farm NPC stands next to planted rows rather than in the thoroughfare. Its feet have static position; one restrained work gesture is selected only on a sparse cadence. The brook observer remains on a permanent idle pose, avoiding artificial marching in place.
+5. Automated source tests assert the original inspection priority, the after-appointment timing, brief dialogue, the unchanged north-gate progression, and an idle brook watcher. **On-device visual acceptance remains open** until the actual game is run in a browser at this exact commit.
