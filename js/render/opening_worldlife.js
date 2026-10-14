@@ -194,6 +194,23 @@ const OpeningWorldLife=(()=>{
   const t=(now+offset)%period;
   return t>=2200&&t<2700?1:t>=2700&&t<3200?3:0
  }
+ // Idle scenery redraws only when an *observable hand pose* can change.
+ // Otherwise the original 200ms timer constantly repaints the full world,
+ // including while all workers spend ~90% of the cycle standing still.
+ function nextWorkFrameDelay(map,playerX,playerY,npcs,now=Date.now()){
+  if(!shouldBreathe(map,playerX,playerY,npcs))return Infinity;
+  let earliest=Infinity;
+  for(const n of npcs){
+   if(!animatedWorkers.has(n.id)||Math.abs(n.x-playerX)+Math.abs(n.y-playerY)>5)continue;
+   const period=n.id==='fieldWorker'||n.id==='farmer'?11000:
+    n.id==='baker'||n.id==='merchant'?8000:9500;
+   const offset=(String(n.id).length*127)%1900;
+   const t=(now+offset)%period;
+   const wait=t<2200?2200-t:t<2700?2700-t:t<3200?3200-t:period+2200-t;
+   earliest=Math.min(earliest,wait);
+  }
+  return Number.isFinite(earliest)?Math.max(80,Math.ceil(earliest)):Infinity
+ }
  function villager(c,map,n,now=0){
   if(!api.enabled||!living.has(n.id)||!maps.has(map))return false;
   const x=n.x*32,y=n.y*32;
@@ -251,6 +268,6 @@ const OpeningWorldLife=(()=>{
  function blocks(map,x,y){
   return map==='capital'&&((x===3&&y===7)||(x===7&&y===7)||(x===17&&y===8))
  }
- const api={enabled:true,maps,ground,villager,living,shouldBreathe,blocks,workPhase};
+ const api={enabled:true,maps,ground,villager,living,shouldBreathe,blocks,workPhase,nextWorkFrameDelay};
  return api
 })();

@@ -11,6 +11,9 @@ const RyuneOutskirts=(()=>{
    Math.min(Math.abs(x-12),Math.abs(x-13))+Math.abs(y-7)<=5
  }
  function setViewer(x,y){viewer.x=x;viewer.y=y}
+ function nextWaterFrameDelay(map,x,y,now=Date.now()){
+  return waterMotion(map,x,y)?Math.max(80,700-(now%700)):Infinity
+ }
 
  const W=32;
  const pixel=(c,col,x,y,w,h)=>{c.fillStyle=col;c.fillRect(x|0,y|0,w|0,h|0)};
@@ -180,5 +183,5 @@ const RyuneOutskirts=(()=>{
    pixel(c,'#cab390',x-3,y+17,6,1);
   }
  }
- return {maps,paintTile,drawAccents,drawObject,drawProgress,setViewer,waterMotion};
+ return {maps,paintTile,drawAccents,drawObject,drawProgress,setViewer,waterMotion,nextWaterFrameDelay};
 })();

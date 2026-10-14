@@ -34,6 +34,43 @@ const EVENT_DEFS=Object.freeze([
   ]
  },
  {id:'alpha.village.appointment.repeat',priority:10,trigger:{type:'npc',map:'village',target:'messenger'},when:[{eventComplete:'alpha.village.appointment'}],lines:[{speaker:'王国使者',text:'「支度が済んだら北門から王都へ向かってくれ。……無理に笑う必要はない。任命式では嫌でも笑わされるだろうからな」'}]},
+
+ // Four very short voluntary goodbyes at EXISTING NPCs after the appointment.
+ // They do not gate leaveVillage, give supplies, set objectives or change canon.
+ // On replay the original inline NPC interaction is restored unchanged.
+ {id:'ryune.farewell.karenBrother',priority:30,
+  trigger:{type:'npc',map:'karenhome',target:'karenBrother'},
+  when:[{storyIs:STORY_STAGES.APPOINTED},{eventIncomplete:'ryune.farewell.karenBrother'}],
+  lines:[
+   {speaker:'リオ',text:'「姉ちゃんがいない間、井戸の水汲みは僕がやるよ」'},
+   {speaker:'カレン',text:'「助かる。走って運ぶとこぼすから、ゆっくりね」'},
+   {speaker:'リオ',text:'「それ、昔の姉ちゃんでしょ」'}
+  ],effects:[{type:'completeEvent',id:'ryune.farewell.karenBrother'}]},
+ {id:'ryune.farewell.tritonRen',priority:30,
+  trigger:{type:'npc',map:'village',target:'ren'},
+  when:[{storyIs:STORY_STAGES.APPOINTED},{eventIncomplete:'ryune.farewell.tritonRen'}],
+  lines:[
+   {speaker:'レン',text:'「トリトン姉ちゃんが帰るまで、稽古は休み？」'},
+   {speaker:'トリトン',text:'「父ちゃんがいるだろ。怖いなら、まず足の位置から覚えな」'},
+   {speaker:'レン',text:'「……分かった。帰ったら見てよ」'}
+  ],effects:[{type:'completeEvent',id:'ryune.farewell.tritonRen'}]},
+ {id:'ryune.farewell.sophieTheo',priority:30,
+  trigger:{type:'npc',map:'orphanage',target:'theo'},
+  when:[{storyIs:STORY_STAGES.APPOINTED},{eventIncomplete:'ryune.farewell.sophieTheo'}],
+  lines:[
+   {speaker:'テオ',text:'「ソフィお姉ちゃん、薬の箱は誰が見るの？」'},
+   {speaker:'ソフィ',text:'「マルタさんと一緒に確認してください。分からない薬には触らないでね」'},
+   {speaker:'テオ',text:'「うん。僕も気をつける」'}
+  ],effects:[{type:'completeEvent',id:'ryune.farewell.sophieTheo'}]},
+ {id:'ryune.farewell.margaretMother',priority:30,
+  trigger:{type:'npc',map:'mayorhouse',target:'margaretMother'},
+  when:[{storyIs:STORY_STAGES.APPOINTED},{eventIncomplete:'ryune.farewell.margaretMother'}],
+  lines:[
+   {speaker:'マーガレットの母',text:'「あんなに本を持っていたのに、荷物はそれだけでいいの？」'},
+   {speaker:'マーガレット',text:'「地図と筆記具があるもの。読めないことは現地で確かめるわ」'},
+   {speaker:'マーガレットの母',text:'「……そう。足元にも気をつけてね」'}
+  ],effects:[{type:'completeEvent',id:'ryune.farewell.margaretMother'}]},
+
  {
   id:'alpha.capital.ceremony',priority:100,trigger:{type:'npc',map:'capital',target:'capitalOfficial'},when:[{eventIncomplete:'alpha.capital.ceremony'},{worldSwitchFalsy:'returnedKingdom'}],
   lines:[

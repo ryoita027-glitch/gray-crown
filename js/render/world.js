@@ -655,12 +655,20 @@ function drawScene(){
  const followerTargets=partyTrailPoints(),followerMoving=VISUAL.followers.some((p,i)=>{const t=followerTargets[i]||p;return Math.abs(t[0]-p[0])>.01||Math.abs(t[1]-p[1])>.01});const moving=cinematicActive||VISUAL.leaderQueue.length>0||VISUAL.followerQueues.some(q=>q.length>0)||Math.abs(target.x-VISUAL.camX)>.08||Math.abs(target.y-VISUAL.camY)>.08||Math.abs(state.x-VISUAL.playerX)>.01||Math.abs(state.y-VISUAL.playerY)>.01||followerMoving;
  const f=front(),interactableNpc=m.npcs.find(n=>npcVisible(n)&&n.x===f.x&&n.y===f.y),interactableObject=m.objects.find(o=>o.x===f.x&&o.y===f.y&&visibleObject(o));
  GC.CommercialUX?.update?.(state.map,interactableNpc,interactableObject);
- const worldLifeMotion=!isInputLocked()&&(OpeningWorldLife.shouldBreathe(state.map,state.x,state.y,m.npcs)||RyuneOutskirts.waterMotion(state.map,state.x,state.y));
+ // The canvas is expensive to repaint. An idle worker mostly holds a
+ // completely still pose; the stream changes only every 700ms. Schedule the
+ // NEXT genuine pixel change rather than running a 5fps background redraw.
+ const ambientAllowed=!isInputLocked();
+ const at=Date.now();
+ const workerWait=ambientAllowed?OpeningWorldLife.nextWorkFrameDelay(state.map,state.x,state.y,m.npcs,at):Infinity;
+ const streamWait=ambientAllowed?RyuneOutskirts.nextWaterFrameDelay(state.map,state.x,state.y,at):Infinity;
+ const nextAmbient=Math.min(workerWait,streamWait);
  if(moving||GC.CommercialActing?.active?.()){
+  clearTimeout(VISUAL.ambientTimer);VISUAL.ambientTimer=null;
   cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene);
- }else if(worldLifeMotion){
-  clearTimeout(VISUAL.ambientTimer);
-  VISUAL.ambientTimer=setTimeout(()=>draw(),200);
+ }else{
+  clearTimeout(VISUAL.ambientTimer);VISUAL.ambientTimer=null;
+  if(Number.isFinite(nextAmbient))VISUAL.ambientTimer=setTimeout(()=>draw(),Math.max(80,nextAmbient));
  }
 }
 function draw(){clearTimeout(VISUAL.ambientTimer);cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene)}
