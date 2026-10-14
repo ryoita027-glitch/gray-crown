@@ -110,7 +110,26 @@ function heroPortraitMarkup(speaker){
  if(speaker==='マーガレット')return commonStart('#3f3150','#202735')+`<path d="M34 55 Q32 27 50 17 Q74 6 87 31 Q93 48 85 83 L78 72 Q84 49 75 30 Q55 19 42 38 L40 81 Q31 70 34 55Z" fill="#e1e4e9"/><path d="M38 31 Q52 13 78 23 Q68 26 61 34 Q48 31 40 48Z" fill="#f3f4f6"/><path d="M79 34 Q96 51 89 91 Q85 105 75 111 L77 74 Q86 53 79 34Z" fill="#c9ced6"/>${face}<path d="M48 52 Q54 48 59 51" stroke="#b8bec8" stroke-width="2.2" fill="none"/><path d="M62 51 Q68 48 74 52" stroke="#b8bec8" stroke-width="2.2" fill="none"/><path d="M50 73 Q60 76 70 72" stroke="#94605e" stroke-width="1.5" fill="none"/><path d="M39 89 Q50 98 60 98 Q71 98 81 88 L96 112 L88 140 H31 L23 112Z" fill="#685083"/><path d="M45 92 L60 106 L76 92 L80 113 L60 126 L40 113Z" fill="#b69acb"/><path d="M53 106 L60 114 L67 106 L65 131 L55 131Z" fill="#332b3f"/><circle cx="60" cy="112" r="4" fill="#ccb86d"/><path d="M24 113 L12 132 L24 140 H42 L40 112Z" fill="#4e3a66"/><path d="M96 113 L108 132 L96 140 H78 L80 112Z" fill="#4e3a66"/>`+'</svg>';
  return '';
 }
+// Resident dialogue portraits use the SAME individually drawn 32px identity
+// as the map. The legacy generic 64px face repeated one template for nearly
+// everyone and made players think characters had not changed at all.
+// These are pixel-native 2x character portraits, not invented close-up faces.
+const FEATURED_RESIDENT_SPEAKERS=Object.freeze({
+ 'パン屋のエダ':0,'農夫のボル':1,'老婆ナナ':2,'村長':3,
+ '王国使者':4,'レン':5,'花売りの少女':6,'新兵':7,'総司令グランツ':8
+});
+function featuredResidentPortraitMarkup(speaker){
+ const i=FEATURED_RESIDENT_SPEAKERS[speaker];
+ if(i===undefined)return null;
+ const id='residentPortraitCrop'+i;
+ // The atlas has 9 columns x 4 directions, each 32x32.
+ // Scale the front-facing source ONLY, with exact nearest-neighbor geometry.
+ // Do not stretch the torso independently or overlay a second generic face.
+ return `<svg class="portrait-svg resident-portrait" viewBox="0 0 64 72" aria-hidden="true" shape-rendering="crispEdges"><defs><clipPath id="${id}"><rect x="0" y="0" width="64" height="64"/></clipPath></defs><rect width="64" height="72" fill="#313b38"/><rect y="64" width="64" height="8" fill="#252c2b"/><g clip-path="url(#${id})"><image href="assets/npc/featured_residents_v1.png" x="-${i*64}" y="0" width="576" height="256" style="image-rendering:pixelated"/></g></svg>`;
+}
 function portraitMarkup(speaker){
+ const featured=featuredResidentPortraitMarkup(speaker);
+ if(featured)return featured;
  if(['カレン','トリトン','ソフィ','マーガレット'].includes(speaker))return heroPortraitMarkup(speaker);
  const p=PORTRAITS[speaker];
  if(!p){
