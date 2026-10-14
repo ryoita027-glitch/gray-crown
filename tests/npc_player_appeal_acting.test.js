@@ -111,14 +111,10 @@ test('base art fallback and reduced-motion optout do not erase NPCs or move hitb
 });
 test('new acting visuals do not recreate overlapping old rectangle props for PNG characters',()=>{
  const s=runtime();
+ const baker={id:'baker',x:8,y:6};
+ s.render.drawNpc(s.c,baker,'down',0);
  const history={fillStyle:'',rects:[],fillRect(...a){this.rects.push(a)}};
- const old=global.OpeningPixelAssets;
- try{
-  global.OpeningPixelAssets=s.render;
-  assert.equal(s.life.villager(history,'village',{id:'baker',x:8,y:6},2500),true);
-  assert.equal(history.rects.length,0,'old rectangle tray obscured the bespoke baking frame');
- }finally{
-  if(old===undefined)delete global.OpeningPixelAssets;
-  else global.OpeningPixelAssets=old;
- }
+ const lifeWithArtwork=new Function('OpeningPixelAssets',lifeSrc+';return OpeningWorldLife')(s.render);
+ assert.equal(lifeWithArtwork.villager(history,'village',baker,2500),true);
+ assert.equal(history.rects.length,0,'old rectangle tray obscured the bespoke baking frame');
 });
