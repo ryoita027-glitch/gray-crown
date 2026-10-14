@@ -3,7 +3,29 @@ const SAVE_KEY='gray-crown-vslice-save-v1';
 const SAVE_BACKUP_KEY=SAVE_KEY+'-backup';
 const SAVE_SCHEMA=23;
 function safeNumber(v,fallback,min=-Infinity,max=Infinity){return Number.isFinite(v)?Math.max(min,Math.min(max,v)):fallback}
-function nearestSafeTile(mapId,x,y){const m=maps[mapId];if(!m)return[11,13];const passThrough=new Set(['gate','exit','northExit','southExit','roadSign','milestone','banner','rations']);const blockedTile=(xx,yy)=>{const t=tileAt(mapId,xx,yy);if(['T','H','S','W','R','K','Z'].includes(t))return true;if(m.npcs.some(n=>n.x===xx&&n.y===yy))return true;if(m.objects.some(o=>o.x===xx&&o.y===yy&&!passThrough.has(o.id)))return true;return false};x=Math.max(0,Math.min(COLS-1,Math.floor(x)));y=Math.max(0,Math.min(ROWS-1,Math.floor(y)));if(!blockedTile(x,y))return[x,y];for(let r=1;r<12;r++)for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){if(Math.abs(dx)!==r&&Math.abs(dy)!==r)continue;const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<COLS&&yy<ROWS&&!blockedTile(xx,yy))return[xx,yy]}return INTERIOR_MAPS.includes(mapId)?[11,11]:[11,13]}
+function nearestSafeTile(mapId,x,y,saveState=state){
+ const m=maps[mapId];if(!m)return[11,13];
+ const passThrough=new Set(['gate','exit','northExit','southExit','roadSign','milestone','banner','rations']);
+ // A collected chest/forage spot is no longer solid. Crucially, load validation
+ // must inspect the *loaded* world's flags, not the old session still in memory.
+ const cleared=o=>TREASURE_DEFS[o.id]&&saveState?.world?.treasures?.[o.id]===true;
+ const blockedTile=(xx,yy)=>{
+  const t=tileAt(mapId,xx,yy);
+  if(['T','H','S','W','R','K','Z'].includes(t))return true;
+  if(m.npcs.some(n=>n.x===xx&&n.y===yy))return true;
+  if(m.objects.some(o=>o.x===xx&&o.y===yy&&!passThrough.has(o.id)&&!cleared(o)))return true;
+  return false
+ };
+ x=Math.max(0,Math.min(COLS-1,Math.floor(x)));
+ y=Math.max(0,Math.min(ROWS-1,Math.floor(y)));
+ if(!blockedTile(x,y))return[x,y];
+ for(let r=1;r<12;r++)for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){
+  if(Math.abs(dx)!==r&&Math.abs(dy)!==r)continue;
+  const xx=x+dx,yy=y+dy;
+  if(xx>=0&&yy>=0&&xx<COLS&&yy<ROWS&&!blockedTile(xx,yy))return[xx,yy]
+ }
+ return INTERIOR_MAPS.includes(mapId)?[11,11]:[11,13]
+}
 function mergeStructuredState(fresh,src){
  const loaded=createGameState();
  for(const key of ['map','x','y','dir','trail','locked','encounterSteps','nextEncounterAt','interiorReturn','journal','inventory','gold'])if(src[key]!==undefined)loaded[key]=src[key];
@@ -33,7 +55,7 @@ function validateLoadedState(loaded,fresh=createGameState()){
  loaded.map=maps[loaded.map]?loaded.map:'village';if(loaded.map==='relayvillage'){loaded.map='borderland';loaded.x=11;loaded.y=5}if(loaded.map==='ravine'){loaded.map='watchfort';loaded.x=11;loaded.y=8}
  loaded.world.visited[loaded.map]=true;loaded.battle=null;loaded.battleReturn=null;loaded.symbolEncounter=null;loaded.locked=false;
  loaded.encounterSteps=Number.isFinite(loaded.encounterSteps)?loaded.encounterSteps:0;loaded.nextEncounterAt=Number.isFinite(loaded.nextEncounterAt)?loaded.nextEncounterAt:rollEncounterThreshold(loaded.map);
- const pos=nearestSafeTile(loaded.map,loaded.x,loaded.y);loaded.x=pos[0];loaded.y=pos[1];if(!Array.isArray(loaded.trail)||loaded.trail.length<3)loaded.trail=[[loaded.x+1,loaded.y],[loaded.x+2,loaded.y],[loaded.x+3,loaded.y]];
+ const pos=nearestSafeTile(loaded.map,loaded.x,loaded.y,loaded);loaded.x=pos[0];loaded.y=pos[1];if(!Array.isArray(loaded.trail)||loaded.trail.length<3)loaded.trail=[[loaded.x+1,loaded.y],[loaded.x+2,loaded.y],[loaded.x+3,loaded.y]];
  return attachStateCompatibility(loaded)
 }
 function migrateLoaded(raw){const fresh=createGameState(),src=JSON.parse(raw);const loaded=mergeStructuredState(fresh,src);loaded.party.forEach(p=>applyLevelUps(p));const reconciled=reconcileStoryState(loaded);if(reconciled.repairs.length)GC.Log?.warn('Save story state repaired during migration',reconciled);loaded.schema=SAVE_SCHEMA;return validateLoadedState(loaded,fresh)}
@@ -54,5 +76,82 @@ function load(silent=false){
  try{next=migrateLoaded(primary||backup)}catch(e){GC.Log?.warn('Primary save load failed',{error:String(e)});if(!backup){if(!silent)say('システム','セーブデータを読み込めませんでした。');return false}try{next=migrateLoaded(backup);recovered=true}catch(e2){GC.Log?.error('Primary and backup save load failed',{primary:String(e),backup:String(e2)});if(!silent)say('システム','セーブデータとバックアップの両方を読み込めませんでした。');return false}}
  clearTransientPanels();replaceState(next);VISUAL.map=null;setMusic(mapMusicTheme(state.map));renderHud();draw();GC.Dev?.clearTaint?.();GC.Log?.info('Load',{map:state.map,x:state.x,y:state.y,stage:state.story.stage,recovered});if(!silent&&typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started)hideTitle();if(!silent)say('システム',recovered?'通常セーブが壊れていたため、バックアップから復旧しました。':'ロードしました。');return true}
 
+// Portable JSON is necessary for player ZIP/file:// releases: browser
+// localStorage belongs to the specific browser/origin, not the game folder.
+function exportPortableSaveText(){
+ if(!save(true))return null;
+ return localStorage.getItem(SAVE_KEY)
+}
+function downloadPortableSave(){
+ const raw=exportPortableSaveText();
+ if(!raw){say('システム','安全にセーブを書き出せません。操作可能な場所で再試行してください。');return false}
+ try{
+  const blob=new Blob([raw],{type:'application/json;charset=utf-8'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='GrayCrown_Save_v23_'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
+  say('システム','セーブを書き出しました。別のPCで遊ぶ時は「セーブを読み込む」を使ってください。');
+  return true
+ }catch(e){GC.Log?.error('Portable save export failed',{error:String(e)});
+  say('システム','セーブの書き出しに失敗しました。ブラウザのダウンロード設定を確認してください。');return false}
+}
+function importPortableSaveText(raw){
+ // Strict structural gate before migration: a generic JSON is not a valid save.
+ // Supports real earlier-version saves, but never silently imports future schema.
+ if(typeof raw!=='string'||raw.length>2*1024*1024) return false;
+ if(!canPersistNow('load'))return false;
+ let parsed,loaded;
+ try{
+  parsed=JSON.parse(raw);
+  const canonical=createGameState().party;
+  const expected=['karen','triton','sophie','margaret'];
+  if(!parsed||!Number.isInteger(parsed.schema)||parsed.schema<1||parsed.schema>SAVE_SCHEMA||
+     !parsed.story||typeof parsed.story!=='object'||!parsed.world||typeof parsed.world!=='object'||
+     !parsed.inventory||typeof parsed.inventory!=='object'||Array.isArray(parsed.inventory)||
+     Object.keys(parsed.inventory).some(id=>!Object.hasOwn(ITEM_DEFS,id))||
+     !Array.isArray(parsed.party)||parsed.party.length!==4||
+     !parsed.party.every((p,i)=>p&&p.id===expected[i]&&p.name===canonical[i].name&&p.job===canonical[i].job)||
+     !maps[parsed.map])return false;
+  loaded=migrateLoaded(raw);
+ }catch(e){GC.Log?.warn('Portable save validation failed',{error:String(e)});return false}
+ const primary=localStorage.getItem(SAVE_KEY),backup=localStorage.getItem(SAVE_BACKUP_KEY);
+ try{
+  // Persist the migrated *validated* schema, never raw untrusted file text.
+  const payload=JSON.stringify({...loaded,schema:SAVE_SCHEMA,locked:false,battle:null,
+    battleReturn:null,symbolEncounter:null});
+  if(primary)localStorage.setItem(SAVE_BACKUP_KEY,primary);
+  else if(!backup)localStorage.setItem(SAVE_BACKUP_KEY,payload);
+  localStorage.setItem(SAVE_KEY,payload);
+  if(!load(true))throw new Error('Imported save could not be loaded');
+  updateTitleContinue();
+  return true
+ }catch(e){
+  GC.Log?.error('Portable save import failed',{error:String(e)});
+  try{
+   if(primary===null)localStorage.removeItem(SAVE_KEY);else localStorage.setItem(SAVE_KEY,primary);
+   if(backup===null)localStorage.removeItem(SAVE_BACKUP_KEY);else localStorage.setItem(SAVE_BACKUP_KEY,backup)
+  }catch(_){}
+  return false
+ }
+}
+async function readPortableSaveFile(file){
+ if(!file||file.size>2*1024*1024){
+  say('システム','2MB以下のGray Crownセーブファイル（.json）を選んでください。');return false
+ }
+ if(!canPersistNow('load')){
+  say('システム','戦闘やイベントの途中ではセーブを読み込めません。');return false
+ }
+ const priorExists=!!localStorage.getItem(SAVE_KEY);
+ if(!confirm(priorExists?'現在のセーブをバックアップして、選んだセーブデータへ切り替えますか？':
+  '選んだセーブデータを読み込みますか？'))return false;
+ let ok=false;
+ try{ok=importPortableSaveText(await file.text())}
+ catch(e){GC.Log?.error('Portable save read failed',{error:String(e)})}
+ say('システム',ok?(priorExists?'外部セーブを読み込みました。元のセーブはバックアップに保存されています。':
+  '外部セーブを読み込みました。'):'セーブの読み込みに失敗しました。形式やデータを確認してください。');
+ return ok
+}
+
 function restart(){if(!confirm('最初からやり直しますか？'))return;beginAlphaNewGame(true)}
-GC.Save={SAVE_KEY,SAVE_BACKUP_KEY,SAVE_SCHEMA,save,load,restart,migrateLoaded,serializeSave,validateLoadedState,nearestSafeTile,transientUiActive,canPersistNow,clearTransientPanels};
+GC.Save={SAVE_KEY,SAVE_BACKUP_KEY,SAVE_SCHEMA,save,load,restart,migrateLoaded,serializeSave,validateLoadedState,nearestSafeTile,transientUiActive,canPersistNow,clearTransientPanels,exportPortableSaveText,downloadPortableSave,importPortableSaveText,readPortableSaveFile};
