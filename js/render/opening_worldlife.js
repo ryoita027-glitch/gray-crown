@@ -251,6 +251,36 @@ const OpeningWorldLife=(()=>{
   }
   return true
  }
+ // Only existing indoor workers get a restrained held-item gesture, so
+ // the planned idle-frame update has a physical object to animate.
+ function workplace(c,map,n,now=0){
+  const eligible=(
+   map==='mayorhouse'&&n.id==='clerk'||
+   map==='capitalarmory'&&['capitalSmith','armoryApprentice'].includes(n.id)||
+   map==='capitalinn'&&n.id==='capitalInnHost'
+  );
+  if(!eligible)return false;
+  const frame=workPhase(n.id,now),lift=frame===1?-1:frame===3?1:0;
+  const x=n.x*32,y=n.y*32;
+  if(n.id==='clerk'){
+   // Ledger rests near the clerk's writing hand, not over the face.
+   R(c,'#79664e',x+23,y+19+lift,9,6);
+   R(c,'#d6c5a2',x+24,y+18+lift,7,5);
+   R(c,'#77675a',x+26,y+20+lift,4,1);
+  }else if(n.id==='capitalSmith'){
+   // The weight stays low: never strike empty air above the NPC.
+   R(c,'#6e5545',x+26,y+17+lift,3,10);
+   R(c,'#a6aaac',x+23,y+15+lift,9,4);
+  }else if(n.id==='armoryApprentice'){
+   R(c,'#b8a889',x+24,y+20+lift,7,4);
+   R(c,'#817c72',x+25,y+21+lift,5,1);
+  }else if(n.id==='capitalInnHost'){
+   // A room key/guest receipt, not a random rhythmic hand wave.
+   R(c,'#d0b992',x+25,y+19+lift,6,6);
+   R(c,'#77624d',x+27,y+21+lift,3,1);
+  }
+  return true
+ }
  // The brook watcher surveys the stream from a fixed position, not a walking
  // or hand-waving animation. Only the farm worker uses sparse working poses.
  // Indoor workshops also have genuinely working NPCs. Ordinary stationary
@@ -268,6 +298,6 @@ const OpeningWorldLife=(()=>{
  function blocks(map,x,y){
   return map==='capital'&&((x===3&&y===7)||(x===7&&y===7)||(x===17&&y===8))
  }
- const api={enabled:true,maps,ground,villager,living,shouldBreathe,blocks,workPhase,nextWorkFrameDelay};
+ const api={enabled:true,maps,ground,villager,living,workplace,shouldBreathe,blocks,workPhase,nextWorkFrameDelay};
  return api
 })();

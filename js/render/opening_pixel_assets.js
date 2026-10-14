@@ -45,6 +45,103 @@ const OpeningPixelAssets=(()=>{
   capitalSmith:['#5e4440','#776760','#d3a787','smith','short'],
   armoryApprentice:['#947560','#7b8392','#d8ae8d','smith','messy']
  };
+ // Explicit role + silhouette grammar, not one shared body with palette swaps.
+ // Each named resident uses a physical shape and practical object relevant to
+ // their work/family. Shapes remain inside a 32px cell; no collision changes.
+ const identities=Object.freeze({
+  father:'trainer',orphan:'child',mayor:'elderOffice',messenger:'courier',
+  mika:'ribbonChild',ren:'practiceChild',lulu:'ribbonChild',baker:'baker',
+  farmer:'farmer',oldwoman:'elderShawl',veteran:'veteran',
+  karenMother:'homeApron',karenFather:'homeWork',karenBrother:'homeChild',
+  caretaker:'care',theo:'satchelChild',noa:'ribbonChild',emi:'ribbonChild',
+  margaretMother:'homeBooks',clerk:'ledger',soldierMother:'homeWork',
+  soldierSister:'homeChild',merchant:'travelMerchant',scout:'scout',
+  fieldWorker:'farmer',brookKeeper:'waterside',
+  capitalOfficial:'cityOfficial',capitalCitizen:'cityResident',
+  capitalFlowerGirl:'florist',capitalRecruit:'recruit',
+  capitalVendor:'cityMerchant',rationMother:'queueFamily',granz:'commander',
+  capitalInnHost:'innkeeper',offDutySoldier:'offDuty',
+  capitalSmith:'smith',armoryApprentice:'smithApprentice'
+ });
+ function signature(c,id,dir,frame,coat,skin){
+  const type=identities[id];if(!type)return;
+  const light=tint(coat,32),dark=tint(coat,-36);
+  const front=dir===0,side=dir===1||dir===2,back=dir===3;
+  const pulse=(frame===1?-1:frame===3?1:0);
+  // Clothing silhouettes are drawn before face details and stay grounded.
+  switch(type){
+   case 'trainer': case 'veteran': case 'scout':
+    P(c,dark,5,17,4,13);P(c,dark,23,17,4,13);
+    P(c,'#a18b65',8,21,16,3);
+    if(type==='trainer')P(c,'#b4b1a2',26,9,2,18);
+    if(type==='veteran')P(c,'#a6a292',6,16,4,3);
+    if(type==='scout')P(c,'#5b604f',5,11,5,13);
+    break;
+   case 'baker':case 'innkeeper':case 'homeApron':case 'care':
+    P(c,'#dfd0ac',10,18,13,12);P(c,'#998467',11,28,10,2);
+    P(c,'#c3ad8e',11,21,3,7);
+    if(type==='care')P(c,'#8a9078',19,23,4,4);
+    if(type==='baker')P(c,'#77583a',24,18+pulse,6,4);
+    if(type==='innkeeper')P(c,'#b8a077',24,19+pulse,5,3);
+    break;
+   case 'farmer':case 'waterside':
+    P(c,'#646249',8,15,4,16);P(c,'#9a946d',21,15,3,13);
+    P(c,'#5b5b44',12,25,9,4);
+    if(type==='farmer')P(c,'#ab8d60',25,9,2,19);
+    else P(c,'#c1b49a',25,17,5,3);
+    break;
+   case 'child':case 'ribbonChild':case 'practiceChild':case 'homeChild':case 'satchelChild':
+    // Small children have an actual flared lower garment / sash, not mini-adult boots.
+    P(c,light,11,25,10,4);
+    if(type==='practiceChild')P(c,'#a89a75',25,16,2,12);
+    if(type==='satchelChild'){P(c,'#786653',7,16,3,9);P(c,'#c5ae86',6,23,6,5)}
+    if(type==='homeChild')P(c,'#d4a97a',22,21,4,4);
+    break;
+   case 'elderOffice':case 'elderShawl':case 'ledger':case 'homeBooks':
+    P(c,dark,8,23,16,7);
+    P(c,'#bcb6a6',8,16,16,4);
+    if(type==='elderShawl'){P(c,'#847478',5,13,8,12);P(c,'#9e8b71',27,16,2,15)}
+    else {P(c,'#c1a477',24,20,6,5);P(c,'#725c48',25,22,4,1)}
+    break;
+   case 'courier':case 'cityOfficial':case 'commander':
+    P(c,dark,5,16,5,14);P(c,dark,22,16,5,14);
+    P(c,'#c7b083',10,19,13,3);
+    if(type==='commander'){P(c,'#b1a28a',6,15,7,3);P(c,'#b1a28a',19,15,7,3)}
+    else P(c,'#e0ccaa',23,21+pulse,6,5);
+    break;
+   case 'homeWork':case 'queueFamily':case 'offDuty':case 'cityResident':
+    P(c,dark,7,21,4,10);P(c,light,21,23,4,7);
+    if(type==='queueFamily')P(c,'#aaa28f',5,12,7,10);
+    if(type==='offDuty')P(c,'#9da3a4',10,21,12,2);
+    break;
+   case 'travelMerchant':case 'cityMerchant':
+    P(c,'#8a6c4c',5,20+pulse,7,10);
+    P(c,'#c4a578',6,21+pulse,5,3);
+    P(c,light,22,17,4,12);
+    if(type==='cityMerchant')P(c,'#c9b18b',11,19,10,9);
+    break;
+   case 'recruit':
+    P(c,'#acb2ad',8,17,16,4);P(c,dark,8,25,16,4);
+    P(c,'#b8ad8c',14,18,3,10);break;
+   case 'florist':
+    P(c,'#b87e86',10,19,13,10);P(c,'#755b42',25,22+pulse,6,7);
+    P(c,'#b96874',26,17+pulse,4,5);break;
+   case 'smith':case 'smithApprentice':
+    P(c,'#665d58',9,17,16,13);P(c,'#ad9376',12,20,10,8);
+    P(c,'#b1b8b8',25,17+pulse,3,8);
+    if(type==='smithApprentice')P(c,'#8c9caa',7,18,4,9);
+    break;
+  }
+  // Identity marks on the face/head are drawn only after the main face.
+  if((type==='ribbonChild'||type==='homeBooks')&&!back){
+   P(c,'#d5bc98',25,7,4,3);
+   if(type==='ribbonChild')P(c,'#ad7385',26,7,3,2);
+  }
+  if(type==='elderShawl'&&front)P(c,'#e0c9ae',14,12,4,1);
+  if(type==='cityOfficial'&&front)P(c,'#d5c59f',14,17,4,2);
+  if(type==='scout'&&side)P(c,'#8a866d',26,13,2,8);
+ }
+
  const dirs={down:0,left:1,right:2,up:3};
  const npcCache=new Map(),houseCache=new Map();
  const P=(c,color,x,y,w,h)=>{c.fillStyle=color;c.fillRect(x|0,y|0,w|0,h|0)};
@@ -166,6 +263,7 @@ const OpeningPixelAssets=(()=>{
   if(id==='noa'){P(c,'#d8b8c2',headX-3,headY+4,3,5);P(c,'#8f7091',headX-3,headY+9,2,6)}
   if(id==='baker'){P(c,'#f1e6d0',14,bodyTop+4,4,2);P(c,'#b48b67',15,bodyTop+8,2,2)}
   if(id==='capitalInnHost'){P(c,'#e7c394',18,bodyTop+3,3,3);P(c,'#8a6054',20,bodyTop+7,4,2)}
+  signature(c,id,dir,frame,coat,skin);
 
  }
  function makeNpc(profile,id){
@@ -268,6 +366,6 @@ const OpeningPixelAssets=(()=>{
   }
   c.save();c.imageSmoothingEnabled=false;c.drawImage(tile,x,y);c.restore();return true
  }
- const api={designs,drawNpc,drawHouse,dirs,getNpcAtlas:id=>npcCache.get(id),getHouseTile:id=>houseCache.get(id)};
+ const api={designs,identities,drawNpc,drawHouse,dirs,getNpcAtlas:id=>npcCache.get(id),getHouseTile:id=>houseCache.get(id)};
  return api
 })();

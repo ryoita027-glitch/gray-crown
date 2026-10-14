@@ -41,6 +41,27 @@ function paintRect(g,x,y,w,h,ch){for(let yy=y;yy<y+h;yy++)for(let xx=x;xx<x+w;xx
 function paintH(g,x1,x2,y,ch){for(let x=x1;x<=x2;x++)if(g[y]&&g[y][x]!==undefined)g[y][x]=ch}
 function paintV(g,y1,y2,x,ch){for(let y=y1;y<=y2;y++)if(g[y]&&g[y][x]!==undefined)g[y][x]=ch}
 function finishTiles(g){return g.map(r=>r.join(''))}
+// Curated Ryune circulation: paths exist because residents use them.
+// Keep every original 24x15 exit, house blocker, NPC and interactable at its
+// existing coordinates. The field/stream routes become visible footpaths.
+function makeVillageTilesV2(){
+ const rows=[
+  'TTTTTTTTTTTPPTTTTTTTTTTT','TGGGGGGGGGGPPGGGGGGGGGGT',
+  'TGGHHHGGGGGPPGGGGHHHGGGT','TGGHHHGGGGGPPGGGGHHHGGGT',
+  'TGGHHHGGGGGPPGGGGHHHGGGT','TGGGGGGHHGGPPGGGGGGGGGGT',
+  'TGGGGPPPPPPPPPPPPPGGGGGT','TGGGGPGGGGGPPGGGGPGGGGGT',
+  'TGGGGPGGGGGPPGGGGPGGGGGT','TGGHHHGGGGGPPGGGGHHHGGGT',
+  'TGGHHHGGGGGPPGGGGHHHGGGT','TGGHHHGGGGGPPGGGGHHHGGGT',
+  'TGGGGGGGGGGPPGGGGGGGGGGT','TGGGGGGGGGGPPGGGGGGGGGGT',
+  'TTTTTTTTTTTPPTTTTTTTTTTT'
+ ].map(line=>line.split(''));
+ // Wagonless pedestrian side passages, joining existing north/south spokes.
+ for(const x of [1,2,3,4,5,18,19,20,21,22])rows[8][x]='P';
+ // Short, worn thresholds lead toward the southwest mayor and southeast home,
+ // but do not cross the homes, courtyard NPC positions or central well.
+ for(const x of [7,8,9,10,14,15,16,17])rows[12][x]='P';
+ return rows.map(row=>row.join(''))
+}
 function makeRoadTilesV15(){
  const g=makeBlankRegion('G','T');
  const centers=[12,12,11,11,10,10,10,11,12,12,11,11,12,12,12];
@@ -168,23 +189,7 @@ function makeRyuneOutskirtsTiles(kind){
  return finishTiles(g)
 }
 const maps={
- village:{name:'リュネ村',tag:'畑と石井戸の故郷',tiles:[
- 'TTTTTTTTTTTPPTTTTTTTTTTT',
- 'TGGGGGGGGGGPPGGGGGGGGGGT',
- 'TGGHHHGGGGGPPGGGGHHHGGGT',
- 'TGGHHHGGGGGPPGGGGHHHGGGT',
- 'TGGHHHGGGGGPPGGGGHHHGGGT',
- 'TGGGGGGHHGGPPGGGGGGGGGGT',
- 'TGGGGPPPPPPPPPPPPPGGGGGT',
- 'TGGGGPGGGGGPPGGGGPGGGGGT',
- 'TGGGGPGGGGGPPGGGGPGGGGGT',
- 'TGGHHHGGGGGPPGGGGHHHGGGT',
- 'TGGHHHGGGGGPPGGGGHHHGGGT',
- 'TGGHHHGGGGGPPGGGGHHHGGGT',
- 'TGGGGGGGGGGPPGGGGGGGGGGT',
- 'TGGGGGGGGGGPPGGGGGGGGGGT',
- 'TTTTTTTTTTTPPTTTTTTTTTTT'
- ],npcs:[
+ village:{name:'リュネ村',tag:'畑と石井戸の故郷',tiles:makeVillageTilesV2(),npcs:[
   {id:'father',x:5,y:6,name:'トリトンの父'},
   {id:'orphan',x:18,y:6,name:'孤児院の子'},
   {id:'mayor',x:6,y:9,name:'村長'},
@@ -347,6 +352,21 @@ const SHORTCUT_DEFS=Object.freeze({
  capitalMarketLane:{map:'capital',label:'市場横丁の抜け道'},
  karenHomeRoomLoop:{map:'karenhome',label:'食卓まわりの回遊動線'}
 });
+const MAP_ART_DISTRICTS=Object.freeze({
+ village:Object.freeze({
+  center:{label:'共同井戸の広場',heart:[12,9],purpose:'水汲みと生活の交点'},
+  west:{label:'生産・農作業圏',heart:[3,8],purpose:'畑と市場の行き来'},
+  northeast:{label:'孤児院・生活圏',heart:[19,5],purpose:'共同養育と子供の活動'},
+  southwest:{label:'村長と村務',heart:[4,12],purpose:'文書・記録と意思決定'},
+  southeast:{label:'東の民家',heart:[19,12],purpose:'帰還を待つ家族'},
+  north:{label:'王都への出入口',heart:[11,0],purpose:'旅立ち、内と外の対照'}
+ }),
+ capital:Object.freeze({
+  market:{label:'市場・交易',heart:[5,9],purpose:'値札、商品、商人、配給の距離感'},
+  palace:{label:'王城前広場',heart:[12,4],purpose:'石造りと儀式の重み'},
+  garrison:{label:'軍務街',heart:[18,9],purpose:'補給、兵装、兵士の生活'}
+ })
+});
 const MAP_DESIGN_RULES=Object.freeze({minimumOptionalFeature:1,benchmarkMaps:['village','road','capital','karenhome']});
 function validateMapDesign(mapId){const m=maps[mapId],f=MAP_FEATURES[mapId]||{};if(!m)return{ok:false,errors:['map missing']};const count=(f.treasures?.length||0)+(f.npcs?.length||0)+(f.optional?.length||0)+(f.shortcuts?.length||0);const errors=[];if(count<MAP_DESIGN_RULES.minimumOptionalFeature)errors.push('optional exploration feature missing');if(m.tiles.length!==ROWS||m.tiles.some(r=>r.length!==COLS))errors.push('invalid map dimensions');return{ok:errors.length===0,errors,count}}
 function auditBenchmarkMaps(){return MAP_DESIGN_RULES.benchmarkMaps.map(id=>({id,...validateMapDesign(id)}))}
@@ -363,4 +383,4 @@ const villageHouses=[
  {x:3,y:9,label:'村長宅',roof:'#5e6575',wall:'#d2bd96'},
  {x:18,y:9,label:'東の民家',roof:'#7f5744',wall:'#cfb589'}
 ];
-GC.Data=GC.Data||{};GC.Data.Maps={maps,INTERIOR_MAPS,TREASURE_DEFS,MAP_FEATURES,SHORTCUT_DEFS,MAP_DESIGN_RULES,MAP_TRANSITIONS,villageHouses};
+GC.Data=GC.Data||{};GC.Data.Maps={maps,INTERIOR_MAPS,TREASURE_DEFS,MAP_FEATURES,SHORTCUT_DEFS,MAP_DESIGN_RULES,MAP_ART_DISTRICTS,MAP_TRANSITIONS,villageHouses};

@@ -53,6 +53,86 @@ const CapitalEnvironment=(()=>{
   }
   return false
  }
+ // Distinct capital districts: roofs/window cadence/stock use the actual
+ // existing blocked H cells. No false doors, unexplained heraldry or obstacles.
+ const facades=Object.freeze([
+  {x:2,y:2,w:3,h:3,kind:'market'},
+  {x:19,y:2,w:3,h:3,kind:'garrison'},
+  {x:4,y:1,w:6,h:2,kind:'palace'},
+  {x:14,y:1,w:6,h:2,kind:'palace'},
+  {x:2,y:11,w:3,h:2,kind:'market'},
+  {x:7,y:10,w:3,h:2,kind:'guild'},
+  {x:16,y:10,w:2,h:2,kind:'garrison'},
+  {x:20,y:10,w:2,h:2,kind:'garrison'}
+ ]);
+ function districtFacades(c){
+  for(const f of facades){
+   const x=f.x*W,y=f.y*W,w=f.w*W,h=f.h*W;
+   const military=f.kind==='garrison',formal=f.kind==='palace',market=f.kind==='market';
+   const stone=military?'#6d747d':formal?'#c8c3b8':market?'#baa891':'#97978c';
+   const mortar=military?'#4d5660':formal?'#938e86':'#79776a';
+   // Roof and parapet heights vary with district, not just with tile tint.
+   box(c,mortar,x+3,y+3,w-6,7);
+   box(c,stone,x+5,y+1,w-10,4);
+   if(formal){
+    for(let i=0;i<f.w;i++){
+     box(c,'#dfd7c8',x+7+i*W,y-2,18,5);
+     box(c,'#a6a298',x+9+i*W,y+5,15,2);
+    }
+   }else if(military){
+    for(let i=0;i<f.w;i++){
+     box(c,'#414b53',x+4+i*W,y-2,20,7);
+     box(c,'#a1a5a3',x+8+i*W,y+1,10,2);
+    }
+   }else if(market){
+    box(c,'#6d5347',x+1,y+5,w-2,8);
+    for(let i=0;i<f.w;i++){
+     box(c,i%2?'#bd987b':'#8f6558',x+3+i*W,y+8,26,7);
+    }
+   }else{
+    box(c,'#806653',x+4,y+5,w-8,9);
+    box(c,'#b5a58e',x+6,y+7,w-12,3);
+   }
+   // Window trim never suggests an extra enterable gate.
+   for(let i=0;i<f.w;i++){
+    const xx=x+10+i*W,yy=y+25;
+    box(c,mortar,xx-3,yy-3,18,18);
+    box(c,'#647d84',xx,yy,12,12);
+    box(c,formal?'#e0dfcf':'#bfc2b2',xx+1,yy+1,5,4);
+    box(c,mortar,xx+6,yy,2,12);
+    box(c,mortar,xx-1,yy+12,14,3);
+   }
+   if(military){
+    // Reinforced storage and a small supply shelf, only on the building face.
+    box(c,'#555d63',x+5,y+h-19,w-10,7);
+    box(c,'#a89d87',x+10,y+h-24,w-20,6);
+    for(let i=0;i<f.w;i++)box(c,'#555c5f',x+7+i*W,y+h-17,3,10);
+   }else if(market){
+    // Low fabric rolls at the trade-house facade; not new street stalls.
+    box(c,'#8d6e54',x+5,y+h-14,w-10,7);
+    box(c,'#c4ad87',x+8,y+h-13,w-16,4);
+   }else if(f.kind==='guild'){
+    box(c,'#69564a',x+9,y+h-18,w-18,8);
+    box(c,'#ae9274',x+13,y+h-17,w-26,4);
+   }
+  }
+ }
+ function districtPaving(c){
+  // Street zones have different foot-wear and water run-off, not random dots.
+  for(const [x,y] of [[7,8],[8,8],[6,10],[17,7],[18,7],[19,8]]){
+   box(c,'#7c7e79',x*W+2,y*W+27,26,2);
+   box(c,'#b6b3a6',x*W+5,y*W+26,19,1);
+  }
+  // Reinforced road leading to garrison, keeping doors and NPCs unobstructed.
+  for(const y of [7,8,9,10]){
+   box(c,'#666e72',20*W+3,y*W+12,24,1);
+   box(c,'#a6aaa6',20*W+10,y*W+12,6,1);
+  }
+  // The trades use a rougher street-side drainage strip.
+  for(const y of [7,8,9,10]){
+   box(c,'#747267',3*W+4,y*W+29,21,2);
+  }
+ }
  function street(c,map){
   if(!on()||map!=='capital')return false;
   // Palace / terrace height differs from western trade stalls and eastern logistics.
@@ -96,6 +176,7 @@ const CapitalEnvironment=(()=>{
     box(c,'#e5dcca',x*W+21,y*W+12,3,2)
    }
   }
+  districtFacades(c);districtPaving(c);
   return true
  }
  function interior(c,map){
@@ -159,6 +240,6 @@ const CapitalEnvironment=(()=>{
    box(c,'#a79b82',x-10,y-15,20,3);box(c,'#54494a',x-9,y-13,18,3);
   }
  }
- const api={enabled:true,mapsSupported,paintTile,street,interior,objectAccent,npcAccent,palettes};
+ const api={enabled:true,mapsSupported,paintTile,street,interior,objectAccent,npcAccent,palettes,facades,districtFacades,districtPaving};
  return api
 })();
