@@ -76,7 +76,7 @@ test('village workers mostly stand still, with two short synchronized hand poses
  life.villager(c,'village',n,2000);
  assert.deepEqual(n,{id:'baker',x:8,y:6});
  assert.ok(c.pixels.length>0,'work prop must visually accompany pose');
- assert.deepEqual(positions,h.GC.Data.Maps.maps.village.npcs.find(n=>n.id==='baker'));
+ assert.deepEqual(positions,{...h.GC.Data.Maps.maps.village.npcs.find(n=>n.id==='baker')});
 });
 
 test('all post-report dialogue is gated, and main appointment remains independent',()=>{
