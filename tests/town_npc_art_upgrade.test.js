@@ -93,7 +93,7 @@ test('named village and capital NPCs use distinct form language beyond color swa
  for(const id of idList)assert.ok(sprite.identities[id],id);
  const signatures=Object.keys(sprite.identities);
  assert.ok(signatures.length>=30,'named key characters should not use random recolors');
- assert.equal(sprite.drawNpc(rectangles(),{id:'missingVillager',x:0,y:0}),'false'=== 'true');
+ assert.equal(sprite.drawNpc(rectangles(),{id:'missingVillager',x:0,y:0}),false);
 });
 test('four home interiors express different family and institution uses',()=>{
  const {R}=modules(),counts=[];
