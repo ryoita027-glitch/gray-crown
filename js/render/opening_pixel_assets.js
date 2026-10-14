@@ -266,11 +266,11 @@ const OpeningPixelAssets=(()=>{
   signature(c,id,dir,frame,coat,skin);
 
  }
- // First six memorable Ryune silhouettes are deliberately drawn as six
+ // Distinct foreground Ryune/capital silhouettes are deliberately drawn as
  // DIFFERENT sprites, not generic `person()` plus a color/role overlay.
  // 32x32, four directions, planted feet; a few localized arm pixels animate.
  function distinctRyune(c,profile,dir,frame,id){
-  if(!['baker','farmer','mayor','veteran','messenger','ren','lulu'].includes(id))return false;
+  if(!['baker','farmer','mayor','veteran','messenger','ren','lulu','capitalVendor','capitalFlowerGirl','capitalRecruit','capitalOfficial','granz'].includes(id))return false;
   const [hair,coat,skin]=profile,back=dir===3,side=dir===1||dir===2,front=dir===0;
   const ink='#342f31',dark=tint(coat,-36),light=tint(coat,26),
         face=tint(skin,-25),shine=tint(hair,30),arm=frame===1?-1:frame===3?1:0;
@@ -365,6 +365,61 @@ const OpeningPixelAssets=(()=>{
     head(11,12,11,10);fringe(10,10,13);eyes(13,17,5);
     p('#493933',11,10,5,4);p(coat,7,22,3,5);
     p('#987e54',26,16,2,14);p('#c2aa78',25,15,4,3);
+    break
+   }
+   case 'capitalVendor':{
+    // Broad merchant silhouette, unequal shoulder sack and square sleeves.
+    feet(8,19);p(ink,4,16,25,13);p('#96734f',5,17,23,11);
+    p('#d0b58a',10,18,13,8);p('#6a513b',6,25,20,3);
+    head(10,6,13,12);fringe(10,5,13);eyes(13,12,6);
+    p('#b9a184',7,4,21,5);p('#6a5345',9,3,18,3);
+    p('#6b5038',1,19,10,11);p('#c6a679',2,18,8,4);
+    p('#b09871',25,19+arm,6,7);
+    break
+   }
+   case 'capitalFlowerGirl':{
+    // A different, compact florist outline with a real bunch of flowers.
+    feet(10,18);p(ink,7,16,19,13);p('#a36a80',8,17,17,11);
+    p('#d2a2a6',11,18,11,8);
+    head(10,8,12,10);fringe(10,6,12);eyes(12,13,6);
+    p('#6e4b45',7,8,4,12);p('#6e4b45',21,8,4,12);
+    p('#906046',24,23+arm,8,6);
+    p('#607950',26,16+arm,2,9);
+    p('#bd677e',24,15+arm,5,4);
+    p('#e5b59d',28,14+arm,3,3);
+    break
+   }
+   case 'capitalRecruit':{
+    // Upright military stance with rigid shoulders and ankle guards.
+    feet(9,19);p(ink,5,14,23,15);
+    p('#667991',6,15,21,12);p('#a4a9a7',5,15,9,4);
+    p('#a4a9a7',20,15,8,4);p('#434b5a',13,18,7,11);
+    p('#c9bb99',10,19,13,2);
+    head(10,7,12,10);eyes(12,12,6);
+    p('#495a6e',8,5,16,5);p('#aab2b4',9,3,14,3);
+    p('#444e5c',23,17,4,12);
+    break
+   }
+   case 'capitalOfficial':{
+    // Narrow ordered coat and scroll held away from face.
+    feet(10,19);p(ink,7,15,19,14);
+    p('#5e6881',8,16,17,13);p('#b3b1a9',12,17,9,11);
+    p('#484a5b',6,18,4,10);
+    head(11,6,11,11);fringe(11,4,11);eyes(13,12,5);
+    p('#a9a69a',10,5,13,3);
+    p('#e0cda4',23,19+arm,8,7);
+    p('#755b50',24,21+arm,7,1);
+    break
+   }
+   case 'granz':{
+    // Commander is not a generic soldier: heavy half-cloak, long frame.
+    feet(9,19);p(ink,4,14,25,15);
+    p('#535c6c',5,15,23,13);
+    p('#343b48',3,17,8,13);p('#7e8791',6,15,9,4);
+    p('#a49e93',20,15,9,4);p('#b7a487',12,20,11,3);
+    head(10,6,13,11);fringe(10,4,13);eyes(13,12,6);
+    p('#3d414b',9,5,15,3);
+    p('#b3aaa0',24,23,3,7);
     break
    }
    case 'lulu':{
