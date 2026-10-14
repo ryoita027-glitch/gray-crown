@@ -10,7 +10,7 @@ function featureRuntime(){
  const captures=[];
  class FakeImage{
   naturalWidth=432;naturalHeight=192;
-  set src(v){captures.push(['src',v]);this.onload?.()}
+  set src(v){captures.push(['src',v]);this.naturalHeight=v.includes('actions_v2')?96:192;this.onload?.()}
  }
  const GC={Render:{World:{draw(){captures.push(['loaded','world-redraw'])}}},Log:{}};
  const a=new Function('Image','GC',sourceFile+';return OpeningPixelAssets')(FakeImage,GC);
@@ -78,9 +78,9 @@ test('nine featured residents use their own four-direction image, not generic pa
    assert.deepEqual(draw.slice(3),[48,48,120,176,48,48]);
   }
  assert.deepEqual(a.featuredStatus(),
-  {requested:true,ready:true,failed:false,count:9});
- assert.equal(captures.filter(x=>x[0]==='src').length,1,
-  'no new image per animation frame');
+  {requested:true,ready:true,failed:false,count:9,gesturesRequested:true,gesturesReady:true,gesturesFailed:false});
+ assert.equal(captures.filter(x=>x[0]==='src').length,2,
+  'one base image and one acting atlas, never a request on each frame');
  assert.ok(captures.some(x=>x[0]==='loaded'));
 });
 test('existing unnamed villagers still render with legacy source instead of missing heads',()=>{

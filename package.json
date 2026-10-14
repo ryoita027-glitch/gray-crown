@@ -45,12 +45,13 @@
     "ryune-farewell-browser-test": "python tests/browser_ryune_farewell_e2e_test.py",
     "opening:metrics-unit-test": "python -m unittest discover -s tests -p test_opening_play_metrics.py",
     "early:wolf-tactics-e2e": "python tests/browser_first_wolf_tactics_e2e.py",
-    "town:art-unit": "node --test tests/town_npc_art_upgrade.test.js",
+    "town:art-unit": "node --test tests/town_npc_art_upgrade.test.js tests/generic_npc_face_foundation.test.js tests/featured_resident_player_visual.test.js tests/npc_player_appeal_acting.test.js",
     "town:visual-capture": "python tests/browser_town_visual_quality_e2e.py",
     "town:visual-acceptance": "npm run town:art-unit && npm run town:visual-capture",
     "opening:one-trip-e2e": "python tests/browser_ryune_one_trip_value_e2e.py",
     "opening:relevance-unit": "node --test tests/opening_player_visible_relevance.test.js",
     "opening:player-first-unit": "npm run opening:relevance-unit && node --test tests/featured_resident_player_visual.test.js tests/featured_resident_dialogue_portraits.test.js tests/player_first_integration_guard.test.js && npm run story:margaret-belonging",
-    "story:margaret-belonging": "node --test tests/margaret_belonging_character_arc.test.js"
+    "story:margaret-belonging": "node --test tests/margaret_belonging_character_arc.test.js",
+    "town:npc-expressive-unit": "node --test tests/featured_resident_player_visual.test.js tests/npc_player_appeal_acting.test.js tests/generic_npc_face_foundation.test.js"
   }
 }

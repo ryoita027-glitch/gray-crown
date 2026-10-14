@@ -148,7 +148,11 @@ const OpeningPixelAssets=(()=>{
   'capitalFlowerGirl','capitalRecruit','granz'];
  const featuredIndex=new Map(featuredNames.map((id,i)=>[id,i]));
  let featuredSheet=null,featuredReady=false,featuredFailed=false,featuredRequested=false;
- function tryFeatured(c,n,dir){
+ // Distinct hand-authored action frames: front-facing 9 residents x 2 gestures.
+ // Not scaled or shifted base PNGs: expressions, limbs and tools are repainted per role.
+ // Optional; a failed download always falls back to the legible resting pose.
+ let actionSheet=null,actionsReady=false,actionsFailed=false,actionsRequested=false;
+ function tryFeatured(c,n,dir,now=0){
   const index=featuredIndex.get(n.id);
   if(index===undefined||featuredFailed)return false;
   if(!featuredRequested){
@@ -166,12 +170,33 @@ const OpeningPixelAssets=(()=>{
    }catch(e){featuredFailed=true;GC?.Log?.warn?.('Featured residents atlas unavailable',{detail:String(e)})}
   }
   if(!featuredReady)return false;
+  if(!actionsRequested){
+   actionsRequested=true;
+   try{
+    actionSheet=new Image();
+    actionSheet.onload=()=>{
+     actionsReady=actionSheet.naturalWidth===432&&actionSheet.naturalHeight===96;
+     actionsFailed=!actionsReady;
+     if(actionsReady)GC?.Render?.World?.draw?.();
+     else GC?.Log?.warn?.('Resident gesture PNG has unexpected dimensions');
+    };
+    actionSheet.onerror=()=>{actionsFailed=true;GC?.Log?.warn?.('Resident gesture PNG unavailable')};
+    actionSheet.src='assets/npc/featured_resident_actions_v2.png';
+   }catch(e){actionsFailed=true;GC?.Log?.warn?.('Resident gesture PNG blocked',{detail:String(e)})}
+  }
+  let pose=0;
+  if(dir==='down'&&actionsReady&&!actionsFailed&&typeof OpeningWorldLife!=='undefined')
+   pose=OpeningWorldLife.workPhase(n.id,now);
+  const stage=pose!==0?pose===1?0:1:-1;
+  const sheet=stage<0?featuredSheet:actionSheet;
+  const sy=stage<0?(dirs[dir]??0)*48:stage*48;
   c.save();c.imageSmoothingEnabled=false;
-  c.drawImage(featuredSheet,index*48,(dirs[dir]??0)*48,48,48,n.x*32-8,n.y*32-16,48,48);
+  c.drawImage(sheet,index*48,sy,48,48,n.x*32-8,n.y*32-16,48,48);
   c.restore();return true
  }
  function featuredStatus(){return {requested:featuredRequested,ready:featuredReady,
-  failed:featuredFailed,count:featuredNames.length}}
+  failed:featuredFailed,count:featuredNames.length,
+  gesturesRequested:actionsRequested,gesturesReady:actionsReady,gesturesFailed:actionsFailed}}
  const dirs={down:0,left:1,right:2,up:3};
  const npcCache=new Map(),houseCache=new Map();
  const P=(c,color,x,y,w,h)=>{c.fillStyle=color;c.fillRect(x|0,y|0,w|0,h|0)};
@@ -188,14 +213,32 @@ const OpeningPixelAssets=(()=>{
   const n=parseInt(color.slice(1),16),f=x=>Math.min(255,Math.max(0,(x+amount)|0));
   return '#'+[f(n>>16),f((n>>8)&255),f(n&255)].map(v=>v.toString(16).padStart(2,'0')).join('')
  }
+ // A person's face should convey their social role before a dialogue label
+ // appears. Every currently authored fallback resident has an intentional
+ // resting emotion instead of a random eye/mouth formula from their ID hash.
+ const expressions=Object.freeze({
+  fieldWorker:'weary',brookKeeper:'focused',father:'guarded',
+  orphan:'bright',mayor:'focused',messenger:'guarded',mika:'bright',
+  ren:'bright',lulu:'gentle',baker:'gentle',farmer:'weary',
+  oldwoman:'gentle',veteran:'guarded',karenMother:'gentle',
+  karenFather:'focused',karenBrother:'bright',caretaker:'gentle',
+  theo:'curious',noa:'shy',emi:'bright',margaretMother:'curious',
+  clerk:'focused',soldierMother:'weary',soldierSister:'shy',
+  merchant:'curious',scout:'guarded',capitalOfficial:'guarded',
+  capitalCitizen:'gentle',capitalFlowerGirl:'bright',capitalRecruit:'shy',
+  capitalVendor:'curious',rationMother:'weary',granz:'guarded',
+  capitalInnHost:'gentle',offDutySoldier:'weary',
+  capitalSmith:'focused',armoryApprentice:'curious'
+ });
  function person(c,profile,dir,frame,id=''){
   const [hair,coat,skin,job,style]=profile;
   const side=dir===1||dir===2,back=dir===3,child=job==='child',
    old=job==='elder',armed=job==='fighter',working=['baker','farmer','smith','florist','scribe','merchant'].includes(job);
   let seed=0;for(const letter of id)seed=(seed*33+letter.charCodeAt(0))>>>0;
-  const variation=seed%4,headW=child?14:variation===0?15:variation===1?16:14,
-   headX=16-Math.floor(headW/2),headY=child?6:5;
-  const bodyW=armed?16:child?10:old?15:variation===3?12:14,bodyX=16-Math.floor(bodyW/2),bodyTop=child?18:16;
+  const variation=seed%4,mood=expressions[id]||'focused',
+   headW=child?14:variation===0?15:variation===1?16:14,
+   headX=16-Math.floor(headW/2),headY=child?9:old?6:5;
+  const bodyW=armed?16:child?10:old?15:variation===3?12:14,bodyX=16-Math.floor(bodyW/2),bodyTop=child?21:old?17:16;
   const front=dir===0,step=working?0:[0,2,0,-2][frame],
    armL=frame===1?-3:frame===3?2:0,armR=frame===1?2:frame===3?-3:0;
   const ink=tint(hair,-65),skinShadow=tint(skin,-27),coatLight=tint(coat,26),coatShade=tint(coat,-24),hairLight=tint(hair,25);
@@ -264,20 +307,47 @@ const OpeningPixelAssets=(()=>{
    P(c,'#ffefe0',dir===1?headX+3:headX+headW-5,headY+8,1,1);
    P(c,skinShadow,dir===1?headX:headX+headW-1,headY+9,2,2);
   }else if(front){
-   const eyeColor=variation===2?'#544149':'#483c3b';
+   const eyeColor=mood==='bright'?'#3f3541':mood==='weary'?'#625451':'#483c3b';
    const leftEye=headX+3,rightEye=headX+headW-5;
-   P(c,eyeColor,leftEye,headY+8,2,child?3:2);
-   P(c,eyeColor,rightEye,headY+8,2,child?3:2);
-   if(child||variation===1){P(c,'#fff2e2',leftEye,headY+8,1,1);P(c,'#fff2e2',rightEye,headY+8,1,1)}
-   if(variation===0||job==='fighter'){
-    P(c,ink,leftEye-1,headY+6,3,1);P(c,ink,rightEye,headY+6,3,1)
+   const eyeH=['bright','curious'].includes(mood)?3:mood==='focused'?1:2;
+   P(c,eyeColor,leftEye,headY+8,2,eyeH);
+   P(c,eyeColor,rightEye,headY+8,2,eyeH);
+   if(['bright','curious','gentle'].includes(mood)){
+    P(c,'#fff2e2',leftEye,headY+8,1,1);P(c,'#fff2e2',rightEye,headY+8,1,1);
    }
-   if(old){P(c,skinShadow,leftEye-1,headY+10,2,1);P(c,skinShadow,rightEye+1,headY+10,2,1)}
-   else {P(c,'#d18d8e',headX+1,headY+10,2,1);P(c,'#d18d8e',headX+headW-3,headY+10,2,1)}
-   // Eyebrows and mouths are character expressions, not identical face stamps.
+   // Eyebrows are intentional acting: worried, curious and guarded faces
+   // have genuinely different strokes at the scale the player sees.
+   if(mood==='guarded'){
+    P(c,ink,leftEye-1,headY+6,3,1);
+    P(c,ink,rightEye,headY+7,3,1)
+   }else if(mood==='weary'){
+    P(c,skinShadow,leftEye-1,headY+7,3,1);
+    P(c,skinShadow,rightEye,headY+6,3,1)
+   }else if(mood==='curious'){
+    P(c,hairLight,leftEye-1,headY+5,3,1);
+    P(c,hairLight,rightEye,headY+6,3,1)
+   }else if(mood==='shy'){
+    P(c,skinShadow,leftEye,headY+7,3,1);
+    P(c,skinShadow,rightEye,headY+7,3,1)
+   }
+   if(old||mood==='weary'){
+    P(c,skinShadow,leftEye-1,headY+10,2,1);
+    P(c,skinShadow,rightEye+1,headY+10,2,1)
+   }else{
+    P(c,'#d18d8e',headX+1,headY+10,2,1);
+    P(c,'#d18d8e',headX+headW-3,headY+10,2,1)
+   }
    const mouth=headX+Math.floor(headW/2)-1;
-   P(c,variation===3?'#8f615a':'#9d6162',mouth,headY+12,child?4:3,1);
-   if(child||variation===1)P(c,'#ffd0bb',mouth+1,headY+13,2,1);
+   const lip=['bright','gentle'].includes(mood)?'#a75e69':'#8f615a';
+   P(c,lip,mouth,headY+12,mood==='bright'?4:3,1);
+   if(['bright','gentle'].includes(mood)){
+    P(c,'#ffd4bc',mouth+1,headY+13,2,1);
+    P(c,lip,mouth-1,headY+11,1,1);
+   }else if(mood==='weary'){
+    P(c,skinShadow,mouth+1,headY+13,2,1);
+   }else if(mood==='shy'){
+    P(c,'#c9828a',headX+2,headY+10,2,1);
+   }
   }
   // Hair is the main identifier; pupils and brows never override the fringe.
   if(style==='bob'||style==='long'||style==='scarf'){P(c,hair,headX-2,headY+4,3,8);P(c,hair,headX+headW-1,headY+4,3,8)}
@@ -316,7 +386,7 @@ const OpeningPixelAssets=(()=>{
   return img
  }
  function drawNpc(c,n,dir='down',now=0){
-  if(tryFeatured(c,n,dir))return true;
+  if(tryFeatured(c,n,dir,now))return true;
   const profile=designs[n.id];if(!profile)return false;
   let sheet=npcCache.get(n.id);
   if(!sheet){sheet=makeNpc(profile,n.id);if(!sheet)return false;npcCache.set(n.id,sheet)}

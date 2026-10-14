@@ -185,11 +185,17 @@ const OpeningWorldLife=(()=>{
  // Small task-specific movement: two deliberate arm poses per 8-11 second
  // cycle, never in-place marching. The same phase drives the dedicated NPC
  // sheet AND the held work prop so tray/tool pixels do not drift apart.
+ function phasePeriod(id){
+  if(id==='farmer'||id==='fieldWorker')return 11000;
+  if(id==='baker'||id==='merchant')return 8000;
+  if(id==='ren'||id==='capitalFlowerGirl')return 7800;
+  if(id==='oldwoman'||id==='mayor'||id==='granz')return 12500;
+  return 9500
+ }
  function workPhase(id,now){
   if(!(now>0))return 0;
   if(typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches)return 0;
-  const period=id==='fieldWorker'||id==='farmer'?11000:
-   id==='baker'||id==='merchant'?8000:9500;
+  const period=phasePeriod(id);
   const offset=(String(id).length*127)%1900;
   const t=(now+offset)%period;
   return t>=2200&&t<2700?1:t>=2700&&t<3200?3:0
@@ -202,8 +208,7 @@ const OpeningWorldLife=(()=>{
   let earliest=Infinity;
   for(const n of npcs){
    if(!animatedWorkers.has(n.id)||Math.abs(n.x-playerX)+Math.abs(n.y-playerY)>5)continue;
-   const period=n.id==='fieldWorker'||n.id==='farmer'?11000:
-    n.id==='baker'||n.id==='merchant'?8000:9500;
+   const period=phasePeriod(n.id);
    const offset=(String(n.id).length*127)%1900;
    const t=(now+offset)%period;
    const wait=t<2200?2200-t:t<2700?2700-t:t<3200?3200-t:period+2200-t;
@@ -214,6 +219,11 @@ const OpeningWorldLife=(()=>{
  function villager(c,map,n,now=0){
   if(!api.enabled||!living.has(n.id)||!maps.has(map))return false;
   const x=n.x*32,y=n.y*32;
+  // New native gesture sheet already has the prop, arm and face painted into
+  // each pose. The historical rectangular overlay obscured their artwork.
+  if(typeof OpeningPixelAssets!=='undefined'&&
+     OpeningPixelAssets.featuredNames?.includes(n.id)&&
+     OpeningPixelAssets.featuredStatus?.().ready)return true;
   const beat=workPhase(n.id,now)===1?1:0;
   // The dedicated NPC atlas already includes distinct garments.
   // Only the old fallback renderer needs the historic costume overlay.
@@ -287,7 +297,8 @@ const OpeningWorldLife=(()=>{
  // civilians must not trigger wasteful, in-place walking cycles.
  const ambientWorkplaces=new Set(['village','ryunefields','ryunebrook','road','capital','capitalarmory','capitalinn','mayorhouse']);
  const animatedWorkers=new Set(['baker','farmer','merchant','capitalVendor','capitalFlowerGirl',
-  'capitalSmith','armoryApprentice','clerk','capitalInnHost','fieldWorker']);
+  'capitalSmith','armoryApprentice','clerk','capitalInnHost','fieldWorker',
+  'oldwoman','mayor','messenger','ren','capitalRecruit','granz']);
  function shouldBreathe(map,playerX,playerY,npcs){
   if(!api.enabled||!ambientWorkplaces.has(map))return false;
   if(typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches)return false;
