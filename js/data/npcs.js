@@ -125,9 +125,15 @@ function featuredResidentPortraitMarkup(speaker){
  // The atlas has 9 columns x 4 directions, each 32x32.
  // Scale the front-facing source ONLY, with exact nearest-neighbor geometry.
  // Do not stretch the torso independently or overlay a second generic face.
+ // The dark uniforms disappeared against the prior identical charcoal cards.
+ // Each subdued district-colored backing supplies silhouette contrast, not
+ // a second generic face or a status badge.
+ const backdrops=['#445246','#4d493d','#554957','#4a5b69','#51434b',
+  '#50634f','#4a6270','#546474','#77756c'];
+ const backdrop=backdrops[i];
  const path='assets/npc/featured_residents_v1.png';
  const source=(typeof window!=='undefined'&&window.__GC_INLINE_ASSETS__?.[path])||path;
- return `<svg class="portrait-svg resident-portrait" viewBox="0 0 64 72" aria-hidden="true" shape-rendering="crispEdges"><defs><clipPath id="${id}"><rect x="0" y="0" width="64" height="64"/></clipPath></defs><rect width="64" height="72" fill="#313b38"/><rect y="64" width="64" height="8" fill="#252c2b"/><g clip-path="url(#${id})"><image href="${source}" x="-${i*64}" y="0" width="576" height="256" style="image-rendering:pixelated"/></g></svg>`;
+ return `<svg class="portrait-svg resident-portrait" viewBox="0 0 64 72" aria-hidden="true" shape-rendering="crispEdges"><defs><clipPath id="${id}"><rect x="0" y="0" width="64" height="64"/></clipPath></defs><rect width="64" height="72" fill="${backdrop}"/><rect y="64" width="64" height="8" fill="#252c2b"/><g clip-path="url(#${id})"><image href="${source}" x="-${i*64}" y="0" width="576" height="256" style="image-rendering:pixelated"/></g></svg>`;
 }
 function portraitMarkup(speaker){
  const featured=featuredResidentPortraitMarkup(speaker);
