@@ -98,7 +98,7 @@ def main():
         finally:
             browser.close()
     manifest={
-      'status':'PASS','tested_commit':first.source_head(),
+      'status':'CAPTURED_PENDING_HUMAN_ART_REVIEW','tested_commit':first.source_head(),
       'type':'SEEDED VISUAL COMPARISON, not real progression',
       'count':sum(len(x['screenshots']) for x in rows),
       'named_sprite_order':NPC_LINEUP,
@@ -106,6 +106,13 @@ def main():
       'acceptance_rule':'Visually reject indistinguishable faces, clipped outfits, head-size mistakes or unnatural town layering; source metrics cannot approve art.',
       'views':rows,
       'human_art_review':'PENDING. Compare roof silhouettes, residents, door clarity, sprite feet, 390px UI.',
+      'manual_acceptance':{
+        'recognizable_jobs_without_labels':'PENDING',
+        'distinct_face_and_hair_at_1x':'PENDING',
+        'clean_32px_outlines_and_no_atlas_bleeding':'PENDING',
+        'town_path_and_building_scale':'PENDING',
+        'optional_ryune_activity_enjoyable':'PENDING'
+      },
       'paid_release_approved':False
     }
     assert manifest['count']==16
