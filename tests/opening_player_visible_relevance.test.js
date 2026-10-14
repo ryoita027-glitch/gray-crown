@@ -56,6 +56,36 @@ test('optional full investigation still produces the original richer farmer repl
  assert.equal(e.findTriggeredEvent('npc','farmer',{map:'village'}),null);
 });
 
+for(const [firstId,firstMap,secondId,secondMap,followUp,missingFlag] of [
+ ['fieldFurrows','ryunefields','brookWater','ryunebrook',
+  'ryune.outskirts.followup.brook','ryune.outskirts.reported.brook'],
+ ['brookWater','ryunebrook','fieldFurrows','ryunefields',
+  'ryune.outskirts.followup.fields','ryune.outskirts.reported.fields']
+]){
+ test('later independent observation '+secondMap+' is acknowledged without farming extra rations',()=>{
+  const h=createHarness(),e=h.GC.Events,s=h.GC.State.get();
+  const food=s.inventory['携帯食']||0;
+  e.applyEventEffects(e.findTriggeredEvent('object',firstId,{map:firstMap}));
+  e.applyEventEffects(e.findTriggeredEvent('npc','farmer',{map:'village'}));
+  assert.equal(s.inventory['携帯食'],food+1);
+  assert.equal(s.events.completed[missingFlag],undefined);
+  e.applyEventEffects(e.findTriggeredEvent('object',secondId,{map:secondMap}));
+  const newConversation=e.findTriggeredEvent('npc','farmer',{map:'village'});
+  assert.equal(newConversation?.id,followUp);
+  assert.equal(newConversation.lines.length,2,'later observation is a short optional update');
+  assert.equal(newConversation.effects.some(x=>x.type==='openTreasure'),false);
+  const before=s.inventory['携帯食'];
+  e.applyEventEffects(newConversation);
+  assert.equal(s.inventory['携帯食'],before);
+  assert.equal(s.events.completed[missingFlag],true);
+  assert.equal(e.findTriggeredEvent('npc','farmer',{map:'village'}),null);
+  assert.equal(s.story.stage,'00_village');
+  const loaded=h.GC.Save.migrateLoaded(h.GC.Save.serializeSave());
+  assert.equal(loaded.events.completed[missingFlag],true);
+  assert.equal(loaded.schema,23);
+ });
+}
+
 test('initial main village departure does not require any of the optional fields, brook or farewells',()=>{
  const h=createHarness(),s=h.GC.State.get();
  h.evaluate("ALPHA_SESSION.started=true;state.map='village';state.x=11;state.y=1;"+
