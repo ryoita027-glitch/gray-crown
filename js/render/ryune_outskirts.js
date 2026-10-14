@@ -176,11 +176,29 @@ const RyuneOutskirts=(()=>{
     pixel(c,'#c5b089',x-2,y+7,7,2);
    }
   }else if(map==='ryunebrook'&&completed['ryune.outskirts.reward']){
-   // Only a small water-level marker; the blocked water is still blocked.
+   // Boru marked a baseline. The bank shows what the player actually chose,
+   // not a magically repaired whole river.
    const x=11*W+24,y=5*W+8;
    pixel(c,'#665541',x,y,2,23);
    pixel(c,'#cab390',x-3,y+12,8,2);
    pixel(c,'#cab390',x-3,y+17,6,1);
+   const choice=choices['ryune.worksite.action'];
+   if(choice==='clear'){
+    // A short stack of BRANCHES safely removed from the reachable bank.
+    const bx=6*W+13,by=11*W+21;
+    pixel(c,'#493e2e',bx-4,by+5,30,3);
+    pixel(c,'#796347',bx-2,by,26,3);
+    pixel(c,'#97774a',bx+2,by-4,19,3);
+    pixel(c,'#65714b',bx+16,by-7,7,5);
+    pixel(c,'#4b6141',bx+3,by-7,5,5);
+   }else if(choice==='measure'){
+    // Two visible gauge markers. The water and existing collision stay as-is.
+    for(const [mx,my] of [[6*W+8,11*W+17],[7*W+7,11*W+13]]){
+     pixel(c,'#544732',mx,my,4,17);
+     pixel(c,'#d9be86',mx-2,my+5,10,3);
+     pixel(c,'#d9be86',mx+1,my+11,6,2);
+    }
+   }
   }
  }
  return {maps,paintTile,drawAccents,drawObject,drawProgress,setViewer,waterMotion,nextWaterFrameDelay};
