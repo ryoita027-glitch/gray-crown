@@ -150,6 +150,23 @@ function makeWatchfortTiles(){
  return finishTiles(g)
 }
 function makeRavineTiles(){const g=makeBlankRegion('K','K');for(let y=0;y<15;y++){g[y][11]='D';g[y][12]='D'}paintRect(g,2,3,6,8,'B');paintRect(g,16,3,6,8,'B');paintH(g,7,16,7,'D');paintH(g,8,15,7,'A');return finishTiles(g)}
+// Optional early exploration, compatible with the existing 24x15 collision grammar.
+function makeRyuneOutskirtsTiles(kind){
+ const g=makeBlankRegion('G','T');
+ if(kind==='fields'){
+  for(const [x,y,w,h] of [[2,2,7,4],[15,2,6,4],[3,10,7,3],[15,10,6,3]])paintRect(g,x,y,w,h,'D');
+  paintRect(g,4,3,2,1,'H');paintRect(g,17,3,2,1,'H');
+  paintH(g,1,22,7,'P');paintH(g,0,23,8,'P');
+  paintV(g,4,11,11,'P');paintH(g,9,13,4,'P');paintV(g,8,11,19,'P');
+ }else{
+  paintRect(g,12,1,2,13,'Z'); // Impassable brook except for its two bridge rows.
+  paintH(g,1,22,7,'P');paintH(g,0,23,8,'P');
+  paintV(g,4,11,9,'P');paintV(g,4,11,18,'P');
+  paintH(g,16,21,5,'P');paintH(g,3,10,11,'P');
+  for(const [x,y] of [[3,3],[4,3],[5,12],[20,3],[21,11]])g[y][x]='T';
+ }
+ return finishTiles(g)
+}
 const maps={
  village:{name:'リュネ村',tag:'畑と石井戸の故郷',tiles:[
  'TTTTTTTTTTTPPTTTTTTTTTTT',
@@ -183,7 +200,13 @@ const maps={
   {id:'store',x:16,y:9},{id:'well',x:12,y:9},{id:'home',x:4,y:5},{id:'doorOrphanage',x:19,y:5},
   {id:'doorMayor',x:4,y:12},{id:'doorCottage',x:19,y:12},{id:'gate',x:11,y:0}
  ]},
- karenhome:{name:'カレンの家',tiles:makeInteriorTiles(),npcs:[
+ ryunefields:{name:'リュネ西の畑',tag:'畑仕事と村の食卓',tiles:makeRyuneOutskirtsTiles('fields'),
+   npcs:[{id:'fieldWorker',x:11,y:5,name:'畑の手伝い人'}],
+   objects:[{id:'fieldFurrows',x:7,y:4},{id:'fieldCart',x:18,y:11},{id:'fieldCache',x:19,y:4}]},
+  ryunebrook:{name:'リュネ東の小川',tag:'生活を支える水辺',tiles:makeRyuneOutskirtsTiles('brook'),
+   npcs:[{id:'brookKeeper',x:18,y:10,name:'川辺の見回り人'}],
+   objects:[{id:'brookWater',x:11,y:5},{id:'brookStones',x:6,y:11},{id:'brookCache',x:19,y:5}]},
+  karenhome:{name:'カレンの家',tiles:makeInteriorTiles(),npcs:[
   {id:'karenMother',x:7,y:6,name:'カレンの母'},
   {id:'karenFather',x:16,y:5,name:'カレンの父'},
   {id:'karenBrother',x:14,y:8,name:'リオ'}
@@ -299,13 +322,18 @@ const maps={
 };
 
 const TREASURE_DEFS=Object.freeze({
+ fieldCache:{map:'ryunefields',item:'薬草',amount:1,label:'畑の道具箱'},
+ brookCache:{map:'ryunebrook',item:'魔力草',amount:1,label:'川辺の採集袋'},
+ outskirtsThanks:{map:'village',item:'携帯食',amount:1,label:'農夫からのお礼'},
  roadCache:{map:'road',item:'薬草',amount:1,label:'旅人の小箱'},
  ashCache:{map:'ashroad',item:'薬草',amount:2,label:'捨てられた荷袋'},
  frontierCache:{map:'frontier',item:'魔力草',amount:1,label:'前線補給箱'},
  chest1:{map:'cave',item:'薬草',amount:2,label:'古い宝箱'},chest2:{map:'cave',item:'魔力草',amount:2,label:'古い宝箱'}
 });
 const MAP_FEATURES=Object.freeze({
- village:{npcs:['father','orphan','mayor'],optional:['well','store'],shortcuts:['villageWestFieldLoop']},
+ village:{npcs:['father','orphan','mayor'],optional:['well','store','westFieldPath','eastBrookPath'],shortcuts:['villageWestFieldLoop']},
+ ryunefields:{npcs:['fieldWorker'],optional:['fieldFurrows','fieldCart'],treasures:['fieldCache']},
+ ryunebrook:{npcs:['brookKeeper'],optional:['brookWater','brookStones'],treasures:['brookCache']},
  road:{npcs:['merchant'],treasures:['roadCache'],shortcuts:['roadWestClearing']},
  capital:{npcs:['capitalVendor','rationMother'],optional:['capitalInnDoor','capitalArmoryDoor'],shortcuts:['capitalMarketLane']},
  karenhome:{npcs:['karenMother','karenFather','karenBrother'],optional:['familyTable','restBed'],shortcuts:['karenHomeRoomLoop']},
@@ -323,6 +351,10 @@ const MAP_DESIGN_RULES=Object.freeze({minimumOptionalFeature:1,benchmarkMaps:['v
 function validateMapDesign(mapId){const m=maps[mapId],f=MAP_FEATURES[mapId]||{};if(!m)return{ok:false,errors:['map missing']};const count=(f.treasures?.length||0)+(f.npcs?.length||0)+(f.optional?.length||0)+(f.shortcuts?.length||0);const errors=[];if(count<MAP_DESIGN_RULES.minimumOptionalFeature)errors.push('optional exploration feature missing');if(m.tiles.length!==ROWS||m.tiles.some(r=>r.length!==COLS))errors.push('invalid map dimensions');return{ok:errors.length===0,errors,count}}
 function auditBenchmarkMaps(){return MAP_DESIGN_RULES.benchmarkMaps.map(id=>({id,...validateMapDesign(id)}))}
 const MAP_TRANSITIONS=Object.freeze({
+ villageToFields:{from:'village',to:'ryunefields',x:20,y:8,dir:'left'},
+ fieldsToVillage:{from:'ryunefields',to:'village',x:3,y:8,dir:'right'},
+ villageToBrook:{from:'village',to:'ryunebrook',x:3,y:8,dir:'right'},
+ brookToVillage:{from:'ryunebrook',to:'village',x:20,y:8,dir:'left'},
  villageToRoad:{from:'village',to:'road',x:11,y:13,dir:'up'},roadToVillage:{from:'road',to:'village',x:11,y:1,dir:'down'},roadToCave:{from:'road',to:'cave',x:12,y:13,dir:'up'},caveToRoad:{from:'cave',to:'road',x:13,y:2,dir:'down'},roadToNorthRoad:{from:'road',to:'northroad',x:11,y:13,dir:'up'},northRoadToRoad:{from:'northroad',to:'road',x:12,y:1,dir:'down'}
 });
 const villageHouses=[
