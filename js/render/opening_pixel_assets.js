@@ -7,6 +7,8 @@
  */
 const OpeningPixelAssets=(()=>{
  const designs={
+  fieldWorker:['#796349','#73875a','#d6af8f','farmer','hat'],
+  brookKeeper:['#606354','#718a7d','#d8b796','civil','short'],
   father:['#3f3840','#5f7185','#bda48f','fighter','short'],
   orphan:['#a88665','#9a8f70','#d6b799','child','bob'],
   mayor:['#b3a5a2','#556779','#d4af93','elder','part'],
