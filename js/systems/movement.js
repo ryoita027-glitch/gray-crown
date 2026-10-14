@@ -122,7 +122,12 @@ function showWorldSkeletonEnding(route){
 }
 
 function move(dir){if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started)return;if(isInputLocked()||state.battle)return;state.dir=dir;const now=Date.now();if(now<VISUAL.nextMoveAt){draw();return}VISUAL.nextMoveAt=now+(GC.Dev?.settings?.moveDelay??88);let nx=state.x,ny=state.y;if(dir==='up')ny--;if(dir==='down')ny++;if(dir==='left')nx--;if(dir==='right')nx++;
- // 序盤の可逆マップ遷移
+ // Optional Ryune outskirts. Border exits are checked before generic wall collision.
+  if(state.map==='village'&&ny===8&&nx===0){useMapTransition('villageToFields');return}
+  if(state.map==='ryunefields'&&ny===8&&nx===23){useMapTransition('fieldsToVillage');return}
+  if(state.map==='village'&&ny===8&&nx===23){useMapTransition('villageToBrook');return}
+  if(state.map==='ryunebrook'&&ny===8&&nx===0){useMapTransition('brookToVillage');return}
+  // 序盤の可逆マップ遷移
  if(state.map==='village'&&ny===0&&[11,12].includes(nx)){if(!isEventComplete('alpha.village.appointment')){say('北門','カレンたち4人の話し合いを終えるまでは、村を離れられない。');return}leaveVillage();return}
  if(state.map==='road'&&ny>=15&&[11,12].includes(nx)){returnVillage();return}
  if(state.map==='road'&&nx===13&&ny===1){enterCave();return}
