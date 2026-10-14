@@ -47,8 +47,8 @@ test('all new regional score beats are finite, quiet, deterministic and safe on 
 test('existing opening and combat score contracts remain distinct',()=>{
  const h=createHarness(),a=h.GC.Audio;
  assert.equal(a.mapMusicTheme('village'),'village');
- assert.equal(a.mapMusicTheme('ryunefields'),'village');
- assert.equal(a.mapMusicTheme('ryunebrook'),'village');
+ assert.equal(a.mapMusicTheme('ryunefields'),'ryuneFields');
+ assert.equal(a.mapMusicTheme('ryunebrook'),'ryuneBrook');
  assert.equal(a.mapMusicTheme('capital'),'capital');
  assert.equal(a.mapMusicTheme('ashroad'),'ashroad');
  assert.equal(a.mapMusicTheme('cave'),'cave');

@@ -3,6 +3,15 @@
 // Terrain and collisions are owned exclusively by js/data/maps.js.
 const RyuneOutskirts=(()=>{
  const maps=new Set(['ryunefields','ryunebrook']);
+ const viewer={x:-99,y:-99};
+ function waterMotion(map,x,y){
+  if(map!=='ryunebrook')return false;
+  if(typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches)return false;
+  return Number.isFinite(x)&&Number.isFinite(y)&&
+   Math.min(Math.abs(x-12),Math.abs(x-13))+Math.abs(y-7)<=5
+ }
+ function setViewer(x,y){viewer.x=x;viewer.y=y}
+
  const W=32;
  const pixel=(c,col,x,y,w,h)=>{c.fillStyle=col;c.fillRect(x|0,y|0,w|0,h|0)};
  const hash=(x,y)=>((Math.imul(x+17,73856093)^Math.imul(y+23,19349663))>>>0);
@@ -38,9 +47,13 @@ const RyuneOutskirts=(()=>{
    return true;
   }
   if(ch==='Z'){
+   // A narrow river highlight shifts by a few *whole pixels* only when nearby.
+   // Never move a collision boundary or overlay the existing wooden bridge.
+   const flow=waterMotion&&waterMotion(map,viewer.x,viewer.y)?
+    Math.floor(Date.now()/700)%4:0;
    pixel(c,'#3d6b77',x,y,32,32);
    pixel(c,'#568e98',x+2,y+4,22,2);
-   pixel(c,'#7aa8a9',x+12+(h%5),y+14,14,2);
+   pixel(c,'#7aa8a9',x+10+flow*2,y+14,12,2);
    pixel(c,'#2e5265',x+4,y+25,22,3);
    return true;
   }
@@ -134,5 +147,38 @@ const RyuneOutskirts=(()=>{
   }else return false;
   return true
  }
- return {maps,paintTile,drawAccents,drawObject};
+ // The village remembers voluntary choices WITHOUT magically repairing the
+ // stream or requiring a side quest. All accents remain on existing props.
+ function drawProgress(c,map,choices={},completed={}){
+  if(map==='village'){
+   if(choices['early.orphanMedicine']==='donate'){
+    // A quiet wrapped medicine packet near the established orphanage doorstep.
+    const x=19*W+22,y=5*W+23;
+    pixel(c,'#65523b',x-1,y-1,9,7);
+    pixel(c,'#e2d5b5',x,y,7,5);
+    pixel(c,'#819376',x+3,y,1,5);
+   }
+   if(completed['ryune.outskirts.reward']){
+    // Brought-back notes stay with Boru; no invented construction complete.
+    const x=7*W+3,y=12*W+22;
+    pixel(c,'#645342',x,y,10,6);
+    pixel(c,'#d6c39b',x+2,y-2,7,5);
+    pixel(c,'#88795f',x+3,y,4,1);
+   }
+  }else if(map==='ryunefields'&&completed['ryune.outskirts.reward']){
+   // Two slim measuring pegs placed beside, not across, the dry furrow.
+   for(const x of [7*W+26,8*W+3]){
+    const y=4*W+11;
+    pixel(c,'#625037',x,y,2,17);
+    pixel(c,'#c5b089',x-2,y+7,7,2);
+   }
+  }else if(map==='ryunebrook'&&completed['ryune.outskirts.reward']){
+   // Only a small water-level marker; the blocked water is still blocked.
+   const x=11*W+24,y=5*W+8;
+   pixel(c,'#665541',x,y,2,23);
+   pixel(c,'#cab390',x-3,y+12,8,2);
+   pixel(c,'#cab390',x-3,y+17,6,1);
+  }
+ }
+ return {maps,paintTile,drawAccents,drawObject,drawProgress,setViewer,waterMotion};
 })();

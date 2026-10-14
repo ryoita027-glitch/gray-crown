@@ -4,6 +4,14 @@
 (function(){
  const profiles=Object.freeze({
   village:{notes:[262,330,392,330,294,349,392,null],bass:[131,null,null,131,147,null,null,147],voice:'sine',gain:.014},
+  // Two restrained variants of the Ryune home motif. They remain recognizably
+  // the same village, not invented combat/danger music for an optional detour.
+  ryuneFields:{notes:[262,null,330,349,330,null,294,262,220,null,262,294,330,null,262,null],
+   bass:[131,null,null,131,null,null,147,null,110,null,131,null,147,null,131,null],
+   voice:'triangle',gain:.011},
+  ryuneBrook:{notes:[262,null,294,null,330,294,null,262,247,null,262,294,null,247,220,null],
+   bass:[131,null,null,null,147,null,131,null,123.5,null,null,147,null,123.5,110,null],
+   voice:'sine',gain:.010},
   road:{notes:[220,null,294,330,262,null,247,220],bass:[110,null,147,null,131,null,110,null],voice:'triangle',gain:.015},
   cave:{notes:[147,null,175,null,164,147,null,131],bass:[73.5,null,82,null,73.5,null,65.4,null],voice:'triangle',gain:.012},
   capital:{notes:[262,392,440,null,392,330,294,null],bass:[131,null,196,null,174,null,147,null],voice:'sine',gain:.016},

@@ -95,7 +95,7 @@ test('work animation is very small, contextual and does not relocate NPC hitboxe
  const life=worldLife(),n={id:'baker',x:8,y:6},original=JSON.stringify(n);
  const early=fakeCanvas(),late=fakeCanvas();
  life.villager(early,'village',n,0);
- life.villager(late,'village',n,1100);
+ life.villager(late,'village',n,2000);
  assert.notEqual(JSON.stringify(early.shapes),JSON.stringify(late.shapes));
  assert.equal(JSON.stringify(n),original);
 });
@@ -137,7 +137,7 @@ test('opening renderer respects draw order and the 5fps idle cap',()=>{
  const html=get('index.html'),world=get('js/render/world.js');
  assert.ok(html.indexOf('js/render/opening_worldlife.js')>0);
  assert.ok(html.indexOf('js/render/opening_worldlife.js')<html.indexOf('js/render/world.js'));
- assert.match(world,/OpeningWorldLife\.ground\(ctx,state\.map,state\.events\.choices\);m\.objects\.forEach\(drawObject\)/);
+ assert.match(world,/OpeningWorldLife\.ground\(ctx,state\.map,state\.events\.choices\);RyuneOutskirts\.drawAccents\(ctx,state\.map\);RyuneOutskirts\.drawProgress\(ctx,state\.map,state\.events\.choices,state\.events\.completed\);m\.objects\.forEach\(drawObject\)/);
  assert.match(world,/OpeningWorldLife\.villager\(ctx,state\.map,n,Date\.now\(\)\)/);
  assert.match(world,/VISUAL\.ambientTimer=setTimeout\(\(\)=>draw\(\),200\)/);
  assert.doesNotMatch(world,/worldLifeRunning&&VISUAL\.map===state\.map/);

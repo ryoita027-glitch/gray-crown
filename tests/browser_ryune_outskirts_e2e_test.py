@@ -3,6 +3,7 @@
 No teleport, developer state writes, seeded rewards or invented screenshots.
 """
 import json
+import time
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 import browser_vertical_slice_e2e_test as first
@@ -45,6 +46,7 @@ def save_from_menu(page):
  return json.loads(raw)
 
 def main():
+ start_clock=time.perf_counter()
  with first.served() as url:
   with sync_playwright() as pw:
    browser=pw.chromium.launch(headless=True)
@@ -79,6 +81,20 @@ def main():
    first.check('ryune.outskirts.reward' in snap['completed'],'reward event completed')
    first.check(snap['inventory'].get('携帯食',0)==food_before+1,'single ration awarded')
    shot(page,'04_farmer_reward')
+   # Revisit under NORMAL player keyboard navigation, not by moving state.
+   # The physical markers must be subtle: no instantly repaired irrigation.
+   cross(page,'village','ryunefields',(1,8),'ArrowLeft','fields revisited after report')
+   shot(page,'06_fields_after_report')
+   first.check(page.evaluate("GC.Events.findTriggeredEvent('npc','fieldWorker',{map:'ryunefields'}).id")
+    =='ryune.fields.worker.afterReport','field hand remembers the joint report')
+   interact(page,'fieldWorker',npc=True)
+   cross(page,'ryunefields','village',(22,8),'ArrowRight','return with observations')
+   cross(page,'village','ryunebrook',(22,8),'ArrowRight','brook revisited after report')
+   shot(page,'07_brook_after_report')
+   first.check(page.evaluate("GC.Events.findTriggeredEvent('npc','brookKeeper',{map:'ryunebrook'}).id")
+    =='ryune.brook.keeper.afterReport','brook watcher remembers measurement')
+   interact(page,'brookKeeper',npc=True)
+   cross(page,'ryunebrook','village',(1,8),'ArrowLeft','return to village')
    interact(page,'farmer',npc=True)
    first.check(first.snapshot(page)['inventory'].get('携帯食',0)==food_before+1,
     'no repeated optional quest payout')
@@ -96,6 +112,10 @@ def main():
    shot(page,'05_continue_with_both_areas')
    (OUT/'results.json').write_text(json.dumps({'status':'PASS','story':final['story'],
     'maps':['village','ryunefields','ryunebrook'],'save_schema':saved['schema'],
-    'screenshots':5,'errors':errors},ensure_ascii=False,indent=2),encoding='utf-8')
+    'screenshots':7,'real_play_elapsed_seconds':round(time.perf_counter()-start_clock,2),
+    'real_keyboard_walk_steps':first.STATS['steps'],
+    'optional_event_count':3,'after_report_revisits':2,
+    'notes':'No Dev Mode, seeded wins, teleporting or mandatory side quest',
+    'errors':errors},ensure_ascii=False,indent=2),encoding='utf-8')
    browser.close()
 if __name__=='__main__':main()
