@@ -182,10 +182,22 @@ const OpeningWorldLife=(()=>{
  // Only named, already-placed people have role-specific props.
  // Tool placement deliberately does not block the NPC's face or outline.
  const living=new Set(['baker','farmer','oldwoman','orphan','merchant','capitalVendor','rationMother','capitalFlowerGirl','capitalRecruit']);
+ // Small task-specific movement: two deliberate arm poses per 8-11 second
+ // cycle, never in-place marching. The same phase drives the dedicated NPC
+ // sheet AND the held work prop so tray/tool pixels do not drift apart.
+ function workPhase(id,now){
+  if(!(now>0))return 0;
+  if(typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches)return 0;
+  const period=id==='fieldWorker'||id==='farmer'?11000:
+   id==='baker'||id==='merchant'?8000:9500;
+  const offset=(String(id).length*127)%1900;
+  const t=(now+offset)%period;
+  return t>=2200&&t<2700?1:t>=2700&&t<3200?3:0
+ }
  function villager(c,map,n,now=0){
   if(!api.enabled||!living.has(n.id)||!maps.has(map))return false;
   const x=n.x*32,y=n.y*32;
-  const beat=Math.floor(now/1050)%4===1?1:0;
+  const beat=workPhase(n.id,now)===1?1:0;
   // The dedicated NPC atlas already includes distinct garments.
   // Only the old fallback renderer needs the historic costume overlay.
   if(typeof OpeningPixelAssets==='undefined'||!OpeningPixelAssets.designs[n.id])clothes(c,n.id,x,y);
@@ -239,6 +251,6 @@ const OpeningWorldLife=(()=>{
  function blocks(map,x,y){
   return map==='capital'&&((x===3&&y===7)||(x===7&&y===7)||(x===17&&y===8))
  }
- const api={enabled:true,maps,ground,villager,living,shouldBreathe,blocks};
+ const api={enabled:true,maps,ground,villager,living,shouldBreathe,blocks,workPhase};
  return api
 })();
