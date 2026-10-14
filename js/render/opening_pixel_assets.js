@@ -281,14 +281,56 @@ const OpeningPixelAssets=(()=>{
   };
   const eyes=(x,y,gap=6)=>{
    if(back)return;
-   if(side){p('#4c3936',dir===1?x+1:x+gap,y,2,2);return}
-   p('#514141',x,y,2,2);p('#514141',x+gap,y,2,2);
-   p('#9e6e5e',x+Math.floor(gap/2)+1,y+3,2,1)
+   if(side){
+    // A real profile: one eye, nose and sideburn, not two front-facing eyes.
+    const eyeX=dir===1?x+1:x+gap;
+    p('#453637',eyeX,y,2,2);
+    p(face,dir===1?x-1:x+gap+3,y+2,2,2);
+    p(hair,dir===1?x+gap+3:x-2,y-3,3,4);
+    return
+   }
+   const relaxed=['baker','lulu','capitalFlowerGirl'].includes(id),
+         worried=id==='capitalRecruit',stern=['veteran','messenger','granz'].includes(id),
+         child=['ren','lulu'].includes(id);
+   const lid=relaxed?1:2;
+   p(stern?'#3b3235':'#514141',x,y,lid===1?3:2,lid);
+   p(stern?'#3b3235':'#514141',x+gap,y,lid===1?3:2,lid);
+   if(stern){
+    p(ink,x,y-2,3,1);
+    p(ink,x+gap,y-2,3,1);
+   }else if(worried){
+    p(hair,x,y-2,3,1);p(hair,x+gap+1,y-3,2,1);
+   }else if(child){
+    p('#e9ceaa',x-1,y+2,3,1);p('#e9ceaa',x+gap,y+2,3,1);
+   }
+   const mouthX=x+Math.floor(gap/2)+1,mouthY=y+3;
+   if(relaxed){
+    p('#995d58',mouthX,mouthY,3,1);
+    p('#d8a18d',mouthX-1,mouthY-1,1,2);
+    p('#d8a18d',mouthX+3,mouthY-1,1,2);
+   }else if(worried){
+    p('#986d64',mouthX,mouthY,2,1);
+   }else if(stern){
+    p('#6f5150',mouthX-1,mouthY,4,1);
+   }else{
+    p('#936959',mouthX,mouthY,2,1);
+   }
+   if(id==='veteran')p('#ac786b',x+gap+1,y+1,1,4);
+   if(id==='mayor'){p('#e4d6bc',x-2,y,2,2);p('#e4d6bc',x+gap+3,y,2,2)}
   };
   const head=(x,y,w,h)=>{
    p(ink,x-1,y-1,w+2,h+2);
    p(back?hair:face,x,y,w,h);
-   if(!back){p(skin,x+1,y+1,w-2,h-2);p(face,x+1,y+h-2,w-2,1)}
+   if(!back){
+    // A rounded cheek/jaw step instead of a universal square skin sticker.
+    p(skin,x+1,y+1,w-2,h-3);
+    p(face,x+2,y+h-2,w-4,1);
+    p(tint(skin,12),x+2,y+2,Math.min(3,w-4),2);
+    p(face,x,y+1,1,3);
+    p(face,x+w-1,y+1,1,3);
+    p(ink,x,y+h-1,2,1);
+    p(ink,x+w-2,y+h-1,2,1);
+   }
   };
   const fringe=(x,y,w)=>{
    p(hair,x,y,w,4);
@@ -342,7 +384,7 @@ const OpeningPixelAssets=(()=>{
     p('#343c46',4,16,7,13);p('#81878b',4,16,10,4);
     p('#a09a87',13,19,15,3);p('#494c55',23,17,4,12);
     head(10,7,13,11);fringe(10,5,13);eyes(13,13,6);
-    p('#c7b8a8',10,7,3,4);
+    p('#c7b8a8',10,7,3,4);p(hair,8,4,4,4);p(shine,9,4,2,1);
     if(front){p('#9f7268',20,14,2,4);p('#e1cbb1',18,13,1,3)}
     p('#a19d92',24,19,2,11);p('#6c6050',26,23,3,7);
     break
@@ -406,7 +448,7 @@ const OpeningPixelAssets=(()=>{
     p('#5e6881',8,16,17,13);p('#b3b1a9',12,17,9,11);
     p('#484a5b',6,18,4,10);
     head(11,6,11,11);fringe(11,4,11);eyes(13,12,5);
-    p('#a9a69a',10,5,13,3);
+    p('#a9a69a',10,5,13,3);p('#6a6f75',9,3,6,4);
     p('#e0cda4',23,19+arm,8,7);
     p('#755b50',24,21+arm,7,1);
     break
@@ -418,7 +460,7 @@ const OpeningPixelAssets=(()=>{
     p('#343b48',3,17,8,13);p('#7e8791',6,15,9,4);
     p('#a49e93',20,15,9,4);p('#b7a487',12,20,11,3);
     head(10,6,13,11);fringe(10,4,13);eyes(13,12,6);
-    p('#3d414b',9,5,15,3);
+    p('#3d414b',9,5,15,3);p('#79818b',10,4,6,2);p('#3d414b',22,6,3,7);
     p('#b3aaa0',24,23,3,7);
     break
    }
