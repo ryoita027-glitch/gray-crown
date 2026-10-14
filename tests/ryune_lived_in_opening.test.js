@@ -65,7 +65,7 @@ test('brook water shimmer is fixed-pixel, spatially constrained and honors reduc
 });
 
 test('village workers mostly stand still, with two short synchronized hand poses and no foot relocation',()=>{
- const h=createHarness(),work=h.GC.OpeningWorldLife.workPhase;
+ const h=createHarness(),life=new Function(read('js/render/opening_worldlife.js')+';return OpeningWorldLife')(),work=life.workPhase;
  assert.equal(work('baker',0),0);
  assert.equal(work('baker',2000),1);
  assert.equal(work('baker',2300),3);
@@ -73,7 +73,7 @@ test('village workers mostly stand still, with two short synchronized hand poses
  const positions={...h.GC.Data.Maps.maps.village.npcs.find(n=>n.id==='baker')};
  assert.equal(work('brookKeeper',0),0);
  const c=fakeCanvas(),n={id:'baker',x:8,y:6};
- h.GC.OpeningWorldLife.villager(c,'village',n,2000);
+ life.villager(c,'village',n,2000);
  assert.deepEqual(n,{id:'baker',x:8,y:6});
  assert.ok(c.pixels.length>0,'work prop must visually accompany pose');
  assert.deepEqual(positions,h.GC.Data.Maps.maps.village.npcs.find(n=>n.id==='baker'));
