@@ -8,12 +8,23 @@ that adding a test means it passed.
 from __future__ import annotations
 import json
 import sys
+import subprocess
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
 VERTICAL=ROOT/'prototype_artifacts/vertical_slice_v1/vertical_slice_e2e_metrics.json'
 OUTSKIRTS=ROOT/'prototype_artifacts/ryune_outskirts_v1/results.json'
 DEST=ROOT/'prototype_artifacts/opening_play_review'
+
+def exact_head():
+    try:
+        sha=subprocess.check_output(['git','rev-parse','--verify','HEAD'],
+            cwd=ROOT,stderr=subprocess.DEVNULL,text=True).strip()
+    except (OSError,subprocess.CalledProcessError) as exc:
+        raise ValueError('Cannot prove tested source commit (Git checkout required)') from exc
+    if len(sha)!=40 or any(x not in '0123456789abcdef' for x in sha):
+        raise ValueError('Invalid Git commit id')
+    return sha
 
 def load_pass(path):
     if not path.is_file():
@@ -31,7 +42,12 @@ def number(value,field,minimum=0):
         raise ValueError(f'Invalid/missing measured {field}: {value!r}')
     return round(float(value),2)
 
-def compile_report(vertical,outskirts):
+def compile_report(vertical,outskirts,expected_head=None):
+    head=expected_head or exact_head()
+    for name,row in [('main opening',vertical),('optional excursions',outskirts)]:
+        if row.get('tested_commit')!=head:
+            raise ValueError(name+' was tested at a different or unknown Git HEAD; '+
+                'run all browser scenarios again on '+head)
     if not vertical.get('battles') or vertical.get('play_seconds',0)<=0:
         raise ValueError('No real input-run vertical-slice combat evidence')
     if not {'ryunefields','ryunebrook','village'}.issubset(set(outskirts.get('maps',[]))):
@@ -76,9 +92,13 @@ def compile_report(vertical,outskirts):
     duration=number(outskirts['real_play_elapsed_seconds'],'detour elapsed',.01)
     dialogue=number(vertical.get('dialogue_seconds',0),'dialogue seconds')
     main_seconds=number(vertical.get('play_seconds'), 'vertical slice seconds',.01)
-    if dialogue/main_seconds>.35:
+    # Automated Enter/Space presses accelerate dialogue; neither this time nor
+    # its share of benchmark runtime measures how long a human reads the scene.
+    dialogue_keys=number(vertical.get('dialogue_advance_keys'),'dialogue fast-forward keys')
+    if dialogue_keys>=35:
         recommendations.append({'stage':'opening pacing','subject':'dialogue',
-            'signal':'dialogue/script ratio over 35%','action':'Inspect whether mandatory scenes outstay their story purpose; preserve optional scenes.'})
+            'signal':'35+ accelerated dialogue keys in scripted input',
+            'action':'Review the mandatory appointment with a human reader; never cut authored dialogue based only on automated fast-forward time.'})
     frame=vertical.get('frame_samples',{})
     if isinstance(frame,dict) and number(frame.get('slowFrames',0),'slowFrames')>0:
         recommendations.append({'stage':'performance','subject':'frame pacing',
@@ -86,10 +106,17 @@ def compile_report(vertical,outskirts):
     return {
         'evidence_status':'MEASURED_SCRIPTED_KEYBOARD_PLAY',
         'not_evidence_of':'human 8-12h playtime, retail-ready art, mastered OST or game-wide difficulty',
+        'tested_commit':head,
+        'timing_scope':'Chromium keyboard automation; accelerated text is NOT human reading time',
         'opening_path':{
             'seconds':main_seconds,
             'steps':number(vertical.get('steps'), 'vertical steps',1),
-            'dialogue_seconds':dialogue,
+            'accelerated_dialogue_seconds':dialogue,
+            'dialogue_fast_forward_keys':dialogue_keys,
+            'checkpoints':[{'name':p['name'],
+              'keyboard_steps_to_here':number(p.get('keyboard_steps_to_here'),'checkpoint steps'),
+              'seconds_to_here':number(p.get('seconds_to_here'),'checkpoint seconds')}
+              for p in vertical.get('checkpoints',[])],
             'battle_samples':len(battlerecords),
             'slow_frames':frame.get('slowFrames',None) if isinstance(frame,dict) else None
         },
@@ -105,7 +132,7 @@ def compile_report(vertical,outskirts):
 
 def main():
     try:
-        report=compile_report(load_pass(VERTICAL),load_pass(OUTSKIRTS))
+        report=compile_report(load_pass(VERTICAL),load_pass(OUTSKIRTS),exact_head())
     except ValueError as exc:
         print('OPENING REVIEW BLOCKED:',exc,file=sys.stderr)
         return 2
