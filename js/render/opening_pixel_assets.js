@@ -161,13 +161,13 @@ const OpeningPixelAssets=(()=>{
    try{
     featuredSheet=new Image();
     featuredSheet.onload=()=>{
-     featuredReady=featuredSheet.naturalWidth===432&&featuredSheet.naturalHeight===192;
+     featuredReady=useLegacyArt?(featuredSheet.naturalWidth===288&&featuredSheet.naturalHeight===128):(featuredSheet.naturalWidth===432&&featuredSheet.naturalHeight===192);
      featuredFailed=!featuredReady;
      if(featuredFailed)GC?.Log?.warn?.('Featured residents atlas wrong dimensions');
      else GC?.Render?.World?.draw?.();
     };
     featuredSheet.onerror=()=>{featuredFailed=true;GC?.Log?.warn?.('Featured residents atlas failed to load')};
-    featuredSheet.src=useLegacyArt?'assets/npc/featured_residents_v1.png':'assets/npc/featured_residents_charm_v3.png';
+    featuredSheet.src=useLegacyArt?'assets/npc/featured_residents_v1.png':'assets/npc/featured_residents_charm_v5.png';
    }catch(e){featuredFailed=true;GC?.Log?.warn?.('Featured residents atlas unavailable',{detail:String(e)})}
   }
   if(!featuredReady)return false;
@@ -182,23 +182,26 @@ const OpeningPixelAssets=(()=>{
      else GC?.Log?.warn?.('Resident gesture PNG has unexpected dimensions');
     };
     actionSheet.onerror=()=>{actionsFailed=true;GC?.Log?.warn?.('Resident gesture PNG unavailable')};
-    actionSheet.src=useLegacyArt?'assets/npc/featured_resident_actions_v2.png':'assets/npc/featured_resident_actions_charm_v3.png';
+    actionSheet.src=useLegacyArt?'assets/npc/featured_resident_actions_v2.png':'assets/npc/featured_resident_actions_charm_v5.png';
    }catch(e){actionsFailed=true;GC?.Log?.warn?.('Resident gesture PNG blocked',{detail:String(e)})}
   }
   let pose=0;
-  if(dir==='down'&&actionsReady&&!actionsFailed&&typeof OpeningWorldLife!=='undefined')
+  if(!useLegacyArt&&dir==='down'&&actionsReady&&!actionsFailed&&typeof OpeningWorldLife!=='undefined')
    pose=OpeningWorldLife.workPhase(n.id,now);
   const stage=pose!==0?pose===1?0:1:-1;
   const sheet=stage<0?featuredSheet:actionSheet;
-  const sy=stage<0?(dirs[dir]??0)*48:stage*48;
+  const srcSize=useLegacyArt?32:48;
+  const sy=stage<0?(dirs[dir]??0)*srcSize:stage*48;
+  const destSize=useLegacyArt?32:48;
   c.save();c.imageSmoothingEnabled=false;
-  c.drawImage(sheet,index*48,sy,48,48,n.x*32-8,n.y*32-16,48,48);
+  c.drawImage(sheet,index*srcSize,sy,srcSize,srcSize,
+   n.x*32-(destSize===48?8:0),n.y*32-(destSize===48?16:0),destSize,destSize);
   c.restore();return true
  }
  function featuredStatus(){return {requested:featuredRequested,ready:featuredReady,
   failed:featuredFailed,count:featuredNames.length,
   gesturesRequested:actionsRequested,gesturesReady:actionsReady,gesturesFailed:actionsFailed,
-  artVersion:useLegacyArt?'classic-v1':'concept-charm-v3'}}
+  artVersion:useLegacyArt?'classic-v1':'concept-charm-v5'}}
  const dirs={down:0,left:1,right:2,up:3};
  const npcCache=new Map(),houseCache=new Map();
  const P=(c,color,x,y,w,h)=>{c.fillStyle=color;c.fillRect(x|0,y|0,w|0,h|0)};

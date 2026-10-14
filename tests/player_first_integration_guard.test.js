@@ -6,13 +6,13 @@ const root=path.resolve(__dirname,'..');
 const read=x=>fs.readFileSync(path.join(root,x),'utf8');
 test('the nine individually drawn residents remain part of the playable world',()=>{
  const src=read('js/render/opening_pixel_assets.js');
- const png=fs.readFileSync(path.join(root,'assets/npc/featured_residents_charm_v3.png'));
+ const png=fs.readFileSync(path.join(root,'assets/npc/featured_residents_charm_v5.png'));
  assert.equal(png.readUInt32BE(16),432);
  assert.equal(png.readUInt32BE(20),192);
  assert.match(src,/featuredNames=\[/);
  assert.match(src,/capitalFlowerGirl/);
  assert.match(src,/featuredSheet\.src=useLegacyArt\?/);
- assert.match(src,/featured_residents_charm_v3\.png/);
+ assert.match(src,/featured_residents_charm_v5\.png/);
  assert.match(read('js/render/world.js'),/OpeningPixelAssets\.drawNpc/);
 });
 test('opening retains either-one-report with one reward and later follow-ups',()=>{
