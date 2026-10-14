@@ -85,6 +85,45 @@ def check_save_reload(page,route,choice,flag):
  assert state["choice"]==choice and state["complete"],state
  assert len(state["party"])==4,"Saved roster lost a character"
 
+def choose_final_approach_via_ui(page,route,option_index):
+ """After the deliberately SEEDED battle test, use the actual dialogue keyboard/
+ button interface to make the new post-checkpoint decision. Not a full playthrough.
+ """
+ if route=='ashcrown':
+  page.evaluate("enterFinalBranch()")
+ else:
+  page.evaluate("route=>runFinalRouteConfrontation(route)",route)
+ expected={
+  'kingdom':['evacuation','witnesses'],
+  'empire':['captives','dispatch'],
+  'ashcrown':['leave','command']
+ }[route][option_index]
+ for _ in range(100):
+  buttons=page.locator('#choiceBox button')
+  if buttons.count()==2 and not page.evaluate('GC.Dialogue.dialogueTyping()'):
+   break
+  if page.locator('#dialogueBox').is_visible():page.keyboard.press('Enter')
+  page.wait_for_timeout(90)
+ else:raise AssertionError('Final approach prompt missing: '+route+'/'+expected)
+ assert page.evaluate("route=>GC.State.get().events.choices['route.final.'+route]",route) is None
+ buttons.nth(option_index).click()
+ actual=page.evaluate("route=>GC.State.get().events.choices['route.final.'+route]",route)
+ assert actual==expected,(route,expected,actual)
+ for _ in range(110):
+  if not page.locator('#dialogueBox').is_visible():break
+  page.keyboard.press('Enter')
+  page.wait_for_timeout(80)
+ else:raise AssertionError('Dialogue stuck after final choice: '+route)
+ assert page.evaluate('GC.Save.save(true)'), 'Cannot Save final stage decision'
+ saved=page.evaluate("""route=>{
+  const s=GC.Save.migrateLoaded(GC.Save.serializeSave());
+  return {schema:s.schema,route:s.finalChoice,decision:s.events.choices['route.final.'+route],
+   party:s.party.map(x=>x.id)}
+ }""",route)
+ assert saved['schema']==23 and saved['route']==route and saved['decision']==expected,saved
+ assert len(saved['party'])==4,'Existing save must preserve all 4 protagonists'
+ return expected
+
 def faction_case(browser,url,route,choice,battle_id,expected_target):
  page,errors=new_game(browser,url)
  try:
@@ -128,6 +167,8 @@ def faction_case(browser,url,route,choice,battle_id,expected_target):
   clear_by_mercy(page)
   assert page.evaluate("grayCrownMorality().lethal")==0
   check_save_reload(page,route,choice,f"final.route.{route}.checkpoint")
+  approach=choose_final_approach_via_ui(page,route,0 if choice in ('evacuate','protect') else 1)
+  assert approach in ('evacuation','witnesses','captives','dispatch')
   assert not errors,errors
   print(f"PASS faction branch {route}/{choice}: forewarn, mercy and save")
  finally:page.close()
@@ -152,6 +193,8 @@ def ash_case(browser,url,choice,count):
   clear_by_mercy(page)
   check_save_reload(page,"ashcrown",choice,"ashcrownCheckpointCleared")
   assert page.evaluate("activeRouteParty().length")==count
+  approach=choose_final_approach_via_ui(page,'ashcrown',0 if choice=='release' else 1)
+  assert approach in ('leave','command')
   assert not errors,errors
   print(f"PASS Ash Crown {choice}: {count} fighting")
  finally:page.close()
