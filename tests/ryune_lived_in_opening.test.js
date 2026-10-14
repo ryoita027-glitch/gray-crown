@@ -25,15 +25,19 @@ test('visible village response is optional and only follows completed player cho
  const report=art(fakeCanvas(),'village',{}, {'ryune.outskirts.reward':true});
  assert.notEqual(blank,medicine,'delivered medicine has a visible quiet physical trace');
  assert.equal(blank,reserved,'no unexplained physical medicine if supplies were reserved');
- assert.notEqual(blank,report,'Boru has notes after BOTH optional visits');
+ assert.notEqual(blank,report,'Boru keeps notes after even one useful observation');
  assert.equal(art(fakeCanvas(),'village',{}, {'ryune.memory.well':true}),blank,
   'remembering an old story cannot magically move a town object');
 });
 
-test('field and river show measuring markers only AFTER the joint report, never immediate water repair',()=>{
+test('field and river only show measuring markers when THAT location was actually reported',()=>{
  for(const map of ['ryunefields','ryunebrook']){
   const bare=art(fakeCanvas(),map),studied=art(fakeCanvas(),map,{},{'ryune.fields.inspect':true,'ryune.brook.inspect':true});
-  const reported=art(fakeCanvas(),map,{},{'ryune.outskirts.reward':true});
+  const current=map==='ryunefields'?'ryune.outskirts.reported.fields':'ryune.outskirts.reported.brook';
+  const opposite=map==='ryunefields'?'ryune.outskirts.reported.brook':'ryune.outskirts.reported.fields';
+  const reported=art(fakeCanvas(),map,{}, {[current]:true});
+  assert.equal(bare,art(fakeCanvas(),map,{}, {[opposite]:true}),
+   map+' must not pretend that unvisited area was reported');
   assert.equal(bare,studied,map+' single inspection leaves terrain unchanged');
   assert.notEqual(bare,reported,map+' reported observations create modest measuring marks');
   assert.equal(scene().drawObject(fakeCanvas(),map,{id:'notReal',x:7,y:8}),false);
@@ -91,7 +95,9 @@ test('all post-report dialogue is gated, and main appointment remains independen
   assert.notEqual(e.findTriggeredEvent(type,id,{map})?.id,after,
    'initial scene cannot pretend the player already reported');
  }
- h.evaluate("state.events.completed['ryune.outskirts.reward']=true");
+ h.evaluate("state.events.completed['ryune.outskirts.reward']=true;"+
+  "state.events.completed['ryune.outskirts.reported.fields']=true;"+
+  "state.events.completed['ryune.outskirts.reported.brook']=true");
  for(const [type,id,map,after] of who){
   assert.equal(e.findTriggeredEvent(type,id,{map})?.id,after);
  }
