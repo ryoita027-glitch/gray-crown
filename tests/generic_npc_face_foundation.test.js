@@ -36,3 +36,24 @@ test('important nine still use the different real PNG and no protagonist sprites
  assert.match(source,/featuredSheet\.naturalWidth===432/);
  assert.match(source,/index\*48/);
 });
+
+
+test('37 fallback villagers each have a purposefully assigned facial expression',()=>{
+ const h=runtime(),map=source.split('const expressions=Object.freeze({')[1]?.split('});')[0];
+ assert.ok(map,'role-expression matrix required');
+ const names=Object.keys(h.atlas.designs);
+ for(const id of names)
+  assert.match(map,new RegExp('(?:^|[,\\s])'+id+':\\x27(?:bright|gentle|weary|guarded|focused|curious|shy)\\x27'),id);
+ assert.equal(names.length,37,'every known generic profile has facial direction');
+});
+test('authored capital sprites are not covered by old rectangular uniform stamps',()=>{
+ const cap=fs.readFileSync(path.join(__dirname,'../js/render/capital_environment.js'),'utf8');
+ const h=runtime();
+ const make=atlas=>new Function('OpeningPixelAssets',cap+';return CapitalEnvironment')(atlas);
+ const npc={id:'capitalRecruit',x:8,y:8};
+ const ctx={count:0,fillRect(){this.count++}};
+ make(h.atlas).npcAccent(ctx,'capital',npc);
+ assert.equal(ctx.count,0,'new recruitment art must remain visible');
+ make({designs:{}}).npcAccent(ctx,'capital',npc);
+ assert.ok(ctx.count>=2,'old rectangles remain as fallback when authored art is unavailable');
+});

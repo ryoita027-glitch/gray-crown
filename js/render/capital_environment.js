@@ -251,6 +251,11 @@ const CapitalEnvironment=(()=>{
  }
  function npcAccent(c,map,n){
   if(!on()||!mapsSupported.has(map))return;
+  // Never paste rectangular wardrobe over the bespoke NPC art. This old
+  // accent path belongs to the fallback silhouettes only; otherwise it hides
+  // authentic faces, clothing folds and individually posed hands.
+  if(typeof OpeningPixelAssets!=='undefined'&&
+     OpeningPixelAssets.designs?.[n.id])return;
   const x=n.x*W+16,y=n.y*W+30;
   if(n.id==='capitalOfficial'){
    box(c,'#e2d0a5',x-9,y-17,18,3);box(c,'#6e343c',x-11,y-14,4,12);
