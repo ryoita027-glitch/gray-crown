@@ -14,6 +14,7 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 VERTICAL=ROOT/'prototype_artifacts/vertical_slice_v1/vertical_slice_e2e_metrics.json'
 OUTSKIRTS=ROOT/'prototype_artifacts/ryune_outskirts_v1/results.json'
+WOLF=ROOT/'prototype_artifacts/first_wolf_tactics_v1/results.json'
 DEST=ROOT/'prototype_artifacts/opening_play_review'
 
 def exact_head():
@@ -130,9 +131,39 @@ def compile_report(vertical,outskirts,expected_head=None):
         'policy':'Treat each signal as a QA hypothesis, not permission to blindly alter enemy stats. Re-run after changes.'
     }
 
+def compare_wolf_samples(sample,head):
+    """Evidence of real action-choice execution, never a balancing verdict."""
+    if sample.get('tested_commit')!=head:
+        raise ValueError('Wolf tactic comparison belongs to another or unknown Git commit')
+    if sample.get('sample_size_per_strategy')!=1:
+        raise ValueError('Unexpected wolf experiment sample count')
+    rows=sample.get('first_wolf_results',[])
+    if len(rows)!=2 or {row.get('mode') for row in rows}!={'attack','guard'}:
+        raise ValueError('Both real guard and attack wolf paths must be present')
+    observations=[]
+    for row in rows:
+        b=row.get('recorded_battle',{})
+        if b.get('id')!='wolves' or not row.get('normal_ui_commands'):
+            raise ValueError('Wolf sample has no real UI actions or battle metrics')
+        if row['mode']=='guard' and not any(a.get('hero')=='karen' and a.get('button')=='guard'
+                 for a in row['normal_ui_commands']):
+            raise ValueError('Defensive sample never actually used Karen guard')
+        observations.append({
+            'strategy':row['mode'],
+            'rounds':number(b.get('rounds'),'wolf rounds',1),
+            'damage_taken':number(b.get('damageTaken'),'wolf damage'),
+            'time_seconds':number(row.get('wall_seconds'),'wolf duration'),
+            'commands':len(row['normal_ui_commands'])
+        })
+    return {'sample_size_each':1,'tested_commit':head,'observations':observations,
+            'warning':'Two independent random trials. Not causal, not a basis for enemy stat changes.'}
+
+
 def main():
     try:
-        report=compile_report(load_pass(VERTICAL),load_pass(OUTSKIRTS),exact_head())
+        commit=exact_head()
+        report=compile_report(load_pass(VERTICAL),load_pass(OUTSKIRTS),commit)
+        report['wolf_tactics']=compare_wolf_samples(load_pass(WOLF),commit)
     except ValueError as exc:
         print('OPENING REVIEW BLOCKED:',exc,file=sys.stderr)
         return 2
