@@ -32,6 +32,30 @@ def interact(page,entity_id,npc=False):
  first.face_and_interact(page,(data['x'],data['y']),entity_id)
  first.clean_dialogue(page)
 
+def decide_worksite(page,option=1):
+ # Actionable follow-up at the original existing bank: no Dev Mode or state edit.
+ data=page.evaluate("""() => {
+  const o=maps.ryunebrook.objects.find(o=>o.id==='brookStones');
+  return {x:o.x,y:o.y};
+ }""")
+ first.face_and_interact(page,(data['x'],data['y']),'original brook stones')
+ for _ in range(90):
+  buttons=page.locator('#choiceBox button')
+  if buttons.count()==3 and not page.evaluate('GC.Dialogue.dialogueTyping()'):
+   break
+  page.keyboard.press('Enter')
+  page.wait_for_timeout(85)
+ else:
+  raise AssertionError('Optional safe-bank decision buttons did not appear')
+ first.check(page.evaluate("GC.State.get().events.choices['ryune.worksite.action']")==None,
+  'do not preselect a player decision')
+ buttons.nth(option).click()
+ first.clean_dialogue(page)
+ chosen=page.evaluate("GC.State.get().events.choices['ryune.worksite.action']")
+ first.check(chosen=='measure' if option==1 else chosen=='clear',
+  'worksite decision not persisted')
+ return chosen
+
 def save_from_menu(page):
  # Use the player-facing Save action, not GC.Save.save() or Dev Mode.
  page.keyboard.press('m')
@@ -94,8 +118,13 @@ def main():
    first.check(page.evaluate("GC.Events.findTriggeredEvent('npc','brookKeeper',{map:'ryunebrook'}).id")
     =='ryune.brook.keeper.afterReport','brook watcher remembers measurement')
    interact(page,'brookKeeper',npc=True)
+   choice=decide_worksite(page,option=1)
+   first.check(choice=='measure','the thoughtful measurement path was selected via UI')
+   shot(page,'08_brook_player_measured')
    cross(page,'ryunebrook','village',(1,8),'ArrowLeft','return to village')
    interact(page,'farmer',npc=True)
+   first.check(page.evaluate("GC.State.get().events.completed['ryune.worksite.boruAcknowledged']===true"),
+    'Boru remembers what players actually did')
    first.check(first.snapshot(page)['inventory'].get('携帯食',0)==food_before+1,
     'no repeated optional quest payout')
    saved=save_from_menu(page)
@@ -107,12 +136,14 @@ def main():
    first.check(final['treasures'].get('fieldCache') and final['treasures'].get('brookCache'),
     'both found supplies persist across fresh page Continue')
    first.check('ryune.outskirts.reward' in final['completed'],'optional quest persists')
+   first.check(page.evaluate("GC.State.get().events.choices['ryune.worksite.action']==='measure'"),
+    'visible worksite decision must survive Save / Continue')
    first.check(final['story']==start['story'],'original appointment stage not forced')
    first.check(not errors,'no browser exceptions: '+repr(errors[:4]))
    shot(page,'05_continue_with_both_areas')
    (OUT/'results.json').write_text(json.dumps({'status':'PASS','story':final['story'],
     'maps':['village','ryunefields','ryunebrook'],'save_schema':saved['schema'],
-    'screenshots':7,'real_play_elapsed_seconds':round(time.perf_counter()-start_clock,2),
+    'screenshots':8,'bank_choice':'measure','real_play_elapsed_seconds':round(time.perf_counter()-start_clock,2),
     'real_keyboard_walk_steps':first.STATS['steps'],
     'tested_commit':first.source_head(),
     'optional_event_count':3,'after_report_revisits':2,
