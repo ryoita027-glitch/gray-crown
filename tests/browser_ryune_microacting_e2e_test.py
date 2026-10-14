@@ -28,7 +28,7 @@ def main():
    helper.check(page.evaluate("GC.CommercialActing.inspect().moment") is None,
                 'first inspection is not a micro-cinematic')
    helper.clean_dialogue(page)
-   helper.check(page.evaluate("GC.State.get().world.switches['ryune.baseViewed.well'] is true".replace(' is true','===true')),
+   helper.check(page.evaluate("GC.State.get().world.switches['ryune.baseViewed.well']===true"),
                 'original inspection preserved as a passive visited bit')
    # A player CHOOSES to inspect the same well again, no auto cutscene.
    helper.face_and_interact(page,(12,9),'well')
