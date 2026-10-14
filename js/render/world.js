@@ -180,6 +180,7 @@ function drawPartyRuntime(leaderMoving,phase){
 }
  actors.push({x:VISUAL.playerX,y:VISUAL.playerY,style:PARTY_STYLE.karen,facing:state.dir,motion:leaderMoving?VISUAL.travelPhase:0,leader:true});
  actors.sort((a,b)=>(a.y-b.y)||(a.x-b.x)||(a.leader?1:-1));
+ GC.CommercialActing?.beginFrame?.(actors);
  for(const a of actors){
   const expressed=a.style?.heroId&&GC.CommercialActing?.draws?.(a.style.heroId,ctx,a.x,a.y,a.facing);
   if(!expressed)drawCharacterSprite(a.x,a.y,a.style,false,a.facing,a.motion);
