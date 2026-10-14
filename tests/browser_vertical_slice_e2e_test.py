@@ -296,6 +296,14 @@ def play(page,url):
   page.keyboard.press('ArrowUp');page.wait_for_timeout(WAIT_MS);STATS['steps']+=1
  check(snapshot(page)['battle']=='wolves','story wolf encounter missing')
  shot(page,'04_wolf_battle')
+ if page.evaluate("GC.State.get().locked"):
+  check(page.locator('#battleActions button:not([disabled])').count()==0,
+   'wolf encounter intro still advertises unusable buttons')
+ page.wait_for_function("() => !GC.State.get().locked && GC.State.get().battle?.id==='wolves'",timeout=5000)
+ check(page.locator('#battleActions button:not([disabled])').count()>0,
+  'wolf input never visibly unlocked after opening animation')
+ page.wait_for_timeout(280)  # screenshot AFTER the dark encounter-card overlay
+ shot(page,'04b_wolf_actionable')
  battle(page)
  check('wolf' in snapshot(page)['defeated'],'wolf did not persist as defeated')
  save_via_menu(page,'road after wolf')
@@ -369,6 +377,14 @@ def play(page,url):
   option.click();page.wait_for_timeout(170)
  check(snapshot(page)['battle']=='boss','boss did not trigger through normal interaction')
  shot(page,'09_boss_battle')
+ if page.evaluate("GC.State.get().locked"):
+  check(page.locator('#battleActions button:not([disabled])').count()==0,
+   'boss cinematic still advertises unusable actions')
+ page.wait_for_function("() => !GC.State.get().locked && GC.State.get().battle?.id==='boss'",timeout=5000)
+ check(page.locator('#battleActions button:not([disabled])').count()>0,
+  'boss battle buttons never became actionable')
+ page.wait_for_timeout(320)
+ shot(page,'09b_boss_actionable')
  battle(page)
  check('boss' in snapshot(page)['defeated'],'boss victory did not persist')
  shot(page,'10_boss_won')
