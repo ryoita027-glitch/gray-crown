@@ -168,14 +168,14 @@ const RyuneOutskirts=(()=>{
     pixel(c,'#d6c39b',x+2,y-2,7,5);
     pixel(c,'#88795f',x+3,y,4,1);
    }
-  }else if(map==='ryunefields'&&completed['ryune.outskirts.reward']){
+  }else if(map==='ryunefields'&&completed['ryune.outskirts.reported.fields']){
    // Two slim measuring pegs placed beside, not across, the dry furrow.
    for(const x of [7*W+26,8*W+3]){
     const y=4*W+11;
     pixel(c,'#625037',x,y,2,17);
     pixel(c,'#c5b089',x-2,y+7,7,2);
    }
-  }else if(map==='ryunebrook'&&completed['ryune.outskirts.reward']){
+  }else if(map==='ryunebrook'&&completed['ryune.outskirts.reported.brook']){
    // Only a small water-level marker; the blocked water is still blocked.
    const x=11*W+24,y=5*W+8;
    pixel(c,'#665541',x,y,2,23);
