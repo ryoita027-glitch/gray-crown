@@ -110,6 +110,73 @@ function companionAftermath(route){
  };
  return scenes[route]?.[path]||[{speaker:'ナレーション',text:'四人はまだ互いの結末を決めていない。語られていない選択は、勝手に埋められない。'}]
 }
+// Last-act political decisions are *demands/records*, not guaranteed peace.
+ // A routed encounter reaches a diplomatic choice, whose local consequence is
+ // preserved by schema-23 event choices; no unapproved victor or treaty is fixed.
+const FINAL_ACT_APPROACHES=Object.freeze({
+ kingdom:{
+  name:'王国',speaker:'カレン',
+  prompt:'「ここにいる人たちを、これ以上巻き込まない方法を考えたい」',
+  choices:[
+   {id:'evacuation',label:'停戦前に民間人の退路を確保する',speaker:'ソフィ',
+    reply:'「道を開くまでは軍が動いても危険です。避難路の安全をまず伝えましょう」',
+    note:'敵味方の区別より先に、民間人が前線を離れられる時間と道を求めた。'},
+   {id:'witnesses',label:'両軍が残した戦争の記録を公開する',speaker:'マーガレット',
+    reply:'「目の前の兵だけを責めず、誰がどんな命令を出したか残しましょう」',
+    note:'王国軍と帝国軍の双方に、被害と命令の記録を残すよう求めた。'}
+  ]
+ },
+ empire:{
+  name:'帝国',speaker:'マーガレット',
+  prompt:'「帝国に協力するなら、こちらからも条件を示すべきよ」',
+  choices:[
+   {id:'captives',label:'捕虜と負傷者の保護を要求する',speaker:'ソフィ',
+    reply:'「国籍を理由に治療を止めないと、今ここで約束してほしいです」',
+    note:'降伏した兵士と負傷者に、両国を問わない保護を要求した。'},
+   {id:'dispatch',label:'追撃命令を記録し撤回を求める',speaker:'トリトン',
+    reply:'「軍を止めるなら、現場の兵まで命令を届かせなきゃ意味がない」',
+    note:'追撃の伝令と命令を確かめ、撤回を前線へ通達するよう求めた。'}
+  ]
+ },
+ ashcrown:{
+  name:'灰冠',speaker:'カレン',
+  prompt:'「従わせるためにここまで来たのか、それとも、私の責任を引き受けるためか」',
+  choices:[
+   {id:'leave',label:'守備兵に退く道を残す',speaker:'カレン',
+    reply:'「道を空けて。もう命を奪って従わせたくない」',
+    note:'支配するという決意を撤回しないまま、退く者を追わないと告げた。'},
+   {id:'command',label:'従うよう命じる',speaker:'カレン',
+    reply:'「従わないなら、ここを去って。命令を撤回するつもりはない」',
+    note:'兵を従わせようとしたが、その命令が受け入れられたかはまだ分からない。'}
+  ]
+ }
+});
+function finalActNegotiationChoices(route){
+ const v=FINAL_ACT_APPROACHES[route];return v?v.choices:[]
+}
+function runFinalActNegotiation(route){
+ if(!FINAL_ACT_APPROACHES[route]||state.finalChoice!==route)return false;
+ // Preserve choice and one-time journal even when the NPC is revisited.
+ if(state.events.choices['route.final.'+route])return playRouteAftermath(route);
+ const info=FINAL_ACT_APPROACHES[route];
+ const variant=state.events.choices['route.companions.'+route];
+ if(!variant)return routeCompanionScene(route);
+ if(route==='ashcrown'&&!isEventComplete('ashcrownCheckpointCleared'))return false;
+ if(route!=='ashcrown'&&!isEventComplete('final.route.'+route+'.checkpoint'))return false;
+ say(info.speaker,info.prompt,info.choices.map(option=>({
+  label:option.label,
+  fn:()=>{
+   const key='route.final.'+route;
+   if(state.events.choices[key])return;
+   state.events.choices[key]=option.id;
+   addJournal('最終局面・'+info.name+'：'+option.note);
+   state.objective='最終局面の決断を記録した（後日談は仮実装）';
+   renderHud();say(option.speaker,option.reply,[],()=>playRouteAftermath(route))
+  }
+ })));
+ return true
+}
+
 // Choice-aware routes reach a distinct tactical roadblock BEFORE meeting a ruler.
 // The four variants block movement, not the player's allegiance or existing saves.
 function finalConfrontationBattleId(route,decision){
@@ -170,7 +237,7 @@ function runFinalRouteConfrontation(route){
     {speaker:'カレン',text:'「故郷を嫌いになったわけじゃない。だからこそ、この戦争を止める」'},
     consequences.empire[decision],
     {speaker:'総司令グランツ',text:'「それも君たちが選んだ勇者の形か。……しかし軍の命令は止まらない」'}];
- return saySequence(lines,()=>playRouteAftermath(route))
+ return saySequence(lines,()=>runFinalActNegotiation(route))
 }
 function grayCrownMorality(){const v=state.events?.choices||{};const lethal=Object.keys(v).filter(k=>k.startsWith('moral.lethal.')&&v[k]==='kill').length;const spared=Object.keys(v).filter(k=>k.startsWith('moral.lethal.')&&v[k]==='spare').length;return{lethal,spared,ashCrownUnlocked:lethal>=1,route:'uncommitted'}}
 function recordGrayCrownMoralChoice(id,decision){if(!['kill','spare'].includes(decision))return false;const key='moral.lethal.'+id;if(state.events.choices[key])return false;state.events.choices[key]=decision;addJournal(decision==='kill'?'自ら命を奪った。戦闘の勝敗とは異なる、取り返せない選択。':'抵抗できない敵を追撃せず、命を奪わなかった。');renderHud();return true}
