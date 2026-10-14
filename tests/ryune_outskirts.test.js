@@ -178,7 +178,7 @@ test('only farm work animates slowly; brook watcher stands still',()=>{
   brook.x+","+brook.y+",maps.ryunebrook.npcs)"),false);
  assert.equal(h.evaluate("OpeningPixelAssets.designs.brookKeeper!==undefined"),true);
  const original=h.evaluate("OpeningPixelAssets.drawNpc.toString()");
- assert.ok(original.includes("n.id==='fieldWorker'"),'only farmhand has an authored sparse gesture');
+ assert.ok(original.includes("'fieldWorker'].includes(n.id)"),'farmhand is in the authored sparse work-gesture roster');
  assert.ok(original.includes('OpeningWorldLife.workPhase(n.id,now)'),
   'one restrained frame timed by the actual sparse work-motion scheduler');
  assert.ok(!original.match(/'fieldWorker','brookKeeper'\]\.includes/),
