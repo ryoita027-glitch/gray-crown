@@ -67,7 +67,7 @@ function enterFinalBranch(){if(state.finalChoice==='kingdom')travelScene('imperi
    {speaker:'カレン',text:'「退くことはできない。でも、あなたを殺すために来たわけじゃない」'}],()=>startBattle('ashcrownCheckpoint'));
   return
  }
- playRouteAftermath('ashcrown');return
+ runFinalActNegotiation('ashcrown');return
 }if(state.finalChoice==='empire')travelScene('royalcamp',11,13,'up','最終章 — 帝国側','王国軍総司令部でグランツと向き合う','侵攻と勇者制度を終わらせるため、四人は自国の軍へ剣を向ける。')}
 function playRouteAftermath(route){
  if(!['kingdom','empire','ashcrown'].includes(route))return false;
@@ -110,6 +110,13 @@ function showWorldSkeletonEnding(route){
   }
  };
  const p=previews[route];if(!p)return false;
+ // Reflect what the player actually demanded without declaring that a ruler,
+ // army or civilian accepted the request. This is still a PROVISIONAL ending.
+ const approachId=state.events?.choices?.['route.final.'+route];
+ const knownApproach=FINAL_ACT_APPROACHES[route]?.choices.find(c=>c.id===approachId);
+ const approachText=knownApproach?
+  '<p class="ending-request"><strong>最後に示した条件：</strong>'+knownApproach.note+'</p>':'';
+
  if(!isEventComplete('worldSkeletonCleared')){
   completeEvent('worldSkeletonCleared',true);
   addJournal('最終章・'+p.title+'へ到達（物語プレビュー・未完成）');
@@ -117,7 +124,7 @@ function showWorldSkeletonEnding(route){
  setWorldSwitch('cleared',true);
  state.objective='最終章の仮エピローグ到達：本編結末は未実装';
  renderHud();
- say('ナレーション','<div class="ending"><h2>'+p.title+'</h2><p>'+p.scene+'</p><p>カレン '+p.karen+'</p><p>'+p.conclusion+'</p><p class="ending-note">ここは未完成エンディングの演出プレビューです。王国・帝国との決着や灰冠への過程は、今後の正式な物語で制作します。</p></div>');
+ say('ナレーション','<div class="ending"><h2>'+p.title+'</h2><p>'+p.scene+'</p>'+approachText+'<p>カレン '+p.karen+'</p><p>'+p.conclusion+'</p><p class="ending-note">ここは未完成エンディングの演出プレビューです。王国・帝国との決着や灰冠への過程は、今後の正式な物語で制作します。</p></div>');
  return true
 }
 
