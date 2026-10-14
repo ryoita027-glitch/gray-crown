@@ -197,7 +197,36 @@ const RyuneEnvironment=(()=>{
   }
   houseIdentity(c,kind,x,y)
  }
- function outdoors(c){lowProps(c);for(const h of villageHouses)building(c,h)}
+ // Curated village geometry, not random decoration. Each tiny object
+ // is anchored beside an existing path/house and never alters walk collision.
+ function districtDetails(c){
+  // South-west: packed documents and a small shaded waiting step at the mayor.
+  rect(c,'#635541',6*32+5,11*32+20,20,5);
+  rect(c,'#c2af84',6*32+7,11*32+17,17,4);
+  rect(c,'#7c6653',6*32+11,11*32+15,8,2);
+  // Family lane: split, faded shoe prints toward shared well.
+  for(const [x,y] of [[8,8],[9,8],[9,9],[14,9],[15,9]]){
+   rect(c,'#8b8669',x*32+13,y*32+24,5,2);
+   rect(c,'#b9ac85',x*32+20,y*32+19,4,2);
+  }
+  // North-east orphanage front: low wooden toy chest and chalk-play stones,
+  // not a false interactive prop nor an extra impassable building.
+  rect(c,'#72583c',20*32+4,6*32+20,23,7);
+  rect(c,'#b49364',20*32+5,6*32+19,21,4);
+  rect(c,'#d9c6a1',20*32+11,6*32+16,5,3);
+  for(const [x,y] of [[17,7],[19,7],[20,8]]){
+   rect(c,'#b3a888',x*32+11,y*32+25,10,2);
+   rect(c,'#d1c2a4',x*32+14,y*32+24,4,1);
+  }
+  // West side working plots connect visually to the existing 8th-row trail.
+  for(let x=1;x<=4;x++){
+   const xx=x*32+9,yy=8*32+26;
+   rect(c,'#927c59',xx,yy,11,2);
+   if(x%2===0)rect(c,'#6e815b',xx+3,yy-5,3,5);
+  }
+  // No made-up victory shrine or royal/heraldic emblem is added.
+ }
+ function outdoors(c){lowProps(c);districtDetails(c);for(const h of villageHouses)building(c,h)}
  function rug(c,map,x,y,w,h){const color=roomPalette[map].rug;rect(c,'#594d40',x,y,w,h);rect(c,color,x+3,y+3,w-6,h-6);for(let yy=y+8;yy<y+h-6;yy+=12)rect(c,'#d3c2a4',x+7,yy,w-14,1)}
  function bed(c,x,y,color){
   rect(c,'#574331',x+2,y+5,30,29);rect(c,'#c6b99c',x+5,y+7,23,8);
@@ -212,6 +241,46 @@ const RyuneEnvironment=(()=>{
   for(let i=0;i<books;i++)rect(c,['#886650','#6e7c79','#ae9972','#967d87'][i%4],x+3+(i%6)*4,y+4+Math.floor(i/6)*13,3,8);
  }
  function cabinet(c,x,y){rect(c,'#5f4c3b',x,y,29,26);rect(c,'#947454',x+3,y+4,23,19);rect(c,'#554434',x+14,y+5,2,17);rect(c,'#d2ad72',x+11,y+13,2,3);rect(c,'#d2ad72',x+18,y+13,2,3)}
+ function householdDetails(c,map){
+  // All details sit on established interiors, with feet and collision owned by
+  // existing tiles. Props express residents' work and occupancy, not loot.
+  if(map==='karenhome'){
+   // Tableware for an actual family; small child's footwear by the entrance.
+   for(let i=0;i<4;i++){
+    const x=10*32+20+i*18,y=7*32+12;
+    rect(c,'#d6ccb0',x,y,10,3);rect(c,'#8d7556',x+2,y+1,6,1);
+   }
+   rect(c,'#625442',9*32+12,10*32+20,8,5);
+   rect(c,'#625442',9*32+23,10*32+21,8,4);
+   rect(c,'#b3a184',9*32+13,10*32+19,6,2);
+  }else if(map==='orphanage'){
+   // Identifiable shared care: folded blankets, shelf labels, activity table.
+   for(let i=0;i<3;i++){
+    rect(c,'#9da88e',15*32+4,5*32+7+i*6,19,4);
+    rect(c,'#d0c09d',15*32+4,5*32+7+i*6,10,1);
+   }
+   for(const [x,y] of [[10,7],[12,7],[14,7]]){
+    rect(c,'#d4b991',x*32+8,y*32+16,9,3);
+    rect(c,'#857f66',x*32+10,y*32+14,3,3);
+   }
+  }else if(map==='mayorhouse'){
+   // Registry ledger and separate pen implements, not invented insignia.
+   for(const [x,y,w] of [[11,7,19],[12,7,23],[13,7,18]]){
+    rect(c,'#a08a69',x*32+5,y*32+15,w,8);
+    rect(c,'#e0cfa8',x*32+7,y*32+16,w-4,5);
+    rect(c,'#6b6258',x*32+9,y*32+18,w-8,1);
+   }
+   rect(c,'#594c44',8*32+12,4*32+18,24,6);
+   rect(c,'#c5b28f',8*32+15,4*32+16,19,2);
+  }else if(map==='cottage'){
+   // Care for an absent soldier: folded spare blanket and household stitching.
+   rect(c,'#6c6b73',6*32+8,4*32+19,16,8);
+   rect(c,'#a8a3a2',6*32+9,4*32+20,14,2);
+   rect(c,'#7d634c',14*32+5,7*32+18,18,8);
+   rect(c,'#cbb68f',14*32+7,7*32+19,13,2);
+   rect(c,'#8e7a61',14*32+17,7*32+16,3,5);
+  }
+ }
  function indoor(c,map){
   const room=roomPalette[map],l=4*32,t=2*32;
   // Room identity uses restrained furniture; navigable tiles remain exactly the same.
@@ -248,6 +317,7 @@ const RyuneEnvironment=(()=>{
   // Entrance mat visually anchors the existing 11/12 exit tiles.
   rect(c,'#4d4036',11*32+1,12*32+13,62,13);
   rect(c,'#bda37d',11*32+5,12*32+17,53,5);
+  householdDetails(c,map);
  }
  function object(c,map,obj){
   if(!targets.has(map))return false;
