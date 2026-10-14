@@ -12,10 +12,18 @@
   watchTower:'見張り台',frontierCache:'補給箱',frontierNotice:'前線の掲示',
   fieldFurrows:'乾いた畑の畝',brookWater:'小川の水際',
   fieldCart:'作業用の荷車',brookStones:'川岸の石積み',
-  westFieldPath:'西畑への道',eastBrookPath:'東小川への道'
+  westFieldPath:'西畑への道',eastBrookPath:'東小川への道',
+  wolf:'街道の灰牙狼',roadSign:'狼の足跡がある道標',cave:'古砦入口',
+  bandit:'街道のならず者',bats:'コウモリの群れ',crawler:'石殻ムカデ',
+  boss:'奥に潜む灰角獣',leverWest:'西側の開閉機構',
+  leverEast:'東側の開閉機構',innerGate:'中央の鉄格子',
+  banner:'古い軍旗',caveRest:'兵舎跡の休憩所',rations:'保存食の箱'
  });
  const action=(kind,o)=>o?
-   (kind==='npc'?'話す':'調べる')+'：'+(o.name||labels[o.id]||'気になるもの')+' · Enter':
+   (kind==='npc'?'話す':
+    ['wolf','bandit','bats','crawler','boss'].includes(o.id)?'向き合う':
+    ['leverWest','leverEast'].includes(o.id)?'操作する':'調べる')+
+   '：'+(o.name||labels[o.id]||'気になるもの')+' · Enter':
    '移動：WASD / 矢印　　調べる：Enter';
  let previous=null;
  function update(map,targetNpc,targetObject){
