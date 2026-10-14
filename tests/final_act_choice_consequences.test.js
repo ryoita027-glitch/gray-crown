@@ -80,12 +80,12 @@ test('Ash Crown route does not become harmless by choosing restraint once',()=>{
  assert.equal(h.evaluate("state.events.choices['route.companions.ashcrown']"),'release');
 });
 
-test('choice approach does not modify source Story 00-19 stage or invent a Save schema 24',()=>{
+test('choice approach preserves Story 00-19 stage and updates only objective text, without schema change',()=>{
  const h=createHarness();
  prepare(h,'kingdom');
- const old=h.evaluate('state.story.stage'),objective=h.evaluate('state.story.objective');
+ const old=h.evaluate('state.story.stage');
  h.evaluate("runFinalActNegotiation('kingdom');dialogueChoices[0].fn()");
  assert.equal(h.evaluate('state.story.stage'),old);
- assert.equal(h.evaluate('state.story.objective'),objective);
+ assert.match(h.evaluate('state.story.objective'),/最終局面の決断/);
  assert.equal(h.GC.Save.SAVE_SCHEMA,23);
 });
