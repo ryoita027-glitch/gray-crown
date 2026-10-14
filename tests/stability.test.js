@@ -52,3 +52,37 @@ test('v22 frontier-complete save migrates to schema 23 without inventing v23 pro
  const h=createHarness();const base=h.GC.State.create();h.GC.Story.applyCanonicalAlphaStage(base,h.GC.Story.STORY_STAGES.FRONTIER_COMPLETE);base.schema=22;base.map='frontier';base.x=9;base.y=8;base.dir='up';base.gold=211;
  const migrated=h.GC.Save.migrateLoaded(JSON.stringify(base));assert.equal(migrated.schema,23);assert.equal(migrated.story.stage,'15_frontier_complete');assert.equal(migrated.map,'frontier');assert.equal(migrated.events.completed['alpha2.frontier.complete'],true);assert.equal(migrated.events.completed['alpha2.frontier2.order'],undefined);assert.equal(migrated.events.completed['alpha2.frontier2.complete'],undefined);assert.equal(migrated.gold,211)
 });
+
+test('load uses the persisted treasure flag when restoring position on a collected supply box',()=>{
+ const h=createHarness(),src=stateOf(h);
+ const box={map:'ryunefields',x:19,y:4};
+ // In a previously explored village branch the box no longer collides.
+ const visited={...src.world,treasures:{...src.world.treasures,fieldCache:true}};
+ const save=JSON.stringify({...src,...box,world:visited,schema:23});
+ const restored=h.GC.Save.migrateLoaded(save);
+ assert.equal(restored.map,'ryunefields');
+ assert.deepEqual([restored.x,restored.y],[19,4],
+  'restore EXACT world coordinates after the player collected this box');
+ assert.equal(restored.world.treasures.fieldCache,true);
+ assert.equal(restored.schema,23);
+});
+
+test('load rejects a standing position on unopened chest even when the previous session opened it',()=>{
+ const h=createHarness(),src=stateOf(h);
+ // A previously running session must not contaminate validation of another save.
+ src.world.treasures.fieldCache=true;
+ const raw=JSON.stringify({...src,map:'ryunefields',x:19,y:4,
+  world:{...src.world,treasures:{...src.world.treasures,fieldCache:false}},schema:23});
+ const loaded=h.GC.Save.migrateLoaded(raw);
+ assert.equal(loaded.map,'ryunefields');
+ assert.notDeepEqual([loaded.x,loaded.y],[19,4],'solid unopened supply crate remains a blocker');
+ assert.notEqual(loaded.world.treasures.fieldCache,true);
+});
+
+test('save nearest-safe-tile continues rejecting real water tiles and occupied NPC cells',()=>{
+ const h=createHarness();
+ for(const [map,x,y] of [['ryunebrook',12,5],['ryunefields',9,5]]){
+  const p=h.GC.Save.nearestSafeTile(map,x,y);
+  assert.notDeepEqual(Array.from(p),[x,y],map+' must reject blocked tile');
+ }
+});
