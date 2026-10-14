@@ -6,7 +6,7 @@ function startBattle(id,fromSymbol=false){if(!$('dialogueBox').classList.contain
  metrics:{startedAt:Date.now(),actions:{},rounds:0,enemyAttacks:0,damageTaken:0,
   openingHp:activeRouteParty().reduce((sum,p)=>sum+p.hp,0),
   openingMp:activeRouteParty().reduce((sum,p)=>sum+p.mp,0)}};
- setMusic(id==='boss'?'boss':'battle');$('battleLog').innerHTML='';$('battleTitle').textContent=bdef.name;$('battlePanel').classList.remove('hidden');if(bdef.boss)showBossCinematic(bdef,false);else if(!bdef.random)showBattleIntro(bdef.name);battleLog(`―― ${bdef.name}との戦闘！`);renderBattle();setTimeout(()=>{state.locked=false},bdef.boss?1480:bdef.random?180:680)}
+ setMusic(id==='boss'?'boss':'battle');$('battleLog').innerHTML='';$('battleTitle').textContent=bdef.name;$('battlePanel').classList.remove('hidden');if(bdef.boss)showBossCinematic(bdef,false);else if(!bdef.random)showBattleIntro(bdef.name);battleLog(`―― ${bdef.name}との戦闘！`);renderBattle();setTimeout(()=>{if(state.battle?.id!==id)return;state.locked=false;renderBattle()},bdef.boss?1480:bdef.random?180:680)}
 function livingEnemies(){return state.battle.enemies.filter(e=>e.hp>0)}
 function currentActor(){return activeRouteParty()[state.battle.actor]}
 function enemyMood(e){if(e.staggered>0)return'体勢崩れ・次の行動不能';if(e.morale==null)return'野生';const r=e.morale/e.maxMorale;if(r<=.2)return'崩れかけ';if(r<=.5)return'動揺';return'戦意あり'}
