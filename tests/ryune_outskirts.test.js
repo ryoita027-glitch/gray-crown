@@ -152,3 +152,15 @@ test('both optional path signs can be read without obstructing either walkable e
   assert.ok(h.GC.Events.findTriggeredEvent('object',sign.id,{map:'village'}));
  }
 });
+
+test('optional chores use ambient animation only near an NPC and do not alter the map',()=>{
+ const h=createHarness();
+ for(const [id,worker] of [['ryunefields','fieldWorker'],['ryunebrook','brookKeeper']]){
+  const npc=h.evaluate("maps['"+id+"'].npcs[0]");
+  assert.equal(npc.id,worker);
+  assert.equal(h.evaluate("OpeningPixelAssets.designs['"+worker+"']!==undefined"),true);
+  assert.equal(h.evaluate("OpeningWorldLife.shouldBreathe('"+id+"',"+
+   npc.x+","+npc.y+",maps['"+id+"'].npcs)"),true);
+  assert.equal(h.evaluate("OpeningWorldLife.shouldBreathe('"+id+"',0,14,maps['"+id+"'].npcs)"),false);
+ }
+});
