@@ -23,6 +23,7 @@
 
 ## 技術
 - 作業姿勢は既存 `OpeningWorldLife.workPhase(id,now)` の8〜11秒周期、短い2姿勢だけに留める。
+- この版の追加実装：`OpeningWorldLife.workplace()` が村長宅の書記、王都の宿の女将、鍛冶師・見習いの4人に **実際の帳簿・鍵/伝票・工具** を持たせ、アトラスの腕と同じ短い拍で動かす。無関係なNPCには発動しない。
 - 見た目が変わる瞬間にだけ描画を予定する `nextWorkFrameDelay()` / `nextWaterFrameDelay()` を維持。
 - ブラウザの `prefers-reduced-motion` で停止。
 - 方向 `down/left/right/up` と実座標を分離。絵だけ先に走らせると足元が滑るので厳禁。
