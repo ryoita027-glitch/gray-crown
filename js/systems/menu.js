@@ -13,6 +13,10 @@ function openMenu(){
    <div class="menu-actions">
      <button onclick="$('modal').classList.add('hidden');save(false)">セーブ</button>
      <button onclick="$('modal').classList.add('hidden');load(false)">ロード</button>
+     <button onclick="$('modal').classList.add('hidden');GC.Save.downloadPortableSave()">セーブを書き出す（PC移行用）</button>
+     <button onclick="document.getElementById('portableSaveUpload').click()">セーブを読み込む（.json）</button>
+     <input id="portableSaveUpload" type="file" accept=".json,application/json" style="display:none"
+       onchange="$('modal').classList.add('hidden');GC.Save.readPortableSaveFile(this.files?.[0]);this.value='';">
      <button class="menu-danger" onclick="$('modal').classList.add('hidden');restart()">最初から</button>
    </div>
  </div>`;
