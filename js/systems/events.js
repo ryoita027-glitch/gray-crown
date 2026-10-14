@@ -258,7 +258,58 @@ function finishSeradGravesChoice(choice){
  addJournal('セラド前線の仮埋葬地点で、四人は'+({care:'墓を整えた。',record:'記録を残した。',leave:'今は進むことを選んだ。'}[choice]||'立ち止まった。'));
  sfx('discovery');renderHud();saySequence(lines[choice]||lines.leave);
 }
+// A tiny, legible decision AFTER the two optional investigations and Boru's
+// report. The player applies what they learned at the EXISTING bank rather
+// than walking to a third empty zone. There is no canonical repair miracle,
+// combat reward, compulsory route or new Save schema.
+function ryuneWorksiteChoice(){
+ const key='ryune.worksite.action',existing=state.events.choices[key];
+ if(existing){
+  return say('川辺の石積み',existing==='clear'
+   ?'トリトンが岸辺から外した小枝は、乾いた場所へまとめてある。川底の泥はまだ残っている。'
+   :'マーガレットが付けた二つの水位の印。雨の後にも同じ高さで確かめられる。')
+ }
+ const commit=kind=>{
+  if(state.events.choices[key]||!['clear','measure'].includes(kind))return false;
+  state.events.choices[key]=kind;
+  addJournal(kind==='clear'
+   ?'小川の岸から手の届く小枝だけを取り除いた。畑全体の水不足が直ったわけではない。'
+   :'小川の二か所に水位の印を付けた。畑の水不足の原因を判断する材料を残した。');
+  renderHud();draw();
+  return saySequence(kind==='clear'
+   ?[{speaker:'トリトン',text:'「届く分だけ取れた。底の泥は、村の人と道具を揃えてからだな」'},
+     {speaker:'ソフィ',text:'「無理に水へ入らなくてよかったです」'}]
+   :[{speaker:'マーガレット',text:'「橋の上下で印の高さを揃えた。何日か経ってからなら違いが分かる」'},
+     {speaker:'カレン',text:'「直す場所も、ちゃんと見つかるといいな」'}])
+ };
+ return saySequence([
+  {speaker:'川辺の石積み',text:'橋の下に枝が引っかかっている。岸から届く枝と、川底に沈んだ泥は別に考えた方がよさそうだ。'},
+  {speaker:'マーガレット',text:'「大がかりな修理は村のみんなと。今ここでできるのは、危険のない範囲だけね」'}
+ ],()=>say('カレン','「せっかく見に来たんだし、どうする？」',[
+  {label:'トリトンと岸辺の小枝だけ片づける',fn:()=>commit('clear')},
+  {label:'マーガレットと水位を記録する',fn:()=>commit('measure')},
+  {label:'今日は手をつけずに戻る',fn:()=>say('ソフィ','「無理をしないのも大切です。村の人に相談しましょう」')}
+ ]))
+}
+function ryuneWorksiteFarmerFollowUp(){
+ if(isEventComplete('ryune.worksite.boruAcknowledged'))return false;
+ const kind=state.events.choices['ryune.worksite.action'];
+ if(!kind)return false;
+ return saySequence([
+  {speaker:'農夫のボル',text:kind==='clear'
+   ?'「枝を岸からどけたのか。川底まで入らなくてよかった。あとはこっちでやる」'
+   :'「水位の印をつけてくれたのか。畑に引く前に、雨の日にも見ておこう」'},
+  {speaker:'カレン',text:'「また帰ってきたら、どうなったか教えてね」'}
+ ],()=>completeEvent('ryune.worksite.boruAcknowledged'))
+}
+
 function runTriggeredEvent(type,target,context={}){
+ const map=context.map??state.map;
+ if(type==='object'&&map==='ryunebrook'&&target==='brookStones'&&isEventComplete('ryune.outskirts.reward'))
+  return ryuneWorksiteChoice();
+ if(type==='npc'&&map==='village'&&target==='farmer'&&isEventComplete('ryune.outskirts.reward')&&
+    state.events.choices['ryune.worksite.action']&&!isEventComplete('ryune.worksite.boruAcknowledged'))
+  return ryuneWorksiteFarmerFollowUp();
  // Optional interactive memory at the existing Serad battlefield grave marker.
  // Reuses this map object; no new entity, gate, reward or canon outcome.
  if(type==='object'&&target==='fieldGraves'&&(context.map??state.map)==='frontierfield'){
