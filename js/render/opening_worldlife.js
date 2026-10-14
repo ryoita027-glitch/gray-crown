@@ -224,9 +224,9 @@ const OpeningWorldLife=(()=>{
  }
  // Indoor workshops also have genuinely working NPCs. Ordinary stationary
  // civilians must not trigger wasteful, in-place walking cycles.
- const ambientWorkplaces=new Set(['village','road','capital','capitalarmory','capitalinn','mayorhouse']);
+ const ambientWorkplaces=new Set(['village','ryunefields','ryunebrook','road','capital','capitalarmory','capitalinn','mayorhouse']);
  const animatedWorkers=new Set(['baker','farmer','merchant','capitalVendor','capitalFlowerGirl',
-  'capitalSmith','armoryApprentice','clerk','capitalInnHost']);
+  'capitalSmith','armoryApprentice','clerk','capitalInnHost','fieldWorker','brookKeeper']);
  function shouldBreathe(map,playerX,playerY,npcs){
   if(!api.enabled||!ambientWorkplaces.has(map))return false;
   if(typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches)return false;
