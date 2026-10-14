@@ -25,3 +25,17 @@ This document accompanies draft PR #69, based on the visual recovery branch PR #
 Run a real Chrome/Edge launch, new game, sprite/NPC/render visual check, combat, save/load, title re-entry, then compare normal ZIP and standalone 1-file. If QA cannot run (including CI runner provisioning or browser policy), keep the PR **draft**, don't call the release commercially approved.
 
 **This PR is about organization and portability, not a game-art quality approval.**
+
+
+## 2026-10-14 commercial readiness extension — player save portability
+
+The source `js/core/save.js` now exposes **portable JSON export/import** in the normal player adventure menu. This matters because the ZIP and single-file HTML use different `file://` paths/origins; moving the game files does **not** guarantee that browser-local `localStorage` follows. Players can explicitly export a `GrayCrown_Save_v23_YYYY-MM-DD.json` file and import that file into another distribution on their own PC.
+
+- Export performs an ordinary allowed manual save before downloading; no export while the game is input-locked, in a cutscene or in battle.
+- Import asks for confirmation; accepts recognized past schema versions through the existing migration routine and maintains the existing save as a backup before writing a normalized v23 save. Malformed JSON, unrecognized characters, unknown maps, unrecognized future schemas and files over 2 MB are rejected. Existing serialized game state is not changed by a rejected import.
+- The menu's preexisting Save / Load / Restart remain. The distinction between *browser-local auto saves* and *user-owned exported JSON backups* should appear in any published player guide.
+- `npm run release:browser-e2e`: build and open the extracted ZIP and the experimental one-file HTML in real Chromium using `file://`, check four PNG sheet loads, normal game input, Save/Continue and actual user-UI ZIP→single-file portable save transfer. Capture genuine desktop + 390px mobile screenshots and logs.
+- `npm run release:technical-candidate`: run full existing quality checks, packaging byte/asset verification, ZIP+single-file Chromium acceptance and three-route acceptance.
+- These commands were added as QA definitions, **not yet executed and not accepted at the current Draft head**. Shipping the single HTML as authoritative remains blocked until same-HEAD testing is documented. Neither technical acceptance nor this portability fix proves the 8–12-hour RPG is content complete.
+
+See `docs/audit/COMMERCIAL_READINESS_GATE_20261014.md` for the blocking S0/S1 issues and commercial content review checklist.
