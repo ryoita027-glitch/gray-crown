@@ -142,6 +142,36 @@ const OpeningPixelAssets=(()=>{
   if(type==='scout'&&side)P(c,'#8a866d',26,13,2,8);
  }
 
+ // Nine bespoke resident silhouettes with four separately drawn directions.
+ // Real transparent PNG pixel source, not another tint over the shared body.
+ const featuredNames=['baker','farmer','oldwoman','mayor','messenger','ren',
+  'capitalFlowerGirl','capitalRecruit','granz'];
+ const featuredIndex=new Map(featuredNames.map((id,i)=>[id,i]));
+ let featuredSheet=null,featuredReady=false,featuredFailed=false,featuredRequested=false;
+ function tryFeatured(c,n,dir){
+  const index=featuredIndex.get(n.id);
+  if(index===undefined||featuredFailed)return false;
+  if(!featuredRequested){
+   featuredRequested=true;
+   try{
+    featuredSheet=new Image();
+    featuredSheet.onload=()=>{
+     featuredReady=featuredSheet.naturalWidth===288&&featuredSheet.naturalHeight===128;
+     featuredFailed=!featuredReady;
+     if(featuredFailed)GC?.Log?.warn?.('Featured residents atlas wrong dimensions');
+     else GC?.Render?.World?.draw?.();
+    };
+    featuredSheet.onerror=()=>{featuredFailed=true;GC?.Log?.warn?.('Featured residents atlas failed to load')};
+    featuredSheet.src='assets/npc/featured_residents_v1.png';
+   }catch(e){featuredFailed=true;GC?.Log?.warn?.('Featured residents atlas unavailable',{detail:String(e)})}
+  }
+  if(!featuredReady)return false;
+  c.save();c.imageSmoothingEnabled=false;
+  c.drawImage(featuredSheet,index*32,(dirs[dir]??0)*32,32,32,n.x*32,n.y*32,32,32);
+  c.restore();return true
+ }
+ function featuredStatus(){return {requested:featuredRequested,ready:featuredReady,
+  failed:featuredFailed,count:featuredNames.length}}
  const dirs={down:0,left:1,right:2,up:3};
  const npcCache=new Map(),houseCache=new Map();
  const P=(c,color,x,y,w,h)=>{c.fillStyle=color;c.fillRect(x|0,y|0,w|0,h|0)};
@@ -275,6 +305,7 @@ const OpeningPixelAssets=(()=>{
   return img
  }
  function drawNpc(c,n,dir='down',now=0){
+  if(tryFeatured(c,n,dir))return true;
   const profile=designs[n.id];if(!profile)return false;
   let sheet=npcCache.get(n.id);
   if(!sheet){sheet=makeNpc(profile,n.id);if(!sheet)return false;npcCache.set(n.id,sheet)}
@@ -366,6 +397,6 @@ const OpeningPixelAssets=(()=>{
   }
   c.save();c.imageSmoothingEnabled=false;c.drawImage(tile,x,y);c.restore();return true
  }
- const api={designs,identities,drawNpc,drawHouse,dirs,getNpcAtlas:id=>npcCache.get(id),getHouseTile:id=>houseCache.get(id)};
+ const api={designs,identities,featuredNames,featuredStatus,drawNpc,drawHouse,dirs,getNpcAtlas:id=>npcCache.get(id),getHouseTile:id=>houseCache.get(id)};
  return api
 })();
