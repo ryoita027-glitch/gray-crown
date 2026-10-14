@@ -138,12 +138,14 @@ async function readPortableSaveFile(file){
  if(!canPersistNow('load')){
   say('システム','戦闘やイベントの途中ではセーブを読み込めません。');return false
  }
- if(!confirm('現在のセーブをバックアップして、選んだセーブデータへ切り替えますか？'))return false;
+ const priorExists=!!localStorage.getItem(SAVE_KEY);
+ if(!confirm(priorExists?'現在のセーブをバックアップして、選んだセーブデータへ切り替えますか？':
+  '選んだセーブデータを読み込みますか？'))return false;
  let ok=false;
  try{ok=importPortableSaveText(await file.text())}
  catch(e){GC.Log?.error('Portable save read failed',{error:String(e)})}
- say('システム',ok?'外部セーブを読み込みました。元のセーブはバックアップに保存されています。':
-  'セーブの読み込みに失敗しました。形式やデータを確認してください。');
+ say('システム',ok?(priorExists?'外部セーブを読み込みました。元のセーブはバックアップに保存されています。':
+  '外部セーブを読み込みました。'):'セーブの読み込みに失敗しました。形式やデータを確認してください。');
  return ok
 }
 
