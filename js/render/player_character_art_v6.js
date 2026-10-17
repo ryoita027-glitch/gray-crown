@@ -217,7 +217,7 @@ const PlayerCharacterArtV6=(()=>{
    // Oversize training scarf and real wooden practice sword.
    box(c,d.trim,x-11,top+19,22,5);
    box(c,d.trim,x+5,top+24,4,7);
-   box(c,'#9a784f',x+12,top+19+motion,3,16);
+   box(c,'#9a784f',x+12,top+19+motion,3,14);
    box(c,'#d0a973',x+10,top+18+motion,7,4);break;
   case 'childRibbon':
    // Small tied cape, readable bow, distinct lighter shoes.
@@ -278,8 +278,8 @@ const PlayerCharacterArtV6=(()=>{
   box(c,d.trim,x-width/2,top+32,width,3);
   // Arms are outside the torso, giving distinct shoulder and idle silhouettes.
   const armW=d.kind==='guard'||d.kind==='commander'?7:small?4:5;
-  box(c,d.shade,x-width/2-armW+1,top+21+Math.max(0,-walk),armW,13);
-  box(c,d.shade,x+width/2-1,top+21+Math.max(0,walk),armW,13);
+  box(c,d.shade,x-width/2-armW+1,top+21+Math.max(0,-walk),armW,Math.min(13,48-top-21-Math.max(0,-walk)));
+  box(c,d.shade,x+width/2-1,top+21+Math.max(0,walk),armW,Math.min(13,48-top-21-Math.max(0,walk)));
   box(c,d.skin,x-width/2-armW+1,top+(small?27:32)+Math.max(0,-walk),armW-1,4);
   box(c,d.skin,x+width/2,top+(small?27:32)+Math.max(0,walk),armW-1,4);
   // Outline -> skin head -> real hairstyle silhouette, not a generic blob.
