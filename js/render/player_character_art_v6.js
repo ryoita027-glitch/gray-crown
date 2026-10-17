@@ -131,7 +131,7 @@ const PlayerCharacterArtV6=(()=>{
   case 'guard':case 'trainer':case 'commander':case 'recruit':
    box(c,d.shade,cx-14,top+15,28,22);
    box(c,shade(d.tunic,-23),cx-15,top+19,9,11);box(c,shade(d.tunic,-23),cx+6,top+19,9,11);
-   if(d.kind==='commander'){box(c,d.tunic,cx-16,top+16,6,29);box(c,d.trim,cx-13,top+17,3,24)}
+   if(d.kind==='commander'){box(c,d.tunic,cx-16,top+16,6,26);box(c,d.trim,cx-13,top+17,3,23)}
    break;
   case 'healer':
    box(c,d.shade,cx-10,top+18,20,23);box(c,d.trim,cx-12,top+30,24,9);break;
@@ -179,7 +179,7 @@ const PlayerCharacterArtV6=(()=>{
   case 'mage':
    // High collar, separate deep violet coat tails and amethyst staff.
    box(c,d.trim,x-12,top+18,7,7);box(c,d.trim,x+5,top+18,7,7);
-   box(c,shade(d.shade,-25),x-10,top+38,8,7);box(c,d.tunic,x+2,top+38,8,7);
+   box(c,shade(d.shade,-25),x-10,top+38,8,4);box(c,d.tunic,x+2,top+38,8,4);
    box(c,'#d0b6d7',x-3,top+25,6,10);
    box(c,'#5a4259',x+15,top+9,3,33);
    box(c,d.accent,x+12,top+6,9,9);box(c,'#e6d5f0',x+15,top+7,3,4);
@@ -242,7 +242,7 @@ const PlayerCharacterArtV6=(()=>{
     box(c,i%2?'#f4cfad':'#c27887',x+8+i*5,top+13+i%2*2,6,6)}break;
   case 'brook':
    box(c,d.trim,x-10,top+19,20,5);
-   box(c,'#8c765d',x+12,top+22,3,21);
+   box(c,'#8c765d',x+12,top+22,3,20);
    box(c,'#a3bdb8',x+10,top+21,8,4);break;
   case 'hearth':
    box(c,d.trim,x-10,top+23,20,20);
@@ -280,8 +280,8 @@ const PlayerCharacterArtV6=(()=>{
   const armW=d.kind==='guard'||d.kind==='commander'?7:small?4:5;
   box(c,d.shade,x-width/2-armW+1,top+21+Math.max(0,-walk),armW,13);
   box(c,d.shade,x+width/2-1,top+21+Math.max(0,walk),armW,13);
-  box(c,d.skin,x-width/2-armW+1,top+32+Math.max(0,-walk),armW-1,4);
-  box(c,d.skin,x+width/2,top+32+Math.max(0,walk),armW-1,4);
+  box(c,d.skin,x-width/2-armW+1,top+(small?27:32)+Math.max(0,-walk),armW-1,4);
+  box(c,d.skin,x+width/2,top+(small?27:32)+Math.max(0,walk),armW-1,4);
   // Outline -> skin head -> real hairstyle silhouette, not a generic blob.
   const headW=small?14:d.width>3?17:16, headTop=top+3;
   box(c,shade(d.hair,-21),x-headW/2-1,headTop-1,headW+2,16);
