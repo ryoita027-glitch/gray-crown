@@ -9,6 +9,9 @@ if(typeof Image!=='undefined'){
 function heroWalkFrame(motion){if(!motion)return 0;const cycle=[0,1,2,3,4,5,4,3,2,1];return cycle[Math.floor(motion)%cycle.length]}
 function drawHeroMarker(cx,topY){ctx.fillStyle='#f0d178';ctx.beginPath();ctx.moveTo(cx,topY-3);ctx.lineTo(cx+5,topY-9);ctx.lineTo(cx,topY-14);ctx.lineTo(cx-5,topY-9);ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(66,46,20,.86)';ctx.lineWidth=1;ctx.stroke()}
 function drawHeroSpriteSheet(x,y,heroId,leader,facing,motion){
+ if(typeof PlayerCharacterArtV6!=='undefined'&&PlayerCharacterArtV6.drawHero(ctx,x,y,heroId,facing,motion)){
+  if(leader)drawHeroMarker(Math.round(x*TILE+16),Math.round(y*TILE-11));return true
+ }
  const frame=heroWalkFrame(motion),row=HERO_RUNTIME.directions[facing]??0,px=Math.round(x*TILE),py=Math.round(y*TILE),footX=px+16,footY=py+30;
  const rec=HERO_RUNTIME.images[heroId];
  if(rec?.ready&&rec.image){
@@ -195,6 +198,8 @@ function colorMix(hex,amount){
 }
 function npcHash(id){let h=0;for(const ch of String(id||''))h=(h*31+ch.charCodeAt(0))>>>0;return h}
 function drawNpcCommercial(n,facing='down'){
+ if(typeof PlayerCharacterArtV6!=='undefined'&&PlayerCharacterArtV6.drawNpc(ctx,n,facing,
+   Math.abs(state.x-n.x)+Math.abs(state.y-n.y)<=5?Date.now():0))return;
  // Render independent 4-direction, 4-pose pixel sprites where authored.
  // Do not paint the old generic body on top.
  if(typeof OpeningPixelAssets!=='undefined'&&OpeningPixelAssets.drawNpc(ctx,n,facing,
@@ -273,7 +278,7 @@ function drawNpcCommercial(n,facing='down'){
   }
   ctx.restore();CapitalEnvironment.npcAccent(ctx,state.map,n);AshFrontierEnvironment.npcAccent(ctx,state.map,n);OpeningWorldLife.villager(ctx,state.map,n,Date.now())
 }
-function drawNpc(n){const close=Math.abs(state.x-n.x)+Math.abs(state.y-n.y)<=2,face=close?facingBetween([n.x,n.y],[state.x,state.y],'down'):(['fieldWorker','brookKeeper'].includes(n.id)?'left':'down');drawNpcCommercial(n,face);OpeningWorldLife.workplace(ctx,state.map,n,Math.abs(state.x-n.x)+Math.abs(state.y-n.y)<=5?Date.now():0);if(close){ctx.font='bold 9px system-ui';const w=Math.max(28,ctx.measureText(n.name).width+8);const px=n.x*TILE+16-w/2,py=n.y*TILE-7;ctx.fillStyle='rgba(13,16,20,.88)';ctx.fillRect(px,py,w,13);ctx.strokeStyle='rgba(210,181,112,.28)';ctx.strokeRect(px+.5,py+.5,w-1,12);ctx.fillStyle='#efe6d2';ctx.textAlign='center';ctx.fillText(n.name,n.x*TILE+16,py+10);ctx.textAlign='start'}}
+function drawNpc(n){const close=Math.abs(state.x-n.x)+Math.abs(state.y-n.y)<=2,face=close?facingBetween([n.x,n.y],[state.x,state.y],'down'):(['fieldWorker','brookKeeper'].includes(n.id)?'left':'down');drawNpcCommercial(n,face);if(typeof PlayerCharacterArtV6==='undefined'||PlayerCharacterArtV6.legacy||!PlayerCharacterArtV6.hasNpc(n.id))OpeningWorldLife.workplace(ctx,state.map,n,Math.abs(state.x-n.x)+Math.abs(state.y-n.y)<=5?Date.now():0);if(close){ctx.font='bold 9px system-ui';const w=Math.max(28,ctx.measureText(n.name).width+8);const px=n.x*TILE+16-w/2,py=n.y*TILE-7;ctx.fillStyle='rgba(13,16,20,.88)';ctx.fillRect(px,py,w,13);ctx.strokeStyle='rgba(210,181,112,.28)';ctx.strokeRect(px+.5,py+.5,w-1,12);ctx.fillStyle='#efe6d2';ctx.textAlign='center';ctx.fillText(n.name,n.x*TILE+16,py+10);ctx.textAlign='start'}}
 function drawVillageDecor(){
  // 畑
  for(let x=1;x<=2;x++)for(let y=7;y<=12;y++){ctx.fillStyle='#776448';ctx.fillRect(x*TILE+3,y*TILE+5,26,22);ctx.strokeStyle='#a58b5c';ctx.beginPath();ctx.moveTo(x*TILE+6,y*TILE+10);ctx.lineTo(x*TILE+26,y*TILE+10);ctx.moveTo(x*TILE+6,y*TILE+18);ctx.lineTo(x*TILE+26,y*TILE+18);ctx.stroke()}
