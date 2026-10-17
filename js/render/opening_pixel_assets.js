@@ -202,7 +202,7 @@ const OpeningPixelAssets=(()=>{
   c.fillStyle='rgba(16,18,18,.25)';
   c.beginPath();c.ellipse(centerX,footY-1,useLegacyArt?8:9,3,0,0,Math.PI*2);c.fill();
   c.drawImage(sheet,index*srcSize,sy,srcSize,srcSize,
-   Math.round(centerX-destSize/2),footY-destSize,destSize,destSize);
+   Math.round(centerX-destSize/2),useLegacyArt?n.y*32:footY-destSize,destSize,destSize);
   c.restore();return true
  }
  function featuredStatus(){return {requested:featuredRequested,ready:featuredReady,
