@@ -359,8 +359,28 @@ const PlayerCharacterArtV6=(()=>{
     '<g transform="translate(-18 -14) scale(2.1)">'+shapes.join('')+'</g></svg>';
   portraitCache.set(id,svg);return svg
  }
+ const battleSheets=new Map();
+ function battleSheetUrl(id,kind='idle'){
+  if(legacy||!heroes[id]||typeof document==='undefined')return null;
+  const frames=kind==='walk'?6:4,key=id+':'+kind;
+  if(battleSheets.has(key))return battleSheets.get(key);
+  const sheet=document.createElement('canvas');sheet.width=frames*48;sheet.height=192;
+  const c=sheet.getContext?.('2d');
+  if(!c||typeof sheet.toDataURL!=='function')return null;
+  for(let direction=0;direction<4;direction++){
+   for(let frame=0;frame<frames;frame++){
+    const cell=atlas(id,direction,kind==='walk'?frame%4:frame);
+    if(!cell)return null;
+    c.drawImage(cell,frame*48,direction*48);
+   }
+  }
+  // Existing combat CSS expects a real 192x192 idle or 288x192 walk sheet
+  // with right-facing frames on row 2. No external network or broken URLs.
+  try{const encoded=sheet.toDataURL('image/png');battleSheets.set(key,encoded);return encoded}
+  catch(e){return null}
+ }
  function getAtlas(id,facing='down',frame=0){return atlas(id,dirs[facing]??0,frame)}
- return Object.freeze({heroes,villagers,drawHero,drawNpc,getAtlas,portraitSvg,paint,
+ return Object.freeze({heroes,villagers,drawHero,drawNpc,getAtlas,portraitSvg,battleSheetUrl,paint,
   hasHero:id=>!!heroes[id],hasNpc:id=>!!villagers[id],get legacy(){return legacy},
   qualityVersion:'player-first-v6'});
 })();
