@@ -117,9 +117,14 @@ test('new adventure must not replace a valid archive when all current saves are 
  h.storage.setItem(s.SAVE_KEY,'{damaged');
  h.storage.setItem(s.SAVE_BACKUP_KEY,'{"hello":"world"}');
  h.context.confirm=()=>true;
- assert.equal(h.GC.App.startNewGameSafely(),false);
- assert.equal(h.GC.State.get().gold,714);
- assert.equal(h.storage.getItem(s.SAVE_ARCHIVE_KEY),archive);
+ assert.equal(h.GC.App.startNewGameSafely(),true);
+ assert.equal(h.GC.State.get().gold,120);
+ assert.equal(h.storage.getItem(s.SAVE_ARCHIVE_KEY),archive,
+  'last good archived adventure must not be overwritten by corrupt saves');
+ const quarantine=JSON.parse(h.storage.getItem(s.SAVE_QUARANTINE_KEY));
+ assert.equal(quarantine.length,1);
+ assert.equal(quarantine[0].primary,'{damaged');
+ assert.equal(quarantine[0].backup,'{"hello":"world"}');
 });
 
 test('parseable but truncated primary cannot silently load as a fresh adventure',()=>{
@@ -180,4 +185,50 @@ test('old schema 22 with real roster remains importable and upgradeable to v23',
  assert.equal(s.load(true),true);
  assert.equal(h.GC.State.get().gold,319);
  assert.equal(h.GC.State.get().schema,23);
+});
+
+test('all-corrupted storage offers fresh start only with an extra explicit user approval',()=>{
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('state.gold=738');
+ h.storage.setItem(s.SAVE_KEY,'{damaged');
+ h.storage.setItem(s.SAVE_BACKUP_KEY,'{"schema":23}');
+ let confirmations=0;
+ h.context.confirm=()=>++confirmations===1;
+ assert.equal(h.GC.App.startNewGameSafely(),false);
+ assert.equal(h.GC.State.get().gold,738);
+ assert.equal(h.storage.getItem(s.SAVE_QUARANTINE_KEY),null);
+ h.context.confirm=()=>true;
+ assert.equal(h.GC.App.startNewGameSafely(),true);
+ assert.equal(h.GC.State.get().gold,120);
+ assert.equal(s.hasQuarantinedSaves(),true);
+ h.GC.Menu.openMenu();
+ assert.match(h.getElement('modalContent').innerHTML,/破損セーブの元データを書き出す/);
+});
+test('quarantine failure cannot erase invalid prior saves or start new adventure',()=>{
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('state.gold=901');
+ h.storage.setItem(s.SAVE_KEY,'{broken');
+ h.storage.setItem(s.SAVE_BACKUP_KEY,'{"schema":99}');
+ const oldWrite=h.storage.setItem;
+ h.storage.setItem=function(k,v){if(k===s.SAVE_QUARANTINE_KEY)throw new Error('full');
+  return oldWrite.call(this,k,v)};
+ h.context.confirm=()=>true;
+ h.context.alert=()=>{};
+ assert.equal(h.GC.App.startNewGameSafely(),false);
+ assert.equal(h.GC.State.get().gold,901);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),'{broken');
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),'{"schema":99}');
+ h.storage.setItem=oldWrite;
+});
+test('quarantine retains both generations instead of overwriting earlier lost saves',()=>{
+ const h=createHarness(),s=h.GC.Save;
+ h.storage.setItem(s.SAVE_KEY,'{broken-A');
+ h.storage.setItem(s.SAVE_BACKUP_KEY,'{lost-A');
+ assert.equal(s.quarantineCorruptSavesBeforeNewGame(),true);
+ h.storage.setItem(s.SAVE_KEY,'{broken-B');
+ h.storage.setItem(s.SAVE_BACKUP_KEY,'{lost-B');
+ assert.equal(s.quarantineCorruptSavesBeforeNewGame(),true);
+ assert.equal(s.quarantineCorruptSavesBeforeNewGame(),true);
+ const saved=JSON.parse(h.storage.getItem(s.SAVE_QUARANTINE_KEY));
+ assert.deepEqual(saved.map(x=>x.primary),['{broken-A','{broken-B']);
 });
