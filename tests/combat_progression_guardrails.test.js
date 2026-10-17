@@ -20,7 +20,7 @@ function trial(id,level,policy,seed){
   assert.equal(h.evaluate('state.locked'),false,'inputs should only happen when battle is unlocked');
   const move=h.evaluate('(()=>{const b=state.battle,a=activeRouteParty()[b.actor];'+
    'if(!a)throw new Error("No active hero");'+
-   'if(a.id==="karen")return "'+(policy==='guard'?'guard':'attack')+'";'+
+   'if(a.id==="karen")return b.turn===1&&"'+policy+'"==="guard"?"guard":"attack";'+
    'if(a.id==="triton")return b.turn===1&&"'+policy+'"==="breakIce"?"break":"heavy";'+
    'if(a.id==="sophie")return "staffSophie";'+
    'return b.turn===1&&"'+policy+'"==="breakIce"?"ice":"fire";'+
