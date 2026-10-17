@@ -807,3 +807,13 @@ body:has(.battle-panel:not(.hidden)) .party-battle-line{left:5%;bottom:38px}
  #partyBattleLine .battle-hero:nth-child(2){left:60px!important}
  #partyBattleLine .battle-hero:nth-child(4){left:60px!important}
 }
+
+/* The 2x2 party reaches y=77 on 220px mobile stages. Preserve all enemy HP
+ * labels at their original font size while reclaiming only unused padding:
+ * the enemy status now ends above the party heads, not on top of Margaret.
+ */
+@media (max-width:600px){
+ #battleStage .enemy-stage-ui{top:7px!important;padding:4px 7px!important}
+ #battleStage .enemy-stage-name{margin-bottom:3px!important}
+ #battleStage .stage-gauge{margin:2px 0!important}
+}
