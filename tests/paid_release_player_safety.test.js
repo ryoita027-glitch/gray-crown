@@ -121,3 +121,34 @@ test('new adventure must not replace a valid archive when all current saves are 
  assert.equal(h.GC.State.get().gold,714);
  assert.equal(h.storage.getItem(s.SAVE_ARCHIVE_KEY),archive);
 });
+
+test('parseable but truncated primary cannot silently load as a fresh adventure',()=>{
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=777');
+ const good=JSON.stringify(h.GC.State.get());
+ h.storage.setItem(s.SAVE_KEY,'{"schema":23,"story":{"stage":"00_village"}}');
+ h.storage.setItem(s.SAVE_BACKUP_KEY,good);
+ h.GC.State.reset();
+ assert.equal(s.load(true),true);
+ assert.equal(h.GC.State.get().gold,777,'backup must win over incomplete primary');
+});
+test('both incomplete saves fail closed without resetting the in-memory player',()=>{
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=555');
+ h.storage.setItem(s.SAVE_KEY,'{"schema":23,"story":{"stage":"00_village"}}');
+ h.storage.setItem(s.SAVE_BACKUP_KEY,'{"map":"village"}');
+ assert.equal(s.load(true),false);
+ assert.equal(h.GC.State.get().gold,555);
+});
+test('importing a valid external save never overwrites a healthy backup with broken JSON',()=>{
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=834');
+ const backup=JSON.stringify(h.GC.State.get());
+ h.storage.setItem(s.SAVE_KEY,'{"schema":23}');
+ h.storage.setItem(s.SAVE_BACKUP_KEY,backup);
+ h.evaluate('state.gold=211');
+ const imported=JSON.stringify(h.GC.State.get());
+ assert.equal(s.importPortableSaveText(imported),true);
+ assert.equal(h.GC.State.get().gold,211);
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),backup);
+});
