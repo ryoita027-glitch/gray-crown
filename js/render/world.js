@@ -710,6 +710,6 @@ function drawScene(){
   if(Number.isFinite(nextAmbient))VISUAL.ambientTimer=setTimeout(()=>draw(),Math.max(80,nextAmbient));
  }
 }
-function draw(){clearTimeout(VISUAL.ambientTimer);cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene)}
+function draw(){clearTimeout(VISUAL.ambientTimer);cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene);GC.MobileCamera?.update?.()}
 
 GC.Render=GC.Render||{};GC.Render.World={draw,drawScene,renderHud:()=>renderHud(),VISUAL,drawCharacterSprite,drawHeroSpriteSheet,heroRuntimeStatus,drawPartyRuntime};
