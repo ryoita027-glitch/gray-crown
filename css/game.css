@@ -817,3 +817,22 @@ body:has(.battle-panel:not(.hidden)) .party-battle-line{left:5%;bottom:38px}
  #battleStage .enemy-stage-name{margin-bottom:3px!important}
  #battleStage .stage-gauge{margin:2px 0!important}
 }
+
+
+/* Field-only mobile readability — same authored 48px pixels, larger camera.
+ * The statusbar toggle always restores full-map view without any save change.
+ * Never zoom dialogue, HP HUD or battle overlay with the world canvas. */
+#btnCameraMode{display:none}
+@media(max-width:600px){
+ .game-stage{overflow:hidden}
+ .game-stage canvas#game{transform-origin:0 0;transition:none;will-change:transform;image-rendering:pixelated}
+ #btnCameraMode{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:84px;min-height:38px;padding:5px 9px;flex-shrink:0;
+  border:1px solid #83704f;border-radius:5px;
+  background:#232b34;color:#e8ddb9;font-weight:600;font-size:.82rem;
+ }
+ #btnCameraMode:focus-visible{outline:3px solid #e9c879;outline-offset:2px}
+ .statusbar{min-height:42px;align-items:center;flex-wrap:wrap;gap:6px}
+ #qualityHint{display:none}
+}

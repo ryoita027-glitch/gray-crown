@@ -20,6 +20,9 @@ for(const [route,choice,fragment] of cases){
   assert.ok(story.includes(fragment),fragment);
   assert.ok(story.includes('未完成'), 'preview must never masquerade as finished ending');
   assert.equal(h.evaluate("isEventComplete('worldSkeletonCleared')"),true);
+  assert.equal(h.evaluate("getWorldSwitch('endingPreviewReached')"),true);
+  assert.notEqual(h.evaluate("getWorldSwitch('cleared')"),true,
+   'a provisional branch must not be recorded as a completed paid game');
   const prior=h.evaluate('state.journal.length');
   h.evaluate("showWorldSkeletonEnding('"+route+"')");
   assert.equal(h.evaluate('state.journal.length'),prior);

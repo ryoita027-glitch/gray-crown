@@ -23,6 +23,8 @@ function openMenu(){
      <button onclick="document.getElementById('portableSaveUpload').click()">セーブを読み込む（.json）</button>
      <input id="portableSaveUpload" type="file" accept=".json,application/json" style="display:none"
        onchange="$('modal').classList.add('hidden');GC.Save.readPortableSaveFile(this.files?.[0]);this.value='';">
+     ${GC.Save.hasArchivedAdventure()?`<button onclick="$('modal').classList.add('hidden');GC.Save.restoreArchivedAdventure()">以前の冒険を復旧</button>`:''}
+     ${GC.Save.hasQuarantinedSaves()?`<button onclick="$('modal').classList.add('hidden');GC.Save.downloadQuarantinedSaves()">破損セーブの元データを書き出す</button>`:''}
      <button class="menu-danger" onclick="$('modal').classList.add('hidden');restart()">最初から</button>
    </div>
  </div>`;

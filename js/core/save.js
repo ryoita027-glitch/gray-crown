@@ -1,6 +1,10 @@
 'use strict';
 const SAVE_KEY='gray-crown-vslice-save-v1';
 const SAVE_BACKUP_KEY=SAVE_KEY+'-backup';
+// A separate, player-recoverable checkpoint before a fresh adventure. Never
+// use the rotating save backup for this: two subsequent saves replace it.
+const SAVE_ARCHIVE_KEY=SAVE_KEY+'-previous-adventure';
+const SAVE_QUARANTINE_KEY=SAVE_KEY+'-corrupt-raw-backups';
 const SAVE_SCHEMA=23;
 function safeNumber(v,fallback,min=-Infinity,max=Infinity){return Number.isFinite(v)?Math.max(min,Math.min(max,v)):fallback}
 function nearestSafeTile(mapId,x,y,saveState=state){
@@ -8,7 +12,19 @@ function nearestSafeTile(mapId,x,y,saveState=state){
  const passThrough=new Set(['gate','exit','northExit','southExit','roadSign','milestone','banner','rations']);
  // A collected chest/forage spot is no longer solid. Crucially, load validation
  // must inspect the *loaded* world's flags, not the old session still in memory.
- const cleared=o=>TREASURE_DEFS[o.id]&&saveState?.world?.treasures?.[o.id]===true;
+ const cleared=o=>{
+  const id=o.id,world=saveState?.world||{};
+  const treasure=world.treasures||{},defeated=world.defeatedSymbols||{},switches=world.switches||{};
+  // Mirror overworld objectCleared, but read the SAVE BEING LOADED, not the
+  // previous in-memory session. Open gates and defeated bosses are traversable
+  // even if they still exist in the map's immutable object list.
+  if(TREASURE_DEFS[id]&&treasure[id]===true)return true;
+  if(['wolf','bandit','bats','crawler','boss','scavengerWolves','imperialPatrol'].includes(id)&&defeated[id]===true)return true;
+  if(id==='innerGate'&&switches.leverWest===true&&switches.leverEast===true)return true;
+  if((id==='fortGate'||id==='fortGateRight')&&switches.fortGateOpen===true)return true;
+  if(['ashCache','frontierCache','empireCache','imperialCache','yukiCache','elsiaCache'].includes(id)&&treasure[id]===true)return true;
+  return false
+ };
  const blockedTile=(xx,yy)=>{
   const t=tileAt(mapId,xx,yy);
   if(['T','H','S','W','R','K','Z'].includes(t))return true;
@@ -66,14 +82,62 @@ function canPersistNow(mode='save'){
  return !transientUiActive()
 }
 function serializeSave(){return JSON.stringify({...state,schema:SAVE_SCHEMA,locked:false,battle:null,battleReturn:null,symbolEncounter:null})}
+function isUsableSavedAdventure(raw){
+ if(typeof raw!=='string'||!raw)return false;
+ try{
+  const saved=JSON.parse(raw);
+  // Prevent a random parseable JSON or corrupted partial save from
+  // silently becoming a clean, empty "archive" after migration.
+  const canonical=createGameState().party;
+  if(!saved||typeof saved!=='object'||Array.isArray(saved)||
+    !Number.isInteger(saved.schema)||saved.schema<1||saved.schema>SAVE_SCHEMA||
+    !Object.hasOwn(maps,saved.map)||!saved.story||typeof saved.story.stage!=='string'||
+    !Array.isArray(saved.party)||saved.party.length!==canonical.length||
+    !saved.party.every((hero,i)=>hero&&hero.id===canonical[i].id&&
+      hero.name===canonical[i].name&&hero.job===canonical[i].job)||
+    !saved.world||typeof saved.world!=='object'||Array.isArray(saved.world)||
+    !saved.inventory||typeof saved.inventory!=='object'||Array.isArray(saved.inventory)||
+    Object.keys(saved.inventory).some(k=>!Object.hasOwn(ITEM_DEFS,k)))return false;
+  migrateLoaded(raw); // Migration follows strict player-owned identity checks.
+  return true
+ }catch(_){return false}
+}
 function save(silent=false){
  if(!canPersistNow('save')){if(!silent&&!GC.Dev?.isStateTainted?.()&&!state.battle&&$('dialogueBox')?.classList.contains('hidden'))say('システム','イベントや戦闘の途中ではセーブできません。操作可能な場所でセーブしてください。');else if(!silent&&GC.Dev?.isStateTainted?.())say('システム','Developer操作後の状態は通常セーブできません。Debug Snapshotを使用してください。');return false}
- try{const payload=serializeSave(),prev=localStorage.getItem(SAVE_KEY);if(prev)localStorage.setItem(SAVE_BACKUP_KEY,prev);else localStorage.setItem(SAVE_BACKUP_KEY,payload);localStorage.setItem(SAVE_KEY,payload);GC.Log?.info('Save',{map:state.map,x:state.x,y:state.y,stage:state.story.stage});if(!silent)say('システム','セーブしました。');return true}catch(e){GC.Log?.error('Save failed',{error:String(e)});if(!silent)say('システム','セーブに失敗しました。ブラウザの保存領域を確認してください。');return false}}
+ try{
+  const payload=serializeSave(),prev=localStorage.getItem(SAVE_KEY);
+  // Never rotate a corrupted primary over a usable previous checkpoint.
+  const backup=localStorage.getItem(SAVE_BACKUP_KEY);
+  try{
+   if(isUsableSavedAdventure(prev))localStorage.setItem(SAVE_BACKUP_KEY,prev);
+   else if(!isUsableSavedAdventure(backup))localStorage.setItem(SAVE_BACKUP_KEY,payload);
+   localStorage.setItem(SAVE_KEY,payload)
+  }catch(writeError){
+   // A failed primary write must not leave the older backup overwritten.
+   // Preserve both original slots as a single logical transaction.
+   try{
+    if(prev===null)localStorage.removeItem(SAVE_KEY);
+    else localStorage.setItem(SAVE_KEY,prev);
+    if(backup===null)localStorage.removeItem(SAVE_BACKUP_KEY);
+    else localStorage.setItem(SAVE_BACKUP_KEY,backup)
+   }catch(rollbackError){GC.Log?.error('Save rollback failed',{error:String(rollbackError)})}
+   throw writeError
+  }
+  GC.Log?.info('Save',{map:state.map,x:state.x,y:state.y,stage:state.story.stage});if(!silent)say('システム','セーブしました。');return true}catch(e){GC.Log?.error('Save failed',{error:String(e)});if(!silent)say('システム','セーブに失敗しました。ブラウザの保存領域を確認してください。');return false}}
 function clearTransientPanels(){for(const id of ['battlePanel','levelUpPanel','battleResult','battleFlash','bossCinematic','chapterCard'])$(id)?.classList.add('hidden');if($('dialogueBox')&&!$('dialogueBox').classList.contains('hidden'))closeDialogue(false)}
 function load(silent=false){
  if(!canPersistNow('load')){if(!silent&&$('dialogueBox')?.classList.contains('hidden'))say('システム','イベントや戦闘の途中ではロードできません。操作可能な場所でロードしてください。');return false}
  const primary=localStorage.getItem(SAVE_KEY),backup=localStorage.getItem(SAVE_BACKUP_KEY);if(!primary&&!backup){if(!silent)say('システム','セーブデータがありません。');return false}let recovered=false,next;
- try{next=migrateLoaded(primary||backup)}catch(e){GC.Log?.warn('Primary save load failed',{error:String(e)});if(!backup){if(!silent)say('システム','セーブデータを読み込めませんでした。');return false}try{next=migrateLoaded(backup);recovered=true}catch(e2){GC.Log?.error('Primary and backup save load failed',{primary:String(e),backup:String(e2)});if(!silent)say('システム','セーブデータとバックアップの両方を読み込めませんでした。');return false}}
+ // Migration can fill missing fields from defaults. Before migrating, ensure
+ // a partially truncated but parseable JSON is not mistaken for a fresh game.
+ if(!isUsableSavedAdventure(primary)){
+  if(!isUsableSavedAdventure(backup)){
+   GC.Log?.error('No structurally usable save or backup');
+   if(!silent)say('システム','セーブデータとバックアップの両方を読み込めませんでした。');
+   return false
+  }
+  recovered=true;next=migrateLoaded(backup)
+ }else next=migrateLoaded(primary);
  clearTransientPanels();replaceState(next);VISUAL.map=null;setMusic(mapMusicTheme(state.map));renderHud();draw();GC.Dev?.clearTaint?.();GC.Log?.info('Load',{map:state.map,x:state.x,y:state.y,stage:state.story.stage,recovered});if(!silent&&typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started)hideTitle();if(!silent)say('システム',recovered?'通常セーブが壊れていたため、バックアップから復旧しました。':'ロードしました。');return true}
 
 // Portable JSON is necessary for player ZIP/file:// releases: browser
@@ -120,8 +184,8 @@ function importPortableSaveText(raw){
   // Persist the migrated *validated* schema, never raw untrusted file text.
   const payload=JSON.stringify({...loaded,schema:SAVE_SCHEMA,locked:false,battle:null,
     battleReturn:null,symbolEncounter:null});
-  if(primary)localStorage.setItem(SAVE_BACKUP_KEY,primary);
-  else if(!backup)localStorage.setItem(SAVE_BACKUP_KEY,payload);
+  if(isUsableSavedAdventure(primary))localStorage.setItem(SAVE_BACKUP_KEY,primary);
+  else if(!isUsableSavedAdventure(backup))localStorage.setItem(SAVE_BACKUP_KEY,payload);
   localStorage.setItem(SAVE_KEY,payload);
   if(!load(true))throw new Error('Imported save could not be loaded');
   updateTitleContinue();
@@ -153,5 +217,86 @@ async function readPortableSaveFile(file){
  return ok
 }
 
-function restart(){if(!confirm('最初からやり直しますか？'))return;beginAlphaNewGame(true)}
-GC.Save={SAVE_KEY,SAVE_BACKUP_KEY,SAVE_SCHEMA,save,load,restart,migrateLoaded,serializeSave,validateLoadedState,nearestSafeTile,transientUiActive,canPersistNow,clearTransientPanels,exportPortableSaveText,downloadPortableSave,importPortableSaveText,readPortableSaveFile};
+function hasArchivedAdventure(){try{return isUsableSavedAdventure(localStorage.getItem(SAVE_ARCHIVE_KEY))}catch(_){return false}}
+function hasUsableStoredAdventure(){
+ try{return isUsableSavedAdventure(localStorage.getItem(SAVE_KEY))||
+  isUsableSavedAdventure(localStorage.getItem(SAVE_BACKUP_KEY))}
+ catch(_){return false}
+}
+function hasQuarantinedSaves(){
+ try{return !!localStorage.getItem(SAVE_QUARANTINE_KEY)}catch(_){return false}
+}
+function quarantineCorruptSavesBeforeNewGame(){
+ try{
+  const primary=localStorage.getItem(SAVE_KEY),backup=localStorage.getItem(SAVE_BACKUP_KEY);
+  // Never classify a future-version save as disposable; quarantine stores
+  // exact original bytes so a later game can still recover those records.
+  if(!primary&&!backup)return true;
+  if(isUsableSavedAdventure(primary)||isUsableSavedAdventure(backup))return false;
+  const existing=localStorage.getItem(SAVE_QUARANTINE_KEY);
+  const record={savedAt:new Date().toISOString(),primary,backup};
+  const old=existing?JSON.parse(existing):[];
+  if(!Array.isArray(old))return false;
+  const entryAlreadyStored=old.some(x=>x?.primary===primary&&x?.backup===backup);
+  if(!entryAlreadyStored)old.push(record);
+  const payload=JSON.stringify(old);
+  localStorage.setItem(SAVE_QUARANTINE_KEY,payload);
+  return localStorage.getItem(SAVE_QUARANTINE_KEY)===payload
+ }catch(e){
+  GC.Log?.error('Corrupt save quarantine failed',{error:String(e)});
+  return false
+ }
+}
+function downloadQuarantinedSaves(){
+ try{
+  const raw=localStorage.getItem(SAVE_QUARANTINE_KEY);
+  if(!raw)return false;
+  const blob=new Blob([raw],{type:'application/json;charset=utf-8'});
+  const url=URL.createObjectURL(blob),link=document.createElement('a');
+  link.href=url;link.download='GrayCrown_RawSaveRecovery_'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(link);link.click();link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
+  say('システム','破損した元の保存データを、変更せず取り出しました。データの復旧を試す場合に保管してください。');
+  return true
+ }catch(e){GC.Log?.error('Quarantine export failed',{error:String(e)});return false}
+}
+
+function archiveBeforeNewGame(){
+ let candidate;
+ try{
+  const main=localStorage.getItem(SAVE_KEY);
+  const backup=localStorage.getItem(SAVE_BACKUP_KEY);
+  if(!main&&!backup)return true;
+  // Corrupted primary may coexist with a valid backup: archive the playable
+  // adventure, not broken bytes. If neither works, stop and keep existing data.
+  candidate=isUsableSavedAdventure(main)?main:isUsableSavedAdventure(backup)?backup:null;
+  if(!candidate)return false;
+  // A new game must not begin if the player's preceding save cannot be
+  // preserved. The special archive survives later manual saves.
+  localStorage.setItem(SAVE_ARCHIVE_KEY,candidate);
+  return localStorage.getItem(SAVE_ARCHIVE_KEY)===candidate
+ }catch(e){
+  GC.Log?.error('Previous adventure archive failed',{error:String(e)});
+  return false
+ }
+}
+function restoreArchivedAdventure(){
+ if(!canPersistNow('load'))return false;
+ const raw=localStorage.getItem(SAVE_ARCHIVE_KEY);
+ if(!raw)return false;
+ if(!confirm('保管していた以前の冒険を復旧しますか？ 現在のセーブはバックアップへ移します。'))return false;
+ const ok=importPortableSaveText(raw);
+ say('システム',ok?'以前の冒険を復旧しました。現在のセーブはバックアップに残しています。':'以前の冒険を復旧できませんでした。現在のセーブには変更していません。');
+ return ok
+}
+function restart(){
+ if(typeof startNewGameSafely!=='function')return false;
+ // A brand-new unsaved session still deserves an explicit warning.
+ // Otherwise switching from the menu can erase hours of unsaved play.
+ let persisted=false;
+ try{persisted=!!(localStorage.getItem(SAVE_KEY)||localStorage.getItem(SAVE_BACKUP_KEY))}
+ catch(e){GC.Log?.error('Restart storage check failed',{error:String(e)});return false}
+ if(!persisted&&!confirm('保存していない現在の冒険を破棄して、最初から始めますか？'))return false;
+ return startNewGameSafely()
+}
+GC.Save={SAVE_KEY,SAVE_BACKUP_KEY,SAVE_ARCHIVE_KEY,SAVE_QUARANTINE_KEY,SAVE_SCHEMA,hasArchivedAdventure,hasUsableStoredAdventure,hasQuarantinedSaves,quarantineCorruptSavesBeforeNewGame,downloadQuarantinedSaves,archiveBeforeNewGame,restoreArchivedAdventure,save,load,restart,migrateLoaded,serializeSave,validateLoadedState,nearestSafeTile,transientUiActive,canPersistNow,clearTransientPanels,exportPortableSaveText,downloadPortableSave,importPortableSaveText,readPortableSaveFile};

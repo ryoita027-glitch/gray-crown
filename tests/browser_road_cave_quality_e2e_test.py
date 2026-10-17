@@ -48,14 +48,32 @@ def dismiss(page):
   if page.locator("#choiceBox button").count():return
   page.keyboard.press("Enter");page.wait_for_timeout(25)
  raise AssertionError("dialogue cannot finish")
+def finish_level_ups(page):
+ for _ in range(5):
+  if not page.locator("#levelUpPanel").is_visible():return
+  page.locator("#levelUpContinue").click()
+  page.wait_for_timeout(120)
+ raise AssertionError("level-up flow did not dismiss within five confirmations")
+
 def fight(page,battle_id=None,allow_loss=False):
  check("battle panel opens",page.locator("#battlePanel").is_visible())
  if battle_id:check("expected encounter "+battle_id,state(page)["battle"]["id"]==battle_id)
  if battle_id in ("wolves","roadBandit","boss"):
   check("four actual battle sprites",page.locator("#partyBattleLine .battle-hero[data-hero]").count()==4)
-  sources=page.locator("#partyBattleLine .battle-hero").evaluate_all("""els=>els.map(e=>({id:e.dataset.hero,src:e.style.backgroundImage}))""")
+  # Combat art is displayed by an <img> atlas, not a background-image.
+  # The old assertion read backgroundImage=="" and failed even when the real
+  # original sprites were correctly present. Check both URL and decoded PNG.
+  page.wait_for_function("""()=>[...document.querySelectorAll("#partyBattleLine .battle-hero .battle-frame-image")].length===4 &&
+    [...document.querySelectorAll("#partyBattleLine .battle-hero .battle-frame-image")].every(x=>x.complete)""",timeout=8000)
+  sources=page.locator("#partyBattleLine .battle-hero").evaluate_all("""els=>els.map(e=>{
+   const img=e.querySelector(".battle-frame-image");return{id:e.dataset.hero,src:img?.getAttribute("src")||"",
+   walk:img?.dataset.walk||"",width:img?.naturalWidth||0,height:img?.naturalHeight||0}
+  })""")
   check("battle heroes preserve locked character assets",
-        all(x["id"] in x["src"] and x["id"] in ("karen","triton","sophie","margaret") for x in sources),sources)
+        all(x["id"] in ("karen","triton","sophie","margaret") and
+            x["src"]==f'assets/characters/{x["id"]}/{x["id"]}_idle.png' and
+            x["walk"]==f'assets/characters/{x["id"]}/{x["id"]}_walk.png' and
+            x["width"]==192 and x["height"]==192 for x in sources),sources)
  if battle_id in ("wolves","boss"):shot(page,"battle_"+battle_id)
  check("combat save blocked",page.evaluate("GC.Save.save(true)===false"))
  check("combat load blocked",page.evaluate("GC.Save.load(true)===false"))
@@ -64,13 +82,19 @@ def fight(page,battle_id=None,allow_loss=False):
   if not page.locator("#battlePanel").is_visible():break
   if page.locator("#levelUpPanel").is_visible():
    page.locator("#levelUpContinue").click();page.wait_for_timeout(110);continue
+  # Battle resolution has already cleared state.battle while its fade panel
+  # remains in the DOM for a few frames. Do not click stale action buttons.
+  if page.evaluate("GC.State.get().battle===null"):
+   page.wait_for_timeout(120);continue
   if page.evaluate("GC.State.get().locked"):
    page.wait_for_timeout(120);continue
   buttons=page.locator("#battleActions button:not([disabled])")
   if buttons.count():
    options=buttons.all_text_contents()
    # Deliberate skill use: rally, heavy, heal when needed, fire when possible.
-   actor=page.evaluate("GC.State.get().party[GC.State.get().battle.actor].id")
+   actor=page.evaluate("(()=>{const s=GC.State.get();return s.battle?s.party[s.battle.actor]?.id:null})()")
+   if actor is None:
+    page.wait_for_timeout(120);continue
    selected=None
    for desired in ({
      "karen":["号令","剣撃"],"triton":["強撃"],"sophie":["治癒","杖撃"],
@@ -85,6 +109,7 @@ def fight(page,battle_id=None,allow_loss=False):
   else:page.wait_for_timeout(100)
  else:raise AssertionError("battle exceeded safety turn/action bound "+str(battle_id))
  check("battle closed after actions "+str(battle_id),not page.locator("#battlePanel").is_visible(),actions)
+ finish_level_ups(page)  # Level-up follows the battle fade; it can appear AFTER battlePanel closes.
  dismiss(page)
  end=state(page)
  check("battle grants nonnegative gold "+str(battle_id),end["gold"]>=start["gold"],
@@ -92,6 +117,7 @@ def fight(page,battle_id=None,allow_loss=False):
  return start,end,actions
 
 def walk(page,tx,ty):
+ finish_level_ups(page)
  goal=(tx,ty)
  for retry in range(16):
   cur=state(page)
