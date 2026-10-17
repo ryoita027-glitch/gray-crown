@@ -81,3 +81,26 @@ test('character presentation changes never edit the 4 hero PNG references or the
  assert.match(state,/schema:23/);
  assert.doesNotMatch(read('js/render/opening_pixel_assets.js'),/player_character_art_v6\.js/);
 });
+
+
+test('nameplate clears the actual face instead of covering original art at interaction distance',()=>{
+ const world=read('js/render/world.js'),begin=world.indexOf('function drawNpc(n){'),
+  end=world.indexOf('function drawVillageDecor()',begin);
+ const state={x:5,y:6,map:'village'},locations=[];
+ const ctx={font:'',fillStyle:'',strokeStyle:'',textAlign:'start',
+  measureText:()=>({width:30}),fillRect(_x,y,w,h){if(h===13)locations.push(y)},
+  strokeRect(){},fillText(){}};
+ const art={featuredNames:['baker'],featuredStatus:()=>({ready:true,artVersion:'concept-charm-v5'})};
+ const make=new Function('state','facingBetween','drawNpcCommercial','OpeningWorldLife','OpeningPixelAssets','ctx','TILE',
+  world.slice(begin,end)+';return drawNpc');
+ const real=make(state,()=> 'down',()=>true,{workplace(){}},art,ctx,32);
+ real({id:'baker',name:'パン屋のエダ',x:4,y:6});
+ assert.equal(locations.at(-1),6*32-28);
+ assert.ok(locations.at(-1)+13<=6*32-14,
+  'the nameplate must end above the 44px resident sprite');
+ const generic=make(state,()=> 'down',()=>false,{workplace(){}},art,ctx,32);
+ generic({id:'unsupported',name:'旅人',x:4,y:6});
+ assert.equal(locations.at(-1),6*32-15);
+ assert.ok(locations.at(-1)+13<6*32,
+  'fallback small resident nameplate also avoids covering the face');
+});
