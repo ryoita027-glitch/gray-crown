@@ -41,9 +41,19 @@ function battleAction(type){if(state.locked||!state.battle)return;const b=state.
   if(d>0&&e.hp>0&&!e.staggerUsed&&['crawler','boss'].includes(b.id)){
    e.staggered=1;e.staggerUsed=true;
    battleLog('体勢崩し成功！ '+e.name+'の次の攻撃を阻止した。');
+   if(b.id==='boss'&&state.events.choices['early.fortShield']==='studied'&&!b.fortShieldRecalled){
+    b.fortShieldRecalled=true;
+    battleLog('トリトン「古砦の盾で見た踏み込みだ！　いま、止めた！」');
+   }
    sfx('guard')
   }battleLog('トリトン「今だ、隙ができた！」')}
- else if(type==='fire'||type==='ice'){const sk=SKILLS[type];if(a.mp<sk.mp){battleLog('MPが足りない。');return}a.mp-=sk.mp;d=sk.power+Math.floor(Math.random()*(sk.variance+1));e.hp=Math.max(0,e.hp-d);if(type==='ice')e.atk=Math.max(4,e.atk-SKILLS.ice.atkDown);moraleLoss=applyMoraleDamage(e,d*.3);visual='magic';battleLog(`${a.name}の${type==='fire'?'火球':'氷槍'}！ ${e.name}に${d}ダメージ。`);if(type==='ice')battleLog('マーガレット「動きを鈍らせた。次の攻撃に備えて」')}
+ else if(type==='fire'||type==='ice'){const sk=SKILLS[type];if(a.mp<sk.mp){battleLog('MPが足りない。');return}a.mp-=sk.mp;d=sk.power+Math.floor(Math.random()*(sk.variance+1));e.hp=Math.max(0,e.hp-d);if(type==='ice')e.atk=Math.max(4,e.atk-SKILLS.ice.atkDown);moraleLoss=applyMoraleDamage(e,d*.3);visual='magic';battleLog(`${a.name}の${type==='fire'?'火球':'氷槍'}！ ${e.name}に${d}ダメージ。`);if(type==='ice'){
+  battleLog('マーガレット「動きを鈍らせた。次の攻撃に備えて」');
+  if(b.id==='boss'&&state.events.choices['early.fortShield']==='studied'&&!b.fortShieldRecalled){
+   b.fortShieldRecalled=true;
+   battleLog('マーガレット「盾の傷から読んだ通り。突進する前の足を冷やせたわ」');
+  }
+ }}
  else if(type==='heal'||type==='prayer'){const sk=SKILLS[type];if(a.mp<sk.mp){battleLog('MPが足りない。');return}a.mp-=sk.mp;visual='heal';if(type==='heal'){const t=[...activeRouteParty()].filter(x=>x.hp>0).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp)[0]||a;const before=t.hp;t.hp=Math.min(t.maxHp,t.hp+sk.power);const healed=t.hp-before;battleLog(`${a.name}の治癒。${t.name}のHPが${healed}回復。`);battlePop('+'+healed,'heal')}else{let total=0;activeRouteParty().forEach(p=>{if(p.hp>0){const before=p.hp;p.hp=Math.min(p.maxHp,p.hp+sk.power);total+=p.hp-before}});battleLog(`${a.name}の祈り。全体でHPが${total}回復。`);battleLog('ソフィ「まだ立てます。みんな、無理しないで！」')}}
  else if(type==='persuade'){const missing=1-e.hp/e.maxHp,m=12+Math.floor(missing*22)+(a.id==='sophie'?6:a.id==='margaret'?3:0);moraleLoss=applyMoraleDamage(e,m);visual='heal';battleLog(`${a.name}は武器を下ろすよう呼びかけた。${e.name}の士気が${moraleLoss}下がった。`)}
  else if(type==='manaItem'){if((state.inventory['魔力草']||0)<=0){battleLog('魔力草がない。');return}state.inventory['魔力草']--;const t=[...activeRouteParty()].filter(x=>x.hp>0).sort((x,y)=>x.mp/x.maxMp-y.mp/y.maxMp)[0]||a;const before=t.mp;t.mp=Math.min(t.maxMp,t.mp+14);visual='heal';battleLog(`${a.name}は魔力草を使った。${t.name}のMPが${t.mp-before}回復。`)}
