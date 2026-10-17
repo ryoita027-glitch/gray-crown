@@ -1,5 +1,9 @@
 name: NPC V5 same-HEAD technical and visual gate
 on:
+  push:
+    branches: [audit/npc-v5-regression-tests-20261017]
+    paths:
+      - .github/workflows/npc-v5-same-head-acceptance.yml
   workflow_dispatch:
 
 permissions:
