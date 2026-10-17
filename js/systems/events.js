@@ -417,7 +417,7 @@ function earlyCapitalEcho(){
 // No map, quest, item, experience or mandatory departure gate is created.
 function finishRenPractice(style){
  if(state.events.choices['early.renPractice']||!['guard','strike'].includes(style))return false;
- if(!isEventComplete('alpha.village.appointment')||isDefeated('wolf'))return false;
+ if(isDefeated('wolf'))return false;
  state.events.choices['early.renPractice']=style;
  addJournal(style==='guard'
   ?'リュネ村でレンと稽古。カレンはソフィの前に立ち、仲間を庇う動きを教えた。'
@@ -460,13 +460,8 @@ function visitRenPractice(){
  }
  if(chosen==='guard')return say('レン','「木の盾、ここに置いてあるよ。狼が後ろの誰かを狙ったら、前に立つんだよね！」');
  if(chosen==='strike')return say('レン','「倒れた木の的、まだそのまま！　先に殴れば勝ちとは限らないんだね」');
- if(!isEventComplete('alpha.village.appointment'))
-  return saySequence([
-   {speaker:'レン',text:'「トリトン姉ちゃんがいなくなったら、剣の稽古は誰が見てくれるの？」'},
-   {speaker:'トリトン',text:'「父ちゃんに頼め。私より百倍怖いぞ」'}
-  ]);
  return saySequence([
-  {speaker:'レン',text:'「勇者になるなら、一回だけ稽古してって！　僕が狼役！　ソフィ姉ちゃんを狙うからね」'},
+  {speaker:'レン',text:'「トリトン姉ちゃん、一回だけ稽古してって！　僕が狼役！　ソフィ姉ちゃんを狙うからね」'},
   {speaker:'トリトン',text:'「木剣だから心配するな。守るか、先に倒すか。どっちも本番で使う手だ」'}
  ],()=>say('レン','「準備いい？　どっちでやってみる？」',[
   {label:'カレンが前に出て、ソフィを庇う',fn:()=>finishRenPractice('guard')},
