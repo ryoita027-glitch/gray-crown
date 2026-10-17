@@ -108,7 +108,16 @@ function clearTransientPanels(){for(const id of ['battlePanel','levelUpPanel','b
 function load(silent=false){
  if(!canPersistNow('load')){if(!silent&&$('dialogueBox')?.classList.contains('hidden'))say('システム','イベントや戦闘の途中ではロードできません。操作可能な場所でロードしてください。');return false}
  const primary=localStorage.getItem(SAVE_KEY),backup=localStorage.getItem(SAVE_BACKUP_KEY);if(!primary&&!backup){if(!silent)say('システム','セーブデータがありません。');return false}let recovered=false,next;
- try{next=migrateLoaded(primary||backup)}catch(e){GC.Log?.warn('Primary save load failed',{error:String(e)});if(!backup){if(!silent)say('システム','セーブデータを読み込めませんでした。');return false}try{next=migrateLoaded(backup);recovered=true}catch(e2){GC.Log?.error('Primary and backup save load failed',{primary:String(e),backup:String(e2)});if(!silent)say('システム','セーブデータとバックアップの両方を読み込めませんでした。');return false}}
+ // Migration can fill missing fields from defaults. Before migrating, ensure
+ // a partially truncated but parseable JSON is not mistaken for a fresh game.
+ if(!isUsableSavedAdventure(primary)){
+  if(!isUsableSavedAdventure(backup)){
+   GC.Log?.error('No structurally usable save or backup');
+   if(!silent)say('システム','セーブデータとバックアップの両方を読み込めませんでした。');
+   return false
+  }
+  recovered=true;next=migrateLoaded(backup)
+ }else next=migrateLoaded(primary);
  clearTransientPanels();replaceState(next);VISUAL.map=null;setMusic(mapMusicTheme(state.map));renderHud();draw();GC.Dev?.clearTaint?.();GC.Log?.info('Load',{map:state.map,x:state.x,y:state.y,stage:state.story.stage,recovered});if(!silent&&typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started)hideTitle();if(!silent)say('システム',recovered?'通常セーブが壊れていたため、バックアップから復旧しました。':'ロードしました。');return true}
 
 // Portable JSON is necessary for player ZIP/file:// releases: browser
@@ -155,8 +164,8 @@ function importPortableSaveText(raw){
   // Persist the migrated *validated* schema, never raw untrusted file text.
   const payload=JSON.stringify({...loaded,schema:SAVE_SCHEMA,locked:false,battle:null,
     battleReturn:null,symbolEncounter:null});
-  if(primary)localStorage.setItem(SAVE_BACKUP_KEY,primary);
-  else if(!backup)localStorage.setItem(SAVE_BACKUP_KEY,payload);
+  if(isUsableSavedAdventure(primary))localStorage.setItem(SAVE_BACKUP_KEY,primary);
+  else if(!isUsableSavedAdventure(backup))localStorage.setItem(SAVE_BACKUP_KEY,payload);
   localStorage.setItem(SAVE_KEY,payload);
   if(!load(true))throw new Error('Imported save could not be loaded');
   updateTitleContinue();
