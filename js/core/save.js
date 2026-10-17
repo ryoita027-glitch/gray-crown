@@ -11,7 +11,19 @@ function nearestSafeTile(mapId,x,y,saveState=state){
  const passThrough=new Set(['gate','exit','northExit','southExit','roadSign','milestone','banner','rations']);
  // A collected chest/forage spot is no longer solid. Crucially, load validation
  // must inspect the *loaded* world's flags, not the old session still in memory.
- const cleared=o=>TREASURE_DEFS[o.id]&&saveState?.world?.treasures?.[o.id]===true;
+ const cleared=o=>{
+  const id=o.id,world=saveState?.world||{};
+  const treasure=world.treasures||{},defeated=world.defeatedSymbols||{},switches=world.switches||{};
+  // Mirror overworld objectCleared, but read the SAVE BEING LOADED, not the
+  // previous in-memory session. Open gates and defeated bosses are traversable
+  // even if they still exist in the map's immutable object list.
+  if(TREASURE_DEFS[id]&&treasure[id]===true)return true;
+  if(['wolf','bandit','bats','crawler','boss','scavengerWolves','imperialPatrol'].includes(id)&&defeated[id]===true)return true;
+  if(id==='innerGate'&&switches.leverWest===true&&switches.leverEast===true)return true;
+  if((id==='fortGate'||id==='fortGateRight')&&switches.fortGateOpen===true)return true;
+  if(['ashCache','frontierCache','empireCache','imperialCache','yukiCache','elsiaCache'].includes(id)&&treasure[id]===true)return true;
+  return false
+ };
  const blockedTile=(xx,yy)=>{
   const t=tileAt(mapId,xx,yy);
   if(['T','H','S','W','R','K','Z'].includes(t))return true;
