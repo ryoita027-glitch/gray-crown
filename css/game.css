@@ -727,3 +727,75 @@ body:has(.battle-panel:not(.hidden)) .party-battle-line{left:5%;bottom:38px}
   transform:none!important;
  }
 }
+
+
+/* Battle-size correction after player review.
+ * Keep the *original* hero PNGs and true 48x48 source cells. Only the
+ * combat presentation grows; exploration sprites remain completely intact.
+ * One CSS variable drives BOTH viewport dimensions and all sprite frames;
+ * changing one without the other previously produced cropped heads.
+ *
+ * Desktop: 72px (vs rejected 44px), mid-size: 64px, phones: 60px.
+ * Phones use two columns/two rows so the larger party cannot overlap foes.
+ */
+#partyBattleLine{
+ --gc-battle-frame:64px;
+}
+#partyBattleLine .battle-hero.sprite{
+ width:var(--gc-battle-frame)!important;
+ height:var(--gc-battle-frame)!important;
+}
+#partyBattleLine .battle-hero .battle-sprite-frame{
+ width:var(--gc-battle-frame)!important;
+ height:var(--gc-battle-frame)!important;
+ overflow:hidden!important;
+}
+#partyBattleLine .battle-hero .battle-frame-image{
+ top:0!important;
+ left:0!important;
+ width:calc(var(--gc-battle-frame) * 4)!important;
+ height:calc(var(--gc-battle-frame) * 4)!important;
+ object-fit:fill!important;
+ image-rendering:pixelated!important;
+}
+#partyBattleLine .battle-hero.strike .battle-frame-image{
+ width:calc(var(--gc-battle-frame) * 6)!important;
+ height:calc(var(--gc-battle-frame) * 4)!important;
+ animation:gcBattleWalkSized .4s steps(1,end) 1!important;
+}
+@keyframes gcBattleWalkSized{
+ 0%,16.66%{transform:translateX(0)}
+ 16.67%,33.33%{transform:translateX(calc(var(--gc-battle-frame) * -1))}
+ 33.34%,49.99%{transform:translateX(calc(var(--gc-battle-frame) * -2))}
+ 50%,66.66%{transform:translateX(calc(var(--gc-battle-frame) * -3))}
+ 66.67%,83.33%{transform:translateX(calc(var(--gc-battle-frame) * -4))}
+ 83.34%,100%{transform:translateX(calc(var(--gc-battle-frame) * -5))}
+}
+/* Scoped positions override legacy desktop nth-child !important positions. */
+@media (min-width:851px){
+ #partyBattleLine{--gc-battle-frame:72px}
+ #partyBattleLine .battle-hero:nth-child(1){left:0!important}
+ #partyBattleLine .battle-hero:nth-child(2){left:82px!important}
+ #partyBattleLine .battle-hero:nth-child(3){left:164px!important}
+ #partyBattleLine .battle-hero:nth-child(4){left:246px!important}
+}
+@media (min-width:601px) and (max-width:850px){
+ #partyBattleLine{--gc-battle-frame:64px}
+ #partyBattleLine .battle-hero:nth-child(1){left:0!important}
+ #partyBattleLine .battle-hero:nth-child(2){left:72px!important}
+ #partyBattleLine .battle-hero:nth-child(3){left:144px!important}
+ #partyBattleLine .battle-hero:nth-child(4){left:216px!important}
+}
+@media (max-width:600px){
+ #partyBattleLine{
+  --gc-battle-frame:60px;
+  left:8px!important;
+  bottom:20px!important;
+  width:146px!important;
+  height:126px!important;
+ }
+ #partyBattleLine .battle-hero:nth-child(1){left:0!important;bottom:63px!important}
+ #partyBattleLine .battle-hero:nth-child(2){left:68px!important;bottom:63px!important}
+ #partyBattleLine .battle-hero:nth-child(3){left:0!important;bottom:0!important}
+ #partyBattleLine .battle-hero:nth-child(4){left:68px!important;bottom:0!important}
+}
