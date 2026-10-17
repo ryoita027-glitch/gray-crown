@@ -85,3 +85,39 @@ test('menu restart also protects an unsaved adventure even when no save slot exi
  assert.equal(h.GC.Save.restart(),true);
  assert.equal(h.GC.State.get().gold,120);
 });
+
+
+test('corrupt primary must not be archived over a recoverable older adventure',()=>{
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('state.gold=672');
+ const valid=JSON.stringify(h.GC.State.get());
+ h.storage.setItem(s.SAVE_KEY,'{truncated');
+ h.storage.setItem(s.SAVE_BACKUP_KEY,valid);
+ h.context.confirm=()=>true;
+ assert.equal(h.GC.App.startNewGameSafely(),true);
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_ARCHIVE_KEY)).gold,672,
+  'archive must contain valid backup, never broken primary');
+});
+test('saving after a broken primary must preserve the previously healthy backup',()=>{
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=912');
+ const good=JSON.stringify(h.GC.State.get());
+ h.storage.setItem(s.SAVE_KEY,'{truncated');
+ h.storage.setItem(s.SAVE_BACKUP_KEY,good);
+ h.evaluate('state.gold=135');
+ assert.equal(s.save(true),true);
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),good);
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_KEY)).gold,135);
+});
+test('new adventure must not replace a valid archive when all current saves are broken',()=>{
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('state.gold=714');
+ const archive=JSON.stringify(h.GC.State.get());
+ h.storage.setItem(s.SAVE_ARCHIVE_KEY,archive);
+ h.storage.setItem(s.SAVE_KEY,'{damaged');
+ h.storage.setItem(s.SAVE_BACKUP_KEY,'{"hello":"world"}');
+ h.context.confirm=()=>true;
+ assert.equal(h.GC.App.startNewGameSafely(),false);
+ assert.equal(h.GC.State.get().gold,714);
+ assert.equal(h.storage.getItem(s.SAVE_ARCHIVE_KEY),archive);
+});
