@@ -199,8 +199,10 @@ const OpeningPixelAssets=(()=>{
   const destSize=useLegacyArt?32:44;
   const centerX=n.x*32+16,footY=n.y*32+30;
   c.save();c.imageSmoothingEnabled=false;
-  c.fillStyle='rgba(16,18,18,.25)';
-  c.beginPath();c.ellipse(centerX,footY-1,useLegacyArt?8:9,3,0,0,Math.PI*2);c.fill();
+  if(c.beginPath&&c.ellipse&&c.fill){
+   c.fillStyle='rgba(16,18,18,.25)';
+   c.beginPath();c.ellipse(centerX,footY-1,useLegacyArt?8:9,3,0,0,Math.PI*2);c.fill()
+  }
   c.drawImage(sheet,index*srcSize,sy,srcSize,srcSize,
    Math.round(centerX-destSize/2),useLegacyArt?n.y*32:footY-destSize,destSize,destSize);
   c.restore();return true
@@ -414,8 +416,10 @@ const OpeningPixelAssets=(()=>{
   c.save();c.imageSmoothingEnabled=false;
   // The 32px native art also needs the same unobtrusive ground contact.
   // Never recolor, repaint or paste accessories across its pixels.
-  c.fillStyle='rgba(16,18,18,.25)';
-  c.beginPath();c.ellipse(n.x*32+16,n.y*32+29,8,3,0,0,Math.PI*2);c.fill();
+  if(c.beginPath&&c.ellipse&&c.fill){
+   c.fillStyle='rgba(16,18,18,.25)';
+   c.beginPath();c.ellipse(n.x*32+16,n.y*32+29,8,3,0,0,Math.PI*2);c.fill()
+  }
   c.drawImage(sheet,frame*32,(dirs[dir]??0)*32,32,32,n.x*32,n.y*32,32,32);
   c.restore();return true
  }
