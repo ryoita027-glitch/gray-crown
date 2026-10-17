@@ -11,7 +11,7 @@ function trial(id,level,policy,seed){
  let rng=(seed>>>0),random=Object.create(Math);
  random.random=()=>{rng=(Math.imul(1664525,rng)+1013904223)>>>0;return rng/4294967296};
  h.context.Math=random;
- h.evaluate('resetState();state.map="road";state.party.forEach(p=>{for(let n=1;n<'+level+';n++)levelUpOne(p)})');
+ h.evaluate('resetState();state.map="road";state.party.forEach(p=>{for(let n=1;n<'+level+';n++)levelUpOne(p);p.hp=p.maxHp;p.mp=p.maxMp})');
  h.evaluate("startBattle('"+id+"')");
  h.flushTimers();
  let commands=0;
@@ -33,7 +33,7 @@ function trial(id,level,policy,seed){
  assert.ok(row,id+' must log its real encounter outcome');
  const data=JSON.parse(JSON.stringify(row));
  assert.equal(data.id,id);
- assert.equal(data.outcome,'defeat','this battle policy should win, not suffer a game over');
+ assert.equal(data.playerResult,'win','enemy defeat is NOT the same as party defeat');
  assert.ok(data.rounds>=1&&data.rounds<=9,'no zero-round battle or slog');
  assert.ok(data.enemyAttacks>0,'a checkpoint boss should be allowed one threatening turn');
  assert.ok(data.damageTaken>=0&&data.damageTaken<=data.openingHp*.5,
