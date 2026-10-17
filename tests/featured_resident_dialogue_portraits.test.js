@@ -27,7 +27,7 @@ test('legacy A/B keeps the original full-body dialogue crop for all featured res
  for(let i=0;i<names.length;i++){
   const p=npc.portraitMarkup(names[i]);
   assert.match(p,/featured_residents_v1[.]png/);
-  assert.ok(p.includes('x="-'+(i*64)+'"'),names[i]);
+  assert.ok(p.includes('x="'+String(-(i*64))+'"'),names[i]);
   assert.match(p,/width="576" height="256"/);
  }
 });
@@ -36,7 +36,7 @@ test('one-file offline release embeds the same portrait pixels instead of broken
  const GC={Data:{}};
  const mock={'assets/npc/featured_residents_charm_v5.png':'data:image/png;base64,VERIFIED_FAKE_ATLAS'};
  const npc=new Function('GC','window',src+';return GC.Data.NPCs')(GC,
-  {__GC_INLINE_ASSETS__:mock});
+  {location:{search:''},__GC_INLINE_ASSETS__:mock});
  for(const name of names){
   const p=npc.portraitMarkup(name);
   assert.match(p,/href="data:image\/png;base64,VERIFIED_FAKE_ATLAS"/);
