@@ -1,0 +1,49 @@
+name: NPC V5 same-HEAD technical and visual gate
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  npc-v5:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-ci.txt
+      - name: Install required Python packages
+        run: python -m pip install --disable-pip-version-check -r requirements-ci.txt
+      - name: Install Chromium before any browser tests
+        run: python -m playwright install --with-deps chromium
+      - name: Run V5 NPC, art and opening unit tests
+        run: |
+          npm run town:npc-charm-v3-unit
+          npm run town:art-unit
+          npm run opening:player-first-unit
+      - name: Run unchanged project regressions
+        run: npm run check
+      - name: Verify both release distributions
+        run: npm run release:checked
+      - name: New Game, same-camera real Chromium A/B and real Save/Continue
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/browser_npc_v5_acceptance_e2e.py --expected-head "$GITHUB_SHA"
+      - name: Preserve evidence even if gate fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gray-crown-npc-v5-same-sha
+          path: prototype_artifacts/npc_v5_same_head/
+          if-no-files-found: warn
+          retention-days: 14
