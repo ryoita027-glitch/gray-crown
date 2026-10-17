@@ -53,9 +53,20 @@ def fight(page,battle_id=None,allow_loss=False):
  if battle_id:check("expected encounter "+battle_id,state(page)["battle"]["id"]==battle_id)
  if battle_id in ("wolves","roadBandit","boss"):
   check("four actual battle sprites",page.locator("#partyBattleLine .battle-hero[data-hero]").count()==4)
-  sources=page.locator("#partyBattleLine .battle-hero").evaluate_all("""els=>els.map(e=>({id:e.dataset.hero,src:e.style.backgroundImage}))""")
+  # Combat art is displayed by an <img> atlas, not a background-image.
+  # The old assertion read backgroundImage=="" and failed even when the real
+  # original sprites were correctly present. Check both URL and decoded PNG.
+  page.wait_for_function("""()=>[...document.querySelectorAll("#partyBattleLine .battle-hero .battle-frame-image")].length===4 &&
+    [...document.querySelectorAll("#partyBattleLine .battle-hero .battle-frame-image")].every(x=>x.complete)""",timeout=8000)
+  sources=page.locator("#partyBattleLine .battle-hero").evaluate_all("""els=>els.map(e=>{
+   const img=e.querySelector(".battle-frame-image");return{id:e.dataset.hero,src:img?.getAttribute("src")||"",
+   walk:img?.dataset.walk||"",width:img?.naturalWidth||0,height:img?.naturalHeight||0}
+  })""")
   check("battle heroes preserve locked character assets",
-        all(x["id"] in x["src"] and x["id"] in ("karen","triton","sophie","margaret") for x in sources),sources)
+        all(x["id"] in ("karen","triton","sophie","margaret") and
+            x["src"]==f'assets/characters/{x["id"]}/{x["id"]}_idle.png' and
+            x["walk"]==f'assets/characters/{x["id"]}/{x["id"]}_walk.png' and
+            x["width"]==192 and x["height"]==192 for x in sources),sources)
  if battle_id in ("wolves","boss"):shot(page,"battle_"+battle_id)
  check("combat save blocked",page.evaluate("GC.Save.save(true)===false"))
  check("combat load blocked",page.evaluate("GC.Save.load(true)===false"))
