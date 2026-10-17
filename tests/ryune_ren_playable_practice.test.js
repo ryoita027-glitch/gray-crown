@@ -32,13 +32,13 @@ for(const style of ['guard','strike']){
   const h=createHarness(),s=h.GC.State.get();appointed(h);
   const startGold=s.gold,startInventory=JSON.stringify(s.inventory);
   const before=practicePixels(h);
-  assert.equal(h.evaluate("finishRenPractice('"+style+"')"),undefined,
+  assert.equal(h.evaluate(style === 'guard' ? "finishRenPractice('guard')" : "finishRenPractice('strike')"),undefined,
    'dialogue sequence returns no quest/currency payload');
   assert.equal(s.events.choices['early.renPractice'],style);
-  assert.notEqual(practicePixels(h),before,'the real village art must remember the player's move');
+  assert.notEqual(practicePixels(h),before,'the real village art must remember the chosen move');
   assert.equal(JSON.stringify(s.inventory),startInventory,'no hidden loot or free training fee');
   assert.equal(s.gold,startGold,'no gold generation');
-  assert.equal(h.evaluate("finishRenPractice('"+(style==='guard'?'strike':'guard')+"')"),false,
+  assert.equal(h.evaluate(style === 'guard' ? "finishRenPractice('strike')" : "finishRenPractice('guard')"),false,
    'the player cannot farm or overwrite a remembered one-time choice');
   assert.equal(s.events.choices['early.renPractice'],style);
   const saved=h.GC.Save.migrateLoaded(h.GC.Save.serializeSave());
