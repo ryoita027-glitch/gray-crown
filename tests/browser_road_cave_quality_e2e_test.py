@@ -75,13 +75,19 @@ def fight(page,battle_id=None,allow_loss=False):
   if not page.locator("#battlePanel").is_visible():break
   if page.locator("#levelUpPanel").is_visible():
    page.locator("#levelUpContinue").click();page.wait_for_timeout(110);continue
+  # Battle resolution has already cleared state.battle while its fade panel
+  # remains in the DOM for a few frames. Do not click stale action buttons.
+  if page.evaluate("GC.State.get().battle===null"):
+   page.wait_for_timeout(120);continue
   if page.evaluate("GC.State.get().locked"):
    page.wait_for_timeout(120);continue
   buttons=page.locator("#battleActions button:not([disabled])")
   if buttons.count():
    options=buttons.all_text_contents()
    # Deliberate skill use: rally, heavy, heal when needed, fire when possible.
-   actor=page.evaluate("GC.State.get().party[GC.State.get().battle.actor].id")
+   actor=page.evaluate("(()=>{const s=GC.State.get();return s.battle?s.party[s.battle.actor]?.id:null})()")
+   if actor is None:
+    page.wait_for_timeout(120);continue
    selected=None
    for desired in ({
      "karen":["号令","剣撃"],"triton":["強撃"],"sophie":["治癒","杖撃"],
