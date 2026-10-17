@@ -3,7 +3,7 @@
    It reads only existing map coordinates and the original front() cell. */
 (function(){
  const labels=Object.freeze({
-  messenger:'王国使者',mayor:'村長',capitalOfficial:'王都の任命担当',granz:'総司令グランツ',
+  renPracticeDummy:'レンの稽古台',messenger:'王国使者',mayor:'村長',capitalOfficial:'王都の任命担当',granz:'総司令グランツ',
   capitalInnDoor:'白鹿亭',capitalArmoryDoor:'兵装店',innRest:'白鹿亭の寝台',
   refugee:'避難民',fieldPriest:'従軍僧',scorchedOrders:'焼けた命令書',
   burnedHomestead:'焼けた家屋',burnedCart:'焼けた荷車',ruinedShrine:'道端の祠',

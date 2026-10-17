@@ -411,6 +411,64 @@ function earlyCapitalEcho(){
  if(a==='reserve')lines.push({speaker:'ソフィ',text:'「村には薬を必要とする子がいました。旅のために残した薬草、これからちゃんと役立てたいです」'});
  return lines
 }
+// A voluntary 20-second play moment before leaving home: a child asks
+// for ONE round of practice. The player's choice persists in schema 23,
+// immediately changes the practice dummy, and is remembered after the wolf.
+// No map, quest, item, experience or mandatory departure gate is created.
+function finishRenPractice(style){
+ if(state.events.choices['early.renPractice']||!['guard','strike'].includes(style))return false;
+ if(isDefeated('wolf'))return false;
+ state.events.choices['early.renPractice']=style;
+ addJournal(style==='guard'
+  ?'リュネ村でレンと稽古。カレンはソフィの前に立ち、仲間を庇う動きを教えた。'
+  :'リュネ村でレンと稽古。トリトンは先に踏み込み、強撃で相手をひるませる動きを見せた。');
+ GC.Render?.World?.draw?.();
+ if(style==='guard'){
+  sfx('guard');
+  return saySequence([
+   {speaker:'レン',text:'「えっ、カレン姉ちゃんが前に？　ソフィ姉ちゃんは後ろでいいの？」'},
+   {speaker:'カレン',text:'「後ろにいていいよ。私が守る。ただし、レンの木剣は意外と速い！」'},
+   {speaker:'ソフィ',text:'「ふふ。守ってもらったら、今度は私が治します。二人で一組ですね」'}
+  ])
+ }
+ sfx('rally');
+ return saySequence([
+  {speaker:'レン',text:'「うわっ！　的が倒れた！　トリトン姉ちゃん、本当に強い！」'},
+  {speaker:'トリトン',text:'「先に動けば敵を減らせる。でも、当て損ねたら仲間が狙われるぞ」'},
+  {speaker:'マーガレット',text:'「勢いだけで終わらせないの。次は相手の動きも見て」'}
+ ])
+}
+function visitRenPractice(){
+ const chosen=state.events.choices['early.renPractice'];
+ if(isDefeated('wolf')){
+  if(state.events.choices['early.renWolfOutcome']==='protected')
+   return saySequence([
+    {speaker:'レン',text:'「灰牙狼がソフィ姉ちゃんを狙った時、本当にカレン姉ちゃんが庇ったんだって？」'},
+    {speaker:'カレン',text:'「レンとの稽古を思い出したよ。本物は怖かったけど、守れてよかった」'}
+   ]);
+  if(chosen==='guard')
+   return saySequence([
+    {speaker:'レン',text:'「狼には勝ったんだね！　でも稽古みたいに毎回、守れるわけじゃないんだ」'},
+    {speaker:'カレン',text:'「うん。次はもっと上手くやる。レンも、一緒に考えてね」'}
+   ]);
+  if(chosen==='strike')
+   return saySequence([
+    {speaker:'レン',text:'「狼を倒したって!?　木の的みたいにはいかなかったでしょ？」'},
+    {speaker:'トリトン',text:'「当たり前だ。本物は反撃してくる。勝った後で手が震えたよ」'}
+   ]);
+  return say('レン','「灰牙狼を倒したって本当？　今度、どうやって四人で戦ったか教えて！」')
+ }
+ if(chosen==='guard')return say('レン','「木の盾、ここに置いてあるよ。狼が後ろの誰かを狙ったら、前に立つんだよね！」');
+ if(chosen==='strike')return say('レン','「倒れた木の的、まだそのまま！　先に殴れば勝ちとは限らないんだね」');
+ return saySequence([
+  {speaker:'レン',text:'「トリトン姉ちゃん、一回だけ稽古してって！　僕が狼役！　ソフィ姉ちゃんを狙うからね」'},
+  {speaker:'トリトン',text:'「木剣だから心配するな。守るか、先に倒すか。どっちも本番で使う手だ」'}
+ ],()=>say('レン','「準備いい？　どっちでやってみる？」',[
+  {label:'カレンが前に出て、ソフィを庇う',fn:()=>finishRenPractice('guard')},
+  {label:'トリトンが先に踏み込み、強撃を放つ',fn:()=>finishRenPractice('strike')},
+  {label:'今は稽古せず、旅の準備をする',fn:()=>say('レン','「分かった！　出発前ならいつでもいいよ！」')}
+ ]))
+}
 function inlineNpcEvent(id){
  if(state.map==='village'){
   if(id==='father'){setStructuredCondition('father',true);addJournal('トリトンの父は「勝つより帰ってこい」と教えてきた。');return say('トリトンの父','「剣を持つなら、勝つことより帰ってくることを覚えろ。トリトンにも昔からそう教えてきた。……カレン、お前もだぞ」')}
@@ -444,7 +502,7 @@ function inlineNpcEvent(id){
    ],()=>{state.chapter='第一章 — 白い旗';advanceStory(STORY_STAGES.APPOINTED,{talkedWithKaren:true,appointed:true},'北門から街道へ出る');addJournal('カレンを中心に4人で話し合い、村への減税と食料支援を受けるため勇者任務を引き受けた。')})
   }
   if(id==='mika')return saySequence([{speaker:'ミカ',text:'「カレン姉ちゃん、勇者って王都のお菓子食べ放題なの？」'},{speaker:'カレン',text:'「たぶん、そういう仕事じゃないかな……」'}])
-  if(id==='ren')return saySequence([{speaker:'レン',text:'「トリトン姉ちゃんがいなくなったら、剣の稽古は誰が見てくれるの？」'},{speaker:'トリトン',text:'「父ちゃんに頼め。私より百倍怖いぞ」'}])
+  if(id==='ren')return visitRenPractice()
   if(id==='lulu')return saySequence([{speaker:'ルル',text:'「ソフィお姉ちゃん、ちゃんと帰ってくる？」'},{speaker:'ソフィ',text:'「もちろん。約束します」'}])
   if(id==='baker')return say('パン屋のエダ','「今朝は小麦が足りなくてね。いつもの半分しか焼けなかったよ。子どもらには黙って大きい方を渡したけどさ」')
   if(id==='farmer')return say('農夫のボル',
@@ -610,6 +668,7 @@ function inlineNpcEvent(id){
 function inlineObjectEvent(id){
  if(TREASURE_DEFS[id])return openTreasure(id);
  if(state.map==='village'){
+  if(id==='renPracticeDummy')return visitRenPractice();
   if(id==='store'){setStructuredCondition('store',true);addJournal('共同食料庫の備蓄は前年同期の半分以下。');return say('共同食料庫','棚の半分以上が空いている。帳簿では前年同期の半分以下まで備蓄が落ちていた。')}
   if(id==='well'){setWorldSwitch('ryune.baseViewed.well',true);return say('村の井戸','何人もの桶が並んでいる。子どもたちの笑い声と、夕食の相談をする大人たちの声が聞こえる。')}
   if(id==='home')return enterInterior('karenhome',4,5)
