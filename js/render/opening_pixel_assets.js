@@ -192,10 +192,19 @@ const OpeningPixelAssets=(()=>{
   const sheet=stage<0?featuredSheet:actionSheet;
   const srcSize=useLegacyArt?32:48;
   const sy=stage<0?(dirs[dir]??0)*srcSize:stage*48;
-  const destSize=useLegacyArt?32:48;
+  // Keep the existing PNG pixels, outfit, face and poses intact.
+  // The original featured NPC draw scaled to 48px and ended at tile+32,
+  // while hero art appears at 44px and ends at tile+30. The 8% scale and
+  // 2px footline difference made residents look pasted onto the map.
+  const destSize=useLegacyArt?32:44;
+  const centerX=n.x*32+16,footY=n.y*32+30;
   c.save();c.imageSmoothingEnabled=false;
+  if(c.beginPath&&c.ellipse&&c.fill){
+   c.fillStyle='rgba(16,18,18,.25)';
+   c.beginPath();c.ellipse(centerX,footY-1,useLegacyArt?8:9,3,0,0,Math.PI*2);c.fill()
+  }
   c.drawImage(sheet,index*srcSize,sy,srcSize,srcSize,
-   n.x*32-(destSize===48?8:0),n.y*32-(destSize===48?16:0),destSize,destSize);
+   Math.round(centerX-destSize/2),useLegacyArt?n.y*32:footY-destSize,destSize,destSize);
   c.restore();return true
  }
  function featuredStatus(){return {requested:featuredRequested,ready:featuredReady,
@@ -405,6 +414,12 @@ const OpeningPixelAssets=(()=>{
   const frame=near&&working&&typeof OpeningWorldLife!=='undefined'
    ?OpeningWorldLife.workPhase(n.id,now):0;
   c.save();c.imageSmoothingEnabled=false;
+  // The 32px native art also needs the same unobtrusive ground contact.
+  // Never recolor, repaint or paste accessories across its pixels.
+  if(c.beginPath&&c.ellipse&&c.fill){
+   c.fillStyle='rgba(16,18,18,.25)';
+   c.beginPath();c.ellipse(n.x*32+16,n.y*32+29,8,3,0,0,Math.PI*2);c.fill()
+  }
   c.drawImage(sheet,frame*32,(dirs[dir]??0)*32,32,32,n.x*32,n.y*32,32,32);
   c.restore();return true
  }

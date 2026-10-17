@@ -75,7 +75,7 @@ test('nine featured residents use their own four-direction image, not generic pa
    assert.ok(draw,'authored PNG must be drawn');
    assert.equal(draw[1],i*48,'person-specific x from atlas');
    assert.equal(draw[2],row*48,'direction-specific y from atlas');
-   assert.deepEqual(draw.slice(3),[48,48,120,176,48,48]);
+   assert.deepEqual(draw.slice(3),[48,48,122,178,44,44]); // untouched 48px source, now visually aligned to 44px heroes
   }
  assert.deepEqual(a.featuredStatus(),
   {requested:true,ready:true,failed:false,count:9,gesturesRequested:true,gesturesReady:true,gesturesFailed:false,artVersion:'concept-charm-v5'});
