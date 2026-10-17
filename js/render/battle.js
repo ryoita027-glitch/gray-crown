@@ -26,7 +26,14 @@ function renderBattleStage(){const b=state.battle;if(!b)return;const e=GC.Commer
  const ids=activeRouteParty().map(p=>p.id).join(',');
  if(line.dataset.party!==ids||line.children.length!==activeRouteParty().length){
   line.dataset.party=ids;
-  line.innerHTML=activeRouteParty().map((p,i)=>`<div id="battleHero${i}" data-hero="${p.id}" class="battle-hero sprite" style="left:${i*56}px"><span class="battle-hero-fallback" aria-hidden="true"><i></i></span><span class="battle-sprite-frame" aria-hidden="true"><img class="battle-frame-image" src="assets/characters/${p.id}/${p.id}_idle.png" data-idle="assets/characters/${p.id}/${p.id}_idle.png" data-walk="assets/characters/${p.id}/${p.id}_walk.png" alt="" draggable="false"></span></div>`).join('')
+  line.innerHTML=activeRouteParty().map((p,i)=>{
+   const idle=typeof PlayerCharacterArtV6!=="undefined"?PlayerCharacterArtV6.battleSheetUrl(p.id,"idle"):null;
+   const walk=idle?PlayerCharacterArtV6.battleSheetUrl(p.id,"walk"):null;
+   const artReady=!!idle&&!!walk;
+   const idlePath=artReady?idle:`assets/characters/${p.id}/${p.id}_idle.png`;
+   const walkPath=artReady?walk:`assets/characters/${p.id}/${p.id}_walk.png`;
+   return `<div id="battleHero${i}" data-hero="${p.id}" class="battle-hero sprite ${artReady?"v6-sprite":""}" style="left:${i*56}px"><span class="battle-hero-fallback" aria-hidden="true"><i></i></span><span class="battle-sprite-frame" aria-hidden="true"><img class="battle-frame-image" src="${idlePath}" data-idle="${idlePath}" data-walk="${walkPath}" alt="" draggable="false"></span></div>`
+  }).join('')
  }
  // Source paths belong to the HTML root, never to css/game.css. Keep a
  // deliberately visible fallback when any atlas is missing or invalid.
