@@ -1,6 +1,6 @@
 'use strict';
 const ALPHA_SESSION={started:false};
-function updateTitleContinue(){const b=$('titleContinue');if(b)b.disabled=!(localStorage.getItem(SAVE_KEY)||localStorage.getItem(SAVE_BACKUP_KEY))}
+function updateTitleContinue(){const b=$('titleContinue');if(b)b.disabled=!GC.Save.hasUsableStoredAdventure()}
 function hideTitle(){const t=$('titleScreen');if(t)t.classList.add('hidden');ALPHA_SESSION.started=true;canvas.focus()}
 function showAlphaIntro(){say('ナレーション','戦争が始まって四年。|王都から遠い[[リュネ村]]にも、食料不足の影響が出始めていた。<br><br>今日は子どもたちも大人たちも、いつも通り村で暮らしている。||広場には王国使者がいる。先に話しても、寄り道をしてもいい。')}
 function beginAlphaNewGame(clearSave=false){resetState();GC.Dev?.clearTaint?.();if(clearSave){localStorage.removeItem(SAVE_KEY);localStorage.removeItem(SAVE_BACKUP_KEY)}$('battlePanel').classList.add('hidden');$('levelUpPanel').classList.add('hidden');VISUAL.map=null;setMusic(mapMusicTheme(state.map));renderHud();draw();hideTitle();GC.Log?.info('New Game');showAlphaIntro();updateTitleContinue()}
@@ -18,11 +18,24 @@ function startNewGameSafely(){
   return false
  }
  if(existing){
-  const overwrite=olderArchive?'前回の復旧用データは、最後に手動保存した内容に置き換わります。':'最後に手動保存した冒険を復旧用に保管します。';
+  const validStored=GC.Save.hasUsableStoredAdventure();
+  const overwrite=!validStored
+   ?'既存の保存形式に破損または未対応のデータがあります。元データを消さずに保管して新しい冒険を始める操作です。'
+   :olderArchive?'前回の復旧用データは、最後に手動保存した内容に置き換わります。'
+   :'最後に手動保存した冒険を復旧用に保管します。';
   if(!confirm('新しい冒険を始めますか？\n未保存の進行は失われます。\n'+overwrite+'\n大切なデータはメニューからJSON書き出しも行ってください。'))return false;
   if(!GC.Save.archiveBeforeNewGame()){
-   alert('以前の冒険を保管できませんでした。データを守るため新規開始を中止しました。');
-   return false
+   if(validStored){
+    alert('以前の冒険を保管できませんでした。データを守るため新規開始を中止しました。');
+    return false
+   }
+   // The user may still want to play after both save slots are damaged.
+   // Quarantine *exact original bytes*, never delete/normalize them silently.
+   if(!confirm('通常のセーブとバックアップを復旧できません。破損データを別に保管し、新しい冒険を始めますか？\n後からメニューで元データを書き出せます。'))return false;
+   if(!GC.Save.quarantineCorruptSavesBeforeNewGame()){
+    alert('破損データの保管に失敗したため、新規開始を中止しました。');
+    return false
+   }
   }
  }
  beginAlphaNewGame(false);
