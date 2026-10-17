@@ -656,3 +656,18 @@ body:has(.battle-panel:not(.hidden)) .party-battle-line{left:5%;bottom:38px}
 @media(prefers-reduced-motion:reduce){
  #partyBattleLine .battle-hero.strike,#partyBattleLine .battle-hero .battle-frame-image{animation:none!important}
 }
+
+
+/* Playtest v6: do not show old 32px sheets or placeholder mannequin through
+   transparent pixels of the actual 48px battle portraits. The same authored
+   character pixels are used in exploration, scenes and combat. */
+#partyBattleLine .battle-hero.v6-sprite{
+ background:none!important;
+ width:48px;
+}
+#partyBattleLine .battle-hero.v6-sprite .battle-hero-fallback{
+ display:none!important;
+}
+#partyBattleLine .battle-hero.v6-sprite .battle-sprite-frame{
+ background:none!important;
+}
