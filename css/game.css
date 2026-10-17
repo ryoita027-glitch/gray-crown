@@ -799,3 +799,11 @@ body:has(.battle-panel:not(.hidden)) .party-battle-line{left:5%;bottom:38px}
  #partyBattleLine .battle-hero:nth-child(3){left:0!important;bottom:0!important}
  #partyBattleLine .battle-hero:nth-child(4){left:68px!important;bottom:0!important}
 }
+
+/* Narrowest 320–360px screens: preserve the 60px character art. Compress
+ * only the horizontal gap, not the characters or enemy. */
+@media (max-width:360px){
+ #partyBattleLine{width:130px!important}
+ #partyBattleLine .battle-hero:nth-child(2){left:60px!important}
+ #partyBattleLine .battle-hero:nth-child(4){left:60px!important}
+}
