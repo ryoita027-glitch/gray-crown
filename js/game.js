@@ -2,7 +2,7 @@
 const ALPHA_SESSION={started:false};
 function updateTitleContinue(){const b=$('titleContinue');if(b)b.disabled=!(localStorage.getItem(SAVE_KEY)||localStorage.getItem(SAVE_BACKUP_KEY))}
 function hideTitle(){const t=$('titleScreen');if(t)t.classList.add('hidden');ALPHA_SESSION.started=true;canvas.focus()}
-function showAlphaIntro(){say('ナレーション','戦争が始まって四年。|王都から遠い[[リュネ村]]にも、食料不足の影響が出始めていた。<br><br>今日は子どもたちも大人たちも、いつも通り村で暮らしている。||村を歩き、人々に話しかけてみよう。')}
+function showAlphaIntro(){say('ナレーション','戦争が始まって四年。|王都から遠い[[リュネ村]]にも、食料不足の影響が出始めていた。<br><br>今日は子どもたちも大人たちも、いつも通り村で暮らしている。||広場には王国使者がいる。先に話しても、寄り道をしてもいい。')}
 function beginAlphaNewGame(clearSave=false){resetState();GC.Dev?.clearTaint?.();if(clearSave){localStorage.removeItem(SAVE_KEY);localStorage.removeItem(SAVE_BACKUP_KEY)}$('battlePanel').classList.add('hidden');$('levelUpPanel').classList.add('hidden');VISUAL.map=null;setMusic(mapMusicTheme(state.map));renderHud();draw();hideTitle();GC.Log?.info('New Game');showAlphaIntro();updateTitleContinue()}
 function continueAlphaFromTitle(){if(!load(true)){updateTitleContinue();return}hideTitle();say('システム','セーブ地点から再開します。')}
 function primaryAction(){if(!ALPHA_SESSION.started)return;if(!$('dialogueBox').classList.contains('hidden')){if(dialogueTyping()){finishDialogueTyping();return}if(dialogueChoices.length)activateDialogueChoice();else if(dialogueContinue){const fn=dialogueContinue;closeDialogue(false);fn()}else closeDialogue();return}interact()}
