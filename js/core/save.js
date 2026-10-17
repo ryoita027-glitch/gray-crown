@@ -108,9 +108,22 @@ function save(silent=false){
   const payload=serializeSave(),prev=localStorage.getItem(SAVE_KEY);
   // Never rotate a corrupted primary over a usable previous checkpoint.
   const backup=localStorage.getItem(SAVE_BACKUP_KEY);
-  if(isUsableSavedAdventure(prev))localStorage.setItem(SAVE_BACKUP_KEY,prev);
-  else if(!isUsableSavedAdventure(backup))localStorage.setItem(SAVE_BACKUP_KEY,payload);
-  localStorage.setItem(SAVE_KEY,payload);GC.Log?.info('Save',{map:state.map,x:state.x,y:state.y,stage:state.story.stage});if(!silent)say('システム','セーブしました。');return true}catch(e){GC.Log?.error('Save failed',{error:String(e)});if(!silent)say('システム','セーブに失敗しました。ブラウザの保存領域を確認してください。');return false}}
+  try{
+   if(isUsableSavedAdventure(prev))localStorage.setItem(SAVE_BACKUP_KEY,prev);
+   else if(!isUsableSavedAdventure(backup))localStorage.setItem(SAVE_BACKUP_KEY,payload);
+   localStorage.setItem(SAVE_KEY,payload)
+  }catch(writeError){
+   // A failed primary write must not leave the older backup overwritten.
+   // Preserve both original slots as a single logical transaction.
+   try{
+    if(prev===null)localStorage.removeItem(SAVE_KEY);
+    else localStorage.setItem(SAVE_KEY,prev);
+    if(backup===null)localStorage.removeItem(SAVE_BACKUP_KEY);
+    else localStorage.setItem(SAVE_BACKUP_KEY,backup)
+   }catch(rollbackError){GC.Log?.error('Save rollback failed',{error:String(rollbackError)})}
+   throw writeError
+  }
+  GC.Log?.info('Save',{map:state.map,x:state.x,y:state.y,stage:state.story.stage});if(!silent)say('システム','セーブしました。');return true}catch(e){GC.Log?.error('Save failed',{error:String(e)});if(!silent)say('システム','セーブに失敗しました。ブラウザの保存領域を確認してください。');return false}}
 function clearTransientPanels(){for(const id of ['battlePanel','levelUpPanel','battleResult','battleFlash','bossCinematic','chapterCard'])$(id)?.classList.add('hidden');if($('dialogueBox')&&!$('dialogueBox').classList.contains('hidden'))closeDialogue(false)}
 function load(silent=false){
  if(!canPersistNow('load')){if(!silent&&$('dialogueBox')?.classList.contains('hidden'))say('システム','イベントや戦闘の途中ではロードできません。操作可能な場所でロードしてください。');return false}
