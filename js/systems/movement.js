@@ -121,7 +121,11 @@ function showWorldSkeletonEnding(route){
   completeEvent('worldSkeletonCleared',true);
   addJournal('最終章・'+p.title+'へ到達（物語プレビュー・未完成）');
  }
- setWorldSwitch('cleared',true);
+ // A route preview is not a completed RPG; never award actual clear state.
+ // This preserves the existing preview marker and the six distinct scenes,
+ // without invalidating previous version-23 save fields.
+ setWorldSwitch('endingPreviewReached',true);
+ setWorldSwitch('cleared',false);
  state.objective='最終章の仮エピローグ到達：本編結末は未実装';
  renderHud();
  say('ナレーション','<div class="ending"><h2>'+p.title+'</h2><p>'+p.scene+'</p>'+approachText+'<p>カレン '+p.karen+'</p><p>'+p.conclusion+'</p><p class="ending-note">ここは未完成エンディングの演出プレビューです。王国・帝国との決着や灰冠への過程は、今後の正式な物語で制作します。</p></div>');
