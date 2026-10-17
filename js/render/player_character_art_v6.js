@@ -136,20 +136,20 @@ const PlayerCharacterArtV6=(()=>{
   case 'healer':
    box(c,d.shade,cx-10,top+18,20,23);box(c,d.trim,cx-12,top+30,24,9);break;
   case 'mage':
-   box(c,d.shade,cx-13,top+16,26,30);box(c,d.tunic,cx-12,top+26,6,18);
-   box(c,d.tunic,cx+6,top+26,6,18);break;
+   box(c,d.shade,cx-13,top+16,26,26);box(c,d.tunic,cx-12,top+26,6,15);
+   box(c,d.tunic,cx+6,top+26,6,15);break;
   case 'elder':
-   box(c,d.shade,cx-12,top+18,24,28);box(c,d.trim,cx-13,top+19,26,6);break;
+   box(c,d.shade,cx-12,top+18,24,21);box(c,d.trim,cx-13,top+19,26,6);break;
   case 'childPractice':case 'childRibbon':
    box(c,d.shade,cx-9,top+18,18,16);break;
   case 'baker':case 'hearth':
-   box(c,d.shade,cx-12,top+18,24,24);box(c,d.trim,cx-10,top+22,20,20);break;
+   box(c,d.shade,cx-12,top+18,24,22);box(c,d.trim,cx-10,top+22,20,19);break;
   case 'farmer':case 'merchant':
    box(c,d.shade,cx-11,top+17,22,25);box(c,d.tunic,cx-14,top+24,4,8);break;
   case 'courier':
-   box(c,d.shade,cx-13,top+18,26,28);
+   box(c,d.shade,cx-13,top+18,26,24);
    box(c,d.tunic,cx-14,top+22,5,20);break;
-  default:box(c,d.shade,cx-10,top+18,20,24)
+  default:box(c,d.shade,cx-10,top+18,20,Math.min(24,48-top-18))
   }
  }
  function roleDetails(c,id,d,top,frame,dir,small){
@@ -189,19 +189,19 @@ const PlayerCharacterArtV6=(()=>{
    box(c,'#d1b477',x-17,top+4,34,4);box(c,'#917a50',x-11,top-2,22,8);
    box(c,'#edd096',x-9,top-1,17,2);
    box(c,d.trim,x-10,top+26,20,13);box(c,'#7b634e',x-3,top+30,6,4);
-   box(c,'#675743',x+15,top+17,3,27);box(c,'#a5a29a',x+12,top+39,10,5);break;
+   box(c,'#675743',x+15,top+17,3,24);box(c,'#a5a29a',x+12,top+36,10,5);break;
   case 'baker':
    // Fluffy baker cap, large flour apron, tray of actual loaves.
-   box(c,'#f2e5cf',x-12,top-4,24,5);box(c,'#fcf2db',x-8,top-8,16,7);
+   box(c,'#f2e5cf',x-12,top-4,24,5);box(c,'#fcf2db',x-8,top-6,16,5);
    box(c,d.trim,x-11,top+24,22,18);box(c,'#cbbba2',x-6,top+30,12,2);
-   box(c,'#73543d',x+10,top+27+motion,17,4);
-   for(let i=0;i<3;i++){box(c,'#c99657',x+11+i*5,top+23+motion,5,4);
-    box(c,'#f0cc84',x+12+i*5,top+23+motion,2,1)}break;
+   box(c,'#73543d',x+10,top+27+motion,14,4);
+   for(let i=0;i<3;i++){box(c,'#c99657',x+10+i*4,top+23+motion,4,4);
+    box(c,'#f0cc84',x+11+i*4,top+23+motion,2,1)}break;
   case 'elder':
    // Rounded silhouette, wrapped shawl, leaning wooden cane.
    box(c,d.trim,x-15,top+19,30,8);
-   box(c,shade(d.tunic,15),x-12,top+29,24,14);
-   box(c,'#765b45',x+17,top+19,3,26);box(c,'#ac8759',x+15,top+17,6,4);
+   box(c,shade(d.tunic,15),x-12,top+29,24,10);
+   box(c,'#765b45',x+17,top+19,3,20);box(c,'#ac8759',x+15,top+17,6,4);
    box(c,d.hairHi,x-10,top+8,5,7);break;
   case 'mayor':
    // High collar and linked seal over a long municipal coat.
@@ -217,7 +217,7 @@ const PlayerCharacterArtV6=(()=>{
    // Oversize training scarf and real wooden practice sword.
    box(c,d.trim,x-11,top+19,22,5);
    box(c,d.trim,x+5,top+24,4,7);
-   box(c,'#9a784f',x+12,top+19+motion,3,20);
+   box(c,'#9a784f',x+12,top+19+motion,3,16);
    box(c,'#d0a973',x+10,top+18+motion,7,4);break;
   case 'childRibbon':
    // Small tied cape, readable bow, distinct lighter shoes.
@@ -229,11 +229,11 @@ const PlayerCharacterArtV6=(()=>{
    box(c,'#a3a6a6',x-17,top+18,10,7);
    box(c,'#9ea4ad',x+7,top+18,10,7);
    box(c,d.trim,x-4,top+26,8,9);box(c,d.accent,x+4,top+26,5,5);
-   box(c,'#a49b85',x+17,top+14,4,31);break;
+   box(c,'#a49b85',x+17,top+14,4,27);break;
   case 'recruit':
    box(c,'#aeb4ae',x-13,top+19,9,5);
    box(c,d.trim,x-4,top+26,8,3);
-   box(c,'#aeb4aa',x+15,top+18,3,27);
+   box(c,'#aeb4aa',x+15,top+18,3,24);
    box(c,d.accent,x+13,top+18,7,4);break;
   case 'florist':
    box(c,d.trim,x-10,top+26,20,12);
