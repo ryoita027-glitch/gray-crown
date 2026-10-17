@@ -656,3 +656,74 @@ body:has(.battle-panel:not(.hidden)) .party-battle-line{left:5%;bottom:38px}
 @media(prefers-reduced-motion:reduce){
  #partyBattleLine .battle-hero.strike,#partyBattleLine .battle-hero .battle-frame-image{animation:none!important}
 }
+
+
+/*
+ * Battle-only presentation rollback.
+ * Retain the four original 48px character idle/walk PNGs exactly as authored.
+ * Previous overlapping CSS used an 80/48px battlefield body, a 48px window,
+ * and a permanently offset source row (-96px) even though the game world uses
+ * the 44px, face-forward/down pose (row zero).
+ *
+ * This narrow end-of-file rule reverses those presentation overrides only
+ * for the fight party. Nothing in the overworld renderer changes.
+ */
+#partyBattleLine .battle-hero.sprite{
+ width:44px!important;
+ height:44px!important;
+ bottom:0!important;
+ background:none!important;
+ background-image:none!important;
+ background-size:auto!important;
+ overflow:visible!important;
+ transform-origin:50% 100%;
+ filter:drop-shadow(0 4px 3px rgba(12,14,16,.38));
+ animation:none!important;
+}
+#partyBattleLine .battle-hero .battle-sprite-frame{
+ inset:0!important;
+ width:44px!important;
+ height:44px!important;
+ overflow:hidden!important;
+ background:none!important;
+ animation:none!important;
+}
+#partyBattleLine .battle-hero .battle-frame-image{
+ position:absolute!important;
+ left:0!important;
+ top:0!important; /* face-forward row 0; never crop head with row -96 */
+ width:176px!important;
+ height:176px!important;
+ max-width:none!important;
+ max-height:none!important;
+ object-fit:fill!important;
+ image-rendering:pixelated!important;
+ transform:none;
+ animation:none!important;
+}
+#partyBattleLine .battle-hero.asset-ready .battle-hero-fallback{
+ display:none!important;
+}
+#partyBattleLine .battle-hero.strike .battle-frame-image{
+ width:264px!important;
+ height:176px!important;
+ animation:gcBattleWalkRestored .40s steps(1,end) 1!important;
+}
+@keyframes gcBattleWalkRestored{
+ 0%,16.66%{transform:translateX(0)}
+ 16.67%,33.33%{transform:translateX(-44px)}
+ 33.34%,49.99%{transform:translateX(-88px)}
+ 50%,66.66%{transform:translateX(-132px)}
+ 66.67%,83.33%{transform:translateX(-176px)}
+ 83.34%,100%{transform:translateX(-220px)}
+}
+#partyBattleLine .battle-hero.active:not(.strike){
+ filter:drop-shadow(0 0 6px rgba(240,207,128,.5))
+        drop-shadow(0 4px 3px rgba(12,14,16,.38));
+}
+@media (prefers-reduced-motion:reduce){
+ #partyBattleLine .battle-hero.strike .battle-frame-image{
+  animation:none!important;
+  transform:none!important;
+ }
+}
