@@ -91,6 +91,18 @@ function checkpointEnemyIntent(b){
    ?'足跡から後衛への回り込みを予測。カレンの庇うで防げる（偵察で被害軽減）。'
    :'後衛への回り込みに警戒。カレンの庇うで守れる。'}
  }
+ // Important bosses introduce a readable, once-only threat rather than
+ // just inflating HP. Only the first round is scripted; later rounds retain
+ // the original AI and the existing guarded-counter opportunity.
+ if((b.id==='vanguardCaptain'||b.id==='zenithEncounter')&&b.turn===1){
+  const living=activeRouteParty().filter(p=>p.hp>0);
+  if(!living.length)return null;
+  const targetId=b.id==='vanguardCaptain'?'margaret':'sophie';
+  const target=living.find(p=>p.id===targetId)||living[0];
+  return {target,bonus:0,note:b.id==='vanguardCaptain'
+   ?'ヴァルクは詠唱中のマーガレットを狙う。カレンの庇う、または氷槍で被害を抑えよう。'
+   :'ゼニスは回復役のソフィを見据えている。庇うか氷槍で守りつつ、崩しで防御を下げよう。'};
+ }
  const pattern=patterns[b.id];if(!pattern)return null;
  const living=activeRouteParty().filter(p=>p.hp>0);if(!living.length)return null;
  const preferred=pattern.order[(Math.max(1,b.turn)-1)%pattern.order.length];
