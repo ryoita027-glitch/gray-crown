@@ -12,7 +12,7 @@ function appointed(h){
 function practicePixels(h){
  return h.evaluate("(()=>{const pixels=[],c={fillStyle:'',fillRect(x,y,w,h){pixels.push([this.fillStyle,x,y,w,h])}};OpeningWorldLife.ground(c,'village',state.events.choices);return JSON.stringify(pixels)})()");
 }
-test('new player can finish the story without the optional training choice',()=>{
+test('appointment remains canonical and optional Ren training cannot auto-start',()=>{
  const h=createHarness(),s=h.GC.State.get();
  assert.equal(s.events.choices['early.renPractice'],undefined);
  const before=practicePixels(h);
