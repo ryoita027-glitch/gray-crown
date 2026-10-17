@@ -296,6 +296,48 @@ function runTriggeredEvent(type,target,context={}){
 // Early-game choices are local, optional and save-schema-23 compatible.
 // Record a decision only once; all repeated conversations read that same history.
 
+// A physical, voluntary discovery rather than a quest checkbox: the player
+// investigates a broken defender's shield and understands a REAL tactic which
+// already works on the fort beast. Reading it never changes boss stats or
+// awards items, XP or an invisible combat advantage.
+function studyFortShield(){
+ if(state.events.choices['early.fortShield'])return false;
+ if(isDefeated('boss'))return false;
+ state.events.choices['early.fortShield']='studied';
+ addJournal('古砦の東回廊で裂けた盾と足跡を調べた。灰角獣の踏み込みには間がある。トリトンの「崩し」で攻撃を阻み、マーガレットの「氷槍」で勢いを鈍らせられそうだ。');
+ sfx('discovery');draw();
+ const flag=state.events.choices['early.caveBanner'];
+ return saySequence([
+  {speaker:'トリトン',text:'「見ろ、この削れ方。角を振る前に大きく踏み込むんだ。そこを“崩し”で止められるかもしれない」'},
+  {speaker:'マーガレット',text:'「頭から突っ込むなら、氷槍で動きを鈍らせる手もある。ただ力任せに殴るよりいいわね」'},
+  {speaker:'ソフィ',text:flag==='names'
+   ?'「盾の裏にも、軍旗で見たのと同じ縫い文字が……。ここにいた人にも、帰る場所があったんですね」'
+   :'「この盾を持っていた人も、誰かを守ろうとしたのかもしれません」'},
+  {speaker:'カレン',text:'「守りたい人がいるのは私たちも同じだね。よし、覚えておこう」'}
+ ])
+}
+function visitFortShield(){
+ const studied=state.events.choices['early.fortShield']==='studied';
+ if(isDefeated('boss'))
+  return saySequence(studied?[
+   {speaker:'トリトン',text:'「あの角の動き、盾の傷で想像した通りだった。……本物は、ずっと怖かったけどな」'},
+   {speaker:'カレン',text:'「それでも四人で勝てた。ここを調べてよかったね」'}
+  ]:[
+   {speaker:'ソフィ',text:'「この盾を持っていた人も、あの獣と向き合ったのでしょうか」'},
+   {speaker:'カレン',text:'「分からないけど……これ以上、誰も傷つかなくてよかった」'}
+  ]);
+ if(studied)return saySequence([
+  {speaker:'トリトン',text:'「足跡はあの角の向きを教えてくれる。“崩し”は一度で決めるぞ」'},
+  {speaker:'マーガレット',text:'「氷槍はMPを使う。ここで無駄には撃てないわ」'}
+ ]);
+ return saySequence([
+  {speaker:'ナレーション',text:'東の回廊。壁に深い角の傷があり、その下に古い木盾が転がっている。盾の内側には糸で縫った文字が残っていた。'},
+  {speaker:'ソフィ',text:'「この盾……誰かが最後まで手放さなかったのかもしれません」'}
+ ],()=>say('トリトン','「壁と足跡を見れば、あいつの動きが分かるかもな。調べてみる？」',[
+  {label:'盾を裏返し、足跡を詳しく調べる',fn:studyFortShield},
+  {label:'今は触らず先に進む',fn:()=>say('カレン','「うん。急がなくていいよ。気になったら戻ってこよう」')}
+ ]))
+}
 function commitEarlyCaveBanner(choice){
  const key='early.caveBanner';
  if(state.events.choices[key]||!['names','raise'].includes(choice))return false;
@@ -771,6 +813,7 @@ function inlineObjectEvent(id){
   if(id==='leverEast'){if(!structuredCondition('caveCrawler'))return say('マーガレット','「あの石殻ムカデが機構の前に居座ってる。動かすなら先に何とかしないと」');if(structuredCondition('leverEast'))return say('東側の開閉機構','歯車はゆっくり回り続けている。');setStructuredCondition('leverEast',true);sfx('lever');state.objective=structuredCondition('leverWest')?'中央の鉄格子へ戻る':'西側の開閉機構も探す';renderHud();draw();return say('東側の開閉機構','錆びた歯車が軋みながら回り始めた。<br><br>マーガレット「これで中央の鉄格子が開くはず」')}
   if(id==='innerGate'){if(structuredCondition('leverWest')&&structuredCondition('leverEast'))return say('ナレーション','二つの機構が作動し、中央の鉄格子は開いている。');return say('マーガレット','「左右に二つの錠前機構がつながってる。西側と東側、両方を動かさないと開かないみたい」')}
   if(id==='banner')return earlyCaveBannerVisit()
+  if(id==='fortShield')return visitFortShield()
   if(id==='rations'){
    if(state.events.choices['early.caveSupplies'])return say('トリトン','「残っていた携帯食はもう拾った。あとは空箱だな」');
    state.events.choices['early.caveSupplies']='taken';
