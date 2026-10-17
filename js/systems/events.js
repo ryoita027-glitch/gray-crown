@@ -673,6 +673,7 @@ function inlineNpcEvent(id){
 function inlineObjectEvent(id){
  if(TREASURE_DEFS[id])return openTreasure(id);
  if(state.map==='village'){
+  if(id==='renPracticeDummy')return visitRenPractice();
   if(id==='store'){setStructuredCondition('store',true);addJournal('共同食料庫の備蓄は前年同期の半分以下。');return say('共同食料庫','棚の半分以上が空いている。帳簿では前年同期の半分以下まで備蓄が落ちていた。')}
   if(id==='well'){setWorldSwitch('ryune.baseViewed.well',true);return say('村の井戸','何人もの桶が並んでいる。子どもたちの笑い声と、夕食の相談をする大人たちの声が聞こえる。')}
   if(id==='home')return enterInterior('karenhome',4,5)
