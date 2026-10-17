@@ -13,17 +13,30 @@ test('all 9 important residents have distinct in-game pixel portraits',()=>{
   const p=npc.portraitMarkup(names[i]);
   assert.match(p,/class="portrait-svg resident-portrait"/);
   assert.match(p,/featured_residents_charm_v5.png/);
-  assert.ok(p.includes('x="-'+(i*64)+'"'),names[i]);
+  assert.ok(p.includes('x="-'+(i*96+16)+'"'),names[i]);
+  assert.match(p,/y="-3"/);
   assert.match(p,/image-rendering:pixelated/);
-  assert.match(p,/width="576" height="256"/);
+  assert.match(p,/width="864" height="384"/);
   assert.doesNotMatch(p,/M8 72V60/,'old single template portrait must not override');
  }
 });
+test('legacy A/B keeps the original full-body dialogue crop for all featured residents',()=>{
+ const GC={Data:{}};
+ const npc=new Function('GC','window',src+';return GC.Data.NPCs')(GC,
+  {location:{search:'?npcArt=legacy'}});
+ for(let i=0;i<names.length;i++){
+  const p=npc.portraitMarkup(names[i]);
+  assert.match(p,/featured_residents_v1[.]png/);
+  assert.ok(p.includes('x="'+String(-(i*64))+'"'),names[i]);
+  assert.match(p,/width="576" height="256"/);
+ }
+});
+
 test('one-file offline release embeds the same portrait pixels instead of broken relative SVG href',()=>{
  const GC={Data:{}};
  const mock={'assets/npc/featured_residents_charm_v5.png':'data:image/png;base64,VERIFIED_FAKE_ATLAS'};
  const npc=new Function('GC','window',src+';return GC.Data.NPCs')(GC,
-  {__GC_INLINE_ASSETS__:mock});
+  {location:{search:''},__GC_INLINE_ASSETS__:mock});
  for(const name of names){
   const p=npc.portraitMarkup(name);
   assert.match(p,/href="data:image\/png;base64,VERIFIED_FAKE_ATLAS"/);
