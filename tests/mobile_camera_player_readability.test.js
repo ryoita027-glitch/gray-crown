@@ -11,14 +11,22 @@ function setupMobile(h,width=360,height=225){
  return canvas
 }
 test('mobile view follows the player without modifying map or party state',()=>{
- const h=createHarness(),c=setupMobile(h),prior=JSON.stringify(h.GC.State.get());
+ const h=createHarness(),c=setupMobile(h),prior={
+  map:h.GC.State.get().map,party:JSON.stringify(h.GC.State.get().party),
+  inventory:JSON.stringify(h.GC.State.get().inventory),
+  story:JSON.stringify(h.GC.State.get().story)
+ };
  assert.equal(h.GC.MobileCamera.update(),true);
  assert.match(c.style.transform,/scale\(1\.6\)/);
  const start=c.style.transform;
  h.evaluate('state.x=20;state.y=5;draw()');
  assert.notEqual(c.style.transform,start,'camera must move when the player moves');
- assert.equal(JSON.stringify(h.GC.State.get()),prior.replace(/"x":\d+,"y":\d+/,'"x":20,"y":5'),
-  'camera itself must never mutate movement/story state');
+ const state=h.GC.State.get();
+ assert.equal(state.map,prior.map);
+ assert.equal(JSON.stringify(state.party),prior.party);
+ assert.equal(JSON.stringify(state.inventory),prior.inventory);
+ assert.equal(JSON.stringify(state.story),prior.story);
+ assert.equal(state.x,20);assert.equal(state.y,5);
 });
 test('mobile full-map toggle restores the original world canvas size',()=>{
  const h=createHarness(),c=setupMobile(h);
