@@ -48,6 +48,13 @@ def dismiss(page):
   if page.locator("#choiceBox button").count():return
   page.keyboard.press("Enter");page.wait_for_timeout(25)
  raise AssertionError("dialogue cannot finish")
+def finish_level_ups(page):
+ for _ in range(5):
+  if not page.locator("#levelUpPanel").is_visible():return
+  page.locator("#levelUpContinue").click()
+  page.wait_for_timeout(120)
+ raise AssertionError("level-up flow did not dismiss within five confirmations")
+
 def fight(page,battle_id=None,allow_loss=False):
  check("battle panel opens",page.locator("#battlePanel").is_visible())
  if battle_id:check("expected encounter "+battle_id,state(page)["battle"]["id"]==battle_id)
@@ -102,6 +109,7 @@ def fight(page,battle_id=None,allow_loss=False):
   else:page.wait_for_timeout(100)
  else:raise AssertionError("battle exceeded safety turn/action bound "+str(battle_id))
  check("battle closed after actions "+str(battle_id),not page.locator("#battlePanel").is_visible(),actions)
+ finish_level_ups(page)  # Level-up follows the battle fade; it can appear AFTER battlePanel closes.
  dismiss(page)
  end=state(page)
  check("battle grants nonnegative gold "+str(battle_id),end["gold"]>=start["gold"],
@@ -109,6 +117,7 @@ def fight(page,battle_id=None,allow_loss=False):
  return start,end,actions
 
 def walk(page,tx,ty):
+ finish_level_ups(page)
  goal=(tx,ty)
  for retry in range(16):
   cur=state(page)
