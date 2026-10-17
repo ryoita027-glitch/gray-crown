@@ -17,7 +17,7 @@
   bandit:'街道のならず者',bats:'コウモリの群れ',crawler:'石殻ムカデ',
   boss:'奥に潜む灰角獣',leverWest:'西側の開閉機構',
   leverEast:'東側の開閉機構',innerGate:'中央の鉄格子',
-  banner:'古い軍旗',caveRest:'兵舎跡の休憩所',rations:'保存食の箱'
+  banner:'古い軍旗',fortShield:'傷だらけの盾',caveRest:'兵舎跡の休憩所',rations:'保存食の箱'
  });
  const action=(kind,o)=>o?
    (kind==='npc'?'話す':
