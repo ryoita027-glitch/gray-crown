@@ -152,3 +152,32 @@ test('importing a valid external save never overwrites a healthy backup with bro
  assert.equal(h.GC.State.get().gold,211);
  assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),backup);
 });
+
+test('future schema and foreign-character slots cannot be mistaken for recoverable saves',()=>{
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=471');
+ const original=JSON.parse(JSON.stringify(h.GC.State.get()));
+ for(const change of [
+  x=>{x.schema=999},
+  x=>{x.party[1].id='unknownHero'},
+  x=>{x.party[2].name='<svg onload=alert(1)>'},
+  x=>{x.inventory['unknown-cheat-item']=1}
+ ]){
+  const malformed=structuredClone(original);change(malformed);
+  h.storage.setItem(s.SAVE_KEY,JSON.stringify(malformed));
+  h.storage.removeItem(s.SAVE_BACKUP_KEY);
+  assert.equal(s.load(true),false);
+  assert.equal(h.GC.State.get().gold,471,'rejected saves must not change progress');
+  assert.equal(s.archiveBeforeNewGame(),false,'never archive a foreign or future save');
+ }
+});
+test('old schema 22 with real roster remains importable and upgradeable to v23',()=>{
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=319');
+ const historical=JSON.parse(JSON.stringify(h.GC.State.get()));
+ historical.schema=22;
+ h.storage.setItem(s.SAVE_KEY,JSON.stringify(historical));
+ assert.equal(s.load(true),true);
+ assert.equal(h.GC.State.get().gold,319);
+ assert.equal(h.GC.State.get().schema,23);
+});
