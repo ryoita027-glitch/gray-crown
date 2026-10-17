@@ -13,9 +13,9 @@ test('all 9 important residents have distinct in-game pixel portraits',()=>{
   const p=npc.portraitMarkup(names[i]);
   assert.match(p,/class="portrait-svg resident-portrait"/);
   assert.match(p,/featured_residents_charm_v5.png/);
-  assert.ok(p.includes('x="-'+(i*64)+'"'),names[i]);
+  assert.ok(p.includes('x="-'+(i*96+16)+'"'),names[i]);
   assert.match(p,/image-rendering:pixelated/);
-  assert.match(p,/width="576" height="256"/);
+  assert.match(p,/width="864" height="384"/);
   assert.doesNotMatch(p,/M8 72V60/,'old single template portrait must not override');
  }
 });
