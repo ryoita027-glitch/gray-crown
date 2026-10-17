@@ -69,9 +69,29 @@ function canPersistNow(mode='save'){
  return !transientUiActive()
 }
 function serializeSave(){return JSON.stringify({...state,schema:SAVE_SCHEMA,locked:false,battle:null,battleReturn:null,symbolEncounter:null})}
+function isUsableSavedAdventure(raw){
+ if(typeof raw!=='string'||!raw)return false;
+ try{
+  const saved=JSON.parse(raw);
+  // Prevent a random parseable JSON or corrupted partial save from
+  // silently becoming a clean, empty "archive" after migration.
+  if(!saved||typeof saved!=='object'||Array.isArray(saved)||
+    !maps[saved.map]||!saved.story||typeof saved.story.stage!=='string'||
+    !Array.isArray(saved.party)||saved.party.length!==4||
+    !saved.world||typeof saved.world!=='object')return false;
+  migrateLoaded(raw); // Exact current engine migration/validation rules.
+  return true
+ }catch(_){return false}
+}
 function save(silent=false){
  if(!canPersistNow('save')){if(!silent&&!GC.Dev?.isStateTainted?.()&&!state.battle&&$('dialogueBox')?.classList.contains('hidden'))say('システム','イベントや戦闘の途中ではセーブできません。操作可能な場所でセーブしてください。');else if(!silent&&GC.Dev?.isStateTainted?.())say('システム','Developer操作後の状態は通常セーブできません。Debug Snapshotを使用してください。');return false}
- try{const payload=serializeSave(),prev=localStorage.getItem(SAVE_KEY);if(prev)localStorage.setItem(SAVE_BACKUP_KEY,prev);else localStorage.setItem(SAVE_BACKUP_KEY,payload);localStorage.setItem(SAVE_KEY,payload);GC.Log?.info('Save',{map:state.map,x:state.x,y:state.y,stage:state.story.stage});if(!silent)say('システム','セーブしました。');return true}catch(e){GC.Log?.error('Save failed',{error:String(e)});if(!silent)say('システム','セーブに失敗しました。ブラウザの保存領域を確認してください。');return false}}
+ try{
+  const payload=serializeSave(),prev=localStorage.getItem(SAVE_KEY);
+  // Never rotate a corrupted primary over a usable previous checkpoint.
+  const backup=localStorage.getItem(SAVE_BACKUP_KEY);
+  if(isUsableSavedAdventure(prev))localStorage.setItem(SAVE_BACKUP_KEY,prev);
+  else if(!isUsableSavedAdventure(backup))localStorage.setItem(SAVE_BACKUP_KEY,payload);
+  localStorage.setItem(SAVE_KEY,payload);GC.Log?.info('Save',{map:state.map,x:state.x,y:state.y,stage:state.story.stage});if(!silent)say('システム','セーブしました。');return true}catch(e){GC.Log?.error('Save failed',{error:String(e)});if(!silent)say('システム','セーブに失敗しました。ブラウザの保存領域を確認してください。');return false}}
 function clearTransientPanels(){for(const id of ['battlePanel','levelUpPanel','battleResult','battleFlash','bossCinematic','chapterCard'])$(id)?.classList.add('hidden');if($('dialogueBox')&&!$('dialogueBox').classList.contains('hidden'))closeDialogue(false)}
 function load(silent=false){
  if(!canPersistNow('load')){if(!silent&&$('dialogueBox')?.classList.contains('hidden'))say('システム','イベントや戦闘の途中ではロードできません。操作可能な場所でロードしてください。');return false}
@@ -160,8 +180,13 @@ function hasArchivedAdventure(){try{return !!localStorage.getItem(SAVE_ARCHIVE_K
 function archiveBeforeNewGame(){
  let candidate;
  try{
-  candidate=localStorage.getItem(SAVE_KEY)||localStorage.getItem(SAVE_BACKUP_KEY);
-  if(!candidate)return true;
+  const main=localStorage.getItem(SAVE_KEY);
+  const backup=localStorage.getItem(SAVE_BACKUP_KEY);
+  if(!main&&!backup)return true;
+  // Corrupted primary may coexist with a valid backup: archive the playable
+  // adventure, not broken bytes. If neither works, stop and keep existing data.
+  candidate=isUsableSavedAdventure(main)?main:isUsableSavedAdventure(backup)?backup:null;
+  if(!candidate)return false;
   // A new game must not begin if the player's preceding save cannot be
   // preserved. The special archive survives later manual saves.
   localStorage.setItem(SAVE_ARCHIVE_KEY,candidate);
