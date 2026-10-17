@@ -4,6 +4,7 @@ const SAVE_BACKUP_KEY=SAVE_KEY+'-backup';
 // A separate, player-recoverable checkpoint before a fresh adventure. Never
 // use the rotating save backup for this: two subsequent saves replace it.
 const SAVE_ARCHIVE_KEY=SAVE_KEY+'-previous-adventure';
+const SAVE_QUARANTINE_KEY=SAVE_KEY+'-corrupt-raw-backups';
 const SAVE_SCHEMA=23;
 function safeNumber(v,fallback,min=-Infinity,max=Infinity){return Number.isFinite(v)?Math.max(min,Math.min(max,v)):fallback}
 function nearestSafeTile(mapId,x,y,saveState=state){
@@ -203,7 +204,50 @@ async function readPortableSaveFile(file){
  return ok
 }
 
-function hasArchivedAdventure(){try{return !!localStorage.getItem(SAVE_ARCHIVE_KEY)}catch(_){return false}}
+function hasArchivedAdventure(){try{return isUsableSavedAdventure(localStorage.getItem(SAVE_ARCHIVE_KEY))}catch(_){return false}}
+function hasUsableStoredAdventure(){
+ try{return isUsableSavedAdventure(localStorage.getItem(SAVE_KEY))||
+  isUsableSavedAdventure(localStorage.getItem(SAVE_BACKUP_KEY))}
+ catch(_){return false}
+}
+function hasQuarantinedSaves(){
+ try{return !!localStorage.getItem(SAVE_QUARANTINE_KEY)}catch(_){return false}
+}
+function quarantineCorruptSavesBeforeNewGame(){
+ try{
+  const primary=localStorage.getItem(SAVE_KEY),backup=localStorage.getItem(SAVE_BACKUP_KEY);
+  // Never classify a future-version save as disposable; quarantine stores
+  // exact original bytes so a later game can still recover those records.
+  if(!primary&&!backup)return true;
+  if(isUsableSavedAdventure(primary)||isUsableSavedAdventure(backup))return false;
+  const existing=localStorage.getItem(SAVE_QUARANTINE_KEY);
+  const record={savedAt:new Date().toISOString(),primary,backup};
+  const old=existing?JSON.parse(existing):[];
+  if(!Array.isArray(old))return false;
+  const entryAlreadyStored=old.some(x=>x?.primary===primary&&x?.backup===backup);
+  if(!entryAlreadyStored)old.push(record);
+  const payload=JSON.stringify(old);
+  localStorage.setItem(SAVE_QUARANTINE_KEY,payload);
+  return localStorage.getItem(SAVE_QUARANTINE_KEY)===payload
+ }catch(e){
+  GC.Log?.error('Corrupt save quarantine failed',{error:String(e)});
+  return false
+ }
+}
+function downloadQuarantinedSaves(){
+ try{
+  const raw=localStorage.getItem(SAVE_QUARANTINE_KEY);
+  if(!raw)return false;
+  const blob=new Blob([raw],{type:'application/json;charset=utf-8'});
+  const url=URL.createObjectURL(blob),link=document.createElement('a');
+  link.href=url;link.download='GrayCrown_RawSaveRecovery_'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(link);link.click();link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
+  say('システム','破損した元の保存データを、変更せず取り出しました。データの復旧を試す場合に保管してください。');
+  return true
+ }catch(e){GC.Log?.error('Quarantine export failed',{error:String(e)});return false}
+}
+
 function archiveBeforeNewGame(){
  let candidate;
  try{
@@ -242,4 +286,4 @@ function restart(){
  if(!persisted&&!confirm('保存していない現在の冒険を破棄して、最初から始めますか？'))return false;
  return startNewGameSafely()
 }
-GC.Save={SAVE_KEY,SAVE_BACKUP_KEY,SAVE_ARCHIVE_KEY,SAVE_SCHEMA,hasArchivedAdventure,archiveBeforeNewGame,restoreArchivedAdventure,save,load,restart,migrateLoaded,serializeSave,validateLoadedState,nearestSafeTile,transientUiActive,canPersistNow,clearTransientPanels,exportPortableSaveText,downloadPortableSave,importPortableSaveText,readPortableSaveFile};
+GC.Save={SAVE_KEY,SAVE_BACKUP_KEY,SAVE_ARCHIVE_KEY,SAVE_QUARANTINE_KEY,SAVE_SCHEMA,hasArchivedAdventure,hasUsableStoredAdventure,hasQuarantinedSaves,quarantineCorruptSavesBeforeNewGame,downloadQuarantinedSaves,archiveBeforeNewGame,restoreArchivedAdventure,save,load,restart,migrateLoaded,serializeSave,validateLoadedState,nearestSafeTile,transientUiActive,canPersistNow,clearTransientPanels,exportPortableSaveText,downloadPortableSave,importPortableSaveText,readPortableSaveFile};
