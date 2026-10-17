@@ -87,11 +87,17 @@ function isUsableSavedAdventure(raw){
   const saved=JSON.parse(raw);
   // Prevent a random parseable JSON or corrupted partial save from
   // silently becoming a clean, empty "archive" after migration.
+  const canonical=createGameState().party;
   if(!saved||typeof saved!=='object'||Array.isArray(saved)||
-    !maps[saved.map]||!saved.story||typeof saved.story.stage!=='string'||
-    !Array.isArray(saved.party)||saved.party.length!==4||
-    !saved.world||typeof saved.world!=='object')return false;
-  migrateLoaded(raw); // Exact current engine migration/validation rules.
+    !Number.isInteger(saved.schema)||saved.schema<1||saved.schema>SAVE_SCHEMA||
+    !Object.hasOwn(maps,saved.map)||!saved.story||typeof saved.story.stage!=='string'||
+    !Array.isArray(saved.party)||saved.party.length!==canonical.length||
+    !saved.party.every((hero,i)=>hero&&hero.id===canonical[i].id&&
+      hero.name===canonical[i].name&&hero.job===canonical[i].job)||
+    !saved.world||typeof saved.world!=='object'||Array.isArray(saved.world)||
+    !saved.inventory||typeof saved.inventory!=='object'||Array.isArray(saved.inventory)||
+    Object.keys(saved.inventory).some(k=>!Object.hasOwn(ITEM_DEFS,k)))return false;
+  migrateLoaded(raw); // Migration follows strict player-owned identity checks.
   return true
  }catch(_){return false}
 }
