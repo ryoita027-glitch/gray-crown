@@ -2,7 +2,7 @@
 function captureBattleReturn(){state.battleReturn={map:state.map,x:state.x,y:state.y,dir:state.dir,trail:state.trail.map(p=>[p[0],p[1]])}}
 function restoreBattleReturn(){const r=state.battleReturn;if(!r||!maps[r.map]){state.battleReturn=null;return}state.map=r.map;state.x=r.x;state.y=r.y;state.dir=r.dir;state.trail=Array.isArray(r.trail)?r.trail:[[r.x+1,r.y],[r.x+2,r.y],[r.x+3,r.y]];state.battleReturn=null;VISUAL.map=null;setMusic(mapMusicTheme(state.map))}
 function startSymbolEncounter(objectId,battleId){if(state.battle||objectCleared(objectId))return false;state.symbolEncounter={objectId,battleId,map:state.map};captureBattleReturn();startBattle(battleId,true);return true}
-function startBattle(id,fromSymbol=false){if(!$('dialogueBox').classList.contains('hidden'))closeDialogue(false);GC.Log?.info('Battle Start',{id,map:state.map,fromSymbol});if(!state.battleReturn)captureBattleReturn();if(!fromSymbol)state.symbolEncounter=null;state.locked=true;const ev=$('enemyVisual');if(ev)ev.classList.remove('hit','shake','surrender');const bdef=battles[id];GC.CommercialTactics?.reset?.();state.battle={id,turn:1,actor:0,comboTarget:null,comboActor:null,counterWindow:null,enemies:bdef.enemies.map(e=>({...e,morale:e.morale??null,maxMorale:e.maxMorale??e.morale??null})),log:[],outcome:null,
+function startBattle(id,fromSymbol=false){if(!$('dialogueBox').classList.contains('hidden'))closeDialogue(false);GC.Log?.info('Battle Start',{id,map:state.map,fromSymbol});if(!state.battleReturn)captureBattleReturn();if(!fromSymbol)state.symbolEncounter=null;state.locked=true;const ev=$('enemyVisual');if(ev)ev.classList.remove('hit','shake','surrender');const bdef=battles[id];GC.CommercialTactics?.reset?.();state.battle={id,turn:1,actor:Math.max(0,activeRouteParty().findIndex(p=>p.hp>0)),comboTarget:null,comboActor:null,counterWindow:null,enemies:bdef.enemies.map(e=>({...e,morale:e.morale??null,maxMorale:e.maxMorale??e.morale??null})),log:[],outcome:null,
  metrics:{startedAt:Date.now(),actions:{},rounds:0,enemyAttacks:0,damageTaken:0,guardedAllies:0,
   openingHp:activeRouteParty().reduce((sum,p)=>sum+p.hp,0),
   openingMp:activeRouteParty().reduce((sum,p)=>sum+p.mp,0)}};
@@ -109,7 +109,16 @@ function checkpointEnemyIntent(b){
  const target=living.find(p=>p.id===preferred)||living.slice().sort((a,c)=>a.hp/a.maxHp-c.hp/c.maxHp)[0];
  return {target,bonus:pattern.bonus,note:pattern.note}
 }
-function nextActor(){const b=state.battle;if(!b)return;b.actor++;if(b.actor>=activeRouteParty().length){b.actor=0;b.comboTarget=null;b.comboActor=null;enemyTurn()}else renderBattle()}
+function nextActor(){
+ const b=state.battle;if(!b)return;
+ const team=activeRouteParty();
+ let next=b.actor+1;
+ // Knocked-out allies remain in the saved party but cannot accept commands.
+ // Skip them instead of indefinitely waiting on a disabled combat button.
+ while(next<team.length&&team[next].hp<=0)next++;
+ if(next>=team.length){b.actor=0;b.comboTarget=null;b.comboActor=null;enemyTurn()}
+ else{b.actor=next;renderBattle()}
+}
 // Prevent 3 quick consecutive hits on one ally in a multi-enemy round.
 function selectEnemyTarget(alive,b,random=Math.random){
  const alternatives=alive.filter(p=>p.id!==b.lastTarget);
@@ -119,7 +128,7 @@ function selectEnemyTarget(alive,b,random=Math.random){
  b.lastTarget=picked.id;
  return picked
 }
-function enemyTurn(){const b=state.battle,bd=battles[b.id],foes=livingEnemies().slice();state.locked=true;b.counterWindow=null;let i=0;const step=()=>{if(i>=foes.length){activeRouteParty().forEach(p=>{p.guard=false;if(p.buff)p.buff=Math.max(0,p.buff-1)});if(activeRouteParty().every(p=>p.hp<=0))return battleLose();b.turn++;b.actor=0;state.locked=false;renderBattle();return}const e=foes[i++];
+function enemyTurn(){const b=state.battle,bd=battles[b.id],foes=livingEnemies().slice();state.locked=true;b.counterWindow=null;let i=0;const step=()=>{if(i>=foes.length){activeRouteParty().forEach(p=>{p.guard=false;if(p.buff)p.buff=Math.max(0,p.buff-1)});if(activeRouteParty().every(p=>p.hp<=0))return battleLose();b.turn++;b.actor=activeRouteParty().findIndex(p=>p.hp>0);if(b.actor<0)return battleLose();state.locked=false;renderBattle();return}const e=foes[i++];
  if(e.staggered>0){e.staggered--;battleLog(e.name+'は体勢を崩して行動できない！');renderBattle();setTimeout(step,220);return}
  if(bd.boss&&e.phase===1&&e.hp<e.maxHp*.65){e.phase=2;e.atk+=2;battleLog(`<strong class="boss-phase">PHASE II — ${bd.phase2||'攻勢が変化した'}</strong>`)}else if(bd.boss&&e.phase===2&&e.hp<e.maxHp*.3){e.phase=3;e.atk+=3;e.def+=1;battleLog(`<strong class="boss-phase">FINAL PHASE — ${bd.phase3||'全力を解放した'}</strong>`)}const alive=activeRouteParty().filter(p=>p.hp>0);if(!alive.length)return battleLose();// Telegraph tactical danger while preserving original fair target-selection rules.
  if(bd.boss&&e.phase>=2)battleLog('警戒：'+e.name+'が攻勢を強めている。防御と回復を確認しよう。');
@@ -150,7 +159,7 @@ function battleWin(outcome='defeat'){const b=state.battle,id=b.id,bd=battles[id]
  if(id==='wolves'&&state.events.choices['early.renPractice']&&!state.events.choices['early.renWolfOutcome'])
   state.events.choices['early.renWolfOutcome']=(b.metrics?.guardedAllies||0)>0?'protected':'won';
  if(b.metrics)GC.Log?.info('Local Battle Balance',{
-  id,map:state.map,outcome,rounds:b.turn,
+  id,map:state.map,outcome,playerResult:'win',rounds:b.turn,
   elapsedMs:Math.max(0,Date.now()-b.metrics.startedAt),
   actions:{...b.metrics.actions},enemyAttacks:b.metrics.enemyAttacks,
   damageTaken:b.metrics.damageTaken,
@@ -200,7 +209,7 @@ function battleWin(outcome='defeat'){const b=state.battle,id=b.id,bd=battles[id]
  else if(won==='roadBandit'&&outcome!=='surrender')saySequence([{speaker:'ナレーション',text:'武器を落としたならず者は、もう抵抗できない。'},{speaker:'ソフィ',text:'「この人はもう戦えません」'}],()=>say('カレン','「命を奪う理由が、まだある？」',[{label:'武器を取り上げて見逃す',fn:()=>{recordGrayCrownMoralChoice('roadBandit','spare');say('トリトン','「武器は置いていけ。二度と旅人を襲うな」')}},{label:'抵抗できない相手を殺す',fn:()=>{recordGrayCrownMoralChoice('roadBandit','kill');saySequence([{speaker:'ナレーション',text:'誰も止める言葉を間に合わせられなかった。'},{speaker:'ソフィ',text:'「……なぜ。もう戦えなかったのに」'},{speaker:'マーガレット',text:'「これは戦いじゃない。私たちが選んだことよ」'}])}}]));else if(won==='roadBandit')saySequence(outcome==='surrender'?[{speaker:'街道のならず者',text:'「……もういい。武器は捨てる。だから殺すな」'},{speaker:'カレン',text:'「追いかけない。食べ物が必要なら、行商人に仕事を頼めないか聞いてみて」'},{speaker:'トリトン',text:'「甘いと思うけど……倒す以外で終われるなら、その方がいい」'}]:[{speaker:'ナレーション',text:'ならず者は地面に倒れ、しばらく動かなかった。さっきまでの獣との戦いとは、後味がまるで違う。'},{speaker:'ソフィ',text:'「……人と戦うのは、やっぱり嫌です」'},{speaker:'マーガレット',text:'「今後はもっと増える。だからこそ、倒す以外の終わらせ方も考えないと」'}]);else if(won==='boss')say('マーガレット','「奥の鉄柵が壊れた。これで北側へ抜けられるはずよ」');else if(won==='crawler')say('ソフィ','「この先にも何かいます。傷が深いなら、いったん村まで戻るのもありですよ」');else if(won==='zenithEncounter')saySequence([{speaker:'ゼニス',text:'「……十分だ。資料を持って行け」'},{speaker:'マーガレット',text:'「敵なのに、止めないの？」'},{speaker:'ゼニス',text:'「敵だからこそだ。王国側にも、事実を見た人間が必要になる。私は帝国の利益のためにそう判断する」'},{speaker:'カレン',text:'「最後まで合理的なんだね」'},{speaker:'ゼニス',text:'「君たちは最後まで感情的だ。それで助かった人間もいる。互いに長所ということにしておこう」'}]);else if(wasRandom){canvas.focus()}else say('カレン','「みんな無事？ よし。先へ進もう」')};showLevelUpSummary(levelMessages,afterLevel)};setTimeout(()=>showBattleResult(outcome,rewardGold,r.exp,finishBattle,wasRandom),bd.boss?720:wasRandom?60:180)}
 function battleLose(){const b=state.battle;GC.Log?.warn('Battle Lose',{id:b?.id,map:state.map});
  if(b?.metrics)GC.Log?.info('Local Battle Balance',{
-  id:b.id,map:state.map,outcome:'defeat',rounds:b.turn,
+  id:b.id,map:state.map,outcome:'defeat',playerResult:'loss',rounds:b.turn,
   elapsedMs:Math.max(0,Date.now()-b.metrics.startedAt),
   actions:{...b.metrics.actions},enemyAttacks:b.metrics.enemyAttacks,
   damageTaken:b.metrics.damageTaken,openingHp:b.metrics.openingHp,
