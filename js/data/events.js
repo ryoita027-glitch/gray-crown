@@ -52,7 +52,7 @@ const EVENT_DEFS=Object.freeze([
   lines:[
    {speaker:'レン',text:'「トリトン姉ちゃんが帰るまで、稽古は休み？」'},
    {speaker:'トリトン',text:'「父ちゃんがいるだろ。怖いなら、まず足の位置から覚えな」'},
-   {speaker:'レン',text:'「……分かった。帰ったら見てよ。そうだ、東の木の的で一回だけ稽古して！」'}
+   {speaker:'レン',text:'「……分かった。帰ったら見てよ。東の木の的、僕が毎日使ってるんだ」'}
   ],effects:[{type:'completeEvent',id:'ryune.farewell.tritonRen'}]},
  {id:'ryune.farewell.sophieTheo',priority:30,
   trigger:{type:'npc',map:'orphanage',target:'theo'},
