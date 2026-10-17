@@ -480,6 +480,33 @@ function drawObject(o){if(RyuneOutskirts.drawObject(ctx,state.map,o,!!state.worl
  if(o.id==='boss'&&!isDefeated('boss')){drawBeast(px,py,'boss')}
  if(o.id==='leverWest'||o.id==='leverEast'){ctx.fillStyle='#5d6066';ctx.fillRect(px+8,py+8,16,18);ctx.fillStyle='#2d3035';ctx.fillRect(px+11,py+11,10,12);ctx.strokeStyle=(o.id==='leverWest'?getWorldSwitch('leverWest'):getWorldSwitch('leverEast'))?'#d2b96b':'#9a7657';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(px+16,py+17);ctx.lineTo(px+((o.id==='leverWest'?getWorldSwitch('leverWest'):getWorldSwitch('leverEast'))?22:10),py+7);ctx.stroke();ctx.fillStyle='#d4c178';ctx.beginPath();ctx.arc(px+16,py+17,3,0,Math.PI*2);ctx.fill()}
  if(o.id==='innerGate'&&!(getWorldSwitch('leverWest')&&getWorldSwitch('leverEast'))){ctx.fillStyle='rgba(26,28,31,.7)';ctx.fillRect(px+1,py+2,30,28);ctx.fillStyle='#81745d';for(let i=0;i<5;i++)ctx.fillRect(px+4+i*6,py+3,3,27);ctx.fillRect(px+2,py+5,28,3);ctx.fillRect(px+2,py+24,28,3)}
+ // One authored in-world clue, not a blinking HUD icon. Once investigated,
+ // the shield has been turned over to expose the stitched old owner's mark.
+ if(o.id==='fortShield'){
+  const read=state.events.choices['early.fortShield']==='studied';
+  ctx.fillStyle='rgba(20,22,25,.42)';ctx.fillRect(px+3,py+27,27,3);
+  ctx.fillStyle='#5e5b50';ctx.fillRect(px+5,py+25,23,3);
+  if(!read){
+   // Broken shield leaned against the gouged fortress wall.
+   ctx.fillStyle='#756958';ctx.fillRect(px+4,py+3,3,15);
+   ctx.fillRect(px+8,py+5,3,14);ctx.fillRect(px+12,py+7,2,13);
+   ctx.fillStyle='#463a32';ctx.fillRect(px+12,py+15,17,11);
+   ctx.fillStyle='#a78761';ctx.fillRect(px+13,py+14,13,9);
+   ctx.fillStyle='#d1b485';ctx.fillRect(px+14,py+15,11,2);
+   ctx.fillStyle='#4b3430';ctx.fillRect(px+18,py+13,3,9);
+   ctx.fillRect(px+22,py+18,3,7);ctx.fillRect(px+14,py+20,3,5);
+  }else{
+   // Turning it over exposes straps and a few gold-thread stitch marks.
+   ctx.fillStyle='#775e43';ctx.fillRect(px+4,py+19,23,7);
+   ctx.fillStyle='#b5966c';ctx.fillRect(px+7,py+15,20,7);
+   ctx.fillStyle='#594a39';ctx.fillRect(px+7,py+16,3,9);
+   ctx.fillRect(px+22,py+15,3,9);
+   ctx.fillStyle='#d2b478';ctx.fillRect(px+12,py+18,2,2);
+   ctx.fillRect(px+16,py+17,2,3);ctx.fillRect(px+20,py+18,2,2);
+   ctx.fillStyle='#8f8776';ctx.fillRect(px+5,py+6,3,10);
+   ctx.fillRect(px+10,py+9,2,7);
+  }
+ }
  if(o.id==='banner'){ctx.fillStyle='#80634d';ctx.fillRect(px+6,py+3,3,26);ctx.fillStyle='#7d3840';ctx.fillRect(px+9,py+5,17,15);ctx.fillStyle='#d0b26d';ctx.fillRect(px+15,py+8,4,8)}
  if(o.id==='rations'){ctx.fillStyle='#65513b';ctx.fillRect(px+4,py+12,24,14);ctx.strokeStyle='#92744f';ctx.strokeRect(px+5,py+13,22,12);ctx.fillStyle='#3c342b';ctx.fillRect(px+9,py+7,14,6)}
  if(o.id==='burnedCart'){ctx.fillStyle='#4b3729';ctx.fillRect(px+4,py+15,23,8);ctx.strokeStyle='#2e2823';ctx.lineWidth=3;ctx.beginPath();ctx.arc(px+8,py+26,5,0,Math.PI*2);ctx.arc(px+24,py+26,5,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#2c2723';ctx.fillRect(px+10,py+8,4,10)}
