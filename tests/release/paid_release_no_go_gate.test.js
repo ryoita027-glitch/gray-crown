@@ -3,7 +3,7 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
-const ROOT=path.resolve(__dirname,'..');
+const ROOT=path.resolve(__dirname,'..','..');
 const read=p=>fs.readFileSync(path.join(ROOT,p),'utf8');
 // Only use this in the PAID release gate, never the normal development test
 // suite. It is intentionally red until the final 8-12-hour RPG is complete.
