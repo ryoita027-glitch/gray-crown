@@ -245,7 +245,7 @@ const PlayerCharacterArtV6=(()=>{
    box(c,'#8c765d',x+12,top+22,3,20);
    box(c,'#a3bdb8',x+10,top+21,8,4);break;
   case 'hearth':
-   box(c,d.trim,x-10,top+23,20,20);
+   box(c,d.trim,x-10,top+23,20,19);
    box(c,'#d9b69b',x-2,top+32,5,4);
    box(c,'#b39a77',x+10,top+30,9,5);break;
   case 'merchant':
@@ -272,7 +272,7 @@ const PlayerCharacterArtV6=(()=>{
   box(c,shade(d.leg,-12),x+stance-4,bootY-3+Math.max(0,-walk),9,4);
   roleBack(c,id,d,top,frame,dir);
   const width=Math.max(12,16+d.width);
-  box(c,d.shade,x-width/2-1,top+19,width+2,17);
+  box(c,d.shade,x-width/2-1,top+19,width+2,Math.min(17,48-top-19));
   box(c,d.tunic,x-width/2,top+20,width,15);
   box(c,shade(d.tunic,23),x-width/2+2,top+21,width-4,3);
   box(c,d.trim,x-width/2,top+32,width,3);
