@@ -142,7 +142,23 @@ function featuredResidentPortraitMarkup(speaker){
  const width=legacy?576:864,height=legacy?256:384;
  return `<svg class="portrait-svg resident-portrait" viewBox="0 0 64 72" aria-hidden="true" shape-rendering="crispEdges"><defs><clipPath id="${id}"><rect x="0" y="0" width="64" height="64"/></clipPath></defs><rect width="64" height="72" fill="${backdrop}"/><rect y="64" width="64" height="8" fill="#252c2b"/><g clip-path="url(#${id})"><image href="${source}" x="${x}" y="${y}" width="${width}" height="${height}" style="image-rendering:pixelated"/></g></svg>`;
 }
+const V6_RESIDENT_SPEAKERS=Object.freeze({
+ 'パン屋のエダ':'baker','農夫のボル':'farmer','老婆ナナ':'oldwoman',
+ '村長':'mayor','王国使者':'messenger','レン':'ren','ミカ':'mika','ルル':'lulu',
+ '花売りの少女':'capitalFlowerGirl','新兵':'capitalRecruit','総司令グランツ':'granz',
+ '畑の手伝い人':'fieldWorker','川辺の見回り人':'brookKeeper',
+ 'トリトンの父':'father','世話役マルタ':'caretaker','カレンの母':'karenMother',
+ 'カレンの父':'karenFather','孤児院の子':'orphan','テオ':'theo','ノア':'noa',
+ 'エミ':'emi','行商人':'merchant'
+});
 function portraitMarkup(speaker){
+ // Dialogues must show the SAME named person the player met in the world.
+ // Keep earlier PNG and classic portrait styles only for legacy comparison
+ // or supporting cast who haven't yet received the new authored design.
+ const v6Id=V6_RESIDENT_SPEAKERS[speaker];
+ const v6=typeof PlayerCharacterArtV6!=='undefined'&&v6Id
+  ?PlayerCharacterArtV6.portraitSvg(v6Id):null;
+ if(v6)return v6;
  const featured=featuredResidentPortraitMarkup(speaker);
  if(featured)return featured;
  if(['カレン','トリトン','ソフィ','マーガレット'].includes(speaker))return heroPortraitMarkup(speaker);
