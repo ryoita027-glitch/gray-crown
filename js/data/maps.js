@@ -202,7 +202,7 @@ const maps={
   {id:'oldwoman',x:15,y:12,name:'老婆ナナ'},
   {id:'veteran',x:9,y:4,name:'帰還兵ガルド'}
  ],objects:[
-  {id:'store',x:16,y:9},{id:'well',x:12,y:9},{id:'home',x:4,y:5},{id:'doorOrphanage',x:19,y:5},
+  {id:'store',x:16,y:9},{id:'well',x:12,y:9},{id:'renPracticeDummy',x:21,y:6},{id:'home',x:4,y:5},{id:'doorOrphanage',x:19,y:5},
   {id:'doorMayor',x:4,y:12},{id:'doorCottage',x:19,y:12},{id:'westFieldPath',x:2,y:7},{id:'eastBrookPath',x:21,y:7},{id:'gate',x:11,y:0}
  ]},
  ryunefields:{name:'リュネ西の畑',tag:'畑仕事と村の食卓',tiles:makeRyuneOutskirtsTiles('fields'),
