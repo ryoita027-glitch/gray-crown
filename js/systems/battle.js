@@ -34,7 +34,7 @@ function battleAction(type){if(state.locked||!state.battle)return;const b=state.
  else if(type==='staffSophie'||type==='staffMargaret'){d=damageFormula(a.atk,e.def,SKILLS[type].power);e.hp=Math.max(0,e.hp-d);moraleLoss=applyMoraleDamage(e,d*.35);battleLog(`${a.name}の杖撃！ ${e.name}に${d}ダメージ。`)}
  else if(type==='guard'){a.guard=true;visual='heal';battleLog(activeRouteParty().length===1?`${a.name}は防御の構えを取った。`:`${a.name}は仲間を庇う構えを取った。`);sfx('guard')}
  else if(type==='rally'){activeRouteParty().forEach(p=>p.buff=(p.buff||0)+SKILLS.rally.value);visual='heal';battleLog(`${a.name}の号令！ 全員の攻撃力が一時的に上がる。`);battleLog('カレン「全員、顔を上げて！　私たちなら進める！」');sfx('rally')}
- else if(type==='heavy'){d=damageFormula(a.atk+(a.buff||0),e.def,SKILLS.heavy.power);e.hp=Math.max(0,e.hp-d);moraleLoss=applyMoraleDamage(e,d*.55);battleLog(`${a.name}の強撃！ ${e.name}に${d}ダメージ。`)}
+ else if(type==='heavy'){d=damageFormula(a.atk+(a.buff||0),e.def,SKILLS.heavy.power);e.hp=Math.max(0,e.hp-d);moraleLoss=applyMoraleDamage(e,d*.55);battleLog(`${a.name}の強撃！ ${e.name}に${d}ダメージ。`);if(b.id==='wolves'&&b.turn===1&&state.events.choices['early.renPractice']==='strike')battleLog('レンとの稽古で見せた踏み込み！　でも、まだ狼の反撃が来る。')}
  else if(type==='break'){d=damageFormula(a.atk,e.def,SKILLS.break.power);e.hp=Math.max(0,e.hp-d);e.def=Math.max(1,e.def-SKILLS.break.defDown);moraleLoss=applyMoraleDamage(e,10+d*.45);battleLog(`${a.name}が防御を崩した。${d}ダメージ、防御低下。`);
   // A visible tactical payoff for the first optional dungeon. One interruption
   // per tough enemy: no extra command button or repetitive stun-lock.
@@ -112,7 +112,8 @@ function enemyTurn(){const b=state.battle,bd=battles[b.id],foes=livingEnemies().
  if(bd.boss&&e.phase===1&&e.hp<e.maxHp*.65){e.phase=2;e.atk+=2;battleLog(`<strong class="boss-phase">PHASE II — ${bd.phase2||'攻勢が変化した'}</strong>`)}else if(bd.boss&&e.phase===2&&e.hp<e.maxHp*.3){e.phase=3;e.atk+=3;e.def+=1;battleLog(`<strong class="boss-phase">FINAL PHASE — ${bd.phase3||'全力を解放した'}</strong>`)}const alive=activeRouteParty().filter(p=>p.hp>0);if(!alive.length)return battleLose();// Telegraph tactical danger while preserving original fair target-selection rules.
  if(bd.boss&&e.phase>=2)battleLog('警戒：'+e.name+'が攻勢を強めている。防御と回復を確認しよう。');
  const focus=checkpointEnemyIntent(b);const originallyTargeted=focus?.target||selectEnemyTarget(alive,b);const t=GC.CommercialTactics?.protect?.(activeRouteParty(),originallyTargeted)||originallyTargeted;let d=damageFormula(e.atk+(focus?.bonus||0),t.def);if(focus?.scouted)d=Math.max(1,d-2);if(t.guard)d=Math.max(1,Math.floor(d/2));if(GC.Dev?.settings?.invincible)d=0;t.hp=Math.max(0,t.hp-d);if(b.metrics){b.metrics.enemyAttacks++;b.metrics.damageTaken+=d;if(t!==originallyTargeted&&t.guard)b.metrics.guardedAllies++}
- if(t!==originallyTargeted)battleLog(`${t.name}が${originallyTargeted.name}を庇った！ ${e.name}の攻撃を引き受け、${d}ダメージ。`);if(t!==originallyTargeted&&t.guard&&focus){
+ if(t!==originallyTargeted)battleLog(`${t.name}が${originallyTargeted.name}を庇った！ ${e.name}の攻撃を引き受け、${d}ダメージ。`);
+ if(b.id==='wolves'&&b.turn===1&&t!==originallyTargeted&&t.guard&&state.events.choices['early.renPractice']==='guard')battleLog('レンとの稽古を思い出した！　カレンの一歩が、本当にソフィを守った。');if(t!==originallyTargeted&&t.guard&&focus){
   b.counterWindow={enemy:e,turn:b.turn+1};
   battleLog('守りの連携！ 敵に隙が生まれた。次の味方ターンの攻撃で反撃できる。');
  }
