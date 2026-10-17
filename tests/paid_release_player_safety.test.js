@@ -72,3 +72,16 @@ test('HUD never treats imported journal or chapter text as executable HTML',()=>
  assert.match(h.getElement('questHud').innerHTML,/&lt;svg/);
  assert.doesNotMatch(h.getElement('questHud').innerHTML,/<svg/);
 });
+
+
+test('menu restart also protects an unsaved adventure even when no save slot exists',()=>{
+ const h=createHarness();
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=418');
+ assert.equal(h.storage.getItem(h.GC.Save.SAVE_KEY),null);
+ h.context.confirm=()=>false;
+ assert.equal(h.GC.Save.restart(),false);
+ assert.equal(h.GC.State.get().gold,418,'unsaved player progress must not vanish on cancel');
+ h.context.confirm=()=>true;
+ assert.equal(h.GC.Save.restart(),true);
+ assert.equal(h.GC.State.get().gold,120);
+});
