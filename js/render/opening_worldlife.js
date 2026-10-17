@@ -39,7 +39,7 @@ const OpeningWorldLife=(()=>{
   R(c,'#614936',x+8,y+10,4,23);R(c,'#614936',x+65,y+9,4,26);
   wheel(c,x+22,y+35);wheel(c,x+55,y+35);
  }
- function village(c){
+ function village(c,choices={}){
   // Sense of daily life; props at authored NPC landmarks, not imaginary loot.
   // Baker's stand: physically distinct from the mayor's house.
   const [bx,by]=at(7,5);
@@ -66,6 +66,39 @@ const OpeningWorldLife=(()=>{
   R(c,'#dbbf85',ox+23,oy+25,3,2);
   R(c,'#806c8a',ox+9,oy+26,5,5);
   R(c,'#d3c09b',ox+10,oy+27,3,2);
+  // Ren's actual practice interaction lives on (21,6). Its one-time player
+  // choice stays visible in the normal game renderer and in a reloaded save.
+  // No new remote art asset or floating quest decoration is needed.
+  const [dx,dy]=at(21,6),practice=choices['early.renPractice'];
+  R(c,'#4d4939',dx+3,dy+27,26,3);
+  R(c,'#8a7655',dx+6,dy+25,22,2);
+  if(practice==='strike'){
+   // Knocked-down dummy: a physical memory of Triton's opening attack.
+   R(c,'#795636',dx+4,dy+22,23,5);
+   R(c,'#bf9562',dx+6,dy+22,18,2);
+   R(c,'#574e3e',dx+9,dy+17,5,5);
+   R(c,'#b09b77',dx+5,dy+14,14,3);
+   R(c,'#9b7860',dx+17,dy+20,7,2);
+  }else{
+   R(c,'#634a33',dx+13,dy+7,5,21);
+   R(c,'#ad8757',dx+13,dy+8,2,18);
+   R(c,'#88704b',dx+8,dy+10,16,4);
+   R(c,'#d0b48a',dx+10,dy+3,11,9);
+   R(c,'#8e795c',dx+11,dy+4,9,2);
+   R(c,'#5a4b3a',dx+12,dy+7,2,2);
+   R(c,'#5a4b3a',dx+18,dy+7,2,2);
+   if(practice==='guard'){
+    // A lifted wooden shield: unlike the knocked dummy, it stays upright.
+    R(c,'#3c594f',dx+4,dy+12,11,12);
+    R(c,'#8cae96',dx+5,dy+13,9,8);
+    R(c,'#d8bb7f',dx+9,dy+14,2,8);
+    R(c,'#655442',dx+5,dy+23,9,2);
+   }else{
+    // A clean straw target tells the player there is something to try.
+    R(c,'#c7ae80',dx+17,dy+15,7,8);
+    R(c,'#84694f',dx+19,dy+17,3,4);
+   }
+  }
   // Village notice board is at the square rather than a floating HUD label.
   // No new solid board on a walkable square; the village door signs suffice.
   // Small footprints into lived-in door thresholds.
@@ -132,7 +165,7 @@ const OpeningWorldLife=(()=>{
   // Use the existing victoryPoster object: no impassable-looking false board.
  }
  function ground(c,map,choices={}){if(!api.enabled)return false;
-  if(map==='village')village(c);
+  if(map==='village')village(c,choices);
   else if(map==='road')road(c,choices);
   else if(map==='capital')capital(c);
   else return false;
