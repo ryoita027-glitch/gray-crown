@@ -17,7 +17,16 @@
  function tweenActor(a,toX,toY,duration=400){if(!a)return Promise.resolve(false);const sx=a.x,sy=a.y,dx=toX-sx,dy=toY-sy,d=Math.max(1,Number(duration)||1);return new Promise(resolve=>{let start=null;const step=ts=>{if(!CINEMATIC.active||CINEMATIC.cancelled){resolve(false);return}if(start===null)start=ts;const t=Math.min(1,(ts-start)/d),ease=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;a.x=sx+dx*ease;a.y=sy+dy*ease;draw();if(t>=1)resolve(true);else requestAnimationFrame(step)};requestAnimationFrame(step)})}
  function directionToward(a,b){if(!a||!b)return'down';const dx=b.x-a.x,dy=b.y-a.y;if(Math.abs(dx)>Math.abs(dy))return dx<0?'left':'right';return dy<0?'up':'down'}
  function focusActors(ids,scale=null,offsetX=0,offsetY=0){const list=(ids||[]).map(actor).filter(Boolean);if(!list.length){CINEMATIC.camera=null;return}const x=list.reduce((s,a)=>s+a.x,0)/list.length,y=list.reduce((s,a)=>s+a.y,0)/list.length;CINEMATIC.camera={active:true,x:x+offsetX,y:y+offsetY,scale:scale||viewScale()};draw()}
- function drawActors(c,helpers={}){for(const a of getRenderActors()){if(a.renderMode.startsWith('pixel48')&&GC.Animation.drawActor(c,a))continue;const motion=['walk','run','approach','react','laugh'].includes(a.animation)?Date.now()/82:0;if(a.controlNpc&&helpers.drawNpcCommercial){helpers.drawNpcCommercial({id:a.styleId||a.id,x:a.x,y:a.y},a.facing);continue}if(a.renderMode==='legacy32'&&helpers.drawHeroSpriteSheet){helpers.drawHeroSpriteSheet(a.x,a.y,'karen',false,a.facing,motion);continue}if(helpers.drawCharacterSprite){const style=GC.Data?.NPCs?.NPC_STYLE?.[a.styleId]||GC.Data?.NPCs?.PARTY_STYLE?.[a.styleId]||{},bob=a.animation==='react'?-.10*Math.abs(Math.sin(Date.now()/95)):0;helpers.drawCharacterSprite(a.x,a.y+bob,style,false,a.facing,motion)}}}
+ function drawActors(c,helpers={}){for(const a of getRenderActors()){
+ const personId=a.styleId||a.id;
+ if(typeof PlayerCharacterArtV6!=='undefined'){
+  const motion=['walk','run','approach','react','laugh'].includes(a.animation)?Date.now()/82:0;
+  if(PlayerCharacterArtV6.hasHero(personId)&&
+      PlayerCharacterArtV6.drawHero(c,a.x,a.y,personId,a.facing,motion))continue;
+  if(PlayerCharacterArtV6.hasNpc(personId)&&
+      PlayerCharacterArtV6.drawNpc(c,{id:personId,x:a.x,y:a.y},a.facing,Date.now()))continue;
+ }
+ if(a.renderMode.startsWith('pixel48')&&GC.Animation.drawActor(c,a))continue;const motion=['walk','run','approach','react','laugh'].includes(a.animation)?Date.now()/82:0;if(a.controlNpc&&helpers.drawNpcCommercial){helpers.drawNpcCommercial({id:a.styleId||a.id,x:a.x,y:a.y},a.facing);continue}if(a.renderMode==='legacy32'&&helpers.drawHeroSpriteSheet){helpers.drawHeroSpriteSheet(a.x,a.y,'karen',false,a.facing,motion);continue}if(helpers.drawCharacterSprite){const style=GC.Data?.NPCs?.NPC_STYLE?.[a.styleId]||GC.Data?.NPCs?.PARTY_STYLE?.[a.styleId]||{},bob=a.animation==='react'?-.10*Math.abs(Math.sin(Date.now()/95)):0;helpers.drawCharacterSprite(a.x,a.y+bob,style,false,a.facing,motion)}}}
  async function runCommand(cmd,scene){
   if(!cmd)return true;
   if(cmd.type==='wait')return await wait(cmd.ms);
