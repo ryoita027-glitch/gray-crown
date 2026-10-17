@@ -3,7 +3,7 @@ const test=require('node:test'),assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),zlib=require('node:zlib');
 const src=fs.readFileSync(path.join(__dirname,'../js/render/opening_pixel_assets.js'),'utf8');
 const lifeSrc=fs.readFileSync(path.join(__dirname,'../js/render/opening_worldlife.js'),'utf8');
-const art=fs.readFileSync(path.join(__dirname,'../assets/npc/featured_resident_actions_charm_v3.png'));
+const art=fs.readFileSync(path.join(__dirname,'../assets/npc/featured_resident_actions_charm_v5.png'));
 function pngPixels(){
  assert.deepEqual([...art.subarray(0,8)],[137,80,78,71,13,10,26,10]);
  assert.equal(art.readUInt32BE(16),432);assert.equal(art.readUInt32BE(20),96);
@@ -58,7 +58,7 @@ function runtime(reduced=false,failActions=false){
   naturalWidth=432;naturalHeight=192;
   set src(value){
    sources.push(value);
-   if(value.includes('actions_charm_v3')){
+   if(value.includes('actions_charm_v5')){
     if(failActions){this.onerror?.();return}
     this.naturalHeight=96;
    }
@@ -94,6 +94,10 @@ test('nine role-specific actors switch real sprite frames only on deliberate idl
   assert.equal(s.draws.at(-1)[0]?.naturalHeight,192,ids[j]+' back keeps correct art');
   assert.equal(s.draws.at(-1)[2],144);
  }
+ assert.ok(s.sources.includes('assets/npc/featured_resident_actions_charm_v5.png'),
+  'V5 work-pose sprite must load in ordinary gameplay');
+ assert.ok(!s.sources.some(p=>p.includes('actions_charm_v3')),
+  'ordinary V5 gameplay must not silently use older gesture art');
  assert.equal(s.sources.length,2,'two PNG requests total for all frames and residents');
 });
 test('base art fallback and reduced-motion optout do not erase NPCs or move hitboxes',()=>{
