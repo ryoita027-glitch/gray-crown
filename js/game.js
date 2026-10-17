@@ -18,8 +18,8 @@ function startNewGameSafely(){
   return false
  }
  if(existing){
-  const overwrite=olderArchive?'以前の冒険の保管データも更新します。':'現在の冒険を復旧用に保管します。';
-  if(!confirm('新しい冒険を始めますか？\n'+overwrite+'\n大切なデータはメニューからJSON書き出しも行ってください。'))return false;
+  const overwrite=olderArchive?'前回の復旧用データは、最後に手動保存した内容に置き換わります。':'最後に手動保存した冒険を復旧用に保管します。';
+  if(!confirm('新しい冒険を始めますか？\n未保存の進行は失われます。\n'+overwrite+'\n大切なデータはメニューからJSON書き出しも行ってください。'))return false;
   if(!GC.Save.archiveBeforeNewGame()){
    alert('以前の冒険を保管できませんでした。データを守るため新規開始を中止しました。');
    return false
