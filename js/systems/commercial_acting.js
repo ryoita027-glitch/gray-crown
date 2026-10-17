@@ -97,6 +97,12 @@
  function draws(id,c,x,y,facing,now=Date.now()){
   if(!active()||!GC.Animation?.drawActor)return false;
   const plan=cuePlan(id,Math.max(0,now-cue.created));if(!plan)return false;
+  // Keep the same actor, facing and subtle authored cue when the game is
+  // using v6 instead of placing a previous PNG animation over the new sprite.
+  if(typeof PlayerCharacterArtV6!=='undefined'&&!PlayerCharacterArtV6.legacy){
+   return PlayerCharacterArtV6.drawHero(c,x,y,id,plan.facing||facing,
+     plan.pose==='talk'||plan.pose==='laugh'?1:0);
+  }
   let a=actors.get(id);
   if(!a){
    a=GC.Animation.createActor(id,{id:'conversation.'+id,x,y,
