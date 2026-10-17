@@ -131,6 +131,11 @@ function openingWolfReaction(def,metrics,scouted){
  return {...def,lines:[...def.lines.slice(0,-1),closing]};
 }
 function battleWin(outcome='defeat'){const b=state.battle,id=b.id,bd=battles[id],r=bd.reward;GC.Log?.info('Battle End',{id,outcome});
+ // Ren only celebrates a real guarded interception if the fight recorded one.
+ // Otherwise the child remembers a victory without falsely claiming a shield
+ // saved Sophie. This single optional acknowledgement is schema-23 safe.
+ if(id==='wolves'&&state.events.choices['early.renPractice']&&!state.events.choices['early.renWolfOutcome'])
+  state.events.choices['early.renWolfOutcome']=(b.metrics?.guardedAllies||0)>0?'protected':'won';
  if(b.metrics)GC.Log?.info('Local Battle Balance',{
   id,map:state.map,outcome,rounds:b.turn,
   elapsedMs:Math.max(0,Date.now()-b.metrics.startedAt),
