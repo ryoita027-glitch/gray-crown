@@ -340,8 +340,27 @@ const PlayerCharacterArtV6=(()=>{
   c.drawImage(image,0,0,48,48,Math.round(footX-22),Math.round(footY-41),size,size);
   c.restore();return true
  }
+ const portraitCache=new Map();
+ function portraitSvg(id){
+  if(legacy||!villagers[id])return null;
+  if(portraitCache.has(id))return portraitCache.get(id);
+  const d=villagers[id],shapes=[];let oval=null;
+  const pixels={
+   fillStyle:'#000',clearRect(){},beginPath(){oval=null},
+   ellipse(x,y,rx,ry){oval=[x,y,rx,ry]},
+   fill(){if(oval){shapes.push('<ellipse cx="'+oval[0]+'" cy="'+oval[1]+'" rx="'+oval[2]+'" ry="'+oval[3]+'" fill="'+this.fillStyle+'"/>');oval=null}},
+   fillRect(x,y,w,h){shapes.push('<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="'+this.fillStyle+'"/>')}
+  };
+  paint(pixels,id,0,0);
+  // Portrait is cropped from the SAME authored pixels as the in-world sprite.
+  const svg='<svg class="portrait-svg resident-portrait" viewBox="0 0 64 72" aria-hidden="true" shape-rendering="crispEdges">'+
+    '<rect width="64" height="72" fill="'+d.shade+'"/>'+
+    '<rect x="0" y="62" width="64" height="10" fill="#322f2e"/>'+
+    '<g transform="translate(-18 -14) scale(2.1)">'+shapes.join('')+'</g></svg>';
+  portraitCache.set(id,svg);return svg
+ }
  function getAtlas(id,facing='down',frame=0){return atlas(id,dirs[facing]??0,frame)}
- return Object.freeze({heroes,villagers,drawHero,drawNpc,getAtlas,paint,
+ return Object.freeze({heroes,villagers,drawHero,drawNpc,getAtlas,portraitSvg,paint,
   hasHero:id=>!!heroes[id],hasNpc:id=>!!villagers[id],get legacy(){return legacy},
   qualityVersion:'player-first-v6'});
 })();
