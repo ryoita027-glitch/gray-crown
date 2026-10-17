@@ -26,7 +26,7 @@ test('legacy A/B keeps the original full-body dialogue crop for all featured res
   {location:{search:'?npcArt=legacy'}});
  for(let i=0;i<names.length;i++){
   const p=npc.portraitMarkup(names[i]);
-  assert.match(p,/featured_residents_v1\\.png/);
+  assert.match(p,/featured_residents_v1[.]png/);
   assert.ok(p.includes('x="-'+(i*64)+'"'),names[i]);
   assert.match(p,/width="576" height="256"/);
  }
