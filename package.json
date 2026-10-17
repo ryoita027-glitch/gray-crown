@@ -53,6 +53,7 @@
     "opening:player-first-unit": "npm run opening:relevance-unit && node --test tests/featured_resident_player_visual.test.js tests/featured_resident_dialogue_portraits.test.js tests/player_first_integration_guard.test.js && npm run story:margaret-belonging",
     "story:margaret-belonging": "node --test tests/margaret_belonging_character_arc.test.js",
     "town:npc-expressive-unit": "node --test tests/featured_resident_player_visual.test.js tests/npc_player_appeal_acting.test.js tests/generic_npc_face_foundation.test.js",
-    "town:npc-charm-v3-unit": "node --test tests/npc_concept_sprite_integration.test.js"
+    "town:npc-charm-v3-unit": "node --test tests/npc_concept_sprite_integration.test.js",
+    "release:paid-gate": "node --test tests/release/paid_release_no_go_gate.test.js"
   }
 }
