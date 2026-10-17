@@ -23,7 +23,7 @@ test('one-file offline release embeds the same portrait pixels instead of broken
  const GC={Data:{}};
  const mock={'assets/npc/featured_residents_charm_v5.png':'data:image/png;base64,VERIFIED_FAKE_ATLAS'};
  const npc=new Function('GC','window',src+';return GC.Data.NPCs')(GC,
-  {__GC_INLINE_ASSETS__:mock});
+  {__GC_INLINE_ASSETS__:mock,location:{search:''}});
  for(const name of names){
   const p=npc.portraitMarkup(name);
   assert.match(p,/href="data:image\/png;base64,VERIFIED_FAKE_ATLAS"/);
