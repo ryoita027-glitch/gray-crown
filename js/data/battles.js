@@ -1,6 +1,6 @@
 'use strict';
 const battles={
- wolves:{name:'灰牙狼',prototype:true,enemies:[{name:'灰牙狼',art:'wolf',hp:72,maxHp:72,atk:10,def:4}],reward:{gold:22,exp:22}},
+ wolves:{name:'灰牙狼',prototype:true,enemies:[{name:'灰牙狼',art:'wolf',hp:96,maxHp:96,atk:16,def:4}],reward:{gold:22,exp:22}},
  roadBandit:{name:'街道のならず者',prototype:true,faction:'human',enemies:[{name:'街道のならず者',art:'bandit',human:true,hp:82,maxHp:82,atk:11,def:6,morale:58,maxMorale:58}],reward:{gold:28,exp:24}},
  bats:{name:'洞窟コウモリの群れ',enemies:[{name:'洞窟コウモリA',hp:28,maxHp:28,atk:8,def:2},{name:'洞窟コウモリB',hp:28,maxHp:28,atk:8,def:2},{name:'洞窟コウモリC',hp:24,maxHp:24,atk:7,def:2}],reward:{gold:18,exp:16}},
  crawler:{name:'石殻ムカデ',enemies:[{name:'石殻ムカデ',hp:105,maxHp:105,atk:14,def:7}],reward:{gold:42,exp:30}},
