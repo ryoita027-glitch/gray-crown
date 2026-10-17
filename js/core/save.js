@@ -1,6 +1,9 @@
 'use strict';
 const SAVE_KEY='gray-crown-vslice-save-v1';
 const SAVE_BACKUP_KEY=SAVE_KEY+'-backup';
+// A separate, player-recoverable checkpoint before a fresh adventure. Never
+// use the rotating save backup for this: two subsequent saves replace it.
+const SAVE_ARCHIVE_KEY=SAVE_KEY+'-previous-adventure';
 const SAVE_SCHEMA=23;
 function safeNumber(v,fallback,min=-Infinity,max=Infinity){return Number.isFinite(v)?Math.max(min,Math.min(max,v)):fallback}
 function nearestSafeTile(mapId,x,y,saveState=state){
@@ -153,5 +156,29 @@ async function readPortableSaveFile(file){
  return ok
 }
 
-function restart(){if(!confirm('最初からやり直しますか？'))return;beginAlphaNewGame(true)}
-GC.Save={SAVE_KEY,SAVE_BACKUP_KEY,SAVE_SCHEMA,save,load,restart,migrateLoaded,serializeSave,validateLoadedState,nearestSafeTile,transientUiActive,canPersistNow,clearTransientPanels,exportPortableSaveText,downloadPortableSave,importPortableSaveText,readPortableSaveFile};
+function hasArchivedAdventure(){try{return !!localStorage.getItem(SAVE_ARCHIVE_KEY)}catch(_){return false}}
+function archiveBeforeNewGame(){
+ let candidate;
+ try{
+  candidate=localStorage.getItem(SAVE_KEY)||localStorage.getItem(SAVE_BACKUP_KEY);
+  if(!candidate)return true;
+  // A new game must not begin if the player's preceding save cannot be
+  // preserved. The special archive survives later manual saves.
+  localStorage.setItem(SAVE_ARCHIVE_KEY,candidate);
+  return localStorage.getItem(SAVE_ARCHIVE_KEY)===candidate
+ }catch(e){
+  GC.Log?.error('Previous adventure archive failed',{error:String(e)});
+  return false
+ }
+}
+function restoreArchivedAdventure(){
+ if(!canPersistNow('load'))return false;
+ const raw=localStorage.getItem(SAVE_ARCHIVE_KEY);
+ if(!raw)return false;
+ if(!confirm('保管していた以前の冒険を復旧しますか？ 現在のセーブはバックアップへ移します。'))return false;
+ const ok=importPortableSaveText(raw);
+ say('システム',ok?'以前の冒険を復旧しました。現在のセーブはバックアップに残しています。':'以前の冒険を復旧できませんでした。現在のセーブには変更していません。');
+ return ok
+}
+function restart(){return typeof startNewGameSafely==='function'?startNewGameSafely():false}
+GC.Save={SAVE_KEY,SAVE_BACKUP_KEY,SAVE_ARCHIVE_KEY,SAVE_SCHEMA,hasArchivedAdventure,archiveBeforeNewGame,restoreArchivedAdventure,save,load,restart,migrateLoaded,serializeSave,validateLoadedState,nearestSafeTile,transientUiActive,canPersistNow,clearTransientPanels,exportPortableSaveText,downloadPortableSave,importPortableSaveText,readPortableSaveFile};
