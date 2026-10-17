@@ -258,7 +258,7 @@ const PlayerCharacterArtV6=(()=>{
  function paint(c,id,dir=0,frame=0){
   const d=all[id];if(!d)return false;
   const small=d.height>3,walk=frame===1?2:frame===3?-2:0;
-  const top=(small?11:6)+d.height;
+  const top=6+d.height; // shorter residents have a low head, not clipped feet
   const x=24,cx=x,back=dir===3,profile=dir===1||dir===2;
   c.clearRect(0,0,48,48);c.imageSmoothingEnabled=false;
   // Shared ground plane, but width and stance are distinct; it doesn't float.
