@@ -65,3 +65,20 @@ test('sprite overhaul changes neither party inventory nor save schema or encount
  assert.equal(JSON.stringify({party:s.party,inventory:s.inventory,events:s.events,battle:s.battle,map:s.map}),snapshot);
  assert.equal(s.schema,23);
 });
+
+
+test('combat animates exact 48px authored heroes in old compatible 192/288px layouts',()=>{
+ const h=createHarness();
+ const result=JSON.parse(h.evaluate("(()=>{const old=document.createElement;let blits=0;"+
+  "document.createElement=function(tag){const node=old(tag);if(tag==='canvas'){"+
+  "node.getContext=()=>({fillStyle:'',clearRect(){},beginPath(){},ellipse(){},fill(){},fillRect(){},drawImage(){blits++}});"+
+  "node.toDataURL=()=>('data:image/png;base64,'+node.width+'x'+node.height)}return node};"+
+  "const idle=PlayerCharacterArtV6.battleSheetUrl('karen','idle');"+
+  "const walk=PlayerCharacterArtV6.battleSheetUrl('karen','walk');"+
+  "const repeat=PlayerCharacterArtV6.battleSheetUrl('karen','idle');"+
+  "document.createElement=old;return JSON.stringify({idle,walk,repeat,blits})})()"));
+ assert.match(result.idle,/192x192$/);
+ assert.match(result.walk,/288x192$/);
+ assert.equal(result.idle,result.repeat,'combat atlas must be cached, not rebuilt per frame');
+ assert.equal(result.blits,40,'4x4 idle + 4x6 walk atlas cells drawn');
+});
