@@ -180,5 +180,14 @@ function restoreArchivedAdventure(){
  say('システム',ok?'以前の冒険を復旧しました。現在のセーブはバックアップに残しています。':'以前の冒険を復旧できませんでした。現在のセーブには変更していません。');
  return ok
 }
-function restart(){return typeof startNewGameSafely==='function'?startNewGameSafely():false}
+function restart(){
+ if(typeof startNewGameSafely!=='function')return false;
+ // A brand-new unsaved session still deserves an explicit warning.
+ // Otherwise switching from the menu can erase hours of unsaved play.
+ let persisted=false;
+ try{persisted=!!(localStorage.getItem(SAVE_KEY)||localStorage.getItem(SAVE_BACKUP_KEY))}
+ catch(e){GC.Log?.error('Restart storage check failed',{error:String(e)});return false}
+ if(!persisted&&!confirm('保存していない現在の冒険を破棄して、最初から始めますか？'))return false;
+ return startNewGameSafely()
+}
 GC.Save={SAVE_KEY,SAVE_BACKUP_KEY,SAVE_ARCHIVE_KEY,SAVE_SCHEMA,hasArchivedAdventure,archiveBeforeNewGame,restoreArchivedAdventure,save,load,restart,migrateLoaded,serializeSave,validateLoadedState,nearestSafeTile,transientUiActive,canPersistNow,clearTransientPanels,exportPortableSaveText,downloadPortableSave,importPortableSaveText,readPortableSaveFile};
