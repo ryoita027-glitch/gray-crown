@@ -232,3 +232,24 @@ test('quarantine retains both generations instead of overwriting earlier lost sa
  const saved=JSON.parse(h.storage.getItem(s.SAVE_QUARANTINE_KEY));
  assert.deepEqual(saved.map(x=>x.primary),['{broken-A','{broken-B']);
 });
+
+test('quota failure during second write restores original primary and backup',()=>{
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=746');
+ const primary=JSON.stringify(h.GC.State.get());
+ h.evaluate('state.gold=612');
+ const backup=JSON.stringify(h.GC.State.get());
+ h.storage.setItem(s.SAVE_KEY,primary);
+ h.storage.setItem(s.SAVE_BACKUP_KEY,backup);
+ h.evaluate('state.gold=150');
+ const write=h.storage.setItem;
+ let failOnce=true;
+ h.storage.setItem=function(key,value){
+  if(key===s.SAVE_KEY&&failOnce){failOnce=false;throw new Error('quota on primary')}
+  return write.call(this,key,value)
+ };
+ assert.equal(s.save(true),false);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),primary);
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),backup);
+ h.storage.setItem=write;
+});
