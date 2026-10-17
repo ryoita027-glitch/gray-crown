@@ -12,11 +12,14 @@ function appointed(h){
 function practicePixels(h){
  return h.evaluate("(()=>{const pixels=[],c={fillStyle:'',fillRect(x,y,w,h){pixels.push([this.fillStyle,x,y,w,h])}};OpeningWorldLife.ground(c,'village',state.events.choices);return JSON.stringify(pixels)})()");
 }
-test('appointment remains canonical and optional Ren training cannot auto-start',()=>{
+test('Ren sparring can be discovered before the messenger and remains optional',()=>{
  const h=createHarness(),s=h.GC.State.get();
  assert.equal(s.events.choices['early.renPractice'],undefined);
  const before=practicePixels(h);
- assert.equal(h.evaluate("finishRenPractice('guard')"),false,'practice does not pre-empt canonical appointment');
+ h.GC.Events.inlineObjectEvent('renPracticeDummy');
+ assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/稽古/);
+ h.evaluate("closeDialogue(false)");
+ assert.equal(s.events.choices['early.renPractice'],undefined,'a prompt does not silently choose');
  assert.equal(before,practicePixels(h));
  appointed(h);
  assert.equal(s.events.choices['early.renPractice'],undefined,
@@ -29,7 +32,8 @@ test('appointment remains canonical and optional Ren training cannot auto-start'
 
 for(const style of ['guard','strike']){
  test('voluntary '+style+' practice gives immediate art and persistent character memory with no item farming',()=>{
-  const h=createHarness(),s=h.GC.State.get();appointed(h);
+  const h=createHarness(),s=h.GC.State.get();
+  if(style==='strike')appointed(h); // both pre-appointment and post-appointment are playable
   const startGold=s.gold,startInventory=JSON.stringify(s.inventory);
   const before=practicePixels(h);
   assert.equal(h.evaluate(style === 'guard' ? "finishRenPractice('guard')" : "finishRenPractice('strike')"),undefined,
