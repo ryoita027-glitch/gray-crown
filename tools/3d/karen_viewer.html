@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gray Crown — Karen 3D technical blockout</title>
+<style>
+:root{color-scheme:dark}body{background:#1d2225;color:#ece7de;font:16px/1.5 system-ui;margin:0}
+main{max-width:960px;margin:auto;padding:18px}h1{font-size:1.3rem;margin:0 0 10px}
+.workspace{background:radial-gradient(circle at 50% 45%,#596168,#232b30 70%);border:1px solid #73716b;border-radius:10px}
+canvas{display:block;width:100%;height:min(72vh,680px);touch-action:none}
+.controls{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0;align-items:center}
+button,input{font:inherit;padding:6px;color:inherit}button{background:#454d50;border:1px solid #8b9295;border-radius:5px}
+#status{font-size:.92rem;white-space:pre-wrap}aside{font-size:.82rem;color:#c9c7bb}
+</style></head>
+<body><main><h1>Gray Crown カレン 3D — 技術検証モデル（未採用）</h1>
+<div class="controls"><label>GLBを選択 <input id="choose" type="file" accept=".glb,model/gltf-binary"></label>
+<button id="front">正面</button><button id="quarter">斜め</button><button id="side">側面</button><button id="back">背面</button>
+<button id="zoomIn">拡大</button><button id="zoomOut">縮小</button></div>
+<div class="workspace"><canvas id="viewport" width="900" height="650" aria-label="3D character viewer"></canvas></div>
+<p id="status" role="status">GLBを生成したら上から選択してください。HTTP配信時は生成ファイルの自動読込も試します。</p>
+<aside>ドラッグで回転。GLBデータ検査専用です。顔・髪の美しさや実ゲーム品質の合格を示すものではありません。</aside>
+</main><script src="../../js/render/karen_3d_webgl.js"></script><script>
+'use strict';
+const status=document.getElementById('status'),canvas=document.getElementById('viewport');
+let viewer;
+try{viewer=GrayCrown3D.createViewer(canvas)}catch(e){status.textContent='WebGL2: '+e.message;throw e}
+for(const [id,a] of [['front',0],['quarter',-Math.PI/4],['side',-Math.PI/2],['back',Math.PI]])
+ document.getElementById(id).onclick=()=>viewer.setView({yaw:a});
+document.getElementById('zoomIn').onclick=()=>viewer.setView({size:viewer.getView().size*1.15});
+document.getElementById('zoomOut').onclick=()=>viewer.setView({size:viewer.getView().size/1.15});
+async function apply(buffer,name){
+ try{const parts=viewer.loadArrayBuffer(buffer);
+ status.textContent='読み込み成功: '+name+' / '+parts.length+'独立パーツ\n技術検査のみ。造形・表情・原案同一性は未合格。'}
+ catch(e){status.textContent='GLB読み込み失敗: '+e.message}
+}
+document.getElementById('choose').onchange=async e=>{
+ const f=e.target.files?.[0];if(f)await apply(await f.arrayBuffer(),f.name)
+};
+let pressed=false,start=0,base=0;
+canvas.addEventListener('pointerdown',e=>{pressed=true;start=e.clientX;base=viewer.getView().yaw;canvas.setPointerCapture(e.pointerId)});
+canvas.addEventListener('pointermove',e=>{if(pressed)viewer.setView({yaw:base+(e.clientX-start)*.009})});
+canvas.addEventListener('pointerup',()=>pressed=false);canvas.addEventListener('pointercancel',()=>pressed=false);
+window.addEventListener('resize',()=>viewer.draw());
+if(location.protocol==='http:'||location.protocol==='https:')
+ fetch('../../assets/3d/karen_stage_a_blockout.glb')
+ .then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.arrayBuffer()})
+ .then(buf=>apply(buf,'karen_stage_a_blockout.glb'))
+ .catch(e=>{status.textContent='自動読込不可: '+e.message+'。生成GLBを手動選択してください。'});
+</script></body></html>
