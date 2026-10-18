@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gray Crown — パーツ式キャラクター制作スタジオ</title>
+<style>
+:root{font:15px/1.55 system-ui,'Yu Gothic',Meiryo,sans-serif;color-scheme:dark;--bg:#161c24;--pane:#212b36;--border:#4d5c6b;--text:#f1eee5;--muted:#b8c7d7}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text)}header{padding:14px 22px;background:#24303e;border-bottom:1px solid var(--border)}h1{font-size:1.25rem;margin:0}h2{font-size:1rem;margin:0 0 9px;color:#f0d8a6}p{color:var(--muted);margin:5px 0;font-size:.86rem}.layout{display:grid;grid-template-columns:minmax(205px,270px) minmax(330px,1fr) minmax(230px,285px);max-width:1460px;margin:auto;gap:14px;padding:15px}
+section{background:var(--pane);border:1px solid var(--border);border-radius:8px;padding:14px;min-width:0}.section{padding:12px 0;border-bottom:1px solid #465261}.section:last-child{border-bottom:0}
+label{display:block;font-size:.86rem;color:#d9e1eb;margin:10px 0 4px}button,input,select{font:inherit;color:inherit}button{border:1px solid #6c8496;background:#344758;border-radius:6px;padding:7px 10px;min-height:37px;cursor:pointer}button:hover{background:#456077}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #efd389;outline-offset:2px}
+input[type=text],select{background:#151f2a;width:100%;padding:7px;border:1px solid #6d8193;border-radius:5px}input[type=file]{font-size:.76rem;max-width:100%}input[type=color]{border:0;width:65px;height:38px;background:transparent}.row{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:7px}
+button.primary{background:#3c746e;border-color:#80afaa}.warn{background:#623f45}.status{margin-top:12px;padding:10px;border:1px solid #8493a5;border-radius:6px;min-height:48px;white-space:pre-wrap}.status.warning{color:#ffdcaf;border-color:#bb9858}.status.success{color:#ccf1dd;border-color:#79ab98}
+.checker{background-color:#777f86;background-image:linear-gradient(45deg,#9ba2aa 25%,transparent 25%),linear-gradient(-45deg,#9ba2aa 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#9ba2aa 75%),linear-gradient(-45deg,transparent 75%,#9ba2aa 75%);background-size:24px 24px;background-position:0 0,0 12px,12px -12px,-12px 0}
+.art-area{display:flex;gap:15px;align-items:flex-start;flex-wrap:wrap}.pixel{image-rendering:pixelated;display:block;outline:1px solid #8da0b2}.editor{width:min(384px,100%);aspect-ratio:1;touch-action:none;cursor:crosshair}.preview{width:192px;height:192px}.native{width:48px;height:48px}.previews{display:flex;align-items:flex-end;gap:12px}.previews small{font-size:.77rem}.part-list{display:grid;gap:5px;max-height:560px;overflow:auto}.part{display:flex;align-items:center;gap:8px;text-align:left;width:100%;border-color:#405165;background:#2d3b4b}.part.active{background:#536b7b;border-color:#eed188}.part-name{flex:1}.part-order{font-size:.75rem;color:#c0ccdb}
+small{font-size:.76rem;color:var(--muted)}#refCanvas{width:96px;height:96px;image-rendering:pixelated;background:#505763}
+@media(max-width:1100px){.layout{grid-template-columns:260px minmax(310px,1fr)}.part-panel{grid-column:1/-1}.part-list{grid-template-columns:repeat(auto-fit,minmax(210px,1fr));max-height:none}}
+@media(max-width:690px){header{padding:13px}.layout{display:flex;flex-direction:column;padding:9px}.layout section{width:100%}.preview{width:144px;height:144px}.editor{width:min(100%,384px)}}
+</style></head><body>
+<header><h1>Gray Crown — 部位別キャラクター制作 <small>ART DRAFT</small></h1><p>48×48pxの頭・目・髪・胴体・手足を別々に描き、4方向の待機/歩行へ合成。承認前は既存ゲーム絵を変更しません。</p></header>
+<main class="layout">
+<section><h2>制作設定</h2>
+ <div class="section"><label>キャラID<input id="characterId" type="text" value="karen"></label>
+ <label>方向<select id="direction"><option value="down">正面 down</option><option value="left">左 left</option><option value="right">右 right</option><option value="up">背面 up</option></select></label>
+ <label>動作<select id="animation"><option value="idle">待機 4コマ</option><option value="walk">歩行 6コマ</option></select></label>
+ <div class="row"><button id="prevFrame">◀ 前</button><span id="frameLabel">1 / 4</span><button id="nextFrame">次 ▶</button><button id="play">▶ 再生</button></div></div>
+ <div class="section"><h2>ドット描画</h2><div class="row"><input id="paintColor" type="color" value="#e0b89a"><button id="pencil" class="primary">ペン</button><button id="eraser">消去</button><button id="eyedropper">スポイト</button></div>
+ <div class="row"><button id="undo">元に戻す</button><button id="clearPart" class="warn">選択部品を全消去</button></div>
+ <label><input id="ghost" type="checkbox" checked> 他パーツを薄く重ねる</label><label><input id="grid" type="checkbox"> 1pxグリッド</label>
+ <p>ショートカット：B＝ペン／E＝消去／I＝スポイト／Ctrl+Z＝戻す</p></div>
+ <div class="section"><h2>元絵の比較（非破壊）</h2><input id="referenceFile" type="file" accept="image/png">
+ <div class="row"><canvas id="refCanvas" width="48" height="48"></canvas><small>48×48/192×192/288×192 PNG。参考表示のみ。自動切り出しなし。</small></div></div>
+ <div class="section"><h2>部品の追加</h2><label>選択部品PNG（48×48）<input id="layerFile" type="file" accept="image/png"></label>
+ <button id="copyMirror">左右反転して反対向きへコピー</button></div>
+</section>
+<section><h2>等倍で可読性を確認</h2>
+<div class="art-area"><div><canvas id="editor" class="checker pixel editor" width="48" height="48" aria-label="48px部品描画"></canvas><p>選んだ部品だけを1pxずつ編集。他の部品は参考表示。</p></div>
+<div><div class="previews"><div><small>拡大</small><canvas id="preview" class="checker pixel preview" width="48" height="48"></canvas></div><div><small>等倍48px</small><canvas id="native" class="checker pixel native" width="48" height="48"></canvas></div></div><p id="poseLabel">正面・待機</p></div></div>
+<div class="section"><h2>途中保存・ドラフト出力</h2><div class="row"><button id="exportManifest" class="primary">編集データJSON保存</button><label>JSONから復元<input id="importManifest" type="file" accept="application/json,.json"></label></div>
+<div class="row"><button id="exportIdle">待機PNG 192×192</button><button id="exportWalk">歩行PNG 288×192</button><button id="exportPreview">等倍PNG</button></div>
+<p>部品不足時のPNGは必ず -draft を付けます。ゲーム用正式素材への自動上書きはありません。</p><div id="status" class="status" role="status" aria-live="polite"></div></div>
+<p>制作順：カレンの顔・目・前後髪 → 全身シルエット → 4方向 → 待機/歩行 → 実ゲーム100%画面評価。合格前に他3人を量産しない。</p>
+</section>
+<section class="part-panel"><h2>身体レイヤー</h2><p>各方向に独立したPNGを保持。重なり順は入れ替え可能です。</p><div id="partList" class="part-list"></div>
+<div class="section"><div class="row"><button id="moveBack">奥へ移動</button><button id="moveFront">手前へ移動</button></div><p id="partMeta"></p></div>
+<p>カレン／トリトン／ソフィ／マーガレット。顔や装備を色替えで使い回さず、部品を個別制作します。</p></section>
+</main>
+<script src="../js/render/character_part_rig.js"></script><script>
+(()=>{
+'use strict';
+const R=window.GC?.CharacterPartRig, $=id=>document.getElementById(id);
+if(!R){$('status').textContent='character_part_rig.js の読み込みに失敗';return;}
+const dirs={down:'正面',left:'左',right:'右',up:'背面'};
+let m=R.newManifest(),active='head',direction='down',anim='idle',frame=0,brush='pencil',drag=false,timer=null,reference=null;
+const layers={},history=[];
+function blank(){const c=document.createElement('canvas');c.width=c.height=48;return c}
+function k(p,d){return p+'|'+d}
+function layer(p=active,d=direction){return layers[k(p,d)]||(layers[k(p,d)]=blank())}
+function ink(c){let p=c.getContext('2d',{willReadFrequently:true}).getImageData(0,0,48,48).data;for(let i=3;i<p.length;i+=4)if(p[i])return true;return false}
+function message(t,cls=''){let el=$('status');el.className='status '+cls;el.textContent=t}
+function snapshot(){history.push({key:k(active,direction),pixels:layer().getContext('2d').getImageData(0,0,48,48)});if(history.length>40)history.shift()}
+function setBrush(v){brush=v;for(const t of ['pencil','eraser','eyedropper'])$(t).classList.toggle('primary',t===v)}
+function images(d){const out={};for(const p of R.PARTS){const l=layers[k(p.id,d)];if(l&&ink(l))out[p.id]={[d]:l}}return out}
+function compose(ctx,{editor=false,d=direction,a=anim,f=frame}={}){
+ ctx.clearRect(0,0,48,48);ctx.imageSmoothingEnabled=false;const im=images(d);
+ for(const p of R.sortedParts(m,d)){const c=im[p.id]?.[d];if(!c)continue;
+  const o=R.frameOffset(p.id,a,f,d);ctx.globalAlpha=editor&&$('ghost').checked&&p.id!==active?.34:1;ctx.drawImage(c,o.x,o.y,48,48);
+ }ctx.globalAlpha=1
+}
+function drawGrid(ctx){ctx.save();ctx.strokeStyle='#ffffff44';ctx.lineWidth=.07;for(let x=1;x<48;x++){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,48);ctx.stroke();ctx.beginPath();ctx.moveTo(0,x);ctx.lineTo(48,x);ctx.stroke()}ctx.restore()}
+function refDraw(){const ctx=$('refCanvas').getContext('2d');ctx.clearRect(0,0,48,48);if(!reference)return;ctx.imageSmoothingEnabled=false;
+ if(reference.naturalWidth===48)ctx.drawImage(reference,0,0,48,48);
+ else ctx.drawImage(reference,0,R.DIRS.indexOf(direction)*48,48,48,0,0,48,48)}
+function render(){let e=$('editor').getContext('2d');compose(e,{editor:true,a:'idle',f:0});if($('grid').checked)drawGrid(e);
+ compose($('preview').getContext('2d'));compose($('native').getContext('2d'));
+ $('frameLabel').textContent=(frame+1)+' / '+R.ANIMATIONS[anim];$('poseLabel').textContent=dirs[direction]+'・'+(anim==='walk'?'歩行':'待機');
+ $('partMeta').textContent=active+' / '+dirs[direction]+' — 必須部品 '+R.REQUIRED.filter(p=>ink(layer(p,direction))).length+'/'+R.REQUIRED.length;
+ for(const b of document.querySelectorAll('[data-part]')){const p=b.dataset.part;b.classList.toggle('active',p===active);b.querySelector('.part-icon').textContent=ink(layer(p,direction))?'●':'○';b.querySelector('.part-order').textContent='z'+m.parts[p].z}
+ refDraw()
+}
+function paint(x,y){if(x<0||x>47||y<0||y>47)return;const c=layer().getContext('2d',{willReadFrequently:true});
+ if(brush==='eyedropper'){const rgba=c.getImageData(x,y,1,1).data;if(rgba[3]){$('paintColor').value='#'+[...rgba.slice(0,3)].map(v=>v.toString(16).padStart(2,'0')).join('');setBrush('pencil')}return}
+ if(brush==='eraser')c.clearRect(x,y,1,1);else{c.fillStyle=$('paintColor').value;c.fillRect(x,y,1,1)}render()
+}
+function xy(ev){const r=$('editor').getBoundingClientRect();return[Math.floor((ev.clientX-r.left)*48/r.width),Math.floor((ev.clientY-r.top)*48/r.height)]}
+function save(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+function sync(){m.id=$('characterId').value.trim();for(const p of R.PARTS){m.parts[p.id].directions={};for(const d of R.DIRS){const c=layers[k(p.id,d)];if(c&&ink(c))m.parts[p.id].directions[d]=c.toDataURL('image/png')}}return m}
+function missing(){const out=[];for(const d of R.DIRS)for(const p of R.REQUIRED)if(!ink(layer(p,d)))out.push(p+'/'+d);return out}
+function sheet(a){sync();const v=R.validateManifest(m);if(!v.ok){message(v.errors.join('\n'),'warning');return null}
+ const cols=R.ANIMATIONS[a],c=document.createElement('canvas');c.width=48*cols;c.height=192;const ctx=c.getContext('2d');ctx.imageSmoothingEnabled=false;
+ for(let row=0;row<4;row++){let d=R.DIRS[row],p=images(d);for(let f=0;f<cols;f++)R.drawFrame(ctx,m,p,d,a,f,f*48,row*48)}
+ return{c,missing:missing()}
+}
+function exportSheet(a){const result=sheet(a);if(!result)return;let draft=result.missing.length>0;result.c.toBlob(b=>{if(b)save(b,m.id+'_'+a+(draft?'-draft':'')+'.png')},'image/png');message(draft?'未完成部品 '+result.missing.length+' 件。ドラフトのみ出力。':'全方向の必須部位あり。実画面での視覚審査は未実施。',draft?'warning':'success')}
+function reorder(delta){const ar=R.sortedParts(m,direction),i=ar.findIndex(p=>p.id===active),j=i+delta;if(j<0||j>=ar.length)return;
+ const next=ar[j].id;let z=m.parts[active].z;m.parts[active].z=m.parts[next].z;m.parts[next].z=z;if(z===m.parts[active].z)m.parts[active].z+=delta*.1;render()}
+async function importJson(file){let data;try{data=JSON.parse(await file.text())}catch{message('JSONを読み込めません','warning');return}
+ const v=R.validateManifest(data);if(!v.ok){message(v.errors.join('\n'),'warning');return}
+ const loaded={},wait=[];for(const p of R.PARTS)for(const d of R.DIRS){let src=data.parts[p.id].directions[d];if(!src)continue;
+ wait.push(new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>{if(im.naturalWidth!==48||im.naturalHeight!==48){reject(Error('PNGサイズ不一致'));return}let c=blank();c.getContext('2d').drawImage(im,0,0);loaded[k(p.id,d)]=c;resolve()};im.onerror=()=>reject(Error('PNGデコード失敗'));im.src=src}))}
+ try{await Promise.all(wait)}catch(e){message(e.message,'warning');return}
+ for(const key of Object.keys(layers))delete layers[key];Object.assign(layers,loaded);m=data;$('characterId').value=m.id;history.length=0;render();message('方向・パーツを復元しました','success')}
+function list(){const host=$('partList');for(const p of R.PARTS){let b=document.createElement('button');b.className='part';b.dataset.part=p.id;
+ const mark=document.createElement('span');mark.className='part-icon';const name=document.createElement('span');name.className='part-name';name.textContent=p.label;const z=document.createElement('span');z.className='part-order';b.append(mark,name,z);b.onclick=()=>{active=p.id;render()};host.append(b)}}
+$('editor').addEventListener('pointerdown',ev=>{if(ev.button!==0)return;drag=true;$('editor').setPointerCapture(ev.pointerId);snapshot();paint(...xy(ev))});
+$('editor').addEventListener('pointermove',ev=>{if(drag)paint(...xy(ev))});
+for(const event of ['pointerup','pointercancel','lostpointercapture'])$('editor').addEventListener(event,()=>{drag=false});
+$('characterId').addEventListener('change',()=>{if(!/^[a-z0-9_-]{1,40}$/i.test($('characterId').value.trim())){$('characterId').value=m.id;message('キャラIDが不正','warning')}else m.id=$('characterId').value.trim()});
+$('direction').onchange=()=>{direction=$('direction').value;frame=0;render()};
+$('animation').onchange=()=>{anim=$('animation').value;frame=0;render()};
+$('prevFrame').onclick=()=>{frame=(frame+R.ANIMATIONS[anim]-1)%R.ANIMATIONS[anim];render()};
+$('nextFrame').onclick=()=>{frame=(frame+1)%R.ANIMATIONS[anim];render()};
+$('play').onclick=()=>{if(timer){clearInterval(timer);timer=null;$('play').textContent='▶ 再生'}else{timer=setInterval(()=>{frame=(frame+1)%R.ANIMATIONS[anim];render()},anim==='idle'?330:170);$('play').textContent='■ 停止'}};
+for(const id of ['pencil','eraser','eyedropper'])$(id).onclick=()=>setBrush(id);
+$('undo').onclick=()=>{let h=history.pop();if(!h){message('元に戻せる描画なし');return}let c=layers[h.key]||(layers[h.key]=blank());c.getContext('2d').putImageData(h.pixels,0,0);render()};
+$('clearPart').onclick=()=>{if(!confirm(active+' / '+dirs[direction]+' を消去しますか？'))return;snapshot();layer().getContext('2d').clearRect(0,0,48,48);render()};
+$('copyMirror').onclick=()=>{if(!['left','right'].includes(direction)){message('左右の方向のみ','warning');return}const target=direction==='left'?'right':'left';
+ if(ink(layer(active,target))&&!confirm('反対向きの部品を上書きしますか？'))return;let ctx=layer(active,target).getContext('2d');ctx.clearRect(0,0,48,48);ctx.save();ctx.translate(48,0);ctx.scale(-1,1);ctx.drawImage(layer(),0,0);ctx.restore();render();message('鏡像作成。顔と装備の左右差は手修正が必要。')};
+$('moveBack').onclick=()=>reorder(-1);$('moveFront').onclick=()=>reorder(1);
+$('grid').onchange=render;$('ghost').onchange=render;
+function loadPng(file,cb){const url=URL.createObjectURL(file),im=new Image();im.onload=()=>{try{cb(im)}finally{URL.revokeObjectURL(url)}};im.onerror=()=>{URL.revokeObjectURL(url);message('PNG読込失敗','warning')};im.src=url}
+$('referenceFile').onchange=ev=>{let f=ev.target.files?.[0];if(!f)return;loadPng(f,im=>{if(![[48,48],[192,192],[288,192]].some(([w,h])=>im.naturalWidth===w&&im.naturalHeight===h)){message('元絵のサイズ違い','warning');return}reference=im;render();message('元絵を非破壊で比較表示')})};
+$('layerFile').onchange=ev=>{let f=ev.target.files?.[0];if(!f)return;loadPng(f,im=>{if(im.naturalWidth!==48||im.naturalHeight!==48){message('部位PNGは48×48限定','warning');return}snapshot();let c=layer().getContext('2d');c.clearRect(0,0,48,48);c.drawImage(im,0,0);render();message('選択パーツのみ更新')})};
+$('exportManifest').onclick=()=>{sync();const v=R.validateManifest(m);if(!v.ok){message(v.errors.join('\n'),'warning');return}save(new Blob([JSON.stringify(m,null,2)],{type:'application/json'}),m.id+'_parts-draft.json');message('編集可能なJSONを保存しました','success')};
+$('importManifest').onchange=ev=>{const f=ev.target.files?.[0];if(f)importJson(f)};
+$('exportIdle').onclick=()=>exportSheet('idle');$('exportWalk').onclick=()=>exportSheet('walk');
+$('exportPreview').onclick=()=>{const c=blank();compose(c.getContext('2d'));c.toBlob(b=>{if(b)save(b,m.id+'_'+direction+'-draft.png')},'image/png')};
+window.addEventListener('keydown',ev=>{if(['INPUT','SELECT','TEXTAREA'].includes(document.activeElement?.tagName))return;
+ if((ev.ctrlKey||ev.metaKey)&&ev.key.toLowerCase()==='z'){ev.preventDefault();$('undo').click();return}
+ const t={b:'pencil',e:'eraser',i:'eyedropper'}[ev.key.toLowerCase()];if(t)setBrush(t)});
+window.__characterStudioTest={getManifest:()=>sync(),hasInk:(p,d)=>ink(layer(p,d)),
+ paint:(p,d,x,y,c)=>{active=p;direction=d;$('paintColor').value=c;setBrush('pencil');paint(x,y)},
+ dataForSheet:a=>{const o=sheet(a);return o?{png:o.c.toDataURL('image/png'),missing:o.missing,width:o.c.width,height:o.c.height}:null},
+ importJson,select:(p,d)=>{active=p;direction=d;$('direction').value=d;render()}};
+list();render();message('試作を開始できます。まずカレンの正面顔から描いてください。');
+})();
+</script></body></html>
