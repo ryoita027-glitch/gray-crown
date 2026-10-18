@@ -23,7 +23,7 @@
 
 ソース: `tools/3d/create_karen_prototype.py`、検査: `tools/3d/check_karen_glb.py`、Blender取り込み・編集基盤: `tools/3d/make_blender_editable.py`、WebGL2閲覧器: `tools/3d/karen_viewer.html` と `js/render/karen_3d_webgl.js`。
 
-- ローカル試作 `karen_stage_a_blockout.glb`: **80個の別メッシュ／約6,652頂点／12,984三角形／156,000 bytes**。
+- ローカル試作 `karen_stage_a_blockout.glb`: **80個の別メッシュ／約6,130頂点／11,940三角形／150,100 bytes**。
 - Python trimeshによるGLB再読込で必要な顔・左右眼球・鼻・髪束・服・右腰装備を検出。
 - Node.jsでWebGLビューアーのGLBパーサが80個のノードを読み取ることを確認。
 - **Blender本体はこの実行環境に未導入**。変形・保存・GLB再出力の実動作は未確認。
