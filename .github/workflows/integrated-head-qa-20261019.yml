@@ -1,0 +1,102 @@
+name: Gray Crown Single-HEAD Integrated Acceptance
+on:
+  push:
+    branches:
+      - qa/gray-crown-integrated-20261019
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: gray-crown-frozen-qa-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  runner-diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify runner allocated for exact SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'GITHUB_SHA=%s\nGITHUB_REF=%s\nRUN_ID=%s\nRUNNER=%s\n' "$GITHUB_SHA" "$GITHUB_REF" "$GITHUB_RUN_ID" "$RUNNER_NAME"
+          test -n "$RUNNER_NAME"
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Assert untouched integration HEAD
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+  integrated-acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-ci.txt
+      - name: Lock test evidence to exact HEAD
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p prototype_artifacts/integration_head_qa
+          git rev-parse HEAD | tee prototype_artifacts/integration_head_qa/HEAD.txt
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git status --porcelain | tee prototype_artifacts/integration_head_qa/status-before.txt
+      - name: Install unchanged CI dependencies
+        run: |
+          python -m pip install --disable-pip-version-check -r requirements-ci.txt
+          python -m playwright install --with-deps chromium
+      - name: Full existing tests, syntax, authority, browser regressions (no test weakening)
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run check 2>&1 | tee prototype_artifacts/integration_head_qa/npm-check.log
+      - name: Actual opening through boss and capital browser acceptance
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/browser_vertical_slice_e2e_test.py 2>&1 | tee prototype_artifacts/integration_head_qa/vertical-slice.log
+      - name: Existing hero / resident presentation and city visual evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run town:visual-acceptance 2>&1 | tee prototype_artifacts/integration_head_qa/town-visual.log
+      - name: Release packaging and file URL browser smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run release:checked 2>&1 | tee prototype_artifacts/integration_head_qa/package.log
+          npm run release:browser-e2e 2>&1 | tee prototype_artifacts/integration_head_qa/release-browser.log
+      - name: Full three-route automated regression (not 8-12 hour human acceptance)
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run three-route-browser-test 2>&1 | tee prototype_artifacts/integration_head_qa/three-route.log
+      - name: Preserve SHA256 for candidate artifacts
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p prototype_artifacts/integration_head_qa
+          find . -maxdepth 5 -type f \( -name '*.zip' -o -name '*standalone*.html' \) -not -path './.git/*' -print0 | sort -z | xargs -0 -r sha256sum > prototype_artifacts/integration_head_qa/package-sha256.txt
+          printf 'Expected SHA: %s\n' "$GITHUB_SHA" >> prototype_artifacts/integration_head_qa/HEAD.txt
+      - name: Archive complete run outputs even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gray-crown-integrated-exact-head-evidence
+          path: |
+            prototype_artifacts/integration_head_qa/
+            prototype_artifacts/vertical_slice_v1/
+            prototype_artifacts/pixel_vslice_acceptance_v1/
+            prototype_artifacts/town_visual_quality_v1/
+          if-no-files-found: warn
+          retention-days: 30
