@@ -57,6 +57,18 @@ def segment(name,a,b,r0,r1,mat,sides=10):
  m.apply_translation((a+b)/2)
  return put(name,m,mat)
 
+def panel(name,outline,mat,thickness=.04):
+ """Watertight planar workwear panel; individually editable."""
+ points=np.asarray(outline,dtype=float);n=len(points)
+ verts=np.vstack([points,points+np.array([0,thickness,0])])
+ faces=[]
+ for i in range(1,n-1):
+  faces.extend([[0,i,i+1],[n,n+i+1,n+i]])
+ for i in range(n):
+  j=(i+1)%n
+  faces.extend([[i,j,n+j],[i,n+j,n+i]])
+ return put(name,trimesh.Trimesh(vertices=verts,faces=faces,process=False),mat)
+
 def tube(name,points,radii,mat):
  for i,(a,b) in enumerate(zip(points[:-1],points[1:])):
   segment(f'{name}_segment{i+1}',a,b,radii[i],radii[i+1],mat,8)
@@ -71,11 +83,11 @@ for side,sgn in [('L',-1),('R',1)]:
  segment(f'body/trouser_cuff_{side}',(x,0,.48),(x,0,.61),.158,.158,'trousers_light',12)
 ellipsoid('body/hips',(0,.025,1.20),(.39,.265,.30),'trousers')
 ellipsoid('body/shirt_torso',(0,0,1.67),(.39,.27,.54),'shirt')
-ellipsoid('clothing/vest_back',(0,.22,1.76),(.37,.105,.47),'vest')
-ellipsoid('clothing/vest_front_L',(-.205,-.205,1.75),(.18,.115,.42),'vest')
-ellipsoid('clothing/vest_front_R',(.205,-.205,1.75),(.18,.115,.42),'vest')
-ellipsoid('clothing/vest_left_fold',(-.27,-.303,1.72),(.05,.036,.34),'vest_light',1)
-ellipsoid('clothing/vest_right_fold',(.27,-.303,1.72),(.05,.036,.34),'vest_light',1)
+panel('clothing/vest_back',[(-.34,.225,1.48),(-.33,.245,2.02),(-.19,.247,2.11),(.19,.247,2.11),(.33,.245,2.02),(.34,.225,1.48)],'vest',.035)
+panel('clothing/vest_front_L',[(-.345,-.19,1.49),(-.34,-.16,2.02),(-.20,-.28,2.08),(-.075,-.285,1.90),(-.082,-.315,1.49)],'vest',.025)
+panel('clothing/vest_front_R',[(.082,-.315,1.49),(.075,-.285,1.90),(.20,-.28,2.08),(.34,-.16,2.02),(.345,-.19,1.49)],'vest',.025)
+panel('clothing/vest_left_fold',[(-.090,-.316,1.49),(-.095,-.318,1.85),(-.066,-.30,1.92),(-.063,-.31,1.49)],'vest_light',.018)
+panel('clothing/vest_right_fold',[(.063,-.31,1.49),(.066,-.30,1.92),(.095,-.318,1.85),(.090,-.316,1.49)],'vest_light',.018)
 segment('clothing/belt',(-.39,-.05,1.37),(.39,-.05,1.37),.055,.055,'leather',12)
 ellipsoid('clothing/belt_buckle',(0,-.315,1.37),(.08,.029,.063),'metal',1)
 # A neutral scabbard stand-in only: sword design is NOT locked.
@@ -84,27 +96,27 @@ segment('equipment/right_hip_scabbard_binding',(.415,-.012,1.25),(.435,-.02,1.15
 ellipsoid('equipment/left_hip_small_pouch',(-.39,-.008,1.20),(.15,.13,.18),'leather_light',1)
 for side,sgn in [('L',-1),('R',1)]:
  x=sgn*.42
- ellipsoid(f'body/shoulder_{side}',(x,0,1.98),(.205,.21,.23),'shirt',1)
- segment(f'body/sleeve_{side}',(x,0,1.89),(sgn*.49,-.045,1.48),.165,.135,'shirt',12)
+ ellipsoid(f'body/shoulder_{side}',(x,0,1.98),(.166,.18,.19),'shirt',1)
+ segment(f'body/sleeve_{side}',(x,0,1.89),(sgn*.49,-.045,1.48),.135,.112,'shirt',12)
  ellipsoid(f'body/hand_{side}',(sgn*.505,-.08,1.38),(.11,.11,.155),'skin')
  segment(f'clothing/sleeve_cuff_{side}',(sgn*.48,-.04,1.49),(sgn*.50,-.06,1.54),.143,.151,'shirt_shadow',10)
 ellipsoid('body/neck',(0,0,2.22),(.14,.14,.21),'skin')
-ellipsoid('face/head_base',(0,-.02,2.74),(.50,.415,.575),'skin',3)
-ellipsoid('face/jaw_soft',(0,-.205,2.42),(.34,.22,.19),'skin')
+ellipsoid('face/head_base',(0,-.02,2.74),(.50,.415,.565),'skin',3)
+ellipsoid('face/jaw_soft',(0,-.205,2.42),(.30,.19,.145),'skin')
 for side,sgn in [('L',-1),('R',1)]:
  ellipsoid(f'face/ear_{side}',(sgn*.49,.02,2.73),(.13,.09,.19),'skin_light')
- ellipsoid(f'face/cheek_{side}',(sgn*.275,-.361,2.63),(.20,.055,.12),'skin_light')
- ellipsoid(f'face/eye_{side}/sclera',(sgn*.219,-.414,2.858),(.158,.056,.19),'eye_white')
- ellipsoid(f'face/eye_{side}/iris_placeholder',(sgn*.219,-.466,2.852),(.106,.021,.146),'iris_unapproved')
- ellipsoid(f'face/eye_{side}/pupil',(sgn*.218,-.489,2.85),(.065,.018,.118),'pupil')
- ellipsoid(f'face/eye_{side}/shine',(sgn*.183,-.505,2.905),(.035,.012,.047),'eye_white',1)
+ ellipsoid(f'face/cheek_{side}',(sgn*.275,-.361,2.63),(.136,.017,.064),'skin')
+ ellipsoid(f'face/eye_{side}/sclera',(sgn*.219,-.414,2.858),(.148,.036,.154),'eye_white')
+ ellipsoid(f'face/eye_{side}/iris_placeholder',(sgn*.219,-.466,2.852),(.094,.018,.124),'iris_unapproved')
+ ellipsoid(f'face/eye_{side}/pupil',(sgn*.218,-.489,2.85),(.055,.012,.099),'pupil')
+ ellipsoid(f'face/eye_{side}/shine',(sgn*.183,-.505,2.905),(.027,.010,.039),'eye_white',1)
  tube(f'face/eye_{side}/upper_lid',[(sgn*.375,-.43,2.948),(sgn*.22,-.476,3.050),(sgn*.078,-.419,2.955)],[.030,.036,.021],'hair_dark')
  tube(f'face/eye_{side}/lower_lid',[(sgn*.35,-.431,2.762),(sgn*.205,-.435,2.725),(sgn*.102,-.412,2.788)],[.016,.018,.010],'skin_shadow')
  tube(f'face/brow_{side}',[(sgn*.36,-.402,3.119),(sgn*.20,-.448,3.157),(sgn*.09,-.411,3.136)],[.028,.033,.018],'hair_dark')
  tube(f'face/lashes_{side}',[(sgn*.359,-.441,2.976),(sgn*.41,-.42,3.020),(sgn*.432,-.401,3.035)],[.021,.014,.003],'hair_dark')
-ellipsoid('face/nose_editable',(0,-.422,2.68),(.062,.066,.104),'skin_light')
-ellipsoid('face/mouth/lower_lip',(0,-.409,2.508),(.143,.026,.037),'lip')
-tube('face/mouth/upper_lip_curve',[(-.125,-.434,2.54),(0,-.450,2.517),(.125,-.434,2.54)],[.018,.020,.018],'mouth')
+ellipsoid('face/nose_editable',(0,-.422,2.68),(.034,.028,.048),'skin_light')
+ellipsoid('face/mouth/lower_lip',(0,-.409,2.508),(.103,.012,.022),'lip')
+tube('face/mouth/upper_lip_curve',[(-.125,-.434,2.54),(0,-.450,2.517),(.125,-.434,2.54)],[.009,.012,.009],'mouth')
 # Front fringe, back hair, side locks, partial low tie are separable.
 ellipsoid('hair/crown',(0,.102,3.123),(.527,.435,.328),'hair')
 ellipsoid('hair/back_upper',(0,.288,2.905),(.50,.257,.45),'hair_dark')
@@ -115,9 +127,9 @@ for side,sgn in [('L',-1),('R',1)]:
 tube('hair/fringe_centre',[(.03,-.31,3.36),(-.07,-.415,3.20),(-.09,-.43,3.08)],[.16,.115,.014],'hair')
 tube('hair/fringe_short_left',[(-.25,-.27,3.37),(-.36,-.37,3.21),(-.345,-.39,3.10)],[.14,.11,.012],'hair_light')
 tube('hair/fringe_long_right',[(.31,-.27,3.37),(.315,-.40,3.15),(.405,-.43,2.935)],[.16,.095,.013],'hair')
-ellipsoid('hair/low_partial_tie',(0,.480,2.617),(.23,.19,.18),'hair_dark')
+ellipsoid('hair/low_partial_tie',(0,.480,2.617),(.13,.105,.105),'hair_dark')
 segment('hair/low_tie_fabric',(-.205,.505,2.62),(.205,.505,2.62),.045,.045,'leather_light',10)
-ellipsoid('hair/low_tied_lock',(0,.54,2.36),(.20,.16,.30),'hair')
+ellipsoid('hair/low_tied_lock',(0,.54,2.36),(.165,.14,.255),'hair')
 
 if __name__=='__main__':
  dest=Path(sys.argv[1]) if len(sys.argv)>1 else Path('assets/3d/karen_stage_a_blockout.glb')
