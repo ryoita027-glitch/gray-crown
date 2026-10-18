@@ -6,7 +6,7 @@
 if(new URLSearchParams(location.search).get('gc3d')!=='1')return;
 let canvas=null,viewer=null,loaded=false,panel=null;
 const mark=msg=>{if(panel)panel.textContent=msg};
-const active=()=>loaded&&!!viewer&&typeof state!=='undefined'&&!!state&&!state.battle;
+const active=()=>loaded&&!!viewer&&typeof state!=='undefined'&&!!state&&!state.battle&&typeof ALPHA_SESSION!=='undefined'&&ALPHA_SESSION.started;
 function install(){
  if(!window.GrayCrown3D)return;
  const stage=document.querySelector('.game-stage'),topbar=document.querySelector('.top-actions');
@@ -22,6 +22,8 @@ function install(){
  panel=document.createElement('output');
  panel.style.cssText='position:absolute;right:4px;bottom:3px;z-index:7;background:rgba(0,0,0,.7);color:#eee;font:10px system-ui;pointer-events:none;max-width:40%';
  stage.appendChild(panel);mark('3D試作 OFF / GLB未選択');
+ const battlePanel=document.getElementById('battlePanel');
+ if(battlePanel)new MutationObserver(()=>{if(!active())canvas.style.display='none'}).observe(battlePanel,{attributes:true,attributeFilter:['class']});
  input.addEventListener('change',async e=>{
   const file=e.target.files?.[0];if(!file)return;
   if(file.size>5*1024*1024){mark('GLBが大きすぎます(上限5MB)');return}
