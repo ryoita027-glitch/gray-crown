@@ -34,7 +34,7 @@ test('featured NPC atlas matches the format actually expected by the live render
 test('field source crop and display scale are uniform on both axes',()=>{
  const world=text('js/render/world.js');
  assert.match(world,/HERO_RUNTIME=\{frameW:48,frameH:48,display:44,/);
- assert.match(world,/ctx\.drawImage\(rec\.image,frame\*48,row\*48,48,48,dx,dy,size,size\)/);
+ assert.match(world,/ctx\.drawImage\(GC\.HeroPhase1\?\.renderImage\?\.\(heroId,rec\.image\)\?\?rec\.image,frame\*48,row\*48,48,48,dx,dy,size,size\)/);
  assert.match(world,/ctx\.imageSmoothingEnabled=false/);
  assert.match(world,/footY=py\+30/);
 });
