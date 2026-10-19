@@ -80,3 +80,39 @@ test('palette preview disabled leaves other 3 character images untouched',()=>{
  const native={naturalWidth:288,naturalHeight:192};
  for(const hero of ['karen','triton','sophie'])assert.equal(api.renderImage(hero,native),native);
 });
+
+test('live image pilot caches a new canvas but does not overwrite original pixels',()=>{
+ const{api,scope}=load('?gcHeroStudy=1');
+ api.setNeutralHair(true);
+ const sourcePixels=new Uint8ClampedArray(288*192*4);
+ const idx=(6*288+10)*4;
+ sourcePixels.set([168,159,214,255],idx);
+ let created=0,updated=0;
+ const work={
+  drawImage(){},
+  getImageData(){return{data:new Uint8ClampedArray(sourcePixels)}},
+  putImageData(obj){updated++;assert.ok(obj.data[idx+2]<sourcePixels[idx+2]);}
+ };
+ scope.document.createElement=kind=>{
+  assert.equal(kind,'canvas');created++;
+  return{getContext:()=>work,width:0,height:0};
+ };
+ const original={naturalWidth:288,naturalHeight:192};
+ const preview=api.renderImage('margaret',original);
+ assert.notEqual(preview,original);
+ assert.equal(preview.width,288);assert.equal(preview.height,192);
+ assert.equal(api.renderImage('margaret',original),preview);
+ assert.equal(created,1);assert.equal(updated,1);
+ assert.deepEqual([...sourcePixels.slice(idx,idx+4)],[168,159,214,255]);
+ api.setNeutralHair(false);
+ assert.equal(api.renderImage('margaret',original),original);
+});
+test('tainted or invalid source does not crash the world renderer',()=>{
+ const{api,scope}=load('?gcHeroStudy=1');api.setNeutralHair(true);
+ assert.equal(api.renderImage('margaret',{naturalWidth:10,naturalHeight:10}).naturalWidth,10);
+ scope.document.createElement=()=>({getContext:()=>({
+  drawImage(){},getImageData(){throw new Error('SecurityError')}
+ })});
+ const src={naturalWidth:288,naturalHeight:192};
+ assert.equal(api.renderImage('margaret',src),src);
+});
