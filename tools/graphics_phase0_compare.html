@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gray Crown | Phase 0 4人同条件画像比較</title>
+<style>
+:root { color-scheme:dark; font-family:system-ui,"Yu Gothic",sans-serif; color:#f0eadb; background:#131820; }
+* { box-sizing:border-box }
+body { margin:0 auto; padding:18px; max-width:1170px }
+header { border-bottom:1px solid #576071; padding-bottom:12px }
+h1 { font-size:1.45rem; margin:0 0 8px }
+p { line-height:1.65; margin:8px 0 }
+.note { color:#b9bdc8; font-size:.9rem }
+.controls { display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin:18px 0 }
+label { display:flex; flex-direction:column; gap:4px; font-size:.84rem }
+select,input,button { font:inherit; background:#272f3d; color:#f4eee0; border:1px solid #828991; border-radius:5px; padding:8px; min-height:40px }
+button { cursor:pointer }
+.grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px }
+.card { padding:12px 5px 9px; border:1px solid #4a5464; background:#202735; text-align:center }
+.card h2 { font-size:1rem; margin:0 0 8px }
+.card canvas { display:block; margin:0 auto; width:100%; max-width:192px; height:auto; image-rendering:pixelated; }
+.card .result { color:#ccd4e2; font-size:.75rem; min-height:2.7em; line-height:1.5; overflow-wrap:anywhere }
+section { margin:20px 0 }
+#status { padding:10px; border:1px solid #556276; margin-top:12px; white-space:pre-wrap }
+#detail { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px }
+#detail canvas { width:192px; height:192px; image-rendering:pixelated; border:1px solid #576071 }
+@media(max-width:730px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}body{padding:10px}}
+@media(max-width:340px){.grid{grid-template-columns:1fr 1fr;gap:5px}.card{padding:6px 2px}}
+</style>
+</head>
+<body>
+<header>
+<h1>Gray Crown — Phase 0 / 主人公4人の同条件比較</h1>
+<p>リポジトリにある本物のPNGから直接切り出し、全員を同じ倍率・背景・接地位置で表示します。スクリーンショット撮影時は設定とコミットSHAも記録してください。</p>
+<p class="note">これは単体素材の検査器であり、ゲーム本編のレンダリングやプレイヤーによる品質評価の代替ではありません。元PNG、戦闘、セーブ、ゲームデータは一切変更しません。</p>
+</header>
+<div class="controls">
+<label>方向<select id="dir"><option value="0">正面（下）</option><option value="1">左</option><option value="2">右</option><option value="3">背面（上）</option></select></label>
+<label>動作<select id="mode"><option value="idle">待機</option><option value="walk">歩行</option></select></label>
+<label>比較倍率<select id="size"><option value="44" selected>フィールド 44px</option><option value="48">元画像 48px</option><option value="60">スマホ戦闘 60px</option><option value="64">中画面戦闘 64px</option><option value="72">PC戦闘 72px</option></select></label>
+<label>背景<select id="bg"><option value="village">村に近い草地色（診断用）</option><option value="cave">古砦に近い暗色（診断用）</option><option value="neutral">無彩色</option></select></label>
+<label>コマ番号<input id="frame" type="range" min="0" max="3" step="1" value="0"></label>
+<button type="button" id="toggle">歩行コマを再生</button>
+</div>
+<section>
+<div class="grid" id="grid"></div>
+<div id="status" role="status" aria-live="polite">読込中...</div>
+</section>
+<section>
+<h2>元画像を4倍で見る（補助表示）</h2>
+<p class="note">拡大画像での美しさだけでは合格にしません。上段の通常倍率で判断してください。</p>
+<div id="detail"></div>
+</section>
+<script>
+'use strict';
+(function(){
+ const PEOPLE=[['karen','カレン'],['triton','トリトン'],['sophie','ソフィ'],['margaret','マーガレット']];
+ const $=id=>document.getElementById(id);
+ const images={},errors=[];
+ let playing=false,timer=null;
+ function checkedImage(id,mode){
+  return new Promise(resolve=>{
+   const img=new Image();
+   const wantedWidth=(mode==='idle'?192:288);
+   img.onload=()=>{
+    if(img.naturalWidth!==wantedWidth||img.naturalHeight!==192){errors.push(id+'/'+mode+': PNG寸法不一致 '+img.naturalWidth+'x'+img.naturalHeight);resolve(null);return}
+    resolve(img);
+   };
+   img.onerror=()=>{errors.push(id+'/'+mode+': 画像読込失敗');resolve(null)};
+   img.src='../assets/characters/'+id+'/'+id+'_'+mode+'.png';
+  });
+ }
+ const grid=$('grid');
+ for(const [id,label] of PEOPLE){
+  const card=document.createElement('article');card.className='card';
+  const h=document.createElement('h2');h.textContent=label;
+  const canvas=document.createElement('canvas');canvas.width=192;canvas.height=144;canvas.dataset.hero=id;
+  const info=document.createElement('p');info.className='result';info.id='result-'+id;
+  card.append(h,canvas,info);grid.append(card);
+  const detail=document.createElement('canvas');detail.width=192;detail.height=192;detail.dataset.hero=id;detail.setAttribute('aria-label',label+' 4倍補助表示');$('detail').append(detail);
+ }
+ function paint(canvas,id,zoom){
+  const ctx=canvas.getContext('2d');if(!ctx)return;
+  const mode=$('mode').value,dir=Number($('dir').value),frame=Number($('frame').value),size=Number($('size').value),bg=$('bg').value;
+  const img=images[id]&&images[id][mode];
+  ctx.imageSmoothingEnabled=false;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle=bg==='village'?'#667657':bg==='cave'?'#383a40':'#56565b';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  if(zoom){
+   if(img){ctx.drawImage(img,frame*48,dir*48,48,48,0,0,192,192)}
+   return;
+  }
+  const footX=canvas.width/2,footY=105;
+  ctx.strokeStyle='rgba(238,231,194,.42)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(10,footY);ctx.lineTo(canvas.width-10,footY);ctx.stroke();
+  ctx.fillStyle='rgba(13,15,18,.27)';ctx.beginPath();ctx.ellipse(footX,footY-1,Math.round(size*10/44),Math.round(size*4/44),0,0,Math.PI*2);ctx.fill();
+  if(img){
+   // Match source crop and uniform destination size used in js/render/world.js.
+   const dx=Math.round(footX-size*.5),dy=Math.round(footY-size*44/48);
+   ctx.drawImage(img,frame*48,dir*48,48,48,dx,dy,size,size);
+  }
+  ctx.font='12px system-ui';ctx.fillStyle='#f1eee6';ctx.fillText(size+'px',9,18);
+ }
+ function render(){
+  const mode=$('mode').value,frameLimit=mode==='idle'?3:5;
+  $('frame').max=String(frameLimit);
+  if(Number($('frame').value)>frameLimit)$('frame').value=String(frameLimit);
+  for(const [id] of PEOPLE){
+   const src=images[id]&&images[id][mode];
+   const info=$('result-'+id);info.textContent=src?(mode+' '+src.naturalWidth+'x'+src.naturalHeight+' / 48pxセル'):'素材未読込';
+   const canvas=grid.querySelector('canvas[data-hero="'+id+'"]');
+   const detail=$('detail').querySelector('canvas[data-hero="'+id+'"]');
+   paint(canvas,id,false);paint(detail,id,true);
+  }
+  $('status').textContent=errors.length?'読込異常: '+errors.join(' / '):'待機・歩行8枚を検証：読込成功、PNG寸法一致。実ゲームの描画検証は別途必要です。';
+ }
+ for(const node of document.querySelectorAll('select,input'))node.addEventListener('input',render);
+ $('toggle').addEventListener('click',()=>{
+  playing=!playing;$('toggle').textContent=playing?'再生を止める':'歩行コマを再生';
+  if(timer){clearInterval(timer);timer=null}
+  if(playing){$('mode').value='walk';timer=setInterval(()=>{$('frame').value=String((Number($('frame').value)+1)%6);render()},170)}
+  render();
+ });
+ Promise.all(PEOPLE.map(async([id])=>{
+  const [idle,walk]=await Promise.all([checkedImage(id,'idle'),checkedImage(id,'walk')]);
+  images[id]={idle,walk};
+ })).then(render);
+})();
+</script>
+</body>
+</html>
