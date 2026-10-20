@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gray Crown Phase 1B — カレンの顔・髪 A/B</title>
+<style>
+:root{color-scheme:dark;font:14px/1.55 system-ui,"Yu Gothic",sans-serif;color:#ebe6d8;background:#141a22}
+*{box-sizing:border-box}body{max-width:1050px;padding:15px;margin:auto}h1{font-size:1.4rem}h2{font-size:1.07rem}p{margin:8px 0}
+.note{color:#c0bdaf}.warn{border-left:3px solid #b9a15e;padding:9px;background:#272c33}
+.controls{display:flex;flex-wrap:wrap;gap:12px;margin:14px 0}.controls label{display:grid;gap:5px}select{font:inherit;padding:9px 12px;border-radius:5px;background:#303844;color:#fff;min-height:42px}
+.panels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.panel{background:#212934;border:1px solid #525b68;padding:9px;border-radius:6px;min-width:0}
+.panel h3{font-size:.94rem;margin:0 0 8px}.panel canvas{width:100%;max-width:320px;height:auto;image-rendering:pixelated;display:block;margin:0 auto}
+#partyOriginal,#partyCandidate{max-width:320px}
+.pixels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.pixels figure{margin:0;background:#222b35;border:1px solid #515965;padding:8px;text-align:center;min-width:0}
+.pixels canvas{display:block;width:100%;max-width:144px;height:auto;image-rendering:pixelated;margin:auto}
+.pixels figcaption{font-size:.8rem;margin-top:5px}
+#status{padding:9px;border:1px solid #6b7680;margin-top:15px;white-space:pre-wrap}
+@media(max-width:620px){.panels{grid-template-columns:1fr}.pixels{grid-template-columns:repeat(2,minmax(0,1fr))}body{padding:9px}}
+</style></head><body>
+<header><h1>Phase 1B：カレン顔・前髪の実素材比較（Draft）</h1>
+<p class="warn">使用画像はGitHub内の元PNGと部位別PNGそのものです。ここでの草地色は比較用の簡易背景であり、実際のゲーム画面ではありません。修正候補は前髪の6画素のみ。正式デザインの承認や商用品質を意味しません。</p></header>
+<div class="controls"><label>方向<select id="dir"><option value="0">正面</option><option value="1">左</option><option value="2">右</option><option value="3">背面</option></select></label>
+<label>表示倍率<select id="size"><option value="44" selected>フィールド旧値 44px</option><option value="48">元画像の48px</option></select></label></div>
+<h2>カレン単体 — 左が元画像、右が編集候補</h2>
+<div class="panels">
+<div class="panel"><h3>元画像から切り出した姿</h3><canvas id="old" width="256" height="144"></canvas></div>
+<div class="panel"><h3>前髪6画素の試作</h3><canvas id="new" width="256" height="144"></canvas></div></div>
+<h2>4人の同条件比較</h2>
+<div class="panels">
+<div class="panel"><h3>元版の4人</h3><canvas id="partyOriginal" width="320" height="140"></canvas></div>
+<div class="panel"><h3>候補版の4人（カレンのみ試作）</h3><canvas id="partyCandidate" width="320" height="140"></canvas></div></div>
+<h2>独立レイヤーの実物（4倍表示）</h2>
+<p class="note">下の6パーツは独立PNGです。合成すると元絵の有効画素をすべて復元します。正面の前髪候補は最後のパーツ欄に並べています。</p>
+<div id="parts" class="pixels"></div>
+<div id="status" role="status">PNG読み込み中…</div>
+<script>
+'use strict';
+(()=>{const $=id=>document.getElementById(id),names=['hairBack','body','head','eyes','mouth','hairFront'],labels=['後ろ髪','既存胴体の保持層','頭部・肌','目・まぶた','口・鼻','前髪'];
+const urls={
+ base:'../assets/character_parts/karen_face_phase1b/karen_pixel_exact_reference_4dir.png',
+ candidate:'../assets/character_parts/karen_face_phase1b/karen_fringe_readability_candidate_4dir.png'
+};
+for(const part of names)urls[part]='../assets/character_parts/karen_face_phase1b/karen_'+part+'_4dir.png';
+for(const hero of ['karen','triton','sophie','margaret'])urls['hero_'+hero]='../assets/characters/'+hero+'/'+hero+'_idle.png';
+const assets={},issues=[];
+const parts=$('parts');
+for(const [index,name] of names.entries()){let fig=document.createElement('figure'),cv=document.createElement('canvas');cv.width=192;cv.height=192;cv.dataset.part=name;let fc=document.createElement('figcaption');fc.textContent=labels[index];fig.append(cv,fc);parts.append(fig)}
+function getImage(key,url){return new Promise(resolve=>{const im=new Image();im.onload=()=>{let expectedW=key.startsWith('hero_')?192:48,expectedH=192;if(im.naturalWidth!==expectedW||im.naturalHeight!==expectedH)issues.push(key+': PNG寸法が違います');else assets[key]=im;resolve()};im.onerror=()=>{issues.push(key+': PNGを読み込めません');resolve()};im.src=url})}
+function background(ctx,w,h){ctx.clearRect(0,0,w,h);ctx.fillStyle='#697751';ctx.fillRect(0,0,w,h);ctx.fillStyle='#71664b';ctx.fillRect(0,95,w,12);ctx.fillStyle='#536249';for(let x=6;x<w;x+=23){ctx.fillRect(x,88+(x%9),9,1);ctx.fillRect(x+4,105+(x%11),7,1)}}
+function drawSprite(ctx,im,d,x,foot,size,full){if(!im)return;ctx.imageSmoothingEnabled=false;const sy=d*48,dx=Math.round(x-size/2),dy=Math.round(foot-size*44/48);ctx.drawImage(im,0,sy,48,48,dx,dy,size,size)}
+function scene(target,key){const cv=$(target),ctx=cv.getContext('2d');background(ctx,cv.width,cv.height);drawSprite(ctx,assets[key],Number($('dir').value),cv.width/2,94,Number($('size').value));ctx.fillStyle='#fff';ctx.font='12px sans-serif';ctx.fillText($('size').value+'px',8,19)}
+function party(target,useCandidate){const cv=$(target),ctx=cv.getContext('2d');background(ctx,cv.width,cv.height);const d=Number($('dir').value),size=Number($('size').value);
+ const ids=['karen','triton','sophie','margaret'];for(let i=0;i<4;i++){let im=i===0?assets[useCandidate?'candidate':'base']:assets['hero_'+ids[i]],x=42+i*79;drawSprite(ctx,im,d,x,98,size);ctx.font='11px sans-serif';ctx.fillStyle='#fff';ctx.fillText(['Karen','Triton','Sophie','Margaret'][i],x-28,128)}}
+function redraw(){scene('old','base');scene('new','candidate');party('partyOriginal',false);party('partyCandidate',true);
+for(const cv of parts.querySelectorAll('canvas')){const ctx=cv.getContext('2d'),im=assets[cv.dataset.part];ctx.clearRect(0,0,cv.width,cv.height);if(im){ctx.imageSmoothingEnabled=false;ctx.drawImage(im,0,Number($('dir').value)*48,48,48,0,0,192,192)}}
+$('status').textContent=issues.length?'確認が必要:　'+issues.join(' / '):'PNG '+Object.keys(urls).length+'枚の読み込みと寸法が正常。ここから先の顔の魅力の評価は人間の判断が必要です。'}
+$('dir').addEventListener('input',redraw);$('size').addEventListener('input',redraw);
+Promise.all(Object.entries(urls).map(([k,v])=>getImage(k,v))).then(redraw);
+})();
+</script></body></html>
