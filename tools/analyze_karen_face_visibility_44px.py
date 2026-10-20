@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from pathlib import Path
 from PIL import Image
 
@@ -33,11 +34,11 @@ def sampled_frame(image: Image.Image, direction: int):
     """Pixels keyed by (x,y), local y from -8 to 43 (top 8px is crown room)."""
     result = {}
     for dy in range(-8, SIZE):
-        sy = int((dy + .5) * W / SIZE) + PAD
+        sy = math.floor((dy + .5) * W / SIZE) + PAD
         if sy < 0 or sy >= H:
             continue
         for dx in range(SIZE):
-            sx = int((dx + .5) * W / SIZE)
+            sx = math.floor((dx + .5) * W / SIZE)
             result[(dx, dy)] = image.getpixel((sx, direction * H + sy))
     return result
 
