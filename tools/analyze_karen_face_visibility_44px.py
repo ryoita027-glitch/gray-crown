@@ -13,6 +13,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import subprocess
 from pathlib import Path
 from PIL import Image
 
@@ -94,6 +95,11 @@ def render_contact(sprites, background="grass"):
     return canvas
 
 def main():
+    head = subprocess.check_output(
+        ["git", "rev-parse", "--verify", "HEAD"], cwd=ROOT, text=True
+    ).strip()
+    if len(head) != 40 or not all(c in "0123456789abcdef" for c in head):
+        raise AssertionError("Quality evidence requires an exact Git HEAD")
     sprites, stats = compute()
     reference = [
         stats["A_eyes"][d]["total"] for d in DIRECTIONS
@@ -109,7 +115,7 @@ def main():
     report = {
         "measurement": "source PNG nearest-neighbour 44px screen-footprint audit",
         "source": "GitHub-checkout PNGs, not in-game screenshots",
-        "commit": "Record exact git rev-parse HEAD at runtime",
+        "commit": head,
         "direction_order": list(DIRECTIONS),
         "original_binary_sha256": sprites["original"]["sha256"],
         "candidate_sha256": {k: v["sha256"] for k,v in sprites.items()},
