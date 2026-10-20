@@ -14,7 +14,7 @@ function drawHeroSpriteSheet(x,y,heroId,leader,facing,motion){
  if(rec?.ready&&rec.image){
   const size=GC.HeroPhase1?.size?.()??HERO_RUNTIME.display,scale=size/HERO_RUNTIME.frameW,dx=Math.round(footX-HERO_RUNTIME.anchor[0]*scale),dy=Math.round(footY-HERO_RUNTIME.anchor[1]*scale);
   ctx.save();ctx.fillStyle='rgba(16,18,18,.28)';ctx.beginPath();ctx.ellipse(footX,footY-1,10,4,0,0,Math.PI*2);ctx.fill();ctx.imageSmoothingEnabled=false;
-  const pilot=GC.KarenFacePilot?.idleImage?.(heroId,motion);if(pilot)ctx.drawImage(pilot,0,row*48,48,48,dx,dy,size,size);else ctx.drawImage(GC.HeroPhase1?.renderImage?.(heroId,rec.image)??rec.image,frame*48,row*48,48,48,dx,dy,size,size);ctx.restore();
+  const extended=GC.KarenFaceVariants?.idleSprite?.(heroId,motion);const pilot=GC.KarenFacePilot?.idleImage?.(heroId,motion);if(extended)ctx.drawImage(extended.image,0,row*56,48,56,dx,dy-8*scale,size,56*scale);else if(pilot)ctx.drawImage(pilot,0,row*48,48,48,dx,dy,size,size);else ctx.drawImage(GC.HeroPhase1?.renderImage?.(heroId,rec.image)??rec.image,frame*48,row*48,48,48,dx,dy,size,size);ctx.restore();
   if(leader)drawHeroMarker(footX,dy);return true
  }
  const cfg=HERO_SPRITES;if(!cfg.ready||!cfg.image||cfg.characters[heroId]===undefined)return false;
