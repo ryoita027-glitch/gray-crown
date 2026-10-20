@@ -16,10 +16,16 @@
   const images={};
   let selected='original';
   function redraw(){root?.GC?.Render?.World?.draw?.()}
+  function refreshPanel(){
+    const label=root?.document?.getElementById?.('gcKarenVariantsStatus');
+    if(!label)return;
+    if(selected==='original')label.textContent='元画像：比較基準';
+    else label.textContent=images[selected]?.ready?'候補表示：待機中だけ（歩行は元画像）':images[selected]?.error?'画像が使えないため元画像を表示':'画像読込中：元画像を表示';
+  }
   function choose(name){
     if(!requested)return 'original';
     if(!names.includes(name))throw new Error('Unknown Karen face variant');
-    if(selected!==name){selected=name;redraw()}
+    if(selected!==name){selected=name;redraw();refreshPanel()}
     return selected;
   }
   function idleSprite(id,motion){
@@ -39,9 +45,9 @@
     const img=new Image();record.image=img;
     img.onload=()=>{
       record.ready=img.naturalWidth===48&&img.naturalHeight===224;
-      record.error=!record.ready;redraw();
+      record.error=!record.ready;redraw();refreshPanel();
     };
-    img.onerror=()=>{record.ready=false;record.error=true;redraw()};
+    img.onerror=()=>{record.ready=false;record.error=true;redraw();refreshPanel()};
     img.src=prefix+files[key];
   }
   function buildPanel(){
@@ -57,14 +63,10 @@
       const opt=root.document.createElement('option');opt.value=name;opt.textContent=title;input.append(opt);
     }
     input.value='original';
-    input.addEventListener('change',()=>{choose(input.value);refresh()});
+    input.addEventListener('change',()=>choose(input.value));
     label.append(input);panel.append(label);
     const status=root.document.createElement('div');status.id='gcKarenVariantsStatus';status.style.fontSize='11px';panel.append(status);
-    function refresh(){
-      if(selected==='original'){status.textContent='元画像：比較基準';return}
-      status.textContent=images[selected]?.ready?'候補表示：待機中だけ（歩行は元画像）':images[selected]?.error?'画像が使えないため元画像を表示':'画像読込中：元画像を表示';
-    }
-    refresh();panel.dataset.testOnly='true';root.document.body.append(panel);
+    refreshPanel();panel.dataset.testOnly='true';root.document.body.append(panel);
   }
   if(root.document){
     if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',buildPanel,{once:true});
