@@ -87,6 +87,24 @@ def main():
     for name,image in layers.items():
         image.save(args.out/f'karen_{name}_4dir.png',optimize=True)
     reconstruction.save(args.out/'karen_pixel_exact_original_pose_4dir.png',optimize=True)
+    # One frontal fringe micro-study: six authored RED hair pixels only.
+    # Independent hairFront layer and four-direction composite are kept in sync.
+    # The rest of the face, 3 other directions and all original sheets are untouched.
+    edits = {
+        (24,13):(168,55,51), (25,13):(171,57,53),
+        (23,14):(195,77,66), (24,14):(184,66,60),
+        (25,14):(186,68,60), (24,15):(180,65,57),
+    }
+    face_candidate = reconstruction.copy()
+    hair_candidate = layers['hairFront'].copy()
+    for pos,rgb in edits.items():
+        orig_rgba=hair_candidate.getpixel(pos)
+        assert orig_rgba[3]>120,('Not a frontal hair pixel',pos)
+        changed=(*rgb,orig_rgba[3])
+        hair_candidate.putpixel(pos,changed)
+        face_candidate.putpixel(pos,changed)
+    face_candidate.save(args.out/'karen_fringe_readability_candidate_4dir.png',optimize=True)
+    hair_candidate.save(args.out/'karen_hairFront_fringe_candidate_4dir.png',optimize=True)
     counts={name:sum(p[3]>0 for p in image.getdata()) for name,image in layers.items()}
     assert all(count>0 for count in counts.values()),counts
     print('PHASE1B SOURCE-FAITHFUL PARTS PASS: 4 dirs / 6 layers / exact visible pixels',counts)
