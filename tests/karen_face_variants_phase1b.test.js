@@ -117,3 +117,43 @@ test('real field renderer uses proportional 48x56 crop with identical 44px feet 
  assert.match(checker,/karen_B_crown_space_48x56_4dir\.png/);
  assert.match(checker,/karen_C_balanced_48x56_4dir\.png/);
 });
+
+
+test('44px actual image-only visibility impact stays documented and is NOT an art pass',()=>{
+ const names=['eyes','crown','balanced'];
+ const directions=['down','left','right','up'];
+ const expected={
+   eyes:[19,0,0,0],
+   crown:[16,4,8,6],
+   balanced:[33,4,8,6]
+ };
+ function at(im,d,x,y){
+   const i=((d*56+y)*48+x)*4;
+   return im.rgba.subarray(i,i+4);
+ }
+ for(const name of names){
+   const rows=[];
+   for(let d=0;d<4;d++){
+     let changed=0,bodyChange=0;
+     for(let dy=-8;dy<44;dy++){
+       const sy=Math.floor((dy+.5)*48/44)+8;
+       if(sy<0||sy>=56)continue;
+       for(let dx=0;dx<44;dx++){
+         const sx=Math.floor((dx+.5)*48/44);
+         const before=at(ref,d,sx,sy);
+         const after=at(candidates[name],d,sx,sy);
+         if(before.some((v,i)=>v!==after[i])){
+           changed++;
+           if(dy>=26)bodyChange++;
+         }
+       }
+     }
+     rows.push(changed);
+     assert.equal(bodyChange,0,name+' must not change body or foot shape');
+   }
+   assert.deepEqual(rows,expected[name],
+     'candidate art changed; repeat human-scale comparison and approve a new baseline');
+   assert.ok(Math.max(...rows)<34,
+     'these low-impact variants must never automatically be called improved art');
+ }
+});
