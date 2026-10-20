@@ -12,6 +12,9 @@ Additional expression/beauty retouch is a separate approval step.
 """
 from __future__ import annotations
 import argparse
+import base64
+import io
+import json
 from pathlib import Path
 from PIL import Image
 
@@ -66,9 +69,10 @@ def extract(source):
             for x in range(48):
                 rgba=original.getpixel((x,y))
                 part=classify(x,y,rgba,direction)
-                if part is None:
-                    continue
                 pos=(x,y+48*dir_index)
+                if part is None:
+                    rebuilt.putpixel(pos,rgba)
+                    continue
                 layers[part].putpixel(pos,rgba)
                 rebuilt.putpixel(pos,rgba)
                 if sum(layers[p].getpixel(pos)[3]>0 for p in PARTS)!=1:
@@ -105,6 +109,28 @@ def main():
         face_candidate.putpixel(pos,changed)
     face_candidate.save(args.out/'karen_fringe_readability_candidate_4dir.png',optimize=True)
     hair_candidate.save(args.out/'karen_hairFront_fringe_candidate_4dir.png',optimize=True)
+    # Importable into the existing 16-layer off-line editor, but marked
+    # INCOMPLETE: legFar/legNear have NOT been authored independently.
+    canonical = {
+        'hairBack':10,'cape':20,'legFar':30,'legNear':40,'boots':45,
+        'armFar':50,'body':60,'neck':65,'head':70,'eyes':75,'mouth':76,
+        'hairFront':80,'armNear':90,'hands':91,'accessory':100,'weapon':110
+    }
+    manifest = {
+        'format':'gray-crown-layered-character','version':1,'id':'karen',
+        'cell':48,'parts':{key:{'z':z,'directions':{}} for key,z in canonical.items()}
+    }
+    individual=args.out/'editable_48px'
+    individual.mkdir(parents=True,exist_ok=True)
+    for name,image in layers.items():
+        for row,direction in enumerate(DIRECTIONS):
+            frame=image.crop((0,row*48,48,(row+1)*48))
+            frame.save(individual/f'karen_{name}_{direction}.png',optimize=True)
+            buf=io.BytesIO()
+            frame.save(buf,format='PNG',optimize=True)
+            manifest['parts'][name]['directions'][direction]='data:image/png;base64,'+base64.b64encode(buf.getvalue()).decode('ascii')
+    (args.out/'karen_face_only_INCOMPLETE_draft.json').write_text(
+        json.dumps(manifest,ensure_ascii=False,indent=2),encoding='utf-8')
     counts={name:sum(p[3]>0 for p in image.getdata()) for name,image in layers.items()}
     assert all(count>0 for count in counts.values()),counts
     print('PHASE1B SOURCE-FAITHFUL PARTS PASS: 4 dirs / 6 layers / exact visible pixels',counts)
