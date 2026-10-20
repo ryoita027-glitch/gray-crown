@@ -1,0 +1,44 @@
+{
+  "status": "DRAFT_NOT_APPROVED",
+  "source": "assets/character_parts/karen_face_phase1b/karen_pixel_exact_reference_4dir.png",
+  "originalSourceBlob": "782785fd504a4baba92be4ff099a827dd1ecac81",
+  "cell": [
+    48,
+    56
+  ],
+  "sourceCell": [
+    48,
+    48
+  ],
+  "topPadding": 8,
+  "directions": [
+    "down",
+    "left",
+    "right",
+    "up"
+  ],
+  "displayWidth": 44,
+  "variants": {
+    "reference": {
+      "filename": "karen_reference_padded_48x56_4dir.png",
+      "changed": 0,
+      "addedHairPixels": 0
+    },
+    "eyes": {
+      "filename": "karen_A_eye_clarity_48x56_4dir.png",
+      "changed": 22,
+      "addedHairPixels": 0
+    },
+    "crown": {
+      "filename": "karen_B_crown_space_48x56_4dir.png",
+      "changed": 34,
+      "addedHairPixels": 28
+    },
+    "balanced": {
+      "filename": "karen_C_balanced_48x56_4dir.png",
+      "changed": 54,
+      "addedHairPixels": 28
+    }
+  },
+  "artAccepted": false
+}
