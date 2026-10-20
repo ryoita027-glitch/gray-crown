@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gray Crown Phase 1B カレンの顔候補4案比較</title>
+<style>
+:root{color-scheme:dark;font:14px/1.6 system-ui,"Yu Gothic",sans-serif;background:#111822;color:#eee5d5}
+*{box-sizing:border-box}body{max-width:1120px;padding:15px;margin:auto}
+h1{font-size:1.42rem}h2{font-size:1.06rem;margin-top:25px}
+p{margin:9px 0}.warning{padding:10px;border-left:3px solid #b49f72;background:#252b35}
+.controls{display:flex;flex-wrap:wrap;gap:12px;padding:14px 0}
+label{display:flex;flex-direction:column;gap:5px}select{padding:9px;color:#fff;background:#303945;border:1px solid #8d938e;font:inherit;min-height:43px}
+.cardGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.card{border:1px solid #546173;background:#252b35;padding:8px;min-width:0}
+.card h3{font-size:.92rem;line-height:1.35;margin:0 0 8px;min-height:2.5em}
+.card canvas{display:block;width:100%;max-width:190px;height:auto;margin:auto;image-rendering:pixelated}
+.note{font-size:.83rem;color:#c8c8c5}.comparisons{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.comparisons figure{margin:0;padding:8px;background:#252b35;border:1px solid #546173}
+.comparisons canvas{display:block;width:100%;max-width:480px;height:auto;image-rendering:pixelated}
+.comparisons figcaption{font-size:.85rem;color:#dfdfdc}
+#status{border:1px solid #687583;padding:9px;margin-top:12px;white-space:pre-wrap}
+@media(max-width:770px){.cardGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.comparisons{grid-template-columns:1fr}}
+@media(max-width:340px){body{padding:7px}.cardGrid{gap:4px}.card{padding:4px}}
+</style></head><body>
+<header><h1>カレンの顔を作り直すためのA/B/C比較</h1>
+<p class="warning">実際のGitHub PNGを使用。A/B/Cはすべて未承認の候補。下の「村」は比較用の単純な地面色で、ゲーム本編の実際のマップではありません。元画像と同じ足元・同じ横幅で比較します。拡大像だけで採用しません。</p></header>
+<div class="controls">
+<label>方向<select id="dir"><option value="0">正面</option><option value="1">左</option><option value="2">右</option><option value="3">後ろ</option></select></label>
+<label>実寸比較<select id="size"><option value="44" selected>フィールド44px</option><option value="48">原寸48px</option></select></label>
+<label>背景色<select id="bg"><option value="grass">村の草地（簡易）</option><option value="stone">古砦の石畳（簡易）</option><option value="plain">無彩色</option></select></label>
+</div>
+<h2>同じ位置・同じ尺度で4案を比較</h2>
+<div class="cardGrid" id="grid"></div>
+<h2>4人を並べた際の違和感を比較</h2>
+<div class="comparisons" id="party"></div>
+<h2>顔だけを4倍拡大（形の確認用）</h2>
+<div class="cardGrid" id="zoom"></div>
+<p class="note">評価順は、44pxで見分けられるか → ほかの3人と並んで魅力が増すか → 4方向で破綻しないか → 拡大した画素の品質、です。頭身の統一や戦闘用画像の合格とは別。</p>
+<div id="status" role="status">元PNGと候補を読み込み中…</div>
+<script>
+'use strict';
+(()=>{
+ const $=id=>document.getElementById(id);
+ const base='../assets/character_parts/karen_face_phase1b/variants/';
+ const options=[
+  ['reference','旧版（基準）','../assets/character_parts/karen_face_phase1b/karen_pixel_exact_reference_4dir.png',48],
+  ['eyes','A：目・前髪',base+'karen_A_eye_clarity_48x56_4dir.png',56],
+  ['crown','B：頭頂の余白',base+'karen_B_crown_space_48x56_4dir.png',56],
+  ['balanced','C：目元と頭頂',base+'karen_C_balanced_48x56_4dir.png',56]
+ ];
+ const hero=['karen','triton','sophie','margaret'];
+ const images={},errors=[];
+ function canvas(w,h){const el=document.createElement('canvas');el.width=w;el.height=h;return el}
+ for(const [key,title] of options){
+   const card=document.createElement('article');card.className='card';
+   const heading=document.createElement('h3');heading.textContent=title;
+   const cv=canvas(160,144);cv.dataset.key=key;card.append(heading,cv);$('grid').append(card);
+   const zcard=document.createElement('article');zcard.className='card';
+   const hd=document.createElement('h3');hd.textContent=title;
+   const z=canvas(192,192);z.dataset.zoomKey=key;zcard.append(hd,z);$('zoom').append(zcard);
+   const p=document.createElement('figure'),pc=canvas(400,140);
+   pc.dataset.partyKey=key;const fig=document.createElement('figcaption');fig.textContent=title;
+   p.append(pc,fig);$('party').append(p);
+ }
+ function load(key,url,width,height){return new Promise(resolve=>{
+  const im=new Image();im.onload=()=>{if(im.naturalWidth!==width||im.naturalHeight!==height)errors.push(key+':寸法不一致');else images[key]=im;resolve()};
+  im.onerror=()=>{errors.push(key+':読込失敗');resolve()};im.src=url;
+ })}
+ function paintBG(ctx,w,h){
+  const type=$('bg').value;ctx.clearRect(0,0,w,h);
+  ctx.fillStyle=type==='grass'?'#647654':type==='stone'?'#454953':'#64656b';ctx.fillRect(0,0,w,h);
+  ctx.fillStyle=type==='grass'?'#7a7156':type==='stone'?'#61626b':'#74767b';ctx.fillRect(0,94,w,9);
+ }
+ function paint(ctx,image,h,d,x,foot,size){
+  if(!image)return;const s=size/48,dy=Math.round(foot-44*s)-(h===56?8*s:0);
+  ctx.imageSmoothingEnabled=false;ctx.drawImage(image,0,d*h,48,h,Math.round(x-size/2),dy,size,h*s);
+ }
+ function render(){
+  const d=Number($('dir').value),size=Number($('size').value);
+  for(const [key,, ,height] of options){
+   const cv=document.querySelector('canvas[data-key="'+key+'"]'),ctx=cv.getContext('2d');
+   paintBG(ctx,cv.width,cv.height);paint(ctx,images[key],height,d,80,94,size);
+   const z=document.querySelector('canvas[data-zoom-key="'+key+'"]'),zc=z.getContext('2d');
+   zc.clearRect(0,0,z.width,z.height);zc.imageSmoothingEnabled=false;
+   if(images[key])zc.drawImage(images[key],0,d*height,48,height,0,0,192,192*height/48);
+   const pc=document.querySelector('canvas[data-party-key="'+key+'"]'),pcx=pc.getContext('2d');
+   paintBG(pcx,pc.width,pc.height);
+   for(let i=0;i<4;i++){let im=i===0?images[key]:images['hero_'+hero[i]],h=i===0?height:48;
+     paint(pcx,im,h,d,48+i*99,97,size);
+     pcx.fillStyle='#f6eee0';pcx.font='11px sans-serif';pcx.fillText(['Karen','Triton','Sophie','Margaret'][i],15+i*99,129);
+   }
+  }
+  $('status').textContent=errors.length?'一部画像の読込異常：'+errors.join(' / '):
+   'すべての元PNGと候補を読込済み。実ゲームの画面・操作・美術審査は別途確認が必要です。';
+ }
+ for(const key of ['dir','size','bg'])$(key).addEventListener('change',render);
+ Promise.all([
+ ...options.map(([k,,file,h])=>load(k,file,48,h*4)),
+ ...hero.slice(1).map(k=>load('hero_'+k,'../assets/characters/'+k+'/'+k+'_idle.png',192,192))
+ ]).then(render);
+})();
+</script></body></html>
