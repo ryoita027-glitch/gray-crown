@@ -247,7 +247,19 @@ def save_via_menu(page,label):
  return stored
 
 def reload_continue(page,label):
+ # A real reload discards window.__verticalPerf; retain the previous segment
+ # and re-establish browser-frame sampling on the newly loaded page.
+ segment=page.evaluate("""() => {const p=window.__verticalPerf;return p?{
+  frames:p.frames,slowFrames:p.slowFrames,maxGapMs:Math.round(p.maxGapMs)}:null}""")
+ check(segment is not None,'frame sampler missing before reload '+label)
+ STATS.setdefault('frame_segments',[]).append({'checkpoint':label,**segment})
  page.reload(wait_until='networkidle')
+ page.evaluate("""() => {
+   const m=window.__verticalPerf={frames:0,slowFrames:0,maxGapMs:0,prev:0};
+   const tick=t=>{if(m.prev){let dt=t-m.prev;m.frames++;if(dt>45)m.slowFrames++;
+    m.maxGapMs=Math.max(m.maxGapMs,dt)}m.prev=t;requestAnimationFrame(tick)};
+   requestAnimationFrame(tick)
+ }""")
  check(page.locator('#titleContinue').is_enabled(),'Continue missing on '+label)
  page.locator('#titleContinue').click()
  clean_dialogue(page)
