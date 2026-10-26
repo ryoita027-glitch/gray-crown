@@ -200,6 +200,14 @@ def walk_to(page,targets,name,limit=170,stop_on_boss=False):
  raise AssertionError('route too long: '+name)
 
 def face_and_interact(page,target,id):
+ # Once opened, a chest stops blocking movement. Repeat with the existing facing.
+ if id in ('chest1','chest2') and snapshot(page)['treasures'].get(id):
+  st=snapshot(page);dx,dy=target[0]-st['x'],target[1]-st['y']
+  look={(0,-1):'up',(0,1):'down',(-1,0):'left',(1,0):'right'}
+  check(abs(dx)+abs(dy)==1 and st['dir']==look.get((dx,dy)),
+        'opened chest not directly in front for repeat interaction: '+id)
+  page.keyboard.press('Enter');page.wait_for_timeout(100)
+  return
  tx,ty=target
  spots={(tx-dx,ty-dy):(key) for dx,dy,key in DIRECTIONS}
  # facing key from player cell -> target: each direction vector leads to target
@@ -224,10 +232,11 @@ def save_via_menu(page,label):
  process_interruptions(page)
  page.keyboard.press('m');page.wait_for_timeout(90)
  check(page.locator('#modal').is_visible(),'menu not accessible at '+label)
- # Existing game menu is read-only; actual Save is the top-right #btnSave.
- page.locator('#modalClose').click()
- check(not page.locator('#modal').is_visible(),'menu failed to close at '+label)
- page.locator('#btnSave').click()
+ # Save is inside the visible adventure menu. Topbar #btnSave is intentionally hidden.
+ save_button=page.locator('#modalContent .menu-actions button').filter(has_text='セーブ')
+ check(save_button.count()==1,'visible adventure-menu Save missing at '+label)
+ save_button.click()
+ check(not page.locator('#modal').is_visible(),'Save did not close the menu at '+label)
  clean_dialogue(page)
  raw=page.evaluate("localStorage.getItem("+json.dumps(SAVE_KEY)+")")
  check(raw,'no persisted save at '+label)
@@ -330,6 +339,11 @@ def play(page,url):
   check(snapshot(page)['inventory']==first['inventory'],'duplicate treasure '+obj)
  # Two combat-guarded mechanisms must be activated through normal input.
  for obj in ('leverWest','leverEast'):
+  if obj=='leverEast' and 'crawler' not in snapshot(page)['defeated']:
+   # Approach the guarding crawler through normal walking and battle UI.
+   walk_to(page,[(19,6)],'east-lever guardian route')
+   process_interruptions(page)
+   check('crawler' in snapshot(page)['defeated'],'eastern guardian not defeated')
   target=page.evaluate("(id)=>{let o=maps.cave.objects.find(o=>o.id===id);return [o.x,o.y]}",obj)
   face_and_interact(page,target,obj)
   process_interruptions(page)
