@@ -125,6 +125,33 @@ def main() -> int:
         report["seconds_elapsed"] = round(time.monotonic() - started, 2)
         (out / "results.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
 
+    def verify_source_integrity(stage: str) -> bool:
+        """Prevent an expected commit SHA from masking local tracked/untracked edits."""
+        if not git:
+            report["source_integrity_" + stage] = "BLOCKED: git is unavailable"
+            write_report()
+            return False
+        head = subprocess.run([git, "rev-parse", "--verify", "HEAD"], cwd=ROOT,
+                              capture_output=True, text=True, check=False)
+        state = subprocess.run([git, "status", "--porcelain", "--untracked-files=normal"],
+                               cwd=ROOT, capture_output=True, text=True, check=False)
+        clean = (head.returncode == 0 and state.returncode == 0 and
+                 head.stdout.strip() == report["head_sha"] and not state.stdout.strip())
+        if args.expect_head:
+            clean = clean and head.stdout.strip() == args.expect_head.lower().strip()
+        report["source_integrity_" + stage] = "CLEAN" if clean else "FAIL"
+        if not clean:
+            report["source_integrity_error_" + stage] = {
+                "checkout_head": head.stdout.strip(),
+                "expected_head": report["head_sha"],
+                "git_status": state.stdout[:4000],
+                "stderr": (head.stderr + state.stderr)[:2000],
+            }
+            print("Source integrity failed at " + stage +
+                  ": wrong HEAD or modified/untracked files", file=sys.stderr)
+        write_report()
+        return clean
+
     worktree = None
     try:
         if git:
@@ -150,6 +177,9 @@ def main() -> int:
             print("Full acceptance requires --expect-head SHA (do not mix builds).",
                   file=sys.stderr)
             return 2
+        if args.mode == "full" or args.expect_head:
+            if not verify_source_integrity("before"):
+                return 2
         if args.install:
             if not run("pinned-python-dependencies", ["python", "-m", "pip", "install", "-r", "requirements-ci.txt"]):
                 return 1
@@ -210,6 +240,9 @@ def main() -> int:
             if not run("real-main-v23-save-migration-backup", [
                   "python", "tests/browser_phase0_remaining_e2e_test.py"], environment=env):
                 return 1
+        if args.mode == "full" or args.expect_head:
+            if not verify_source_integrity("after"):
+                return 2
         report["verdict"] = "PASS"
         print("\nAll requested local tests PASSED. This is not an artistic approval.")
         return 0
