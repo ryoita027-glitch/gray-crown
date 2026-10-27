@@ -426,7 +426,30 @@ def play(page,url):
  # North cave gate -> northroad -> capital: actual canonical Story 04/05.
  walk_to(page,[(11,1),(12,1)],'fort northern exit')
  cross_north_boundary(page,'northroad','fort northern exit')
- check(snapshot(page)['map']=='northroad','boss-to-old-road transition failed')
+ # PR #97: Story 04 must advance on the real cave exit, not only during load migration.
+ on_exit=snapshot(page)
+ check(on_exit['map']=='northroad','boss-to-old-road transition failed')
+ check(on_exit['story']=='04_capital_approach',
+       'cave exit did not advance Story 04 immediately')
+ check(on_exit['objective']=='王国軍の斥候に話を聞く',
+       'cave exit lost the original scout objective')
+ check(on_exit['defeated'] and 'boss' in on_exit['defeated'],
+       'cave exit lost the defeated boss marker')
+ checkpoint(page,'Story 04 immediately after cave exit')
+ northroad_save=save_via_menu(page,'northroad Story 04')
+ check(northroad_save['map']=='northroad' and
+       northroad_save['story']['stage']=='04_capital_approach',
+       'northroad save did not persist Story 04')
+ reload_continue(page,'northroad Story 04')
+ after_continue=snapshot(page)
+ check(after_continue['map']=='northroad' and
+       after_continue['story']=='04_capital_approach',
+       'northroad Continue changed Story 04')
+ check(after_continue['objective']==on_exit['objective'],
+       'northroad Continue lost the cave-route scout objective')
+ check('boss' in after_continue['defeated'],
+       'northroad Continue lost the defeated boss marker')
+ checkpoint(page,'Story 04 after Continue')
  shot(page,'12_northroad')
  walk_to(page,[(11,1),(12,1)],'northroad capital direction')
  cross_north_boundary(page,'capital','northroad capital direction')
