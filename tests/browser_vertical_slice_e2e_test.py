@@ -29,10 +29,13 @@ def source_head():
  try:
   sha=subprocess.check_output(['git','rev-parse','--verify','HEAD'],cwd=ROOT,
     stderr=subprocess.DEVNULL,text=True).strip()
+  dirty=subprocess.check_output(['git','status','--porcelain','--untracked-files=normal'],
+    cwd=ROOT,stderr=subprocess.DEVNULL,text=True).strip()
  except (OSError,subprocess.CalledProcessError) as exc:
   raise AssertionError('Actual browser quality evidence requires a Git checkout') from exc
  check(len(sha)==40 and all(x in '0123456789abcdef' for x in sha),
   'Invalid tested Git commit id: '+repr(sha))
+ check(not dirty,'Refusing browser PASS from modified/untracked source: '+dirty[:400])
  return sha
 
 class Quiet(http.server.SimpleHTTPRequestHandler):
@@ -458,10 +461,24 @@ def play(page,url):
  shot(page,'13_capital')
  checkpoint(page,'canonical capital transition')
  STATS['play_seconds']=round(time.perf_counter()-start,1)
- STATS['frame_samples']=page.evaluate("""() => ({
+ # Count every real rendered segment, including those before Save/Continue reloads.
+ # The previous summary silently dropped all pre-reload frames.
+ final_segment=page.evaluate("""() => ({
    frames:window.__verticalPerf.frames,slowFrames:window.__verticalPerf.slowFrames,
    maxGapMs:Math.round(window.__verticalPerf.maxGapMs)
  })""")
+ segments=[*STATS.get('frame_segments',[]),{'checkpoint':'capital',**final_segment}]
+ check(all(s['frames']>=0 and 0<=s['slowFrames']<=s['frames'] and
+           s['maxGapMs']>=0 for s in segments),
+       'invalid browser frame sampler values')
+ STATS['frame_segments']=segments
+ STATS['frame_samples']={
+   'frames':sum(s['frames'] for s in segments),
+   'slowFrames':sum(s['slowFrames'] for s in segments),
+   'maxGapMs':max(s['maxGapMs'] for s in segments),
+   'segments':len(segments),
+ }
+ check(STATS['frame_samples']['frames']>0,'no rendered browser frames recorded')
  STATS['completed_events_count']=len(snapshot(page)['completed'])
 
 def main():
