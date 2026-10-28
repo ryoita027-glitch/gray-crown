@@ -24,7 +24,14 @@ function drawHeroSpriteSheet(x,y,heroId,leader,facing,motion){
 function heroRuntimeStatus(){const out={};for(const id of Object.keys(HERO_SPRITES.characters)){const rec=HERO_RUNTIME.images[id];out[id]={ready:!!rec?.ready,error:!!rec?.error,naturalWidth:rec?.image?.naturalWidth||0,naturalHeight:rec?.image?.naturalHeight||0}}return out}
 function tileAt(mapId,x,y){const m=maps[mapId];if(!m||x<0||y<0||x>=COLS||y>=ROWS)return'S';return m.tiles[y][x]}
 function objectCleared(id){if(TREASURE_DEFS[id]&&state.world.treasures[id])return true;return (id==='wolf'&&isDefeated('wolf'))||(id==='bandit'&&isDefeated('bandit'))||(id==='bats'&&isDefeated('bats'))||(id==='crawler'&&isDefeated('crawler'))||(id==='boss'&&isDefeated('boss'))||(id==='scavengerWolves'&&isDefeated('scavengerWolves'))||(id==='chest1'&&state.world.treasures.chest1)||(id==='chest2'&&state.world.treasures.chest2)||(id==='innerGate'&&getWorldSwitch('leverWest')&&getWorldSwitch('leverEast'))||((id==='imperialPatrol'&&isDefeated('imperialPatrol'))||((['fortGate','fortGateRight'].includes(id)&&getWorldSwitch('fortGateOpen'))||(['ashCache','frontierCache','empireCache','imperialCache','yukiCache','elsiaCache'].includes(id)&&state.world.treasures[id])))}
-function npcVisible(n){if(n.showWhen&&!structuredCondition(n.showWhen))return false;if(n.hideWhen&&structuredCondition(n.hideWhen))return false;return true}
+// Visibility checks during save recovery must use the SAVED world, not a
+// different adventure still held in memory. Normal rendering uses state.
+function npcVisible(n,worldState=state){
+ const condition=name=>!!getPath(worldState,legacyFlagPath(name));
+ if(n.showWhen&&!condition(n.showWhen))return false;
+ if(n.hideWhen&&condition(n.hideWhen))return false;
+ return true
+}
 function isBlocked(x,y){
  if(OpeningWorldLife.blocks(state.map,x,y))return true;
  const t=tileAt(state.map,x,y);if(['T','H','S','W','R','K','Z'].includes(t))return true;
