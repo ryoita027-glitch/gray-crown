@@ -38,7 +38,9 @@ function nearestSafeTile(mapId,x,y,saveState=state){
  x=Math.max(0,Math.min(COLS-1,Math.floor(x)));
  y=Math.max(0,Math.min(ROWS-1,Math.floor(y)));
  if(!blockedTile(x,y))return[x,y];
- for(let r=1;r<12;r++)for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){
+ // Search every map tile before falling back: a distant walkable tile is
+ // safer than returning a hard-coded position that might itself be blocked.
+ for(let r=1;r<Math.max(COLS,ROWS);r++)for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){
   if(Math.abs(dx)!==r&&Math.abs(dy)!==r)continue;
   const xx=x+dx,yy=y+dy;
   if(xx>=0&&yy>=0&&xx<COLS&&yy<ROWS&&!blockedTile(xx,yy))return[xx,yy]
