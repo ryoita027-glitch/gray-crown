@@ -28,7 +28,7 @@ function nearestSafeTile(mapId,x,y,saveState=state){
  const blockedTile=(xx,yy)=>{
   const t=tileAt(mapId,xx,yy);
   if(['T','H','S','W','R','K','Z'].includes(t))return true;
-  if(m.npcs.some(n=>n.x===xx&&n.y===yy))return true;
+  if(m.npcs.some(n=>npcVisible(n,saveState)&&n.x===xx&&n.y===yy))return true;
   if(m.objects.some(o=>o.x===xx&&o.y===yy&&!passThrough.has(o.id)&&!cleared(o)))return true;
   return false
  };
