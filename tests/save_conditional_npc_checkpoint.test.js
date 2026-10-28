@@ -42,3 +42,28 @@ test('NPC showWhen gates and ordinary NPC collisions remain intact',()=>{
  assert.notDeepEqual([...save.nearestSafeTile('capital',8,5,saved)],[8,5],
   'permanent NPCs must still block their tiles');
 });
+
+test('loading a checkpoint on authored capital stalls moves to a genuinely walkable tile',()=>{
+ const h=createHarness(),save=h.GC.Save;
+ h.evaluate("ALPHA_SESSION.started=true;state.map='capital';state.world.visited.capital=true");
+ for(const [x,y] of [[3,7],[7,7],[17,8]]){
+  h.evaluate(`state.x=${x};state.y=${y}`);
+  assert.equal(h.evaluate(`OpeningWorldLife.blocks('capital',${x},${y})`),true);
+  assert.equal(h.evaluate(`isBlocked(${x},${y})`),true,
+   'live movement treats the market stall as solid');
+  assert.notDeepEqual([...save.nearestSafeTile('capital',x,y,h.GC.State.get())],[x,y],
+   'save recovery must not choose an occupied scenery tile');
+  assert.equal(save.save(true),true);
+  h.GC.State.reset();
+  assert.equal(save.load(true),true);
+  const restored=h.GC.State.get();
+  assert.notDeepEqual([restored.x,restored.y],[x,y],
+   'loading a legacy checkpoint must move the player off the stall');
+  assert.equal(h.evaluate('isBlocked(state.x,state.y)'),false,
+   'the recovered position must be walkable by the actual movement rules');
+ }
+ h.evaluate("state.map='capital';state.x=11;state.y=13");
+ assert.equal(h.evaluate('isBlocked(11,13)'),false);
+ assert.deepEqual([...save.nearestSafeTile('capital',11,13,h.GC.State.get())],[11,13],
+  'valid checkpoints must not drift during loading');
+});
