@@ -58,7 +58,7 @@ def snapshot(page):
   encounterSteps:s.encounterSteps,completed:Object.keys(s.events.completed).filter(k=>s.events.completed[k]),
   defeated:Object.keys(s.world.defeatedSymbols).filter(k=>s.world.defeatedSymbols[k]),
   switches:{...s.world.switches},treasures:{...s.world.treasures},
-  inventory:{...s.inventory},hp:s.party.map(p=>p.hp),mp:s.party.map(p=>p.mp),
+  inventory:{...s.inventory},gold:s.gold,hp:s.party.map(p=>p.hp),mp:s.party.map(p=>p.mp),
   objective:s.story.objective,trail:s.trail
  }}""")
 
@@ -233,6 +233,7 @@ def face_and_interact(page,target,id):
 
 def save_via_menu(page,label):
  process_interruptions(page)
+ before=snapshot(page)
  page.keyboard.press('m');page.wait_for_timeout(90)
  check(page.locator('#modal').is_visible(),'menu not accessible at '+label)
  # Save is inside the visible adventure menu. Topbar #btnSave is intentionally hidden.
@@ -245,11 +246,22 @@ def save_via_menu(page,label):
  check(raw,'no persisted save at '+label)
  stored=json.loads(raw)
  check(stored['schema']==23,'save schema changed')
+ # A successful menu click must write the state the player actually sees,
+ # not a stale or silently truncated checkpoint.
+ for key in ('map','x','y','dir','inventory','gold'):
+  check(stored[key]==before[key],f'Save changed {key} at {label}')
+ check(stored['story']['stage']==before['story'] and
+       stored['story']['objective']==before['objective'],
+       'Save lost story stage/objective at '+label)
+ check([p['hp'] for p in stored['party']]==before['hp'] and
+       [p['mp'] for p in stored['party']]==before['mp'],
+       'Save lost party HP/MP at '+label)
  STATS['checkpoints'].append({'name':'save '+label,'state':{'map':stored['map'],'stage':stored['story']['stage'],
        'defeated':stored['world']['defeatedSymbols'],'treasures':stored['world']['treasures']}})
  return stored
 
 def reload_continue(page,label):
+ before=snapshot(page)
  # A real reload discards window.__verticalPerf; retain the previous segment
  # and re-establish browser-frame sampling on the newly loaded page.
  segment=page.evaluate("""() => {const p=window.__verticalPerf;return p?{
@@ -267,6 +279,16 @@ def reload_continue(page,label):
  page.locator('#titleContinue').click()
  clean_dialogue(page)
  check(snapshot(page)['schema']==23,'Continue schema mismatch')
+ # Every Continue in this real-input route must preserve the player's
+ # checkpoint, resources and world flags, not merely load the right map.
+ after=snapshot(page)
+ for key in ('map','x','y','dir','story','objective','inventory','gold',
+             'hp','mp','switches','treasures'):
+  check(after[key]==before[key],
+        f'Save/Continue changed {key} at {label}: {before[key]!r} -> {after[key]!r}')
+ for key in ('defeated','completed'):
+  check(set(after[key])==set(before[key]),
+        f'Save/Continue changed {key} at {label}: {before[key]!r} -> {after[key]!r}')
 
 def cross_north_boundary(page,expected,name,max_press=3):
  """Use original keyboard movement; different maps transition at y==0/y<0."""
@@ -511,6 +533,7 @@ def main():
      check(not errors,'uncaught JS exceptions '+str(errors[:6]))
      page.close()
     finally:browser.close()
+  check(source_head()==STATS['tested_commit'],'source HEAD changed during browser test')
   STATS['status']='PASS';print('VERTICAL SLICE FULL NORMAL PLAY PASS: '+json.dumps({'seconds':STATS['play_seconds'],'battles':len(STATS['battles']),'steps':STATS['steps']},ensure_ascii=False))
  except Exception as e:
   STATS['status']='FAIL';STATS['failure']=str(e)
