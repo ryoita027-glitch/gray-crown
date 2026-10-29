@@ -27,21 +27,23 @@ button,a.action{cursor:pointer;text-decoration:none}button:hover,a.action:hover{
 <label>向き<select id="direction"><option value="down">正面</option><option value="left">左</option><option value="right">右</option><option value="up">背面</option></select></label>
 <label>倍率<select id="zoom"><option value="1" selected>1倍・実寸</option><option value="2">2倍</option><option value="4">4倍・画素確認</option></select></label>
 <button id="save">比較画像PNGを書き出す</button>
-<a class="action" href="../index.html?gcFieldWorkerArt=1">ゲーム内で候補を試す</a>
+<a class="action" href="../index.html?gcFieldWorkerArt=1">ゲーム内でv1を試す</a>
+<a class="action" href="../index.html?gcFieldWorkerArt=2">ゲーム内でv2を試す</a>
 <a class="action" href="../index.html">通常版で遊ぶ</a>
 </div>
 <p id="status">画像読み込み中…</p>
 <div id="gallery"></div>
 <div class="notes">
-<p>左2人が今回の比較対象です。村長・王国使者はV5原画、主人公4人は現在のIdle原画の第1コマを表示します。主人公のゲーム内歩行アニメーションとは異なるため、このページだけでゲーム全体の合否は判断しません。</p>
-<p>試作は畑の手伝い人1人・4方向の待機姿だけです。歩行・作業動作は未制作であり、正式採用しません。通常版の画像・進行・セーブは変更せず、試験URLでのみフィールド表示を差し替えます。画像が読めない場合は従来表示へ戻ります。</p>
+<p>左3人が今回の比較対象です。村長・王国使者はV5原画、主人公4人は現在のIdle原画の第1コマを表示します。主人公のゲーム内歩行アニメーションとは異なるため、このページだけでゲーム全体の合否は判断しません。</p>
+<p>候補v2は顔の陰影・帽子・袖・ベスト・革帯・靴の面を方向別に描き直した未承認の別PNGです。元候補v1は保存したまま、同条件で比較します。試作は畑の手伝い人1人・4方向の待機姿だけです。歩行・作業動作は未制作であり、正式採用しません。通常版の画像・進行・セーブは変更せず、試験URLでのみフィールド表示を差し替えます。画像が読めない場合は従来表示へ戻ります。</p>
 </div>
 <script src="../js/render/opening_pixel_assets.js"></script>
 <script>
 'use strict';
 const ids=[
  {id:'old',title:'畑の手伝い人',sub:'現行32px',kind:'old'},
- {id:'new',title:'畑の手伝い人',sub:'試作44px・4方向',kind:'new'},
+ {id:'new',title:'畑の手伝い人',sub:'候補v1・44px',kind:'new'},
+ {id:'new2',title:'畑の手伝い人',sub:'候補v2・布と顔の面構造',kind:'new2'},
  {id:'mayor',title:'村長',sub:'基準V5・44px',kind:'anchor',index:3},
  {id:'messenger',title:'王国使者',sub:'基準V5・44px',kind:'anchor',index:4},
  {id:'karen',title:'カレン',sub:'現行Idle・44px',kind:'hero'},
@@ -56,13 +58,14 @@ function load(src){return new Promise(resolve=>{
 })}
 async function init(){
  const sources={new:'../assets/npc/field_worker_style_study_48x192.png',
+  new2:'../assets/npc/field_worker_style_study_v2_48x192.png',
   atlas:'../assets/npc/featured_residents_charm_v5.png'};
  for(const id of ['karen','triton','sophie','margaret'])
   sources[id]='../assets/characters/'+id+'/'+id+'_idle.png';
  await Promise.all(Object.keys(sources).map(async id=>{images[id]=await load(sources[id])}));
  for(const item of ids){
   const card=document.createElement('section');
-  card.className='unit '+(item.kind==='anchor'?'anchor':item.kind==='new'?'study':'');
+  card.className='unit '+(item.kind==='anchor'?'anchor':(item.kind==='new'||item.kind==='new2')?'study':'');
   const canvas=document.createElement('canvas');canvas.setAttribute('aria-label',item.title+' '+item.sub);
   const name=document.createElement('strong');name.textContent=item.title;
   const detail=document.createElement('small');detail.textContent=item.sub;
@@ -86,8 +89,8 @@ function paint(ctx,item,dir,cx,foot){
  ctx.fillStyle='#928769';ctx.fillRect(0,foot+1,72,1);
  ctx.fillStyle='#b9aa8b';ctx.fillRect(0,foot+2,72,12);
  if(item.kind==='old')return fallback(ctx,dir,cx,foot);
- if(item.kind==='new'){
-  const img=images.new;if(!img)return false;
+ if(item.kind==='new'||item.kind==='new2'){
+  const img=images[item.kind==='new2'?'new2':'new'];if(!img)return false;
   ctx.fillStyle='rgba(16,18,18,.25)';ctx.beginPath();ctx.ellipse(cx,foot-1,9,3,0,0,Math.PI*2);ctx.fill();
   ctx.drawImage(img,0,dirs[dir]*48,48,48,cx-22,foot-44,44,44);return true
  }
@@ -110,15 +113,16 @@ function redraw(){
   const ctx=c.getContext('2d');ctx.imageSmoothingEnabled=false;ctx.scale(zoom,zoom);
   if(!paint(ctx,item,dir,36,58))failed.push(item.title);
  }
- status.textContent=failed.length?'読み込み失敗: '+failed.join('、'):'全8種類を同一方向・同一足元で表示中。';
+ status.textContent=failed.length?'読み込み失敗: '+failed.join('、'):'全9種類を同一方向・同一足元で表示中。';
 }
 function exportImage(){
  const zoom=4,dir=document.getElementById('direction').value;
- const c=document.createElement('canvas');c.width=72*zoom*4;c.height=(72*zoom+28)*2;
+ const cols=3,rows=Math.ceil(ids.length/cols);
+ const c=document.createElement('canvas');c.width=72*zoom*cols;c.height=(72*zoom+28)*rows;
  const ctx=c.getContext('2d');ctx.fillStyle='#20252a';ctx.fillRect(0,0,c.width,c.height);
  ctx.textAlign='center';ctx.font='14px sans-serif';ctx.fillStyle='#eee';
  ids.forEach((item,i)=>{
-  const x=(i%4)*72*zoom,y=Math.floor(i/4)*(72*zoom+28);
+  const x=(i%cols)*72*zoom,y=Math.floor(i/cols)*(72*zoom+28);
   ctx.save();ctx.translate(x,y);ctx.scale(zoom,zoom);paint(ctx,item,dir,36,58);ctx.restore();
   ctx.fillStyle='#eee';ctx.fillText(item.title,x+72*zoom/2,y+72*zoom+17)
  });

@@ -213,7 +213,8 @@ const OpeningPixelAssets=(()=>{
   artVersion:useLegacyArt?'classic-v1':'concept-charm-v5'}}
  // Field worker V5-style art study: isolated, opt-in, never a default asset swap.
  // Four independently authored 48px directional views; no idle/walk claims.
- const fieldWorkerStudyEnabled=typeof window!=='undefined'&&/(?:^|[?&])gcFieldWorkerArt=1(?:&|$)/.test(window.location.search||'');
+ const fieldWorkerStudyV2Enabled=typeof window!=='undefined'&&/(?:^|[?&])gcFieldWorkerArt=2(?:&|$)/.test(window.location.search||'');
+  const fieldWorkerStudyEnabled=(typeof window!=='undefined'&&/(?:^|[?&])gcFieldWorkerArt=1(?:&|$)/.test(window.location.search||''))||fieldWorkerStudyV2Enabled;
  let fieldWorkerStudyImage=null,fieldWorkerStudyReady=false,fieldWorkerStudyFailed=false,fieldWorkerStudyRequested=false;
  function tryFieldWorkerStudy(c,n,dir){
   if(!fieldWorkerStudyEnabled||n.id!=='fieldWorker'||fieldWorkerStudyFailed)return false;
@@ -227,7 +228,7 @@ const OpeningPixelAssets=(()=>{
     if(fieldWorkerStudyReady&&typeof GC!=='undefined')GC.Render?.World?.draw?.();
    };
    fieldWorkerStudyImage.onerror=()=>{fieldWorkerStudyFailed=true};
-   fieldWorkerStudyImage.src='assets/npc/field_worker_style_study_48x192.png';
+   fieldWorkerStudyImage.src=fieldWorkerStudyV2Enabled?'assets/npc/field_worker_style_study_v2_48x192.png':'assets/npc/field_worker_style_study_48x192.png';
   }
   if(!fieldWorkerStudyReady)return false;
   const cx=n.x*32+16,footY=n.y*32+30;
@@ -241,7 +242,8 @@ const OpeningPixelAssets=(()=>{
   c.restore();return true
  }
  function fieldWorkerStudyStatus(){return {enabled:fieldWorkerStudyEnabled,
-  requested:fieldWorkerStudyRequested,ready:fieldWorkerStudyReady,failed:fieldWorkerStudyFailed}}
+  requested:fieldWorkerStudyRequested,ready:fieldWorkerStudyReady,failed:fieldWorkerStudyFailed,
+   variant:fieldWorkerStudyV2Enabled?'v2':'v1'}}
  const dirs={down:0,left:1,right:2,up:3};
  const npcCache=new Map(),houseCache=new Map();
  const P=(c,color,x,y,w,h)=>{c.fillStyle=color;c.fillRect(x|0,y|0,w|0,h|0)};
