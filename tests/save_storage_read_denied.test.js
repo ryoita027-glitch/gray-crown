@@ -78,3 +78,40 @@ test('previous-adventure restore reports denied storage reads without prompting 
  assert.match(h.getElement('dialogueText').innerHTML, /保存領域/,
   'the player should see an actionable storage error');
 });
+
+
+test('failed primary save write restores the older backup even when primary rollback also fails', () => {
+ const h = createHarness();
+ h.evaluate('ALPHA_SESSION.started=true');
+ assert.equal(h.GC.Save.save(true), true);
+ h.evaluate('state.gold=111');
+ assert.equal(h.GC.Save.save(true), true);
+ const before = [...h.storage.data];
+ const set = h.storage.setItem.bind(h.storage);
+ h.storage.setItem = (key, value) => {
+  if (key === h.GC.Save.SAVE_KEY) throw new Error('QuotaExceededError: primary denied');
+  return set(key, value);
+ };
+ h.evaluate('state.gold=999');
+ assert.equal(h.GC.Save.save(true), false);
+ assert.deepEqual([...h.storage.data], before,
+  'a denied primary rollback must not prevent restoration of the original backup');
+});
+
+test('failed portable import restores the older backup when primary writes are denied', () => {
+ const h = createHarness();
+ h.evaluate('ALPHA_SESSION.started=true');
+ assert.equal(h.GC.Save.save(true), true);
+ const imported = h.storage.getItem(h.GC.Save.SAVE_KEY);
+ h.evaluate('state.gold=234');
+ assert.equal(h.GC.Save.save(true), true);
+ const before = [...h.storage.data];
+ const set = h.storage.setItem.bind(h.storage);
+ h.storage.setItem = (key, value) => {
+  if (key === h.GC.Save.SAVE_KEY) throw new Error('QuotaExceededError: primary denied');
+  return set(key, value);
+ };
+ assert.equal(h.GC.Save.importPortableSaveText(imported), false);
+ assert.deepEqual([...h.storage.data], before,
+  'import failure must not silently overwrite the previous backup');
+});
