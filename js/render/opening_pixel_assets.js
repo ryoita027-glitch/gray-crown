@@ -211,6 +211,37 @@ const OpeningPixelAssets=(()=>{
   failed:featuredFailed,count:featuredNames.length,
   gesturesRequested:actionsRequested,gesturesReady:actionsReady,gesturesFailed:actionsFailed,
   artVersion:useLegacyArt?'classic-v1':'concept-charm-v5'}}
+ // Field worker V5-style art study: isolated, opt-in, never a default asset swap.
+ // Four independently authored 48px directional views; no idle/walk claims.
+ const fieldWorkerStudyEnabled=typeof window!=='undefined'&&/(?:^|[?&])gcFieldWorkerArt=1(?:&|$)/.test(window.location.search||'');
+ let fieldWorkerStudyImage=null,fieldWorkerStudyReady=false,fieldWorkerStudyFailed=false,fieldWorkerStudyRequested=false;
+ function tryFieldWorkerStudy(c,n,dir){
+  if(!fieldWorkerStudyEnabled||n.id!=='fieldWorker'||fieldWorkerStudyFailed)return false;
+  if(!fieldWorkerStudyRequested){
+   fieldWorkerStudyRequested=true;
+   if(typeof Image==='undefined'){fieldWorkerStudyFailed=true;return false}
+   fieldWorkerStudyImage=new Image();
+   fieldWorkerStudyImage.onload=()=>{
+    fieldWorkerStudyReady=fieldWorkerStudyImage.naturalWidth===48&&fieldWorkerStudyImage.naturalHeight===192;
+    fieldWorkerStudyFailed=!fieldWorkerStudyReady;
+    if(fieldWorkerStudyReady&&typeof GC!=='undefined')GC.Render?.World?.draw?.();
+   };
+   fieldWorkerStudyImage.onerror=()=>{fieldWorkerStudyFailed=true};
+   fieldWorkerStudyImage.src='assets/npc/field_worker_style_study_48x192.png';
+  }
+  if(!fieldWorkerStudyReady)return false;
+  const cx=n.x*32+16,footY=n.y*32+30;
+  c.save();c.imageSmoothingEnabled=false;
+  if(c.beginPath&&c.ellipse&&c.fill){
+   c.fillStyle='rgba(16,18,18,.25)';
+   c.beginPath();c.ellipse(cx,footY-1,9,3,0,0,Math.PI*2);c.fill()
+  }
+  c.drawImage(fieldWorkerStudyImage,0,(dirs[dir]??0)*48,48,48,
+   Math.round(cx-22),footY-44,44,44);
+  c.restore();return true
+ }
+ function fieldWorkerStudyStatus(){return {enabled:fieldWorkerStudyEnabled,
+  requested:fieldWorkerStudyRequested,ready:fieldWorkerStudyReady,failed:fieldWorkerStudyFailed}}
  const dirs={down:0,left:1,right:2,up:3};
  const npcCache=new Map(),houseCache=new Map();
  const P=(c,color,x,y,w,h)=>{c.fillStyle=color;c.fillRect(x|0,y|0,w|0,h|0)};
@@ -400,7 +431,7 @@ const OpeningPixelAssets=(()=>{
   return img
  }
  function drawNpc(c,n,dir='down',now=0){
-  if(tryFeatured(c,n,dir,now))return true;
+  if(tryFeatured(c,n,dir,now)||tryFieldWorkerStudy(c,n,dir))return true;
   const profile=designs[n.id];if(!profile)return false;
   let sheet=npcCache.get(n.id);
   if(!sheet){sheet=makeNpc(profile,n.id);if(!sheet)return false;npcCache.set(n.id,sheet)}
@@ -498,6 +529,6 @@ const OpeningPixelAssets=(()=>{
   }
   c.save();c.imageSmoothingEnabled=false;c.drawImage(tile,x,y);c.restore();return true
  }
- const api={designs,identities,featuredNames,featuredStatus,drawNpc,drawHouse,dirs,getNpcAtlas:id=>npcCache.get(id),getHouseTile:id=>houseCache.get(id)};
+ const api={designs,identities,featuredNames,featuredStatus,fieldWorkerStudyStatus,drawNpc,drawHouse,dirs,getNpcAtlas:id=>npcCache.get(id),getHouseTile:id=>houseCache.get(id)};
  return api
 })();
