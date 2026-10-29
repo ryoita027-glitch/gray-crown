@@ -70,3 +70,16 @@ test('saved step count is capped to the number of available history entries',()=
  assert.equal(h.GC.State.get().worldStepsOnMap,raw.trail.length);
  assert.deepEqual(followerTiles(h),['9,7','8,7','8,6']);
 });
+
+test('a recovered blocked checkpoint discards trail history from the old location',()=>{
+ const h=createHarness(),save=h.GC.Save;
+ h.evaluate("ALPHA_SESSION.started=true;state.map='capital';state.x=3;state.y=7;state.dir='up';state.trail=[[3,8],[3,9],[4,9]];state.worldStepsOnMap=4;state.world.visited.capital=true");
+ assert.equal(h.evaluate('isBlocked(3,7)'),true,'capital stall is not a legal checkpoint');
+ assert.equal(save.save(true),true);
+ h.GC.State.reset();
+ assert.equal(save.load(true),true);
+ assert.notDeepEqual([h.GC.State.get().x,h.GC.State.get().y],[3,7]);
+ assert.equal(h.GC.State.get().worldStepsOnMap,0,
+  'recovery must not replay trail coordinates from an invalid checkpoint');
+ assert.equal(h.evaluate('partyTrailPoints().every(([x,y])=>!isBlocked(x,y))'),true);
+});
