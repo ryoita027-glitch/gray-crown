@@ -45,7 +45,10 @@ function nearestSafeTile(mapId,x,y,saveState=state){
   const xx=x+dx,yy=y+dy;
   if(xx>=0&&yy>=0&&xx<COLS&&yy<ROWS&&!blockedTile(xx,yy))return[xx,yy]
  }
- return INTERIOR_MAPS.includes(mapId)?[11,11]:[11,13]
+ // If the authored map has no walkable cell, a hard-coded fallback would
+ // restore the player inside a wall. Reject this checkpoint so load() can
+ // recover the usable backup without modifying either stored save slot.
+ throw new Error('No walkable checkpoint tile in '+mapId)
 }
 function mergeStructuredState(fresh,src){
  const loaded=createGameState();
