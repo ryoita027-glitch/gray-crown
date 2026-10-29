@@ -113,3 +113,37 @@ test('fully blocked checkpoint is rejected and a usable backup is recovered with
   h.evaluate('delete maps.__qaNoWalkable');
  }
 });
+
+test('legacy truthy clearance flags match live collision during checkpoint validation',()=>{
+ const h=createHarness(),save=h.GC.Save;
+ for(const [x,y,flags] of [
+  [4,3,"state.world.treasures.chest1=1"],
+  [12,3,"state.world.defeatedSymbols.boss=1"],
+  [12,4,"state.world.switches.leverWest=1;state.world.switches.leverEast=1"]
+ ]){
+  h.evaluate("state.map='cave';state.world.treasures.chest1=0;state.world.defeatedSymbols.boss=0;state.world.switches.leverWest=0;state.world.switches.leverEast=0;"+flags);
+  assert.equal(h.evaluate(`isBlocked(${x},${y})`),false,
+   'the actual movement rules allow this cleared object');
+  assert.deepEqual([...save.nearestSafeTile('cave',x,y,h.GC.State.get())],[x,y],
+   'Continue must not treat a legacy numeric truthy flag as an uncleared object');
+ }
+ h.evaluate("state.world.treasures.chest1=0");
+ assert.equal(h.evaluate('isBlocked(4,3)'),true);
+ assert.notDeepEqual([...save.nearestSafeTile('cave',4,3,h.GC.State.get())],[4,3],
+  'uncleared chests must still block the checkpoint');
+});
+
+test('Continue keeps checkpoint and follower turn history on a legacy-cleared chest',()=>{
+ const h=createHarness(),save=h.GC.Save;
+ h.evaluate("ALPHA_SESSION.started=true;state.map='cave';state.x=4;state.y=3;state.dir='up';state.world.visited.cave=true;state.world.treasures.chest1=1;state.trail=[[4,4],[5,4],[6,4]];state.worldStepsOnMap=3");
+ assert.equal(h.evaluate('isBlocked(4,3)'),false);
+ assert.equal(save.save(true),true);
+ h.GC.State.reset();
+ assert.equal(save.load(true),true);
+ assert.deepEqual([h.GC.State.get().x,h.GC.State.get().y],[4,3],
+  'a collected chest is a legal saved leader tile');
+ assert.equal(h.GC.State.get().worldStepsOnMap,3,
+  'valid follower history must survive Continue when leader stays in place');
+ assert.deepEqual(Array.from(h.evaluate('partyTrailPoints().map(p=>p.join(","))')),
+  ['4,4','5,4','6,4']);
+});
