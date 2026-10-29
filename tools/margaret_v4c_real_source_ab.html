@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Margaret V4C 44px actual-source review</title>
+<style>body{font:15px system-ui;background:#eee9e0;color:#24272b;padding:16px}h1{font-size:22px}p{max-width:1050px;line-height:1.6}.gallery{overflow:auto;background:#fff;border:1px solid #bcb2a4}table{border-collapse:collapse}th,td{border:1px solid #d2c9bd;padding:7px;text-align:center;white-space:nowrap}th,td:first-child{background:#e9e1d6;font-size:12px}canvas{display:block;width:100px;height:80px;image-rendering:pixelated}#status{padding:10px}</style>
+<h1>マーガレット V4C / 原画・V4・V5 44px比較</h1>
+<p>ゲーム内と同じ44×44pxに48×48px原画を最近傍縮小。正面・左右・背面を同一背景・同一接地位置で並べます。元PNGは変更せず、V4Cは未採用の歩行のみの候補です。表示は静的素材比較であり、実ゲーム・8動作・美術合格を意味しません。</p>
+<div id="status" role="status">読み込み中…</div><div class="gallery"><table><thead><tr><th>向き</th><th>カレン</th><th>トリトン</th><th>ソフィ</th><th>マーガレット原画</th><th>V4</th><th>V4C</th><th>村長V5</th><th>王国使者V5</th></tr></thead><tbody id="body"></tbody></table></div>
+<p>採否は44pxでの顔・髪の塊・肩幅・服の情報量・地面との釣り合いを見て判断。技術テスト成功は美術採用ではありません。</p>
+<script>
+'use strict';
+const sources=[
+ ['karen','../assets/characters/karen/karen_walk.png',0],
+ ['triton','../assets/characters/triton/triton_walk.png',0],
+ ['sophie','../assets/characters/sophie/sophie_walk.png',0],
+ ['margaret','../assets/characters/margaret/margaret_walk.png',0],
+ ['v4','../assets/characters/margaret/studies/margaret_walk_v4_study.png',0],
+ ['v4c','../assets/characters/margaret/studies/margaret_walk_v4c_study.png',0],
+ ['mayor','../assets/npc/featured_residents_charm_v5.png',3],
+ ['messenger','../assets/npc/featured_residents_charm_v5.png',4]
+];
+function load(url){return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(Error('読み込み失敗: '+url));im.src=url;});}
+function paint(canvas,img,col,dir){
+ const ctx=canvas.getContext('2d',{alpha:false});ctx.imageSmoothingEnabled=false;
+ ctx.fillStyle=dir%2===0?'#82947a':'#a9a093';ctx.fillRect(0,0,100,80);
+ ctx.fillStyle='rgba(20,23,22,.27)';ctx.beginPath();ctx.ellipse(50,63,9,3,0,0,Math.PI*2);ctx.fill();
+ ctx.drawImage(img,col*48,dir*48,48,48,28,20,44,44);
+}
+(async()=>{
+ const items=await Promise.all(sources.map(async ([name,url,col])=>{
+  try{const img=await load(url);if(img.naturalHeight!==192||img.naturalWidth!==(col?432:288))throw Error('画像サイズ不一致: '+url);return{name,img,col};}
+  catch(e){return{name,error:String(e)};}
+ }));
+ const body=document.querySelector('#body');
+ for(let d=0;d<4;d++){const tr=document.createElement('tr'),lab=document.createElement('td');lab.textContent=['正面','左','右','背面'][d];tr.appendChild(lab);
+  for(const item of items){const td=document.createElement('td');if(item.error){td.textContent='画像エラー';td.title=item.error;}else{const c=document.createElement('canvas');c.width=100;c.height=80;paint(c,item.img,item.col,d);td.appendChild(c);}tr.appendChild(td);}body.appendChild(tr);
+ }
+ const errors=items.filter(x=>x.error),status=document.querySelector('#status');
+ status.textContent=errors.length?errors.map(x=>x.error).join(' | '):'8種類の実PNG・4方向を44pxで表示（美術承認ではありません）';
+ status.style.color=errors.length?'#a42b24':'#315b3b';
+})();
+</script></html>
