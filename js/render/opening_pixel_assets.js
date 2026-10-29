@@ -247,7 +247,8 @@ const OpeningPixelAssets=(()=>{
 
  // Brook keeper: second V5-style study, kept independent from field worker.
  // Idle only: no claim of animated walk or accepted commercial artwork.
- const brookKeeperStudyEnabled=typeof window!=='undefined'&&/(?:^|[?&])gcBrookKeeperArt=1(?:&|$)/.test(window.location.search||'');
+ const brookKeeperStudyV2Enabled=typeof window!=='undefined'&&/(?:^|[?&])gcBrookKeeperArt=2(?:&|$)/.test(window.location.search||'');
+ const brookKeeperStudyEnabled=(typeof window!=='undefined'&&/(?:^|[?&])gcBrookKeeperArt=1(?:&|$)/.test(window.location.search||''))||brookKeeperStudyV2Enabled;
  let brookKeeperStudyImage=null,brookKeeperStudyReady=false,brookKeeperStudyFailed=false,brookKeeperStudyRequested=false;
  function tryBrookKeeperStudy(c,n,dir){
   if(!brookKeeperStudyEnabled||n.id!=='brookKeeper'||brookKeeperStudyFailed)return false;
@@ -262,7 +263,7 @@ const OpeningPixelAssets=(()=>{
      if(brookKeeperStudyReady&&typeof GC!=='undefined')GC.Render?.World?.draw?.();
     };
     brookKeeperStudyImage.onerror=()=>{brookKeeperStudyFailed=true};
-    brookKeeperStudyImage.src='assets/npc/brook_keeper_style_study_48x192.png';
+    brookKeeperStudyImage.src=brookKeeperStudyV2Enabled?'assets/npc/brook_keeper_style_study_v2_48x192.png':'assets/npc/brook_keeper_style_study_48x192.png';
    }catch(e){brookKeeperStudyFailed=true}
   }
   if(!brookKeeperStudyReady)return false;
@@ -277,7 +278,8 @@ const OpeningPixelAssets=(()=>{
   c.restore();return true
  }
  function brookKeeperStudyStatus(){return {enabled:brookKeeperStudyEnabled,
-  requested:brookKeeperStudyRequested,ready:brookKeeperStudyReady,failed:brookKeeperStudyFailed}}
+  requested:brookKeeperStudyRequested,ready:brookKeeperStudyReady,failed:brookKeeperStudyFailed,
+  variant:brookKeeperStudyV2Enabled?'v2':'v1'}}
  const dirs={down:0,left:1,right:2,up:3};
  const npcCache=new Map(),houseCache=new Map();
  const P=(c,color,x,y,w,h)=>{c.fillStyle=color;c.fillRect(x|0,y|0,w|0,h|0)};

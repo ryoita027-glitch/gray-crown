@@ -3,8 +3,8 @@ const test=require('node:test'),assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),zlib=require('node:zlib');
 const ROOT=path.resolve(__dirname,'..');
 const sprite='assets/npc/brook_keeper_style_study_48x192.png';
-function decode(){
- const b=fs.readFileSync(path.join(ROOT,sprite));
+function decode(file=sprite){
+ const b=fs.readFileSync(path.join(ROOT,file));
  assert.equal(b.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
  let p=8,w=0,h=0,depth=0,type=0,parts=[];
  while(p<b.length){
@@ -57,8 +57,33 @@ test('brook pilot is opt-in, falls back to original, does not replace field work
 test('same-footline visual review includes original, V5 anchors and heroes',()=>{
  const s=fs.readFileSync(path.join(ROOT,'tools/brook_keeper_v5_style_review.html'),'utf8');
  for(const v of ['brook_keeper_style_study_48x192.png','featured_residents_charm_v5.png',
-  'field_worker_style_study_v2_48x192.png','gcBrookKeeperArt=1','const cols=3',
+  'field_worker_style_study_v2_48x192.png','gcBrookKeeperArt=1','const cols=5',
   "id:'old'","id:'new'","id:'fieldv2'","id:'mayor'","id:'messenger'",
   "id:'karen'","id:'triton'","id:'sophie'","id:'margaret'"])
   assert.ok(s.includes(v),v)
+});
+
+test('brook V2: four-direction art, same alpha silhouette and restrained palette',()=>{
+ const before=decode(),after=decode('assets/npc/brook_keeper_style_study_v2_48x192.png');
+ assert.equal(before.length,after.length);
+ let changes=0;const byDirection=[0,0,0,0],palette=new Set();
+ for(let i=0;i<before.length;i+=4){
+  const d=Math.floor(i/(48*48*4));
+  assert.equal(after[i+3],before[i+3],'alpha/footline must be unchanged');
+  if(after[i+3])palette.add(after.subarray(i,i+3).toString('hex'));
+  if(!before.subarray(i,i+4).equals(after.subarray(i,i+4))){changes++;byDirection[d]++}
+ }
+ assert.ok(changes>=60&&changes<=300,'meaningful but restrained pixel edits');
+ assert.ok(byDirection.every(n=>n>=12),'all four views revised');
+ assert.ok(palette.size<=24,'no gradient palette explosion');
+});
+test('brook V2 is opt-in and comparison includes V1, V2 and V5 anchors',()=>{
+ const js=fs.readFileSync(path.join(ROOT,'js/render/opening_pixel_assets.js'),'utf8');
+ for(const marker of ['gcBrookKeeperArt=1','gcBrookKeeperArt=2',
+  'brook_keeper_style_study_v2_48x192.png','brookKeeperStudyV2Enabled','variant:brookKeeperStudyV2Enabled'])
+  assert.ok(js.includes(marker),marker);
+ const html=fs.readFileSync(path.join(ROOT,'tools/brook_keeper_v5_style_review.html'),'utf8');
+ for(const marker of ["id:'newv2'",'gcBrookKeeperArt=1','gcBrookKeeperArt=2','const cols=5',
+  'featured_residents_charm_v5.png','brook_keeper_style_study_v2_48x192.png'])
+  assert.ok(html.includes(marker),marker);
 });
