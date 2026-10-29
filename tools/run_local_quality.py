@@ -5,6 +5,7 @@ Windows usage (from repo root):
     py -3 tools/run_local_quality.py --mode full --install
     py -3 tools/run_local_quality.py --mode quick
     py -3 tools/run_local_quality.py --mode save --expect-head YOUR_FULL_40_CHARACTER_COMMIT_SHA
+    # Focused save mode requires Node and Git; npm is not needed.
 All commands execute synchronously, in the **actual local repository checkout**.
 Reports are written under ignored prototype_artifacts/local_quality_runs/.
 Never treats an unrun command as a PASS. Never pushes, merges or edits sprites.
@@ -58,7 +59,11 @@ def main() -> int:
     out.mkdir(parents=True, exist_ok=True)
     python = sys.executable
     npm = shutil.which("npm.cmd" if os.name == "nt" else "npm")
-    if not npm:
+    if args.mode == "save":
+        if not shutil.which("node"):
+            print("Focused save gate requires Node.js on PATH.", file=sys.stderr)
+            return 2
+    elif not npm:
         print("Node.js/npm not installed. Install current Node LTS.", file=sys.stderr)
         return 2
     git = shutil.which("git")
@@ -191,19 +196,21 @@ def main() -> int:
             if not verify_source_integrity("before"):
                 return 2
         if args.mode == "save":
-            # Same exact checkout, no hosted runner, downloads or browser mocks.
-            # This is a focused diagnostic gate, never full game acceptance.
-            if not run("save-javascript-syntax", ["node", "tests/check-syntax.js"]):
-                return 1
-            if not run("save-continue-node-regressions", [
-                "node", "--test",
-                "tests/save_conditional_npc_checkpoint.test.js",
-                "tests/save_world_collision_parity.test.js",
-                "tests/follower_save_continue_trail.test.js",
-            ]):
-                return 1
-            if not verify_source_integrity("after"):
+            # Always audit the checkout after a failed test, too: a failing
+            # test can modify tracked files, so early return hid that evidence.
+            passed = run("save-javascript-syntax", ["node", "tests/check-syntax.js"])
+            if passed:
+                passed = run("save-continue-node-regressions", [
+                    "node", "--test",
+                    "tests/save_conditional_npc_checkpoint.test.js",
+                    "tests/save_world_collision_parity.test.js",
+                    "tests/follower_save_continue_trail.test.js",
+                ])
+            clean_after = verify_source_integrity("after")
+            if not clean_after:
                 return 2
+            if not passed:
+                return 1
             report["verdict"] = "PASS"
             print("Focused save Node tests PASSED on exact clean HEAD; "
                   "npm run check and Chromium are NOT RUN.")
