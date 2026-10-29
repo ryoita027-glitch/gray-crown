@@ -12,7 +12,9 @@ function isolatedTrail(){
  const s=src('js/render/world.js');
  const begin=s.indexOf('function partyTrailPoints(){'),end=s.indexOf('\nfunction cameraForMap()',begin);
  assert.ok(begin>0&&end>begin);
- return new Function('state','COLS','ROWS','tileAt',s.slice(begin,end)+';return partyTrailPoints()');
+ const run=new Function('state','COLS','ROWS','tileAt','isBlocked',s.slice(begin,end)+';return partyTrailPoints()');
+ return (state,cols,rows,tileAt,isBlocked=(x,y)=>['T','H','S','W','R','K','Z'].includes(tileAt(state.map,x,y)))=>
+  run(state,cols,rows,tileAt,isBlocked);
 }
 test('a simple straight route yields three actual, equally spaced followers',()=>{
  const state={x:8,y:3,worldStepsOnMap:9,dir:'up',map:'road',trail:Array.from({length:9},(_,i)=>[8,i+4])};
@@ -32,6 +34,18 @@ test('repeated short backtracking does not stack three visible heroes on the sam
  assert.equal(new Set(points.map(p=>p.join(','))).size,3);
  assert.equal(points.some(([x,y])=>x===8&&y===8),false);
 });
+test('capital followers avoid solid market stalls and visible NPCs after map entry',()=>{
+ const h=createHarness();
+ // Without movement history the follower fallback must not choose scenery or NPC hitboxes.
+ for(const [x,y,bx,by] of [[3,6,3,7],[8,4,8,5]]){
+  h.evaluate(`state.map='capital';state.x=${x};state.y=${y};state.dir='up';state.trail=[];state.worldStepsOnMap=0`);
+  assert.equal(h.evaluate(`isBlocked(${bx},${by})`),true,'fixture blocker must be solid');
+  assert.equal(h.evaluate('partyTrailPoints().length'),3,'all three followers must be placed');
+  assert.equal(h.evaluate('partyTrailPoints().every(([px,py])=>!isBlocked(px,py))'),true,
+   'followers must not appear inside a market stall or visible NPC');
+ }
+});
+
 test('battle heroes use explicit HTML images and show fallback when loading fails',()=>{
  const render=src('js/render/battle.js'),css=src('css/game.css');
  assert.match(render,/class="battle-frame-image"/);
