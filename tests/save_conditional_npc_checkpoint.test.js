@@ -113,3 +113,81 @@ test('fully blocked checkpoint is rejected and a usable backup is recovered with
   h.evaluate('delete maps.__qaNoWalkable');
  }
 });
+
+test('legacy truthy clearance flags match live collision during checkpoint validation',()=>{
+ const h=createHarness(),save=h.GC.Save;
+ for(const [x,y,flags] of [
+  [4,3,"state.world.treasures.chest1=1"],
+  [12,3,"state.world.defeatedSymbols.boss=1"],
+  [12,4,"state.world.switches.leverWest=1;state.world.switches.leverEast=1"]
+ ]){
+  h.evaluate("state.map='cave';state.world.treasures.chest1=0;state.world.defeatedSymbols.boss=0;state.world.switches.leverWest=0;state.world.switches.leverEast=0;"+flags);
+  assert.equal(h.evaluate(`isBlocked(${x},${y})`),false,
+   'the actual movement rules allow this cleared object');
+  assert.deepEqual([...save.nearestSafeTile('cave',x,y,h.GC.State.get())],[x,y],
+   'Continue must not treat a legacy numeric truthy flag as an uncleared object');
+ }
+ h.evaluate("state.world.treasures.chest1=0");
+ assert.equal(h.evaluate('isBlocked(4,3)'),true);
+ assert.notDeepEqual([...save.nearestSafeTile('cave',4,3,h.GC.State.get())],[4,3],
+  'uncleared chests must still block the checkpoint');
+});
+
+test('Continue keeps checkpoint and follower turn history on a legacy-cleared chest',()=>{
+ const h=createHarness(),save=h.GC.Save;
+ h.evaluate("ALPHA_SESSION.started=true;state.map='cave';state.x=4;state.y=3;state.dir='up';state.world.visited.cave=true;state.world.treasures.chest1=1;state.trail=[[4,4],[5,4],[6,4]];state.worldStepsOnMap=3");
+ assert.equal(h.evaluate('isBlocked(4,3)'),false);
+ assert.equal(save.save(true),true);
+ h.GC.State.reset();
+ assert.equal(save.load(true),true);
+ assert.deepEqual([h.GC.State.get().x,h.GC.State.get().y],[4,3],
+  'a collected chest is a legal saved leader tile');
+ assert.equal(h.GC.State.get().worldStepsOnMap,3,
+  'valid follower history must survive Continue when leader stays in place');
+ assert.deepEqual(Array.from(h.evaluate('partyTrailPoints().map(p=>p.join(","))')),
+  ['4,4','5,4','6,4']);
+});
+
+test('checkpoint validation honors saved chest, boss and gate flags over opposite live flags',()=>{
+ const h=createHarness(),save=h.GC.Save;
+ h.evaluate("state.map='cave';state.world.treasures.chest1=0;state.world.defeatedSymbols.boss=0;state.world.switches.leverWest=0;state.world.switches.leverEast=0");
+ const saved=JSON.parse(JSON.stringify(h.GC.State.get()));
+ saved.world.treasures.chest1=1;
+ saved.world.defeatedSymbols.boss=1;
+ saved.world.switches.leverWest=1;
+ saved.world.switches.leverEast=1;
+ const objects=[[4,3],[12,3],[12,4]];
+ for(const [x,y] of objects){
+  assert.equal(h.evaluate(`isBlocked(${x},${y})`),true,'live session is uncleared');
+  assert.deepEqual([...save.nearestSafeTile('cave',x,y,saved)],[x,y],
+   'loaded cleared object must not displace the saved checkpoint');
+ }
+ h.evaluate("state.world.treasures.chest1=1;state.world.defeatedSymbols.boss=1;state.world.switches.leverWest=1;state.world.switches.leverEast=1");
+ saved.world.treasures.chest1=0;
+ saved.world.defeatedSymbols.boss=0;
+ saved.world.switches.leverWest=0;
+ saved.world.switches.leverEast=0;
+ for(const [x,y] of objects){
+  assert.equal(h.evaluate(`isBlocked(${x},${y})`),false,'live session is cleared');
+  assert.notDeepEqual([...save.nearestSafeTile('cave',x,y,saved)],[x,y],
+   'loaded uncleared object must remain solid despite the live session');
+ }
+});
+
+test('Continue restores saved chest clearance even when the prior live world disagrees',()=>{
+ for(const [savedCleared,liveCleared] of [[true,false],[false,true]]){
+  const h=createHarness(),save=h.GC.Save;
+  h.evaluate(`ALPHA_SESSION.started=true;state.map='cave';state.x=4;state.y=3;state.world.visited.cave=true;state.world.treasures.chest1=${savedCleared?1:0}`);
+  assert.equal(save.save(true),true);
+  h.evaluate(`state.world.treasures.chest1=${liveCleared?1:0}`);
+  assert.equal(h.evaluate('isBlocked(4,3)'),!liveCleared,'live fixture must disagree');
+  assert.equal(save.load(true),true);
+  const restored=h.GC.State.get();
+  assert.equal(!!restored.world.treasures.chest1,savedCleared,
+   'Continue must restore the saved world flag');
+  assert.equal(restored.x===4&&restored.y===3,savedCleared,
+   'cleared chest retains the checkpoint; uncleared chest relocates it');
+  assert.equal(h.evaluate('isBlocked(state.x,state.y)'),false,
+   'Continue must leave the leader on a traversable tile');
+ }
+});

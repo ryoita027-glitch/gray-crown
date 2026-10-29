@@ -18,11 +18,14 @@ function nearestSafeTile(mapId,x,y,saveState=state){
   // Mirror overworld objectCleared, but read the SAVE BEING LOADED, not the
   // previous in-memory session. Open gates and defeated bosses are traversable
   // even if they still exist in the map's immutable object list.
-  if(TREASURE_DEFS[id]&&treasure[id]===true)return true;
-  if(['wolf','bandit','bats','crawler','boss','scavengerWolves','imperialPatrol'].includes(id)&&defeated[id]===true)return true;
-  if(id==='innerGate'&&switches.leverWest===true&&switches.leverEast===true)return true;
-  if((id==='fortGate'||id==='fortGateRight')&&switches.fortGateOpen===true)return true;
-  if(['ashCache','frontierCache','empireCache','imperialCache','yukiCache','elsiaCache'].includes(id)&&treasure[id]===true)return true;
+  // Live objectCleared() uses truthiness. Legacy/imported v23 flags may be
+  // 1 instead of true; treating them as solid only during Continue moves a
+  // perfectly legal checkpoint and discards valid follower history.
+  if(TREASURE_DEFS[id]&&treasure[id])return true;
+  if(['wolf','bandit','bats','crawler','boss','scavengerWolves','imperialPatrol'].includes(id)&&defeated[id])return true;
+  if(id==='innerGate'&&switches.leverWest&&switches.leverEast)return true;
+  if((id==='fortGate'||id==='fortGateRight')&&switches.fortGateOpen)return true;
+  if(['ashCache','frontierCache','empireCache','imperialCache','yukiCache','elsiaCache'].includes(id)&&treasure[id])return true;
   return false
  };
  const blockedTile=(xx,yy)=>{
