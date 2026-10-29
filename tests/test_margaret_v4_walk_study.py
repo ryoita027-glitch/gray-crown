@@ -29,7 +29,7 @@ class MargaretV4WalkStudy(unittest.TestCase):
                 cell = self.im.crop((frame*48,direction*48,(frame+1)*48,(direction+1)*48))
                 with self.subTest(direction=direction,frame=frame):
                     self.assertEqual(cell.crop((0,44,48,48)).getbbox(), None)
-                    self.assertGreater(sum(p[3]>0 for p in cell.getdata()), 160)
+                    self.assertGreater(sum(cell.getchannel('A').histogram()[1:]), 160)
 
 if __name__ == '__main__':
     unittest.main()
