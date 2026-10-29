@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Gray Crown | Margaret original / V1 / V2 native 44px</title>
+<title>Gray Crown | Margaret original / V1 / V2 / V3 native 44px</title>
 <style>
 :root{font-family:system-ui,"Noto Sans JP",sans-serif;color-scheme:dark;background:#1d2225;color:#eee6d7}
 *{box-sizing:border-box}body{max-width:1180px;margin:0 auto;padding:18px}
@@ -13,8 +13,8 @@ h1{font-size:1.3rem}p{line-height:1.6;color:#d4d0c6}#gallery{display:flex;gap:10
 select,button,a{padding:8px;background:#343c40;border:1px solid #778087;color:#fff;border-radius:5px}
 a{text-decoration:none}button{cursor:pointer}#status{font-size:.88rem;color:#dfc38c}
 </style></head><body>
-<h1>マーガレット 原画 / 銀白V1 / 色面V2 実寸比較 — DRAFT / NO-GO</h1>
-<p>村長・王国使者のV5を同一尺度の基準として、原画と銀白V1、髪の大きな明暗色面と暗色衣装のコントラストを調整したV2を比較します。V2は顔の中心を保護し、髪の輪郭・足元・原PNG・アニメーション枚数を変えません。通常ゲームは原画のままです。</p>
+<h1>マーガレット 原画 / 銀白V1 / 色面V2 / 輪郭V3 実寸比較 — DRAFT / NO-GO</h1>
+<p>村長・王国使者のV5を同一尺度の基準として、原画と銀白V1、髪の大きな明暗色面と暗色衣装のコントラストを調整したV2を比較します。V2は色面だけのNO-GO案。V3は頭頂部と4方向の髪外形を1px単位で変更する別の試験案です。V3も未承認であり、元PNG・足元・アニメーション枚数は維持します。通常ゲームは原画のままです。</p>
 <div class="controls">
 <label>向き <select id="direction"><option value="0">正面</option><option value="1">左</option><option value="2">右</option><option value="3">背面</option></select></label>
 <label>倍率 <select id="zoom"><option value="1">1倍・44px実寸</option><option value="2">2倍</option><option value="4">4倍・画素確認</option></select></label>
@@ -22,6 +22,7 @@ a{text-decoration:none}button{cursor:pointer}#status{font-size:.88rem;color:#dfc
 <button id="export">比較画像PNGを書き出す</button>
 <a href="../index.html?gcMargaretSilver=1">ゲーム内でV1を試す</a>
 <a href="../index.html?gcMargaretSilver=2">ゲーム内でV2を試す</a>
+<a href="../index.html?gcMargaretSilver=3">ゲーム内でV3を試す</a>
 <a href="../index.html">通常版で遊ぶ</a>
 </div>
 <p id="status">原画を読み込み中…</p><div id="gallery"></div>
@@ -33,6 +34,7 @@ const cards=[
  {id:'margaret',label:'マーガレット',sub:'現行Idle',kind:'original'},
  {id:'margaret',label:'マーガレット',sub:'銀白V1・44px',kind:'study'},
  {id:'margaret',label:'マーガレット',sub:'色面V2・44px',kind:'studyV2'},
+ {id:'margaret',label:'マーガレット',sub:'輪郭V3・44px',kind:'studyV3'},
  {id:'karen',label:'カレン',sub:'現行Idle',kind:'hero'},
  {id:'triton',label:'トリトン',sub:'現行Idle',kind:'hero'},
  {id:'sophie',label:'ソフィ',sub:'現行Idle',kind:'hero'},
@@ -48,9 +50,10 @@ async function init(){
  if(images.margaret){
   images.study=MargaretSilverStudy.makeCandidate(images.margaret,1);
   images.studyV2=MargaretSilverStudy.makeCandidate(images.margaret,2);
+  images.studyV3=MargaretSilverStudy.makeCandidate(images.margaret,3);
  }
  for(const item of cards){
-  const el=document.createElement('section');el.className='unit '+(item.kind==='anchor'?'anchor':item.kind==='study'||item.kind==='studyV2'?'study':'');
+  const el=document.createElement('section');el.className='unit '+(item.kind==='anchor'?'anchor':item.kind==='study'||item.kind==='studyV2'||item.kind==='studyV3'?'study':'');
   const c=document.createElement('canvas'),name=document.createElement('strong'),sub=document.createElement('small');
   name.textContent=item.label;sub.textContent=item.sub;el.append(c,name,sub);gallery.append(el);item.canvas=c
  }
@@ -63,7 +66,7 @@ function paint(ctx,item,direction){
  ctx.fillStyle=ground==='grass'?'#8e9875':'#92928d';ctx.fillRect(0,0,72,72);
  ctx.fillStyle=ground==='grass'?'#798967':'#81817d';ctx.fillRect(0,58,72,2);
  ctx.fillStyle='rgba(14,18,19,.26)';ctx.beginPath();ctx.ellipse(36,57,10,3.3,0,0,Math.PI*2);ctx.fill();
- const src=item.kind==='anchor'?images.atlas:item.kind==='study'?images.study:item.kind==='studyV2'?images.studyV2:images[item.id];
+ const src=item.kind==='anchor'?images.atlas:item.kind==='study'?images.study:item.kind==='studyV2'?images.studyV2:item.kind==='studyV3'?images.studyV3:images[item.id];
  if(!src)return false;
  const sx=item.kind==='anchor'?item.index*48:0;
  ctx.drawImage(src,sx,direction*48,48,48,14,14,44,44);return true
@@ -75,7 +78,7 @@ function redraw(){
   const ctx=c.getContext('2d');ctx.scale(zoom,zoom);if(!paint(ctx,item,dir))failures.push(item.label)
  }
  if(failures.length){status.textContent='読み込み失敗: '+failures.join('、');return}
- if(images.study===images.margaret||images.studyV2===images.margaret){
+ if(images.study===images.margaret||images.studyV2===images.margaret||images.studyV3===images.margaret){
   status.textContent='一部候補変換が適用されませんでした。画像読み込みを確認してください。';return
  }
  const a=document.createElement('canvas');a.width=a.height=48;
@@ -92,7 +95,7 @@ function redraw(){
   }
   return changed+'色 / '+alpha+'透明度'
  }
- status.textContent=['正面','左','右','背面'][dir]+'：V1 '+diff(images.study)+'、V2 '+diff(images.studyV2)+'。視覚的な優劣は未判定。'
+ status.textContent=['正面','左','右','背面'][dir]+'：V1 '+diff(images.study)+'、V2 '+diff(images.studyV2)+'、V3 '+diff(images.studyV3)+'。V3の輪郭と顔の見え方は未審査。'
 }
 function exportImage(){
  const zoom=4,dir=Number(document.getElementById('direction').value),c=document.createElement('canvas');
@@ -100,7 +103,7 @@ function exportImage(){
  ctx.fillStyle='#24282c';ctx.fillRect(0,0,c.width,c.height);
  cards.forEach((item,i)=>{ctx.save();ctx.translate(i*72*zoom,0);ctx.scale(zoom,zoom);paint(ctx,item,dir);ctx.restore();
   ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font='14px sans-serif';ctx.fillText(item.label,i*72*zoom+144,72*zoom+20)});
- try{const a=document.createElement('a');a.download='gray-crown-margaret-v1-v2-ab-'+dir+'.png';a.href=c.toDataURL('image/png');a.click()}
+ try{const a=document.createElement('a');a.download='gray-crown-margaret-v1-v2-v3-ab-'+dir+'.png';a.href=c.toDataURL('image/png');a.click()}
  catch(_){status.textContent='file://環境では書き出せない場合があります。画面上の比較を利用してください。'}
 }
 init();
