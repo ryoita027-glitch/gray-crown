@@ -196,16 +196,27 @@ def main() -> int:
             if not verify_source_integrity("before"):
                 return 2
         if args.mode == "save":
-            # Always audit the checkout after a failed test, too: a failing
-            # test can modify tracked files, so early return hid that evidence.
-            passed = run("save-javascript-syntax", ["node", "tests/check-syntax.js"])
+            # Reject a false-green Node exit code with zero, skipped or
+            # incomplete TAP results. Audit helper self-tests run offline.
+            passed = run("save-tap-audit-unit", [
+                "python", "-m", "unittest", "discover", "-s", "tests",
+                "-p", "test_save_gate_tap_audit.py",
+            ])
+            if passed:
+                passed = run("save-javascript-syntax", ["node", "tests/check-syntax.js"])
             if passed:
                 passed = run("save-continue-node-regressions", [
-                    "node", "--test",
+                    "node", "--test", "--test-reporter=tap",
                     "tests/save_conditional_npc_checkpoint.test.js",
                     "tests/save_world_collision_parity.test.js",
                     "tests/follower_save_continue_trail.test.js",
                 ])
+            if passed:
+                passed = run("save-node-tap-audit", [
+                    "python", "tools/verify_node_test_tap.py", steps[-1]["log"],
+                ])
+            # Always audit the checkout after a failed test, too: a failing
+            # test can modify tracked files, so early return hid that evidence.
             clean_after = verify_source_integrity("after")
             if not clean_after:
                 return 2
