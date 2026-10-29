@@ -281,7 +281,8 @@ function drawNpc(n){const close=Math.abs(state.x-n.x)+Math.abs(state.y-n.y)<=2,f
  if(!authored)OpeningWorldLife.workplace(ctx,state.map,n,Math.abs(state.x-n.x)+Math.abs(state.y-n.y)<=5?Date.now():0);
  if(close){ctx.font='bold 9px system-ui';const w=Math.max(28,ctx.measureText(n.name).width+8);const px=n.x*TILE+16-w/2;
  const atlas=typeof OpeningPixelAssets!=='undefined'&&OpeningPixelAssets.featuredStatus?.();
- const tall=authored&&atlas?.ready&&atlas.artVersion!=='classic-v1'&&OpeningPixelAssets.featuredNames?.includes(n.id);
+ const fieldStudy=typeof OpeningPixelAssets!=='undefined'&&OpeningPixelAssets.fieldWorkerStudyStatus?.();
+ const tall=authored&&((atlas?.ready&&atlas.artVersion!=='classic-v1'&&OpeningPixelAssets.featuredNames?.includes(n.id))||(n.id==='fieldWorker'&&fieldStudy?.ready));
  // The previous name tag was painted ON the NPC's forehead when approached.
  // Place it ABOVE the actual head instead; ordinary 32px characters remain
  // closer to ground and need a lower tag. Do not resize any actual portrait.
