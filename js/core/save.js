@@ -76,10 +76,13 @@ function validateLoadedState(loaded,fresh=createGameState()){
  loaded.party=(loaded.party||fresh.party).slice(0,4).map((p,i)=>{const f=fresh.party[i]||fresh.party[0];return{...f,...p,level:safeNumber(p.level,f.level,1,MAX_LEVEL),exp:safeNumber(p.exp,f.exp,0,9999999),maxHp:safeNumber(p.maxHp,f.maxHp,1,9999),maxMp:safeNumber(p.maxMp,f.maxMp,0,9999),atk:safeNumber(p.atk,f.atk,1,999),def:safeNumber(p.def,f.def,0,999),spd:safeNumber(p.spd,f.spd,1,999),hp:safeNumber(p.hp,f.maxHp,0,safeNumber(p.maxHp,f.maxHp,1,9999)),mp:safeNumber(p.mp,f.maxMp,0,safeNumber(p.maxMp,f.maxMp,0,9999))}});
  for(const k of Object.keys(loaded.inventory||{}))loaded.inventory[k]=Math.floor(safeNumber(loaded.inventory[k],0,0,999));
  for(const k of Object.keys(loaded.world.recoveryUses||{}))loaded.world.recoveryUses[k]=Math.floor(safeNumber(loaded.world.recoveryUses[k],0,0,99));
+ const savedMap=loaded.map;
  loaded.map=maps[loaded.map]?loaded.map:'village';if(loaded.map==='relayvillage'){loaded.map='borderland';loaded.x=11;loaded.y=5}if(loaded.map==='ravine'){loaded.map='watchfort';loaded.x=11;loaded.y=8}
  loaded.world.visited[loaded.map]=true;loaded.battle=null;loaded.battleReturn=null;loaded.symbolEncounter=null;loaded.locked=false;
  loaded.encounterSteps=Number.isFinite(loaded.encounterSteps)?loaded.encounterSteps:0;loaded.nextEncounterAt=Number.isFinite(loaded.nextEncounterAt)?loaded.nextEncounterAt:rollEncounterThreshold(loaded.map);
- const pos=nearestSafeTile(loaded.map,loaded.x,loaded.y,loaded);loaded.x=pos[0];loaded.y=pos[1];
+ const pos=nearestSafeTile(loaded.map,loaded.x,loaded.y,loaded);
+ const checkpointRelocated=savedMap!==loaded.map||pos[0]!==loaded.x||pos[1]!==loaded.y;
+ loaded.x=pos[0];loaded.y=pos[1];
  // Trail entries from a map transition are seeded placeholders, not steps.
  // Keep the saved real-step count only when the accompanying trail is usable.
  // Without this, Continue discards genuine turn history and followers jump
@@ -87,7 +90,7 @@ function validateLoadedState(loaded,fresh=createGameState()){
  const hasTrail=Array.isArray(loaded.trail)&&loaded.trail.length>=3;
  if(!hasTrail)loaded.trail=[[loaded.x+1,loaded.y],[loaded.x+2,loaded.y],[loaded.x+3,loaded.y]];
  const steps=loaded.worldStepsOnMap;
- loaded.worldStepsOnMap=hasTrail&&Number.isSafeInteger(steps)&&steps>=0?
+ loaded.worldStepsOnMap=!checkpointRelocated&&hasTrail&&Number.isSafeInteger(steps)&&steps>=0?
   Math.min(steps,loaded.trail.length):0;
  return attachStateCompatibility(loaded)
 }
