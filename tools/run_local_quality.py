@@ -4,6 +4,7 @@
 Windows usage (from repo root):
     py -3 tools/run_local_quality.py --mode full --install
     py -3 tools/run_local_quality.py --mode quick
+    py -3 tools/run_local_quality.py --mode save --expect-head <40-char-commit-SHA>
 All commands execute synchronously, in the **actual local repository checkout**.
 Reports are written under ignored prototype_artifacts/local_quality_runs/.
 Never treats an unrun command as a PASS. Never pushes, merges or edits sprites.
@@ -44,7 +45,7 @@ FULL_BROWSER = [
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--mode", choices=("quick", "capital", "full"), default="quick")
+    parser.add_argument("--mode", choices=("quick", "save", "capital", "full"), default="quick")
     parser.add_argument("--install", action="store_true",
         help="Install pinned Python dependencies and Chromium into current PC (network required)")
     parser.add_argument("--with-v23", action="store_true",
@@ -82,6 +83,7 @@ def main() -> int:
         "head_sha": None,
         "v23_fixture": "not requested",
         "verdict": "NOT RUN",
+        "acceptance_scope": "focused Node save tests only" if args.mode == "save" else args.mode,
     }
 
     def resolve(command):
@@ -160,6 +162,14 @@ def main() -> int:
             if p.returncode == 0:
                 report["head_sha"] = p.stdout.strip()
         write_report()
+        if args.mode == "save" and not args.expect_head:
+            print("Save regression gate requires --expect-head (exact 40-character SHA).",
+                  file=sys.stderr)
+            return 2
+        if args.mode == "save" and (args.with_v23 or args.install):
+            print("Focused save gate needs neither --with-v23 nor --install.",
+                  file=sys.stderr)
+            return 2
         if args.mode == "full" and not args.with_v23:
             print("Full acceptance requires --with-v23 to check actual old-save compatibility.",
                   file=sys.stderr)
@@ -180,6 +190,24 @@ def main() -> int:
         if args.mode == "full" or args.expect_head:
             if not verify_source_integrity("before"):
                 return 2
+        if args.mode == "save":
+            # Same exact checkout, no hosted runner, downloads or browser mocks.
+            # This is a focused diagnostic gate, never full game acceptance.
+            if not run("save-javascript-syntax", ["node", "tests/check-syntax.js"]):
+                return 1
+            if not run("save-continue-node-regressions", [
+                "node", "--test",
+                "tests/save_conditional_npc_checkpoint.test.js",
+                "tests/save_world_collision_parity.test.js",
+                "tests/follower_save_continue_trail.test.js",
+            ]):
+                return 1
+            if not verify_source_integrity("after"):
+                return 2
+            report["verdict"] = "PASS"
+            print("Focused save Node tests PASSED on exact clean HEAD; "
+                  "npm run check and Chromium are NOT RUN.")
+            return 0
         if args.install:
             if not run("pinned-python-dependencies", ["python", "-m", "pip", "install", "-r", "requirements-ci.txt"]):
                 return 1
