@@ -53,8 +53,9 @@ function nearestSafeTile(mapId,x,y,saveState=state){
 // A real follower step is an orthogonal, in-bounds move from the leader's
 // previous position. Validate every stored real step (up to 10), not only
 // the first three visible followers: an imported save must not retain a
-// malformed tail as trusted movement history.
-function hasContiguousFollowerHistory(trail,x,y,count){
+// malformed tail as trusted movement history. A valid geometric trail must
+// also remain traversable under the saved world's current collision flags.
+function hasContiguousFollowerHistory(trail,x,y,count,mapId,saveState){
  let px=x,py=y;
  for(let i=0;i<count;i++){
   const point=trail[i];
@@ -62,6 +63,10 @@ function hasContiguousFollowerHistory(trail,x,y,count){
      !Number.isInteger(point[0])||!Number.isInteger(point[1])||
      point[0]<0||point[0]>=COLS||point[1]<0||point[1]>=ROWS||
      Math.abs(point[0]-px)+Math.abs(point[1]-py)!==1)return false;
+  // Story-dependent NPCs, gates and authored scenery may differ at load time.
+  // Reject stale trail tiles rather than restoring followers inside blockers.
+  const safe=nearestSafeTile(mapId,point[0],point[1],saveState);
+  if(safe[0]!==point[0]||safe[1]!==point[1])return false;
   px=point[0];py=point[1]
  }
  return true
@@ -107,7 +112,7 @@ function validateLoadedState(loaded,fresh=createGameState()){
  if(!hasTrail)loaded.trail=[[loaded.x+1,loaded.y],[loaded.x+2,loaded.y],[loaded.x+3,loaded.y]];
  const steps=loaded.worldStepsOnMap;
  loaded.worldStepsOnMap=!checkpointRelocated&&hasTrail&&Number.isSafeInteger(steps)&&steps>=0&&
-  hasContiguousFollowerHistory(loaded.trail,loaded.x,loaded.y,Math.min(steps,loaded.trail.length))?
+  hasContiguousFollowerHistory(loaded.trail,loaded.x,loaded.y,Math.min(steps,loaded.trail.length),loaded.map,loaded)?
   Math.min(steps,loaded.trail.length):0;
  return attachStateCompatibility(loaded)
 }
