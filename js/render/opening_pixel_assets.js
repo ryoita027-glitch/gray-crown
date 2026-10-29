@@ -244,6 +244,40 @@ const OpeningPixelAssets=(()=>{
  function fieldWorkerStudyStatus(){return {enabled:fieldWorkerStudyEnabled,
   requested:fieldWorkerStudyRequested,ready:fieldWorkerStudyReady,failed:fieldWorkerStudyFailed,
    variant:fieldWorkerStudyV2Enabled?'v2':'v1'}}
+
+ // Brook keeper: second V5-style study, kept independent from field worker.
+ // Idle only: no claim of animated walk or accepted commercial artwork.
+ const brookKeeperStudyEnabled=typeof window!=='undefined'&&/(?:^|[?&])gcBrookKeeperArt=1(?:&|$)/.test(window.location.search||'');
+ let brookKeeperStudyImage=null,brookKeeperStudyReady=false,brookKeeperStudyFailed=false,brookKeeperStudyRequested=false;
+ function tryBrookKeeperStudy(c,n,dir){
+  if(!brookKeeperStudyEnabled||n.id!=='brookKeeper'||brookKeeperStudyFailed)return false;
+  if(!brookKeeperStudyRequested){
+   brookKeeperStudyRequested=true;
+   if(typeof Image==='undefined'){brookKeeperStudyFailed=true;return false}
+   try{
+    brookKeeperStudyImage=new Image();
+    brookKeeperStudyImage.onload=()=>{
+     brookKeeperStudyReady=brookKeeperStudyImage.naturalWidth===48&&brookKeeperStudyImage.naturalHeight===192;
+     brookKeeperStudyFailed=!brookKeeperStudyReady;
+     if(brookKeeperStudyReady&&typeof GC!=='undefined')GC.Render?.World?.draw?.();
+    };
+    brookKeeperStudyImage.onerror=()=>{brookKeeperStudyFailed=true};
+    brookKeeperStudyImage.src='assets/npc/brook_keeper_style_study_48x192.png';
+   }catch(e){brookKeeperStudyFailed=true}
+  }
+  if(!brookKeeperStudyReady)return false;
+  const cx=n.x*32+16,footY=n.y*32+30;
+  c.save();c.imageSmoothingEnabled=false;
+  if(c.beginPath&&c.ellipse&&c.fill){
+   c.fillStyle='rgba(16,18,18,.25)';
+   c.beginPath();c.ellipse(cx,footY-1,9,3,0,0,Math.PI*2);c.fill()
+  }
+  c.drawImage(brookKeeperStudyImage,0,(dirs[dir]??0)*48,48,48,
+   Math.round(cx-22),footY-44,44,44);
+  c.restore();return true
+ }
+ function brookKeeperStudyStatus(){return {enabled:brookKeeperStudyEnabled,
+  requested:brookKeeperStudyRequested,ready:brookKeeperStudyReady,failed:brookKeeperStudyFailed}}
  const dirs={down:0,left:1,right:2,up:3};
  const npcCache=new Map(),houseCache=new Map();
  const P=(c,color,x,y,w,h)=>{c.fillStyle=color;c.fillRect(x|0,y|0,w|0,h|0)};
@@ -433,7 +467,7 @@ const OpeningPixelAssets=(()=>{
   return img
  }
  function drawNpc(c,n,dir='down',now=0){
-  if(tryFeatured(c,n,dir,now)||tryFieldWorkerStudy(c,n,dir))return true;
+  if(tryFeatured(c,n,dir,now)||tryFieldWorkerStudy(c,n,dir)||tryBrookKeeperStudy(c,n,dir))return true;
   const profile=designs[n.id];if(!profile)return false;
   let sheet=npcCache.get(n.id);
   if(!sheet){sheet=makeNpc(profile,n.id);if(!sheet)return false;npcCache.set(n.id,sheet)}
@@ -531,6 +565,6 @@ const OpeningPixelAssets=(()=>{
   }
   c.save();c.imageSmoothingEnabled=false;c.drawImage(tile,x,y);c.restore();return true
  }
- const api={designs,identities,featuredNames,featuredStatus,fieldWorkerStudyStatus,drawNpc,drawHouse,dirs,getNpcAtlas:id=>npcCache.get(id),getHouseTile:id=>houseCache.get(id)};
+ const api={designs,identities,featuredNames,featuredStatus,fieldWorkerStudyStatus,brookKeeperStudyStatus,drawNpc,drawHouse,dirs,getNpcAtlas:id=>npcCache.get(id),getHouseTile:id=>houseCache.get(id)};
  return api
 })();
