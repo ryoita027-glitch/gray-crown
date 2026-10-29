@@ -14,3 +14,11 @@ Locally inspected the actual V4/V4B candidate PNGs side by side at native 44px. 
 Local standalone structural tests: 3/3 passed on the byte-identical candidate and V4 PNG, **not** a full same-HEAD repository QA. Full `npm run check`, real gameplay, dialogue, combat and eight motion sheets remain unverified. No paid APIs/Actions minutes used.
 
 Next: execute the real-source gallery on a complete checkout, redesign the candidate face/hair/torso more substantially if needed, and only after a visible improvement complete all eight animations and an opt-in game A/B. Characters before buildings; no changes to story, save v23, balance, maps or default sprites.
+
+## Added exact-source A/B evidence (same run)
+
+A self-contained SVG was generated **directly from the eight real GitHub PNG blobs**, with their exact SHA values embedded in its description:
+
+[44px four-direction original/V4/V4B/four-hero/V5 matched SVG](evidence/margaret_v4b_actual_sources_44px_four_dir_20261030.svg)
+
+The SVG contains 8 embedded real source images and 32 cropped sprite views (4 directions × 8 columns). Each uses a 48px source cell, 44px output, matching ground shadow/background within its row, and correct mayor/messenger atlas columns. Its source structure was read back from GitHub and checked (8 PNG data URIs, 32 views, 32 shadows). **The SVG was not rasterized or visually approved in this runtime**, and it is not a live Chromium game screenshot. This adds reproducible actual-source A/B evidence but does not change the ART NO-GO decision.
