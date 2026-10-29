@@ -57,7 +57,7 @@ test('brook pilot is opt-in, falls back to original, does not replace field work
 test('same-footline visual review includes original, V5 anchors and heroes',()=>{
  const s=fs.readFileSync(path.join(ROOT,'tools/brook_keeper_v5_style_review.html'),'utf8');
  for(const v of ['brook_keeper_style_study_48x192.png','featured_residents_charm_v5.png',
-  'field_worker_style_study_v2_48x192.png','gcBrookKeeperArt=1','const cols=3',
+  'field_worker_style_study_v2_48x192.png','gcBrookKeeperArt=1','const cols=5',
   "id:'old'","id:'new'","id:'fieldv2'","id:'mayor'","id:'messenger'",
   "id:'karen'","id:'triton'","id:'sophie'","id:'margaret'"])
   assert.ok(s.includes(v),v)
