@@ -43,10 +43,13 @@ const MargaretSilverStudy=(()=>{
     value<180?[178,175,193]:
     value<210?[207,202,216]:[233,229,234];
    const strength=.90;
+   // A continuous lower-hair shadow separates the ponytail from the dress
+   // instead of drawing a hard horizontal band through the hairstyle.
+   const lower=Math.min(1,Math.max(0,(ly-25)/16));
    return [
-    clamp(r+(palette[0]-r)*strength),
-    clamp(g+(palette[1]-g)*strength),
-    clamp(b+(palette[2]-b)*strength),a
+    clamp(r+(palette[0]-20*lower-r)*strength),
+    clamp(g+(palette[1]-20*lower-g)*strength),
+    clamp(b+(palette[2]-14*lower-b)*strength),a
    ]
   }
   // A clear garment-to-hair value break is more useful at 44px than extra
