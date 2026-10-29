@@ -335,7 +335,13 @@ function archiveBeforeNewGame(){
 }
 function restoreArchivedAdventure(){
  if(!canPersistNow('load'))return false;
- const raw=localStorage.getItem(SAVE_ARCHIVE_KEY);
+ let raw;
+ try{raw=localStorage.getItem(SAVE_ARCHIVE_KEY)}
+ catch(e){
+  GC.Log?.error('Previous adventure restore storage read failed',{error:String(e)});
+  say('システム','以前の冒険を読み込めません。ブラウザの保存領域を確認してください。');
+  return false
+ }
  if(!raw)return false;
  if(!confirm('保管していた以前の冒険を復旧しますか？ 現在のセーブはバックアップへ移します。'))return false;
  const ok=importPortableSaveText(raw);
