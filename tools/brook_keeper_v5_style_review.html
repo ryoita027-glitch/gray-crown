@@ -22,12 +22,13 @@ button,a.action{cursor:pointer;text-decoration:none}button:hover,a.action:hover{
 </head>
 <body>
 <h1>Gray Crown — 川辺の見回り人・V5絵柄の実寸比較（未承認）</h1>
-<p>村長・王国使者のV5原画を基準に、川辺の見回り人の現行32px表示と新規48px原画（ゲーム内44px）を、同じ向き・同じ足元・同じ背景で比較します。顔・服・道具の個性を確認してください。</p>
+<p>村長・王国使者のV5原画を基準に、川辺の見回り人の現行32px・V1・V2（ゲーム内44px）を、同じ向き・同じ足元・同じ背景で比較します。顔・服・道具の個性を確認してください。</p>
 <div class="controls">
 <label>向き<select id="direction"><option value="down">正面</option><option value="left">左</option><option value="right">右</option><option value="up">背面</option></select></label>
 <label>倍率<select id="zoom"><option value="1" selected>1倍・実寸</option><option value="2">2倍</option><option value="4">4倍・画素確認</option></select></label>
 <button id="save">比較画像PNGを書き出す</button>
-<a class="action" href="../index.html?gcBrookKeeperArt=1">ゲーム内で川辺の候補を試す</a>
+<a class="action" href="../index.html?gcBrookKeeperArt=1">川辺V1をゲームで試す</a>
+<a class="action" href="../index.html?gcBrookKeeperArt=2">川辺V2をゲームで試す</a>
 <a class="action" href="../index.html?gcFieldWorkerArt=2">畑の候補v2を試す</a>
 <a class="action" href="../index.html">通常版で遊ぶ</a>
 </div>
@@ -35,14 +36,15 @@ button,a.action{cursor:pointer;text-decoration:none}button:hover,a.action:hover{
 <div id="gallery"></div>
 <div class="notes">
 <p>川辺の見回り人は「リュネ東の小川」の(18,10)にいるNPCです。川辺の新規候補は短髪・深緑の仕事着・革袋・救助縄・水位目盛りを意図して描画しました。既存の畑の手伝い人v2と並べ、同じ顔・同じ衣装に見えないか確認します。</p>
-<p>これは4方向の待機姿のみで、歩行・作業動作は未制作です。通常URLでは元の32px表示のまま。美術的に良くなったかは実ゲームで確認が必要です。顔や衣服の描き込みがV5基準に足りない可能性があり、正式採用しません。</p>
+<p>V2はV1の透明輪郭・足元位置・20色パレットを維持し、帽子の立体感、襟・袖・ベルト・道具の明暗を方向ごとに手修正した比較候補です。顔を細かくし過ぎた中間案は44pxでノイズが増えたため取り消しました。これは4方向の待機姿のみで、歩行・作業動作は未制作です。通常URLでは元の32px表示のまま。実ゲームでの美術確認は未完了で、正式採用しません。</p>
 </div>
 <script src="../js/render/opening_pixel_assets.js"></script>
 <script>
 'use strict';
 const ids=[
  {id:'old',title:'川辺の見回り人',sub:'現行32px',kind:'old'},
- {id:'new',title:'川辺の見回り人',sub:'新規候補・44px',kind:'new'},
+ {id:'new',title:'川辺の見回り人',sub:'V1・44px',kind:'new'},
+ {id:'newv2',title:'川辺の見回り人',sub:'V2・44px',kind:'newv2'},
  {id:'fieldv2',title:'畑の手伝い人',sub:'候補v2・44px',kind:'fieldv2'},
  {id:'mayor',title:'村長',sub:'基準V5・44px',kind:'anchor',index:3},
  {id:'messenger',title:'王国使者',sub:'基準V5・44px',kind:'anchor',index:4},
@@ -58,6 +60,7 @@ function load(src){return new Promise(resolve=>{
 })}
 async function init(){
  const sources={new:'../assets/npc/brook_keeper_style_study_48x192.png',
+  newv2:'../assets/npc/brook_keeper_style_study_v2_48x192.png',
   fieldv2:'../assets/npc/field_worker_style_study_v2_48x192.png',
   atlas:'../assets/npc/featured_residents_charm_v5.png'};
  for(const id of ['karen','triton','sophie','margaret'])
@@ -65,7 +68,7 @@ async function init(){
  await Promise.all(Object.keys(sources).map(async id=>{images[id]=await load(sources[id])}));
  for(const item of ids){
   const card=document.createElement('section');
-  card.className='unit '+(item.kind==='anchor'?'anchor':(item.kind==='new'||item.kind==='fieldv2')?'study':'');
+  card.className='unit '+(item.kind==='anchor'?'anchor':(['new','newv2','fieldv2'].includes(item.kind))?'study':'');
   const canvas=document.createElement('canvas');canvas.setAttribute('aria-label',item.title+' '+item.sub);
   const name=document.createElement('strong');name.textContent=item.title;
   const detail=document.createElement('small');detail.textContent=item.sub;
@@ -89,8 +92,8 @@ function paint(ctx,item,dir,cx,foot){
  ctx.fillStyle='#928769';ctx.fillRect(0,foot+1,72,1);
  ctx.fillStyle='#b9aa8b';ctx.fillRect(0,foot+2,72,12);
  if(item.kind==='old')return fallback(ctx,dir,cx,foot);
- if(item.kind==='new'||item.kind==='fieldv2'){
-  const img=images[item.kind==='fieldv2'?'fieldv2':'new'];if(!img)return false;
+ if(item.kind==='new'||item.kind==='newv2'||item.kind==='fieldv2'){
+  const img=images[item.kind];if(!img)return false;
   ctx.fillStyle='rgba(16,18,18,.25)';ctx.beginPath();ctx.ellipse(cx,foot-1,9,3,0,0,Math.PI*2);ctx.fill();
   ctx.drawImage(img,0,dirs[dir]*48,48,48,cx-22,foot-44,44,44);return true
  }
@@ -113,11 +116,11 @@ function redraw(){
   const ctx=c.getContext('2d');ctx.imageSmoothingEnabled=false;ctx.scale(zoom,zoom);
   if(!paint(ctx,item,dir,36,58))failed.push(item.title);
  }
- status.textContent=failed.length?'読み込み失敗: '+failed.join('、'):'全9種類を同一方向・同一足元で表示中。';
+ status.textContent=failed.length?'読み込み失敗: '+failed.join('、'):'全10種類を同一方向・同一足元で表示中。';
 }
 function exportImage(){
  const zoom=4,dir=document.getElementById('direction').value;
- const cols=3,rows=Math.ceil(ids.length/cols);
+ const cols=5,rows=Math.ceil(ids.length/cols);
  const c=document.createElement('canvas');c.width=72*zoom*cols;c.height=(72*zoom+28)*rows;
  const ctx=c.getContext('2d');ctx.fillStyle='#20252a';ctx.fillRect(0,0,c.width,c.height);
  ctx.textAlign='center';ctx.font='14px sans-serif';ctx.fillStyle='#eee';
