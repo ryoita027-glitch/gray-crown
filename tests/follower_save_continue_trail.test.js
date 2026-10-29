@@ -147,3 +147,30 @@ test('Continue rejects corrupted fourth real step while preserving valid four-st
  assert.equal(h.GC.State.get().worldStepsOnMap,4);
  assert.deepEqual(followerTiles(h),['9,7','8,7','8,6']);
 });
+
+test('Continue discards a contiguous trail crossing a solid capital market stall',()=>{
+ const h=createHarness(),save=h.GC.Save;
+ // Every step is orthogonal and within bounds, but the first follower tile
+ // is a solid authored stall. Geometric validation alone would accept it.
+ h.evaluate("ALPHA_SESSION.started=true;state.map='capital';state.x=3;state.y=6;state.dir='up';state.trail=[[3,7],[3,8],[4,8],[4,7]];state.worldStepsOnMap=4;state.world.visited.capital=true");
+ assert.equal(h.evaluate('isBlocked(3,6)'),false,'leader fixture must be walkable');
+ assert.equal(h.evaluate('isBlocked(3,7)'),true,'saved follower fixture must be solid');
+ assert.equal(save.save(true),true);
+ h.GC.State.reset();
+ assert.equal(save.load(true),true);
+ assert.deepEqual([h.GC.State.get().x,h.GC.State.get().y],[3,6],
+  'a valid leader checkpoint must not be relocated to fix stale followers');
+ assert.equal(h.GC.State.get().worldStepsOnMap,0,
+  'a contiguous but obstructed trail must not be trusted after Continue');
+ assert.equal(h.evaluate('partyTrailPoints().every(([x,y])=>!isBlocked(x,y))'),true,
+  'fallback followers must remain outside authored obstacles');
+});
+
+test('Continue retains a genuinely traversable four-step road trail',()=>{
+ const h=createHarness(),save=h.GC.Save;
+ saveTurnedRoadCheckpoint(h);
+ h.GC.State.reset();
+ assert.equal(save.load(true),true);
+ assert.equal(h.GC.State.get().worldStepsOnMap,4);
+ assert.deepEqual(followerTiles(h),['9,7','8,7','8,6']);
+});
