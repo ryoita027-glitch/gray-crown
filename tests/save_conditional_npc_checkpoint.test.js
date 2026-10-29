@@ -82,3 +82,34 @@ test('save recovery finds a distant legal tile instead of a blocked fallback',()
   h.evaluate('delete maps.__qaSaveRadius');
  }
 });
+
+test('fully blocked checkpoint is rejected and a usable backup is recovered without overwriting slots',()=>{
+ const h=createHarness(),save=h.GC.Save;
+ // A future broken map definition or imported checkpoint must never put the
+ // player into an impassable fallback cell.
+ h.evaluate("maps.__qaNoWalkable={name:'QA only',tiles:Array.from({length:ROWS},()=> 'S'.repeat(COLS)),npcs:[],objects:[]}");
+ try{
+  assert.throws(()=>save.nearestSafeTile('__qaNoWalkable',0,0,h.GC.State.get()),
+   /No walkable checkpoint tile in __qaNoWalkable/,
+   'no valid cell means reject, not a blocked hard-coded fallback');
+  h.evaluate('ALPHA_SESSION.started=true');
+  assert.equal(save.save(true),true);
+  const playable=h.storage.getItem(save.SAVE_KEY);
+  const original=JSON.parse(playable);
+  const invalid={...original,map:'__qaNoWalkable',x:0,y:0};
+  const invalidRaw=JSON.stringify(invalid);
+  h.storage.setItem(save.SAVE_KEY,invalidRaw);
+  h.storage.setItem(save.SAVE_BACKUP_KEY,playable);
+  h.GC.State.reset();
+  assert.equal(save.load(true),true,'a valid backup must still be loadable');
+  assert.equal(h.GC.State.get().map,original.map,
+   'Continue must recover the playable backup rather than an impossible map');
+  assert.deepEqual([h.GC.State.get().x,h.GC.State.get().y],[original.x,original.y]);
+  assert.equal(h.storage.getItem(save.SAVE_KEY),invalidRaw,
+   'the unusable primary bytes must remain available for manual recovery');
+  assert.equal(h.storage.getItem(save.SAVE_BACKUP_KEY),playable,
+   'backup bytes must not be overwritten during recovery');
+ }finally{
+  h.evaluate('delete maps.__qaNoWalkable');
+ }
+});
