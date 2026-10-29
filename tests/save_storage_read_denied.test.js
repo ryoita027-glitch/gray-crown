@@ -59,3 +59,22 @@ test('file import fails before reading the file when browser storage is denied',
  assert.equal(ok, false);
  assert.equal(readFile, false);
 });
+
+test('previous-adventure restore reports denied storage reads without prompting or changing progress', () => {
+ const h = createHarness();
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=613');
+ assert.equal(h.GC.Save.save(true), true);
+ assert.equal(h.GC.Save.archiveBeforeNewGame(), true);
+ const beforeState = JSON.stringify(h.GC.State.get());
+ const beforeStorage = [...h.storage.data];
+ let prompted = false;
+ h.context.confirm = () => { prompted = true; return true; };
+ denyReads(h);
+ assert.doesNotThrow(() => assert.equal(h.GC.Save.restoreArchivedAdventure(), false));
+ assert.equal(prompted, false, 'unreadable archives must not prompt to replace the current save');
+ assert.equal(JSON.stringify(h.GC.State.get()), beforeState);
+ assert.deepEqual([...h.storage.data], beforeStorage, 'restore must leave both saves and archive intact');
+ h.GC.Dialogue.finishDialogueTyping();
+ assert.match(h.getElement('dialogueText').innerHTML, /保存領域/,
+  'the player should see an actionable storage error');
+});
