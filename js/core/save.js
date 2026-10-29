@@ -50,9 +50,23 @@ function nearestSafeTile(mapId,x,y,saveState=state){
  // recover the usable backup without modifying either stored save slot.
  throw new Error('No walkable checkpoint tile in '+mapId)
 }
+// A real follower step is an orthogonal, in-bounds move from the leader's
+// previous position. Imported/edited saves must not teleport party members.
+function hasContiguousFollowerHistory(trail,x,y,count){
+ let px=x,py=y;
+ for(let i=0;i<Math.min(count,3);i++){
+  const point=trail[i];
+  if(!Array.isArray(point)||point.length!==2||
+     !Number.isInteger(point[0])||!Number.isInteger(point[1])||
+     point[0]<0||point[0]>=COLS||point[1]<0||point[1]>=ROWS||
+     Math.abs(point[0]-px)+Math.abs(point[1]-py)!==1)return false;
+  px=point[0];py=point[1]
+ }
+ return true
+}
 function mergeStructuredState(fresh,src){
  const loaded=createGameState();
- for(const key of ['map','x','y','dir','trail','locked','encounterSteps','nextEncounterAt','interiorReturn','journal','inventory','gold'])if(src[key]!==undefined)loaded[key]=src[key];
+ for(const key of ['map','x','y','dir','trail','worldStepsOnMap','locked','encounterSteps','nextEncounterAt','interiorReturn','journal','inventory','gold'])if(src[key]!==undefined)loaded[key]=src[key];
  loaded.story={...fresh.story,...(src.story||{})};
  loaded.quests={...fresh.quests,...(src.quests||{}),main:{...fresh.quests.main,...(src.quests?.main||{})},active:{...fresh.quests.active,...(src.quests?.active||{})},completed:{...fresh.quests.completed,...(src.quests?.completed||{})}};
  loaded.world={...fresh.world,...(src.world||{}),visited:{...fresh.world.visited,...(src.world?.visited||{})},switches:{...fresh.world.switches,...(src.world?.switches||{})},defeatedSymbols:{...fresh.world.defeatedSymbols,...(src.world?.defeatedSymbols||{})},recoveryUses:{...fresh.world.recoveryUses,...(src.world?.recoveryUses||src.recoveryUses||{})},treasures:{...fresh.world.treasures,...(src.world?.treasures||src.treasures||{})},shortcuts:{...fresh.world.shortcuts,...(src.world?.shortcuts||src.shortcuts||{})},finalChoice:src.world?.finalChoice??src.finalChoice??fresh.world.finalChoice};
@@ -76,10 +90,23 @@ function validateLoadedState(loaded,fresh=createGameState()){
  loaded.party=(loaded.party||fresh.party).slice(0,4).map((p,i)=>{const f=fresh.party[i]||fresh.party[0];return{...f,...p,level:safeNumber(p.level,f.level,1,MAX_LEVEL),exp:safeNumber(p.exp,f.exp,0,9999999),maxHp:safeNumber(p.maxHp,f.maxHp,1,9999),maxMp:safeNumber(p.maxMp,f.maxMp,0,9999),atk:safeNumber(p.atk,f.atk,1,999),def:safeNumber(p.def,f.def,0,999),spd:safeNumber(p.spd,f.spd,1,999),hp:safeNumber(p.hp,f.maxHp,0,safeNumber(p.maxHp,f.maxHp,1,9999)),mp:safeNumber(p.mp,f.maxMp,0,safeNumber(p.maxMp,f.maxMp,0,9999))}});
  for(const k of Object.keys(loaded.inventory||{}))loaded.inventory[k]=Math.floor(safeNumber(loaded.inventory[k],0,0,999));
  for(const k of Object.keys(loaded.world.recoveryUses||{}))loaded.world.recoveryUses[k]=Math.floor(safeNumber(loaded.world.recoveryUses[k],0,0,99));
+ const savedMap=loaded.map;
  loaded.map=maps[loaded.map]?loaded.map:'village';if(loaded.map==='relayvillage'){loaded.map='borderland';loaded.x=11;loaded.y=5}if(loaded.map==='ravine'){loaded.map='watchfort';loaded.x=11;loaded.y=8}
  loaded.world.visited[loaded.map]=true;loaded.battle=null;loaded.battleReturn=null;loaded.symbolEncounter=null;loaded.locked=false;
  loaded.encounterSteps=Number.isFinite(loaded.encounterSteps)?loaded.encounterSteps:0;loaded.nextEncounterAt=Number.isFinite(loaded.nextEncounterAt)?loaded.nextEncounterAt:rollEncounterThreshold(loaded.map);
- const pos=nearestSafeTile(loaded.map,loaded.x,loaded.y,loaded);loaded.x=pos[0];loaded.y=pos[1];if(!Array.isArray(loaded.trail)||loaded.trail.length<3)loaded.trail=[[loaded.x+1,loaded.y],[loaded.x+2,loaded.y],[loaded.x+3,loaded.y]];
+ const pos=nearestSafeTile(loaded.map,loaded.x,loaded.y,loaded);
+ const checkpointRelocated=savedMap!==loaded.map||pos[0]!==loaded.x||pos[1]!==loaded.y;
+ loaded.x=pos[0];loaded.y=pos[1];
+ // Trail entries from a map transition are seeded placeholders, not steps.
+ // Keep the saved real-step count only when the accompanying trail is usable.
+ // Without this, Continue discards genuine turn history and followers jump
+ // into a new formation instead of staying on their previous walk path.
+ const hasTrail=Array.isArray(loaded.trail)&&loaded.trail.length>=3;
+ if(!hasTrail)loaded.trail=[[loaded.x+1,loaded.y],[loaded.x+2,loaded.y],[loaded.x+3,loaded.y]];
+ const steps=loaded.worldStepsOnMap;
+ loaded.worldStepsOnMap=!checkpointRelocated&&hasTrail&&Number.isSafeInteger(steps)&&steps>=0&&
+  hasContiguousFollowerHistory(loaded.trail,loaded.x,loaded.y,Math.min(steps,loaded.trail.length))?
+  Math.min(steps,loaded.trail.length):0;
  return attachStateCompatibility(loaded)
 }
 function migrateLoaded(raw){const fresh=createGameState(),src=JSON.parse(raw);const loaded=mergeStructuredState(fresh,src);loaded.party.forEach(p=>applyLevelUps(p));const reconciled=reconcileStoryState(loaded);if(reconciled.repairs.length)GC.Log?.warn('Save story state repaired during migration',reconciled);loaded.schema=SAVE_SCHEMA;return validateLoadedState(loaded,fresh)}
