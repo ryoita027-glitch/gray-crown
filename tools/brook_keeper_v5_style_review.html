@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gray Crown | Brook keeper V5 style visual review</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,"Noto Sans JP",sans-serif;background:#181b20;color:#f0e8d8}
+*{box-sizing:border-box}body{max-width:1260px;margin:0 auto;padding:20px}
+h1{font-size:1.35rem;margin:0 0 8px}p{line-height:1.6;color:#c6c6bd}
+.controls{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin:16px 0}
+label{display:flex;gap:8px;align-items:center}select,button,a.action{background:#32383e;color:#fff;border:1px solid #777b7b;border-radius:5px;padding:8px 10px}
+button,a.action{cursor:pointer;text-decoration:none}button:hover,a.action:hover{background:#48525a}
+#gallery{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}
+.unit{background:#262b30;border:1px solid #4b5153;border-radius:8px;padding:10px;text-align:center;min-width:100px}
+.unit.anchor{border-color:#a38b68}.unit.study{border-color:#94a783}
+.unit canvas{display:block;margin:0 auto;image-rendering:pixelated;max-width:100%;background:#a89a7d}
+.unit strong{display:block;font-size:.85rem;margin-top:9px}.unit small{display:block;color:#bbb;font-size:.72rem}
+.notes{border-top:1px solid #4b5153;margin-top:20px;padding-top:8px}
+#status{font-size:.85rem;color:#cfb989}
+</style>
+</head>
+<body>
+<h1>Gray Crown — 川辺の見回り人・V5絵柄の実寸比較（未承認）</h1>
+<p>村長・王国使者のV5原画を基準に、川辺の見回り人の現行32px表示と新規48px原画（ゲーム内44px）を、同じ向き・同じ足元・同じ背景で比較します。顔・服・道具の個性を確認してください。</p>
+<div class="controls">
+<label>向き<select id="direction"><option value="down">正面</option><option value="left">左</option><option value="right">右</option><option value="up">背面</option></select></label>
+<label>倍率<select id="zoom"><option value="1" selected>1倍・実寸</option><option value="2">2倍</option><option value="4">4倍・画素確認</option></select></label>
+<button id="save">比較画像PNGを書き出す</button>
+<a class="action" href="../index.html?gcBrookKeeperArt=1">ゲーム内で川辺の候補を試す</a>
+<a class="action" href="../index.html?gcFieldWorkerArt=2">畑の候補v2を試す</a>
+<a class="action" href="../index.html">通常版で遊ぶ</a>
+</div>
+<p id="status">画像読み込み中…</p>
+<div id="gallery"></div>
+<div class="notes">
+<p>川辺の見回り人は「リュネ東の小川」の(18,10)にいるNPCです。川辺の新規候補は短髪・深緑の仕事着・革袋・救助縄・水位目盛りを意図して描画しました。既存の畑の手伝い人v2と並べ、同じ顔・同じ衣装に見えないか確認します。</p>
+<p>これは4方向の待機姿のみで、歩行・作業動作は未制作です。通常URLでは元の32px表示のまま。美術的に良くなったかは実ゲームで確認が必要です。顔や衣服の描き込みがV5基準に足りない可能性があり、正式採用しません。</p>
+</div>
+<script src="../js/render/opening_pixel_assets.js"></script>
+<script>
+'use strict';
+const ids=[
+ {id:'old',title:'川辺の見回り人',sub:'現行32px',kind:'old'},
+ {id:'new',title:'川辺の見回り人',sub:'新規候補・44px',kind:'new'},
+ {id:'fieldv2',title:'畑の手伝い人',sub:'候補v2・44px',kind:'fieldv2'},
+ {id:'mayor',title:'村長',sub:'基準V5・44px',kind:'anchor',index:3},
+ {id:'messenger',title:'王国使者',sub:'基準V5・44px',kind:'anchor',index:4},
+ {id:'karen',title:'カレン',sub:'現行Idle・44px',kind:'hero'},
+ {id:'triton',title:'トリトン',sub:'現行Idle・44px',kind:'hero'},
+ {id:'sophie',title:'ソフィ',sub:'現行Idle・44px',kind:'hero'},
+ {id:'margaret',title:'マーガレット',sub:'現行Idle・44px',kind:'hero'}
+];
+const images={},gallery=document.getElementById('gallery'),status=document.getElementById('status');
+const dirs={down:0,left:1,right:2,up:3};
+function load(src){return new Promise(resolve=>{
+ const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>resolve(null);img.src=src
+})}
+async function init(){
+ const sources={new:'../assets/npc/brook_keeper_style_study_48x192.png',
+  fieldv2:'../assets/npc/field_worker_style_study_v2_48x192.png',
+  atlas:'../assets/npc/featured_residents_charm_v5.png'};
+ for(const id of ['karen','triton','sophie','margaret'])
+  sources[id]='../assets/characters/'+id+'/'+id+'_idle.png';
+ await Promise.all(Object.keys(sources).map(async id=>{images[id]=await load(sources[id])}));
+ for(const item of ids){
+  const card=document.createElement('section');
+  card.className='unit '+(item.kind==='anchor'?'anchor':(item.kind==='new'||item.kind==='fieldv2')?'study':'');
+  const canvas=document.createElement('canvas');canvas.setAttribute('aria-label',item.title+' '+item.sub);
+  const name=document.createElement('strong');name.textContent=item.title;
+  const detail=document.createElement('small');detail.textContent=item.sub;
+  card.append(canvas,name,detail);gallery.append(card);item.canvas=canvas;
+ }
+ document.getElementById('direction').addEventListener('change',redraw);
+ document.getElementById('zoom').addEventListener('change',redraw);
+ document.getElementById('save').addEventListener('click',exportImage);
+ redraw()
+}
+function fallback(ctx,dir,cx,foot){
+ const tmp=document.createElement('canvas');tmp.width=96;tmp.height=96;
+ const t=tmp.getContext('2d');t.imageSmoothingEnabled=false;
+ if(typeof OpeningPixelAssets==='undefined'){return false}
+ OpeningPixelAssets.drawNpc(t,{id:'brookKeeper',x:1,y:1},dir,0);
+ ctx.drawImage(tmp,32,32,32,32,cx-16,foot-30,32,32);return true
+}
+function paint(ctx,item,dir,cx,foot){
+ ctx.imageSmoothingEnabled=false;
+ ctx.fillStyle='#a89a7d';ctx.fillRect(0,0,72,72);
+ ctx.fillStyle='#928769';ctx.fillRect(0,foot+1,72,1);
+ ctx.fillStyle='#b9aa8b';ctx.fillRect(0,foot+2,72,12);
+ if(item.kind==='old')return fallback(ctx,dir,cx,foot);
+ if(item.kind==='new'||item.kind==='fieldv2'){
+  const img=images[item.kind==='fieldv2'?'fieldv2':'new'];if(!img)return false;
+  ctx.fillStyle='rgba(16,18,18,.25)';ctx.beginPath();ctx.ellipse(cx,foot-1,9,3,0,0,Math.PI*2);ctx.fill();
+  ctx.drawImage(img,0,dirs[dir]*48,48,48,cx-22,foot-44,44,44);return true
+ }
+ if(item.kind==='anchor'){
+  const img=images.atlas;if(!img)return false;
+  ctx.fillStyle='rgba(16,18,18,.25)';ctx.beginPath();ctx.ellipse(cx,foot-1,9,3,0,0,Math.PI*2);ctx.fill();
+  ctx.drawImage(img,item.index*48,dirs[dir]*48,48,48,cx-22,foot-44,44,44);return true
+ }
+ const img=images[item.id];if(!img)return false;
+ ctx.fillStyle='rgba(16,18,18,.28)';ctx.beginPath();ctx.ellipse(cx,foot-1,10,4,0,0,Math.PI*2);ctx.fill();
+ const pos=Math.round(cx-24*44/48),top=Math.round(foot-44*44/48);
+ ctx.drawImage(img,0,dirs[dir]*48,48,48,pos,top,44,44);return true
+}
+function redraw(){
+ const dir=document.getElementById('direction').value,zoom=Number(document.getElementById('zoom').value);
+ let failed=[];
+ for(const item of ids){
+  const c=item.canvas;c.width=72*zoom;c.height=72*zoom;
+  c.style.width=(72*zoom)+'px';c.style.height=(72*zoom)+'px';
+  const ctx=c.getContext('2d');ctx.imageSmoothingEnabled=false;ctx.scale(zoom,zoom);
+  if(!paint(ctx,item,dir,36,58))failed.push(item.title);
+ }
+ status.textContent=failed.length?'読み込み失敗: '+failed.join('、'):'全9種類を同一方向・同一足元で表示中。';
+}
+function exportImage(){
+ const zoom=4,dir=document.getElementById('direction').value;
+ const cols=3,rows=Math.ceil(ids.length/cols);
+ const c=document.createElement('canvas');c.width=72*zoom*cols;c.height=(72*zoom+28)*rows;
+ const ctx=c.getContext('2d');ctx.fillStyle='#20252a';ctx.fillRect(0,0,c.width,c.height);
+ ctx.textAlign='center';ctx.font='14px sans-serif';ctx.fillStyle='#eee';
+ ids.forEach((item,i)=>{
+  const x=(i%cols)*72*zoom,y=Math.floor(i/cols)*(72*zoom+28);
+  ctx.save();ctx.translate(x,y);ctx.scale(zoom,zoom);paint(ctx,item,dir,36,58);ctx.restore();
+  ctx.fillStyle='#eee';ctx.fillText(item.title,x+72*zoom/2,y+72*zoom+17)
+ });
+ try{const a=document.createElement('a');a.download='gray-crown-brook-keeper-ab-'+dir+'.png';a.href=c.toDataURL('image/png');a.click()}
+ catch(e){status.textContent='ブラウザのfile://画像制限で書き出せません。画面を直接比較してください。'}
+}
+init();
+</script>
+</body>
+</html>

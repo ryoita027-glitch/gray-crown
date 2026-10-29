@@ -282,7 +282,8 @@ function drawNpc(n){const close=Math.abs(state.x-n.x)+Math.abs(state.y-n.y)<=2,f
  if(close){ctx.font='bold 9px system-ui';const w=Math.max(28,ctx.measureText(n.name).width+8);const px=n.x*TILE+16-w/2;
  const atlas=typeof OpeningPixelAssets!=='undefined'&&OpeningPixelAssets.featuredStatus?.();
  const fieldStudy=typeof OpeningPixelAssets!=='undefined'&&OpeningPixelAssets.fieldWorkerStudyStatus?.();
- const tall=authored&&((atlas?.ready&&atlas.artVersion!=='classic-v1'&&OpeningPixelAssets.featuredNames?.includes(n.id))||(n.id==='fieldWorker'&&fieldStudy?.ready));
+ const brookStudy=typeof OpeningPixelAssets!=='undefined'&&OpeningPixelAssets.brookKeeperStudyStatus?.();
+ const tall=authored&&((atlas?.ready&&atlas.artVersion!=='classic-v1'&&OpeningPixelAssets.featuredNames?.includes(n.id))||(n.id==='fieldWorker'&&fieldStudy?.ready)||(n.id==='brookKeeper'&&brookStudy?.ready));
  // The previous name tag was painted ON the NPC's forehead when approached.
  // Place it ABOVE the actual head instead; ordinary 32px characters remain
  // closer to ground and need a lower tag. Do not resize any actual portrait.
