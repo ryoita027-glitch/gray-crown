@@ -127,6 +127,21 @@ function canPersistNow(mode='save'){
  return !transientUiActive()
 }
 function serializeSave(){return JSON.stringify({...state,schema:SAVE_SCHEMA,locked:false,battle:null,battleReturn:null,symbolEncounter:null})}
+function restoreSaveSlots(primary,backup,operation){
+ // Browser storage is not transactional. A failed primary write may leave the
+ // backup modified; attempt each rollback independently even if one fails.
+ let restored=true;
+ for(const [key,value] of [[SAVE_KEY,primary],[SAVE_BACKUP_KEY,backup]]){
+  try{
+   if(value===null)localStorage.removeItem(key);
+   else localStorage.setItem(key,value)
+  }catch(e){
+   restored=false;
+   GC.Log?.error(operation+' rollback failed',{slot:key,error:String(e)})
+  }
+ }
+ return restored
+}
 function isUsableSavedAdventure(raw){
  if(typeof raw!=='string'||!raw)return false;
  try{
@@ -160,12 +175,7 @@ function save(silent=false){
   }catch(writeError){
    // A failed primary write must not leave the older backup overwritten.
    // Preserve both original slots as a single logical transaction.
-   try{
-    if(prev===null)localStorage.removeItem(SAVE_KEY);
-    else localStorage.setItem(SAVE_KEY,prev);
-    if(backup===null)localStorage.removeItem(SAVE_BACKUP_KEY);
-    else localStorage.setItem(SAVE_BACKUP_KEY,backup)
-   }catch(rollbackError){GC.Log?.error('Save rollback failed',{error:String(rollbackError)})}
+   restoreSaveSlots(prev,backup,'Save')
    throw writeError
   }
   GC.Log?.info('Save',{map:state.map,x:state.x,y:state.y,stage:state.story.stage});if(!silent)say('システム','セーブしました。');return true}catch(e){GC.Log?.error('Save failed',{error:String(e)});if(!silent)say('システム','セーブに失敗しました。ブラウザの保存領域を確認してください。');return false}}
@@ -243,10 +253,7 @@ function importPortableSaveText(raw){
   return true
  }catch(e){
   GC.Log?.error('Portable save import failed',{error:String(e)});
-  try{
-   if(primary===null)localStorage.removeItem(SAVE_KEY);else localStorage.setItem(SAVE_KEY,primary);
-   if(backup===null)localStorage.removeItem(SAVE_BACKUP_KEY);else localStorage.setItem(SAVE_BACKUP_KEY,backup)
-  }catch(_){}
+  restoreSaveSlots(primary,backup,'Portable save import')
   return false
  }
 }
