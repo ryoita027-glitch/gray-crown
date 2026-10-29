@@ -616,7 +616,9 @@ function partyTrailPoints(){
  // A follower owns each previous whole step. No 2/4/6 tile teleporting.
  const trail=Array.isArray(state.trail)?state.trail:[],used=new Set([state.x+','+state.y]),out=[];
  const behind={down:[0,-1],up:[0,1],left:[1,0],right:[-1,0]}[state.dir]||[0,-1];
- const valid=(x,y)=>x>=0&&y>=0&&x<COLS&&y<ROWS&&!['T','H','S','W','R','K','Z'].includes(tileAt(state.map,x,y));
+ // Use the same live collision rules as the leader. Map glyphs alone miss
+ // authored scenery (capital stalls), visible NPCs and uncleared objects.
+ const valid=(x,y)=>x>=0&&y>=0&&x<COLS&&y<ROWS&&!isBlocked(x,y);
  const insert=(x,y)=>{let key=x+','+y;if(!Number.isInteger(x)||!Number.isInteger(y)||!valid(x,y)||used.has(key))return false;used.add(key);out.push([x,y]);return true};
  for(let i=0;i<3;i++){
   // For first 3 moves of a new map use the walking history only when
