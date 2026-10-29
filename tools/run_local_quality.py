@@ -4,7 +4,7 @@
 Windows usage (from repo root):
     py -3 tools/run_local_quality.py --mode full --install
     py -3 tools/run_local_quality.py --mode quick
-    py -3 tools/run_local_quality.py --mode save --expect-head <40-char-commit-SHA>
+    py -3 tools/run_local_quality.py --mode save --expect-head YOUR_FULL_40_CHARACTER_COMMIT_SHA
 All commands execute synchronously, in the **actual local repository checkout**.
 Reports are written under ignored prototype_artifacts/local_quality_runs/.
 Never treats an unrun command as a PASS. Never pushes, merges or edits sprites.
