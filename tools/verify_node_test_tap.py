@@ -10,6 +10,7 @@ import argparse
 from pathlib import Path
 import re
 
+MINIMUM_SAVE_TESTS = 21  # 10 checkpoint + 1 map parity + 10 follower tests
 SUMMARY_KEYS = ("tests", "pass", "fail", "cancelled", "skipped", "todo")
 SUMMARY_LINE = re.compile(r"^# (tests|pass|fail|cancelled|skipped|todo) (\d+)$")
 
@@ -24,8 +25,10 @@ def verify_tap(text: str) -> dict[str, int]:
     missing = set(SUMMARY_KEYS) - counters.keys()
     if missing:
         raise ValueError("Missing Node TAP summary counters: " + ", ".join(sorted(missing)))
-    if counters["tests"] < 1:
-        raise ValueError("Node TAP reports zero tests")
+    if counters["tests"] < MINIMUM_SAVE_TESTS:
+        raise ValueError(
+            f"Node TAP reports {counters['tests']} tests; at least {MINIMUM_SAVE_TESTS} required"
+        )
     if counters["pass"] != counters["tests"]:
         raise ValueError("Not all Node TAP tests passed")
     for key in ("fail", "cancelled", "skipped", "todo"):
