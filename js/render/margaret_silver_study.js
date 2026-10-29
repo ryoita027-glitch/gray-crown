@@ -21,6 +21,35 @@ const MargaretSilverStudy=(()=>{
   const target=[clamp(value+5),clamp(value+6),clamp(value+11)];
   return[clamp(r+(target[0]-r)*strength),clamp(g+(target[1]-g)*strength),clamp(b+(target[2]-b)*strength),a]
  }
+ // Same-scene visual A/B without restarting the adventure or camera.
+ let candidateVisible=true;
+ function active(search=typeof window!=='undefined'?window.location.search:''){
+  return enabled(search)&&candidateVisible
+ }
+ function setCandidate(value,search=typeof window!=='undefined'?window.location.search:''){
+  if(!enabled(search))return false;
+  candidateVisible=!!value;return candidateVisible
+ }
+ function mountToggle(){
+  if(typeof document==='undefined'||!enabled()||document.getElementById('gcMargaretSilverToggle'))return;
+  const host=document.querySelector('.top-actions');if(!host)return;
+  const button=document.createElement('button');
+  button.id='gcMargaretSilverToggle';button.type='button';
+  button.title='同じ位置・向き・場面のまま原画と銀白髪候補を切り替える';
+  const sync=()=>{
+   button.textContent=active()?'マーガレット：銀白候補':'マーガレット：原画';
+   button.setAttribute('aria-pressed',String(active()))
+  };
+  button.addEventListener('click',()=>{
+   setCandidate(!candidateVisible);sync();
+   if(typeof GC!=='undefined')GC.Render?.World?.draw?.()
+  });
+  host.appendChild(button);sync()
+ }
+ if(typeof document!=='undefined'&&enabled()){
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountToggle,{once:true});
+  else mountToggle()
+ }
  function applyToImageData(imageData){
   if(!imageData||!imageData.data||!Number.isInteger(imageData.width)||!Number.isInteger(imageData.height))return 0;
   const {width,height,data}=imageData;
@@ -48,5 +77,5 @@ const MargaretSilverStudy=(()=>{
    c.putImageData(pixels,0,0);return canvas
   }catch(_){return image}
  }
- return Object.freeze({enabled,transformPixel,applyToImageData,makeCandidate});
+ return Object.freeze({enabled,active,setCandidate,mountToggle,transformPixel,applyToImageData,makeCandidate});
 })();

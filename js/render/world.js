@@ -14,7 +14,7 @@ function drawHeroSpriteSheet(x,y,heroId,leader,facing,motion){
  if(rec?.ready&&rec.image){
   const size=HERO_RUNTIME.display,scale=size/HERO_RUNTIME.frameW,dx=Math.round(footX-HERO_RUNTIME.anchor[0]*scale),dy=Math.round(footY-HERO_RUNTIME.anchor[1]*scale);
   ctx.save();ctx.fillStyle='rgba(16,18,18,.28)';ctx.beginPath();ctx.ellipse(footX,footY-1,10,4,0,0,Math.PI*2);ctx.fill();ctx.imageSmoothingEnabled=false;
-  ctx.drawImage(rec.studyImage||rec.image,frame*48,row*48,48,48,dx,dy,size,size);ctx.restore();
+  const art=heroId==='margaret'&&typeof MargaretSilverStudy!=='undefined'&&MargaretSilverStudy.active()?(rec.studyImage||rec.image):rec.image;ctx.drawImage(art,frame*48,row*48,48,48,dx,dy,size,size);ctx.restore();
   if(leader)drawHeroMarker(footX,dy);return true
  }
  const cfg=HERO_SPRITES;if(!cfg.ready||!cfg.image||cfg.characters[heroId]===undefined)return false;
