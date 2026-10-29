@@ -172,7 +172,10 @@ function save(silent=false){
 function clearTransientPanels(){for(const id of ['battlePanel','levelUpPanel','battleResult','battleFlash','bossCinematic','chapterCard'])$(id)?.classList.add('hidden');if($('dialogueBox')&&!$('dialogueBox').classList.contains('hidden'))closeDialogue(false)}
 function load(silent=false){
  if(!canPersistNow('load')){if(!silent&&$('dialogueBox')?.classList.contains('hidden'))say('システム','イベントや戦闘の途中ではロードできません。操作可能な場所でロードしてください。');return false}
- const primary=localStorage.getItem(SAVE_KEY),backup=localStorage.getItem(SAVE_BACKUP_KEY);if(!primary&&!backup){if(!silent)say('システム','セーブデータがありません。');return false}let recovered=false,next;
+ let primary,backup;
+ try{primary=localStorage.getItem(SAVE_KEY);backup=localStorage.getItem(SAVE_BACKUP_KEY)}
+ catch(e){GC.Log?.error('Save load storage read failed',{error:String(e)});if(!silent)say('システム','ブラウザの保存領域を読み込めません。設定を確認してください。');return false}
+ if(!primary&&!backup){if(!silent)say('システム','セーブデータがありません。');return false}let recovered=false,next;
  // Migration can fill missing fields from defaults. Before migrating, ensure
  // a partially truncated but parseable JSON is not mistaken for a fresh game.
  if(!isUsableSavedAdventure(primary)){
@@ -189,7 +192,8 @@ function load(silent=false){
 // localStorage belongs to the specific browser/origin, not the game folder.
 function exportPortableSaveText(){
  if(!save(true))return null;
- return localStorage.getItem(SAVE_KEY)
+ try{return localStorage.getItem(SAVE_KEY)}
+ catch(e){GC.Log?.error('Portable save export read failed',{error:String(e)});return null}
 }
 function downloadPortableSave(){
  const raw=exportPortableSaveText();
@@ -224,7 +228,9 @@ function importPortableSaveText(raw){
      !maps[parsed.map])return false;
   loaded=migrateLoaded(raw);
  }catch(e){GC.Log?.warn('Portable save validation failed',{error:String(e)});return false}
- const primary=localStorage.getItem(SAVE_KEY),backup=localStorage.getItem(SAVE_BACKUP_KEY);
+ let primary,backup;
+ try{primary=localStorage.getItem(SAVE_KEY);backup=localStorage.getItem(SAVE_BACKUP_KEY)}
+ catch(e){GC.Log?.error('Portable save import storage read failed',{error:String(e)});return false}
  try{
   // Persist the migrated *validated* schema, never raw untrusted file text.
   const payload=JSON.stringify({...loaded,schema:SAVE_SCHEMA,locked:false,battle:null,
@@ -251,7 +257,9 @@ async function readPortableSaveFile(file){
  if(!canPersistNow('load')){
   say('システム','戦闘やイベントの途中ではセーブを読み込めません。');return false
  }
- const priorExists=!!localStorage.getItem(SAVE_KEY);
+ let priorExists;
+ try{priorExists=!!localStorage.getItem(SAVE_KEY)}
+ catch(e){GC.Log?.error('Portable save file storage read failed',{error:String(e)});say('システム','ブラウザの保存領域を読み込めません。設定を確認してください。');return false}
  if(!confirm(priorExists?'現在のセーブをバックアップして、選んだセーブデータへ切り替えますか？':
   '選んだセーブデータを読み込みますか？'))return false;
  let ok=false;
