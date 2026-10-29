@@ -44,17 +44,17 @@ class SaveTapAuditTests(unittest.TestCase):
                 verify_tap(summary(passed=20, **{field: 1}))
 
     def test_summary_without_test_results_rejected(self):
-        fake = summary().replace("".join(f"ok {n} - case {n}\\n" for n in range(1, 22)), "")
+        fake = summary().replace("".join(f"ok {n} - case {n}\n" for n in range(1, 22)), "")
         with self.assertRaisesRegex(ValueError, "top-level"):
             verify_tap(fake)
 
     def test_missing_plan_rejected(self):
         with self.assertRaisesRegex(ValueError, "plan"):
-            verify_tap(summary().replace("1..21\\n", ""))
+            verify_tap(summary().replace("1..21\n", ""))
 
     def test_duplicate_or_mismatched_plan_rejected(self):
-        for data in (summary().replace("1..21\\n", "1..20\\n"),
-                     summary().replace("1..21\\n", "1..21\\n1..21\\n")):
+        for data in (summary().replace("1..21\n", "1..20\n"),
+                     summary().replace("1..21\n", "1..21\n1..21\n")):
             with self.subTest(data=data[-140:]), self.assertRaisesRegex(ValueError, "plan"):
                 verify_tap(data)
 
@@ -76,7 +76,7 @@ class SaveTapAuditTests(unittest.TestCase):
 
     def test_duplicate_tap_header_rejected(self):
         with self.assertRaisesRegex(ValueError, "header"):
-            verify_tap("TAP version 13\\n" + summary())
+            verify_tap("TAP version 13\n" + summary())
 
 
 if __name__ == "__main__":
