@@ -4,6 +4,8 @@
 Windows usage (from repo root):
     py -3 tools/run_local_quality.py --mode full --install
     py -3 tools/run_local_quality.py --mode quick
+    py -3 tools/run_local_quality.py --mode save --expect-head YOUR_FULL_40_CHARACTER_COMMIT_SHA
+    # Focused save mode requires Node and Git; npm is not needed.
 All commands execute synchronously, in the **actual local repository checkout**.
 Reports are written under ignored prototype_artifacts/local_quality_runs/.
 Never treats an unrun command as a PASS. Never pushes, merges or edits sprites.
@@ -44,7 +46,7 @@ FULL_BROWSER = [
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--mode", choices=("quick", "capital", "full"), default="quick")
+    parser.add_argument("--mode", choices=("quick", "save", "capital", "full"), default="quick")
     parser.add_argument("--install", action="store_true",
         help="Install pinned Python dependencies and Chromium into current PC (network required)")
     parser.add_argument("--with-v23", action="store_true",
@@ -57,7 +59,11 @@ def main() -> int:
     out.mkdir(parents=True, exist_ok=True)
     python = sys.executable
     npm = shutil.which("npm.cmd" if os.name == "nt" else "npm")
-    if not npm:
+    if args.mode == "save":
+        if not shutil.which("node"):
+            print("Focused save gate requires Node.js on PATH.", file=sys.stderr)
+            return 2
+    elif not npm:
         print("Node.js/npm not installed. Install current Node LTS.", file=sys.stderr)
         return 2
     git = shutil.which("git")
@@ -82,6 +88,7 @@ def main() -> int:
         "head_sha": None,
         "v23_fixture": "not requested",
         "verdict": "NOT RUN",
+        "acceptance_scope": "focused Node save tests only" if args.mode == "save" else args.mode,
     }
 
     def resolve(command):
@@ -160,6 +167,14 @@ def main() -> int:
             if p.returncode == 0:
                 report["head_sha"] = p.stdout.strip()
         write_report()
+        if args.mode == "save" and not args.expect_head:
+            print("Save regression gate requires --expect-head (exact 40-character SHA).",
+                  file=sys.stderr)
+            return 2
+        if args.mode == "save" and (args.with_v23 or args.install):
+            print("Focused save gate needs neither --with-v23 nor --install.",
+                  file=sys.stderr)
+            return 2
         if args.mode == "full" and not args.with_v23:
             print("Full acceptance requires --with-v23 to check actual old-save compatibility.",
                   file=sys.stderr)
@@ -180,6 +195,37 @@ def main() -> int:
         if args.mode == "full" or args.expect_head:
             if not verify_source_integrity("before"):
                 return 2
+        if args.mode == "save":
+            # Reject a false-green Node exit code with zero, skipped or
+            # incomplete TAP results. Audit helper self-tests run offline.
+            passed = run("save-tap-audit-unit", [
+                "python", "-m", "unittest", "discover", "-s", "tests",
+                "-p", "test_save_gate_tap_audit.py",
+            ])
+            if passed:
+                passed = run("save-javascript-syntax", ["node", "tests/check-syntax.js"])
+            if passed:
+                passed = run("save-continue-node-regressions", [
+                    "node", "--test", "--test-reporter=tap",
+                    "tests/save_conditional_npc_checkpoint.test.js",
+                    "tests/save_world_collision_parity.test.js",
+                    "tests/follower_save_continue_trail.test.js",
+                ])
+            if passed:
+                passed = run("save-node-tap-audit", [
+                    "python", "tools/verify_node_test_tap.py", steps[-1]["log"],
+                ])
+            # Always audit the checkout after a failed test, too: a failing
+            # test can modify tracked files, so early return hid that evidence.
+            clean_after = verify_source_integrity("after")
+            if not clean_after:
+                return 2
+            if not passed:
+                return 1
+            report["verdict"] = "PASS"
+            print("Focused save Node tests PASSED on exact clean HEAD; "
+                  "npm run check and Chromium are NOT RUN.")
+            return 0
         if args.install:
             if not run("pinned-python-dependencies", ["python", "-m", "pip", "install", "-r", "requirements-ci.txt"]):
                 return 1
