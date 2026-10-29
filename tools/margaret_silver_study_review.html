@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gray Crown | Margaret silver-white 44px A/B</title>
+<style>
+:root{font-family:system-ui,"Noto Sans JP",sans-serif;color-scheme:dark;background:#1d2225;color:#eee6d7}
+*{box-sizing:border-box}body{max-width:1180px;margin:0 auto;padding:18px}
+h1{font-size:1.3rem}p{line-height:1.6;color:#d4d0c6}#gallery{display:flex;gap:10px;flex-wrap:wrap;align-items:start}
+.unit{background:#303438;border:1px solid #535a60;border-radius:7px;padding:10px;text-align:center}
+.unit.anchor{border-color:#bd9e69}.unit.study{border-color:#99ad9d}
+.unit canvas{display:block;image-rendering:pixelated;margin:auto}
+.unit strong,.unit small{display:block;margin-top:6px}.unit small{font-size:.72rem;color:#c6c3bb}
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:18px 0}
+select,button,a{padding:8px;background:#343c40;border:1px solid #778087;color:#fff;border-radius:5px}
+a{text-decoration:none}button{cursor:pointer}#status{font-size:.88rem;color:#dfc38c}
+</style></head><body>
+<h1>マーガレット銀白髪の実寸比較 — DRAFT / NO-GO</h1>
+<p>村長・王国使者のV5を同一尺度の基準として、マーガレットの紫がかった髪の影を抑える試験です。髪の外形・足元・原PNG・衣装・目・アニメーション枚数は変更しません。通常ゲームでは元画像を表示します。</p>
+<div class="controls">
+<label>向き <select id="direction"><option value="0">正面</option><option value="1">左</option><option value="2">右</option><option value="3">背面</option></select></label>
+<label>倍率 <select id="zoom"><option value="1">1倍・44px実寸</option><option value="2">2倍</option><option value="4">4倍・画素確認</option></select></label>
+<label>背景 <select id="ground"><option value="grass">村の草地</option><option value="stone">王都の石畳</option></select></label>
+<button id="export">比較画像PNGを書き出す</button>
+<a href="../index.html?gcMargaretSilver=1">ゲーム内で試す</a>
+<a href="../index.html">通常版で遊ぶ</a>
+</div>
+<p id="status">原画を読み込み中…</p><div id="gallery"></div>
+<p>判定基準：44pxで顔と髪の形が読みやすいか、他3人・V5 NPCと同じ世界に見えるか、白髪の影が単調な灰色になっていないか。美術的な優劣は未判定です。通常の移動と会話動作の両方で確認してください。</p>
+<script src="../js/render/margaret_silver_study.js"></script>
+<script>
+'use strict';
+const cards=[
+ {id:'margaret',label:'マーガレット',sub:'現行Idle',kind:'original'},
+ {id:'margaret',label:'マーガレット',sub:'銀白髪候補・44px',kind:'study'},
+ {id:'karen',label:'カレン',sub:'現行Idle',kind:'hero'},
+ {id:'triton',label:'トリトン',sub:'現行Idle',kind:'hero'},
+ {id:'sophie',label:'ソフィ',sub:'現行Idle',kind:'hero'},
+ {id:'mayor',label:'村長',sub:'V5基準',kind:'anchor',index:3},
+ {id:'messenger',label:'王国使者',sub:'V5基準',kind:'anchor',index:4}
+];
+const images={},gallery=document.getElementById('gallery'),status=document.getElementById('status');
+function load(src){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>resolve(null);img.src=src})}
+async function init(){
+ const sources={atlas:'../assets/npc/featured_residents_charm_v5.png'};
+ for(const id of ['margaret','karen','triton','sophie'])sources[id]='../assets/characters/'+id+'/'+id+'_idle.png';
+ await Promise.all(Object.entries(sources).map(async ([id,src])=>{images[id]=await load(src)}));
+ if(images.margaret)images.study=MargaretSilverStudy.makeCandidate(images.margaret);
+ for(const item of cards){
+  const el=document.createElement('section');el.className='unit '+(item.kind==='anchor'?'anchor':item.kind==='study'?'study':'');
+  const c=document.createElement('canvas'),name=document.createElement('strong'),sub=document.createElement('small');
+  name.textContent=item.label;sub.textContent=item.sub;el.append(c,name,sub);gallery.append(el);item.canvas=c
+ }
+ for(const id of ['direction','zoom','ground'])document.getElementById(id).addEventListener('change',redraw);
+ document.getElementById('export').addEventListener('click',exportImage);redraw()
+}
+function paint(ctx,item,direction){
+ ctx.imageSmoothingEnabled=false;
+ const ground=document.getElementById('ground').value;
+ ctx.fillStyle=ground==='grass'?'#8e9875':'#92928d';ctx.fillRect(0,0,72,72);
+ ctx.fillStyle=ground==='grass'?'#798967':'#81817d';ctx.fillRect(0,58,72,2);
+ ctx.fillStyle='rgba(14,18,19,.26)';ctx.beginPath();ctx.ellipse(36,57,10,3.3,0,0,Math.PI*2);ctx.fill();
+ const src=item.kind==='anchor'?images.atlas:item.kind==='study'?images.study:images[item.id];
+ if(!src)return false;
+ const sx=item.kind==='anchor'?item.index*48:0;
+ ctx.drawImage(src,sx,direction*48,48,48,14,14,44,44);return true
+}
+function redraw(){
+ const dir=Number(document.getElementById('direction').value),zoom=Number(document.getElementById('zoom').value);
+ const failures=[];
+ for(const item of cards){const c=item.canvas;c.width=72*zoom;c.height=72*zoom;c.style.width=c.width+'px';c.style.height=c.height+'px';
+  const ctx=c.getContext('2d');ctx.scale(zoom,zoom);if(!paint(ctx,item,dir))failures.push(item.label)
+ }
+ if(failures.length){status.textContent='読み込み失敗: '+failures.join('、');return}
+ if(images.study===images.margaret){status.textContent='候補変換は適用されませんでした。元画像と同じ表示です。';return}
+ const a=document.createElement('canvas'),b=document.createElement('canvas');a.width=b.width=48;a.height=b.height=48;
+ a.getContext('2d').drawImage(images.margaret,0,dir*48,48,48,0,0,48,48);
+ b.getContext('2d').drawImage(images.study,0,dir*48,48,48,0,0,48,48);
+ const p=a.getContext('2d').getImageData(0,0,48,48).data,q=b.getContext('2d').getImageData(0,0,48,48).data;
+ let changed=0,alphaChanged=0;for(let i=0;i<p.length;i+=4){if(p[i]!==q[i]||p[i+1]!==q[i+1]||p[i+2]!==q[i+2])changed++;if(p[i+3]!==q[i+3])alphaChanged++}
+ status.textContent='方向 '+['正面','左','右','背面'][dir]+'：色変更 '+changed+'px / 透明度変更 '+alphaChanged+'px。美術的な優劣は未判定。'
+}
+function exportImage(){
+ const zoom=4,dir=Number(document.getElementById('direction').value),c=document.createElement('canvas');
+ c.width=72*zoom*cards.length;c.height=72*zoom+34;const ctx=c.getContext('2d');
+ ctx.fillStyle='#24282c';ctx.fillRect(0,0,c.width,c.height);
+ cards.forEach((item,i)=>{ctx.save();ctx.translate(i*72*zoom,0);ctx.scale(zoom,zoom);paint(ctx,item,dir);ctx.restore();
+  ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font='14px sans-serif';ctx.fillText(item.label,i*72*zoom+144,72*zoom+20)});
+ try{const a=document.createElement('a');a.download='gray-crown-margaret-silver-ab-'+dir+'.png';a.href=c.toDataURL('image/png');a.click()}
+ catch(_){status.textContent='file://環境では書き出せない場合があります。画面上の比較を利用してください。'}
+}
+init();
+</script></body></html>
