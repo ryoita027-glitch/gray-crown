@@ -83,3 +83,43 @@ test('a recovered blocked checkpoint discards trail history from the old locatio
   'recovery must not replay trail coordinates from an invalid checkpoint');
  assert.equal(h.evaluate('partyTrailPoints().every(([x,y])=>!isBlocked(x,y))'),true);
 });
+
+test('Continue rejects distant, diagonal, fractional and malformed follower paths',()=>{
+ const invalidTrails=[
+  [[20,7],[19,7],[18,7],[17,7]],
+  [[9,8],[8,7],[8,6],[8,5]],
+  [[9,7],[7,7],[8,6],[8,5]],
+  [[9.5,7],[8,7],[8,6],[8,5]],
+  [[-1,7],[8,7],[8,6],[8,5]],
+  [[9,7],null,[8,6],[8,5]]
+ ];
+ for(const trail of invalidTrails){
+  const h=createHarness(),save=h.GC.Save;
+  saveTurnedRoadCheckpoint(h);
+  const raw=JSON.parse(h.storage.getItem(save.SAVE_KEY));
+  raw.trail=trail;
+  h.storage.setItem(save.SAVE_KEY,JSON.stringify(raw));
+  h.GC.State.reset();
+  assert.equal(save.load(true),true);
+  assert.equal(h.GC.State.get().worldStepsOnMap,0,
+   'malformed path must not be replayed as genuine movement history');
+  assert.equal(followerTiles(h).length,3);
+  assert.equal(h.evaluate('partyTrailPoints().every(([x,y])=>!isBlocked(x,y))'),true);
+ }
+});
+
+test('valid backtracking and first-step history remain accepted',()=>{
+ for(const [steps,trail] of [
+  [4,[[9,7],[10,7],[9,7],[8,7]]],
+  [1,[[9,7],[100,100],[100,101],[100,102]]]
+ ]){
+  const h=createHarness(),save=h.GC.Save;
+  saveTurnedRoadCheckpoint(h);
+  const raw=JSON.parse(h.storage.getItem(save.SAVE_KEY));
+  raw.worldStepsOnMap=steps;raw.trail=trail;
+  h.storage.setItem(save.SAVE_KEY,JSON.stringify(raw));
+  h.GC.State.reset();
+  assert.equal(save.load(true),true);
+  assert.equal(h.GC.State.get().worldStepsOnMap,steps);
+ }
+});
