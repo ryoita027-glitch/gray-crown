@@ -50,6 +50,20 @@ function nearestSafeTile(mapId,x,y,saveState=state){
  // recover the usable backup without modifying either stored save slot.
  throw new Error('No walkable checkpoint tile in '+mapId)
 }
+// A real follower step is an orthogonal, in-bounds move from the leader's
+// previous position. Imported/edited saves must not teleport party members.
+function hasContiguousFollowerHistory(trail,x,y,count){
+ let px=x,py=y;
+ for(let i=0;i<Math.min(count,3);i++){
+  const point=trail[i];
+  if(!Array.isArray(point)||point.length!==2||
+     !Number.isInteger(point[0])||!Number.isInteger(point[1])||
+     point[0]<0||point[0]>=COLS||point[1]<0||point[1]>=ROWS||
+     Math.abs(point[0]-px)+Math.abs(point[1]-py)!==1)return false;
+  px=point[0];py=point[1]
+ }
+ return true
+}
 function mergeStructuredState(fresh,src){
  const loaded=createGameState();
  for(const key of ['map','x','y','dir','trail','worldStepsOnMap','locked','encounterSteps','nextEncounterAt','interiorReturn','journal','inventory','gold'])if(src[key]!==undefined)loaded[key]=src[key];
@@ -90,7 +104,8 @@ function validateLoadedState(loaded,fresh=createGameState()){
  const hasTrail=Array.isArray(loaded.trail)&&loaded.trail.length>=3;
  if(!hasTrail)loaded.trail=[[loaded.x+1,loaded.y],[loaded.x+2,loaded.y],[loaded.x+3,loaded.y]];
  const steps=loaded.worldStepsOnMap;
- loaded.worldStepsOnMap=!checkpointRelocated&&hasTrail&&Number.isSafeInteger(steps)&&steps>=0?
+ loaded.worldStepsOnMap=!checkpointRelocated&&hasTrail&&Number.isSafeInteger(steps)&&steps>=0&&
+  hasContiguousFollowerHistory(loaded.trail,loaded.x,loaded.y,Math.min(steps,loaded.trail.length))?
   Math.min(steps,loaded.trail.length):0;
  return attachStateCompatibility(loaded)
 }
