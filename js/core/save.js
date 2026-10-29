@@ -51,10 +51,12 @@ function nearestSafeTile(mapId,x,y,saveState=state){
  throw new Error('No walkable checkpoint tile in '+mapId)
 }
 // A real follower step is an orthogonal, in-bounds move from the leader's
-// previous position. Imported/edited saves must not teleport party members.
+// previous position. Validate every stored real step (up to 10), not only
+// the first three visible followers: an imported save must not retain a
+// malformed tail as trusted movement history.
 function hasContiguousFollowerHistory(trail,x,y,count){
  let px=x,py=y;
- for(let i=0;i<Math.min(count,3);i++){
+ for(let i=0;i<count;i++){
   const point=trail[i];
   if(!Array.isArray(point)||point.length!==2||
      !Number.isInteger(point[0])||!Number.isInteger(point[1])||

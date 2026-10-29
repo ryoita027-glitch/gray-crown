@@ -123,3 +123,27 @@ test('valid backtracking and first-step history remain accepted',()=>{
   assert.equal(h.GC.State.get().worldStepsOnMap,steps);
  }
 });
+
+
+test('Continue rejects corrupted fourth real step while preserving valid four-step history',()=>{
+ const h=createHarness(),save=h.GC.Save;
+ saveTurnedRoadCheckpoint(h);
+ const original=JSON.parse(h.storage.getItem(save.SAVE_KEY));
+ assert.equal(original.worldStepsOnMap,4);
+ // The first three positions are legitimate, but the fourth teleports.
+ // A three-follower-only check would incorrectly trust this history.
+ const corrupted={...original,trail:[[9,7],[8,7],[8,6],[20,6]]};
+ h.storage.setItem(save.SAVE_KEY,JSON.stringify(corrupted));
+ h.GC.State.reset();
+ assert.equal(save.load(true),true);
+ assert.equal(h.GC.State.get().worldStepsOnMap,0,
+  'all counted real steps, not just the three visible followers, must be contiguous');
+ assert.equal(h.evaluate('partyTrailPoints().every(([x,y])=>!isBlocked(x,y))'),true);
+
+ // The same checkpoint with a complete, contiguous four-step turn is valid.
+ h.storage.setItem(save.SAVE_KEY,JSON.stringify(original));
+ h.GC.State.reset();
+ assert.equal(save.load(true),true);
+ assert.equal(h.GC.State.get().worldStepsOnMap,4);
+ assert.deepEqual(followerTiles(h),['9,7','8,7','8,6']);
+});
