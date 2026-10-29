@@ -5,7 +5,7 @@ const MargaretSilverStudy=(()=>{
  function mode(search=typeof window!=='undefined'?window.location.search:''){
   try{
    const value=new URLSearchParams(search).get(PARAM);
-   return value==='1'?1:value==='2'?2:0
+   return value==='1'?1:value==='2'?2:value==='3'?3:0
   }catch(_){return 0}
  }
  function enabled(search=typeof window!=='undefined'?window.location.search:''){return mode(search)!==0}
@@ -75,7 +75,7 @@ const MargaretSilverStudy=(()=>{
   button.id='gcMargaretSilverToggle';button.type='button';
   button.title='同じ位置・向き・場面のまま原画と銀白髪候補を切り替える';
   const sync=()=>{
-   button.textContent=active()?(mode()===2?'マーガレット：色面V2':'マーガレット：銀白候補'):'マーガレット：原画';
+   button.textContent=active()?(mode()===3?'マーガレット：輪郭V3':mode()===2?'マーガレット：色面V2':'マーガレット：銀白候補'):'マーガレット：原画';
    button.setAttribute('aria-pressed',String(active()))
   };
   button.addEventListener('click',()=>{
@@ -88,20 +88,81 @@ const MargaretSilverStudy=(()=>{
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountToggle,{once:true});
   else mountToggle()
  }
+
+ // V3 geometry pilot: authored 48px crown and hair-outline bands applied
+ // to all original poses/directions. The candidate is NOT art-approved.
+ // Classify source hair before recoloring, not skin/eyes/cloth afterward.
+ function reshapeSilhouetteV3(imageData,original){
+  const {width,height,data}=imageData;
+  if(width%48||height%48||!original||original.length!==data.length)return 0;
+  const hairAt=(x,y)=>{
+   const i=(y*width+x)*4,r=original[i],g=original[i+1],b=original[i+2],a=original[i+3];
+   return a>=200&&r>=75&&b>=g+9&&r>=g+4&&b>=r-15;
+  };
+  const put=(x,y,sourceX,sourceY)=>{
+   const i=(y*width+x)*4,j=(sourceY*width+sourceX)*4;
+   if(data[i+3]>=128||!hairAt(sourceX,sourceY))return 0;
+   // Keep a dark hair outline rather than creating a silver glow.
+   data[i]=Math.max(43,data[j]-31);
+   data[i+1]=Math.max(41,data[j+1]-30);
+   data[i+2]=Math.max(51,data[j+2]-27);
+   data[i+3]=255;
+   return 1;
+  };
+  let changed=0;
+  for(let cy=0;cy<height;cy+=48)for(let cx=0;cx<width;cx+=48){
+   const dir=(cy/48)%4;
+   // Lift central crown by one source pixel without shifting eyes or feet.
+   let crown=-1;
+   for(let y=3;y<=13&&crown<0;y++){
+    let hits=0;
+    for(let x=17;x<=30;x++)if(hairAt(cx+x,cy+y))hits++;
+    if(hits>=4)crown=y;
+   }
+   if(crown>=4){
+    for(let x=21;x<=26;x++)
+     if(hairAt(cx+x,cy+crown))
+      changed+=put(cx+x,cy+crown-1,cx+x,cy+crown);
+   }
+   // Hand-selected direction-specific outline bands: temple, tied hair,
+   // and rear long hair. No generic scaling or alpha dilation of the body.
+   const bands=[
+    [[11,16,'L'],[11,17,'R'],[24,29,'L'],[24,29,'R']],
+    [[12,17,'L'],[14,22,'R'],[25,30,'R']],
+    [[14,22,'L'],[12,17,'R'],[25,30,'L']],
+    [[11,18,'L'],[11,18,'R'],[23,31,'L'],[23,31,'R']]
+   ][dir];
+   for(const [from,to,side] of bands)for(let y=from;y<=to;y++){
+    let edge=side==='L'?48:-1;
+    const lo=side==='L'?10:24,hi=side==='L'?23:37;
+    for(let x=lo;x<=hi;x++)if(hairAt(cx+x,cy+y)){
+     if(side==='L')edge=Math.min(edge,x);else edge=Math.max(edge,x);
+    }
+    if(edge===48||edge===-1)continue;
+    if(side==='L'&&(edge<12||edge>20))continue;
+    if(side==='R'&&(edge<27||edge>35))continue;
+    const next=edge+(side==='L'?-1:1);
+    changed+=put(cx+next,cy+y,cx+edge,cy+y);
+   }
+  }
+  return changed;
+ }
+
  function applyToImageData(imageData,variant=1){
   if(!imageData||!imageData.data||!Number.isInteger(imageData.width)||!Number.isInteger(imageData.height))return 0;
   const {width,height,data}=imageData;
   if(width%48||height%48)return 0;
+  const original=variant===3?Uint8ClampedArray.from(data):null;
   let changed=0;
   for(let y=0;y<height;y++)for(let x=0;x<width;x++){
    const i=(y*width+x)*4,old=[data[i],data[i+1],data[i+2],data[i+3]];
-   const p=variant===2?transformPixelV2(old[0],old[1],old[2],old[3],x,y):
+   const p=(variant===2||variant===3)?transformPixelV2(old[0],old[1],old[2],old[3],x,y):
     transformPixel(old[0],old[1],old[2],old[3],x,y);
    if(p[0]!==old[0]||p[1]!==old[1]||p[2]!==old[2]){
     data[i]=p[0];data[i+1]=p[1];data[i+2]=p[2];changed++
    }
   }
-  return changed
+  return changed+(variant===3?reshapeSilhouetteV3(imageData,original):0)
  }
  function makeCandidate(image,variant=mode()||1){
   if(typeof document==='undefined'||!image)return image;
@@ -116,5 +177,5 @@ const MargaretSilverStudy=(()=>{
    c.putImageData(pixels,0,0);return canvas
   }catch(_){return image}
  }
- return Object.freeze({mode,enabled,active,setCandidate,mountToggle,transformPixel,transformPixelV2,applyToImageData,makeCandidate});
+ return Object.freeze({mode,enabled,active,setCandidate,mountToggle,transformPixel,transformPixelV2,reshapeSilhouetteV3,applyToImageData,makeCandidate});
 })();
