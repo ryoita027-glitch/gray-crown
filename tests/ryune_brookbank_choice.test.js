@@ -40,20 +40,38 @@ test('brookbank is discoverable from the real approach without adding a blocker 
  assert.equal(h.GC.State.get().story.stage,h.evaluate('STORY_STAGES.VILLAGE'),'a clue must not advance the story');
 });
 
-test('brook stones offer three optional party-led actions without auto-selecting or changing the chapter',()=>{
+test('brook stones offer three lasting actions and a noncommittal return-later option',()=>{
  const h=createHarness(),s=h.GC.State.get();
  const stage=s.story.stage,items=clone(s.inventory),before=stonePixels(h);
  const labels=showBrookbankChoices(h);
- assert.equal(labels.length,3);
+ assert.equal(labels.length,4);
  assert.match(labels[0],/水位/);
  assert.match(labels[1],/石/);
  assert.match(labels[2],/任せる/);
+ assert.match(labels[3],/あとで戻る/);
  assert.equal(s.events.choices['ryune.brookbank.action'],undefined);
  assert.equal(s.story.stage,stage);
  assert.deepEqual(clone(s.inventory),items);
  assert.deepEqual(stonePixels(h),before);
  h.evaluate('closeDialogue(false)');
  assert.equal(s.events.completed['ryune.brookbank.choice'],undefined,'closing dialogue must not commit an action');
+});
+
+
+test('return-later option keeps all three outcomes open on a later visit',()=>{
+ const h=createHarness(),s=h.GC.State.get();
+ const stage=s.story.stage,items=clone(s.inventory),before=stonePixels(h);
+ assert.equal(showBrookbankChoices(h).length,4);
+ choose(h,3);
+ assert.equal(s.events.choices['ryune.brookbank.action'],undefined);
+ assert.equal(s.events.completed['ryune.brookbank.choice'],undefined);
+ assert.equal(s.story.stage,stage);
+ assert.deepEqual(clone(s.inventory),items);
+ assert.deepEqual(stonePixels(h),before);
+ assert.equal(showBrookbankChoices(h).length,4,'returning to stones offers the same meaningful options');
+ choose(h,1);
+ assert.equal(s.events.choices['ryune.brookbank.action'],'secure');
+ assert.equal(s.events.completed['ryune.brookbank.choice'],true);
 });
 
 test('each chosen action is remembered, is idempotent, and is acknowledged by the local keeper',()=>{
@@ -100,6 +118,11 @@ test('brookbank choice survives save/load and does not block a one-trip field or
  h.evaluate('closeDialogue(false)');
  h.evaluate("state.map='village';inlineNpcEvent('farmer')");
  assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/水位の目印/);
+ assert.equal(s.events.completed['ryune.brookbank.boruTold'],undefined,'Boru is not informed before the dialogue completes');
+ h.evaluate("for(let i=0;i<3&&dialogueContinue;i++){const next=dialogueContinue;closeDialogue(false);next()}");
+ assert.equal(s.events.completed['ryune.brookbank.boruTold'],true);
+ h.evaluate("inlineNpcEvent('farmer')");
+ assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/覚えてるよ/);
 });
 
 test('Boru does not falsely claim knowledge of brook work after a fields-only report',()=>{
@@ -108,7 +131,27 @@ test('Boru does not falsely claim knowledge of brook work after a fields-only re
  h.evaluate("state.events.completed['ryune.outskirts.reward']=true;state.events.completed['ryune.outskirts.reported.fields']=true;state.map='village';inlineNpcEvent('farmer')");
  assert.doesNotMatch(h.evaluate('DIALOGUE_TYPE.fullHTML'),/川辺の水位の目印/);
  h.evaluate("state.events.completed['ryune.outskirts.reported.brook']=true;inlineNpcEvent('farmer')");
- assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/川辺の水位の目印/);
+ assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/川辺に水位の目印/);
+ assert.doesNotMatch(h.evaluate('DIALOGUE_TYPE.fullHTML'),/見たよ/,'Boru must learn from Karen rather than know the future');
+});
+
+
+test('Boru learns all brookbank outcomes only through an actual follow-up conversation after a prior report',()=>{
+ for(const [index,action,keyword] of [[0,'mark','水位の目印'],[1,'secure','ずれた石'],[2,'leave','触らなかった']]){
+  const h=createHarness(),s=h.GC.State.get();
+  h.evaluate("state.events.completed['ryune.outskirts.reward']=true;state.events.completed['ryune.outskirts.reported.brook']=true");
+  showBrookbankChoices(h);choose(h,index);
+  assert.equal(s.events.choices['ryune.brookbank.action'],action);
+  assert.equal(s.events.completed['ryune.brookbank.boruTold'],undefined);
+  h.evaluate("state.map='village';inlineNpcEvent('farmer')");
+  assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),new RegExp(keyword),'Karen reports the action');
+  assert.equal(s.events.completed['ryune.brookbank.boruTold'],undefined);
+  h.evaluate("for(let i=0;i<3&&dialogueContinue;i++){const next=dialogueContinue;closeDialogue(false);next()}");
+  assert.equal(s.events.completed['ryune.brookbank.boruTold'],true,'Boru only learns after hearing both lines');
+  h.evaluate("inlineNpcEvent('farmer')");
+  assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/覚えてるよ/);
+  assert.equal(s.events.completed['ryune.outskirts.reward'],true,'no additional quest or reward');
+ }
 });
 
 test('first brook inspection hints at the stones but never gates the one-trip report',()=>{
