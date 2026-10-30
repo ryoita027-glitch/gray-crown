@@ -1036,3 +1036,41 @@ test('portable file import preserves live and stored progress when panel cleanup
  h.GC.Dialogue.finishDialogueTyping();
  assert.match(h.getElement('dialogueText').innerHTML,/ページを再読み込み/);
 });
+
+test('unchanged manual Save repairs a missing backup without rewriting primary', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=881');
+ assert.equal(s.save(true),true);
+ const original=h.storage.getItem(s.SAVE_KEY);
+ h.storage.removeItem(s.SAVE_BACKUP_KEY);
+ const set=h.storage.setItem.bind(h.storage),writes=[];
+ h.storage.setItem=(key,value)=>{
+  writes.push(key);
+  if(key===s.SAVE_KEY)throw new Error('QuotaExceededError: unchanged primary denied');
+  return set(key,value);
+ };
+ assert.equal(s.save(true),true);
+ assert.deepEqual(writes,[s.SAVE_BACKUP_KEY]);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),original);
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),original);
+});
+
+test('unchanged manual Save quarantines an invalid backup without rewriting primary', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=882');
+ assert.equal(s.save(true),true);
+ const original=h.storage.getItem(s.SAVE_KEY),corrupt='{broken-backup';
+ h.storage.setItem(s.SAVE_BACKUP_KEY,corrupt);
+ const set=h.storage.setItem.bind(h.storage),writes=[];
+ h.storage.setItem=(key,value)=>{
+  writes.push(key);
+  if(key===s.SAVE_KEY)throw new Error('QuotaExceededError: unchanged primary denied');
+  return set(key,value);
+ };
+ assert.equal(s.save(true),true);
+ assert.deepEqual(writes,[s.SAVE_QUARANTINE_KEY,s.SAVE_BACKUP_KEY]);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),original);
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),original);
+ const records=JSON.parse(h.storage.getItem(s.SAVE_QUARANTINE_KEY));
+ assert.equal(records.at(-1).backup,corrupt);
+});

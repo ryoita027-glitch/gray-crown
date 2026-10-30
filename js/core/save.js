@@ -203,7 +203,10 @@ function save(silent=false){
     localStorage.setItem(SAVE_BACKUP_KEY,payload);
     if(localStorage.getItem(SAVE_BACKUP_KEY)!==payload)throw new Error('Save backup write not persisted');
    }
-   localStorage.setItem(SAVE_KEY,payload);
+   // Repairing an absent/corrupt backup must not rewrite an unchanged primary.
+   // A quota-denied primary write would otherwise report Save failure after
+   // the backup had already been repaired successfully.
+   if(prev!==payload)localStorage.setItem(SAVE_KEY,payload);
    if(localStorage.getItem(SAVE_KEY)!==payload)throw new Error('Save primary write not persisted')
   }catch(writeError){
    // A failed primary write must not leave the older backup overwritten.
