@@ -421,7 +421,11 @@ function restart(){
  // Otherwise switching from the menu can erase hours of unsaved play.
  let persisted=false;
  try{persisted=!!(localStorage.getItem(SAVE_KEY)||localStorage.getItem(SAVE_BACKUP_KEY))}
- catch(e){GC.Log?.error('Restart storage check failed',{error:String(e)});return false}
+ catch(e){
+  GC.Log?.error('Restart storage check failed',{error:String(e)});
+  say('システム','ブラウザの保存領域を確認できません。新しい冒険は開始していません。設定を確認してください。');
+  return false
+ }
  if(!persisted&&!confirm('保存していない現在の冒険を破棄して、最初から始めますか？'))return false;
  return startNewGameSafely()
 }
