@@ -174,9 +174,15 @@ function save(silent=false){
   if(!preserveInvalidSaveSlotsBeforeWrite(prev,backup,primaryUsable,backupUsable))
    throw new Error('Cannot preserve unreadable save slots before Save');
   try{
-   if(primaryUsable)localStorage.setItem(SAVE_BACKUP_KEY,prev);
-   else if(!backupUsable)localStorage.setItem(SAVE_BACKUP_KEY,payload);
-   localStorage.setItem(SAVE_KEY,payload)
+   if(primaryUsable){
+    localStorage.setItem(SAVE_BACKUP_KEY,prev);
+    if(localStorage.getItem(SAVE_BACKUP_KEY)!==prev)throw new Error('Save backup write not persisted');
+   }else if(!backupUsable){
+    localStorage.setItem(SAVE_BACKUP_KEY,payload);
+    if(localStorage.getItem(SAVE_BACKUP_KEY)!==payload)throw new Error('Save backup write not persisted');
+   }
+   localStorage.setItem(SAVE_KEY,payload);
+   if(localStorage.getItem(SAVE_KEY)!==payload)throw new Error('Save primary write not persisted')
   }catch(writeError){
    // A failed primary write must not leave the older backup overwritten.
    // Preserve both original slots as a single logical transaction.
@@ -278,9 +284,15 @@ function importPortableSaveText(raw){
   // Persist the migrated *validated* schema, never raw untrusted file text.
   const payload=JSON.stringify({...loaded,schema:SAVE_SCHEMA,locked:false,battle:null,
     battleReturn:null,symbolEncounter:null});
-  if(isUsableSavedAdventure(primary))localStorage.setItem(SAVE_BACKUP_KEY,primary);
-  else if(!isUsableSavedAdventure(backup))localStorage.setItem(SAVE_BACKUP_KEY,payload);
+  if(isUsableSavedAdventure(primary)){
+   localStorage.setItem(SAVE_BACKUP_KEY,primary);
+   if(localStorage.getItem(SAVE_BACKUP_KEY)!==primary)throw new Error('Portable import backup write not persisted');
+  }else if(!isUsableSavedAdventure(backup)){
+   localStorage.setItem(SAVE_BACKUP_KEY,payload);
+   if(localStorage.getItem(SAVE_BACKUP_KEY)!==payload)throw new Error('Portable import backup write not persisted');
+  }
   localStorage.setItem(SAVE_KEY,payload);
+  if(localStorage.getItem(SAVE_KEY)!==payload)throw new Error('Portable import primary write not persisted');
   if(!load(true))throw new Error('Imported save could not be loaded');
   // The imported adventure is now live. A title-button refresh failure must
   // not report a failed import and roll back the saved slots behind it.
