@@ -145,6 +145,8 @@ const OpeningPixelAssets=(()=>{
  // Nine bespoke resident silhouettes with four separately drawn directions.
  // Real transparent PNG pixel source, not another tint over the shared body.
  const useLegacyArt=typeof window!=='undefined'&&/(?:^|[?&])npcArt=legacy(?:&|$)/.test(window.location.search||'');
+ // Reversible V5-only footline study. Original approved PNGs and default positions stay unchanged.
+ const featuredFootlineStudy=typeof window!=='undefined'&&/(?:^|[?&])gcV5Footline=44(?:&|$)/.test(window.location.search||'');
  const featuredNames=['baker','farmer','oldwoman','mayor','messenger','ren',
   'capitalFlowerGirl','capitalRecruit','granz'];
  const featuredIndex=new Map(featuredNames.map((id,i)=>[id,i]));
@@ -204,13 +206,14 @@ const OpeningPixelAssets=(()=>{
    c.beginPath();c.ellipse(centerX,footY-1,useLegacyArt?8:9,3,0,0,Math.PI*2);c.fill()
   }
   c.drawImage(sheet,index*srcSize,sy,srcSize,srcSize,
-   Math.round(centerX-destSize/2),useLegacyArt?n.y*32:footY-destSize,destSize,destSize);
+   Math.round(centerX-destSize/2),useLegacyArt?n.y*32:(featuredFootlineStudy?footY-Math.round(destSize*44/srcSize):footY-destSize),destSize,destSize);
   c.restore();return true
  }
  function featuredStatus(){return {requested:featuredRequested,ready:featuredReady,
   failed:featuredFailed,count:featuredNames.length,
   gesturesRequested:actionsRequested,gesturesReady:actionsReady,gesturesFailed:actionsFailed,
-  artVersion:useLegacyArt?'classic-v1':'concept-charm-v5'}}
+  artVersion:useLegacyArt?'classic-v1':'concept-charm-v5',
+  footlineStudy:!useLegacyArt&&featuredFootlineStudy?'source-y44':'default'}}
  // Field worker V5-style art study: isolated, opt-in, never a default asset swap.
  // Four independently authored 48px directional views; no idle/walk claims.
  const fieldWorkerStudyV2Enabled=typeof window!=='undefined'&&/(?:^|[?&])gcFieldWorkerArt=2(?:&|$)/.test(window.location.search||'');
