@@ -73,3 +73,20 @@
 
 ### Next acceptance
 Run `node --test tests/capital_ration_gift.test.js tests/road_merchant_cart_consequence.test.js` and `npm run check` on the exact PR HEAD; then real browser: reach the capital with zero and one ration, choose donate/keep, revisit and Continue, check no double spend, and verify the late-war dialogue remains unchanged. Evaluate whether the added prompt helps agency without slowing the ration queue.
+
+## 2026-10-31 follow-up — the capital sees one personal ration (Draft)
+
+### Actual player-visible change
+- The previous gift cost one `携帯食` and the mother remembered it, but no scenery or other nearby character acknowledged the donation. At (16,8), a small wrapped food packet now appears beside the mother immediately after the gift and after Continue, using the existing `early.capitalRationGift` choice. It is scenery only, not a new pickup, collision or city-wide food supply.
+- The recruit at (18,8), two tiles away, now notices the gift and adds **one line** about helping in future. His original opening, road-bandit moral branch and late-war priority are retained. No extra reward, NPC, quest, map area, forced stop or lore spoiler.
+- Distinction: the repaired merchant's supplies belong to the supply house; this packet is a single personal gift.
+
+### External player signals checked 2026-10-31
+- Steam *Chained Echoes*, Oct 28 reviews: individual players praised environmental details and criticized lack of protagonist impact. Oct 29 criticism described a hard-to-find doorway and repetitive backtracking: https://steamcommunity.com/app/1229240/reviews/
+- Steam *Octopath Traveler II*, Oct 26 and Oct 29 individual reviews criticize dialogue fatigue: https://steamcommunity.com/app/1971650/
+- **Hypothesis only:** one visual consequence plus one short witnessed reaction is more legible than another long exposition scene. These are not representative market findings or tested improvements.
+
+### Verification and limits
+- Runtime sources and Node regression source parsed in V8; isolated execution of actual updated renderer and gift commit verified before writing. New tests cover initial/after-gift pixels, one-time spending, passability, Save/Continue and recruit's existing moral and war branches.
+- **Not run:** actual Node harness, `npm run check`, native-scale Chromium screenshot, full Save/Continue integration, human player test. Private repo clone from the execution container still fails GitHub DNS. No paid CI.
+- **Draft/HOLD** pending real-screen inspection: reject if the packet is hidden under the mother's authored sprite, resembles loot, or masks walking. Confirm recruit dialogue in all states.
