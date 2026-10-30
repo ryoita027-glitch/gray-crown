@@ -386,6 +386,23 @@ function downloadQuarantinedSaves(){
  }catch(e){GC.Log?.error('Quarantine export failed',{error:String(e)});return false}
 }
 
+function preserveInvalidArchivedAdventureBeforeWrite(raw){
+ // Never erase unreadable previous-adventure bytes during a new archive write.
+ if(!raw||isUsableSavedAdventure(raw))return true;
+ try{
+  const existing=localStorage.getItem(SAVE_QUARANTINE_KEY);
+  const entries=existing?JSON.parse(existing):[];
+  if(!Array.isArray(entries))return false;
+  if(entries.some(entry=>entry?.archive===raw))return true;
+  entries.push({savedAt:new Date().toISOString(),primary:null,backup:null,archive:raw});
+  const payload=JSON.stringify(entries);
+  localStorage.setItem(SAVE_QUARANTINE_KEY,payload);
+  return localStorage.getItem(SAVE_QUARANTINE_KEY)===payload
+ }catch(e){
+  GC.Log?.error('Previous adventure archive quarantine failed',{error:String(e)});
+  return false
+ }
+}
 function archiveBeforeNewGame(){
  let candidate;
  try{
@@ -404,7 +421,9 @@ function archiveBeforeNewGame(){
   // preserved. The special archive survives later manual saves.
   // Reuse an identical archived checkpoint without a quota-sensitive rewrite.
   // This check comes after corrupt-slot preservation, which must never be skipped.
-  if(localStorage.getItem(SAVE_ARCHIVE_KEY)===candidate)return true;
+  const previousArchive=localStorage.getItem(SAVE_ARCHIVE_KEY);
+  if(previousArchive===candidate)return true;
+  if(!preserveInvalidArchivedAdventureBeforeWrite(previousArchive))return false;
   localStorage.setItem(SAVE_ARCHIVE_KEY,candidate);
   return localStorage.getItem(SAVE_ARCHIVE_KEY)===candidate
  }catch(e){
