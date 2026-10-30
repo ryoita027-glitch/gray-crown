@@ -164,3 +164,30 @@ test('first brook inspection hints at the stones but never gates the one-trip re
  assert.equal(s.events.choices['ryune.brookbank.action'],undefined,'observing water must not choose for the player');
  assert.equal(h.GC.Events.findTriggeredEvent('npc','farmer',{map:'village'})?.id,'ryune.outskirts.brookReport','the original single-observation reward remains available');
 });
+
+
+test('Boru can hear about any shoreline decision without requiring a water inspection or ration',()=>{
+ for(const [index,choice,keyword] of [[0,'mark','水位の目印'],[1,'secure','ずれた石'],[2,'leave','触らなかった']]){
+  const h=createHarness(),s=h.GC.State.get();
+  showBrookbankChoices(h);choose(h,index);
+  assert.equal(s.events.choices['ryune.brookbank.action'],choice);
+  assert.equal(s.events.completed['ryune.brook.inspect'],undefined);
+  assert.equal(s.events.completed['ryune.outskirts.reward'],undefined);
+  h.evaluate("state.map='village';npcEvent('farmer')");
+  assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),new RegExp(keyword),'Boru hears the actual choice');
+  assert.equal(s.events.completed['ryune.brookbank.boruTold'],undefined,'he must listen before remembering');
+  h.evaluate("for(let i=0;i<3&&dialogueContinue;i++){const next=dialogueContinue;closeDialogue(false);next()}");
+  assert.equal(s.events.completed['ryune.brookbank.boruTold'],true);
+  assert.equal(s.events.completed['ryune.outskirts.reward'],undefined,'conversation is not a reward shortcut');
+  assert.equal(s.inventory['携帯食']||0,0,'no ration from optional conversation');
+  h.evaluate("npcEvent('farmer')");
+  assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/覚えてるよ/,'repeat does not restart the report');
+  const inspect=h.evaluate("EVENT_DEFS.find(e=>e.id==='ryune.brook.inspect')");
+  h.GC.Events.applyEventEffects(inspect);
+  const reward=h.GC.Events.findTriggeredEvent('npc','farmer',{map:'village'});
+  assert.equal(reward?.id,'ryune.outskirts.brookReport','original observation report remains available');
+  h.GC.Events.applyEventEffects(reward);
+  assert.equal(s.inventory['携帯食'],1,'normal one-time report still awards one ration');
+  assert.equal(s.events.completed['ryune.brookbank.boruTold'],true,'prior memory survives the report');
+ }
+});
