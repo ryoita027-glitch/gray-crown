@@ -108,6 +108,19 @@ const RyuneOutskirts=(()=>{
     pixel(c,'#a6a284',11*W+22,y*W+18,7,4);
     pixel(c,'#4a7b6d',14*W+2,y*W+21,12,4);
    }
+   // Footfalls turn from the main east-west brook path toward the existing
+   // stones. Use only already-walkable path tiles; these are worn soil marks,
+   // not arrows, walls, quest markers, or new collision geometry.
+   for(const [tx,ty] of [[9,9],[9,10],[9,11],[8,11],[7,11]]){
+    const px=tx*W,py=ty*W;
+    pixel(c,'#8f7e61',px+10,py+21,6,2);
+    pixel(c,'#c4b18d',px+18,py+24,5,1);
+   }
+   // The worn approach ends at the existing stone prop. These are low,
+   // non-blocking ground marks, not a new quest arrow or a fake obstacle.
+   pixel(c,'#9b8769',5*W+19,11*W+25,10,3);
+   pixel(c,'#c4b18d',5*W+21,11*W+26,5,1);
+   pixel(c,'#9b8769',5*W+27,11*W+29,4,2);
    // A shallow, unblocked shoreline. Water itself remains collision-coded Z.
    pixel(c,'#ae9c78',10*W+26,5*W+20,7,8);
    pixel(c,'#cbba8e',10*W+27,5*W+18,5,3);
@@ -146,6 +159,22 @@ const RyuneOutskirts=(()=>{
    for(const [xx,yy] of [[3,15],[11,10],[20,17]]){
     pixel(c,'#646e67',x+xx,y+yy,9,9);
     pixel(c,'#b5afa0',x+xx+2,y+yy+1,5,2);
+   }
+   // A short old survey cord catches the eye at native tile scale;
+   // it belongs to the stonework and remains after any player decision.
+   pixel(c,'#b7a47c',x+8,y+7,12,2);
+   pixel(c,'#89a8a0',x+18,y+8,4,3);
+   // Draw the chosen change AFTER the original stones, not under the prop.
+   const action=state.events?.choices?.['ryune.brookbank.action'];
+   if(action==='mark'){
+    pixel(c,'#68543a',x+26,y+4,3,23);
+    pixel(c,'#d7c29b',x+23,y+10,8,3);
+    pixel(c,'#e5d4b1',x+24,y+17,6,2);
+   }else if(action==='secure'){
+    for(const [xx,yy] of [[5,22],[14,20],[22,24]]){
+     pixel(c,'#626d65',x+xx,y+yy,7,5);
+     pixel(c,'#b7b0a0',x+xx+1,y+yy,4,2);
+    }
    }
   }else return false;
   return true

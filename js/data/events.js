@@ -554,7 +554,7 @@ const EVENT_DEFS=Object.freeze([
   {id:'ryune.brook.inspect',priority:70,trigger:{type:'object',map:'ryunebrook',target:'brookWater'},
    when:[{eventIncomplete:'ryune.brook.inspect'}],
    lines:[
-    {speaker:'小川の水辺',text:'小川は浅い。橋の下の水路には泥と小枝がたまり、水がゆっくり流れている。'},
+    {speaker:'小川の水辺',text:'小川は浅い。橋の下の水路には泥と小枝がたまり、水がゆっくり流れている。橋の手前には、石積みへ続く踏み跡が残る。'},
     {speaker:'ソフィ',text:'「水がなくなったわけじゃないんですね。畑までちゃんと届いていないのかも」'},
     {speaker:'カレン',text:'「戻ったらボルに伝えよう。私たちだけで勝手に掘るわけにはいかないからね」'}
    ],effects:[
@@ -654,7 +654,7 @@ const EVENT_DEFS=Object.freeze([
   {id:'ryune.fields.worker',priority:15,trigger:{type:'npc',map:'ryunefields',target:'fieldWorker'},
    lines:[{speaker:'畑の手伝い人',text:'「畝の間を踏まないでおくれよ。村へ戻るなら東側の道をまっすぐだ。乾いた場所が気になったら見ていって」'}]},
   {id:'ryune.brook.keeper',priority:15,trigger:{type:'npc',map:'ryunebrook',target:'brookKeeper'},
-   lines:[{speaker:'川辺の見回り人',text:'「橋は通れるよ。足元だけ気をつけて。川の流れを調べるなら橋の手前の岸辺からどうぞ」'}]},
+   lines:[{speaker:'川辺の見回り人',text:'「橋は通れるよ。橋の手前、踏み跡の先に石積みがあるだろう。昨日の雨で少しずれたんだ。気になるなら岸から見ていって」'}]},
   {id:'ryune.fields.cart',priority:15,trigger:{type:'object',map:'ryunefields',target:'fieldCart'},
    lines:[{speaker:'畑の荷車',text:'籠と道具が積まれている。収穫を運ぶための荷車だが、今は修理用の木材を積んでいる。'}]},
   {id:'ryune.brook.stones',priority:15,trigger:{type:'object',map:'ryunebrook',target:'brookStones'},

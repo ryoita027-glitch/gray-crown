@@ -1,0 +1,90 @@
+# Gray Crown — map/story player signals and playable decisions
+
+Updated: 2026-10-30 (JST). This is a working design log, **not** a claim of human playtest acceptance.
+
+## Evidence observed (public, external)
+- *Octopath Traveler II* Steam-derived review summary (TrueGG, sampled as of 2026-10-21): 93.0% all-language Steam positive; 90.3% of 524 Japanese-language reviews positive. This is **overall sentiment**, not proof that any single mechanic causes positive reviews. https://truegg.app/game/1971650/octopath-traveler-ii/
+- Two identifiable September 2026 Steam-purchase reviews reproduced by Verdict: praise character/world journeys while criticizing weak party integration, repetitive chapter loops and side quests whose next step is hard to infer. These are **individual reviews**, not a representative survey. https://www.verdict.games/game/octopath-traveler-2
+- *Chained Echoes* Japanese-language review aggregate: 81/100 positive vs 89% across all languages (sample sizes 100 and 7,722 in the source). This supports checking Japanese feedback separately, not assuming universal tastes. https://gamelog-jp.com/game/1229240/
+
+## Design hypothesis for this iteration (not a measured player outcome)
+Existing Ryune brook and field exploration already lets one observation earn one ration; do not create another fetch loop. Add a **voluntary, ~one-minute party moment** at the existing brook stones. Karen asks, Margaret weighs evidence, Triton sees the practical alternative, and Sophie responds to the human consequences. The player can leave a water-level mark, secure loose stones, or leave the managed shoreline untouched. Each is respected, recorded in schema-23 choices, and reflected by the brook keeper. Two choices leave a small persistent change on the actual stone prop; the mark/secure outcomes are also acknowledged by Boru after a normal report. No route lock, inventory bonus, guaranteed irrigation fix, new character, extra map, or copied dialogue.
+
+## Player-visible acceptance questions
+1. Can a first-time player reach and activate the stones without a quest marker or backtracking requirement?
+2. Does the choice feel optional, short and distinct from the existing report/treasure loop?
+3. Are the chosen marks/stones visibly readable at normal game scale without looking like an obstruction?
+4. Does the keeper/Boru respond to what the player actually chose, including after Save/Continue?
+5. Do the field/brook report, departure, and existing story stages remain unaffected?
+
+## Verification state
+- Code and targeted Node regression test added on an isolated branch; tests are **not confirmed passed** until executed against this exact HEAD.
+- Real Chromium play, human first-time playtest, 44px visual inspection and 3-route regression: **not performed in this run**.
+- No claim that this specific choice is a market-proven trend or has improved player satisfaction. Validate with playtest before adoption.
+
+## 2026-10-30 follow-up — discoverability and readable agency
+**Observed public player feedback (individual reviews, not representative sampling):**
+- On the Octopath Traveler II Steam store, a review posted October 3 criticizes interruptions after very short player-controlled movement and over-directed quests. https://store.steampowered.com/app/1971650/OCTOPATH_TRAVELER_II/
+- On Chained Echoes Steam Community, an October 29 negative review describes repeatedly circling a map because a needed doorway was difficult to notice. An October 28 positive review praises the journey, cast and world. https://steamcommunity.com/app/1229240/reviews/
+- Other October 28 Chained Echoes reviews disagree about the writing, while some value environmental exploration; do not treat any of these as a market-wide mandate. https://steamcommunity.com/app/1229240/reviews/
+
+**Graygrow-specific design hypothesis:** The brookbank choice in PR #137 is optional but its existing stone prop is visually subtle and the local keeper does not explicitly point to it. Make the original walkable lower-bank path (5,11) look lightly worn and give the stone prop a tiny old survey cord. Before any decision, the keeper mentions the visible stonework, not a new quest. Add one Sophie line to make the tradeoff about villagers' ownership explicit. Do not force a cutscene when walking by; do not add loot, objectives, collision, or extra backtracking. These cues and dialogue are original to Graygrow.
+
+**Verification to perform:** At native scale, inspect whether the worn path and survey cord are noticeable but not misleading; walk from the east village exit to the stones; confirm keeper clue is optional; choose all three actions and save/reload; confirm existing brook report still works. The new Node regression checks path/collision, prop pixel command and dialogue source but has **not been executed** against this GitHub-only workspace. No human playtest, screenshot, browser run or full build is claimed.
+
+## 2026-10-30 follow-up — route readability from the main path
+**Additional public signals checked:**
+- *Chained Echoes* Steam Community review dated October 29 describes looping through a map several times before noticing an obscure door; October 28 feedback praises exploration and world but is mixed on writing. These are individual opinions, not a measured population trend. https://steamcommunity.com/app/1229240/reviews/
+- *Octopath Traveler II* Steam Community reviews dated October 26–29 criticize tedious story/dialogue pacing. These are individual opinions, not evidence that every player prefers less text. https://steamcommunity.com/app/1971650/
+
+**Source-grounded issue:** The prior small footprint at brook tile (5,11) was only near the stones, not visible as a trail from the main east-west crossing. The actual brook map already has connected, walkable P tiles from (9,9) to (9,11) and west along y=11; no new geometry is required.
+
+**Implemented hypothesis:** Add restrained paired footfalls on existing P tiles (9,9), (9,10), (9,11), (8,11), (7,11), leading to the existing stone prop. The original brook-water inspection now mentions the nearby stonework in one sentence, without adding an objective, cutscene, item, NPC, or extra trip. The choice remains fully optional and its three outcomes unchanged. This is original Graygrow map writing/art, not copied layout or text.
+
+**Acceptance still pending:** Confirm the marks read at actual 100% game scale and do not look like an artificial quest trail; walk the east-bank route and the return route; execute focused Node test and full check on this exact SHA, plus Save/Continue and three-route browser checks. No human playtest or Chromium pass is claimed.
+
+## 2026-10-30 follow-up — no accidental commitment and no omniscient village NPC
+**Fresh external player signals (individual Steam reviews, not a representative sample):**
+- *Chained Echoes*, Oct 24 review: praises world/gameplay but objects to heavy exposition and cast members whose dialogue lacks distinct voices. https://steamcommunity.com/app/1229240/reviews/
+- *Chained Echoes*, Oct 28 review: praises exploration and a reward-board structure that gives optional things to notice without treating everything as a quest, while criticizing weak player agency in the story. https://steamcommunity.com/app/1229240/
+- *Octopath Traveler II*, Oct 26 and Oct 29 reviews: criticize tedious story pacing and repeated backstory interruptions. These complaints are not a mandate to remove story; the evidence is anecdotal and mixed. https://steamcommunity.com/app/1971650/
+
+**Actual source problem found:** PR #137 previously treated “leave the managed stones untouched” as an irreversible third outcome, while offering no visible way to postpone the decision; closing the dialogue was technically possible but not communicated in the choices. The farmer Boru's generic after-reward line could also say he had *already seen* a shoreline mark even when the player placed it **after** reporting to him, making him appear to know a later action without being told.
+
+**Playable changes:** Keep the three consequential options and add an explicit fourth “decide later” response. It changes no choice, journal, chapter, items, map collision or progress, and the player can return to choose later. At Boru's existing NPC, after the normal brook report and a shoreline decision, Karen now tells him what the party actually did; he replies and remembers only after the conversation finishes. All three outcomes, including respecting villagers' ownership, are acknowledged. No new errand, loot or reward is added; no false instantaneous irrigation fix is implied. State uses existing schema-23 event completion/choice maps.
+
+**Verification performed this run:** V8 compiled the complete updated `js/systems/events.js` and `tests/ryune_brookbank_choice.test.js`. Isolated V8 runtime smoke exercised all three actions, explicit deferral without mutation, Karen-to-Boru dialogue, and Boru's subsequent memory with mocked game services; passed. These are **not** the project's Node harness, actual Save/Continue, full npm check, browser play, native-scale screenshots or human playtest. Focused regression tests were expanded but have not been executed in the real repo environment. **Draft/HOLD** until exact-HEAD checks and first-time player validation.
+
+## 2026-10-30 follow-up — optional shoreline action is its own village news
+**Current public signals checked:** Oct 28 *Chained Echoes* reviews praise exploratory rewards without mandatory quest framing while criticizing characters whose actions do not influence the story; Oct 29 *Octopath Traveler II* review criticizes repeated interruptions, while another praises its pacing. These are conflicting individual opinions, not a representative sample or evidence that this patch is successful. Sources: https://steamcommunity.com/app/1229240/reviews/ and https://steamcommunity.com/app/1971650/positivereviews/ .
+
+**Actual code issue:** The party's shoreline action was saved and visible at the stones, but Boru could only hear about it after the separate brook-water observation **and** one-time ration report. A player who went straight from the stones back to Boru got the generic 'go inspect a site' line, even after making a choice worth telling him. This made a voluntary action feel unacknowledged unless the player completed an unrelated step.
+
+**Playable correction:** At Boru's existing village interaction, all three shoreline outcomes can now be reported immediately and independently. Karen says what actually happened, Boru responds, and the existing completion flag is set only after the exchange finishes. No water inspection, reward, journal duplication, new quest, NPC or map change is required. The original water/field observation reports retain their independent one-time ration, and subsequent visits use the existing remembered-response line. This is a cause-and-effect improvement, not a promise of repaired irrigation.
+
+**Verification gate:** New focused Node regression covers all three actions before inspection, no accidental ration, dialogue completion timing, repeated recognition, and later availability of the normal water report/reward. Test is authored but **not executed** in this connector-only workspace. Full `npm run check`, browser play, native-scale visual and human feedback remain pending. PR stays Draft/HOLD; #98 and main unchanged.
+
+
+## 2026-10-30 follow-up — avoid replaying a long scene on a voluntary return
+**Source checked again:** Steam Community reviews of *Chained Echoes* (Oct 24 and 28) and *Octopath Traveler II* (Oct 26 and 29) express mixed opinions about narrative pacing, exposition, party identity and optional exploration. https://steamcommunity.com/app/1229240/reviews/ and https://steamcommunity.com/app/1971650/ . These are **individual comments**, not a representative measure of preferences or proof that this patch improves ratings.
+
+**Concrete player-facing issue:** In PR #137, choosing “decide later” and revisiting the same stones replayed four lines of introductory explanation before offering the same menu. The four protagonists had already discussed the situation. New discoveries in the field or brook also did not change Karen's prompt, making the optional observations feel disconnected.
+
+**Playable improvement:** After the full initial introduction, persist a schema-23-compatible `ryune.brookbank.introSeen` completion flag. Revisit directly to the four-choice menu with one short Karen line. If the player inspected the brook and/or fields since the prior visit, Karen briefly acknowledges that evidence without asserting the irrigation is fixed. The flag is only set after the introduction dialogue finishes; deferral still commits no action. For the mark/secure outcomes, the existing ending dialogue now naturally mentions that Boru can be told, without a new quest or mandatory trip.
+
+**Verification:** Added a focused Node regression for first-read timing, repeat visit, observation-sensitive prompts, no forced choice and eventual selection. V8 compiled the edited runtime and test source. An isolated mock execution of the **actual updated runtime source** passed first-read timing, immediate revisit without repeated exposition, four options, deferral without commitment, brook-only and both-site evidence prompts. This is **not** the repository Node harness, actual Save/Continue, Chromium play, native 44px review or a human test; those remain **unexecuted**. PR remains Draft/HOLD.
+
+## 2026-10-30 — village news travels only when told; concise revisits
+
+**Public review observations (individual comments, not representative research):**
+- *Chained Echoes* (Steam Community, Oct 28): one negative review praises environmental exploration and optional discoveries but says protagonist decisions feel inconsequential. Another positive review praises the journey, party and world. Source: https://steamcommunity.com/app/1229240/ .
+- *Chained Echoes* (Oct 24): a positive review still criticizes repeated exposition and characters whose voices sound alike. Source: https://steamcommunity.com/app/1229240/reviews/ .
+- *Octopath Traveler II* (Oct 26–29): a negative review finds dialogue tedious; a positive review praises the pacing. These conflict and cannot establish a universal preferred amount of text. Sources: https://steamcommunity.com/app/1971650/ and https://steamcommunity.com/app/1971650/positivereviews/ .
+
+**Verified in the existing Graygrow source:** The optional brookbank decision was visible at the stones and acknowledged by Boru after Karen spoke to him, but the **western field worker** still used the same generic dialogue regardless of which decision Boru learned. The brook keeper also required **two dialogue pages on every post-report visit**, repeating the same two statements.
+
+**Implemented, not yet player-validated:** Once the existing `ryune.brookbank.boruTold` flag is set after Karen's complete report, the existing field worker gives one original, action-specific reply for mark/secure/leave. Before that report, the worker has no foreknowledge and uses the original dialogue. The keeper's two post-report statements now fit in one speech bubble; no quest, ration, journal, map collision, art, new save field, or claim of fixed irrigation. This tests the hypothesis that actions feel more consequential when news reaches a second existing resident without imposing more errands.
+
+**Verification pending:** New regression tests were authored for all three outcomes, news timing, no duplicate reward/journal, and one-screen keeper follow-up. They have not been run in the repository's Node harness; `npm run check`, Chromium, 44px inspection, Save/Continue end-to-end and human first-time playtest remain **not performed**. Do not infer an increase in player enjoyment from the code change alone. PR #137 stays Draft/HOLD.
+
+**2026-10-30 isolated verification addendum (not browser acceptance):** Re-fetched the exact committed runtime and test source; V8 syntax compilation passed **2/2**. Extracted the actual committed `runTriggeredEvent` function and exercised it in isolated V8 with mock state/dialogue: **6/6 PASS** (three actions: generic field-worker reply before Boru learns, specific reply after Boru learns, no state mutation; three keeper outcomes after the water report: one distinct reply under 80 characters). The real Node harness, save/load integration, `npm run check`, Chromium, native-scale screenshot and human evaluation remain unexecuted. The source-based mocks validate only these branches, not the whole game.
