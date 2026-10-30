@@ -57,7 +57,7 @@ function alphaFoot(who,index,dir){
  let last=-1;
  // Foot-region occupancy: ignore outer weapons/capes where possible.
  for(let yy=47;yy>=0;yy--){
-  for(let xx=13;xx<=34;xx++)if(data[(yy*48+xx)*4+3]>=64){last=yy;break}
+  for(let xx=13;xx<=34;xx++)if(data[(yy*48+xx)*4+3]>=128){last=yy;break}
   if(last>=0)break;
  }
  return last;
@@ -70,12 +70,12 @@ function medianFoot(who){
 function showMetrics(){
  if(!ready.npc||!ready.margaret)return;
  const entries=[['村長','npc',3],['王国使者','npc',4],['カレン','karen',0],['トリトン','triton',0],['ソフィ','sophie',0],['マーガレット','margaret',0]];
- document.getElementById('metrics').textContent='原画48px：中心部 x13〜34 の最下端不透明ピクセル（α≥64）\n'
+ document.getElementById('metrics').textContent='原画48px：中心部 x13〜34 の最下端不透明ピクセル（α≥128）\n'
   +entries.map(([name,who,index])=>name+'  '+[0,1,2,3].map(d=>alphaFoot(who,index,d)).join(' / ')+'  [正面 / 左 / 右 / 背面]'+(who!=='npc'?' / alpha基準='+medianFoot(who):'')).join('\n')
   +'\n※この値は画像の足元を推定する補助情報。影・靴・衣装の形状を目視確認して採否を決める。';
 }
 function render(){
- c.imageSmoothingEnabled=false;c.fillStyle='#20282a';c.fillRect(0,0,760,630);
+ c.imageSmoothingEnabled=false;c.fillStyle='#20282a';c.fillRect(0,0,canvas.width,canvas.height);
  label('V5: 現行の足元基準（原画 y=48 を地面に合わせる）',18,25,15);
  const xs=[190,305,420,535],names=['正面','左','右','背面'];
  for(let i=0;i<4;i++)label(names[i],xs[i]+8,48);
