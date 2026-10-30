@@ -77,3 +77,53 @@ test('a gift and the intro completion persist across Continue; later war-afterma
  assert.match(h.evaluate("DIALOGUE_TYPE.fullHTML"),/息子は前線から戻りました/);
  assert.equal(h.evaluate("dialogueChoices.length"),0);
 });
+
+function rationQueuePixels(h){
+ return JSON.parse(JSON.stringify(h.evaluate(`(()=>{
+  const rects=[];
+  const c={fillStyle:'',fillRect(x,y,w,z){rects.push([x,y,w,z,this.fillStyle])}};
+  CapitalEnvironment.street(c,'capital');
+  return rects;
+ })()`)));
+}
+function hasGiftRect(rects,x,y,w,h,color){
+ return rects.some(r=>r[0]===x&&r[1]===y&&r[2]===w&&r[3]===h&&r[4]===color);
+}
+
+test('a donated personal ration appears immediately beside the mother without new collision',()=>{
+ const h=createHarness();startCapital(h);
+ const x=16*32+23,y=8*32+22;
+ assert.equal(h.evaluate("isBlocked(15,8)"),false);
+ assert.equal(h.evaluate("isBlocked(17,8)"),false);
+ assert.ok(!hasGiftRect(rationQueuePixels(h),x,y+2,11,7,'#b9a07c'));
+ h.evaluate("state.inventory['携帯食']=1");
+ const before=h.GC.State.get().journal.length,stage=h.GC.State.get().story.stage;
+ assert.equal(h.evaluate("commitCapitalRationGift()"),true);
+ assert.ok(hasGiftRect(rationQueuePixels(h),x,y+2,11,7,'#b9a07c'));
+ assert.equal(h.evaluate("state.inventory['携帯食']"),0);
+ assert.equal(h.GC.State.get().journal.length,before+1);
+ assert.equal(h.GC.State.get().story.stage,stage);
+ assert.equal(h.evaluate("commitCapitalRationGift()"),false);
+ assert.equal(h.GC.Save.save(true),true);
+ h.evaluate("state.events.choices['early.capitalRationGift']=null");
+ assert.ok(!hasGiftRect(rationQueuePixels(h),x,y+2,11,7,'#b9a07c'));
+ assert.equal(h.GC.Save.load(true),true);
+ assert.ok(hasGiftRect(rationQueuePixels(h),x,y+2,11,7,'#b9a07c'));
+});
+
+test('the nearby recruit notices the donation while preserving road morality and late-war dialogue',()=>{
+ const h=createHarness();startCapital(h);
+ h.evaluate("inlineNpcEvent('capitalRecruit')");
+ assert.doesNotMatch(h.evaluate("DIALOGUE_TYPE.fullHTML"),/配給列で携帯食/);
+ h.evaluate("closeDialogue();state.inventory['携帯食']=1;commitCapitalRationGift();inlineNpcEvent('capitalRecruit')");
+ h.evaluate("finishDialogueTyping();primaryAction()");
+ assert.match(h.evaluate("DIALOGUE_TYPE.fullHTML"),/配給列で携帯食/);
+ h.evaluate("closeDialogue();state.events.choices['moral.lethal.roadBandit']='kill';inlineNpcEvent('capitalRecruit')");
+ h.evaluate("finishDialogueTyping();primaryAction()");
+ assert.match(h.evaluate("DIALOGUE_TYPE.fullHTML"),/戦いで勝つこと/);
+ h.evaluate("finishDialogueTyping();primaryAction()");
+ assert.match(h.evaluate("DIALOGUE_TYPE.fullHTML"),/配給列で携帯食/);
+ h.evaluate("closeDialogue();state.world.switches.returnedKingdom=true;inlineNpcEvent('capitalRecruit')");
+ assert.match(h.evaluate("DIALOGUE_TYPE.fullHTML"),/次の総攻撃/);
+ assert.doesNotMatch(h.evaluate("DIALOGUE_TYPE.fullHTML"),/配給列で携帯食/);
+});
