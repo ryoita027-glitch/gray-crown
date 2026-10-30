@@ -31,7 +31,7 @@ test('brookbank is discoverable from the real approach without adding a blocker 
  assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/踏み跡/);
  assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/石積み/);
  assert.equal(h.GC.State.get().events.choices['ryune.brookbank.action'],undefined,'a clue must not commit a choice');
- assert.equal(h.GC.State.get().story.stage,'00_opening','a clue must not advance the story');
+ assert.equal(h.GC.State.get().story.stage,h.evaluate('STORY_STAGES.VILLAGE'),'a clue must not advance the story');
 });
 
 test('brook stones offer three optional party-led actions without auto-selecting or changing the chapter',()=>{
