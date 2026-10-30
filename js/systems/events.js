@@ -337,11 +337,14 @@ function runTriggeredEvent(type,target,context={}){
    secure:'「石を戻してくれたのか。渡る人の足元が少し安心だね。水路の詰まりは、これから調べるよ」',
    leave:'「石積みは村で管理してる。勝手に崩さずにいてくれてありがとう。気になることがあれば聞いて」'
   }[choice];
-  const followup=isEventComplete('ryune.outskirts.reported.brook')
-   ?'「ボルにも川の様子が伝わっている。水路を直せるかは、もう少し測ってからだね」':null;
-  // One short reply on repeat visits; the same information should not
-  // demand two dialogue advances every time the player checks the brook.
-  say('川辺の見回り人',followup?response.slice(0,-1)+' '+followup.slice(1):response);return true
+  // After Boru's water report, acknowledge the specific action and news
+  // in one brief reply instead of repeating two dialogue screens.
+  const afterReport={
+   mark:'「岸の目印は見たよ。ボルにも川の様子が伝わった。流れが戻るかは、これから測って確かめるね」',
+   secure:'「石を戻してくれて助かった。ボルにも川の様子は伝わってる。水路はまだ調べているよ」',
+   leave:'「石積みを村に任せてくれてありがとう。ボルにも川の様子が伝わった。まず水位を測ってみるね」'
+  };
+  say('川辺の見回り人',isEventComplete('ryune.outskirts.reported.brook')?afterReport[choice]:response);return true
  }
  // A decision becomes village news only AFTER Karen has told Boru.
  // The field worker cannot know an action merely because it was saved.
