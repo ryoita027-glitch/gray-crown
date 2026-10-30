@@ -643,3 +643,51 @@ test('failed first archive write removes a partially created archive', () => {
  assert.equal(h.storage.getItem(s.SAVE_ARCHIVE_KEY),null);
  assert.equal(h.storage.getItem(s.SAVE_KEY),primary);
 });
+
+test('Save skips a redundant primary rollback when backup rotation is denied', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=411');
+ assert.equal(s.save(true),true);
+ const before=[...h.storage.data];
+ const set=h.storage.setItem.bind(h.storage);
+ let primaryWrites=0;
+ h.storage.setItem=(key,value)=>{
+  if(key===s.SAVE_BACKUP_KEY)throw new Error('QuotaExceededError: backup rotation denied');
+  if(key===s.SAVE_KEY){primaryWrites++;throw new Error('QuotaExceededError: redundant primary rollback denied')}
+  return set(key,value);
+ };
+ h.evaluate('state.gold=412');
+ assert.equal(s.save(true),false);
+ assert.equal(primaryWrites,0,'an unchanged primary must not be rewritten during rollback');
+ assert.deepEqual([...h.storage.data],before,'both original save slots must remain intact');
+ assert.equal(h.GC.State.get().gold,412,'failed Save must not reset unsaved progress');
+});
+
+test('Save detects a silent backup rollback failure after a partial rotation', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=421');
+ assert.equal(s.save(true),true);
+ h.evaluate('state.gold=422');
+ assert.equal(s.save(true),true);
+ const beforePrimary=h.storage.getItem(s.SAVE_KEY);
+ const beforeBackup=h.storage.getItem(s.SAVE_BACKUP_KEY);
+ const set=h.storage.setItem.bind(h.storage);
+ let backupWrites=0;
+ h.storage.setItem=(key,value)=>{
+  if(key===s.SAVE_BACKUP_KEY){
+   backupWrites++;
+   if(backupWrites===1){set(key,value);throw new Error('SecurityError: backup rotated then threw')}
+   return; // Simulate an adapter silently ignoring the attempted rollback.
+  }
+  return set(key,value);
+ };
+ h.evaluate('state.gold=423');
+ assert.equal(s.save(true),false);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),beforePrimary);
+ assert.notEqual(h.storage.getItem(s.SAVE_BACKUP_KEY),beforeBackup);
+ const rollbackErrors=h.GC.Log.get('error').filter(e=>e.message==='Save rollback failed');
+ assert.equal(rollbackErrors.length,1,'silent rollback failure must be logged, not treated as success');
+ assert.equal(rollbackErrors[0].data.slot,s.SAVE_BACKUP_KEY);
+ assert.match(rollbackErrors[0].data.error,/not persisted/);
+ assert.equal(h.GC.State.get().gold,423);
+});
