@@ -14,7 +14,7 @@ Base: PR #128 HEAD `ba624345f6f1d2ba55e3c6e6b0c0d87f61db5676`, itself stacked on
 ## Evidence and verdict
 An offline same-background **44px V4E vs V4F** comparison was generated and visually inspected. The book no longer remains on the same screen side when the character turns; side/back poses have a clearer prop silhouette. The change is modest at actual size and does not fix the oversized/simplified face, character head-to-body proportion, or mismatch with V5 NPC design. **Art acceptance: NO-GO.**
 
-Local tests: 3/3 PASS (source PNG decode, 4-direction groundline, directional book). This is structural validation, **not** proof of commercial visual quality. Static gallery is not a live game screenshot; browser gameplay, all eight motions, original/V5 anchor visual acceptance and full regression remain untested.
+Local tests: 3/3 PASS (source PNG decode, 4-direction groundline, directional book). Additionally, local Chromium (Playwright, system executable) decoded both actual PNGs and rendered all 8 native-size Canvas comparisons successfully using embedded data URLs; screenshot saved as a local evidence artifact. Direct file:// and localhost navigation were blocked by the browser policy, so this was an in-memory Canvas comparison, **not** the repository's full HTML page or a gameplay test. This is structural validation, **not** proof of commercial visual quality. Static gallery is not a live game screenshot; browser gameplay, all eight motions, original/V5 anchor visual acceptance and full regression remain untested.
 
 ## Next
 1. Inspect V4F, original Margaret and V5 NPCs in a real browser scene at native scale. Check side/back grip, face and grounding, then reject or revise.
