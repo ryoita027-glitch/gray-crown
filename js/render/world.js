@@ -8,7 +8,7 @@ function heroDisplayStudySize(search=typeof window!=='undefined'?window.location
  }catch(_){return 44}
 }
 // Opt-in native-PNG alpha-foot study. No change to default 44px/source-y44 behavior.
-const HERO_FOOTLINE_ALPHA_STUDY=typeof window!=='undefined'&&/(?:^|[?&])gcHeroFootline=alpha(?:&|$)/.test(window.location.search||'');
+let HERO_FOOTLINE_ALPHA_STUDY=typeof window!=='undefined'&&/(?:^|[?&])gcHeroFootline=alpha(?:&|$)/.test(window.location.search||'');
 function heroAlphaFootline(image){
  if(typeof document==='undefined'||!document.createElement)return 44;
  try{
@@ -47,6 +47,19 @@ function drawHeroSpriteSheet(x,y,heroId,leader,facing,motion){
  ctx.save();ctx.imageSmoothingEnabled=false;ctx.drawImage(cfg.image,fallbackFrame*32,fallbackRow*32,32,32,px,py,32,32);ctx.restore();if(leader)drawHeroMarker(px+16,py);return true
 }
 function heroRuntimeStatus(){const out={};for(const id of Object.keys(HERO_SPRITES.characters)){const rec=HERO_RUNTIME.images[id];out[id]={ready:!!rec?.ready,error:!!rec?.error,naturalWidth:rec?.image?.naturalWidth||0,naturalHeight:rec?.image?.naturalHeight||0}}return out}
+ // Review-only, same live canvas and camera: change native display/footline
+ // without reloading, altering source PNGs, story, save or the NPC renderer.
+function heroVisualStudyStatus(){return {display:HERO_RUNTIME.display,footline:HERO_FOOTLINE_ALPHA_STUDY?'alpha':'default'}}
+function setHeroDisplayStudySize(value,redraw=true){
+ const size=Number(value);if(![40,42,44].includes(size))return false;
+ HERO_RUNTIME.display=size;if(redraw)draw();return true
+}
+function setHeroFootlineStudy(value,redraw=true){
+ HERO_FOOTLINE_ALPHA_STUDY=!!value;
+ if(HERO_FOOTLINE_ALPHA_STUDY)for(const rec of Object.values(HERO_RUNTIME.images))
+  if(rec.ready&&rec.image)rec.footline=heroAlphaFootline(rec.image);
+ if(redraw)draw();return true
+}
 function tileAt(mapId,x,y){const m=maps[mapId];if(!m||x<0||y<0||x>=COLS||y>=ROWS)return'S';return m.tiles[y][x]}
 function objectCleared(id){if(TREASURE_DEFS[id]&&state.world.treasures[id])return true;return (id==='wolf'&&isDefeated('wolf'))||(id==='bandit'&&isDefeated('bandit'))||(id==='bats'&&isDefeated('bats'))||(id==='crawler'&&isDefeated('crawler'))||(id==='boss'&&isDefeated('boss'))||(id==='scavengerWolves'&&isDefeated('scavengerWolves'))||(id==='chest1'&&state.world.treasures.chest1)||(id==='chest2'&&state.world.treasures.chest2)||(id==='innerGate'&&getWorldSwitch('leverWest')&&getWorldSwitch('leverEast'))||((id==='imperialPatrol'&&isDefeated('imperialPatrol'))||((['fortGate','fortGateRight'].includes(id)&&getWorldSwitch('fortGateOpen'))||(['ashCache','frontierCache','empireCache','imperialCache','yukiCache','elsiaCache'].includes(id)&&state.world.treasures[id])))}
 function npcVisible(n){if(n.showWhen&&!structuredCondition(n.showWhen))return false;if(n.hideWhen&&structuredCondition(n.hideWhen))return false;return true}
@@ -739,4 +752,4 @@ function drawScene(){
 }
 function draw(){clearTimeout(VISUAL.ambientTimer);cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene);GC.MobileCamera?.update?.()}
 
-GC.Render=GC.Render||{};GC.Render.World={draw,drawScene,renderHud:()=>renderHud(),VISUAL,drawCharacterSprite,drawHeroSpriteSheet,heroRuntimeStatus,drawPartyRuntime};
+GC.Render=GC.Render||{};GC.Render.World={draw,drawScene,renderHud:()=>renderHud(),VISUAL,drawCharacterSprite,drawHeroSpriteSheet,heroRuntimeStatus,drawPartyRuntime,heroVisualStudyStatus,setHeroDisplayStudySize,setHeroFootlineStudy};
