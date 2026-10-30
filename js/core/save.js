@@ -133,8 +133,14 @@ function restoreSaveSlots(primary,backup,operation){
  let restored=true;
  for(const [key,value] of [[SAVE_KEY,primary],[SAVE_BACKUP_KEY,backup]]){
   try{
-   if(value===null)localStorage.removeItem(key);
-   else localStorage.setItem(key,value)
+   // Skip a quota-sensitive write if the original bytes are already intact.
+   if(localStorage.getItem(key)!==value){
+    if(value===null)localStorage.removeItem(key);
+    else localStorage.setItem(key,value);
+   }
+   // A browser shim can acknowledge a rollback without persisting its bytes.
+   if(localStorage.getItem(key)!==value)
+    throw new Error('Save slot rollback not persisted');
   }catch(e){
    restored=false;
    GC.Log?.error(operation+' rollback failed',{slot:key,error:String(e)})
