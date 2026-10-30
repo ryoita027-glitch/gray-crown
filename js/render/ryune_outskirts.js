@@ -108,6 +108,11 @@ const RyuneOutskirts=(()=>{
     pixel(c,'#a6a284',11*W+22,y*W+18,7,4);
     pixel(c,'#4a7b6d',14*W+2,y*W+21,12,4);
    }
+   // The worn approach ends at the existing stone prop. These are low,
+   // non-blocking ground marks, not a new quest arrow or a fake obstacle.
+   pixel(c,'#9b8769',6*W+10,10*W+25,10,3);
+   pixel(c,'#c4b18d',6*W+12,10*W+26,5,1);
+   pixel(c,'#9b8769',6*W+22,10*W+28,5,2);
    // A shallow, unblocked shoreline. Water itself remains collision-coded Z.
    pixel(c,'#ae9c78',10*W+26,5*W+20,7,8);
    pixel(c,'#cbba8e',10*W+27,5*W+18,5,3);
@@ -147,6 +152,10 @@ const RyuneOutskirts=(()=>{
     pixel(c,'#646e67',x+xx,y+yy,9,9);
     pixel(c,'#b5afa0',x+xx+2,y+yy+1,5,2);
    }
+   // A short old survey cord catches the eye at native tile scale;
+   // it belongs to the stonework and remains after any player decision.
+   pixel(c,'#b7a47c',x+8,y+7,12,2);
+   pixel(c,'#89a8a0',x+18,y+8,4,3);
    // Draw the chosen change AFTER the original stones, not under the prop.
    const action=state.events?.choices?.['ryune.brookbank.action'];
    if(action==='mark'){
