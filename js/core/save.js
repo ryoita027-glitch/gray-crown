@@ -282,7 +282,10 @@ function importPortableSaveText(raw){
   else if(!isUsableSavedAdventure(backup))localStorage.setItem(SAVE_BACKUP_KEY,payload);
   localStorage.setItem(SAVE_KEY,payload);
   if(!load(true))throw new Error('Imported save could not be loaded');
-  updateTitleContinue();
+  // The imported adventure is now live. A title-button refresh failure must
+  // not report a failed import and roll back the saved slots behind it.
+  try{updateTitleContinue()}
+  catch(uiError){GC.Log?.warn('Portable import title refresh failed',{error:String(uiError)})}
   return true
  }catch(e){
   GC.Log?.error('Portable save import failed',{error:String(e)});
