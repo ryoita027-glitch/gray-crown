@@ -207,6 +207,17 @@ const CapitalEnvironment=(()=>{
   box(c,'#eee0bb',x+4,y,3,3);
   box(c,'#73604c',x+5,y+1,1,3);
  }
+ // The recruit physically follows through after witnessing the ration gift.
+ // Small water pail on the existing queue pavement, not a pickup or blocker.
+ function rationRecruitWater(c){
+  if(typeof state==='undefined'||state.events?.choices?.['early.capitalRecruitHelp']!=='water')return;
+  const x=17*W+11,y=8*W+22;
+  box(c,'#504b44',x-1,y+4,13,6);
+  box(c,'#b89a72',x,y+3,11,7);
+  box(c,'#668c94',x+2,y+3,7,2);
+  box(c,'#d5c3a4',x+4,y,3,4);
+  box(c,'#6a5847',x+1,y+8,9,2);
+ }
  function street(c,map){
   if(!on()||map!=='capital')return false;
   // Palace / terrace height differs from western trade stalls and eastern logistics.
@@ -250,7 +261,7 @@ const CapitalEnvironment=(()=>{
     box(c,'#e5dcca',x*W+21,y*W+12,3,2)
    }
   }
-  districtFacades(c);districtPaving(c);rationSupplyShelf(c);rationGiftBundle(c);
+  districtFacades(c);districtPaving(c);rationSupplyShelf(c);rationGiftBundle(c);rationRecruitWater(c);
   return true
  }
  function interior(c,map){
