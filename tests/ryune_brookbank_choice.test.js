@@ -58,6 +58,35 @@ test('brook stones offer three lasting actions and a noncommittal return-later o
 });
 
 
+test('postponed brookbank visits skip repeated exposition and reflect newly inspected locations',()=>{
+ const h=createHarness(),s=h.GC.State.get();
+ h.evaluate("ALPHA_SESSION.started=true;state.map='ryunebrook';runTriggeredEvent('object','brookStones',{map:'ryunebrook'})");
+ assert.equal(s.events.completed['ryune.brookbank.introSeen'],undefined,'do not mark a scene seen before its dialogue completes');
+ h.evaluate("for(let i=0;i<10&&dialogueContinue;i++){const next=dialogueContinue;closeDialogue(false);next()}");
+ assert.equal(s.events.completed['ryune.brookbank.introSeen'],true);
+ assert.equal(h.evaluate('dialogueChoices.length'),4);
+ choose(h,3);
+ assert.equal(s.events.choices['ryune.brookbank.action'],undefined);
+ h.evaluate("runTriggeredEvent('object','brookStones',{map:'ryunebrook'})");
+ assert.equal(h.evaluate('dialogueChoices.length'),4,'returning immediately offers choices, not four repeated story screens');
+ assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/どれなら/);
+ choose(h,3);
+ const brook=h.evaluate("EVENT_DEFS.find(e=>e.id==='ryune.brook.inspect')");
+ h.GC.Events.applyEventEffects(brook);
+ h.evaluate("runTriggeredEvent('object','brookStones',{map:'ryunebrook'})");
+ assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/橋の下の泥/,'newly discovered water evidence changes the short prompt');
+ choose(h,3);
+ const fields=h.evaluate("EVENT_DEFS.find(e=>e.id==='ryune.fields.inspect')");
+ h.GC.Events.applyEventEffects(fields);
+ h.evaluate("runTriggeredEvent('object','brookStones',{map:'ryunebrook'})");
+ assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/畑も小川も見た/);
+ assert.equal(h.evaluate('dialogueChoices.length'),4);
+ assert.equal(s.events.choices['ryune.brookbank.action'],undefined,'observations and deferrals do not force a choice');
+ choose(h,0);
+ assert.equal(s.events.choices['ryune.brookbank.action'],'mark');
+ assert.equal(s.events.completed['ryune.brookbank.choice'],true);
+});
+
 test('return-later option keeps all three outcomes open on a later visit',()=>{
  const h=createHarness(),s=h.GC.State.get();
  const stage=s.story.stage,items=clone(s.inventory),before=stonePixels(h);
