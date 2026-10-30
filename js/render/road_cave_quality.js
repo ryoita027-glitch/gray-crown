@@ -191,6 +191,15 @@ const RoadCaveQuality=(()=>{
     fill(c,'#c8b995',x+24,y+12,5,3);
     fill(c,'#a78b65',x+25,y+15,2,6);
    }
+   // Paw prints are the physical evidence mentioned by the existing road sign.
+   // All marks sit on the existing walkable approach; they are not pickups.
+   for(const [tx,ty,ox,oy] of [[11,5,2,4],[11,4,16,12],[10,3,18,17]]){
+    const x=tx*32+ox,y=ty*32+oy;
+    fill(c,'#71604b',x+3,y+5,7,4);
+    fill(c,'#77654d',x,y+2,3,3);
+    fill(c,'#77654d',x+5,y,3,3);
+    fill(c,'#77654d',x+10,y+2,3,3);
+   }
    // Old road boundary: muted flat stones lead toward the existing cave door.
    for(const [tx,ty] of [[12,2],[13,2],[13,1]]){
     const x=tx*32,y=ty*32;
@@ -217,6 +226,14 @@ const RoadCaveQuality=(()=>{
   if(map==='road'&&['wolf','bandit','cave'].includes(o.id)){
    fill(c,'#554c3e',x+5,y+27,23,3);
    fill(c,'#c4a36f',x+11,y+28,12,2);
+  }
+  // Frame only the EXISTING solid cave entrance, so the sign's destination
+  // is recognizable without painting a false wall across a walkable tile.
+  if(map==='road'&&o.id==='cave'){
+   fill(c,'#5d625c',x+1,y+7,5,22);
+   fill(c,'#5d625c',x+26,y+7,5,22);
+   fill(c,'#888576',x+4,y+4,24,5);
+   fill(c,'#b5a88b',x+8,y+4,16,2);
   }
   if(map==='cave'&&['leverWest','leverEast'].includes(o.id)){
    const isOn=typeof structuredCondition==='function'&&structuredCondition(o.id);
