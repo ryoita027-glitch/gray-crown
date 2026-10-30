@@ -171,8 +171,13 @@ function isUsableSavedAdventure(raw){
   return true
  }catch(_){return false}
 }
+function notifySaveStatus(message){
+ // A dialogue failure must not change the outcome of an already persisted Save.
+ try{say('システム',message)}
+ catch(e){GC.Log?.warn?.('Save status message failed',{error:String(e)})}
+}
 function save(silent=false){
- if(!canPersistNow('save')){if(!silent&&!GC.Dev?.isStateTainted?.()&&!state.battle&&$('dialogueBox')?.classList.contains('hidden'))say('システム','イベントや戦闘の途中ではセーブできません。操作可能な場所でセーブしてください。');else if(!silent&&GC.Dev?.isStateTainted?.())say('システム','Developer操作後の状態は通常セーブできません。Debug Snapshotを使用してください。');return false}
+ if(!canPersistNow('save')){if(!silent&&!GC.Dev?.isStateTainted?.()&&!state.battle&&$('dialogueBox')?.classList.contains('hidden'))notifySaveStatus('イベントや戦闘の途中ではセーブできません。操作可能な場所でセーブしてください。');else if(!silent&&GC.Dev?.isStateTainted?.())notifySaveStatus('Developer操作後の状態は通常セーブできません。Debug Snapshotを使用してください。');return false}
  try{
   const payload=serializeSave(),prev=localStorage.getItem(SAVE_KEY);
   // Never rotate a corrupted primary over a usable previous checkpoint.
@@ -187,7 +192,7 @@ function save(silent=false){
   // Missing or invalid backups still follow the normal repair path.
   if(primaryUsable&&backupUsable&&prev===payload){
    GC.Log?.info('Save unchanged',{map:state.map,x:state.x,y:state.y,stage:state.story.stage});
-   if(!silent)say('システム','セーブしました。');
+   if(!silent)notifySaveStatus('セーブしました。');
    return true
   }
   try{
@@ -206,7 +211,7 @@ function save(silent=false){
    restoreSaveSlots(prev,backup,'Save')
    throw writeError
   }
-  GC.Log?.info('Save',{map:state.map,x:state.x,y:state.y,stage:state.story.stage});if(!silent)say('システム','セーブしました。');return true}catch(e){GC.Log?.error('Save failed',{error:String(e)});if(!silent)say('システム','セーブに失敗しました。ブラウザの保存領域を確認してください。');return false}}
+  GC.Log?.info('Save',{map:state.map,x:state.x,y:state.y,stage:state.story.stage});if(!silent)notifySaveStatus('セーブしました。');return true}catch(e){GC.Log?.error('Save failed',{error:String(e)});if(!silent)notifySaveStatus('セーブに失敗しました。ブラウザの保存領域を確認してください。');return false}}
 function clearTransientPanels(){for(const id of ['battlePanel','levelUpPanel','battleResult','battleFlash','bossCinematic','chapterCard'])$(id)?.classList.add('hidden');if($('dialogueBox')&&!$('dialogueBox').classList.contains('hidden'))closeDialogue(false)}
 function load(silent=false){
  lastLoadPresentationFailed=false;
