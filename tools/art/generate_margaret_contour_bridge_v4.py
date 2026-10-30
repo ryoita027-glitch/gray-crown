@@ -48,9 +48,9 @@ def build():
                             removed += 1
                             changed += 1
                         if inside[3] > 180 and inside[0] > 150 and inside[1] > 140:
-                            put(x+dx, y, (max(85, round(inside[0]*0.77)),
-                                          max(80, round(inside[1]*0.77)),
-                                          max(92, round(inside[2]*0.80)), inside[3]))
+                            put(x+dx, y, (max(85, int(inside[0]*0.77+0.5)),
+                                          max(80, int(inside[1]*0.77+0.5)),
+                                          max(92, int(inside[2]*0.80+0.5)), inside[3]))
                             shadow += 1
                             changed += 1
             for y in range(23, 28):
@@ -71,16 +71,15 @@ def build():
                         continue
                     if pix(nx, y+1)[3] == 0 and pix(nx, y-1)[3] == 0:
                         continue
-                    put(nx, y, (max(72, round(inside[0]*0.62)),
-                                max(67, round(inside[1]*0.62)),
-                                max(83, round(inside[2]*0.69)), inside[3]))
+                    put(nx, y, (max(72, int(inside[0]*0.62+0.5)),
+                                max(67, int(inside[1]*0.62+0.5)),
+                                max(83, int(inside[2]*0.69+0.5)), inside[3]))
                     added += 1
                     changed += 1
         per_direction.append(changed)
     diff = sum(a != b for a, b in zip(v2.getdata(), out.getdata()))
     alpha_diff = sum(a[3] != b[3] for a, b in zip(v2.getdata(), out.getdata()))
-    # Python round uses ties-to-even; all coefficients and source pixels here
-    # avoid exact .5 ties in the generated candidate.
+    # Match the offline JS pixel transform's positive-number Math.round exactly.
     assert (diff, alpha_diff, removed, added, shadow) == (452, 300, 234, 66, 152), (
         diff, alpha_diff, removed, added, shadow)
     assert per_direction == [144, 88, 76, 144], per_direction
