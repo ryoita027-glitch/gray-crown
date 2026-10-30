@@ -235,8 +235,11 @@ function preserveInvalidSaveSlotsBeforeWrite(primary,backup,
   const existing=localStorage.getItem(SAVE_QUARANTINE_KEY);
   const entries=existing?JSON.parse(existing):[];
   if(!Array.isArray(entries))return false;
-  if(!entries.some(entry=>entry?.primary===unsafePrimary&&entry?.backup===unsafeBackup))
-   entries.push({savedAt:new Date().toISOString(),primary:unsafePrimary,backup:unsafeBackup});
+  // An identical raw-byte record is already safely stored. Rewriting it
+  // wastes quota and can block Save/Import when quarantine writes are denied.
+  if(entries.some(entry=>entry?.primary===unsafePrimary&&entry?.backup===unsafeBackup))
+   return true;
+  entries.push({savedAt:new Date().toISOString(),primary:unsafePrimary,backup:unsafeBackup});
   const payload=JSON.stringify(entries);
   localStorage.setItem(SAVE_QUARANTINE_KEY,payload);
   return localStorage.getItem(SAVE_QUARANTINE_KEY)===payload
