@@ -807,3 +807,43 @@ test('previous-adventure restore remains successful if the final status dialogue
  assert.equal(JSON.parse(h.storage.getItem(s.SAVE_KEY)).gold,911);
  assert.equal(JSON.parse(h.storage.getItem(s.SAVE_BACKUP_KEY)).gold,922);
 });
+
+test('repeat Save keeps an older usable backup instead of replacing it with identical primary', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=601');
+ assert.equal(s.save(true),true);
+ h.evaluate('state.gold=602');
+ assert.equal(s.save(true),true);
+ const primary=h.storage.getItem(s.SAVE_KEY);
+ const olderBackup=h.storage.getItem(s.SAVE_BACKUP_KEY);
+ assert.equal(JSON.parse(olderBackup).gold,601);
+ assert.equal(s.save(true),true);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),primary);
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),olderBackup,
+  'saving an unchanged adventure must not erase the earlier recovery checkpoint');
+});
+
+test('repeat Save does not require quota-sensitive writes when both checkpoints are usable', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=611');
+ assert.equal(s.save(true),true);
+ h.evaluate('state.gold=612');
+ assert.equal(s.save(true),true);
+ const before=[...h.storage.data];
+ let attempted=0;
+ h.storage.setItem=()=>{attempted++;throw new Error('QuotaExceededError: unnecessary write');};
+ assert.equal(s.save(true),true);
+ assert.equal(attempted,0);
+ assert.deepEqual([...h.storage.data],before);
+});
+
+test('repeat Save still repairs a missing backup before returning success', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=621');
+ assert.equal(s.save(true),true);
+ const primary=h.storage.getItem(s.SAVE_KEY);
+ h.storage.removeItem(s.SAVE_BACKUP_KEY);
+ assert.equal(s.save(true),true);
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),primary,
+  'backup repair must not be skipped by the unchanged-checkpoint optimization');
+});
