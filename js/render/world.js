@@ -489,6 +489,13 @@ function drawObject(o){if(RyuneOutskirts.drawObject(ctx,state.map,o,!!state.worl
  if(o.id==='crawler'&&!isDefeated('crawler')){drawBeast(px,py,'crawler')}
  if((o.id==='chest1'&&!state.world.treasures.chest1)||(o.id==='chest2'&&!state.world.treasures.chest2)){ctx.fillStyle='#8a5f35';ctx.fillRect(px+6,py+10,20,14);ctx.fillStyle=COLORS.gold;ctx.fillRect(px+6,py+10,20,4);ctx.fillRect(px+15,py+14,3,7)}
  if(TREASURE_DEFS[o.id]&&!state.treasures[o.id]){ctx.fillStyle='#765535';ctx.fillRect(px+6,py+11,20,13);ctx.fillStyle='#c8a65b';ctx.fillRect(px+6,py+10,20,4);ctx.fillRect(px+15,py+14,4,7)}
+ // The collected western-road cache is visibly empty, not an unopened pickup.
+ // A shallow abandoned box remains; its existing tile is now passable.
+ if(o.id==='roadCache'&&state.world.treasures.roadCache){
+  ctx.fillStyle='#604b37';ctx.fillRect(px+6,py+24,20,4);
+  ctx.fillStyle='#a78a5e';ctx.fillRect(px+6,py+19,20,3);
+  ctx.fillStyle='#2e2a24';ctx.fillRect(px+9,py+24,14,2);
+ }
  if(o.id==='boss'&&!isDefeated('boss')){drawBeast(px,py,'boss')}
  if(o.id==='leverWest'||o.id==='leverEast'){ctx.fillStyle='#5d6066';ctx.fillRect(px+8,py+8,16,18);ctx.fillStyle='#2d3035';ctx.fillRect(px+11,py+11,10,12);ctx.strokeStyle=(o.id==='leverWest'?getWorldSwitch('leverWest'):getWorldSwitch('leverEast'))?'#d2b96b':'#9a7657';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(px+16,py+17);ctx.lineTo(px+((o.id==='leverWest'?getWorldSwitch('leverWest'):getWorldSwitch('leverEast'))?22:10),py+7);ctx.stroke();ctx.fillStyle='#d4c178';ctx.beginPath();ctx.arc(px+16,py+17,3,0,Math.PI*2);ctx.fill()}
  if(o.id==='innerGate'&&!(getWorldSwitch('leverWest')&&getWorldSwitch('leverEast'))){ctx.fillStyle='rgba(26,28,31,.7)';ctx.fillRect(px+1,py+2,30,28);ctx.fillStyle='#81745d';for(let i=0;i<5;i++)ctx.fillRect(px+4+i*6,py+3,3,27);ctx.fillRect(px+2,py+5,28,3);ctx.fillRect(px+2,py+24,28,3)}

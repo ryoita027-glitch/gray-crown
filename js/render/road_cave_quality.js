@@ -177,6 +177,20 @@ const RoadCaveQuality=(()=>{
    // Worn wheel marks connect it to the merchant without blocking the path.
    fill(c,'#907b60',7*32+4,8*32+25,9,2);
    fill(c,'#c1ac83',7*32+5,8*32+24,5,1);
+   // An optional herb box lies up the already walkable western footpath.
+   // These two quiet scuffs do not create a new shortcut or obstacle.
+   for(const [tx,ty] of [[7,8],[7,7]]){
+    const x=tx*32,y=ty*32;
+    fill(c,'#a18b69',x+11,y+7,8,2);
+    fill(c,'#c5aa7d',x+12,y+6,5,1);
+    fill(c,'#6b7355',x+20,y+20,3,5);
+   }
+   // A cloth tag draws the eye to the existing box, then vanishes on pickup.
+   if(typeof state!=='undefined'&&!state.world?.treasures?.roadCache){
+    const x=7*32,y=6*32;
+    fill(c,'#c8b995',x+24,y+12,5,3);
+    fill(c,'#a78b65',x+25,y+15,2,6);
+   }
    // Old road boundary: muted flat stones lead toward the existing cave door.
    for(const [tx,ty] of [[12,2],[13,2],[13,1]]){
     const x=tx*32,y=ty*32;
