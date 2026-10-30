@@ -418,21 +418,33 @@ function commitEarlyMerchantChoice(choice){
  addJournal(choice==='repair'
   ?'街道で行商人の荷車を修理し、荷を王都へ運べるようにした。礼に携帯食を1個受け取った。'
   :'行商人に危険な街道の引き返しを勧めた。商人は村へ向かい、礼に薬草を1個渡した。');
- renderHud();return true
+ renderHud();
+ // Refresh the roadside cart immediately after the choice; no new collision.
+ GC.Render?.World?.draw?.();
+ return true
+}
+// Returning to an undecided wagon should not replay the entire introduction.
+// A completed introduction is only recorded after its final line is read.
+function offerEarlyMerchantChoice(){
+ return say('カレン','「荷車はまだここにある。どうする？」',[
+  {label:'トリトンと荷車を直し、王都への輸送を助ける',fn:()=>finishEarlyMerchantChoice('repair')},
+  {label:'危険を伝え、村へ引き返すよう勧める',fn:()=>finishEarlyMerchantChoice('return')},
+  {label:'今は判断を保留する',fn:()=>say('行商人','「迷ったらまた声をかけてくれ。荷はまだここにある」')}
+ ]);
 }
 function earlyMerchantVisit(){
  const prior=state.events.choices['early.merchantCart'];
  if(prior==='repair')return say('行商人','「車軸は持ち直した。王都への荷は何とか運べそうだ。あんたらも獣には気をつけな」');
  if(prior==='return')return say('行商人','「荷車を南に向けて、一度荷を整理しているところだ。危険を教えてくれて助かったよ」');
+ if(isEventComplete('early.merchantIntro'))return offerEarlyMerchantChoice();
  return saySequence([
   {speaker:'行商人',text:'「やれやれ、荷車の軸が曲がった。食料を王都へ届けるはずが、このままじゃ狼の餌だ」'},
   {speaker:'トリトン',text:'「固定具ならその場で直せる。少し時間はかかるけどな」'},
   {speaker:'行商人',text:'「東の古砦跡に抜け道があるとも聞くが、獣の声がする。どれも楽な道じゃない」'}
- ],()=>say('カレン','「この荷車、どうする？」',[
-  {label:'トリトンと荷車を直し、王都への輸送を助ける',fn:()=>finishEarlyMerchantChoice('repair')},
-  {label:'危険を伝え、村へ引き返すよう勧める',fn:()=>finishEarlyMerchantChoice('return')},
-  {label:'今は判断を保留する',fn:()=>say('行商人','「迷ったらまた声をかけてくれ。荷はまだここにある」')}
- ]))
+ ],()=>{
+  completeEvent('early.merchantIntro');
+  offerEarlyMerchantChoice();
+ });
 }
 function finishEarlyMerchantChoice(choice){
  if(!commitEarlyMerchantChoice(choice))return say('行商人','「さっきの話はもう決めただろう？」');
@@ -452,6 +464,63 @@ function earlyCapitalEcho(){
  if(a==='donate')lines.push({speaker:'ソフィ',text:'「出発前、孤児院に薬草を残してきました。でもここでも薬が足りない。どこまで手を伸ばせるんでしょう」'});
  if(a==='reserve')lines.push({speaker:'ソフィ',text:'「村には薬を必要とする子がいました。旅のために残した薬草、これからちゃんと役立てたいです」'});
  return lines
+}
+// A voluntary, one-time personal ration gift at the existing capital queue.
+// It uses schema-23 event choices, not a new quest, reward or city-wide fix.
+function commitCapitalRationGift(){
+ const key='early.capitalRationGift';
+ if(state.events.choices[key]||(state.inventory['携帯食']||0)<1)return false;
+ state.inventory['携帯食']-=1;
+ state.events.choices[key]='donate';
+ addJournal('王都の配給列で携帯食を1個手渡した。街道からの輸送だけでは、今日の食事に困る人がいる。');
+ renderHud();
+ // Immediately reveal the donated bundle without leaving the capital.
+ GC.Render?.World?.draw?.();
+ return true;
+}
+function capitalRationMotherVisit(){
+ // The later war-aftermath conversation takes priority, unchanged.
+ if(structuredCondition('returnedKingdom'))return saySequence([
+  {speaker:'配給待ちの母親',text:'「勇者様。息子は前線から戻りました。片腕を失ったけど、生きてます。……それでも私は、勝ってよかったって言うべきなんでしょうか」'},
+  {speaker:'ソフィ',text:'「生きて帰ったことを喜んでいいと思います。それと戦争を喜ぶことは、同じじゃありません」'},
+  {speaker:'配給待ちの母親',text:'「……そうね。そう言ってもらえると、少し楽です」'}
+ ]);
+ if(state.events.choices['early.capitalRationGift']==='donate')return saySequence([
+  {speaker:'配給待ちの母親',text:state.events.choices['early.capitalRecruitHelp']==='water'
+   ?'「あの携帯食、大切に使います。新兵さんが水も運んでくれました。……ありがとう」'
+   :'「あの携帯食は大切に使います。配給だけでは足りない日があるから……ありがとう」'},
+  {speaker:'ソフィ',text:'「どうか、あなたも無理をしないでくださいね」'}
+ ]);
+ const offer=()=>{
+  if((state.inventory['携帯食']||0)<1)return;
+  return say('ソフィ','「携帯食が一つあります。私たちの旅にも必要ですが……どうしますか？」',[
+   {label:'携帯食を1個、母親に渡す',fn:()=>{
+    if(!commitCapitalRationGift())return say('ソフィ','「……今は渡せる食料がありません」');
+    return saySequence([
+     {speaker:'配給待ちの母親',text:'「いいんですか？　勇者様たちも道中で必要でしょうに……。必ず大切にします」'},
+     {speaker:'カレン',text:'「私たちも次の食事を考えなきゃ。でも、今ここでできることもあるよ」'}
+    ]);
+   }},
+   {label:'今は旅のために取っておく',fn:()=>say('カレン','「私たちも無事に進まないと。……どうか気をつけて」')}
+  ]);
+ };
+ if(isEventComplete('early.capitalRationIntro')){
+  if((state.inventory['携帯食']||0)>0)return offer();
+  const shipment=state.events.choices['early.merchantCart'];
+  return say('配給待ちの母親',shipment==='repair'
+   ?'「街道から届いた荷の仕分けが始まったそうです。今日の分が少しでも増えるといいのですが」'
+   :shipment==='return'
+   ?'「荷車が戻ったと聞きました。運ぶ人も危険な道では命がけなんですね」'
+   :'「今日も列は長いけれど、みんな順番を守っています」');
+ }
+ return saySequence([
+  {speaker:'配給待ちの母親',text:'「配給は一人パン二つまで。王都でこれなら、地方はもっとひどいんでしょうね」'},
+  {speaker:'ソフィ',text:'「私たちの村では、小麦そのものが足りません」'},
+  {speaker:'配給待ちの母親',text:'「なのに任命式にはあんなに花を使う。王都って、不思議なところね」'}
+ ].concat(earlyCapitalEcho()),()=>{
+  completeEvent('early.capitalRationIntro');
+  offer();
+ });
 }
 // A voluntary 20-second play moment before leaving home: a child asks
 // for ONE round of practice. The player's choice persists in schema 23,
@@ -616,16 +685,28 @@ function inlineNpcEvent(id){
   if(id==='capitalRecruit'){
    if(structuredCondition('returnedKingdom'))return say('新兵','「次の総攻撃、俺たちも出るそうです。勇者様……勝てば、本当に終わるんでしょうか」');
    const roadDecision=state.events?.choices?.['moral.lethal.roadBandit'];
-   if(!roadDecision)return say('新兵','「勇者様と同じ前線に行けるなら光栄です。俺も聖地を取り戻してみせます！」');
-   return saySequence([
-    {speaker:'新兵',text:'「勇者様と同じ前線に行けるなら光栄です。俺も聖地を取り戻してみせます！」'},
-    roadDecision==='kill'
-     ?{speaker:'カレン',text:'「……戦いで勝つことと、正しいことは同じじゃない。私もまだ、答えられない」'}
-     :{speaker:'ソフィ',text:'「どうか、武器を下ろした人を傷つけずに済む道も覚えていてください」'}
-   ])
+   const witnessedGift=state.events?.choices?.['early.capitalRationGift']==='donate';
+   const greeting='「勇者様と同じ前線に行けるなら光栄です。俺も聖地を取り戻してみせます！」';
+   if(!roadDecision&&!witnessedGift)return say('新兵',greeting);
+   const lines=[];
+   // Do not replay the ceremonial greeting on every post-gift revisit.
+   if(!witnessedGift)lines.push({speaker:'新兵',text:greeting});
+   if(roadDecision)lines.push(roadDecision==='kill'
+    ?{speaker:'カレン',text:'「……戦いで勝つことと、正しいことは同じじゃない。私もまだ、答えられない」'}
+    :{speaker:'ソフィ',text:'「どうか、武器を下ろした人を傷つけずに済む道も覚えていてください」'});
+   if(witnessedGift){
+    if(state.events.choices['early.capitalRecruitHelp']!=='water'){
+     // The soldier follows through instead of promising help forever.
+     state.events.choices['early.capitalRecruitHelp']='water';
+     addJournal('王都の配給列で、携帯食を渡した姿を見た新兵が水桶を運んだ。');
+     GC.Render?.World?.draw?.();
+     lines.push({speaker:'新兵',text:'「配給列で携帯食を渡すのを見ました。俺も水を運びます。見ているだけじゃ何も変わりませんから」'});
+    }else lines.push({speaker:'新兵',text:'「配給所に水を運びました。次の当番も手伝うつもりです」'});
+   }
+   return lines.length===1?say(lines[0].speaker,lines[0].text):saySequence(lines)
   }
   if(id==='capitalVendor')return capitalShop()
-  if(id==='rationMother')return saySequence([{speaker:'配給待ちの母親',text:structuredCondition('returnedKingdom')?'「勇者様。息子は前線から戻りました。片腕を失ったけど、生きてます。……それでも私は、勝ってよかったって言うべきなんでしょうか」':'「配給は一人パン二つまで。王都でこれなら、地方はもっとひどいんでしょうね」'},{speaker:'ソフィ',text:structuredCondition('returnedKingdom')?'「生きて帰ったことを喜んでいいと思います。それと戦争を喜ぶことは、同じじゃありません」':'「私たちの村では、小麦そのものが足りません」'},{speaker:'配給待ちの母親',text:structuredCondition('returnedKingdom')?'「……そうね。そう言ってもらえると、少し楽です」':'「なのに任命式にはあんなに花を使う。王都って、不思議なところね」'}].concat(structuredCondition('returnedKingdom')?[]:earlyCapitalEcho()))
+  if(id==='rationMother')return capitalRationMotherVisit()
   if(id==='granz'){
    if(!structuredCondition('returnedKingdom')){
     if(!structuredCondition('capitalCeremony'))return say('総司令グランツ','「先に任命式を終えろ。国民に顔を見せることも、今のお前たちの任務だ」');
