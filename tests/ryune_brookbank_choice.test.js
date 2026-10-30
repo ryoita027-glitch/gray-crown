@@ -9,8 +9,8 @@ function showBrookbankChoices(h){
  h.evaluate("for(let i=0;i<10&&dialogueContinue;i++){const next=dialogueContinue;closeDialogue(false);next()}");
  return clone(h.evaluate('dialogueChoices.map(c=>c.label)'));
 }
-function progressPixels(h){
- return clone(h.evaluate("(()=>{const pixels=[];const c={fillStyle:'',fillRect(x,y,w,h){pixels.push([x,y,w,h,this.fillStyle])}};RyuneOutskirts.drawProgress(c,'ryunebrook',state.events.choices,state.events.completed);return pixels})()"));
+function stonePixels(h){
+ return clone(h.evaluate("(()=>{const pixels=[];const c={fillStyle:'',fillRect(x,y,w,h){pixels.push([x,y,w,h,this.fillStyle])}};RyuneOutskirts.drawObject(c,'ryunebrook',maps.ryunebrook.objects.find(o=>o.id==='brookStones'));return pixels})()"));
 }
 function choose(h,index){
  h.evaluate('dialogueChoiceIndex='+index+';activateDialogueChoice()');
@@ -19,7 +19,7 @@ function choose(h,index){
 
 test('brook stones offer three optional party-led actions without auto-selecting or changing the chapter',()=>{
  const h=createHarness(),s=h.GC.State.get();
- const stage=s.story.stage,items=clone(s.inventory),before=progressPixels(h);
+ const stage=s.story.stage,items=clone(s.inventory),before=stonePixels(h);
  const labels=showBrookbankChoices(h);
  assert.equal(labels.length,3);
  assert.match(labels[0],/水位/);
@@ -28,7 +28,7 @@ test('brook stones offer three optional party-led actions without auto-selecting
  assert.equal(s.events.choices['ryune.brookbank.action'],undefined);
  assert.equal(s.story.stage,stage);
  assert.deepEqual(clone(s.inventory),items);
- assert.deepEqual(progressPixels(h),before);
+ assert.deepEqual(stonePixels(h),before);
  h.evaluate('closeDialogue(false)');
  assert.equal(s.events.completed['ryune.brookbank.choice'],undefined,'closing dialogue must not commit an action');
 });
@@ -38,13 +38,13 @@ test('each chosen action is remembered, is idempotent, and is acknowledged by th
   [0,'mark','目印',true],[1,'secure','石',true],[2,'leave','石積み',false]
  ]){
   const h=createHarness(),s=h.GC.State.get();
-  const before=progressPixels(h),stage=s.story.stage,items=clone(s.inventory);
+  const before=stonePixels(h),stage=s.story.stage,items=clone(s.inventory);
   showBrookbankChoices(h);choose(h,index);
   assert.equal(s.events.choices['ryune.brookbank.action'],choice);
   assert.equal(s.events.completed['ryune.brookbank.choice'],true);
   assert.equal(s.story.stage,stage);
   assert.deepEqual(clone(s.inventory),items);
-  assert.equal(progressPixels(h).length>before.length,visual,choice+' visual footprint');
+  assert.equal(stonePixels(h).length>before.length,visual,choice+' visual footprint');
   const journalCount=s.journal.length;
   assert.equal(h.evaluate("finishRyuneBrookbankChoice('mark')"),false,'cannot overwrite the saved decision');
   assert.equal(s.journal.length,journalCount,'no duplicate journal entries');
