@@ -1,0 +1,19 @@
+<!doctype html><html lang="ja"><meta charset="utf-8"><title>Margaret V7 — native 44px V5 anchor review</title>
+<style>body{font:14px system-ui;background:#263129;color:#f5f4ed;margin:24px}h1{font-size:21px}p{max-width:850px;line-height:1.6}table{border-collapse:separate;border-spacing:10px}td,th{text-align:center;padding:6px;background:#364a38}canvas{display:block;margin:auto;image-rendering:pixelated}#sheet.zoom canvas{width:176px;height:176px}#sheet.zoom td{min-width:180px}button{padding:9px 16px}small{color:#d1d6ce}</style>
+<h1>Margaret V7 front-neck/collar study — ART HOLD</h1>
+<p>同じ44px・同じ背景・同じ向き・同じ歩行フレーム0で比較。左2列はV2原画由来とV7、右2列は承認済みV5の村長・王国使者。これは<strong>素材比較であり実ゲームのChromium撮影ではありません</strong>。V7は正面6歩行フレームのみ変更。正式採用禁止。</p>
+<button id="zoom" type="button">44px ↔ 4倍拡大</button><div id="sheet"></div><h2>正面歩行6フレーム</h2><div id="walk"></div>
+<script>
+const specs=[['V2 source','../../assets/characters/margaret/studies/margaret_original_contour_v2_walk.png',0],['V7 collar','../../assets/characters/margaret/studies/margaret_neck_collar_v7_front_study.png',0],['Mayor V5','../../assets/npc/featured_residents_charm_v5.png',3],['Envoy V5','../../assets/npc/featured_residents_charm_v5.png',4]];
+const directions=['正面','左','右','背面'];
+const load=src=>new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(new Error(src));im.src=src});
+function cell(img,column,dir,frame){const canvas=document.createElement('canvas');canvas.width=canvas.height=44;const c=canvas.getContext('2d');c.fillStyle='#5e7557';c.fillRect(0,0,44,44);c.imageSmoothingEnabled=false;c.drawImage(img,(column+frame)*48,dir*48,48,48,0,0,44,44);return canvas}
+function table(headers,rows){const t=document.createElement('table'),head=t.insertRow();headers.forEach(h=>{const th=document.createElement('th');th.textContent=h;head.append(th)});rows.forEach(cells=>{const row=t.insertRow();cells.forEach(v=>{const td=row.insertCell();if(typeof v==='string')td.textContent=v;else td.append(v)})});return t}
+Promise.all(specs.map(x=>load(x[1]))).then(images=>{
+ const rows=directions.map((name,d)=>[name,...images.map((im,i)=>cell(im,specs[i][2],d,0))]);
+ document.getElementById('sheet').append(table(['向き',...specs.map(x=>x[0])],rows));
+ const walkRows=Array.from({length:6},(_,f)=>['Frame '+f,cell(images[0],0,0,f),cell(images[1],0,0,f)]);
+ document.getElementById('walk').append(table(['正面','V2','V7'],walkRows));
+}).catch(err=>{document.getElementById('sheet').textContent='読み込み失敗: '+err.message});
+document.getElementById('zoom').addEventListener('click',()=>{document.getElementById('sheet').classList.toggle('zoom');document.getElementById('walk').classList.toggle('zoom')});
+</script><p><small>V7は首・襟・胸元の局所手打ち。体型と横顔の根本問題は未解決。実画面確認と8動作は未実施。</small></p></html>
