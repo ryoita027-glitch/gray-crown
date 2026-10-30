@@ -127,6 +127,21 @@ function canPersistNow(mode='save'){
  return !transientUiActive()
 }
 function serializeSave(){return JSON.stringify({...state,schema:SAVE_SCHEMA,locked:false,battle:null,battleReturn:null,symbolEncounter:null})}
+function restoreSaveSlots(primary,backup,operation){
+ // Browser storage is not transactional. A failed primary write may leave the
+ // backup modified; attempt each rollback independently even if one fails.
+ let restored=true;
+ for(const [key,value] of [[SAVE_KEY,primary],[SAVE_BACKUP_KEY,backup]]){
+  try{
+   if(value===null)localStorage.removeItem(key);
+   else localStorage.setItem(key,value)
+  }catch(e){
+   restored=false;
+   GC.Log?.error(operation+' rollback failed',{slot:key,error:String(e)})
+  }
+ }
+ return restored
+}
 function isUsableSavedAdventure(raw){
  if(typeof raw!=='string'||!raw)return false;
  try{
@@ -153,26 +168,35 @@ function save(silent=false){
   const payload=serializeSave(),prev=localStorage.getItem(SAVE_KEY);
   // Never rotate a corrupted primary over a usable previous checkpoint.
   const backup=localStorage.getItem(SAVE_BACKUP_KEY);
+  const primaryUsable=isUsableSavedAdventure(prev),backupUsable=isUsableSavedAdventure(backup);
+  // Manual Save also overwrites slots. Keep invalid raw bytes recoverable,
+  // even when the other slot contains a usable adventure.
+  if(!preserveInvalidSaveSlotsBeforeWrite(prev,backup,primaryUsable,backupUsable))
+   throw new Error('Cannot preserve unreadable save slots before Save');
   try{
-   if(isUsableSavedAdventure(prev))localStorage.setItem(SAVE_BACKUP_KEY,prev);
-   else if(!isUsableSavedAdventure(backup))localStorage.setItem(SAVE_BACKUP_KEY,payload);
-   localStorage.setItem(SAVE_KEY,payload)
+   if(primaryUsable){
+    localStorage.setItem(SAVE_BACKUP_KEY,prev);
+    if(localStorage.getItem(SAVE_BACKUP_KEY)!==prev)throw new Error('Save backup write not persisted');
+   }else if(!backupUsable){
+    localStorage.setItem(SAVE_BACKUP_KEY,payload);
+    if(localStorage.getItem(SAVE_BACKUP_KEY)!==payload)throw new Error('Save backup write not persisted');
+   }
+   localStorage.setItem(SAVE_KEY,payload);
+   if(localStorage.getItem(SAVE_KEY)!==payload)throw new Error('Save primary write not persisted')
   }catch(writeError){
    // A failed primary write must not leave the older backup overwritten.
    // Preserve both original slots as a single logical transaction.
-   try{
-    if(prev===null)localStorage.removeItem(SAVE_KEY);
-    else localStorage.setItem(SAVE_KEY,prev);
-    if(backup===null)localStorage.removeItem(SAVE_BACKUP_KEY);
-    else localStorage.setItem(SAVE_BACKUP_KEY,backup)
-   }catch(rollbackError){GC.Log?.error('Save rollback failed',{error:String(rollbackError)})}
+   restoreSaveSlots(prev,backup,'Save')
    throw writeError
   }
   GC.Log?.info('Save',{map:state.map,x:state.x,y:state.y,stage:state.story.stage});if(!silent)say('システム','セーブしました。');return true}catch(e){GC.Log?.error('Save failed',{error:String(e)});if(!silent)say('システム','セーブに失敗しました。ブラウザの保存領域を確認してください。');return false}}
 function clearTransientPanels(){for(const id of ['battlePanel','levelUpPanel','battleResult','battleFlash','bossCinematic','chapterCard'])$(id)?.classList.add('hidden');if($('dialogueBox')&&!$('dialogueBox').classList.contains('hidden'))closeDialogue(false)}
 function load(silent=false){
  if(!canPersistNow('load')){if(!silent&&$('dialogueBox')?.classList.contains('hidden'))say('システム','イベントや戦闘の途中ではロードできません。操作可能な場所でロードしてください。');return false}
- const primary=localStorage.getItem(SAVE_KEY),backup=localStorage.getItem(SAVE_BACKUP_KEY);if(!primary&&!backup){if(!silent)say('システム','セーブデータがありません。');return false}let recovered=false,next;
+ let primary,backup;
+ try{primary=localStorage.getItem(SAVE_KEY);backup=localStorage.getItem(SAVE_BACKUP_KEY)}
+ catch(e){GC.Log?.error('Save load storage read failed',{error:String(e)});if(!silent)say('システム','ブラウザの保存領域を読み込めません。設定を確認してください。');return false}
+ if(!primary&&!backup){if(!silent)say('システム','セーブデータがありません。');return false}let recovered=false,next;
  // Migration can fill missing fields from defaults. Before migrating, ensure
  // a partially truncated but parseable JSON is not mistaken for a fresh game.
  if(!isUsableSavedAdventure(primary)){
@@ -189,7 +213,8 @@ function load(silent=false){
 // localStorage belongs to the specific browser/origin, not the game folder.
 function exportPortableSaveText(){
  if(!save(true))return null;
- return localStorage.getItem(SAVE_KEY)
+ try{return localStorage.getItem(SAVE_KEY)}
+ catch(e){GC.Log?.error('Portable save export read failed',{error:String(e)});return null}
 }
 function downloadPortableSave(){
  const raw=exportPortableSaveText();
@@ -204,6 +229,30 @@ function downloadPortableSave(){
   return true
  }catch(e){GC.Log?.error('Portable save export failed',{error:String(e)});
   say('システム','セーブの書き出しに失敗しました。ブラウザのダウンロード設定を確認してください。');return false}
+}
+// Portable import must not erase unreadable old slots. Preserve their exact
+// bytes in the existing player-exportable quarantine before any replacement.
+function preserveInvalidSaveSlotsBeforeWrite(primary,backup,
+ primaryUsable=isUsableSavedAdventure(primary),backupUsable=isUsableSavedAdventure(backup)){
+ const unsafePrimary=primary&&!primaryUsable?primary:null;
+ const unsafeBackup=backup&&!backupUsable?backup:null;
+ if(!unsafePrimary&&!unsafeBackup)return true;
+ try{
+  const existing=localStorage.getItem(SAVE_QUARANTINE_KEY);
+  const entries=existing?JSON.parse(existing):[];
+  if(!Array.isArray(entries))return false;
+  // An identical raw-byte record is already safely stored. Rewriting it
+  // wastes quota and can block Save/Import when quarantine writes are denied.
+  if(entries.some(entry=>entry?.primary===unsafePrimary&&entry?.backup===unsafeBackup))
+   return true;
+  entries.push({savedAt:new Date().toISOString(),primary:unsafePrimary,backup:unsafeBackup});
+  const payload=JSON.stringify(entries);
+  localStorage.setItem(SAVE_QUARANTINE_KEY,payload);
+  return localStorage.getItem(SAVE_QUARANTINE_KEY)===payload
+ }catch(e){
+  GC.Log?.error('Portable import corrupt-slot quarantine failed',{error:String(e)});
+  return false
+ }
 }
 function importPortableSaveText(raw){
  // Strict structural gate before migration: a generic JSON is not a valid save.
@@ -224,23 +273,35 @@ function importPortableSaveText(raw){
      !maps[parsed.map])return false;
   loaded=migrateLoaded(raw);
  }catch(e){GC.Log?.warn('Portable save validation failed',{error:String(e)});return false}
- const primary=localStorage.getItem(SAVE_KEY),backup=localStorage.getItem(SAVE_BACKUP_KEY);
+ let primary,backup;
+ try{primary=localStorage.getItem(SAVE_KEY);backup=localStorage.getItem(SAVE_BACKUP_KEY)}
+ catch(e){GC.Log?.error('Portable save import storage read failed',{error:String(e)});return false}
+ if(!preserveInvalidSaveSlotsBeforeWrite(primary,backup)){
+  GC.Log?.warn('Portable import refused: existing unreadable save bytes could not be preserved');
+  return false
+ }
  try{
   // Persist the migrated *validated* schema, never raw untrusted file text.
   const payload=JSON.stringify({...loaded,schema:SAVE_SCHEMA,locked:false,battle:null,
     battleReturn:null,symbolEncounter:null});
-  if(isUsableSavedAdventure(primary))localStorage.setItem(SAVE_BACKUP_KEY,primary);
-  else if(!isUsableSavedAdventure(backup))localStorage.setItem(SAVE_BACKUP_KEY,payload);
+  if(isUsableSavedAdventure(primary)){
+   localStorage.setItem(SAVE_BACKUP_KEY,primary);
+   if(localStorage.getItem(SAVE_BACKUP_KEY)!==primary)throw new Error('Portable import backup write not persisted');
+  }else if(!isUsableSavedAdventure(backup)){
+   localStorage.setItem(SAVE_BACKUP_KEY,payload);
+   if(localStorage.getItem(SAVE_BACKUP_KEY)!==payload)throw new Error('Portable import backup write not persisted');
+  }
   localStorage.setItem(SAVE_KEY,payload);
+  if(localStorage.getItem(SAVE_KEY)!==payload)throw new Error('Portable import primary write not persisted');
   if(!load(true))throw new Error('Imported save could not be loaded');
-  updateTitleContinue();
+  // The imported adventure is now live. A title-button refresh failure must
+  // not report a failed import and roll back the saved slots behind it.
+  try{updateTitleContinue()}
+  catch(uiError){GC.Log?.warn('Portable import title refresh failed',{error:String(uiError)})}
   return true
  }catch(e){
   GC.Log?.error('Portable save import failed',{error:String(e)});
-  try{
-   if(primary===null)localStorage.removeItem(SAVE_KEY);else localStorage.setItem(SAVE_KEY,primary);
-   if(backup===null)localStorage.removeItem(SAVE_BACKUP_KEY);else localStorage.setItem(SAVE_BACKUP_KEY,backup)
-  }catch(_){}
+  restoreSaveSlots(primary,backup,'Portable save import')
   return false
  }
 }
@@ -251,14 +312,31 @@ async function readPortableSaveFile(file){
  if(!canPersistNow('load')){
   say('システム','戦闘やイベントの途中ではセーブを読み込めません。');return false
  }
- const priorExists=!!localStorage.getItem(SAVE_KEY);
- if(!confirm(priorExists?'現在のセーブをバックアップして、選んだセーブデータへ切り替えますか？':
-  '選んだセーブデータを読み込みますか？'))return false;
+ let priorPrimary,priorBackup;
+ try{
+  priorPrimary=localStorage.getItem(SAVE_KEY);
+  priorBackup=localStorage.getItem(SAVE_BACKUP_KEY)
+ }catch(e){
+  GC.Log?.error('Portable save file storage read failed',{error:String(e)});
+  say('システム','ブラウザの保存領域を読み込めません。設定を確認してください。');return false
+ }
+ // A missing or unreadable primary does not mean there is no previous
+ // adventure: a usable backup (or recoverable corrupt bytes) may remain.
+ const hadPrior=!!(priorPrimary||priorBackup);
+ const usablePrimary=isUsableSavedAdventure(priorPrimary);
+ const prompt=usablePrimary?
+  '現在のセーブをバックアップして、選んだセーブデータへ切り替えますか？':
+  hadPrior?'既存のセーブやバックアップを保護したうえで、選んだセーブデータへ切り替えますか？':
+  '選んだセーブデータを読み込みますか？';
+ if(!confirm(prompt))return false;
  let ok=false;
  try{ok=importPortableSaveText(await file.text())}
  catch(e){GC.Log?.error('Portable save read failed',{error:String(e)})}
- say('システム',ok?(priorExists?'外部セーブを読み込みました。元のセーブはバックアップに保存されています。':
-  '外部セーブを読み込みました。'):'セーブの読み込みに失敗しました。形式やデータを確認してください。');
+ say('システム',ok?(usablePrimary?
+  '外部セーブを読み込みました。元のセーブはバックアップに保存されています。':
+  hadPrior?'外部セーブを読み込みました。既存の保存データはバックアップまたは復旧用領域に保護されています。':
+  '外部セーブを読み込みました。'):
+  'セーブの読み込みに失敗しました。形式・データ・ブラウザの保存領域を確認してください。');
  return ok
 }
 
@@ -283,7 +361,9 @@ function quarantineCorruptSavesBeforeNewGame(){
   const old=existing?JSON.parse(existing):[];
   if(!Array.isArray(old))return false;
   const entryAlreadyStored=old.some(x=>x?.primary===primary&&x?.backup===backup);
-  if(!entryAlreadyStored)old.push(record);
+  // Identical raw bytes are already preserved. Avoid a redundant quota-sensitive write.
+  if(entryAlreadyStored)return true;
+  old.push(record);
   const payload=JSON.stringify(old);
   localStorage.setItem(SAVE_QUARANTINE_KEY,payload);
   return localStorage.getItem(SAVE_QUARANTINE_KEY)===payload
@@ -312,12 +392,19 @@ function archiveBeforeNewGame(){
   const main=localStorage.getItem(SAVE_KEY);
   const backup=localStorage.getItem(SAVE_BACKUP_KEY);
   if(!main&&!backup)return true;
-  // Corrupted primary may coexist with a valid backup: archive the playable
-  // adventure, not broken bytes. If neither works, stop and keep existing data.
-  candidate=isUsableSavedAdventure(main)?main:isUsableSavedAdventure(backup)?backup:null;
+  // Preserve unreadable bytes even when the other slot is playable. Starting
+  // a new adventure must not postpone their recovery until a later Save.
+  const mainUsable=isUsableSavedAdventure(main);
+  const backupUsable=isUsableSavedAdventure(backup);
+  candidate=mainUsable?main:backupUsable?backup:null;
   if(!candidate)return false;
+  if(!preserveInvalidSaveSlotsBeforeWrite(main,backup,mainUsable,backupUsable))
+   return false;
   // A new game must not begin if the player's preceding save cannot be
   // preserved. The special archive survives later manual saves.
+  // Reuse an identical archived checkpoint without a quota-sensitive rewrite.
+  // This check comes after corrupt-slot preservation, which must never be skipped.
+  if(localStorage.getItem(SAVE_ARCHIVE_KEY)===candidate)return true;
   localStorage.setItem(SAVE_ARCHIVE_KEY,candidate);
   return localStorage.getItem(SAVE_ARCHIVE_KEY)===candidate
  }catch(e){
@@ -327,7 +414,13 @@ function archiveBeforeNewGame(){
 }
 function restoreArchivedAdventure(){
  if(!canPersistNow('load'))return false;
- const raw=localStorage.getItem(SAVE_ARCHIVE_KEY);
+ let raw;
+ try{raw=localStorage.getItem(SAVE_ARCHIVE_KEY)}
+ catch(e){
+  GC.Log?.error('Previous adventure restore storage read failed',{error:String(e)});
+  say('システム','以前の冒険を読み込めません。ブラウザの保存領域を確認してください。');
+  return false
+ }
  if(!raw)return false;
  if(!confirm('保管していた以前の冒険を復旧しますか？ 現在のセーブはバックアップへ移します。'))return false;
  const ok=importPortableSaveText(raw);
@@ -340,7 +433,11 @@ function restart(){
  // Otherwise switching from the menu can erase hours of unsaved play.
  let persisted=false;
  try{persisted=!!(localStorage.getItem(SAVE_KEY)||localStorage.getItem(SAVE_BACKUP_KEY))}
- catch(e){GC.Log?.error('Restart storage check failed',{error:String(e)});return false}
+ catch(e){
+  GC.Log?.error('Restart storage check failed',{error:String(e)});
+  say('システム','ブラウザの保存領域を確認できません。新しい冒険は開始していません。設定を確認してください。');
+  return false
+ }
  if(!persisted&&!confirm('保存していない現在の冒険を破棄して、最初から始めますか？'))return false;
  return startNewGameSafely()
 }
