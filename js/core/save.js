@@ -168,9 +168,14 @@ function save(silent=false){
   const payload=serializeSave(),prev=localStorage.getItem(SAVE_KEY);
   // Never rotate a corrupted primary over a usable previous checkpoint.
   const backup=localStorage.getItem(SAVE_BACKUP_KEY);
+  const primaryUsable=isUsableSavedAdventure(prev),backupUsable=isUsableSavedAdventure(backup);
+  // Manual Save also overwrites slots. Keep invalid raw bytes recoverable,
+  // even when the other slot contains a usable adventure.
+  if(!preserveInvalidSaveSlotsBeforeWrite(prev,backup,primaryUsable,backupUsable))
+   throw new Error('Cannot preserve unreadable save slots before Save');
   try{
-   if(isUsableSavedAdventure(prev))localStorage.setItem(SAVE_BACKUP_KEY,prev);
-   else if(!isUsableSavedAdventure(backup))localStorage.setItem(SAVE_BACKUP_KEY,payload);
+   if(primaryUsable)localStorage.setItem(SAVE_BACKUP_KEY,prev);
+   else if(!backupUsable)localStorage.setItem(SAVE_BACKUP_KEY,payload);
    localStorage.setItem(SAVE_KEY,payload)
   }catch(writeError){
    // A failed primary write must not leave the older backup overwritten.
@@ -221,9 +226,10 @@ function downloadPortableSave(){
 }
 // Portable import must not erase unreadable old slots. Preserve their exact
 // bytes in the existing player-exportable quarantine before any replacement.
-function preserveInvalidSaveSlotsBeforeImport(primary,backup){
- const unsafePrimary=primary&&!isUsableSavedAdventure(primary)?primary:null;
- const unsafeBackup=backup&&!isUsableSavedAdventure(backup)?backup:null;
+function preserveInvalidSaveSlotsBeforeWrite(primary,backup,
+ primaryUsable=isUsableSavedAdventure(primary),backupUsable=isUsableSavedAdventure(backup)){
+ const unsafePrimary=primary&&!primaryUsable?primary:null;
+ const unsafeBackup=backup&&!backupUsable?backup:null;
  if(!unsafePrimary&&!unsafeBackup)return true;
  try{
   const existing=localStorage.getItem(SAVE_QUARANTINE_KEY);
@@ -261,7 +267,7 @@ function importPortableSaveText(raw){
  let primary,backup;
  try{primary=localStorage.getItem(SAVE_KEY);backup=localStorage.getItem(SAVE_BACKUP_KEY)}
  catch(e){GC.Log?.error('Portable save import storage read failed',{error:String(e)});return false}
- if(!preserveInvalidSaveSlotsBeforeImport(primary,backup)){
+ if(!preserveInvalidSaveSlotsBeforeWrite(primary,backup)){
   GC.Log?.warn('Portable import refused: existing unreadable save bytes could not be preserved');
   return false
  }
