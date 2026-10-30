@@ -11,6 +11,7 @@ canvas{background:#657953;image-rendering:pixelated;max-width:100%;height:auto;d
 <p>GitHubの実PNGを読み込み、正面・左・右・背面を<strong>同じ44px・同じ背景・同じ影・同じ座標</strong>で比較します。上段が現在の表示、下段が原画のy=44を足元基準に合わせた試作です。最下段はマーガレット現行原画（比較用）。</p>
 <p><button id="grass">草地</button> <button id="path">道</button> <button id="toggle">足元ガイド切替</button></p>
 <canvas id="stage" width="760" height="630" aria-label="実素材の44px比較"></canvas>
+<pre id="metrics" class="note" aria-live="polite"></pre>
 <p class="note">このページはゲーム本編のスクリーンショットではありません。画像の構造・表示条件を揃えた資料です。ゲーム本編の比較は <code>?gcV5Footline=44</code> を追加して確認します。未承認・本番未変更。</p>
 <script>
 'use strict';
@@ -43,6 +44,27 @@ function sprite(x,y,who,index,dir,mode){
  const destY=mode==='default'?footY-44:footY-Math.round(44*44/48);
  c.drawImage(img,srcX,srcY,48,48,destX,destY,44,44);
 }
+function alphaFoot(who,index,dir){
+ if(!ready[who])return '?';
+ const off=document.createElement('canvas');off.width=48;off.height=48;
+ const g=off.getContext('2d',{willReadFrequently:true});
+ g.drawImage(images[who],who==='npc'?index*48:0,dir*48,48,48,0,0,48,48);
+ const data=g.getImageData(0,0,48,48).data;
+ let last=-1;
+ // Foot-region occupancy: ignore outer weapons/capes where possible.
+ for(let yy=47;yy>=0;yy--){
+  for(let xx=13;xx<=34;xx++)if(data[(yy*48+xx)*4+3]>=64){last=yy;break}
+  if(last>=0)break;
+ }
+ return last;
+}
+function showMetrics(){
+ if(!ready.npc||!ready.margaret)return;
+ const entries=[['村長','npc',3],['王国使者','npc',4],['マーガレット','margaret',0]];
+ document.getElementById('metrics').textContent='原画48px：中心部 x13〜34 の最下端不透明ピクセル（α≥64）\\n'
+  +entries.map(([name,who,index])=>name+'  '+[0,1,2,3].map(d=>alphaFoot(who,index,d)).join(' / ')+'  [正面 / 左 / 右 / 背面]').join('\\n')
+  +'\\n※この値は画像の足元を推定する補助情報。影・靴・衣装の形状を目視確認して採否を決める。';
+}
 function render(){
  c.imageSmoothingEnabled=false;c.fillStyle='#20282a';c.fillRect(0,0,760,630);
  label('V5: 現行の足元基準（原画 y=48 を地面に合わせる）',18,25,15);
@@ -63,6 +85,7 @@ function render(){
  y+=90;
  label('黄色の細線はゲームの地面足元座標。原画自体の形・色は変更していません。',16,y,13);
  if(Object.keys(errors).length)label('画像読み込み失敗: '+Object.keys(errors).join(', '),16,y+25,13);
+ showMetrics();
 }
 document.getElementById('grass').onclick=()=>{ground='grass';render()};
 document.getElementById('path').onclick=()=>{ground='path';render()};
