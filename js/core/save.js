@@ -331,7 +331,9 @@ function quarantineCorruptSavesBeforeNewGame(){
   const old=existing?JSON.parse(existing):[];
   if(!Array.isArray(old))return false;
   const entryAlreadyStored=old.some(x=>x?.primary===primary&&x?.backup===backup);
-  if(!entryAlreadyStored)old.push(record);
+  // Identical raw bytes are already preserved. Avoid a redundant quota-sensitive write.
+  if(entryAlreadyStored)return true;
+  old.push(record);
   const payload=JSON.stringify(old);
   localStorage.setItem(SAVE_QUARANTINE_KEY,payload);
   return localStorage.getItem(SAVE_QUARANTINE_KEY)===payload
