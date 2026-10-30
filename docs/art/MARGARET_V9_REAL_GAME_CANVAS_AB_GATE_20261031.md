@@ -20,7 +20,7 @@ python tests/browser_margaret_v9_live_canvas_ab_e2e.py
 - Baseline uses the **unchanged production** \`assets/characters/margaret/margaret_walk.png\`.
 - The second browser context intercepts **only** that image request and responds with \`assets/characters/margaret/studies/margaret_silver_planes_v9_walk.png\`. No game source or production PNG is overwritten. Checks exactly one substitution.
 - Requires 288×192 RGBA hero atlases, 432×192 V5 NPC atlas (its source is **palette-mode PNG**, not RGBA), unchanged alpha/footline, and RGB differences in all 24 candidate walk frames.
-- Uses three **real village** camera/party setups (wide, envoy contact, mayor contact), four directions, 44px default hero scale, original NPC footline. Captures **24 unscaled 768×480 game-canvas screenshots** (12 baseline + 12 V9).
+- Uses three **real village** camera/party setups (wide, envoy contact, mayor contact), four directions, 44px default hero scale, original NPC footline. Calls the actual synchronous world draw with a reset camera for each setup and refuses A/B pairs whose recorded camera, party position or pose differs. Captures **24 unscaled 768×480 game-canvas screenshots** (12 baseline + 12 V9).
 - Builds three side-by-side 4-direction PNG montages, one per scene, and a JSON manifest with source SHA-256, atlas changes, runtime status, screenshot names and pixel-difference counts.
 - All generated evidence goes under \`prototype_artifacts/margaret_v9_live_canvas_ab_20261031/\` and does **not** enter the shipped assets.
 
