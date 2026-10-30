@@ -341,7 +341,7 @@ function runTriggeredEvent(type,target,context={}){
    ?'「ボルにも川の様子が伝わっている。水路を直せるかは、もう少し測ってからだね」':null;
   // One short reply on repeat visits; the same information should not
   // demand two dialogue advances every time the player checks the brook.
-  say('川辺の見回り人',followup?response+' '+followup:response);return true
+  say('川辺の見回り人',followup?response.slice(0,-1)+' '+followup.slice(1):response);return true
  }
  // A decision becomes village news only AFTER Karen has told Boru.
  // The field worker cannot know an action merely because it was saved.
