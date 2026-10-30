@@ -161,6 +161,40 @@ const CapitalEnvironment=(()=>{
    box(c,'#747267',3*W+4,y*W+29,21,2);
   }
  }
+ // The road merchant's optional choice already changes the ration mother's
+ // dialogue. Echo that choice in the existing eastern supply-house facade,
+ // so the result can be noticed without opening a conversation. All pixels
+ // stay inside an already-solid H building at (16..17,10..11).
+ function rationSupplyShelf(c){
+  const choice=typeof state!=='undefined'?state.events?.choices?.['early.merchantCart']:null;
+  const x=16*W,y=10*W;
+  // One ordinary crate is present regardless of the merchant's fate:
+  // the city is never falsely depicted as having zero provisions.
+  const crate=(dx)=>{
+   box(c,'#4d463d',x+dx-1,y+33,16,16);
+   box(c,'#92714f',x+dx,y+34,14,13);
+   box(c,'#c5a77a',x+dx+2,y+35,10,2);
+   box(c,'#665340',x+dx+3,y+40,8,2);
+   box(c,'#c5a77a',x+dx+6,y+37,2,9);
+  };
+  crate(6);
+  if(choice==='repair'){
+   // The repaired wagon arrived: a few extra sacks are in the storeroom.
+   // This does not promise an increased ration or award the party items.
+   for(const dx of [24,42]){
+    box(c,'#574f43',x+dx-1,y+43,16,5);
+    box(c,'#b9a581',x+dx,y+32,14,14);
+    box(c,'#dfcaa0',x+dx+2,y+34,10,3);
+    box(c,'#796951',x+dx+3,y+41,8,2);
+    box(c,'#786148',x+dx+6,y+31,2,3);
+   }
+  }else{
+   // A covered, unfilled shelf space; never suggest that the whole
+   // capital has run out of food because one merchant turned back.
+   box(c,'#655d53',x+25,y+44,31,3);
+   box(c,'#9b9382',x+27,y+43,26,1);
+  }
+ }
  function street(c,map){
   if(!on()||map!=='capital')return false;
   // Palace / terrace height differs from western trade stalls and eastern logistics.
@@ -204,7 +238,7 @@ const CapitalEnvironment=(()=>{
     box(c,'#e5dcca',x*W+21,y*W+12,3,2)
    }
   }
-  districtFacades(c);districtPaving(c);
+  districtFacades(c);districtPaving(c);rationSupplyShelf(c);
   return true
  }
  function interior(c,map){
