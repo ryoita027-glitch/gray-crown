@@ -691,3 +691,31 @@ test('Save detects a silent backup rollback failure after a partial rotation', (
  assert.match(rollbackErrors[0].data.error,/not persisted/);
  assert.equal(h.GC.State.get().gold,423);
 });
+
+test('portable import keeps its committed checkpoint when map redraw throws', () => {
+ const h=createHarness();
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=101');
+ assert.equal(h.GC.Save.save(true),true);
+ const imported=h.storage.getItem(h.GC.Save.SAVE_KEY);
+ h.evaluate('state.gold=202');
+ assert.equal(h.GC.Save.save(true),true);
+ h.evaluate('draw=()=>{throw new Error("map redraw unavailable after load");}');
+ assert.equal(h.GC.Save.importPortableSaveText(imported),true,
+  'presentation failure after state replacement must not roll back the imported save');
+ assert.equal(h.GC.State.get().gold,101);
+ assert.equal(JSON.parse(h.storage.getItem(h.GC.Save.SAVE_KEY)).gold,101,
+  'live progress and the primary checkpoint must agree');
+ assert.equal(JSON.parse(h.storage.getItem(h.GC.Save.SAVE_BACKUP_KEY)).gold,202,
+  'the preceding adventure must remain recoverable in the backup');
+});
+
+test('Continue survives a HUD refresh exception and still attempts the map redraw', () => {
+ const h=createHarness();
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=404');
+ assert.equal(h.GC.Save.save(true),true);
+ h.evaluate('state.gold=999;renderHud=()=>{throw new Error("HUD refresh unavailable");};draw=()=>{globalThis.__drawAfterHudError=true;}');
+ assert.equal(h.GC.Save.load(true),true);
+ assert.equal(h.GC.State.get().gold,404);
+ assert.equal(h.evaluate('globalThis.__drawAfterHudError'),true,
+  'an independent map refresh should still run after a HUD failure');
+});
