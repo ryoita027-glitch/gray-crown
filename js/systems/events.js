@@ -274,13 +274,32 @@ function finishRyuneBrookbankChoice(action){
  if(action!=='leave')sfx('discovery');
  const endings={
   mark:[{speaker:'マーガレット',text:'「これで今日の高さが残る。明日も同じとは限らないけれど、比べることはできるわ」'},
-        {speaker:'ソフィ',text:'「足元を塞がない場所にできましたね。渡る人の邪魔にもなりません」'}],
+        {speaker:'ソフィ',text:'「足元を塞がない場所にできましたね。村へ戻ったらボルにも伝えましょう」'}],
   secure:[{speaker:'トリトン',text:'「石は戻した。でも水の流れまでは変えてない。そこは村の人に任せよう」'},
-          {speaker:'カレン',text:'「うん。できることだけ、ちゃんとやろう」'}],
+          {speaker:'カレン',text:'「うん。できることだけ、ちゃんとやろう。ボルにも話しておこう」'}],
   leave:[{speaker:'ソフィ',text:'「この石積みを守ってきた人がいます。私たちだけで変えない方がいいですね」'},
          {speaker:'カレン',text:'「じゃあ、見たことを覚えておこう。村へ戻ったら話せるから」'}]
  };
  saySequence(endings[action]);return true
+}
+// Repeated visits should not replay the same four-line explanation. The
+// short prompt also acknowledges discoveries made since the previous visit.
+function ryuneBrookbankMenu(){
+ const sawBrook=isEventComplete('ryune.brook.inspect');
+ const sawFields=isEventComplete('ryune.fields.inspect');
+ const prompt=sawBrook&&sawFields
+  ?'「畑も小川も見た。でも、ここだけで水路は直せない。石積みはどうしよう？」'
+  :sawBrook
+  ?'「橋の下の泥は見たね。ここでできることだけ、選ぼうか？」'
+  :sawFields
+  ?'「畑の土は乾いてた。だからって、岸を勝手に掘るわけにはいかないよね」'
+  :'「どれなら、この場所のためになるかな？」';
+ return say('カレン',prompt,[
+  {label:'安全な岸に水位の目印を立てる',fn:()=>finishRyuneBrookbankChoice('mark')},
+  {label:'ずれた石を戻して足場を整える',fn:()=>finishRyuneBrookbankChoice('secure')},
+  {label:'石積みには触れず村人に任せる',fn:()=>finishRyuneBrookbankChoice('leave')},
+  {label:'今は決めずに、あとで戻る',fn:()=>say('カレン','「急がなくていいよ。村の人に聞いてからでも、またここで考えよう」')}
+ ])
 }
 function runTriggeredEvent(type,target,context={}){
  // A voluntary, short party scene at the existing stones: three valid choices,
@@ -295,17 +314,19 @@ function runTriggeredEvent(type,target,context={}){
    };
    say('川辺の石積み',memories[choice]);return true
   }
+  if(isEventComplete('ryune.brookbank.introSeen')){
+   ryuneBrookbankMenu();return true
+  }
   saySequence([
    {speaker:'ナレーション',text:'橋の手前。雨でずれた石の間に、水が届いた跡が残っている。人が通る岸だ。'},
    {speaker:'マーガレット',text:'「水の高さを残せば、あとで比べられる。でも岸を崩したら逆効果ね」'},
    {speaker:'トリトン',text:'「なら石を戻して足場を守る手もある。勝手に触らないって選び方もな」'},
    {speaker:'ソフィ',text:'「ここは村の人も通る道です。私たちだけで決めていいのかな」'}
-  ],()=>say('カレン','「どれなら、この場所のためになるかな？」',[
-   {label:'安全な岸に水位の目印を立てる',fn:()=>finishRyuneBrookbankChoice('mark')},
-   {label:'ずれた石を戻して足場を整える',fn:()=>finishRyuneBrookbankChoice('secure')},
-   {label:'石積みには触れず村人に任せる',fn:()=>finishRyuneBrookbankChoice('leave')},
-   {label:'今は決めずに、あとで戻る',fn:()=>say('カレン','「急がなくていいよ。村の人に聞いてからでも、またここで考えよう」')}
-  ]));
+  ],()=>{
+   // Only remember an introduction the player actually finished reading.
+   completeEvent('ryune.brookbank.introSeen');
+   ryuneBrookbankMenu()
+  });
   return true
  }
  if(type==='npc'&&target==='brookKeeper'&&(context.map??state.map)==='ryunebrook'&&
