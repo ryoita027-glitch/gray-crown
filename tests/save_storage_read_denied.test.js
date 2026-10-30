@@ -225,3 +225,53 @@ test('manual Save does not duplicate an identical corrupt-slot quarantine record
  const records = JSON.parse(h.storage.getItem(h.GC.Save.SAVE_QUARANTINE_KEY));
  assert.equal(records.filter(x => x.primary === '{broken-primary').length, 1);
 });
+
+test('manual Save reuses an already quarantined corrupt primary when quarantine rewrites are blocked', () => {
+ const h = createHarness();
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=41');
+ assert.equal(h.GC.Save.save(true), true);
+ h.storage.setItem(h.GC.Save.SAVE_KEY, '{broken-primary');
+ assert.equal(h.GC.Save.save(true), true);
+ const quarantine = h.storage.getItem(h.GC.Save.SAVE_QUARANTINE_KEY);
+ h.storage.setItem(h.GC.Save.SAVE_KEY, '{broken-primary');
+ const originalSet = h.storage.setItem.bind(h.storage);
+ let redundantWrites = 0;
+ h.storage.setItem = (key, value) => {
+  if(key === h.GC.Save.SAVE_QUARANTINE_KEY) {
+   redundantWrites++;
+   throw new Error('QuotaExceededError: no room to rewrite quarantine');
+  }
+  return originalSet(key, value);
+ };
+ h.evaluate('state.gold=42');
+ assert.equal(h.GC.Save.save(true), true,
+  'a previously preserved corrupt slot must not block a later manual Save');
+ assert.equal(redundantWrites, 0);
+ assert.equal(h.storage.getItem(h.GC.Save.SAVE_QUARANTINE_KEY), quarantine);
+ assert.equal(JSON.parse(h.storage.getItem(h.GC.Save.SAVE_KEY)).gold, 42);
+});
+
+test('portable import reuses an existing corrupt-slot quarantine without rewriting it', () => {
+ const h = createHarness();
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=71');
+ assert.equal(h.GC.Save.save(true), true);
+ const imported = h.storage.getItem(h.GC.Save.SAVE_KEY);
+ h.storage.setItem(h.GC.Save.SAVE_KEY, '{broken-primary');
+ assert.equal(h.GC.Save.importPortableSaveText(imported), true);
+ const quarantine = h.storage.getItem(h.GC.Save.SAVE_QUARANTINE_KEY);
+ h.storage.setItem(h.GC.Save.SAVE_KEY, '{broken-primary');
+ const originalSet = h.storage.setItem.bind(h.storage);
+ let redundantWrites = 0;
+ h.storage.setItem = (key, value) => {
+  if(key === h.GC.Save.SAVE_QUARANTINE_KEY) {
+   redundantWrites++;
+   throw new Error('QuotaExceededError: no room to rewrite quarantine');
+  }
+  return originalSet(key, value);
+ };
+ assert.equal(h.GC.Save.importPortableSaveText(imported), true,
+  'a previously preserved corrupt slot must not block another valid import');
+ assert.equal(redundantWrites, 0);
+ assert.equal(h.storage.getItem(h.GC.Save.SAVE_QUARANTINE_KEY), quarantine);
+ assert.equal(JSON.parse(h.storage.getItem(h.GC.Save.SAVE_KEY)).gold, 71);
+});
