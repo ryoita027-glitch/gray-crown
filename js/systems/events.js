@@ -611,13 +611,13 @@ function inlineNpcEvent(id){
   if(id==='lulu')return saySequence([{speaker:'ルル',text:'「ソフィお姉ちゃん、ちゃんと帰ってくる？」'},{speaker:'ソフィ',text:'「もちろん。約束します」'}])
   if(id==='baker')return say('パン屋のエダ','「今朝は小麦が足りなくてね。いつもの半分しか焼けなかったよ。子どもらには黙って大きい方を渡したけどさ」')
   if(id==='farmer'){
-   const brookReported=isEventComplete('ryune.outskirts.reported.brook');
    const brookAction=state.events.choices['ryune.brookbank.action'];
-   // Boru must HEAR about the party's later shoreline decision. A brook
-   // report completed earlier does not make him omniscient. This is a
-   // voluntary follow-up at his existing NPC, never a new quest or reward.
-   if(isEventComplete('ryune.outskirts.reward')&&brookReported&&
-      ['mark','secure','leave'].includes(brookAction)){
+   // An optional shoreline action is news worth telling Boru on its own.
+   // Never force the player to inspect the water or collect the one-time
+   // ration first: the separate observation report remains independently
+   // available through runTriggeredEvent('npc','farmer',...).
+   // Boru only remembers this after Karen actually finishes telling him.
+   if(['mark','secure','leave'].includes(brookAction)){
     const told='ryune.brookbank.boruTold';
     if(!isEventComplete(told)){
      const reports={
