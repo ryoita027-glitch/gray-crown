@@ -91,6 +91,52 @@ const RoadCaveQuality=(()=>{
   }
   fill(c,on?'#859f79':'#c6ab78',x+2,y+18,36,3)
  }
+ // The merchant speaks about a broken wagon, but the old map had no wagon.
+ // Park it on an EXISTING blocked tree tile (6,8), beside the side path:
+ // no false walk-through obstacle, no new collision, and no sprite overlap.
+ // The same cart visibly remembers the existing repair/return decision.
+ function drawMerchantCart(c){
+  const x=6*32,y=8*32;
+  const choice=typeof state!=='undefined'?state.events?.choices?.['early.merchantCart']:null;
+  const fixed=choice==='repair',returning=choice==='return';
+  fill(c,'#43513e',x+1,y+27,30,4);
+  fill(c,'#3f392f',x+3,y+25,26,4);
+  // Axle, wagon bed and two modest sacks; the merchant remains the NPC.
+  fill(c,'#4e3d2e',x+4,y+17,24,8);
+  fill(c,'#795639',x+3,y+12,26,10);
+  fill(c,'#b28b5d',x+5,y+13,22,3);
+  fill(c,'#5c4431',x+6,y+21,20,3);
+  fill(c,'#b5a17d',x+7,y+6,11,7);
+  fill(c,'#d2bd93',x+9,y+7,7,2);
+  fill(c,'#98876a',x+18,y+8,8,5);
+  // A repair ties the cargo and straightens the visibly bent left wheel.
+  if(fixed){
+   fill(c,'#dac494',x+9,y+5,2,12);
+   fill(c,'#dac494',x+23,y+6,2,11);
+  }
+  if(returning){
+   // Goods covered for the southward trip; the axle is still broken.
+   fill(c,'#66827d',x+6,y+6,21,9);
+   fill(c,'#8ea59a',x+8,y+7,16,2);
+   fill(c,'#4e4436',x+14,y+24,3,7); // hitch lowered to turn south
+  }else{
+   fill(c,'#69503b',x+27,y+17,4,3); // forward hitch
+  }
+  // Wheels are drawn on top of the bed so the change reads at native scale.
+  fill(c,'#302f2b',x+21,y+21,8,8);
+  fill(c,'#b7a077',x+23,y+23,4,4);
+  fill(c,'#544536',x+24,y+24,2,2);
+  if(fixed){
+   fill(c,'#302f2b',x+3,y+21,8,8);
+   fill(c,'#b7a077',x+5,y+23,4,4);
+   fill(c,'#544536',x+6,y+24,2,2);
+  }else{
+   // Crooked wheel and exposed axle, not a magically repaired cart.
+   fill(c,'#302f2b',x+1,y+24,9,5);
+   fill(c,'#aa7658',x+2,y+24,6,2);
+   fill(c,'#c6ad85',x+10,y+23,5,2);
+  }
+ }
  function drawAccents(c,map){
   if(!obj.enabled||!active.has(map))return;
   if(map==='road'){
@@ -125,6 +171,12 @@ const RoadCaveQuality=(()=>{
      fill(c,'#928064',ox+9,oy+5,2,11);
      fill(c,'#928064',ox+21,oy+7,2,10);
    }
+   // The wagon belongs to the existing merchant; the player can inspect the
+   // crooked wheel before deciding, then see the same prop change afterward.
+   drawMerchantCart(c);
+   // Worn wheel marks connect it to the merchant without blocking the path.
+   fill(c,'#907b60',7*32+4,8*32+25,9,2);
+   fill(c,'#c1ac83',7*32+5,8*32+24,5,1);
    // Old road boundary: muted flat stones lead toward the existing cave door.
    for(const [tx,ty] of [[12,2],[13,2],[13,1]]){
     const x=tx*32,y=ty*32;
