@@ -195,6 +195,18 @@ const CapitalEnvironment=(()=>{
    box(c,'#9b9382',x+27,y+43,26,1);
   }
  }
+ // A personal, non-interactive ration bundle beside the mother at (16,8).
+ // No new item pickup, road obstacle, or city-wide supply miracle.
+ function rationGiftBundle(c){
+  if(typeof state==='undefined'||state.events?.choices?.['early.capitalRationGift']!=='donate')return;
+  const x=16*W+23,y=8*W+22;
+  box(c,'#595147',x-1,y+8,13,2);
+  box(c,'#b9a07c',x,y+2,11,7);
+  box(c,'#dec7a0',x+1,y+1,9,3);
+  box(c,'#826c52',x+3,y+5,5,2);
+  box(c,'#eee0bb',x+4,y,3,3);
+  box(c,'#73604c',x+5,y+1,1,3);
+ }
  function street(c,map){
   if(!on()||map!=='capital')return false;
   // Palace / terrace height differs from western trade stalls and eastern logistics.
@@ -238,7 +250,7 @@ const CapitalEnvironment=(()=>{
     box(c,'#e5dcca',x*W+21,y*W+12,3,2)
    }
   }
-  districtFacades(c);districtPaving(c);rationSupplyShelf(c);
+  districtFacades(c);districtPaving(c);rationSupplyShelf(c);rationGiftBundle(c);
   return true
  }
  function interior(c,map){
