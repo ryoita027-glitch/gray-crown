@@ -110,9 +110,9 @@ const RyuneOutskirts=(()=>{
    }
    // The worn approach ends at the existing stone prop. These are low,
    // non-blocking ground marks, not a new quest arrow or a fake obstacle.
-   pixel(c,'#9b8769',6*W+10,10*W+25,10,3);
-   pixel(c,'#c4b18d',6*W+12,10*W+26,5,1);
-   pixel(c,'#9b8769',6*W+22,10*W+28,5,2);
+   pixel(c,'#9b8769',5*W+19,11*W+25,10,3);
+   pixel(c,'#c4b18d',5*W+21,11*W+26,5,1);
+   pixel(c,'#9b8769',5*W+27,11*W+29,4,2);
    // A shallow, unblocked shoreline. Water itself remains collision-coded Z.
    pixel(c,'#ae9c78',10*W+26,5*W+20,7,8);
    pixel(c,'#cbba8e',10*W+27,5*W+18,5,3);
