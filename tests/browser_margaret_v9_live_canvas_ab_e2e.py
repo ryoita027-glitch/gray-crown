@@ -88,10 +88,13 @@ def set_scene(page, x, y, direction):
       s.trail=[[x-1,y],[x-2,y],[x-3,y]];
       s.worldStepsOnMap=3;
       GC.Render.World.VISUAL.map=null;
-      GC.Render.World.draw();
+      GC.Render.World.drawScene();
+      const v=GC.Render.World.VISUAL;
       return {map:s.map,x:s.x,y:s.y,dir:s.dir,
               trail:s.trail.map(p=>p.join(',')),
-              display:GC.Render.World.heroVisualStudyStatus().display};
+              display:GC.Render.World.heroVisualStudyStatus().display,
+              camera:[v.camX,v.camY],player:[v.playerX,v.playerY],
+              followers:v.followers.map(p=>[...p])};
     }''', [x, y, direction])
     if result['display'] != 44 or result['map'] != 'village' or result['dir'] != direction:
         raise AssertionError(f'Incorrect review state: {result}')
@@ -140,9 +143,6 @@ def capture_variant(browser, base, variant, manifest):
         for scene, (x, y) in SCENES.items():
             for direction in DIRECTIONS:
                 state = set_scene(page, x, y, direction)
-                # Let the real party/camera settle after a teleported review state.
-                page.wait_for_timeout(450)
-                page.evaluate('() => GC.Render.World.drawScene()')
                 filename = f'{scene}_{direction}_{variant}.png'
                 page.locator('#game').screenshot(path=str(OUT / filename), animations='disabled')
                 manifest['captures'].append({'variant': variant, 'scene': scene,
@@ -163,10 +163,16 @@ def capture_variant(browser, base, variant, manifest):
 
 
 def compare_and_montage(manifest):
+    states = {(c['variant'], c['scene'], c['direction']): c['state']
+              for c in manifest['captures']}
     for scene in SCENES:
         sheet = Image.new('RGB', (768 * 2, 504 * 4), '#1b201c')
         pen = ImageDraw.Draw(sheet)
         for row, direction in enumerate(DIRECTIONS):
+            a_state = states[('original', scene, direction)]
+            b_state = states[('v9_study', scene, direction)]
+            if a_state != b_state:
+                raise AssertionError(f'Camera/party/pose mismatch: {scene}/{direction}: {a_state} vs {b_state}')
             originals = []
             for col, variant in enumerate(VARIANTS):
                 filename = f'{scene}_{direction}_{variant}.png'
