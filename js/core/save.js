@@ -390,6 +390,9 @@ function archiveBeforeNewGame(){
    return false;
   // A new game must not begin if the player's preceding save cannot be
   // preserved. The special archive survives later manual saves.
+  // Reuse an identical archived checkpoint without a quota-sensitive rewrite.
+  // This check comes after corrupt-slot preservation, which must never be skipped.
+  if(localStorage.getItem(SAVE_ARCHIVE_KEY)===candidate)return true;
   localStorage.setItem(SAVE_ARCHIVE_KEY,candidate);
   return localStorage.getItem(SAVE_ARCHIVE_KEY)===candidate
  }catch(e){
