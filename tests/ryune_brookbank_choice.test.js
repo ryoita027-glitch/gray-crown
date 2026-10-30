@@ -19,11 +19,11 @@ function choose(h,index){
 
 test('brookbank is discoverable from the real approach without adding a blocker or a mandatory quest',()=>{
  const h=createHarness();
- h.evaluate("ALPHA_SESSION.started=true;state.map='ryunebrook';state.x=6;state.y=10");
+ h.evaluate("ALPHA_SESSION.started=true;state.map='ryunebrook';state.x=5;state.y=11");
  const accents=clone(h.evaluate("(()=>{const pixels=[];const c={fillStyle:'',fillRect(x,y,w,h){pixels.push([x,y,w,h,this.fillStyle])}};RyuneOutskirts.drawAccents(c,'ryunebrook');return pixels})()"));
- assert.ok(accents.some(p=>p[0]===6*32+10&&p[1]===10*32+25),'subtle approach marks should appear beside the stones');
- assert.equal(h.evaluate("maps.ryunebrook.tiles[10][6]"),'P','approach is an existing walkable path');
- assert.equal(h.evaluate('isBlocked(6,10)'),false,'wayfinding must not obstruct movement');
+ assert.ok(accents.some(p=>p[0]===5*32+19&&p[1]===11*32+25),'subtle approach marks should appear beside the stones');
+ assert.equal(h.evaluate("maps.ryunebrook.tiles[11][5]"),'P','approach is an existing walkable path');
+ assert.equal(h.evaluate('isBlocked(5,11)'),false,'wayfinding must not obstruct movement');
  assert.equal(h.evaluate('isBlocked(6,11)'),true,'existing stone prop retains collision');
  const prop=stonePixels(h);
  assert.ok(prop.some(p=>p[4]==='#89a8a0'),'old survey cord is drawn on the real stone prop');
