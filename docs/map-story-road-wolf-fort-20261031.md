@@ -20,6 +20,7 @@
 
 ## Acceptance and limits
 - Added `tests/road_wolf_fort_wayfinding.test.js`: checks exact draw rectangles, sign/approach passability, sign before and after wolf defeat for both scout states, unchanged inventory/story stage.
+- **Executed against re-fetched committed source:** V8 syntax parsing 3/3 (renderer, events, new Node test); 6/6 actual renderer rectangle checks (three paw-print clusters and three cave-frame parts); 4/4 actual sign-branch dialogue cases (wolf alive/dead × scout unread/read); road map function evaluated from committed map source and a collision-aware breadth-first route from the southern road to the cave approach was found (174 reachable cells examined). These are isolated checks, **not** full gameplay acceptance.
 - **NOT RUN** until verified: full repository Node harness, `npm run check`, Chromium real walking and 44px screenshots, Save/Continue, and human first-time playtest. The isolated GitHub read/write environment cannot clone the private repo from the local container due DNS resolution failure; no paid Actions rerun.
 - Browser gate: village → merchant → optional western cache → sign → wolf → sign again → cave. Check that footprints are recognizable but not fake pickups, cave is visible at normal scale, NPCs/followers do not hide the sign, and the post-battle text does not imply an unseen action.
 - Keep Draft / HOLD; do not merge before integration tests and actual-play review.
