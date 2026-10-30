@@ -70,10 +70,20 @@ test('brookbank choice survives save/load and does not block a one-trip field or
  assert.equal(h.GC.Events.findTriggeredEvent('npc','farmer',{map:'village'})?.id,'ryune.outskirts.brookReport');
  const reward=h.GC.Events.findTriggeredEvent('npc','farmer',{map:'village'});
  h.GC.Events.applyEventEffects(reward);
+ h.evaluate('closeDialogue(false)');
  assert.equal(h.GC.State.get().inventory['携帯食'],1);
  h.evaluate("runTriggeredEvent('npc','brookKeeper',{map:'ryunebrook'})");
  assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/目印/);
  h.evaluate('closeDialogue(false)');
  h.evaluate("state.map='village';inlineNpcEvent('farmer')");
  assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/水位の目印/);
+});
+
+test('Boru does not falsely claim knowledge of brook work after a fields-only report',()=>{
+ const h=createHarness();
+ showBrookbankChoices(h);choose(h,0);
+ h.evaluate("state.events.completed['ryune.outskirts.reward']=true;state.events.completed['ryune.outskirts.reported.fields']=true;state.map='village';inlineNpcEvent('farmer')");
+ assert.doesNotMatch(h.evaluate('DIALOGUE_TYPE.fullHTML'),/川辺の水位の目印/);
+ h.evaluate("state.events.completed['ryune.outskirts.reported.brook']=true;inlineNpcEvent('farmer')");
+ assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/川辺の水位の目印/);
 });
