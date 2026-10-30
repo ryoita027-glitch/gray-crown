@@ -300,16 +300,31 @@ async function readPortableSaveFile(file){
  if(!canPersistNow('load')){
   say('システム','戦闘やイベントの途中ではセーブを読み込めません。');return false
  }
- let priorExists;
- try{priorExists=!!localStorage.getItem(SAVE_KEY)}
- catch(e){GC.Log?.error('Portable save file storage read failed',{error:String(e)});say('システム','ブラウザの保存領域を読み込めません。設定を確認してください。');return false}
- if(!confirm(priorExists?'現在のセーブをバックアップして、選んだセーブデータへ切り替えますか？':
-  '選んだセーブデータを読み込みますか？'))return false;
+ let priorPrimary,priorBackup;
+ try{
+  priorPrimary=localStorage.getItem(SAVE_KEY);
+  priorBackup=localStorage.getItem(SAVE_BACKUP_KEY)
+ }catch(e){
+  GC.Log?.error('Portable save file storage read failed',{error:String(e)});
+  say('システム','ブラウザの保存領域を読み込めません。設定を確認してください。');return false
+ }
+ // A missing or unreadable primary does not mean there is no previous
+ // adventure: a usable backup (or recoverable corrupt bytes) may remain.
+ const hadPrior=!!(priorPrimary||priorBackup);
+ const usablePrimary=isUsableSavedAdventure(priorPrimary);
+ const prompt=usablePrimary?
+  '現在のセーブをバックアップして、選んだセーブデータへ切り替えますか？':
+  hadPrior?'既存のセーブやバックアップを保護したうえで、選んだセーブデータへ切り替えますか？':
+  '選んだセーブデータを読み込みますか？';
+ if(!confirm(prompt))return false;
  let ok=false;
  try{ok=importPortableSaveText(await file.text())}
  catch(e){GC.Log?.error('Portable save read failed',{error:String(e)})}
- say('システム',ok?(priorExists?'外部セーブを読み込みました。元のセーブはバックアップに保存されています。':
-  '外部セーブを読み込みました。'):'セーブの読み込みに失敗しました。形式やデータを確認してください。');
+ say('システム',ok?(usablePrimary?
+  '外部セーブを読み込みました。元のセーブはバックアップに保存されています。':
+  hadPrior?'外部セーブを読み込みました。既存の保存データはバックアップまたは復旧用領域に保護されています。':
+  '外部セーブを読み込みました。'):
+  'セーブの読み込みに失敗しました。形式・データ・ブラウザの保存領域を確認してください。');
  return ok
 }
 
