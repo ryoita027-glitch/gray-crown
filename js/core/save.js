@@ -230,13 +230,19 @@ function load(silent=false){
   }
   recovered=true;next=migrateLoaded(backup)
  }else next=migrateLoaded(primary);
- clearTransientPanels();
+ // Panel cleanup is presentation-only. A stale dialogue/panel must not
+ // prevent a validated checkpoint from becoming the live adventure.
+ let refreshFailed=false;
+ try{clearTransientPanels()}
+ catch(e){
+  refreshFailed=true;
+  GC.Log?.warn?.('Load panel cleanup failed',{error:String(e)})
+ }
  replaceState(next);
  // The validated checkpoint is now live. A subsequent renderer, audio or
  // title failure must not make portable import roll back its stored slots
  // while leaving this already-restored adventure active.
  VISUAL.map=null;
- let refreshFailed=false;
  for(const [step,refresh] of [
   ['music',()=>setMusic(mapMusicTheme(state.map))],
   ['hud',()=>renderHud()],
