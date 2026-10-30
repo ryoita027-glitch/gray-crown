@@ -303,7 +303,8 @@ function runTriggeredEvent(type,target,context={}){
   ],()=>say('カレン','「どれなら、この場所のためになるかな？」',[
    {label:'安全な岸に水位の目印を立てる',fn:()=>finishRyuneBrookbankChoice('mark')},
    {label:'ずれた石を戻して足場を整える',fn:()=>finishRyuneBrookbankChoice('secure')},
-   {label:'石積みには触れず村人に任せる',fn:()=>finishRyuneBrookbankChoice('leave')}
+   {label:'石積みには触れず村人に任せる',fn:()=>finishRyuneBrookbankChoice('leave')},
+   {label:'今は決めずに、あとで戻る',fn:()=>say('カレン','「急がなくていいよ。村の人に聞いてからでも、またここで考えよう」')}
   ]));
   return true
  }
@@ -609,14 +610,39 @@ function inlineNpcEvent(id){
   if(id==='ren')return visitRenPractice()
   if(id==='lulu')return saySequence([{speaker:'ルル',text:'「ソフィお姉ちゃん、ちゃんと帰ってくる？」'},{speaker:'ソフィ',text:'「もちろん。約束します」'}])
   if(id==='baker')return say('パン屋のエダ','「今朝は小麦が足りなくてね。いつもの半分しか焼けなかったよ。子どもらには黙って大きい方を渡したけどさ」')
-  if(id==='farmer')return say('農夫のボル',
-   isEventComplete('ryune.outskirts.reward')
-    ?(isEventComplete('ryune.outskirts.reported.brook')&&state.events.choices['ryune.brookbank.action']==='mark'
-      ?'「川辺の水位の目印も見たよ。あれなら畑の高さと比べられる。すぐに直すより、確かめながら進めるさ」'
-      :isEventComplete('ryune.outskirts.reported.brook')&&state.events.choices['ryune.brookbank.action']==='secure'
-      ?'「川辺の石を戻してくれたんだな。足場が悪いと水路も調べられない。助かったよ」'
-      :'「教えてもらった場所から順に水路を確かめるよ。すぐに畑が戻るわけじゃないが、何も分からなかった昨日よりは前に進めそうだ」')
+  if(id==='farmer'){
+   const brookReported=isEventComplete('ryune.outskirts.reported.brook');
+   const brookAction=state.events.choices['ryune.brookbank.action'];
+   // Boru must HEAR about the party's later shoreline decision. A brook
+   // report completed earlier does not make him omniscient. This is a
+   // voluntary follow-up at his existing NPC, never a new quest or reward.
+   if(isEventComplete('ryune.outskirts.reward')&&brookReported&&
+      ['mark','secure','leave'].includes(brookAction)){
+    const told='ryune.brookbank.boruTold';
+    if(!isEventComplete(told)){
+     const reports={
+      mark:{hero:'「ボル、川辺に水位の目印を立てたよ。まだ流れは変わってないけど、比べる手がかりになると思う」',
+       boru:'「教えてくれて助かる。次に川へ行ったら、畑の高さと比べてみるよ」'},
+      secure:{hero:'「川辺のずれた石を戻しておいたよ。水路の詰まりは、まだそのままなんだ」',
+       boru:'「足場を整えてくれたのか。ありがとう。水路は村の者と調べてみるよ」'},
+      leave:{hero:'「川辺の石積みは触らなかった。村の人が管理してる場所だから、まず伝えたくて」',
+       boru:'「それでいい。あそこはみんなで守ってきた岸だ。様子を知らせてくれてありがとう」'}
+     };
+     const lines=reports[brookAction];
+     return saySequence([{speaker:'カレン',text:lines.hero},
+      {speaker:'農夫のボル',text:lines.boru}],()=>completeEvent(told))
+    }
+    const followups={
+     mark:'「川辺の水位の目印の話、覚えてるよ。次に測る時は畑の高さと比べてみるさ」',
+     secure:'「川辺の石を戻してくれた話、覚えてるよ。足場を見てから水路を調べるさ」',
+     leave:'「川辺の石積みをそのままにした話、覚えてるよ。村の者と様子を確かめるさ」'
+    };
+    return say('農夫のボル',followups[brookAction])
+   }
+   return say('農夫のボル',isEventComplete('ryune.outskirts.reward')
+    ?'「教えてもらった場所から順に水路を確かめるよ。すぐに畑が戻るわけじゃないが、何も分からなかった昨日よりは前に進めそうだ」'
     :'「荷車も肥料も軍に持っていかれてな。西の畝か東の小川、どちらか一つでも様子を見てくれると助かる。……旅支度が先なら、そっちを優先してくれ」')
+  }
   if(id==='oldwoman')return say('老婆ナナ','「勇者さま、なんて呼ばれたって腹は減るし、怪我もする。偉い名前より、帰ってくる方が大事だよ」')
   if(id==='veteran')return say('帰還兵ガルド','「前線は英雄譚みたいな場所じゃない。音がうるさくて、泥だらけで、誰が勝ったかなんてその場じゃ分からん。……覚えておけ」')
  }
