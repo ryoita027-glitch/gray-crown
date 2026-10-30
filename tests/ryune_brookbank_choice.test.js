@@ -17,6 +17,23 @@ function choose(h,index){
  h.evaluate('closeDialogue(false)');
 }
 
+test('brookbank is discoverable from the real approach without adding a blocker or a mandatory quest',()=>{
+ const h=createHarness();
+ h.evaluate("ALPHA_SESSION.started=true;state.map='ryunebrook';state.x=6;state.y=10");
+ const accents=clone(h.evaluate("(()=>{const pixels=[];const c={fillStyle:'',fillRect(x,y,w,h){pixels.push([x,y,w,h,this.fillStyle])}};RyuneOutskirts.drawAccents(c,'ryunebrook');return pixels})()"));
+ assert.ok(accents.some(p=>p[0]===6*32+10&&p[1]===10*32+25),'subtle approach marks should appear beside the stones');
+ assert.equal(h.evaluate("maps.ryunebrook.tiles[10][6]"),'P','approach is an existing walkable path');
+ assert.equal(h.evaluate('isBlocked(6,10)'),false,'wayfinding must not obstruct movement');
+ assert.equal(h.evaluate('isBlocked(6,11)'),true,'existing stone prop retains collision');
+ const prop=stonePixels(h);
+ assert.ok(prop.some(p=>p[4]==='#89a8a0'),'old survey cord is drawn on the real stone prop');
+ h.evaluate("runTriggeredEvent('npc','brookKeeper',{map:'ryunebrook'})");
+ assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/踏み跡/);
+ assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/石積み/);
+ assert.equal(h.GC.State.get().events.choices['ryune.brookbank.action'],undefined,'a clue must not commit a choice');
+ assert.equal(h.GC.State.get().story.stage,'00_opening','a clue must not advance the story');
+});
+
 test('brook stones offer three optional party-led actions without auto-selecting or changing the chapter',()=>{
  const h=createHarness(),s=h.GC.State.get();
  const stage=s.story.stage,items=clone(s.inventory),before=stonePixels(h);
