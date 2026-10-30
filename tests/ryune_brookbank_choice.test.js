@@ -220,3 +220,34 @@ test('Boru can hear about any shoreline decision without requiring a water inspe
   assert.equal(s.events.completed['ryune.brookbank.boruTold'],true,'prior memory survives the report');
  }
 });
+
+test('a field worker learns each shoreline outcome only after Karen tells Boru',()=>{
+ for(const [index,word] of [[0,'水位の印'],[1,'石を戻して'],[2,'村の者に任せて']]){
+  const h=createHarness(),s=h.GC.State.get();
+  showBrookbankChoices(h);choose(h,index);
+  h.evaluate("state.map='ryunefields';runTriggeredEvent('npc','fieldWorker',{map:'ryunefields'})");
+  assert.doesNotMatch(h.evaluate('DIALOGUE_TYPE.fullHTML'),/ボルから|ボルに聞いた/,'news cannot spread before a report');
+  h.evaluate('closeDialogue(false)');
+  h.evaluate("state.map='village';inlineNpcEvent('farmer')");
+  assert.equal(s.events.completed['ryune.brookbank.boruTold'],undefined,'opening a report does not send the news');
+  h.evaluate("for(let i=0;i<3&&dialogueContinue;i++){const next=dialogueContinue;closeDialogue(false);next()}");
+  assert.equal(s.events.completed['ryune.brookbank.boruTold'],true);
+  const stage=s.story.stage,items=clone(s.inventory),journal=clone(s.journal);
+  h.evaluate("state.map='ryunefields';runTriggeredEvent('npc','fieldWorker',{map:'ryunefields'})");
+  assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),new RegExp(word),'field worker should recognize the specific action');
+  assert.equal(s.story.stage,stage);
+  assert.deepEqual(clone(s.inventory),items,'no reward or extra fetch quest');
+  assert.deepEqual(clone(s.journal),journal,'no repeated journal or phantom story progress');
+ }
+});
+
+test('keeper gives a concise one-screen response after the water report',()=>{
+ const h=createHarness();
+ showBrookbankChoices(h);choose(h,0);
+ h.evaluate('closeDialogue(false)');
+ h.evaluate("completeEvent('ryune.outskirts.reported.brook');state.map='ryunebrook';runTriggeredEvent('npc','brookKeeper',{map:'ryunebrook'})");
+ const text=h.evaluate('DIALOGUE_TYPE.fullHTML');
+ assert.match(text,/岸の目印/);
+ assert.match(text,/ボルにも川の様子/);
+ assert.equal(h.evaluate('!!dialogueContinue'),false,'return visit should not require a second dialogue screen');
+});
