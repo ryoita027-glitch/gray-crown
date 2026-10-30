@@ -258,7 +258,7 @@ function finishSeradGravesChoice(choice){
  addJournal('セラド前線の仮埋葬地点で、四人は'+({care:'墓を整えた。',record:'記録を残した。',leave:'今は進むことを選んだ。'}[choice]||'立ち止まった。'));
  sfx('discovery');renderHud();saySequence(lines[choice]||lines.leave);
 }
-// Optional, reversible local agency at an EXISTING brook prop. No new map,
+// Optional, persistent local agency at an EXISTING brook prop. No new map,
 // collision, reward, mandatory errand, or chapter state is introduced.
 function finishRyuneBrookbankChoice(action){
  const key='ryune.brookbank.action';
@@ -610,9 +610,9 @@ function inlineNpcEvent(id){
   if(id==='baker')return say('パン屋のエダ','「今朝は小麦が足りなくてね。いつもの半分しか焼けなかったよ。子どもらには黙って大きい方を渡したけどさ」')
   if(id==='farmer')return say('農夫のボル',
    isEventComplete('ryune.outskirts.reward')
-    ?(state.events.choices['ryune.brookbank.action']==='mark'
+    ?(isEventComplete('ryune.outskirts.reported.brook')&&state.events.choices['ryune.brookbank.action']==='mark'
       ?'「川辺の水位の目印も見たよ。あれなら畑の高さと比べられる。すぐに直すより、確かめながら進めるさ」'
-      :state.events.choices['ryune.brookbank.action']==='secure'
+      :isEventComplete('ryune.outskirts.reported.brook')&&state.events.choices['ryune.brookbank.action']==='secure'
       ?'「川辺の石を戻してくれたんだな。足場が悪いと水路も調べられない。助かったよ」'
       :'「教えてもらった場所から順に水路を確かめるよ。すぐに畑が戻るわけじゃないが、何も分からなかった昨日よりは前に進めそうだ」')
     :'「荷車も肥料も軍に持っていかれてな。西の畝か東の小川、どちらか一つでも様子を見てくれると助かる。……旅支度が先なら、そっちを優先してくれ」')
