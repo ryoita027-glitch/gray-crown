@@ -298,7 +298,8 @@ function runTriggeredEvent(type,target,context={}){
   saySequence([
    {speaker:'ナレーション',text:'橋の手前。雨でずれた石の間に、水が届いた跡が残っている。人が通る岸だ。'},
    {speaker:'マーガレット',text:'「水の高さを残せば、あとで比べられる。でも岸を崩したら逆効果ね」'},
-   {speaker:'トリトン',text:'「なら石を戻して足場を守る手もある。勝手に触らないって選び方もな」'}
+   {speaker:'トリトン',text:'「なら石を戻して足場を守る手もある。勝手に触らないって選び方もな」'},
+   {speaker:'ソフィ',text:'「ここは村の人も通る道です。私たちだけで決めていいのかな」'}
   ],()=>say('カレン','「どれなら、この場所のためになるかな？」',[
    {label:'安全な岸に水位の目印を立てる',fn:()=>finishRyuneBrookbankChoice('mark')},
    {label:'ずれた石を戻して足場を整える',fn:()=>finishRyuneBrookbankChoice('secure')},
