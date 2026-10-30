@@ -501,3 +501,72 @@ test('restart shows a storage-access error without discarding unsaved progress',
  assert.match(h.getElement('dialogueText').innerHTML, /保存領域/,
   'the player must see why Restart was refused');
 });
+
+test('New Game preserves unreadable previous-adventure archive bytes before replacing it', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=901');
+ assert.equal(s.save(true),true);
+ const current=h.storage.getItem(s.SAVE_KEY),corrupt='{broken-previous-adventure';
+ h.storage.setItem(s.SAVE_ARCHIVE_KEY,corrupt);
+ assert.equal(s.archiveBeforeNewGame(),true);
+ assert.equal(h.storage.getItem(s.SAVE_ARCHIVE_KEY),current);
+ const records=JSON.parse(h.storage.getItem(s.SAVE_QUARANTINE_KEY));
+ assert.equal(records.length,1);
+ assert.equal(records[0].archive,corrupt,'exact original archive bytes must remain exportable');
+ assert.equal(records[0].primary,null);
+ assert.equal(records[0].backup,null);
+});
+
+test('New Game refuses to overwrite an unreadable previous archive when recovery write is denied', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=902');
+ assert.equal(s.save(true),true);
+ const beforeState=JSON.stringify(h.GC.State.get());
+ const primary=h.storage.getItem(s.SAVE_KEY),backup=h.storage.getItem(s.SAVE_BACKUP_KEY);
+ const corrupt='{broken-previous-adventure';
+ h.storage.setItem(s.SAVE_ARCHIVE_KEY,corrupt);
+ const set=h.storage.setItem.bind(h.storage);
+ h.storage.setItem=(key,value)=>{
+  if(key===s.SAVE_QUARANTINE_KEY)throw new Error('QuotaExceededError: recovery denied');
+  return set(key,value);
+ };
+ h.context.confirm=()=>true;
+ h.context.alert=()=>{};
+ assert.equal(h.GC.App.startNewGameSafely(),false);
+ assert.equal(JSON.stringify(h.GC.State.get()),beforeState);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),primary);
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),backup);
+ assert.equal(h.storage.getItem(s.SAVE_ARCHIVE_KEY),corrupt);
+});
+
+test('New Game reuses quarantined archive bytes without redundant quota-sensitive writes', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=903');
+ assert.equal(s.save(true),true);
+ const corrupt='{broken-previous-adventure';
+ h.storage.setItem(s.SAVE_ARCHIVE_KEY,corrupt);
+ const existing=JSON.stringify([{savedAt:'2026-10-01T00:00:00Z',primary:null,backup:null,archive:corrupt}]);
+ h.storage.setItem(s.SAVE_QUARANTINE_KEY,existing);
+ const set=h.storage.setItem.bind(h.storage);
+ let attempted=0;
+ h.storage.setItem=(key,value)=>{
+  if(key===s.SAVE_QUARANTINE_KEY){attempted++;throw new Error('quota')}
+  return set(key,value);
+ };
+ assert.equal(s.archiveBeforeNewGame(),true);
+ assert.equal(attempted,0);
+ assert.equal(h.storage.getItem(s.SAVE_QUARANTINE_KEY),existing);
+});
+
+test('New Game preserves normal valid-archive replacement without creating quarantine', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=904');
+ assert.equal(s.save(true),true);
+ assert.equal(s.archiveBeforeNewGame(),true);
+ const older=h.storage.getItem(s.SAVE_ARCHIVE_KEY);
+ h.evaluate('state.gold=905');
+ assert.equal(s.save(true),true);
+ assert.equal(s.archiveBeforeNewGame(),true);
+ assert.notEqual(h.storage.getItem(s.SAVE_ARCHIVE_KEY),older);
+ assert.equal(h.storage.getItem(s.SAVE_QUARANTINE_KEY),null);
+});
