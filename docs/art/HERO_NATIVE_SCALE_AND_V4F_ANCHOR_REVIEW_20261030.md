@@ -2,6 +2,10 @@
 
 **Status: ART HOLD / NO-GO for production.** This branch is an isolated experiment from PR #129 HEAD `86d655f0bd4850f3aaed1d655af29b0e57ffed8e`. Frozen PR #98 (`075f9cb7dc0321361ad1a8674adbc0938ce3ed8c`) and `main` are unchanged.
 
+## Prior art work checked (avoid duplicate studies)
+
+PR #99 establishes the part-based pipeline; #100 is an unrelated 3D Karen blockout. PR #101 already has an offline four-hero 44/48/60/64/72px comparison. PR #102 has an opt-in 44-vs-48px in-game pilot. PR #103–#105 test Karen face parts and reject A/B/C. This run **does not recreate those candidates**: it examines the previously untested smaller 40/42px in-game render alongside 44px, corrects the current Margaret V4F gallery's footline error, and uses V5 NPCs as visual anchors.
+
 ## What changed visibly
 
 - `js/render/world.js`: opt-in `?gcHeroDisplay=40` or `?gcHeroDisplay=42` displays **all four existing detailed protagonist PNGs** at 40/42px rather than 44px. Default and invalid values remain **44px**. The same source frames, animation and 48px source data remain unchanged. Ground shadow width scales with the actor; horizontal center and y=44 source foot anchor remain at the existing world tile foot position. This is an experiment addressing oversized hero/map contrast, not a new character design.
