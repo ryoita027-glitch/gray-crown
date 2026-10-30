@@ -61,9 +61,9 @@ function alphaFoot(who,index,dir){
 function showMetrics(){
  if(!ready.npc||!ready.margaret)return;
  const entries=[['村長','npc',3],['王国使者','npc',4],['マーガレット','margaret',0]];
- document.getElementById('metrics').textContent='原画48px：中心部 x13〜34 の最下端不透明ピクセル（α≥64）\\n'
-  +entries.map(([name,who,index])=>name+'  '+[0,1,2,3].map(d=>alphaFoot(who,index,d)).join(' / ')+'  [正面 / 左 / 右 / 背面]').join('\\n')
-  +'\\n※この値は画像の足元を推定する補助情報。影・靴・衣装の形状を目視確認して採否を決める。';
+ document.getElementById('metrics').textContent='原画48px：中心部 x13〜34 の最下端不透明ピクセル（α≥64）\n'
+  +entries.map(([name,who,index])=>name+'  '+[0,1,2,3].map(d=>alphaFoot(who,index,d)).join(' / ')+'  [正面 / 左 / 右 / 背面]').join('\n')
+  +'\n※この値は画像の足元を推定する補助情報。影・靴・衣装の形状を目視確認して採否を決める。';
 }
 function render(){
  c.imageSmoothingEnabled=false;c.fillStyle='#20282a';c.fillRect(0,0,760,630);
