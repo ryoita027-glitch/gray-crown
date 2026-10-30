@@ -164,3 +164,64 @@ test('portable import refuses to overwrite invalid save bytes if quarantine stor
  assert.deepEqual([...h.storage.data], before);
  assert.equal(JSON.stringify(h.GC.State.get()), live);
 });
+
+
+test('manual Save quarantines corrupt primary bytes while retaining a usable backup', () => {
+ const h = createHarness();
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=111');
+ assert.equal(h.GC.Save.save(true), true);
+ const good = h.storage.getItem(h.GC.Save.SAVE_KEY);
+ h.storage.setItem(h.GC.Save.SAVE_BACKUP_KEY, good);
+ h.storage.setItem(h.GC.Save.SAVE_KEY, '{broken-primary');
+ h.evaluate('state.gold=222');
+ assert.equal(h.GC.Save.save(true), true);
+ const records = JSON.parse(h.storage.getItem(h.GC.Save.SAVE_QUARANTINE_KEY));
+ assert.equal(records.at(-1).primary, '{broken-primary');
+ assert.equal(records.at(-1).backup, null);
+ assert.equal(h.storage.getItem(h.GC.Save.SAVE_BACKUP_KEY), good);
+ assert.equal(JSON.parse(h.storage.getItem(h.GC.Save.SAVE_KEY)).gold, 222);
+});
+
+test('manual Save preserves corrupt backup bytes before rotating the usable primary', () => {
+ const h = createHarness();
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=111');
+ assert.equal(h.GC.Save.save(true), true);
+ const good = h.storage.getItem(h.GC.Save.SAVE_KEY);
+ h.storage.setItem(h.GC.Save.SAVE_BACKUP_KEY, '{broken-backup');
+ h.evaluate('state.gold=222');
+ assert.equal(h.GC.Save.save(true), true);
+ const records = JSON.parse(h.storage.getItem(h.GC.Save.SAVE_QUARANTINE_KEY));
+ assert.equal(records.at(-1).primary, null);
+ assert.equal(records.at(-1).backup, '{broken-backup');
+ assert.equal(h.storage.getItem(h.GC.Save.SAVE_BACKUP_KEY), good);
+ assert.equal(JSON.parse(h.storage.getItem(h.GC.Save.SAVE_KEY)).gold, 222);
+});
+
+test('manual Save refuses to overwrite corrupt slots when quarantine cannot be written', () => {
+ const h = createHarness();
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=111');
+ assert.equal(h.GC.Save.save(true), true);
+ h.storage.setItem(h.GC.Save.SAVE_KEY, '{broken-primary');
+ const before = [...h.storage.data];
+ const set = h.storage.setItem.bind(h.storage);
+ h.storage.setItem = (key, value) => {
+  if(key===h.GC.Save.SAVE_QUARANTINE_KEY)throw new Error('QuotaExceededError: quarantine denied');
+  return set(key, value);
+ };
+ h.evaluate('state.gold=222');
+ assert.equal(h.GC.Save.save(true), false);
+ assert.deepEqual([...h.storage.data], before, 'failed preservation must not overwrite either slot');
+ assert.equal(h.GC.State.get().gold, 222, 'failed Save must not reset live progress');
+});
+
+test('manual Save does not duplicate an identical corrupt-slot quarantine record', () => {
+ const h = createHarness();
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=111');
+ assert.equal(h.GC.Save.save(true), true);
+ h.storage.setItem(h.GC.Save.SAVE_KEY, '{broken-primary');
+ assert.equal(h.GC.Save.save(true), true);
+ h.storage.setItem(h.GC.Save.SAVE_KEY, '{broken-primary');
+ assert.equal(h.GC.Save.save(true), true);
+ const records = JSON.parse(h.storage.getItem(h.GC.Save.SAVE_QUARANTINE_KEY));
+ assert.equal(records.filter(x => x.primary === '{broken-primary').length, 1);
+});
