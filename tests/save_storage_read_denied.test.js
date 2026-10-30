@@ -482,3 +482,22 @@ test('New Game still quarantines corrupt raw bytes before reusing an identical v
  assert.equal(h.storage.getItem(s.SAVE_ARCHIVE_KEY),archived);
  assert.equal(h.storage.getItem(s.SAVE_KEY),'{broken-primary');
 });
+
+test('restart shows a storage-access error without discarding unsaved progress', () => {
+ const h = createHarness();
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=613');
+ const beforeState = JSON.stringify(h.GC.State.get());
+ const beforeStorage = [...h.storage.data];
+ let prompted = false;
+ h.context.confirm = () => { prompted = true; return true; };
+ denyReads(h);
+ assert.equal(h.GC.Save.restart(), false);
+ assert.equal(prompted, false, 'blocked storage must not ask to discard progress');
+ assert.equal(JSON.stringify(h.GC.State.get()), beforeState,
+  'Restart must not reset unsaved player progress');
+ assert.deepEqual([...h.storage.data], beforeStorage,
+  'Restart must not modify existing save slots');
+ h.GC.Dialogue.finishDialogueTyping();
+ assert.match(h.getElement('dialogueText').innerHTML, /保存領域/,
+  'the player must see why Restart was refused');
+});
