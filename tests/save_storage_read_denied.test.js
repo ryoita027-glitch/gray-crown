@@ -892,3 +892,62 @@ test('failed visible Save returns false even when the failure notification throw
  assert.equal(h.GC.Log.get('error').filter(e=>e.message==='Save failed').length,1);
  assert.equal(h.GC.Log.get('warn').filter(e=>e.message==='Save status message failed').length,1);
 });
+
+test('portable download remains successful when its final status dialogue throws', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=833');
+ let clicks=0,removals=0,revocations=0,cleanup=null,filename='';
+ h.context.Blob=class {constructor(parts,options){assert.ok(parts[0].includes('"gold":833'));assert.match(options.type,/json/)}};
+ h.context.URL={createObjectURL:()=> 'blob:gray-crown-test',revokeObjectURL:()=>{revocations++}};
+ h.context.document.body={appendChild:()=>{}};
+ h.context.document.createElement=()=>({
+  set download(v){filename=v;},set href(v){assert.equal(v,'blob:gray-crown-test')},
+  click(){clicks++},remove(){removals++}
+ });
+ h.context.setTimeout=(fn,ms)=>{assert.equal(ms,3000);cleanup=fn;return 1};
+ h.evaluate('say=()=>{throw new Error("dialogue unavailable after download")}');
+ assert.equal(s.downloadPortableSave(),true);
+ assert.equal(clicks,1);
+ assert.equal(removals,1);
+ assert.match(filename,/GrayCrown_Save_v23_.*\.json/);
+ assert.equal(typeof cleanup,'function');
+ cleanup();
+ assert.equal(revocations,1);
+ assert.equal(h.GC.Log.get('error').filter(e=>e.message==='Portable save export failed').length,0);
+ assert.equal(h.GC.Log.get('warn').filter(e=>e.message==='Save status message failed').length,1);
+});
+
+test('portable download reports a failed browser click even if failure dialogue also throws', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=844');
+ let revoked=0,removed=0;
+ h.context.Blob=class {};
+ h.context.URL={createObjectURL:()=> 'blob:failed-click',revokeObjectURL:()=>{revoked++}};
+ h.context.document.body={appendChild:()=>{}};
+ h.context.document.createElement=()=>({
+  click(){throw new Error('browser download denied')},remove(){removed++}
+ });
+ h.evaluate('say=()=>{throw new Error("dialogue unavailable during download failure")}');
+ assert.equal(s.downloadPortableSave(),false);
+ assert.equal(removed,1,'the temporary link must be removed on click failure');
+ assert.equal(revoked,1,'the object URL must be revoked when the click fails');
+ assert.equal(h.GC.Log.get('error').filter(e=>e.message==='Portable save export failed').length,1);
+ assert.equal(h.GC.Log.get('warn').filter(e=>e.message==='Save status message failed').length,1);
+});
+
+test('portable download does not fail after click because temporary link cleanup throws', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=855');
+ let clicks=0;
+ h.context.Blob=class {};
+ h.context.URL={createObjectURL:()=> 'blob:cleanup-test',revokeObjectURL:()=>{}};
+ h.context.document.body={appendChild:()=>{}};
+ h.context.document.createElement=()=>({
+  click(){clicks++},remove(){throw new Error('link removal denied')}
+ });
+ h.context.setTimeout=()=>1;
+ assert.equal(s.downloadPortableSave(),true);
+ assert.equal(clicks,1);
+ assert.equal(h.GC.Log.get('warn').filter(e=>e.message==='Portable save link cleanup failed').length,1);
+ assert.equal(h.GC.Log.get('error').filter(e=>e.message==='Portable save export failed').length,0);
+});
