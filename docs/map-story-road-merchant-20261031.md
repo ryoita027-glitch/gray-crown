@@ -105,3 +105,25 @@ The recruit's previous line promised to help someday, but revisits repeated the 
 - Changed JS sources and Node test source: V8 parse check at authoring time; targeted static checks on one-time choice and visible state.
 - **Not run:** repository Node harness, full npm check, Chromium actual 1x scene, collision walk, Save/Continue integration, human first-time playtest. New regression covers pre-gift, post-gift, single commit, mother dialogue, persistence and no collision; its presence is not proof of execution.
 - Hold adoption if the pail looks like loot, obscures the mother/recruit, or cannot be seen at native scale. No changes to main or frozen PR #98.
+
+
+## 2026-10-31 — merchant decision deferral no longer replays three lines (Draft)
+
+### Verified source / actual player problem
+- Existing road merchant at (8,8) offers repair, safe return, or postponement. Before this change, postponement left no intro-completion flag, so talking again replayed all three opening lines before reaching the same choice. The real road map's tree at (6,8) and walkable side path at (7,8) remain untouched.
+- The updated first meeting still introduces the bent axle, Triton's practical repair offer, and the dangerous fort route. Only after the *third line is actually completed* is `early.merchantIntro` recorded via existing schema-23 `events.completed`. On deferred reentry, the player immediately sees the three original options and a short reminder. If the dialogue is closed before the last line, the introduction is not silently marked as read.
+- Repair and return retain their original mutually exclusive rewards and later visual/world reactions; neither choice is auto-committed. No new NPC, forced event, story stage, map dimensions, collision, inventory reward, or schema migration.
+
+### External evidence checked on 2026-10-31
+- An individual Steam *Chained Echoes* review criticizes long dialogue and limited choice, but is old and **not** representative of current players: https://steamcommunity.com/id/vel8b8/recommended/1229240
+- Kao et al., *How does Juicy Game Feedback Motivate?*, CHI 2024, preregistered experiment (n=1,699): immediate feedback alone is not automatically beneficial; player agency and legible action–outcome relationships matter: https://nickballou.com/publication/2024-kao-et-al-juicy/
+- Lagrange, *Individualized Communal Experience*, DiGRA 2023, reports agency-related immersion in branching narrative play; it does not validate this particular JRPG change: https://dl.digra.org/index.php/dl/article/view/1954
+- **Hypothesis:** skipping repeated setup after a voluntary postponement reduces friction without hiding the original stakes. The latest Japanese Steam review distribution, broader trend and human response remain **unverified**. No source's dialogue or design is copied.
+
+### Validation and limits
+- Parsed the complete updated `js/systems/events.js` in V8; executed the actual new functions with isolated dialogue/state mocks: **8 checks passed** (first intro, interrupted intro, completion, defer, direct reentry, repair option, resolved reentry, inventory/story invariance).
+- Added `tests/road_merchant_deferred_revisit.test.js` using the project's real Node harness for first read, interruption, deferral, Save/Continue, both mutually exclusive outcomes, one-time rewards, and existing collision. **Test file parsed but Node test not executed.**
+- **Not executed:** full `node --test`, `npm run check`, browser walk-through, actual integrated Save/Continue, native-scale screenshot or human first-time playtest. This remains a Draft / HOLD change on PR #146, not an approved release or a main merge.
+
+### Next high-value gate
+Run `node --test tests/road_merchant_deferred_revisit.test.js tests/road_merchant_cart_consequence.test.js` on this exact HEAD, then actually defer and return in a browser. Confirm the short prompt, original three options, no replayed introduction, a readable wagon, and a clear path toward the fort. Reject if an uncompleted introduction is incorrectly skipped or if the first interaction feels rushed.
