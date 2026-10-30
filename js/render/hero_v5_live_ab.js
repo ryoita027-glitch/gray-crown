@@ -48,11 +48,17 @@ const HeroV5LiveAB=(()=>{
    if(!canvas||!Object.values(status).every(x=>x.ready&&x.naturalWidth===288&&x.naturalHeight===192)){
     message.textContent='主人公4人の48px原画が読み込まれていません。';return
    }
-   if(V.leaderQueue.length||V.followerQueues.some(q=>q.length)||
-      Math.abs(V.playerX-GC.State.get().x)>.01||Math.abs(V.playerY-GC.State.get().y)>.01){
+   const gameState=GC.State.get();
+   const npc=typeof OpeningPixelAssets!=='undefined'?OpeningPixelAssets.featuredStatus():null;
+   if(gameState.map==='village'&&(!npc?.ready||npc.artVersion!=='concept-charm-v5')){
+    message.textContent='村長・王国使者のV5原画が読み込まれていません。';return
+   }
+   if(GC.Cinematic?.isActive?.()||gameState.battle||V.leaderQueue.length||V.followerQueues.some(q=>q.length)||
+      Math.abs(V.playerX-gameState.x)>.01||Math.abs(V.playerY-gameState.y)>.01){
     message.textContent='歩行が停止してから撮影してください。';return
    }
    const original=world.heroVisualStudyStatus(),sizes=[44,42,40];
+   const camera={x:V.camX,y:V.camY};
    const combined=document.createElement('canvas');
    combined.width=canvas.width*3;combined.height=canvas.height+24;
    const ctx=combined.getContext('2d');
@@ -63,6 +69,9 @@ const HeroV5LiveAB=(()=>{
     ctx.font='16px sans-serif';ctx.fillStyle='#fff';
     sizes.forEach((size,i)=>{
      world.setHeroDisplayStudySize(size,false);
+     // Reuse the same camera starting point for each size. Without this,
+     // camera easing can make a false A/B difference unrelated to the art.
+     V.camX=camera.x;V.camY=camera.y;
      world.drawScene(); // actual map, NPCs and original 4-hero sprites
      ctx.fillText(size+'px / '+original.footline,i*canvas.width+8,18);
      ctx.drawImage(canvas,i*canvas.width,24);
@@ -89,6 +98,7 @@ const HeroV5LiveAB=(()=>{
    }finally{
     world.setHeroDisplayStudySize(original.display,false);
     world.setHeroFootlineStudy(original.footline==='alpha',false);
+    V.camX=camera.x;V.camY=camera.y;
     world.draw()
    }
    sync()
