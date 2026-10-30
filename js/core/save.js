@@ -424,8 +424,25 @@ function archiveBeforeNewGame(){
   const previousArchive=localStorage.getItem(SAVE_ARCHIVE_KEY);
   if(previousArchive===candidate)return true;
   if(!preserveInvalidArchivedAdventureBeforeWrite(previousArchive))return false;
-  localStorage.setItem(SAVE_ARCHIVE_KEY,candidate);
-  return localStorage.getItem(SAVE_ARCHIVE_KEY)===candidate
+  // A storage shim may mutate the archive and then throw, or acknowledge
+  // a write without persisting the requested bytes. Do not abandon the
+  // previous recoverable adventure on a failed replacement.
+  try{
+   localStorage.setItem(SAVE_ARCHIVE_KEY,candidate);
+   if(localStorage.getItem(SAVE_ARCHIVE_KEY)!==candidate)
+    throw new Error('Previous adventure archive write not persisted');
+  }catch(writeError){
+   try{
+    if(previousArchive===null)localStorage.removeItem(SAVE_ARCHIVE_KEY);
+    else localStorage.setItem(SAVE_ARCHIVE_KEY,previousArchive);
+    if(localStorage.getItem(SAVE_ARCHIVE_KEY)!==previousArchive)
+     throw new Error('Previous adventure archive rollback not persisted');
+   }catch(rollbackError){
+    GC.Log?.error('Previous adventure archive rollback failed',{error:String(rollbackError)})
+   }
+   throw writeError
+  }
+  return true
  }catch(e){
   GC.Log?.error('Previous adventure archive failed',{error:String(e)});
   return false
