@@ -847,3 +847,48 @@ test('repeat Save still repairs a missing backup before returning success', () =
  assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),primary,
   'backup repair must not be skipped by the unchanged-checkpoint optimization');
 });
+
+test('visible Save remains successful when the status dialogue throws after persistence', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=701');
+ h.evaluate('say=()=>{throw new Error("dialogue render failed")}');
+ assert.equal(s.save(false),true,
+  'a failed success notification must not turn a committed Save into failure');
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_KEY)).gold,701);
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_BACKUP_KEY)).gold,701);
+ assert.equal(h.GC.Log.get('error').filter(e=>e.message==='Save failed').length,0);
+ assert.equal(h.GC.Log.get('warn').filter(e=>e.message==='Save status message failed').length,1);
+});
+
+test('unchanged visible Save preserves older backup when its status dialogue throws', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=711');
+ assert.equal(s.save(true),true);
+ h.evaluate('state.gold=712');
+ assert.equal(s.save(true),true);
+ const primary=h.storage.getItem(s.SAVE_KEY),backup=h.storage.getItem(s.SAVE_BACKUP_KEY);
+ h.evaluate('say=()=>{throw new Error("dialogue render failed")}');
+ assert.equal(s.save(false),true);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),primary);
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),backup,
+  'an unchanged Save must retain the earlier recoverable checkpoint');
+ assert.equal(h.GC.Log.get('error').filter(e=>e.message==='Save failed').length,0);
+});
+
+test('failed visible Save returns false even when the failure notification throws', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=721');
+ assert.equal(s.save(true),true);
+ const primary=h.storage.getItem(s.SAVE_KEY),backup=h.storage.getItem(s.SAVE_BACKUP_KEY);
+ const set=h.storage.setItem.bind(h.storage);
+ h.storage.setItem=(key,value)=>{
+  if(key===s.SAVE_KEY)throw new Error('QuotaExceededError: primary denied');
+  return set(key,value);
+ };
+ h.evaluate('state.gold=722;say=()=>{throw new Error("dialogue render failed")}');
+ assert.equal(s.save(false),false);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),primary);
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),backup);
+ assert.equal(h.GC.Log.get('error').filter(e=>e.message==='Save failed').length,1);
+ assert.equal(h.GC.Log.get('warn').filter(e=>e.message==='Save status message failed').length,1);
+});
