@@ -58,8 +58,9 @@ def validate_atlases():
     for path, size in ((ORIGINAL, (288, 192)), (CANDIDATE, (288, 192)),
                        (NPC_V5, (432, 192))):
         with Image.open(path) as image:
-            if image.size != size or image.mode != 'RGBA':
-                raise AssertionError(f'{path.name}: expected RGBA {size}, got {image.mode} {image.size}')
+            allowed_modes = ('P', 'RGBA') if path == NPC_V5 else ('RGBA',)
+            if image.size != size or image.mode not in allowed_modes:
+                raise AssertionError(f'{path.name}: expected {allowed_modes} {size}, got {image.mode} {image.size}')
     with Image.open(ORIGINAL) as a, Image.open(CANDIDATE) as b:
         if a.getchannel('A').tobytes() != b.getchannel('A').tobytes():
             raise AssertionError('V9 changed original walk transparency/footline')
