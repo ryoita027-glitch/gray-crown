@@ -951,3 +951,57 @@ test('portable download does not fail after click because temporary link cleanup
  assert.equal(h.GC.Log.get('warn').filter(e=>e.message==='Portable save link cleanup failed').length,1);
  assert.equal(h.GC.Log.get('error').filter(e=>e.message==='Portable save export failed').length,0);
 });
+
+test('identical portable import preserves an older usable backup without storage writes', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=811');
+ assert.equal(s.save(true),true);
+ const older=h.storage.getItem(s.SAVE_KEY);
+ h.evaluate('state.gold=812');
+ assert.equal(s.save(true),true);
+ const raw=h.storage.getItem(s.SAVE_KEY);
+ // Seed the exact validated payload the import would commit.
+ const canonical=JSON.stringify({...s.migrateLoaded(raw),schema:s.SAVE_SCHEMA,
+  locked:false,battle:null,battleReturn:null,symbolEncounter:null});
+ h.storage.setItem(s.SAVE_KEY,canonical);
+ h.storage.setItem(s.SAVE_BACKUP_KEY,older);
+ const before=[...h.storage.data];
+ let writes=0;
+ h.storage.setItem=()=>{writes++;throw new Error('QuotaExceededError: unnecessary import write');};
+ assert.equal(s.importPortableSaveText(raw),true);
+ assert.equal(writes,0,'identical import must not rotate backup or rewrite primary');
+ assert.deepEqual([...h.storage.data],before);
+ assert.equal(h.GC.State.get().gold,812);
+});
+
+test('identical portable import repairs a missing backup without rewriting primary', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=821');
+ assert.equal(s.save(true),true);
+ const raw=h.storage.getItem(s.SAVE_KEY);
+ const canonical=JSON.stringify({...s.migrateLoaded(raw),schema:s.SAVE_SCHEMA,
+  locked:false,battle:null,battleReturn:null,symbolEncounter:null});
+ h.storage.setItem(s.SAVE_KEY,canonical);
+ h.storage.removeItem(s.SAVE_BACKUP_KEY);
+ const originalSet=h.storage.setItem.bind(h.storage);
+ const writes=[];
+ h.storage.setItem=(key,value)=>{writes.push(key);return originalSet(key,value);};
+ assert.equal(s.importPortableSaveText(raw),true);
+ assert.deepEqual(writes,[s.SAVE_BACKUP_KEY],
+  'missing backup should be repaired without rewriting unchanged primary');
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),canonical);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),canonical);
+});
+
+test('importing a different checkpoint still rotates prior primary into backup', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=831');
+ assert.equal(s.save(true),true);
+ const older=h.storage.getItem(s.SAVE_KEY);
+ h.evaluate('state.gold=832');
+ assert.equal(s.save(true),true);
+ const current=h.storage.getItem(s.SAVE_KEY);
+ assert.equal(s.importPortableSaveText(older),true);
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),current);
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_KEY)).gold,831);
+});
