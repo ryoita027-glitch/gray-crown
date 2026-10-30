@@ -21,3 +21,13 @@ Existing Ryune brook and field exploration already lets one observation earn one
 - Code and targeted Node regression test added on an isolated branch; tests are **not confirmed passed** until executed against this exact HEAD.
 - Real Chromium play, human first-time playtest, 44px visual inspection and 3-route regression: **not performed in this run**.
 - No claim that this specific choice is a market-proven trend or has improved player satisfaction. Validate with playtest before adoption.
+
+## 2026-10-30 follow-up — discoverability and readable agency
+**Observed public player feedback (individual reviews, not representative sampling):**
+- On the Octopath Traveler II Steam store, a review posted October 3 criticizes interruptions after very short player-controlled movement and over-directed quests. https://store.steampowered.com/app/1971650/OCTOPATH_TRAVELER_II/
+- On Chained Echoes Steam Community, an October 29 negative review describes repeatedly circling a map because a needed doorway was difficult to notice. An October 28 positive review praises the journey, cast and world. https://steamcommunity.com/app/1229240/reviews/
+- Other October 28 Chained Echoes reviews disagree about the writing, while some value environmental exploration; do not treat any of these as a market-wide mandate. https://steamcommunity.com/app/1229240/reviews/
+
+**Graygrow-specific design hypothesis:** The brookbank choice in PR #137 is optional but its existing stone prop is visually subtle and the local keeper does not explicitly point to it. Make the original walkable approach (6,10) look lightly worn and give the stone prop a tiny old survey cord. Before any decision, the keeper mentions the visible stonework, not a new quest. Add one Sophie line to make the tradeoff about villagers' ownership explicit. Do not force a cutscene when walking by; do not add loot, objectives, collision, or extra backtracking. These cues and dialogue are original to Graygrow.
+
+**Verification to perform:** At native scale, inspect whether the worn path and survey cord are noticeable but not misleading; walk from the east village exit to the stones; confirm keeper clue is optional; choose all three actions and save/reload; confirm existing brook report still works. The new Node regression checks path/collision, prop pixel command and dialogue source but has **not been executed** against this GitHub-only workspace. No human playtest, screenshot, browser run or full build is claimed.
