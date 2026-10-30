@@ -423,19 +423,28 @@ function commitEarlyMerchantChoice(choice){
  GC.Render?.World?.draw?.();
  return true
 }
+// Returning to an undecided wagon should not replay the entire introduction.
+// A completed introduction is only recorded after its final line is read.
+function offerEarlyMerchantChoice(){
+ return say('カレン','「荷車はまだここにある。どうする？」',[
+  {label:'トリトンと荷車を直し、王都への輸送を助ける',fn:()=>finishEarlyMerchantChoice('repair')},
+  {label:'危険を伝え、村へ引き返すよう勧める',fn:()=>finishEarlyMerchantChoice('return')},
+  {label:'今は判断を保留する',fn:()=>say('行商人','「迷ったらまた声をかけてくれ。荷はまだここにある」')}
+ ]);
+}
 function earlyMerchantVisit(){
  const prior=state.events.choices['early.merchantCart'];
  if(prior==='repair')return say('行商人','「車軸は持ち直した。王都への荷は何とか運べそうだ。あんたらも獣には気をつけな」');
  if(prior==='return')return say('行商人','「荷車を南に向けて、一度荷を整理しているところだ。危険を教えてくれて助かったよ」');
+ if(isEventComplete('early.merchantIntro'))return offerEarlyMerchantChoice();
  return saySequence([
   {speaker:'行商人',text:'「やれやれ、荷車の軸が曲がった。食料を王都へ届けるはずが、このままじゃ狼の餌だ」'},
   {speaker:'トリトン',text:'「固定具ならその場で直せる。少し時間はかかるけどな」'},
   {speaker:'行商人',text:'「東の古砦跡に抜け道があるとも聞くが、獣の声がする。どれも楽な道じゃない」'}
- ],()=>say('カレン','「この荷車、どうする？」',[
-  {label:'トリトンと荷車を直し、王都への輸送を助ける',fn:()=>finishEarlyMerchantChoice('repair')},
-  {label:'危険を伝え、村へ引き返すよう勧める',fn:()=>finishEarlyMerchantChoice('return')},
-  {label:'今は判断を保留する',fn:()=>say('行商人','「迷ったらまた声をかけてくれ。荷はまだここにある」')}
- ]))
+ ],()=>{
+  completeEvent('early.merchantIntro');
+  offerEarlyMerchantChoice();
+ });
 }
 function finishEarlyMerchantChoice(choice){
  if(!commitEarlyMerchantChoice(choice))return say('行商人','「さっきの話はもう決めただろう？」');
