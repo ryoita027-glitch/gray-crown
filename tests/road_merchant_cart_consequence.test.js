@@ -69,3 +69,40 @@ test('turning back covers cargo but does not magically fix the axle; state persi
  assert.equal(h.GC.State.get().events.choices['early.merchantCart'],'return');
  assert.ok(has(pixels(h),x+6,y+6,21,9,'#66827d'),'visual outcome survives Continue');
 });
+
+function capitalSupplyPixels(h){
+ return JSON.parse(JSON.stringify(h.evaluate(`(()=>{
+  const rects=[];
+  const c={fillStyle:'',fillRect(x,y,w,z){rects.push([x,y,w,z,this.fillStyle])}};
+  CapitalEnvironment.street(c,'capital');
+  return rects;
+ })()`)));
+}
+
+test('the repaired merchant shipment leaves a visible, nonblocking echo at the capital',()=>{
+ const h=createHarness(),s=h.GC.State.get(),x=16*32,y=10*32;
+ h.evaluate("ALPHA_SESSION.started=true;state.map='capital';state.x=11;state.y=9");
+ const inventory=JSON.stringify(s.inventory),stage=s.story.stage;
+ assert.equal(h.evaluate("maps.capital.tiles[10][16]"),'H');
+ assert.equal(h.evaluate("maps.capital.tiles[10][17]"),'H');
+ assert.equal(h.evaluate("isBlocked(16,10)"),true,'supplies stay on a blocked building');
+ assert.equal(h.evaluate("isBlocked(15,10)"),false,'adjacent street stays open');
+ const initial=capitalSupplyPixels(h);
+ assert.ok(has(initial,x+6,y+34,14,13,'#92714f'),'one baseline crate remains');
+ assert.ok(!has(initial,x+24,y+32,14,14,'#b9a581'),'no invented merchant shipment before choice');
+ h.evaluate("state.events.choices['early.merchantCart']='repair'");
+ const repaired=capitalSupplyPixels(h);
+ assert.ok(has(repaired,x+24,y+32,14,14,'#b9a581'),'first arrived sack');
+ assert.ok(has(repaired,x+42,y+32,14,14,'#b9a581'),'second arrived sack');
+ assert.ok(!has(repaired,x+25,y+44,31,3,'#655d53'),'shelf is not marked unfilled');
+ assert.equal(h.GC.Save.save(true),true);
+ h.evaluate("state.events.choices['early.merchantCart']='return'");
+ const returning=capitalSupplyPixels(h);
+ assert.ok(!has(returning,x+24,y+32,14,14,'#b9a581'),'return choice cannot show delivered sacks');
+ assert.ok(has(returning,x+25,y+44,31,3,'#655d53'),'only the spare shelf remains unfilled');
+ assert.ok(has(returning,x+6,y+34,14,13,'#92714f'),'other city supplies still exist');
+ assert.equal(h.GC.Save.load(true),true);
+ assert.ok(has(capitalSupplyPixels(h),x+42,y+32,14,14,'#b9a581'),'Save/Continue restores visible delivery');
+ assert.equal(JSON.stringify(h.GC.State.get().inventory),inventory,'drawing changes no inventory');
+ assert.equal(h.GC.State.get().story.stage,stage,'drawing changes no chapter');
+});
