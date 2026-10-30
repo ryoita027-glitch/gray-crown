@@ -9,8 +9,8 @@ th,td:first-child{background:#e9e0d4;font-size:12px}canvas{display:block;width:1
 #status{margin:12px 0;color:#a23b2a}
 </style>
 <h1>マーガレット V4E / V4F：原画・主人公・村長・王国使者との44px実素材比較</h1>
-<p>同じ背景・接地位置・48→44px最近傍縮小・同じ方向・同じフレームを比較。V4EとV4Fは未採用。技術テスト成功は美術採用ではありません。このページは静的な素材比較であり実ゲーム画面ではありません。</p>
-<label for="frame">歩行フレーム</label><select id="frame"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
+<p>同じ背景・接地位置・48px原画の最近傍縮小・同じ方向・同じフレームを比較。40/42pxは未採用の尺度試験。V4EとV4Fは未採用。技術テスト成功は美術採用ではありません。このページは静的な素材比較であり実ゲーム画面ではありません。</p>
+<label for="scale">表示サイズ</label><select id="scale"><option value="44" selected>44px（現行）</option><option value="42">42px（比較）</option><option value="40">40px（比較）</option></select> <label for="frame">歩行フレーム</label><select id="frame"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
 <div id="status" role="status">Loading source PNGs...</div><div class="gallery"><table><thead><tr><th>方向</th><th>カレン</th><th>トリトン</th><th>ソフィ</th><th>マーガレット原画</th><th>V4</th><th>V4E</th><th>V4F</th><th>村長V5</th><th>王国使者V5</th></tr></thead><tbody id="rows"></tbody></table></div>
 <p>顔の成熟度、髪の塊、肩と首、衣装の素材感、本の手持ち位置、足元とタイル尺度を評価。V4Fは方向別の書物と手のつながりを試作。顔・衣装の情報量はまだV5に劣る可能性が高く、現時点はNO-GO。</p>
 <script>
@@ -32,7 +32,10 @@ function paint(c,im,col,d,frame){
  const ctx=c.getContext('2d',{alpha:false});ctx.imageSmoothingEnabled=false;
  ctx.fillStyle=d%2===0?'#82947a':'#a9a093';ctx.fillRect(0,0,110,88);
  ctx.fillStyle='#556257';ctx.beginPath();ctx.ellipse(55,69,10,3,0,0,Math.PI*2);ctx.fill();
- ctx.drawImage(im,(col ? col : frame%6)*48,d*48,48,48,33,25,44,44);
+ // Align each source's local foot anchor y=44 to the shared shadow y=69.
+ const size=Number(document.getElementById('scale').value)||44;
+ const dx=Math.round(55-size/2),dy=Math.round(69-size*44/48);
+ ctx.drawImage(im,(col ? col : frame%6)*48,d*48,48,48,dx,dy,size,size);
 }
 async function main(){
  for(const [name,src,col] of sources){
@@ -44,7 +47,7 @@ async function main(){
   for(const item of items){const td=document.createElement('td');if(item.error){td.textContent='読み込み失敗';td.title=item.error;}else{const c=document.createElement('canvas');c.width=110;c.height=88;c.dataset.d=d;c.dataset.name=item.name;td.append(c);}tr.append(td);}tbody.append(tr);
  }
  function render(){const f=Number(document.getElementById('frame').value);document.querySelectorAll('canvas').forEach(c=>{const item=items.find(i=>i.name===c.dataset.name);paint(c,item.im,item.col,Number(c.dataset.d),f);});}
- document.getElementById('frame').addEventListener('change',render);render();
+ document.getElementById('frame').addEventListener('change',render);document.getElementById('scale').addEventListener('change',render);render();
  const failures=items.filter(i=>i.error);document.getElementById('status').textContent=failures.length?failures.map(i=>i.error).join(' | '):'9 real PNG sources loaded; visual review pending';
 }
 main();
