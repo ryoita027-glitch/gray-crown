@@ -339,8 +339,21 @@ function runTriggeredEvent(type,target,context={}){
   }[choice];
   const followup=isEventComplete('ryune.outskirts.reported.brook')
    ?'「ボルにも川の様子が伝わっている。水路を直せるかは、もう少し測ってからだね」':null;
-  if(followup)return saySequence([{speaker:'川辺の見回り人',text:response},{speaker:'川辺の見回り人',text:followup}]),true;
-  say('川辺の見回り人',response);return true
+  // One short reply on repeat visits; the same information should not
+  // demand two dialogue advances every time the player checks the brook.
+  say('川辺の見回り人',followup?response+' '+followup:response);return true
+ }
+ // A decision becomes village news only AFTER Karen has told Boru.
+ // The field worker cannot know an action merely because it was saved.
+ if(type==='npc'&&target==='fieldWorker'&&(context.map??state.map)==='ryunefields'&&
+    isEventComplete('ryune.brookbank.boruTold')){
+  const action=state.events?.choices?.['ryune.brookbank.action'];
+  const news={
+   mark:'「ボルから川の水位の印を聞いたよ。畑の溝と高さを比べられるね。苗を踏まないよう、こっちも測ってみる」',
+   secure:'「川岸の石を戻してくれたんだって？　足場があるのは助かるよ。でも畑に水が届くかは、まだ調べないとね」',
+   leave:'「川岸は村の者に任せてくれたって、ボルから聞いたよ。石積みを見てくる。あんたたちは旅支度を優先して」'
+  };
+  if(news[action]){say('畑の手伝い人',news[action]);return true}
  }
 
  // Optional interactive memory at the existing Serad battlefield grave marker.
