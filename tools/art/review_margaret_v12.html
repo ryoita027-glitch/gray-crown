@@ -1,0 +1,17 @@
+<!doctype html><html lang="ja"><meta charset="utf-8"><title>Margaret V11 / V12 proportion diagnostic — NO-GO</title>
+<style>body{font:14px system-ui,sans-serif;background:#233128;color:#f3f2e8;margin:20px}h1{font-size:20px}p{max-width:1000px;line-height:1.5}table{border-spacing:6px}td,th{padding:5px;text-align:center;background:#344737}canvas{width:44px;height:44px;image-rendering:pixelated;display:block;margin:auto}.zoom canvas{width:176px;height:176px}button{padding:8px;margin:4px}</style>
+<h1>Margaret V11 vs V12 head/body diagnostic — ART NO-GO</h1><p>4方向×6歩行フレーム、44px、同一背景・足元。V12は頭頂側の3行を間引き胴体側の3行を複製する構造試験。顔の元画素と足元6行を維持。ただし髪の層と胴体に段差・繰返しが生じるため不採用。村長・使者V5は同一NPCを固定表示。実ゲーム画面ではありません。</p>
+<button id="zoom">44px / 4倍</button><button id="play">歩行再生</button><button id="stop">停止</button><div id="gallery"></div><div id="walk"></div>
+<script>
+const specs=[['V11','../../assets/characters/margaret/studies/margaret_shoulder_mass_v11_walk.png',0,true],['V12 NO-GO','../../assets/characters/margaret/studies/margaret_proportion_v12_diagnostic_walk.png',0,true],['Mayor V5','../../assets/npc/featured_residents_charm_v5.png',3,false],['Envoy V5','../../assets/npc/featured_residents_charm_v5.png',4,false]];
+const names=['Front','Left','Right','Back'];let imgs=[],cells=[],frame=0,timer=null;
+function load(src){return new Promise((ok,fail)=>{let im=new Image();im.onload=()=>ok(im);im.onerror=()=>fail(Error(src));im.src=src})}
+function canvas(){let c=document.createElement('canvas');c.width=c.height=44;return c}
+function draw(c,img,col,dir,step,animated){let ctx=c.getContext('2d');ctx.imageSmoothingEnabled=false;ctx.fillStyle='#5e7557';ctx.fillRect(0,0,44,44);ctx.drawImage(img,(col+(animated?step:0))*48,dir*48,48,48,0,0,44,44)}
+function table(headers,rows){let t=document.createElement('table'),head=t.insertRow();for(let h of headers){let th=document.createElement('th');th.textContent=h;head.append(th)}for(let row of rows){let tr=t.insertRow();for(let v of row){let td=tr.insertCell();if(typeof v==='string')td.textContent=v;else td.append(v)}}return t}
+function refresh(){for(let q of cells)draw(q.c,imgs[q.i],specs[q.i][2],q.dir,q.step===null?frame:q.step,specs[q.i][3])}
+Promise.all(specs.map(s=>load(s[1]))).then(im=>{imgs=im;document.getElementById('gallery').append(table(['Direction',...specs.map(s=>s[0])],names.map((n,d)=>[n,...specs.map((s,i)=>{let c=canvas();cells.push({c,i,dir:d,step:null});return c})])));document.getElementById('walk').append(table(['Front walk','V11','V12'],Array.from({length:6},(_,f)=>['Frame '+f,...[0,1].map(i=>{let c=canvas();cells.push({c,i,dir:0,step:f});return c})])));refresh()}).catch(e=>document.getElementById('gallery').textContent='Asset load error: '+e.message);
+document.getElementById('zoom').onclick=()=>{document.getElementById('gallery').classList.toggle('zoom');document.getElementById('walk').classList.toggle('zoom')};
+document.getElementById('play').onclick=()=>{if(timer!==null)return;timer=setInterval(()=>{frame=(frame+1)%6;refresh()},180)};
+document.getElementById('stop').onclick=()=>{if(timer!==null)clearInterval(timer);timer=null;frame=0;refresh()};
+</script></html>
