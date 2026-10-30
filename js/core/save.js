@@ -213,7 +213,38 @@ function load(silent=false){
   }
   recovered=true;next=migrateLoaded(backup)
  }else next=migrateLoaded(primary);
- clearTransientPanels();replaceState(next);VISUAL.map=null;setMusic(mapMusicTheme(state.map));renderHud();draw();GC.Dev?.clearTaint?.();GC.Log?.info('Load',{map:state.map,x:state.x,y:state.y,stage:state.story.stage,recovered});if(!silent&&typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started)hideTitle();if(!silent)say('システム',recovered?'通常セーブが壊れていたため、バックアップから復旧しました。':'ロードしました。');return true}
+ clearTransientPanels();
+ replaceState(next);
+ // The validated checkpoint is now live. A subsequent renderer, audio or
+ // title failure must not make portable import roll back its stored slots
+ // while leaving this already-restored adventure active.
+ VISUAL.map=null;
+ let refreshFailed=false;
+ for(const [step,refresh] of [
+  ['music',()=>setMusic(mapMusicTheme(state.map))],
+  ['hud',()=>renderHud()],
+  ['world',()=>draw()],
+  ['developer',()=>GC.Dev?.clearTaint?.()]
+ ]){
+  try{refresh()}
+  catch(e){
+   refreshFailed=true;
+   GC.Log?.warn?.('Load presentation refresh failed',{step,error:String(e)})
+  }
+ }
+ GC.Log?.info('Load',{map:state.map,x:state.x,y:state.y,stage:state.story.stage,recovered,refreshFailed});
+ if(!silent&&typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started){
+  try{hideTitle()}
+  catch(e){
+   refreshFailed=true;
+   GC.Log?.warn?.('Load title refresh failed',{error:String(e)})
+  }
+ }
+ if(!silent)say('システム',refreshFailed?
+  '冒険は読み込みましたが、画面の更新に失敗しました。ページを再読み込みしてください。':
+  recovered?'通常セーブが壊れていたため、バックアップから復旧しました。':'ロードしました。');
+ return true
+}
 
 // Portable JSON is necessary for player ZIP/file:// releases: browser
 // localStorage belongs to the specific browser/origin, not the game folder.
