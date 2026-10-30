@@ -8,9 +8,9 @@ canvas{background:#657953;image-rendering:pixelated;max-width:100%;height:auto;d
 .note{font-size:13px;color:#bac9b8}a{color:#b7dcb6}
 </style></head><body>
 <h1>王国使者・村長 V5 / 足元接地 A/B</h1>
-<p>GitHubの実PNGを読み込み、正面・左・右・背面を<strong>同じ44px・同じ背景・同じ影・同じ座標</strong>で比較します。上段が現在の表示、下段が原画のy=44を足元基準に合わせた試作です。最下段はマーガレット現行原画（比較用）。</p>
+<p>GitHubの実PNGを読み込み、正面・左・右・背面を<strong>同じ44px・同じ背景・同じ影・同じ座標</strong>で比較します。NPCは現行とy44案、主人公4人は現行とPNGの足元不透明画素から算出したalpha案を比較します。正式採用ではありません。</p>
 <p><button id="grass">草地</button> <button id="path">道</button> <button id="toggle">足元ガイド切替</button></p>
-<canvas id="stage" width="760" height="630" aria-label="実素材の44px比較"></canvas>
+<canvas id="stage" width="760" height="1180" aria-label="実素材の44px比較"></canvas>
 <pre id="metrics" class="note" aria-live="polite"></pre>
 <p class="note">このページはゲーム本編のスクリーンショットではありません。画像の構造・表示条件を揃えた資料です。ゲーム本編の比較は <code>?gcV5Footline=44</code> を追加して確認します。未承認・本番未変更。</p>
 <script>
@@ -19,7 +19,10 @@ const canvas=document.getElementById('stage'),c=canvas.getContext('2d');
 c.imageSmoothingEnabled=false;
 const assets={
  npc:'../assets/npc/featured_residents_charm_v5.png',
- margaret:'../assets/characters/margaret/margaret_walk.png'
+ margaret:'../assets/characters/margaret/margaret_walk.png',
+ karen:'../assets/characters/karen/karen_walk.png',
+ triton:'../assets/characters/triton/triton_walk.png',
+ sophie:'../assets/characters/sophie/sophie_walk.png'
 };
 const images={},ready={},errors={};let ground='grass',guides=true;
 for(const [key,src] of Object.entries(assets)){
@@ -41,7 +44,8 @@ function sprite(x,y,who,index,dir,mode){
  if(!ready[who])return;
  const img=images[who],srcX=who==='npc'?index*48:0,srcY=dir*48;
  const cx=cellX+33,destX=Math.round(cx-22);
- const destY=mode==='default'?footY-44:footY-Math.round(44*44/48);
+ const sourceFoot=mode==='npcDefault'?48:mode==='alpha'?medianFoot(who):44;
+ const destY=footY-Math.round(44*sourceFoot/48);
  c.drawImage(img,srcX,srcY,48,48,destX,destY,44,44);
 }
 function alphaFoot(who,index,dir){
@@ -58,11 +62,16 @@ function alphaFoot(who,index,dir){
  }
  return last;
 }
+function medianFoot(who){
+ if(!ready[who])return 44;
+ const vals=[0,1,2,3].map(dir=>alphaFoot(who,0,dir)).sort((a,b)=>a-b);
+ return vals[1]<38?44:Math.max(43,Math.min(47,Math.round((vals[1]+vals[2])/2)));
+}
 function showMetrics(){
  if(!ready.npc||!ready.margaret)return;
- const entries=[['村長','npc',3],['王国使者','npc',4],['マーガレット','margaret',0]];
+ const entries=[['村長','npc',3],['王国使者','npc',4],['カレン','karen',0],['トリトン','triton',0],['ソフィ','sophie',0],['マーガレット','margaret',0]];
  document.getElementById('metrics').textContent='原画48px：中心部 x13〜34 の最下端不透明ピクセル（α≥64）\n'
-  +entries.map(([name,who,index])=>name+'  '+[0,1,2,3].map(d=>alphaFoot(who,index,d)).join(' / ')+'  [正面 / 左 / 右 / 背面]').join('\n')
+  +entries.map(([name,who,index])=>name+'  '+[0,1,2,3].map(d=>alphaFoot(who,index,d)).join(' / ')+'  [正面 / 左 / 右 / 背面]'+(who!=='npc'?' / alpha基準='+medianFoot(who):'')).join('\n')
   +'\n※この値は画像の足元を推定する補助情報。影・靴・衣装の形状を目視確認して採否を決める。';
 }
 function render(){
@@ -70,20 +79,21 @@ function render(){
  label('V5: 現行の足元基準（原画 y=48 を地面に合わせる）',18,25,15);
  const xs=[190,305,420,535],names=['正面','左','右','背面'];
  for(let i=0;i<4;i++)label(names[i],xs[i]+8,48);
- const people=[['村長',3],['王国使者',4]];
+ const rows=[
+  ['村長 / 現行','npc',3,'npcDefault'],['村長 / y44案（不採用候補）','npc',3,'study'],
+  ['王国使者 / 現行','npc',4,'npcDefault'],['王国使者 / y44案（不採用候補）','npc',4,'study'],
+  ['カレン / 現行','karen',0,'study'],['カレン / alpha案','karen',0,'alpha'],
+  ['トリトン / 現行','triton',0,'study'],['トリトン / alpha案','triton',0,'alpha'],
+  ['ソフィ / 現行','sophie',0,'study'],['ソフィ / alpha案','sophie',0,'alpha'],
+  ['マーガレット / 現行','margaret',0,'study'],['マーガレット / alpha案','margaret',0,'alpha']
+ ];
  let y=63;
- for(const [name,index] of people){
-  label(name+' / 現行',16,y+32);
-  for(let i=0;i<4;i++)sprite(xs[i],y,'npc',index,i,'default');
-  y+=76;
-  label(name+' / y44案',16,y+32);
-  for(let i=0;i<4;i++)sprite(xs[i],y,'npc',index,i,'study');
-  y+=91;
+ for(const [name,who,index,mode] of rows){
+  label(name,16,y+32);
+  for(let i=0;i<4;i++)sprite(xs[i],y,who,index,i,mode);
+  y+=83;
  }
- label('マーガレット / 現行原画（基準）',16,y+28);
- for(let i=0;i<4;i++)sprite(xs[i],y,'margaret',0,i,'study');
- y+=90;
- label('黄色の細線はゲームの地面足元座標。原画自体の形・色は変更していません。',16,y,13);
+ label('黄色の細線は地面足元座標。原画の形・色は変更していません。',16,y+5,13);
  if(Object.keys(errors).length)label('画像読み込み失敗: '+Object.keys(errors).join(', '),16,y+25,13);
  showMetrics();
 }
