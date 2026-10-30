@@ -275,3 +275,67 @@ test('portable import reuses an existing corrupt-slot quarantine without rewriti
  assert.equal(h.storage.getItem(h.GC.Save.SAVE_QUARANTINE_KEY), quarantine);
  assert.equal(JSON.parse(h.storage.getItem(h.GC.Save.SAVE_KEY)).gold, 71);
 });
+
+test('New Game reuses an identical corrupt-save quarantine without a quota-sensitive rewrite', () => {
+ const h = createHarness();
+ const {SAVE_KEY, SAVE_BACKUP_KEY, SAVE_QUARANTINE_KEY} = h.GC.Save;
+ h.storage.setItem(SAVE_KEY, '{broken-primary');
+ h.storage.setItem(SAVE_BACKUP_KEY, '{broken-backup');
+ assert.equal(h.GC.Save.quarantineCorruptSavesBeforeNewGame(), true);
+ const quarantine = h.storage.getItem(SAVE_QUARANTINE_KEY);
+ const records = JSON.parse(quarantine);
+ assert.equal(records.length, 1);
+ assert.equal(records[0].primary, '{broken-primary');
+ assert.equal(records[0].backup, '{broken-backup');
+ const originalSet = h.storage.setItem.bind(h.storage);
+ let quarantineWrites = 0;
+ h.storage.setItem = (key, value) => {
+  if (key === SAVE_QUARANTINE_KEY) {
+   quarantineWrites++;
+   throw new Error('QuotaExceededError: duplicate quarantine write denied');
+  }
+  return originalSet(key, value);
+ };
+ assert.equal(h.GC.Save.quarantineCorruptSavesBeforeNewGame(), true,
+  'already preserved raw bytes must not block a new game when storage is full');
+ assert.equal(quarantineWrites, 0);
+ assert.equal(h.storage.getItem(SAVE_QUARANTINE_KEY), quarantine);
+ assert.equal(h.storage.getItem(SAVE_KEY), '{broken-primary');
+ assert.equal(h.storage.getItem(SAVE_BACKUP_KEY), '{broken-backup');
+});
+
+test('New Game still refuses an unpreserved corrupt save when quarantine storage is denied', () => {
+ const h = createHarness();
+ const {SAVE_KEY, SAVE_BACKUP_KEY, SAVE_QUARANTINE_KEY} = h.GC.Save;
+ h.storage.setItem(SAVE_KEY, '{broken-primary');
+ h.storage.setItem(SAVE_BACKUP_KEY, '{broken-backup');
+ const originalSet = h.storage.setItem.bind(h.storage);
+ h.storage.setItem = (key, value) => {
+  if (key === SAVE_QUARANTINE_KEY)
+   throw new Error('QuotaExceededError: cannot preserve new corrupt bytes');
+  return originalSet(key, value);
+ };
+ assert.equal(h.GC.Save.quarantineCorruptSavesBeforeNewGame(), false);
+ assert.equal(h.storage.getItem(SAVE_QUARANTINE_KEY), null);
+ assert.equal(h.storage.getItem(SAVE_KEY), '{broken-primary');
+ assert.equal(h.storage.getItem(SAVE_BACKUP_KEY), '{broken-backup');
+});
+
+test('New Game does not mistake changed corrupt bytes for an existing quarantine record', () => {
+ const h = createHarness();
+ const {SAVE_KEY, SAVE_BACKUP_KEY, SAVE_QUARANTINE_KEY} = h.GC.Save;
+ h.storage.setItem(SAVE_KEY, '{broken-primary');
+ h.storage.setItem(SAVE_BACKUP_KEY, '{broken-backup');
+ assert.equal(h.GC.Save.quarantineCorruptSavesBeforeNewGame(), true);
+ const quarantine = h.storage.getItem(SAVE_QUARANTINE_KEY);
+ h.storage.setItem(SAVE_KEY, '{different-corrupt-primary');
+ const originalSet = h.storage.setItem.bind(h.storage);
+ h.storage.setItem = (key, value) => {
+  if (key === SAVE_QUARANTINE_KEY)
+   throw new Error('QuotaExceededError: changed bytes cannot be preserved');
+  return originalSet(key, value);
+ };
+ assert.equal(h.GC.Save.quarantineCorruptSavesBeforeNewGame(), false);
+ assert.equal(h.storage.getItem(SAVE_QUARANTINE_KEY), quarantine);
+ assert.equal(h.storage.getItem(SAVE_KEY), '{different-corrupt-primary');
+});
