@@ -365,10 +365,14 @@ function archiveBeforeNewGame(){
   const main=localStorage.getItem(SAVE_KEY);
   const backup=localStorage.getItem(SAVE_BACKUP_KEY);
   if(!main&&!backup)return true;
-  // Corrupted primary may coexist with a valid backup: archive the playable
-  // adventure, not broken bytes. If neither works, stop and keep existing data.
-  candidate=isUsableSavedAdventure(main)?main:isUsableSavedAdventure(backup)?backup:null;
+  // Preserve unreadable bytes even when the other slot is playable. Starting
+  // a new adventure must not postpone their recovery until a later Save.
+  const mainUsable=isUsableSavedAdventure(main);
+  const backupUsable=isUsableSavedAdventure(backup);
+  candidate=mainUsable?main:backupUsable?backup:null;
   if(!candidate)return false;
+  if(!preserveInvalidSaveSlotsBeforeWrite(main,backup,mainUsable,backupUsable))
+   return false;
   // A new game must not begin if the player's preceding save cannot be
   // preserved. The special archive survives later manual saves.
   localStorage.setItem(SAVE_ARCHIVE_KEY,candidate);
