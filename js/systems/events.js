@@ -258,7 +258,68 @@ function finishSeradGravesChoice(choice){
  addJournal('セラド前線の仮埋葬地点で、四人は'+({care:'墓を整えた。',record:'記録を残した。',leave:'今は進むことを選んだ。'}[choice]||'立ち止まった。'));
  sfx('discovery');renderHud();saySequence(lines[choice]||lines.leave);
 }
+// Optional, reversible local agency at an EXISTING brook prop. No new map,
+// collision, reward, mandatory errand, or chapter state is introduced.
+function finishRyuneBrookbankChoice(action){
+ const key='ryune.brookbank.action';
+ if(!['mark','secure','leave'].includes(action)||state.events.choices[key])return false;
+ state.events.choices[key]=action;
+ completeEvent('ryune.brookbank.choice');
+ const notes={
+  mark:'リュネ東の小川で、四人は安全な岸に水位の目印を残した。村人が後から変化を確かめられる。',
+  secure:'リュネ東の小川で、四人は崩れた岸の石を元へ戻した。水路そのものは直していない。',
+  leave:'リュネ東の小川で、四人は石積みに手を加えず、管理する村人の判断を尊重した。'
+ };
+ addJournal(notes[action]);renderHud();draw();
+ if(action!=='leave')sfx('discovery');
+ const endings={
+  mark:[{speaker:'マーガレット',text:'「これで今日の高さが残る。明日も同じとは限らないけれど、比べることはできるわ」'},
+        {speaker:'ソフィ',text:'「足元を塞がない場所にできましたね。渡る人の邪魔にもなりません」'}],
+  secure:[{speaker:'トリトン',text:'「石は戻した。でも水の流れまでは変えてない。そこは村の人に任せよう」'},
+          {speaker:'カレン',text:'「うん。できることだけ、ちゃんとやろう」'}],
+  leave:[{speaker:'ソフィ',text:'「この石積みを守ってきた人がいます。私たちだけで変えない方がいいですね」'},
+         {speaker:'カレン',text:'「じゃあ、見たことを覚えておこう。村へ戻ったら話せるから」'}]
+ };
+ saySequence(endings[action]);return true
+}
 function runTriggeredEvent(type,target,context={}){
+ // A voluntary, short party scene at the existing stones: three valid choices,
+ // a persistent visible consequence for two of them, and local NPC recognition.
+ if(type==='object'&&target==='brookStones'&&(context.map??state.map)==='ryunebrook'){
+  const choice=state.events?.choices?.['ryune.brookbank.action'];
+  if(choice){
+   const memories={
+    mark:'岸の端に、四人が立てた細い水位の目印が残っている。水路の流れはまだ変わっていない。',
+    secure:'ずれていた石が戻され、岸の小さな足場が整っている。水路の詰まりはそのままだ。',
+    leave:'石積みは前に見たままだ。村の人が管理する場所を、勝手に変えずにおいた。'
+   };
+   say('川辺の石積み',memories[choice]);return true
+  }
+  saySequence([
+   {speaker:'ナレーション',text:'橋の手前。雨でずれた石の間に、水が届いた跡が残っている。人が通る岸だ。'},
+   {speaker:'マーガレット',text:'「水の高さを残せば、あとで比べられる。でも岸を崩したら逆効果ね」'},
+   {speaker:'トリトン',text:'「なら石を戻して足場を守る手もある。勝手に触らないって選び方もな」'}
+  ],()=>say('カレン','「どれなら、この場所のためになるかな？」',[
+   {label:'安全な岸に水位の目印を立てる',fn:()=>finishRyuneBrookbankChoice('mark')},
+   {label:'ずれた石を戻して足場を整える',fn:()=>finishRyuneBrookbankChoice('secure')},
+   {label:'石積みには触れず村人に任せる',fn:()=>finishRyuneBrookbankChoice('leave')}
+  ]));
+  return true
+ }
+ if(type==='npc'&&target==='brookKeeper'&&(context.map??state.map)==='ryunebrook'&&
+    state.events?.choices?.['ryune.brookbank.action']){
+  const choice=state.events.choices['ryune.brookbank.action'];
+  const response={
+   mark:'「岸の目印、見たよ。助かる。明日も水位を測って、畑の人と比べてみる」',
+   secure:'「石を戻してくれたのか。渡る人の足元が少し安心だね。水路の詰まりは、これから調べるよ」',
+   leave:'「石積みは村で管理してる。勝手に崩さずにいてくれてありがとう。気になることがあれば聞いて」'
+  }[choice];
+  const followup=isEventComplete('ryune.outskirts.reported.brook')
+   ?'「ボルにも川の様子が伝わっている。水路を直せるかは、もう少し測ってからだね」':null;
+  if(followup)return saySequence([{speaker:'川辺の見回り人',text:response},{speaker:'川辺の見回り人',text:followup}]),true;
+  say('川辺の見回り人',response);return true
+ }
+
  // Optional interactive memory at the existing Serad battlefield grave marker.
  // Reuses this map object; no new entity, gate, reward or canon outcome.
  if(type==='object'&&target==='fieldGraves'&&(context.map??state.map)==='frontierfield'){
@@ -549,7 +610,11 @@ function inlineNpcEvent(id){
   if(id==='baker')return say('パン屋のエダ','「今朝は小麦が足りなくてね。いつもの半分しか焼けなかったよ。子どもらには黙って大きい方を渡したけどさ」')
   if(id==='farmer')return say('農夫のボル',
    isEventComplete('ryune.outskirts.reward')
-    ?'「教えてもらった場所から順に水路を確かめるよ。すぐに畑が戻るわけじゃないが、何も分からなかった昨日よりは前に進めそうだ」'
+    ?(state.events.choices['ryune.brookbank.action']==='mark'
+      ?'「川辺の水位の目印も見たよ。あれなら畑の高さと比べられる。すぐに直すより、確かめながら進めるさ」'
+      :state.events.choices['ryune.brookbank.action']==='secure'
+      ?'「川辺の石を戻してくれたんだな。足場が悪いと水路も調べられない。助かったよ」'
+      :'「教えてもらった場所から順に水路を確かめるよ。すぐに畑が戻るわけじゃないが、何も分からなかった昨日よりは前に進めそうだ」')
     :'「荷車も肥料も軍に持っていかれてな。西の畝か東の小川、どちらか一つでも様子を見てくれると助かる。……旅支度が先なら、そっちを優先してくれ」')
   if(id==='oldwoman')return say('老婆ナナ','「勇者さま、なんて呼ばれたって腹は減るし、怪我もする。偉い名前より、帰ってくる方が大事だよ」')
   if(id==='veteran')return say('帰還兵ガルド','「前線は英雄譚みたいな場所じゃない。音がうるさくて、泥だらけで、誰が勝ったかなんてその場じゃ分からん。……覚えておけ」')
