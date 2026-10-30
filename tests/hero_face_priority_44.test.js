@@ -36,3 +36,35 @@ test('opt-in must be explicit and cannot mix with silver recolor study',()=>{
  assert.equal(study.enabled('?gcHeroFace44=1'),true);
  assert.equal(study.enabled('?gcHeroFace44=1&gcMargaretSilver=2'),false);
 });
+
+test('face+feet map preserves original head and shoe/footline rows in all directions',()=>{
+ const ymap=study.sourceYFeet;
+ for(let y=0;y<24;y++)assert.equal(ymap(y),y);
+ for(let y=36;y<44;y++)assert.equal(ymap(y),y+4);
+ assert.equal(ymap(40),44);
+ assert.equal(ymap(43),47);
+ assert.equal(study.sourceY(40),43); // previous face-only remap skips source y44
+ assert.ok(!Array.from({length:44},(_,y)=>study.sourceY(y)).includes(44));
+ for(let y=1;y<44;y++)assert.ok(ymap(y)>ymap(y-1));
+ const w=288,h=192,p=new Uint8ClampedArray(w*h*4);
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+  const i=(y*w+x)*4;p[i]=x%256;p[i+1]=y%256;p[i+2]=(x+y)%256;p[i+3]=((x*13+y*17)%256);
+ }
+ const r=study.resamplePixels(p,w,h,'feet');
+ assert.equal(r.width,264);assert.equal(r.height,176);
+ for(let dir=0;dir<4;dir++)for(let frame=0;frame<6;frame++)
+  for(const [x,y] of [[12,5],[21,20],[24,24],[24,40],[23,43]]){
+   const sx=frame*48+study.sourceX(x),sy=dir*48+ymap(y);
+   const src=(sy*w+sx)*4,dst=((dir*44+y)*r.width+frame*44+x)*4;
+   assert.deepEqual(Array.from(r.data.slice(dst,dst+4)),Array.from(p.slice(src,src+4)));
+  }
+ assert.throws(()=>study.resamplePixels(p,w,h,'unknown'),/Unknown/);
+});
+test('face+feet mode remains opt-in and can restore original and face-only state',()=>{
+ assert.equal(study.enabled('?gcHeroFace44=1'),true);
+ // The global study has no location in Node; enabled() defaults false, so
+ // state mutation must refuse to enable any candidate in headless production.
+ assert.equal(study.setFeetCandidate(true),false);
+ assert.equal(study.feetActive(),false);
+ assert.equal(study.active(),false);
+});
