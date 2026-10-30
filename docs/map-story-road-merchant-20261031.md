@@ -49,3 +49,27 @@
 - In a real browser at native scale: visit the road merchant and choose each outcome on separate saves; travel to the capital, check the supply facade near the ration mother, listen to her existing dialogue, Save/Continue, verify visibility and no occlusion/false blockage. Reject if the pixel sacks are unreadable or if the ration queue appears more prosperous than the script supports.
 
 **Still Draft / HOLD / NO-GO.**
+
+## 2026-10-31 follow-up — an optional, personally costly ration gift at the capital (Draft)
+
+### Player-facing change
+- The existing ration mother at (16,8) now offers a **voluntary** choice if the party actually carries at least one `携帯食`: give exactly one ration to her, or keep it for the journey. The merchant's repair outcome gives one portable ration, creating a tangible tradeoff between immediate aid and travel resources; the return outcome grants a herb instead and does **not** fabricate a ration.
+- The gift deducts one real inventory item, writes `early.capitalRationGift='donate'` in existing Save schema 23 choices, updates the HUD, records a short journal entry and yields a specific grateful reply. Revisit dialogue remembers the gift and does not request another ration. Keeping the ration costs nothing and the player may reconsider later.
+- The initial 3-line queue conversation and existing merchant/orphan echoes remain; after the first fully read conversation, ordinary revisits no longer replay the whole exposition. The existing later `returnedKingdom` war-aftermath dialogue takes precedence unchanged.
+- No city-wide food supply miracle, additional reward, quest, route lock, new NPC, new collision, new art, forced detour or automatic merge. This is a *personal* act; the mother never claims one ration fixes the city's distribution.
+
+### Public signals reviewed 2026-10-31
+- [Chained Echoes community/reviews](https://steamcommunity.com/app/1229240): Oct 28 individual negative review praises exploration details but criticizes protagonists' lack of effect on events; Oct 29 individual negative review describes getting lost retracing a map.
+- [Octopath Traveler II community/reviews](https://steamcommunity.com/app/1971650): Oct 26 individual negative review criticizes tedious dialogue; Oct 29 review criticizes lengthy repeated backstories.
+- **Inference (not market consensus):** a brief, optional *resource-consuming* choice and a remembered NPC reply may provide more agency than another free dialogue choice; skipping repeated queue exposition may improve pacing. No A/B test, representative sample or human playtest confirms this hypothesis. No copied plot, dialogue, map or assets.
+
+### Implementation and actual verification
+- `js/systems/events.js`: `commitCapitalRationGift` and `capitalRationMotherVisit`; existing ration-mother fallback delegates to the new handler.
+- `tests/capital_ration_gift.test.js`: real-harness regression source for no-food, donation/one-time spending, defer/return, Save/Continue, and late-war precedence.
+- **Executed before first code commit:** V8 syntax compilation of the complete modified events source and 6/6 isolated executions of the actual new helper with controlled state/dialogue mocks (no-food, donate, repeat prevention, grateful revisit, keep, late-war precedence).
+- **Executed after test-file creation:** V8 syntax compilation of the Node test source (parse only).
+- **Not executed:** the committed Node test in the full repository harness, `npm run check`, actual Chromium/44px UI, real input/camera/collision, Save/Continue end-to-end, or human player evaluation. The prior local private checkout was blocked by GitHub DNS; no Actions minutes spent.
+- The new option's actual screen readability and choice timing remain unapproved. Keep this PR **Draft / HOLD / NO-GO** and do not merge to main or frozen PR #98.
+
+### Next acceptance
+Run `node --test tests/capital_ration_gift.test.js tests/road_merchant_cart_consequence.test.js` and `npm run check` on the exact PR HEAD; then real browser: reach the capital with zero and one ration, choose donate/keep, revisit and Continue, check no double spend, and verify the late-war dialogue remains unchanged. Evaluate whether the added prompt helps agency without slowing the ration queue.
