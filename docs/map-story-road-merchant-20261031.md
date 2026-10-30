@@ -90,3 +90,18 @@ Run `node --test tests/capital_ration_gift.test.js tests/road_merchant_cart_cons
 - Runtime sources and Node regression source parsed in V8; isolated execution of actual updated renderer and gift commit verified before writing. New tests cover initial/after-gift pixels, one-time spending, passability, Save/Continue and recruit's existing moral and war branches.
 - **Not run:** actual Node harness, `npm run check`, native-scale Chromium screenshot, full Save/Continue integration, human player test. Private repo clone from the execution container still fails GitHub DNS. No paid CI.
 - **Draft/HOLD** pending real-screen inspection: reject if the packet is hidden under the mother's authored sprite, resembles loot, or masks walking. Confirm recruit dialogue in all states.
+
+## 2026-10-31 follow-up — recruit acts on the witnessed gift (Draft)
+
+### Player-facing slice
+The recruit's previous line promised to help someday, but revisits repeated the same promise and the city never changed. After the player gives one real portable ration to the existing mother and *then talks to the recruit*, he now brings a small water pail to the queue. The pail appears immediately on existing walkable pavement at (17,8), is purely decorative (no pickup or collision), and persists using a schema-23 event choice. The mother recognizes the water on revisit. Before the gift, the recruit does not help or claim to have seen it; late-war dialogue still overrides this scene. Repeated conversations do not award anything or repeat the action.
+
+### Evidence and hypothesis (checked 2026-10-31)
+- Steam *Chained Echoes* Oct 28 individual review praises exploration but criticizes the protagonists having little effect on events; Oct 29 individual review complains about repeated map loops around a subtle door. https://steamcommunity.com/app/1229240/reviews/
+- Steam *Octopath Traveler II* Oct 26 and 29 individual reviews complain about repetitive story exposition. https://steamcommunity.com/app/1971650/
+- **Inference, not verified acceptance:** a visible, modest NPC follow-through with short revisits gives a clearer consequence than a permanently repeated promise. These reviews are not representative research. No copied scene, script, artwork or map design.
+
+### QA gate
+- Changed JS sources and Node test source: V8 parse check at authoring time; targeted static checks on one-time choice and visible state.
+- **Not run:** repository Node harness, full npm check, Chromium actual 1x scene, collision walk, Save/Continue integration, human first-time playtest. New regression covers pre-gift, post-gift, single commit, mother dialogue, persistence and no collision; its presence is not proof of execution.
+- Hold adoption if the pail looks like loot, obscures the mother/recruit, or cannot be seen at native scale. No changes to main or frozen PR #98.
