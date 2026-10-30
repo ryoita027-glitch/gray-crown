@@ -768,3 +768,42 @@ test('normal file import keeps its ordinary success message without a refresh wa
  assert.match(h.getElement('dialogueText').innerHTML,/外部セーブを読み込みました/);
  assert.doesNotMatch(h.getElement('dialogueText').innerHTML,/ページを再読み込み/);
 });
+
+test('visible Continue keeps a loaded checkpoint when the status dialogue throws', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=711');
+ assert.equal(s.save(true),true);
+ h.evaluate('state.gold=722');
+ h.evaluate('say=()=>{throw new Error("status dialogue unavailable")}');
+ assert.equal(s.load(false),true,'dialogue failure must not turn a committed Continue into a failed load');
+ assert.equal(h.GC.State.get().gold,711);
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_KEY)).gold,711);
+});
+
+test('file import resolves successfully after a committed save even if status dialogue throws', async () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=811');
+ assert.equal(s.save(true),true);
+ const imported=h.storage.getItem(s.SAVE_KEY);
+ h.evaluate('state.gold=822');
+ assert.equal(s.save(true),true);
+ h.evaluate('say=()=>{throw new Error("status dialogue unavailable")}');
+ assert.equal(await s.readPortableSaveFile({size:imported.length,async text(){return imported;}}),true);
+ assert.equal(h.GC.State.get().gold,811);
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_KEY)).gold,811);
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_BACKUP_KEY)).gold,822);
+});
+
+test('previous-adventure restore remains successful if the final status dialogue throws', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=911');
+ assert.equal(s.save(true),true);
+ assert.equal(s.archiveBeforeNewGame(),true);
+ h.evaluate('state.gold=922');
+ assert.equal(s.save(true),true);
+ h.evaluate('say=()=>{throw new Error("status dialogue unavailable")}');
+ assert.equal(s.restoreArchivedAdventure(),true);
+ assert.equal(h.GC.State.get().gold,911);
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_KEY)).gold,911);
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_BACKUP_KEY)).gold,922);
+});
