@@ -477,7 +477,9 @@ function capitalRationMotherVisit(){
   {speaker:'配給待ちの母親',text:'「……そうね。そう言ってもらえると、少し楽です」'}
  ]);
  if(state.events.choices['early.capitalRationGift']==='donate')return saySequence([
-  {speaker:'配給待ちの母親',text:'「あの携帯食は大切に使います。配給だけでは足りない日があるから……ありがとう」'},
+  {speaker:'配給待ちの母親',text:state.events.choices['early.capitalRecruitHelp']==='water'
+   ?'「あの携帯食、大切に使います。新兵さんが水も運んでくれました。……ありがとう」'
+   :'「あの携帯食は大切に使います。配給だけでは足りない日があるから……ありがとう」'},
   {speaker:'ソフィ',text:'「どうか、あなたも無理をしないでくださいね」'}
  ]);
  const offer=()=>{
@@ -677,12 +679,22 @@ function inlineNpcEvent(id){
    const witnessedGift=state.events?.choices?.['early.capitalRationGift']==='donate';
    const greeting='「勇者様と同じ前線に行けるなら光栄です。俺も聖地を取り戻してみせます！」';
    if(!roadDecision&&!witnessedGift)return say('新兵',greeting);
-   const lines=[{speaker:'新兵',text:greeting}];
+   const lines=[];
+   // Do not replay the ceremonial greeting on every post-gift revisit.
+   if(!witnessedGift)lines.push({speaker:'新兵',text:greeting});
    if(roadDecision)lines.push(roadDecision==='kill'
     ?{speaker:'カレン',text:'「……戦いで勝つことと、正しいことは同じじゃない。私もまだ、答えられない」'}
     :{speaker:'ソフィ',text:'「どうか、武器を下ろした人を傷つけずに済む道も覚えていてください」'});
-   if(witnessedGift)lines.push({speaker:'新兵',text:'「配給列で携帯食を渡すのを見ました。俺は立って見ているだけでした。次は手を貸せることを探します」'});
-   return saySequence(lines)
+   if(witnessedGift){
+    if(state.events.choices['early.capitalRecruitHelp']!=='water'){
+     // The soldier follows through instead of promising help forever.
+     state.events.choices['early.capitalRecruitHelp']='water';
+     addJournal('王都の配給列で、携帯食を渡した姿を見た新兵が水桶を運んだ。');
+     GC.Render?.World?.draw?.();
+     lines.push({speaker:'新兵',text:'「配給列で携帯食を渡すのを見ました。俺も水を運びます。見ているだけじゃ何も変わりませんから」'});
+    }else lines.push({speaker:'新兵',text:'「配給所に水を運びました。次の当番も手伝うつもりです」'});
+   }
+   return lines.length===1?say(lines[0].speaker,lines[0].text):saySequence(lines)
   }
   if(id==='capitalVendor')return capitalShop()
   if(id==='rationMother')return capitalRationMotherVisit()
