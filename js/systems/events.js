@@ -418,7 +418,10 @@ function commitEarlyMerchantChoice(choice){
  addJournal(choice==='repair'
   ?'街道で行商人の荷車を修理し、荷を王都へ運べるようにした。礼に携帯食を1個受け取った。'
   :'行商人に危険な街道の引き返しを勧めた。商人は村へ向かい、礼に薬草を1個渡した。');
- renderHud();return true
+ renderHud();
+ // Refresh the roadside cart immediately after the choice; no new collision.
+ GC.Render?.World?.draw?.();
+ return true
 }
 function earlyMerchantVisit(){
  const prior=state.events.choices['early.merchantCart'];
