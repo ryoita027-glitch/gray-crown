@@ -871,9 +871,13 @@ function inlineObjectEvent(id){
   if(id==='bandit'&&!structuredCondition('roadBandit'))return say('街道のならず者','「荷物と金を置いていけ。こっちも腹が減ってるんだ」',[{label:'戦う',fn:()=>startSymbolEncounter('bandit','roadBandit')},{label:'離れる',fn:()=>say('マーガレット','「本道は通れる。無理に相手をする必要はないわ」')}]);
   if(id==='cave')return enterCave();
   if(id==='roadSign'){
-   if(isDefeated('wolf')&&!state.events.choices['early.wolfScout'])return say('古い道標','「王都　北」「旧砦　東」。足元には、もういない灰牙狼の足跡が残っている。');
-   if(state.events.choices['early.wolfScout']==='read')return say('マーガレット','「足跡は覚えたわ。灰牙狼は最初に一番守りの薄い相手を狙う。カレンの庇うが使える」');
-   return say('古い道標','「王都　北」「旧砦　東」。足元には新しい狼の足跡が続いている。',[
+   // After the encounter, stop warning about a wolf that is no longer here.
+   // Both scout histories now point to the visible old-fort stone entrance.
+   if(isDefeated('wolf'))return state.events.choices['early.wolfScout']==='read'
+    ?say('マーガレット','「足跡は覚えたわ。狼はもういない。古砦へ進むなら、道標の右手に見える崩れた石門よ」')
+    :say('古い道標','「王都　北」「旧砦　東」。狼の足跡は残るが、獣の気配は消えた。東の崩れた石門が古砦の入口だ。');
+   if(state.events.choices['early.wolfScout']==='read')return say('マーガレット','「足跡は覚えたわ。灰牙狼は最初に一番守りの薄い相手を狙う。カレンの庇うが使える。古砦は右手の石門よ」');
+   return say('古い道標','「王都　北」「旧砦　東」。足元には新しい狼の足跡が続いている。東の崩れた石門が古砦の入口だ。',[
     {label:'足跡を調べて備える',fn:()=>{
       if(state.events.choices['early.wolfScout'])return;
       state.events.choices['early.wolfScout']='read';
