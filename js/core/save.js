@@ -276,17 +276,34 @@ function exportPortableSaveText(){
 }
 function downloadPortableSave(){
  const raw=exportPortableSaveText();
- if(!raw){say('システム','安全にセーブを書き出せません。操作可能な場所で再試行してください。');return false}
+ if(!raw){notifySaveStatus('安全にセーブを書き出せません。操作可能な場所で再試行してください。');return false}
+ let url=null;
  try{
   const blob=new Blob([raw],{type:'application/json;charset=utf-8'});
-  const url=URL.createObjectURL(blob),a=document.createElement('a');
+  url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
   a.href=url;a.download='GrayCrown_Save_v23_'+new Date().toISOString().slice(0,10)+'.json';
-  document.body.appendChild(a);a.click();a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),3000);
-  say('システム','セーブを書き出しました。別のPCで遊ぶ時は「セーブを読み込む」を使ってください。');
-  return true
- }catch(e){GC.Log?.error('Portable save export failed',{error:String(e)});
-  say('システム','セーブの書き出しに失敗しました。ブラウザのダウンロード設定を確認してください。');return false}
+  document.body.appendChild(a);
+  try{a.click()}
+  finally{
+   try{a.remove()}catch(e){GC.Log?.warn?.('Portable save link cleanup failed',{error:String(e)})}
+  }
+  // Once the browser has accepted the click, cleanup and status UI errors
+  // must not turn an initiated download into a reported export failure.
+  try{setTimeout(()=>{
+   try{URL.revokeObjectURL(url)}
+   catch(e){GC.Log?.warn?.('Portable save URL cleanup failed',{error:String(e)})}
+  },3000)}
+  catch(e){GC.Log?.warn?.('Portable save URL cleanup scheduling failed',{error:String(e)})}
+ }catch(e){
+  GC.Log?.error('Portable save export failed',{error:String(e)});
+  if(url!==null)try{URL.revokeObjectURL(url)}
+  catch(cleanupError){GC.Log?.warn?.('Portable save URL cleanup failed',{error:String(cleanupError)})}
+  notifySaveStatus('セーブの書き出しに失敗しました。ブラウザのダウンロード設定を確認してください。');
+  return false
+ }
+ notifySaveStatus('セーブを書き出しました。別のPCで遊ぶ時は「セーブを読み込む」を使ってください。');
+ return true
 }
 // Portable import must not erase unreadable old slots. Preserve their exact
 // bytes in the existing player-exportable quarantine before any replacement.
