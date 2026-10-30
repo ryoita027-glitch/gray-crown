@@ -453,17 +453,37 @@ function quarantineCorruptSavesBeforeNewGame(){
  }
 }
 function downloadQuarantinedSaves(){
+ let url=null,clickCompleted=false;
  try{
   const raw=localStorage.getItem(SAVE_QUARANTINE_KEY);
   if(!raw)return false;
   const blob=new Blob([raw],{type:'application/json;charset=utf-8'});
-  const url=URL.createObjectURL(blob),link=document.createElement('a');
+  url=URL.createObjectURL(blob);
+  const link=document.createElement('a');
   link.href=url;link.download='GrayCrown_RawSaveRecovery_'+new Date().toISOString().slice(0,10)+'.json';
-  document.body.appendChild(link);link.click();link.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),3000);
-  say('システム','破損した元の保存データを、変更せず取り出しました。データの復旧を試す場合に保管してください。');
-  return true
- }catch(e){GC.Log?.error('Quarantine export failed',{error:String(e)});return false}
+  try{
+   document.body.appendChild(link);
+   link.click();
+   clickCompleted=true
+  }finally{
+   // A blocked download must not leave an invisible link in the page.
+   try{link.remove()}catch(e){GC.Log?.warn?.('Recovery export link cleanup failed',{error:String(e)})}
+  }
+  // Do not revoke immediately: the browser may still be reading the blob.
+  try{setTimeout(()=>{
+   try{URL.revokeObjectURL(url)}
+   catch(e){GC.Log?.warn?.('Recovery export URL cleanup failed',{error:String(e)})}
+  },3000)}
+  catch(e){GC.Log?.warn?.('Recovery export URL cleanup scheduling failed',{error:String(e)})}
+ }catch(e){
+  GC.Log?.error('Quarantine export failed',{error:String(e)});
+  if(url!==null&&!clickCompleted)try{URL.revokeObjectURL(url)}
+  catch(cleanupError){GC.Log?.warn?.('Recovery export URL cleanup failed',{error:String(cleanupError)})}
+  return false
+ }
+ // Notification failure cannot undo an already initiated recovery download.
+ notifySaveStatus('破損した元の保存データの書き出しを開始しました。復旧に備えて保管してください。');
+ return true
 }
 
 function preserveInvalidArchivedAdventureBeforeWrite(raw){
