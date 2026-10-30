@@ -219,6 +219,26 @@ function downloadPortableSave(){
  }catch(e){GC.Log?.error('Portable save export failed',{error:String(e)});
   say('システム','セーブの書き出しに失敗しました。ブラウザのダウンロード設定を確認してください。');return false}
 }
+// Portable import must not erase unreadable old slots. Preserve their exact
+// bytes in the existing player-exportable quarantine before any replacement.
+function preserveInvalidSaveSlotsBeforeImport(primary,backup){
+ const unsafePrimary=primary&&!isUsableSavedAdventure(primary)?primary:null;
+ const unsafeBackup=backup&&!isUsableSavedAdventure(backup)?backup:null;
+ if(!unsafePrimary&&!unsafeBackup)return true;
+ try{
+  const existing=localStorage.getItem(SAVE_QUARANTINE_KEY);
+  const entries=existing?JSON.parse(existing):[];
+  if(!Array.isArray(entries))return false;
+  if(!entries.some(entry=>entry?.primary===unsafePrimary&&entry?.backup===unsafeBackup))
+   entries.push({savedAt:new Date().toISOString(),primary:unsafePrimary,backup:unsafeBackup});
+  const payload=JSON.stringify(entries);
+  localStorage.setItem(SAVE_QUARANTINE_KEY,payload);
+  return localStorage.getItem(SAVE_QUARANTINE_KEY)===payload
+ }catch(e){
+  GC.Log?.error('Portable import corrupt-slot quarantine failed',{error:String(e)});
+  return false
+ }
+}
 function importPortableSaveText(raw){
  // Strict structural gate before migration: a generic JSON is not a valid save.
  // Supports real earlier-version saves, but never silently imports future schema.
@@ -241,6 +261,10 @@ function importPortableSaveText(raw){
  let primary,backup;
  try{primary=localStorage.getItem(SAVE_KEY);backup=localStorage.getItem(SAVE_BACKUP_KEY)}
  catch(e){GC.Log?.error('Portable save import storage read failed',{error:String(e)});return false}
+ if(!preserveInvalidSaveSlotsBeforeImport(primary,backup)){
+  GC.Log?.warn('Portable import refused: existing unreadable save bytes could not be preserved');
+  return false
+ }
  try{
   // Persist the migrated *validated* schema, never raw untrusted file text.
   const payload=JSON.stringify({...loaded,schema:SAVE_SCHEMA,locked:false,battle:null,
