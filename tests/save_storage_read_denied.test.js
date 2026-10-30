@@ -719,3 +719,52 @@ test('Continue survives a HUD refresh exception and still attempts the map redra
  assert.equal(h.evaluate('globalThis.__drawAfterHudError'),true,
   'an independent map refresh should still run after a HUD failure');
 });
+
+test('file import warns about a failed redraw without losing the imported checkpoint', async () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=131');
+ assert.equal(s.save(true),true);
+ const imported=h.storage.getItem(s.SAVE_KEY);
+ h.evaluate('state.gold=242');
+ assert.equal(s.save(true),true);
+ h.evaluate('draw=()=>{throw new Error("redraw unavailable");}');
+ const ok=await s.readPortableSaveFile({size:imported.length,async text(){return imported;}});
+ assert.equal(ok,true,'a committed import must not be reported as a storage failure');
+ assert.equal(h.GC.State.get().gold,131);
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_KEY)).gold,131);
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_BACKUP_KEY)).gold,242);
+ h.GC.Dialogue.finishDialogueTyping();
+ assert.match(h.getElement('dialogueText').innerHTML,/画面の更新に失敗/);
+ assert.match(h.getElement('dialogueText').innerHTML,/ページを再読み込み/);
+});
+
+test('previous-adventure restore warns when the title refresh fails after commit', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=313');
+ assert.equal(s.save(true),true);
+ assert.equal(s.archiveBeforeNewGame(),true);
+ h.evaluate('state.gold=424');
+ assert.equal(s.save(true),true);
+ h.evaluate('updateTitleContinue=()=>{throw new Error("title UI unavailable");}');
+ assert.equal(s.restoreArchivedAdventure(),true);
+ assert.equal(h.GC.State.get().gold,313);
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_KEY)).gold,313);
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_BACKUP_KEY)).gold,424);
+ h.GC.Dialogue.finishDialogueTyping();
+ assert.match(h.getElement('dialogueText').innerHTML,/以前の冒険は復旧しました/);
+ assert.match(h.getElement('dialogueText').innerHTML,/ページを再読み込み/);
+});
+
+test('normal file import keeps its ordinary success message without a refresh warning', async () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=515');
+ assert.equal(s.save(true),true);
+ const imported=h.storage.getItem(s.SAVE_KEY);
+ h.evaluate('state.gold=626');
+ assert.equal(s.save(true),true);
+ assert.equal(await s.readPortableSaveFile({size:imported.length,async text(){return imported;}}),true);
+ assert.equal(h.GC.State.get().gold,515);
+ h.GC.Dialogue.finishDialogueTyping();
+ assert.match(h.getElement('dialogueText').innerHTML,/外部セーブを読み込みました/);
+ assert.doesNotMatch(h.getElement('dialogueText').innerHTML,/ページを再読み込み/);
+});
