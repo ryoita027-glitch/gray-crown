@@ -570,3 +570,76 @@ test('New Game preserves normal valid-archive replacement without creating quara
  assert.notEqual(h.storage.getItem(s.SAVE_ARCHIVE_KEY),older);
  assert.equal(h.storage.getItem(s.SAVE_QUARANTINE_KEY),null);
 });
+
+test('New Game restores the older archive when its replacement writes then throws', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=911');
+ assert.equal(s.save(true),true);
+ assert.equal(s.archiveBeforeNewGame(),true);
+ const oldArchive=h.storage.getItem(s.SAVE_ARCHIVE_KEY);
+ h.evaluate('state.gold=912');
+ assert.equal(s.save(true),true);
+ const primary=h.storage.getItem(s.SAVE_KEY);
+ const beforeState=JSON.stringify(h.GC.State.get());
+ const set=h.storage.setItem.bind(h.storage);
+ let injected=false;
+ h.storage.setItem=(key,value)=>{
+  if(key===s.SAVE_ARCHIVE_KEY&&!injected){
+   injected=true;set(key,value);
+   throw new Error('QuotaExceededError: write changed storage before throwing');
+  }
+  return set(key,value);
+ };
+ h.context.confirm=()=>true;
+ h.context.alert=()=>{};
+ assert.equal(h.GC.App.startNewGameSafely(),false);
+ assert.equal(injected,true);
+ assert.equal(h.storage.getItem(s.SAVE_ARCHIVE_KEY),oldArchive,
+  'a failed New Game must not erase the prior recoverable adventure');
+ assert.equal(h.storage.getItem(s.SAVE_KEY),primary);
+ assert.equal(JSON.stringify(h.GC.State.get()),beforeState,
+  'the live adventure must remain active after failed archive replacement');
+});
+
+test('New Game rolls back a silently corrupted archive replacement', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=921');
+ assert.equal(s.save(true),true);
+ assert.equal(s.archiveBeforeNewGame(),true);
+ const oldArchive=h.storage.getItem(s.SAVE_ARCHIVE_KEY);
+ h.evaluate('state.gold=922');
+ assert.equal(s.save(true),true);
+ const set=h.storage.setItem.bind(h.storage);
+ let injected=false;
+ h.storage.setItem=(key,value)=>{
+  if(key===s.SAVE_ARCHIVE_KEY&&!injected){
+   injected=true;return set(key,'{truncated-archive');
+  }
+  return set(key,value);
+ };
+ assert.equal(s.archiveBeforeNewGame(),false);
+ assert.equal(injected,true);
+ assert.equal(h.storage.getItem(s.SAVE_ARCHIVE_KEY),oldArchive,
+  'a false-success write must not destroy the previous archive');
+});
+
+test('failed first archive write removes a partially created archive', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=931');
+ assert.equal(s.save(true),true);
+ assert.equal(h.storage.getItem(s.SAVE_ARCHIVE_KEY),null);
+ const primary=h.storage.getItem(s.SAVE_KEY);
+ const set=h.storage.setItem.bind(h.storage);
+ let injected=false;
+ h.storage.setItem=(key,value)=>{
+  if(key===s.SAVE_ARCHIVE_KEY&&!injected){
+   injected=true;set(key,value);
+   throw new Error('SecurityError: partial first archive write');
+  }
+  return set(key,value);
+ };
+ assert.equal(s.archiveBeforeNewGame(),false);
+ assert.equal(injected,true);
+ assert.equal(h.storage.getItem(s.SAVE_ARCHIVE_KEY),null);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),primary);
+});
