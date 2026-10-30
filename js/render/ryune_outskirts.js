@@ -182,6 +182,22 @@ const RyuneOutskirts=(()=>{
    pixel(c,'#cab390',x-3,y+12,8,2);
    pixel(c,'#cab390',x-3,y+17,6,1);
   }
+  // The player's brookbank decision changes the existing stones in the
+  // actual field, without inventing a new blocker or instantly fixing water.
+  if(map==='ryunebrook'){
+   const action=choices['ryune.brookbank.action'];
+   const x=6*W,y=11*W;
+   if(action==='mark'){
+    pixel(c,'#68543a',x+26,y+4,3,23);
+    pixel(c,'#d7c29b',x+23,y+10,8,3);
+    pixel(c,'#e5d4b1',x+24,y+17,6,2);
+   }else if(action==='secure'){
+    for(const [xx,yy] of [[5,22],[14,20],[22,24]]){
+     pixel(c,'#626d65',x+xx,y+yy,7,5);
+     pixel(c,'#b7b0a0',x+xx+1,y+yy,4,2);
+    }
+   }
+  }
  }
  return {maps,paintTile,drawAccents,drawObject,drawProgress,setViewer,waterMotion,nextWaterFrameDelay};
 })();
