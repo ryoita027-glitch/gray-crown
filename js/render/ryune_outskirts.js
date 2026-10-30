@@ -108,6 +108,14 @@ const RyuneOutskirts=(()=>{
     pixel(c,'#a6a284',11*W+22,y*W+18,7,4);
     pixel(c,'#4a7b6d',14*W+2,y*W+21,12,4);
    }
+   // Footfalls turn from the main east-west brook path toward the existing
+   // stones. Use only already-walkable path tiles; these are worn soil marks,
+   // not arrows, walls, quest markers, or new collision geometry.
+   for(const [tx,ty] of [[9,9],[9,10],[9,11],[8,11],[7,11]]){
+    const px=tx*W,py=ty*W;
+    pixel(c,'#8f7e61',px+10,py+21,6,2);
+    pixel(c,'#c4b18d',px+18,py+24,5,1);
+   }
    // The worn approach ends at the existing stone prop. These are low,
    // non-blocking ground marks, not a new quest arrow or a fake obstacle.
    pixel(c,'#9b8769',5*W+19,11*W+25,10,3);

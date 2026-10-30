@@ -554,7 +554,7 @@ const EVENT_DEFS=Object.freeze([
   {id:'ryune.brook.inspect',priority:70,trigger:{type:'object',map:'ryunebrook',target:'brookWater'},
    when:[{eventIncomplete:'ryune.brook.inspect'}],
    lines:[
-    {speaker:'小川の水辺',text:'小川は浅い。橋の下の水路には泥と小枝がたまり、水がゆっくり流れている。'},
+    {speaker:'小川の水辺',text:'小川は浅い。橋の下の水路には泥と小枝がたまり、水がゆっくり流れている。橋の手前には、石積みへ続く踏み跡が残る。'},
     {speaker:'ソフィ',text:'「水がなくなったわけじゃないんですね。畑までちゃんと届いていないのかも」'},
     {speaker:'カレン',text:'「戻ったらボルに伝えよう。私たちだけで勝手に掘るわけにはいかないからね」'}
    ],effects:[

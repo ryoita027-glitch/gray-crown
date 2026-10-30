@@ -31,3 +31,14 @@ Existing Ryune brook and field exploration already lets one observation earn one
 **Graygrow-specific design hypothesis:** The brookbank choice in PR #137 is optional but its existing stone prop is visually subtle and the local keeper does not explicitly point to it. Make the original walkable lower-bank path (5,11) look lightly worn and give the stone prop a tiny old survey cord. Before any decision, the keeper mentions the visible stonework, not a new quest. Add one Sophie line to make the tradeoff about villagers' ownership explicit. Do not force a cutscene when walking by; do not add loot, objectives, collision, or extra backtracking. These cues and dialogue are original to Graygrow.
 
 **Verification to perform:** At native scale, inspect whether the worn path and survey cord are noticeable but not misleading; walk from the east village exit to the stones; confirm keeper clue is optional; choose all three actions and save/reload; confirm existing brook report still works. The new Node regression checks path/collision, prop pixel command and dialogue source but has **not been executed** against this GitHub-only workspace. No human playtest, screenshot, browser run or full build is claimed.
+
+## 2026-10-30 follow-up — route readability from the main path
+**Additional public signals checked:**
+- *Chained Echoes* Steam Community review dated October 29 describes looping through a map several times before noticing an obscure door; October 28 feedback praises exploration and world but is mixed on writing. These are individual opinions, not a measured population trend. https://steamcommunity.com/app/1229240/reviews/
+- *Octopath Traveler II* Steam Community reviews dated October 26–29 criticize tedious story/dialogue pacing. These are individual opinions, not evidence that every player prefers less text. https://steamcommunity.com/app/1971650/
+
+**Source-grounded issue:** The prior small footprint at brook tile (5,11) was only near the stones, not visible as a trail from the main east-west crossing. The actual brook map already has connected, walkable P tiles from (9,9) to (9,11) and west along y=11; no new geometry is required.
+
+**Implemented hypothesis:** Add restrained paired footfalls on existing P tiles (9,9), (9,10), (9,11), (8,11), (7,11), leading to the existing stone prop. The original brook-water inspection now mentions the nearby stonework in one sentence, without adding an objective, cutscene, item, NPC, or extra trip. The choice remains fully optional and its three outcomes unchanged. This is original Graygrow map writing/art, not copied layout or text.
+
+**Acceptance still pending:** Confirm the marks read at actual 100% game scale and do not look like an artificial quest trail; walk the east-bank route and the return route; execute focused Node test and full check on this exact SHA, plus Save/Continue and three-route browser checks. No human playtest or Chromium pass is claimed.

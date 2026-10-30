@@ -22,6 +22,12 @@ test('brookbank is discoverable from the real approach without adding a blocker 
  h.evaluate("ALPHA_SESSION.started=true;state.map='ryunebrook';state.x=5;state.y=11");
  const accents=clone(h.evaluate("(()=>{const pixels=[];const c={fillStyle:'',fillRect(x,y,w,h){pixels.push([x,y,w,h,this.fillStyle])}};RyuneOutskirts.drawAccents(c,'ryunebrook');return pixels})()"));
  assert.ok(accents.some(p=>p[0]===5*32+19&&p[1]===11*32+25),'subtle approach marks should appear beside the stones');
+ // The path must be legible from the main crossing, not only at its far end.
+ for(const [x,y] of [[9,9],[9,10],[9,11],[8,11],[7,11]]){
+  assert.equal(h.evaluate(`maps.ryunebrook.tiles[${y}][${x}]`),'P','footfall on existing path');
+  assert.equal(h.evaluate(`isBlocked(${x},${y})`),false,'footfall cannot block movement');
+  assert.ok(accents.some(p=>p[0]===x*32+10&&p[1]===y*32+21),'visible trail pixel '+x+','+y);
+ }
  assert.equal(h.evaluate("maps.ryunebrook.tiles[11][5]"),'P','approach is an existing walkable path');
  assert.equal(h.evaluate('isBlocked(5,11)'),false,'wayfinding must not obstruct movement');
  assert.equal(h.evaluate('isBlocked(6,11)'),true,'existing stone prop retains collision');
@@ -103,4 +109,15 @@ test('Boru does not falsely claim knowledge of brook work after a fields-only re
  assert.doesNotMatch(h.evaluate('DIALOGUE_TYPE.fullHTML'),/川辺の水位の目印/);
  h.evaluate("state.events.completed['ryune.outskirts.reported.brook']=true;inlineNpcEvent('farmer')");
  assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/川辺の水位の目印/);
+});
+
+test('first brook inspection hints at the stones but never gates the one-trip report',()=>{
+ const h=createHarness(),s=h.GC.State.get();
+ const inspection=h.evaluate("EVENT_DEFS.find(e=>e.id==='ryune.brook.inspect')");
+ assert.match(inspection.lines[0].text,/石積みへ続く踏み跡/);
+ assert.equal(s.events.choices['ryune.brookbank.action'],undefined);
+ h.GC.Events.applyEventEffects(inspection);
+ assert.equal(s.events.completed['ryune.brook.inspect'],true);
+ assert.equal(s.events.choices['ryune.brookbank.action'],undefined,'observing water must not choose for the player');
+ assert.equal(h.GC.Events.findTriggeredEvent('npc','farmer',{map:'village'})?.id,'ryune.outskirts.brookReport','the original single-observation reward remains available');
 });
