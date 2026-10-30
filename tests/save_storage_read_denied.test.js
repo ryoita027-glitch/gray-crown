@@ -429,3 +429,56 @@ test('New Game reuses already preserved mixed-slot corruption without rewriting 
  assert.equal(h.storage.getItem(s.SAVE_QUARANTINE_KEY),existing);
  assert.equal(h.storage.getItem(s.SAVE_ARCHIVE_KEY),usable);
 });
+
+test('New Game reuses an identical previous-adventure archive without a quota-sensitive rewrite', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=503');
+ assert.equal(s.save(true),true);
+ assert.equal(s.archiveBeforeNewGame(),true);
+ const archived=h.storage.getItem(s.SAVE_ARCHIVE_KEY);
+ const originalSet=h.storage.setItem.bind(h.storage);
+ let archiveWrites=0;
+ h.storage.setItem=(key,value)=>{
+  if(key===s.SAVE_ARCHIVE_KEY){archiveWrites++;throw new Error('QuotaExceededError: duplicate archive write denied')}
+  return originalSet(key,value);
+ };
+ assert.equal(s.archiveBeforeNewGame(),true);
+ assert.equal(archiveWrites,0);
+ assert.equal(h.storage.getItem(s.SAVE_ARCHIVE_KEY),archived);
+});
+
+test('New Game refuses to reuse an older archive for a different checkpoint if writes are denied', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=503');
+ assert.equal(s.save(true),true);
+ assert.equal(s.archiveBeforeNewGame(),true);
+ const archived=h.storage.getItem(s.SAVE_ARCHIVE_KEY);
+ h.evaluate('state.gold=504');
+ assert.equal(s.save(true),true);
+ const originalSet=h.storage.setItem.bind(h.storage);
+ h.storage.setItem=(key,value)=>{
+  if(key===s.SAVE_ARCHIVE_KEY)throw new Error('QuotaExceededError: updated archive denied');
+  return originalSet(key,value);
+ };
+ assert.equal(s.archiveBeforeNewGame(),false,
+  'a different current adventure must not be mistaken for an already protected one');
+ assert.equal(h.storage.getItem(s.SAVE_ARCHIVE_KEY),archived);
+});
+
+test('New Game still quarantines corrupt raw bytes before reusing an identical valid archive', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=505');
+ assert.equal(s.save(true),true);
+ assert.equal(s.archiveBeforeNewGame(),true);
+ const archived=h.storage.getItem(s.SAVE_ARCHIVE_KEY);
+ h.storage.setItem(s.SAVE_KEY,'{broken-primary');
+ const originalSet=h.storage.setItem.bind(h.storage);
+ h.storage.setItem=(key,value)=>{
+  if(key===s.SAVE_QUARANTINE_KEY)throw new Error('QuotaExceededError: cannot preserve corrupt bytes');
+  return originalSet(key,value);
+ };
+ assert.equal(s.archiveBeforeNewGame(),false,
+  'archive reuse must not skip protection of newly corrupt save bytes');
+ assert.equal(h.storage.getItem(s.SAVE_ARCHIVE_KEY),archived);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),'{broken-primary');
+});
