@@ -182,6 +182,14 @@ function save(silent=false){
   // even when the other slot contains a usable adventure.
   if(!preserveInvalidSaveSlotsBeforeWrite(prev,backup,primaryUsable,backupUsable))
    throw new Error('Cannot preserve unreadable save slots before Save');
+  // A repeat Save of the same persisted checkpoint is not a new generation.
+  // Keep the older usable backup instead of overwriting it with the same data.
+  // Missing or invalid backups still follow the normal repair path.
+  if(primaryUsable&&backupUsable&&prev===payload){
+   GC.Log?.info('Save unchanged',{map:state.map,x:state.x,y:state.y,stage:state.story.stage});
+   if(!silent)say('システム','セーブしました。');
+   return true
+  }
   try{
    if(primaryUsable){
     localStorage.setItem(SAVE_BACKUP_KEY,prev);
