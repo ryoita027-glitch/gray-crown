@@ -244,9 +244,12 @@ function load(silent=false){
    GC.Log?.warn?.('Load title refresh failed',{error:String(e)})
   }
  }
- if(!silent)say('システム',refreshFailed?
-  '冒険は読み込みましたが、画面の更新に失敗しました。ページを再読み込みしてください。':
-  recovered?'通常セーブが壊れていたため、バックアップから復旧しました。':'ロードしました。');
+ if(!silent){
+  try{say('システム',refreshFailed?
+   '冒険は読み込みましたが、画面の更新に失敗しました。ページを再読み込みしてください。':
+   recovered?'通常セーブが壊れていたため、バックアップから復旧しました。':'ロードしました。')}
+  catch(e){refreshFailed=true;GC.Log?.warn?.('Load status message failed',{error:String(e)})}
+ }
  lastLoadPresentationFailed=refreshFailed;
  return true
 }
@@ -376,13 +379,14 @@ async function readPortableSaveFile(file){
  let ok=false;
  try{ok=importPortableSaveText(await file.text())}
  catch(e){GC.Log?.error('Portable save read failed',{error:String(e)})}
- say('システム',ok&&lastImportPresentationFailed?
+ try{say('システム',ok&&lastImportPresentationFailed?
   '外部セーブは読み込みましたが、画面の更新に失敗しました。ページを再読み込みしてください。':
   ok?(usablePrimary?
   '外部セーブを読み込みました。元のセーブはバックアップに保存されています。':
   hadPrior?'外部セーブを読み込みました。既存の保存データはバックアップまたは復旧用領域に保護されています。':
   '外部セーブを読み込みました。'):
-  'セーブの読み込みに失敗しました。形式・データ・ブラウザの保存領域を確認してください。');
+  'セーブの読み込みに失敗しました。形式・データ・ブラウザの保存領域を確認してください。')}
+ catch(e){GC.Log?.warn?.('Portable file status message failed',{error:String(e)})}
  return ok
 }
 
@@ -506,9 +510,10 @@ function restoreArchivedAdventure(){
  if(!raw)return false;
  if(!confirm('保管していた以前の冒険を復旧しますか？ 現在のセーブはバックアップへ移します。'))return false;
  const ok=importPortableSaveText(raw);
- say('システム',ok&&lastImportPresentationFailed?
+ try{say('システム',ok&&lastImportPresentationFailed?
   '以前の冒険は復旧しましたが、画面の更新に失敗しました。ページを再読み込みしてください。':
-  ok?'以前の冒険を復旧しました。現在のセーブはバックアップに残しています。':'以前の冒険を復旧できませんでした。現在のセーブには変更していません。');
+  ok?'以前の冒険を復旧しました。現在のセーブはバックアップに残しています。':'以前の冒険を復旧できませんでした。現在のセーブには変更していません。')}
+ catch(e){GC.Log?.warn?.('Previous adventure status message failed',{error:String(e)})}
  return ok
 }
 function restart(){
