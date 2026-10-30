@@ -7,10 +7,29 @@ function heroDisplayStudySize(search=typeof window!=='undefined'?window.location
   return size==='40'?40:size==='42'?42:44;
  }catch(_){return 44}
 }
+// Opt-in native-PNG alpha-foot study. No change to default 44px/source-y44 behavior.
+const HERO_FOOTLINE_ALPHA_STUDY=typeof window!=='undefined'&&/(?:^|[?&])gcHeroFootline=alpha(?:&|$)/.test(window.location.search||'');
+function heroAlphaFootline(image){
+ if(typeof document==='undefined'||!document.createElement)return 44;
+ try{
+  const canvas=document.createElement('canvas');canvas.width=48;canvas.height=192;
+  const c=canvas.getContext('2d',{willReadFrequently:true});if(!c)return 44;
+  c.drawImage(image,0,0,48,192,0,0,48,192);
+  const data=c.getImageData(0,0,48,192).data,feet=[];
+  for(let row=0;row<4;row++){
+   let last=44;
+   search:for(let y=47;y>=38;y--)for(let x=13;x<=34;x++)
+    if(data[((row*48+y)*48+x)*4+3]>=128){last=y;break search}
+   feet.push(last)
+  }
+  feet.sort((a,b)=>a-b);
+  return Math.max(43,Math.min(47,Math.round((feet[1]+feet[2])/2)));
+ }catch(_){return 44}
+}
 const HERO_RUNTIME={frameW:48,frameH:48,display:heroDisplayStudySize(),anchor:[24,44],directions:{down:0,left:1,right:2,up:3},images:{}};
 if(typeof Image!=='undefined'){
  const fallback=new Image();HERO_SPRITES.image=fallback;fallback.onload=()=>{HERO_SPRITES.ready=true};fallback.onerror=()=>{HERO_SPRITES.ready=false};fallback.src='assets/hero_party_walk.png';
- for(const id of Object.keys(HERO_SPRITES.characters)){const rec={image:new Image(),ready:false,error:false};rec.image.onload=()=>{rec.ready=true;rec.error=false;if(id==='margaret'&&typeof MargaretSilverStudy!=='undefined'&&MargaretSilverStudy.enabled())rec.studyImage=MargaretSilverStudy.makeCandidate(rec.image)};rec.image.onerror=()=>{rec.ready=false;rec.error=true};rec.image.src='assets/characters/'+id+'/'+id+'_walk.png';HERO_RUNTIME.images[id]=rec}
+ for(const id of Object.keys(HERO_SPRITES.characters)){const rec={image:new Image(),ready:false,error:false};rec.image.onload=()=>{rec.ready=true;rec.error=false;rec.footline=HERO_FOOTLINE_ALPHA_STUDY?heroAlphaFootline(rec.image):44;if(id==='margaret'&&typeof MargaretSilverStudy!=='undefined'&&MargaretSilverStudy.enabled())rec.studyImage=MargaretSilverStudy.makeCandidate(rec.image)};rec.image.onerror=()=>{rec.ready=false;rec.error=true};rec.image.src='assets/characters/'+id+'/'+id+'_walk.png';HERO_RUNTIME.images[id]=rec}
 }
 function heroWalkFrame(motion){if(!motion)return 0;const cycle=[0,1,2,3,4,5,4,3,2,1];return cycle[Math.floor(motion)%cycle.length]}
 function drawHeroMarker(cx,topY){ctx.fillStyle='#f0d178';ctx.beginPath();ctx.moveTo(cx,topY-3);ctx.lineTo(cx+5,topY-9);ctx.lineTo(cx,topY-14);ctx.lineTo(cx-5,topY-9);ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(66,46,20,.86)';ctx.lineWidth=1;ctx.stroke()}
@@ -18,7 +37,7 @@ function drawHeroSpriteSheet(x,y,heroId,leader,facing,motion){
  const frame=heroWalkFrame(motion),row=HERO_RUNTIME.directions[facing]??0,px=Math.round(x*TILE),py=Math.round(y*TILE),footX=px+16,footY=py+30;
  const rec=HERO_RUNTIME.images[heroId];
  if(rec?.ready&&rec.image){
-  const size=HERO_RUNTIME.display,scale=size/HERO_RUNTIME.frameW,dx=Math.round(footX-HERO_RUNTIME.anchor[0]*scale),dy=Math.round(footY-HERO_RUNTIME.anchor[1]*scale);
+  const size=HERO_RUNTIME.display,scale=size/HERO_RUNTIME.frameW,dx=Math.round(footX-HERO_RUNTIME.anchor[0]*scale),dy=Math.round(footY-(HERO_FOOTLINE_ALPHA_STUDY?(rec.footline||44):HERO_RUNTIME.anchor[1])*scale);
   ctx.save();ctx.fillStyle='rgba(16,18,18,.28)';ctx.beginPath();ctx.ellipse(footX,footY-1,10*size/44,4*size/44,0,0,Math.PI*2);ctx.fill();ctx.imageSmoothingEnabled=false;
   const art=heroId==='margaret'&&typeof MargaretSilverStudy!=='undefined'&&MargaretSilverStudy.active()?(rec.studyImage||rec.image):rec.image;ctx.drawImage(art,frame*48,row*48,48,48,dx,dy,size,size);ctx.restore();
   if(leader)drawHeroMarker(footX,dy);return true
