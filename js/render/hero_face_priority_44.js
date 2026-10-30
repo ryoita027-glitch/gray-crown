@@ -73,7 +73,7 @@ const HeroFacePriority44=(()=>{
     info.textContent='ゲーム開始後、全員の候補読込と44px表示を確認してください。';return
    }
    const game=GC.State.get();
-   if(GC.Cinematic?.isActive?.()||game.battle||V.leaderQueue.length||
+   if(GC.Cinematic?.isActive?.()||GC.CommercialActing?.active?.()||game.battle||V.leaderQueue.length||
       V.followerQueues.some(q=>q.length)||Math.abs(V.playerX-game.x)>.01||
       Math.abs(V.playerY-game.y)>.01){
     info.textContent='全員の歩行が停止してから撮影してください。';return
