@@ -115,3 +115,52 @@ test('failed portable import restores the older backup when primary writes are d
  assert.deepEqual([...h.storage.data], before,
   'import failure must not silently overwrite the previous backup');
 });
+
+test('portable import quarantines corrupt primary bytes even with a usable backup', () => {
+ const h = createHarness();
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=321');
+ assert.equal(h.GC.Save.save(true), true);
+ const imported = h.storage.getItem(h.GC.Save.SAVE_KEY);
+ h.storage.setItem(h.GC.Save.SAVE_KEY, '{broken-primary');
+ h.storage.setItem(h.GC.Save.SAVE_BACKUP_KEY, imported);
+ assert.equal(h.GC.Save.importPortableSaveText(imported), true);
+ const records = JSON.parse(h.storage.getItem(h.GC.Save.SAVE_QUARANTINE_KEY));
+ assert.equal(records.at(-1).primary, '{broken-primary');
+ assert.equal(records.at(-1).backup, null);
+ assert.equal(h.storage.getItem(h.GC.Save.SAVE_BACKUP_KEY), imported);
+ assert.equal(h.GC.State.get().gold, 321);
+});
+
+test('portable import preserves invalid backup bytes before rotating a valid primary', () => {
+ const h = createHarness();
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=321');
+ assert.equal(h.GC.Save.save(true), true);
+ const imported = h.storage.getItem(h.GC.Save.SAVE_KEY);
+ h.evaluate('state.gold=654');
+ assert.equal(h.GC.Save.save(true), true);
+ const oldPrimary = h.storage.getItem(h.GC.Save.SAVE_KEY);
+ h.storage.setItem(h.GC.Save.SAVE_BACKUP_KEY, '{broken-backup');
+ assert.equal(h.GC.Save.importPortableSaveText(imported), true);
+ const records = JSON.parse(h.storage.getItem(h.GC.Save.SAVE_QUARANTINE_KEY));
+ assert.equal(records.at(-1).primary, null);
+ assert.equal(records.at(-1).backup, '{broken-backup');
+ assert.equal(h.storage.getItem(h.GC.Save.SAVE_BACKUP_KEY), oldPrimary);
+ assert.equal(h.GC.State.get().gold, 321);
+});
+
+test('portable import refuses to overwrite invalid save bytes if quarantine storage is denied', () => {
+ const h = createHarness();
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=321');
+ assert.equal(h.GC.Save.save(true), true);
+ const imported = h.storage.getItem(h.GC.Save.SAVE_KEY);
+ h.storage.setItem(h.GC.Save.SAVE_KEY, '{broken-primary');
+ const before = [...h.storage.data], live = JSON.stringify(h.GC.State.get());
+ const set = h.storage.setItem.bind(h.storage);
+ h.storage.setItem = (key,value) => {
+  if(key===h.GC.Save.SAVE_QUARANTINE_KEY)throw new Error('QuotaExceededError: quarantine denied');
+  return set(key,value);
+ };
+ assert.equal(h.GC.Save.importPortableSaveText(imported), false);
+ assert.deepEqual([...h.storage.data], before);
+ assert.equal(JSON.stringify(h.GC.State.get()), live);
+});
