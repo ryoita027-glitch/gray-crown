@@ -360,16 +360,21 @@ function importPortableSaveText(raw){
   // Persist the migrated *validated* schema, never raw untrusted file text.
   const payload=JSON.stringify({...loaded,schema:SAVE_SCHEMA,locked:false,battle:null,
     battleReturn:null,symbolEncounter:null});
-  if(isUsableSavedAdventure(primary)){
+  const primaryUsable=isUsableSavedAdventure(primary);
+  const backupUsable=isUsableSavedAdventure(backup);
+  // Re-importing an identical validated checkpoint is not a new save
+  // generation. Keep the older usable backup and avoid redundant writes
+  // that can fail when browser storage is near its quota.
+  if(primaryUsable&&primary!==payload){
    localStorage.setItem(SAVE_BACKUP_KEY,primary);
    if(localStorage.getItem(SAVE_BACKUP_KEY)!==primary)throw new Error('Portable import backup write not persisted');
-  }else if(!isUsableSavedAdventure(backup)){
+  }else if(!backupUsable){
    localStorage.setItem(SAVE_BACKUP_KEY,payload);
    if(localStorage.getItem(SAVE_BACKUP_KEY)!==payload)throw new Error('Portable import backup write not persisted');
   }
-  localStorage.setItem(SAVE_KEY,payload);
+  if(primary!==payload)localStorage.setItem(SAVE_KEY,payload);
   if(localStorage.getItem(SAVE_KEY)!==payload)throw new Error('Portable import primary write not persisted');
-  if(!load(true))throw new Error('Imported save could not be loaded');
+    if(!load(true))throw new Error('Imported save could not be loaded');
   lastImportPresentationFailed=lastLoadPresentationFailed;
   // The imported adventure is now live. A title-button refresh failure must
   // not report a failed import and roll back the saved slots behind it.
