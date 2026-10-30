@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ja"><meta charset="utf-8">
+<title>Margaret V9/V10 native-44px temple contour A/B (ART HOLD)</title>
+<style>
+body{font:14px system-ui,sans-serif;background:#233128;color:#f1f1e8;margin:20px;line-height:1.55}
+h1{font-size:20px}h2{font-size:17px}p{max-width:1000px}
+table{border-collapse:separate;border-spacing:7px}td,th{text-align:center;padding:6px;background:#344737}
+canvas{display:block;margin:auto;image-rendering:pixelated;width:44px;height:44px}
+.zoom canvas{width:176px;height:176px}.zoom td{min-width:178px}
+button{padding:7px 12px;margin:3px}small{color:#ced9cc}
+</style>
+<h1>Margaret V9 vs V10 with Mayor V5 / Envoy V5 — ART HOLD</h1>
+<p>4方向・6歩行フレームを同じ44×44px・背景・向き・足元で比較。V10はV9の顔色・衣装・足元を保持し、頭の左右外周を15〜25行に限って段階的に1〜2px整理した可逆的な試作。全24フレームに反映。<strong>美術採用ではなく、実ゲームChromiumの撮影でもありません。</strong> 村長と王国使者は静止したNPC列を参照します。</p>
+<button id="zoom">44px / 4倍</button><button id="play">歩行アニメーション再生</button><button id="stop">停止</button>
+<div id="gallery"></div><h2>正面6フレーム比較</h2><div id="walk"></div>
+<p><small>V10は輪郭が細くなった一方、こめかみの段差・横顔・首肩の不自然さが残る。A/Bは採否未確定（HOLD）。本番PNG・8動作・実ゲーム画面は未変更／未検証。</small></p>
+<script>
+const spec=[
+ ['V2 original','../../assets/characters/margaret/studies/margaret_original_contour_v2_walk.png',0,true],
+ ['V9 silver','../../assets/characters/margaret/studies/margaret_silver_planes_v9_walk.png',0,true],
+ ['V10 contour','../../assets/characters/margaret/studies/margaret_temple_contour_v10_walk.png',0,true],
+ ['Mayor V5','../../assets/npc/featured_residents_charm_v5.png',3,false],
+ ['Envoy V5','../../assets/npc/featured_residents_charm_v5.png',4,false]
+];
+const dirs=['Front','Left','Right','Back'];let imgs=[],grid=[],walk=[],frame=0,timer=null;
+const load=url=>new Promise((res,rej)=>{let im=new Image();im.onload=()=>res(im);im.onerror=()=>rej(Error(url));im.src=url});
+function cell(){let c=document.createElement('canvas');c.width=c.height=44;return c}
+function sourceX(column,frame,animated){return (column+(animated?frame:0))*48}
+function draw(canvas,img,column,dir,frame,animated){let ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
+ ctx.fillStyle='#5e7557';ctx.fillRect(0,0,44,44);
+ ctx.drawImage(img,sourceX(column,frame,animated),dir*48,48,48,0,0,44,44)}
+function makeTable(headers,rows){let t=document.createElement('table'),tr=t.insertRow();
+ for(let v of headers){let th=document.createElement('th');th.textContent=v;tr.append(th)}
+ for(let row of rows){tr=t.insertRow();for(let item of row){let td=tr.insertCell();if(typeof item==='string')td.textContent=item;else td.append(item)}}return t}
+function refresh(){for(let {canvas,index,dir} of grid)draw(canvas,imgs[index],spec[index][2],dir,frame,spec[index][3]);
+ for(let {canvas,index,step} of walk)draw(canvas,imgs[index],0,0,step,true)}
+Promise.all(spec.map(s=>load(s[1]))).then(images=>{
+ imgs=images;let rows=dirs.map((name,dir)=>[name,...spec.map((s,index)=>{let c=cell();grid.push({canvas:c,index,dir});return c})]);
+ document.getElementById('gallery').append(makeTable(['Direction',...spec.map(s=>s[0])],rows));
+ let wrows=Array.from({length:6},(_,step)=>['Frame '+step,...[1,2].map(index=>{let c=cell();walk.push({canvas:c,index,step});return c})]);
+ document.getElementById('walk').append(makeTable(['Walk','V9','V10'],wrows));refresh();
+}).catch(e=>document.getElementById('gallery').textContent='Asset load error: '+e.message);
+document.getElementById('zoom').onclick=()=>{document.getElementById('gallery').classList.toggle('zoom');document.getElementById('walk').classList.toggle('zoom')};
+document.getElementById('play').onclick=()=>{if(timer!==null)return;timer=setInterval(()=>{frame=(frame+1)%6;refresh()},180)};
+document.getElementById('stop').onclick=()=>{if(timer!==null)clearInterval(timer);timer=null;frame=0;refresh()};
+</script></html>
