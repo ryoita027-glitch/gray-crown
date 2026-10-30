@@ -31,7 +31,7 @@ function paint(c,im,col,d,frame){
  const ctx=c.getContext('2d',{alpha:false});ctx.imageSmoothingEnabled=false;
  ctx.fillStyle=d%2===0?'#82947a':'#a9a093';ctx.fillRect(0,0,110,88);
  ctx.fillStyle='#556257';ctx.beginPath();ctx.ellipse(55,69,10,3,0,0,Math.PI*2);ctx.fill();
- ctx.drawImage(im,(col*48)+(frame%6)*48,d*48,48,48,33,25,44,44);
+ ctx.drawImage(im,(col ? col : frame%6)*48,d*48,48,48,33,25,44,44);
 }
 async function main(){
  for(const [name,src,col] of sources){
