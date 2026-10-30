@@ -465,6 +465,8 @@ function commitCapitalRationGift(){
  state.events.choices[key]='donate';
  addJournal('王都の配給列で携帯食を1個手渡した。街道からの輸送だけでは、今日の食事に困る人がいる。');
  renderHud();
+ // Immediately reveal the donated bundle without leaving the capital.
+ GC.Render?.World?.draw?.();
  return true;
 }
 function capitalRationMotherVisit(){
@@ -672,13 +674,15 @@ function inlineNpcEvent(id){
   if(id==='capitalRecruit'){
    if(structuredCondition('returnedKingdom'))return say('新兵','「次の総攻撃、俺たちも出るそうです。勇者様……勝てば、本当に終わるんでしょうか」');
    const roadDecision=state.events?.choices?.['moral.lethal.roadBandit'];
-   if(!roadDecision)return say('新兵','「勇者様と同じ前線に行けるなら光栄です。俺も聖地を取り戻してみせます！」');
-   return saySequence([
-    {speaker:'新兵',text:'「勇者様と同じ前線に行けるなら光栄です。俺も聖地を取り戻してみせます！」'},
-    roadDecision==='kill'
-     ?{speaker:'カレン',text:'「……戦いで勝つことと、正しいことは同じじゃない。私もまだ、答えられない」'}
-     :{speaker:'ソフィ',text:'「どうか、武器を下ろした人を傷つけずに済む道も覚えていてください」'}
-   ])
+   const witnessedGift=state.events?.choices?.['early.capitalRationGift']==='donate';
+   const greeting='「勇者様と同じ前線に行けるなら光栄です。俺も聖地を取り戻してみせます！」';
+   if(!roadDecision&&!witnessedGift)return say('新兵',greeting);
+   const lines=[{speaker:'新兵',text:greeting}];
+   if(roadDecision)lines.push(roadDecision==='kill'
+    ?{speaker:'カレン',text:'「……戦いで勝つことと、正しいことは同じじゃない。私もまだ、答えられない」'}
+    :{speaker:'ソフィ',text:'「どうか、武器を下ろした人を傷つけずに済む道も覚えていてください」'});
+   if(witnessedGift)lines.push({speaker:'新兵',text:'「配給列で携帯食を渡すのを見ました。俺は立って見ているだけでした。次は手を貸せることを探します」'});
+   return saySequence(lines)
   }
   if(id==='capitalVendor')return capitalShop()
   if(id==='rationMother')return capitalRationMotherVisit()
