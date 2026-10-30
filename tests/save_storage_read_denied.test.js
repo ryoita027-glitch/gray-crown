@@ -1005,3 +1005,34 @@ test('importing a different checkpoint still rotates prior primary into backup',
  assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),current);
  assert.equal(JSON.parse(h.storage.getItem(s.SAVE_KEY)).gold,831);
 });
+
+test('Continue restores the checkpoint and warns when transient-panel cleanup fails', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=717');
+ assert.equal(s.save(true),true);
+ h.evaluate('state.gold=818;clearTransientPanels=()=>{throw new Error("panel reset denied")};');
+ assert.equal(s.load(false),true);
+ assert.equal(h.GC.State.get().gold,717);
+ const warnings=h.GC.Log.get('warn').filter(e=>e.message==='Load panel cleanup failed');
+ assert.equal(warnings.length,1);
+ h.GC.Dialogue.finishDialogueTyping();
+ assert.match(h.getElement('dialogueText').innerHTML,/ページを再読み込み/);
+});
+
+test('portable file import preserves live and stored progress when panel cleanup fails', async () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=721');
+ assert.equal(s.save(true),true);
+ const imported=h.storage.getItem(s.SAVE_KEY);
+ h.evaluate('state.gold=822');
+ assert.equal(s.save(true),true);
+ h.evaluate('clearTransientPanels=()=>{throw new Error("panel reset denied")};');
+ h.context.confirm=()=>true;
+ const ok=await s.readPortableSaveFile({size:imported.length,async text(){return imported}});
+ assert.equal(ok,true);
+ assert.equal(h.GC.State.get().gold,721);
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_KEY)).gold,721);
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_BACKUP_KEY)).gold,822);
+ h.GC.Dialogue.finishDialogueTyping();
+ assert.match(h.getElement('dialogueText').innerHTML,/ページを再読み込み/);
+});
