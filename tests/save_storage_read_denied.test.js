@@ -339,3 +339,19 @@ test('New Game does not mistake changed corrupt bytes for an existing quarantine
  assert.equal(h.storage.getItem(SAVE_QUARANTINE_KEY), quarantine);
  assert.equal(h.storage.getItem(SAVE_KEY), '{different-corrupt-primary');
 });
+
+test('successful portable import stays committed when the title button refresh throws', () => {
+ const h = createHarness();
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=101');
+ assert.equal(h.GC.Save.save(true), true);
+ const imported = h.storage.getItem(h.GC.Save.SAVE_KEY);
+ h.evaluate('state.gold=202');
+ assert.equal(h.GC.Save.save(true), true);
+ h.evaluate('updateTitleContinue = () => { throw new Error("title UI unavailable"); }');
+ assert.equal(h.GC.Save.importPortableSaveText(imported), true,
+  'a nonessential title refresh must not turn a loaded import into a reported failure');
+ assert.equal(h.GC.State.get().gold, 101,
+  'the live adventure must match the successfully imported checkpoint');
+ assert.equal(JSON.parse(h.storage.getItem(h.GC.Save.SAVE_KEY)).gold, 101,
+  'the stored checkpoint must agree with the live adventure');
+});
