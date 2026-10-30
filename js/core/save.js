@@ -6,6 +6,9 @@ const SAVE_BACKUP_KEY=SAVE_KEY+'-backup';
 const SAVE_ARCHIVE_KEY=SAVE_KEY+'-previous-adventure';
 const SAVE_QUARANTINE_KEY=SAVE_KEY+'-corrupt-raw-backups';
 const SAVE_SCHEMA=23;
+// A committed import may need a page refresh if nonessential presentation fails.
+let lastLoadPresentationFailed=false;
+let lastImportPresentationFailed=false;
 function safeNumber(v,fallback,min=-Infinity,max=Infinity){return Number.isFinite(v)?Math.max(min,Math.min(max,v)):fallback}
 function nearestSafeTile(mapId,x,y,saveState=state){
  const m=maps[mapId];if(!m)return[11,13];
@@ -198,6 +201,7 @@ function save(silent=false){
   GC.Log?.info('Save',{map:state.map,x:state.x,y:state.y,stage:state.story.stage});if(!silent)say('システム','セーブしました。');return true}catch(e){GC.Log?.error('Save failed',{error:String(e)});if(!silent)say('システム','セーブに失敗しました。ブラウザの保存領域を確認してください。');return false}}
 function clearTransientPanels(){for(const id of ['battlePanel','levelUpPanel','battleResult','battleFlash','bossCinematic','chapterCard'])$(id)?.classList.add('hidden');if($('dialogueBox')&&!$('dialogueBox').classList.contains('hidden'))closeDialogue(false)}
 function load(silent=false){
+ lastLoadPresentationFailed=false;
  if(!canPersistNow('load')){if(!silent&&$('dialogueBox')?.classList.contains('hidden'))say('システム','イベントや戦闘の途中ではロードできません。操作可能な場所でロードしてください。');return false}
  let primary,backup;
  try{primary=localStorage.getItem(SAVE_KEY);backup=localStorage.getItem(SAVE_BACKUP_KEY)}
@@ -243,6 +247,7 @@ function load(silent=false){
  if(!silent)say('システム',refreshFailed?
   '冒険は読み込みましたが、画面の更新に失敗しました。ページを再読み込みしてください。':
   recovered?'通常セーブが壊れていたため、バックアップから復旧しました。':'ロードしました。');
+ lastLoadPresentationFailed=refreshFailed;
  return true
 }
 
@@ -292,6 +297,7 @@ function preserveInvalidSaveSlotsBeforeWrite(primary,backup,
  }
 }
 function importPortableSaveText(raw){
+ lastImportPresentationFailed=false;
  // Strict structural gate before migration: a generic JSON is not a valid save.
  // Supports real earlier-version saves, but never silently imports future schema.
  if(typeof raw!=='string'||raw.length>2*1024*1024) return false;
@@ -331,10 +337,11 @@ function importPortableSaveText(raw){
   localStorage.setItem(SAVE_KEY,payload);
   if(localStorage.getItem(SAVE_KEY)!==payload)throw new Error('Portable import primary write not persisted');
   if(!load(true))throw new Error('Imported save could not be loaded');
+  lastImportPresentationFailed=lastLoadPresentationFailed;
   // The imported adventure is now live. A title-button refresh failure must
   // not report a failed import and roll back the saved slots behind it.
   try{updateTitleContinue()}
-  catch(uiError){GC.Log?.warn('Portable import title refresh failed',{error:String(uiError)})}
+  catch(uiError){lastImportPresentationFailed=true;GC.Log?.warn('Portable import title refresh failed',{error:String(uiError)})}
   return true
  }catch(e){
   GC.Log?.error('Portable save import failed',{error:String(e)});
@@ -369,7 +376,9 @@ async function readPortableSaveFile(file){
  let ok=false;
  try{ok=importPortableSaveText(await file.text())}
  catch(e){GC.Log?.error('Portable save read failed',{error:String(e)})}
- say('システム',ok?(usablePrimary?
+ say('システム',ok&&lastImportPresentationFailed?
+  '外部セーブは読み込みましたが、画面の更新に失敗しました。ページを再読み込みしてください。':
+  ok?(usablePrimary?
   '外部セーブを読み込みました。元のセーブはバックアップに保存されています。':
   hadPrior?'外部セーブを読み込みました。既存の保存データはバックアップまたは復旧用領域に保護されています。':
   '外部セーブを読み込みました。'):
@@ -497,7 +506,9 @@ function restoreArchivedAdventure(){
  if(!raw)return false;
  if(!confirm('保管していた以前の冒険を復旧しますか？ 現在のセーブはバックアップへ移します。'))return false;
  const ok=importPortableSaveText(raw);
- say('システム',ok?'以前の冒険を復旧しました。現在のセーブはバックアップに残しています。':'以前の冒険を復旧できませんでした。現在のセーブには変更していません。');
+ say('システム',ok&&lastImportPresentationFailed?
+  '以前の冒険は復旧しましたが、画面の更新に失敗しました。ページを再読み込みしてください。':
+  ok?'以前の冒険を復旧しました。現在のセーブはバックアップに残しています。':'以前の冒険を復旧できませんでした。現在のセーブには変更していません。');
  return ok
 }
 function restart(){
