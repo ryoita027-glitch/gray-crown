@@ -542,7 +542,7 @@ function downloadQuarantinedSaves(){
  let url=null,clickCompleted=false;
  try{
   const raw=localStorage.getItem(SAVE_QUARANTINE_KEY);
-  if(!raw)return false;
+  if(!raw){notifySaveStatus('破損セーブの復旧用データが見つかりません。ブラウザの保存領域を確認してください。');return false}
   const blob=new Blob([raw],{type:'application/json;charset=utf-8'});
   url=URL.createObjectURL(blob);
   const link=document.createElement('a');
@@ -565,6 +565,7 @@ function downloadQuarantinedSaves(){
   GC.Log?.error('Quarantine export failed',{error:String(e)});
   if(url!==null&&!clickCompleted)try{URL.revokeObjectURL(url)}
   catch(cleanupError){GC.Log?.warn?.('Recovery export URL cleanup failed',{error:String(cleanupError)})}
+  notifySaveStatus('破損セーブの元データを書き出せませんでした。ブラウザのダウンロード設定や保存領域を確認し、ページを閉じずに再試行してください。');
   return false
  }
  // Notification failure cannot undo an already initiated recovery download.
