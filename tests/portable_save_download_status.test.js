@@ -303,3 +303,52 @@ for(const [label,archiveRaw] of [
   assert.match(messages.at(-1),/現在のセーブは変更していません/);
  });
 }
+
+
+test('unsaved live progress before portable import is explicitly warned and survives cancellation',async()=>{
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=321');
+ const incoming=s.serializeSave();
+ const prompts=[];
+ h.context.confirm=message=>{prompts.push(message);return false};
+ assert.equal(await s.readPortableSaveFile({size:incoming.length,text:async()=>incoming}),false);
+ assert.equal(prompts.length,1);
+ assert.match(prompts[0],/未保存の進行がある場合は失われます/);
+ assert.match(prompts[0],/先にセーブかJSON書き出し/);
+ assert.equal(h.evaluate('state.gold'),321);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),null);
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),null);
+});
+
+test('portable import warns about newer unsaved progress even when a primary save exists',async()=>{
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=34');
+ assert.equal(s.save(true),true);
+ const primary=h.storage.getItem(s.SAVE_KEY);
+ h.evaluate('state.gold=678');
+ const incoming=s.serializeSave();
+ const prompts=[];
+ h.context.confirm=message=>{prompts.push(message);return false};
+ assert.equal(await s.readPortableSaveFile({size:incoming.length,text:async()=>incoming}),false);
+ assert.match(prompts[0],/未保存の進行がある場合は失われます/);
+ assert.equal(h.evaluate('state.gold'),678);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),primary);
+});
+
+test('previous-adventure restore warns about unsaved live progress and cancellation preserves it',()=>{
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=87');
+ const archive=s.serializeSave();
+ h.storage.setItem(s.SAVE_ARCHIVE_KEY,archive);
+ h.evaluate('state.gold=444');
+ const prompts=[];
+ h.context.confirm=message=>{prompts.push(message);return false};
+ assert.equal(s.restoreArchivedAdventure(),false);
+ assert.equal(prompts.length,1);
+ assert.match(prompts[0],/未保存の進行がある場合は失われます/);
+ assert.match(prompts[0],/先にセーブかJSON書き出し/);
+ assert.equal(h.evaluate('state.gold'),444);
+ assert.equal(h.storage.getItem(s.SAVE_ARCHIVE_KEY),archive);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),null);
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),null);
+});
