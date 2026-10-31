@@ -58,3 +58,36 @@ test('recovery export with no quarantined bytes does not create a URL',()=>{
  assert.equal(s.downloadQuarantinedSaves(),false);
  assert.equal(calls.length,0);
 });
+
+test('blocked recovery download explains failure and preserves original quarantine bytes',()=>{
+ const h=createHarness(),s=h.GC.Save;
+ const raw='[{"primary":"{damaged-raw","backup":null}]';
+ h.storage.setItem(s.SAVE_QUARANTINE_KEY,raw);
+ const calls=mockRecoveryDownload(h,{clickThrows:true}),messages=[];
+ h.context.say=(_who,message)=>messages.push(message);
+ assert.equal(s.downloadQuarantinedSaves(),false);
+ assert.equal(h.storage.getItem(s.SAVE_QUARANTINE_KEY),raw);
+ assert.equal(calls.filter(x=>x[0]==='remove').length,1);
+ assert.deepEqual(calls.filter(x=>x[0]==='revoke'),[['revoke','blob:recovery-test']]);
+ assert.match(messages.at(-1),/書き出せませんでした/);
+ assert.match(messages.at(-1),/ページを閉じずに/);
+});
+
+test('recovery export reports denied storage reads without claiming a download',()=>{
+ const h=createHarness(),s=h.GC.Save;
+ const calls=mockRecoveryDownload(h),messages=[];
+ h.storage.getItem=()=>{throw Error('SecurityError')};
+ h.context.say=(_who,message)=>messages.push(message);
+ assert.equal(s.downloadQuarantinedSaves(),false);
+ assert.equal(calls.length,0);
+ assert.match(messages.at(-1),/書き出せませんでした/);
+});
+
+test('missing recovery bytes give feedback without creating a download',()=>{
+ const h=createHarness(),s=h.GC.Save;
+ const calls=mockRecoveryDownload(h),messages=[];
+ h.context.say=(_who,message)=>messages.push(message);
+ assert.equal(s.downloadQuarantinedSaves(),false);
+ assert.equal(calls.length,0);
+ assert.match(messages.at(-1),/復旧用データが見つかりません/);
+});
