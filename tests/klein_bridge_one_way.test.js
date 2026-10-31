@@ -62,11 +62,18 @@ test('after crossing, the collapsed bridge blocks return to Bellad Watchfort',()
  for(let i=0;i<24&&s.map==='watchfort';i++){h.GC.Dialogue.finishDialogueTyping();h.GC.App.primaryAction()}
  assert.equal(s.map,'empirevillage');
  h.flushTimers();
+ h.GC.Dialogue.closeDialogue(false);
+ assert.equal(h.GC.Save.save(true),true);
+ h.GC.State.reset();
+ assert.equal(h.GC.Save.load(true),true);
+ assert.equal(h.GC.State.get().map,'empirevillage');
+ assert.equal(h.GC.State.get().schema,23);
+ assert.equal(!!h.GC.State.get().events.completed.metKlein,true);
  h.GC.Movement.setMap('empirevillage',11,14,'down');
  h.evaluate('VISUAL.nextMoveAt=0');
  h.GC.Movement.move('down');
- assert.equal(s.map,'empirevillage');
+ assert.equal(h.GC.State.get().map,'empirevillage');
  h.GC.Dialogue.finishDialogueTyping();
  assert.match(h.getElement('dialogueText').innerHTML,/橋が落ちている/);
- assert.equal(s.schema,23);
+ assert.equal(h.GC.State.get().schema,23);
 });
