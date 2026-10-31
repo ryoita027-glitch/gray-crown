@@ -350,6 +350,28 @@ function drawRegionDecor(){if(RoadCaveQuality.enabled&&RoadCaveQuality.active.ha
   const rc=[12,12,11,11,10,10,10,11,12,12,11,11,12,12,12];ctx.strokeStyle='rgba(73,59,39,.25)';ctx.lineWidth=2.5;for(const off of [-.55,.55]){ctx.beginPath();for(let y=1;y<14;y++){const xx=(rc[y]+off)*TILE+16,yy=y*TILE+16;if(y===1)ctx.moveTo(xx,yy);else ctx.lineTo(xx,yy)}ctx.stroke()}
   for(let i=0;i<14;i++){const yy=(i*43)%420+26,c=rc[Math.max(0,Math.min(14,Math.floor(yy/TILE)))];const x=(c+(i%2?1.8:-1.7))*TILE+(i%3)*5;ctx.fillStyle='#817866';ctx.beginPath();ctx.ellipse(x,yy,4+(i%3)*2,2+(i%2),0,0,Math.PI*2);ctx.fill()}
  }
+ if(state.map==='northroad'){
+  // The old northbound road keeps its main corridor. Small worn patches lead
+  // toward the existing stone milestone and scout rather than to empty grass.
+  for(const [tx,ty] of [[10,5],[10,6],[10,7],[13,4],[13,5]]){
+   ctx.fillStyle='rgba(96,79,58,.22)';ctx.fillRect(tx*TILE+5,ty*TILE+22,21,3);
+   ctx.fillStyle='rgba(210,188,145,.35)';ctx.fillRect(tx*TILE+9,ty*TILE+21,11,1);
+  }
+  // Arrival from the forest road leaves wheel ruts; arrival through the fort
+  // carries stone grit. Both are unobtrusive marks on existing passable tiles.
+  if(getWorldSwitch('northRoadFromRoad')){
+   ctx.fillStyle='rgba(96,76,48,.35)';
+   for(const [tx,ty] of [[11,11],[12,12],[11,13]]){
+    ctx.fillRect(tx*TILE+8,ty*TILE+7,2,13);
+    ctx.fillRect(tx*TILE+22,ty*TILE+7,2,13);
+   }
+  }else{
+   for(const [tx,ty] of [[11,11],[12,12],[11,13]]){
+    ctx.fillStyle='#858579';ctx.fillRect(tx*TILE+8,ty*TILE+24,7,3);
+    ctx.fillStyle='#b3a995';ctx.fillRect(tx*TILE+10,ty*TILE+23,4,2);
+   }
+  }
+ }
  if(state.map==='capital'){
 
   // 上層の屋根並みと遠景窓。城だけが浮かないよう街並みを作る。
@@ -560,7 +582,18 @@ function drawObject(o){if(RyuneOutskirts.drawObject(ctx,state.map,o,!!state.worl
  if(o.id==='borderCampfire'){ctx.fillStyle='#3a2f29';ctx.beginPath();ctx.arc(px+16,py+22,12,0,Math.PI*2);ctx.fill();ctx.fillStyle='#8e5a32';ctx.fillRect(px+9,py+20,17,4);ctx.fillStyle='#e2943f';ctx.beginPath();ctx.moveTo(px+16,py+20);ctx.lineTo(px+10,py+12);ctx.lineTo(px+16,py+5);ctx.lineTo(px+23,py+13);ctx.closePath();ctx.fill()}
  if(['fortGate','fortGateRight'].includes(o.id)&&!getWorldSwitch('fortGateOpen')){ctx.fillStyle='#4e4640';ctx.fillRect(px-10,py+4,52,26);ctx.fillStyle='#866c50';for(let i=0;i<6;i++)ctx.fillRect(px-6+i*9,py+4,4,26);ctx.fillStyle='#c0a16d';ctx.fillRect(px-10,py+4,52,4)}
  if(o.id==='ravineLookout'||o.id==='bridgeMarker'){ctx.fillStyle='#70685d';ctx.fillRect(px+7,py+20,20,7);ctx.fillStyle='#c7b990';ctx.fillRect(px+10,py+8,14,12)}
- if(o.id==='roadSign'||o.id==='milestone'){ctx.fillStyle='#73583b';ctx.fillRect(px+14,py+7,4,22);ctx.fillStyle='#b09262';ctx.fillRect(px+3,py+4,26,12);ctx.fillStyle='#403329';ctx.font='bold 8px system-ui';ctx.textAlign='center';ctx.fillText(o.id==='roadSign'?'古砦→':'王都 近道',px+16,py+13);ctx.textAlign='start'}
+ if(o.id==='roadSign'){ctx.fillStyle='#73583b';ctx.fillRect(px+14,py+7,4,22);ctx.fillStyle='#b09262';ctx.fillRect(px+3,py+4,26,12);ctx.fillStyle='#403329';ctx.font='bold 8px system-ui';ctx.textAlign='center';ctx.fillText('古砦→',px+16,py+13);ctx.textAlign='start'}
+ if(o.id==='milestone'){
+  // A real stone marker, not a wooden "shortcut" sign: the route does not
+  // contain a shortcut. The arrow points along the actual northbound road.
+  ctx.fillStyle='#51564f';ctx.fillRect(px+6,py+27,21,3);
+  ctx.fillStyle='#878779';ctx.fillRect(px+8,py+6,17,22);
+  ctx.fillStyle='#b5b09a';ctx.fillRect(px+7,py+4,19,5);
+  ctx.fillStyle='#d4c7a6';ctx.fillRect(px+11,py+9,2,3);
+  ctx.fillStyle='#413f37';ctx.font='bold 8px system-ui';ctx.textAlign='center';ctx.fillText('王都',px+16,py+19);ctx.textAlign='start';
+  ctx.fillStyle='#ded0ae';ctx.fillRect(px+15,py+21,2,5);
+  ctx.fillRect(px+13,py+22,2,2);ctx.fillRect(px+17,py+22,2,2);
+ }
 }
 function drawBeast(px,py,type){ctx.fillStyle=COLORS.shadow;ctx.beginPath();ctx.ellipse(px+16,py+27,12,4,0,0,Math.PI*2);ctx.fill();if(type==='wolf'){ctx.fillStyle='#5b6260';ctx.beginPath();ctx.ellipse(px+16,py+18,12,8,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#3c413f';ctx.beginPath();ctx.moveTo(px+8,py+11);ctx.lineTo(px+11,py+3);ctx.lineTo(px+14,py+12);ctx.fill();ctx.beginPath();ctx.moveTo(px+18,py+11);ctx.lineTo(px+22,py+3);ctx.lineTo(px+24,py+12);ctx.fill();ctx.fillStyle='#d8c374';ctx.fillRect(px+22,py+16,2,2)}
  if(type==='bats'){ctx.fillStyle='#65586b';for(const ox of [7,18]){ctx.beginPath();ctx.moveTo(px+ox,py+14);ctx.lineTo(px+ox-7,py+7);ctx.lineTo(px+ox-3,py+20);ctx.lineTo(px+ox+4,py+16);ctx.lineTo(px+ox+10,py+7);ctx.lineTo(px+ox+8,py+21);ctx.closePath();ctx.fill()}}
