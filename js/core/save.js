@@ -9,6 +9,7 @@ const SAVE_SCHEMA=23;
 // A committed import may need a page refresh if nonessential presentation fails.
 let lastLoadPresentationFailed=false;
 let lastImportPresentationFailed=false;
+let lastPortableExportNeedsManualBackup=false;
 function safeNumber(v,fallback,min=-Infinity,max=Infinity){return Number.isFinite(v)?Math.max(min,Math.min(max,v)):fallback}
 function nearestSafeTile(mapId,x,y,saveState=state){
  const m=maps[mapId];if(!m)return[11,13];
@@ -279,9 +280,28 @@ function load(silent=false){
 // Portable JSON is necessary for player ZIP/file:// releases: browser
 // localStorage belongs to the specific browser/origin, not the game folder.
 function exportPortableSaveText(){
- if(!save(true))return null;
- try{return localStorage.getItem(SAVE_KEY)}
- catch(e){GC.Log?.error('Portable save export read failed',{error:String(e)});return null}
+ lastPortableExportNeedsManualBackup=false;
+ // Never export an in-progress battle, event or developer-tainted session.
+ if(!canPersistNow('save'))return null;
+ if(save(true)){
+  try{
+   const stored=localStorage.getItem(SAVE_KEY);
+   if(stored)return stored
+  }catch(e){GC.Log?.warn?.('Portable save export read failed',{error:String(e)})}
+ }
+ // Quota denial or blocked localStorage must not strand the player's current
+ // progress. A validated, in-memory JSON download can still be rescued without
+ // modifying any existing browser save or corrupt recovery bytes.
+ try{
+  const raw=serializeSave();
+  if(!isUsableSavedAdventure(raw))return null;
+  lastPortableExportNeedsManualBackup=true;
+  GC.Log?.warn?.('Portable save is an unverified in-memory recovery export');
+  return raw
+ }catch(e){
+  GC.Log?.error?.('Portable save in-memory recovery export failed',{error:String(e)});
+  return null
+ }
 }
 function downloadPortableSave(){
  const raw=exportPortableSaveText();
@@ -311,7 +331,9 @@ function downloadPortableSave(){
   notifySaveStatus('セーブの書き出しに失敗しました。ブラウザのダウンロード設定を確認してください。');
   return false
  }
- notifySaveStatus('セーブの書き出しを開始しました。ブラウザのダウンロード一覧で保存を確認してください。別のPCで遊ぶ時は「セーブを読み込む」を使ってください。');
+ notifySaveStatus(lastPortableExportNeedsManualBackup?
+  'ブラウザ内の保存を確認できませんでしたが、現在の冒険のJSON書き出しを開始しました。ダウンロード一覧でファイルを必ず確認・保管してください。復旧時は「セーブを読み込む」を使ってください。':
+  'セーブの書き出しを開始しました。ブラウザのダウンロード一覧で保存を確認してください。別のPCで遊ぶ時は「セーブを読み込む」を使ってください。');
  return true
 }
 // Portable import must not erase unreadable old slots. Preserve their exact

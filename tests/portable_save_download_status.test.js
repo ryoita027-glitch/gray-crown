@@ -75,3 +75,43 @@ test('portable export does not initiate a download when saving is forbidden',()=
  assert.equal(h.storage.getItem(s.SAVE_KEY),null);
  assert.match(calls.find(x=>x[0]==='say')[2],/安全にセーブを書き出せません/);
 });
+
+
+test('quota-denied browser Save still offers an explicitly unverified JSON recovery download',()=>{
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=991');
+ const calls=mockPortableDownload(h);
+ const originalSet=h.storage.setItem;
+ h.storage.setItem=function(key,value){
+  if(key===s.SAVE_BACKUP_KEY)throw Error('storage quota exceeded');
+  return originalSet.call(this,key,value)
+ };
+ h.context.say=(who,message)=>calls.push(['say',who,message]);
+ assert.equal(s.downloadPortableSave(),true);
+ assert.equal(JSON.parse(calls.find(x=>x[0]==='blob')[1]).gold,991);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),null,'failed browser save stays absent');
+ assert.match(calls.find(x=>x[0]==='say')[2],/ブラウザ内の保存を確認できませんでした/);
+ assert.match(calls.find(x=>x[0]==='say')[2],/必ず確認・保管/);
+ h.flushTimers();
+ assert.equal(calls.filter(x=>x[0]==='revoke').length,1);
+});
+
+test('storage-read denial does not prevent a safe in-memory recovery export',()=>{
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=762');
+ const calls=mockPortableDownload(h);
+ h.storage.getItem=()=>{throw Error('SecurityError')};
+ h.context.say=(who,message)=>calls.push(['say',who,message]);
+ assert.equal(s.downloadPortableSave(),true);
+ assert.equal(JSON.parse(calls.find(x=>x[0]==='blob')[1]).gold,762);
+ assert.match(calls.find(x=>x[0]==='say')[2],/ブラウザ内の保存を確認できませんでした/);
+});
+
+test('unsafe in-memory sessions remain ineligible for portable recovery export',()=>{
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.locked=true;state.gold=315');
+ const calls=mockPortableDownload(h);
+ assert.equal(s.downloadPortableSave(),false);
+ assert.equal(calls.filter(x=>x[0]==='blob').length,0);
+ assert.equal(calls.filter(x=>x[0]==='click').length,0);
+});
