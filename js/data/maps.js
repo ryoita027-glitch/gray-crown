@@ -158,6 +158,9 @@ function makeBorderlandTiles(){
  // 南：旧関所。中央：分岐する荒野。北：ハルム宿場。
  paintV(g,10,14,11,'D');paintV(g,10,14,12,'D');
  paintH(g,5,18,10,'D');paintV(g,6,10,5,'D');paintV(g,7,10,18,'D');
+  // A two-step worn spur visibly connects the wagon layby to the east checkpoint.
+  // Both cells were already walkable B: only the ground material changes.
+  paintH(g,19,20,10,'D');
  paintH(g,3,20,6,'D');paintV(g,2,6,7,'D');paintV(g,2,6,16,'D');
  paintV(g,0,6,11,'P');paintV(g,0,6,12,'P');
  // 宿場の建物と旧関所の崩れた壁
@@ -304,7 +307,7 @@ const maps={
  ],objects:[{id:'stretcherTracks',x:5,y:9},{id:'imperialSatchel',x:18,y:9},{id:'withdrawalOrders',x:7,y:5},{id:'fieldGraves',x:4,y:4},{id:'brokenSignalPost',x:19,y:4},{id:'scavengerWolves',x:15,y:6}]},
  borderland:{name:'ハルム国境地帯',tag:'旧関所・荒野・小さな宿場が続く境界地',tiles:makeBorderlandTiles(),npcs:[
   {id:'borderScout',x:6,y:10,name:'王国の偵察兵'},
-  {id:'lostMerchant',x:18,y:10,name:'足止めされた商人'},
+  {id:'lostMerchant',x:18,y:9,name:'足止めされた商人'},
   {id:'relayHost',x:7,y:6,name:'ハルム宿場の女将'},
   {id:'relayChild',x:16,y:6,name:'宿場の子ども'}
  ],objects:[{id:'borderGrave',x:3,y:6},{id:'oldCheckpoint',x:20,y:10},{id:'brokenWagon',x:19,y:9},{id:'borderCampfire',x:12,y:5},{id:'relayBoard',x:6,y:5}]},

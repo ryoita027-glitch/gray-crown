@@ -1090,7 +1090,7 @@ function inlineNpcEvent(id){
   if(id==='relayHost'){
    if(!structuredCondition('borderMerchantHelped'))return say('ハルム宿場の女将','「東の商人がまだ戻ってない。暗くなる前に帰ってくればいいけどね」');
    if(structuredCondition('borderRested'))return say('ハルム宿場の女将','「朝飯は包んでおいた。ベルド砦までなら昼前には着くよ」');
-   return say('ハルム宿場の女将','「今日はここまでにしな。峡谷へ夜に入る馬鹿はいないよ」',[{label:'日が落ちるまで休む',fn:()=>objectEvent('borderCampfire')},{label:'まだ周辺を見る',fn:()=>say('カレン','「もう少しだけ見て回ろう」')}])
+   return say('ハルム宿場の女将','「東の荷車を直したんだってね。塩が届くなら宿場も助かる。……今夜は休みな。峡谷へ夜に入る馬鹿はいないよ」',[{label:'日が落ちるまで休む',fn:()=>objectEvent('borderCampfire')},{label:'まだ周辺を見る',fn:()=>say('カレン','「もう少しだけ見て回ろう」')}])
   }
   if(id==='relayChild')return structuredCondition('borderMerchantHelped')
     ?saySequence([{speaker:'宿場の子ども',text:'「東の荷車、直ったんだって！　おばあちゃんが塩が届くかもって喜んでた」'},{speaker:'ソフィ',text:'「帝国の塩も、ここへ届いていたんですね」'},{speaker:'宿場の子ども',text:'「うん。昔は帝国の子も泊まったって。今は兵隊さんばっかりだけど、また来てほしいな」'}])
@@ -1162,7 +1162,7 @@ function inlineObjectEvent(id){
   if(id==='borderGrave')return saySequence([{speaker:'名のない墓標',text:'王国語と帝国語、両方で短い祈りが刻まれている。名前は雨で読めない。'},{speaker:'ソフィ',text:'「どちらの国の人だったんでしょう」'},{speaker:'マーガレット',text:'「分からない。たぶん、ここではそれが一番正しいのかも」'}])
   if(id==='oldCheckpoint'){
    if(!structuredCondition('borderSparePin')){setStructuredCondition('borderSparePin',true);state.objective=borderlandNextObjective();renderHud();return saySequence([{speaker:'古い関所跡',text:'崩れた柵の根元に、まだ使えそうな太い鉄杭が一本残っている。戦争前の通行札も散らばっている。'},{speaker:'トリトン',text:'「これなら荷車の車軸を留められる」'},{speaker:'マーガレット',text:'「帝国の商人印と王国の税印が同じ板に押してある。ここ、本当に普通の国境だったのね」'}])}
-   return say('古い関所跡','戦争前の通行札が散らばっている。人の往来があった痕跡だけが残っている。')
+   return say('古い関所跡',structuredCondition('borderMerchantHelped')?'戦争前の通行札が散らばっている。荷車は修理され、古い交易路にまた車輪の音が戻りそうだ。':'柵から抜いた鉄杭は手元にある。西の荷車の車軸を留められそうだ。')
   }
   if(id==='brokenWagon')return say('壊れた荷車',structuredCondition('borderMerchantHelped')?'応急修理された車軸。商人は荷を積み直し、宿場へ向かう支度をしている。':structuredCondition('borderMerchantAsked')?'片側の車輪が外れている。荷車の東側に、崩れた関所の柵が見える。':'片側の車輪が外れ、荷袋が道脇に積まれている。持ち主はすぐ近くにいる。')
   if(id==='relayBoard')return say('ハルム宿場の掲示板',structuredCondition('borderMerchantHelped')?'「国境便停止」の下に、女将の字で「東の荷車、修理済み。塩の便、再開見込み」と追記されている。':'「国境便停止」「ベルド砦への荷役募集」「帝国産塩・入荷未定」。戦争で途切れたものが、短い紙切れだけでも分かる。')
