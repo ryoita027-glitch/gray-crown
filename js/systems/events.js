@@ -36,25 +36,32 @@ function applyEventEffects(def,context={}){for(const effect of def?.effects||[])
 // canonical first night. Derive the scene at playback; never mutate EVENT_DEFS
 // or introduce a Save v23 field. Untouched routes keep the original pacing.
 function capitalNightEchoLines(original){
+ // Keep the first-night conversation at its authored length. Optional discoveries
+ // alter an existing voice instead of stacking extra mandatory dialogue screens.
  const choices=state.events?.choices||{};
  const sawQueue=isEventComplete('early.capitalRationIntro');
  const guided=choices['early.capitalWagonGuide']==='guided';
  const perspective=choices['early.capitalFountainPerspective'];
  const roomOffered=choices['early.capitalRoomOffer']==='offered';
- const lines=original.map(line=>{
+ return original.map(line=>{
   if(roomOffered&&line.speaker==='ナレーション'&&line.text.startsWith('任命式の夜。'))
    return {...line,text:'任命式の夜。女将が用意した奥の狭い相部屋には、四人分の寝具が並んでいた。窓の外ではまだ「勇者万歳」の声が遠く聞こえる。四人とも昼間ほど喋らなくなった。'};
-  if(line.speaker==='マーガレット'&&line.text.includes('でも市場には配給の列があった')&&!sawQueue)
-   return {...line,text:'「私も花を見て少し嬉しかった。でも、この街を式だけで知った気にはなれないの」'};
+  if(line.speaker==='マーガレット'&&line.text.includes('でも市場には配給の列があった')){
+   if(sawQueue&&perspective==='observed')
+    return {...line,text:'「花はきれいだった。でも噴水で見たポスターと配給列、どちらもこの街の本当の姿よ。片方だけで決めつけたくない」'};
+   if(!sawQueue)
+    return {...line,text:'「私も花を見て少し嬉しかった。でも、この街を式だけで知った気にはなれないの」'};
+  }
+  if(line.speaker==='ソフィ'&&line.text.includes('王都にも苦しい人はいる')){
+   if(guided&&sawQueue&&perspective==='asked')
+    return {...line,text:'「南門の荷車、配給所まで押しました。噴水で話してくれた人は、明日のパンも心配していました。今夜の野菜が届いても、まだ終わりじゃないんですね」'};
+   if(guided)
+    return {...line,text:'「南門の荷車、配給所まで押したけれど、今夜の食事に届いたでしょうか。王都にも待っている人がいるんですね」'};
+   if(sawQueue&&perspective==='asked')
+    return {...line,text:'「噴水で話してくれた人は、勝利だけでなく明日のパンを心配していました。王都にも苦しい人はいるんですね」'};
+  }
   return line;
  });
- const at=lines.findIndex(line=>line.speaker==='ソフィ'&&line.text.includes('王都にも苦しい人はいる'));
- if(at<0)return lines;
- const echo=[];
- if(guided)echo.push({speaker:'トリトン',text:'「南門の荷車、配給所まで押しただろ。あれ一台で全部足りるわけじゃない。でも、今夜の食事にはなるといいな」'});
- if(perspective==='asked')echo.push({speaker:'カレン',text:'「噴水で話してくれた人がいた。勝つことだけじゃなくて、明日の食事と、帰ってくる人のことも考えてた」'});
- else if(perspective==='observed')echo.push({speaker:'マーガレット',text:'「噴水で見たポスターと配給列、どちらもこの街の本当の姿よ。片方だけで決めつけないようにしたい」'});
- return [...lines.slice(0,at),...echo,...lines.slice(at)];
 }
 // The inn notice is already on the player's route. A voluntary room swap
 // trades comfort, not money or plot access, for a small visible civic outcome.
