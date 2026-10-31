@@ -284,7 +284,7 @@ const maps={
   {id:'capitalVendor',x:4,y:8,name:'市場商人マロ'},
   {id:'rationMother',x:16,y:8,name:'配給待ちの母親'},
   {id:'granz',x:8,y:5,name:'総司令グランツ'}
- ],objects:[{id:'royalCastle',x:7,y:5},{id:'capitalMarket',x:5,y:9},{id:'capitalFountain',x:12,y:8},{id:'capitalBarracks',x:19,y:9},{id:'victoryPoster',x:15,y:6},{id:'heroLedger',x:20,y:11},{id:'capitalInnDoor',x:6,y:12},{id:'capitalArmoryDoor',x:18,y:12}]},
+ ],objects:[{id:'royalCastle',x:7,y:5},{id:'capitalMarket',x:5,y:9},{id:'capitalFountain',x:12,y:8},{id:'capitalBarracks',x:19,y:9},{id:'victoryPoster',x:15,y:6},{id:'heroLedger',x:20,y:11},{id:'capitalInnDoor',x:6,y:12},{id:'capitalArmoryDoor',x:18,y:12},{id:'capitalWagonQueue',x:14,y:13}]},
  ashroad:{name:'灰の街道',tag:'焼けた農地と避難路',tiles:makeAshRoadTiles(),npcs:[
   {id:'refugee',x:8,y:5,name:'避難民の母'},
   {id:'fieldPriest',x:18,y:9,name:'従軍僧'}
