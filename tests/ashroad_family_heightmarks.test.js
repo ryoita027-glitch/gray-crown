@@ -1,0 +1,61 @@
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const {createHarness}=require('./harness');
+const step=h=>h.evaluate('finishDialogueTyping();if(dialogueContinue)dialogueContinue()');
+function completeScene(h,id,max=20){
+ for(let i=0;i<max&&!h.GC.State.get().events.completed[id];i++)step(h);
+ assert.equal(h.GC.State.get().events.completed[id],true,'scene completes');
+}
+test('ash-road home gives an optional, reachable, visually persistent family trace',()=>{
+ const h=createHarness();
+ h.evaluate("state.map='ashroad'");
+ const m=h.evaluate('maps.ashroad');
+ for(let x=4;x<=8;x++)assert.equal(m.tiles[5][x],'D','home and mother share a walkable side path');
+ assert.equal(h.GC.Events.runTriggeredEvent('object','burnedHomestead',{map:'ashroad'}),true);
+ completeScene(h,'alpha2.ashroad.homestead');
+ assert.equal(h.evaluate('dialogueChoices.length'),2);
+ const before=h.GC.State.get().journal.length;
+ h.evaluate('finishDialogueTyping();activateDialogueChoice()');
+ assert.equal(h.evaluate("state.events.choices['early.ashroadHeightMarks']"),'cleared');
+ assert.equal(h.GC.State.get().journal.length,before+1);
+ const marks=h.evaluate("(()=>{const a=[];const c={fillRect(x,y,w,h){a.push([this.fillStyle,x,y,w,h])}};AshFrontierEnvironment.objectAccent(c,'ashroad',{id:'burnedHomestead',x:4,y:5});return a})()");
+ assert.ok(Array.from(marks).some(v=>v[0]==='#ddc6a0'),'cleaned marks have a visible pixel accent');
+ assert.equal(h.GC.Save.save(true),true);
+ h.evaluate("delete state.events.choices['early.ashroadHeightMarks']");
+ assert.equal(h.GC.Save.load(true),true);
+ assert.equal(h.evaluate("state.events.choices['early.ashroadHeightMarks']"),'cleared');
+ h.evaluate("closeDialogue();runTriggeredEvent('object','burnedHomestead',{map:'ashroad'})");
+ assert.equal(h.evaluate('dialogueChoices.length'),0,'no repeated choice after cleaning');
+ assert.equal(h.GC.State.get().journal.length,before+1);
+});
+test('refugee mother recognizes the cleaned post, once, without claiming her husband died',()=>{
+ const h=createHarness();h.evaluate("state.map='ashroad';state.events.completed['alpha2.ashroad.homestead']=true;state.events.choices['early.ashroadHeightMarks']='cleared'");
+ const before=h.GC.State.get().journal.length;
+ assert.equal(h.GC.Events.runTriggeredEvent('npc','refugee',{map:'ashroad'}),true);
+ completeScene(h,'alpha2.ashroad.refugee');
+ assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/西の焼けた家/);
+ step(h);step(h);
+ assert.equal(h.evaluate("state.events.choices['early.ashroadHeightMarksShared']"),'shared');
+ assert.equal(h.GC.State.get().journal.length,before+2,'canonical refugee entry plus one memory');
+ h.evaluate("closeDialogue();runTriggeredEvent('npc','refugee',{map:'ashroad'})");
+ assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/夫の行方はまだ分からない/);
+ assert.equal(h.GC.State.get().journal.length,before+2);
+});
+test('mother-first, skip, and order-scene callbacks preserve choice and canon',()=>{
+ const h=createHarness();h.evaluate("state.map='ashroad'");
+ const canonical=JSON.stringify(h.evaluate("EVENT_DEFS.find(e=>e.id==='alpha2.ashroad.orders').lines"));
+ const plain=h.evaluate("ashRoadFamilyMemoryLines('alpha2.ashroad.orders',EVENT_DEFS.find(e=>e.id==='alpha2.ashroad.orders').lines)");
+ assert.doesNotMatch(plain.map(x=>x.text).join(' '),/あの家の柱/);
+ h.evaluate("state.events.completed['alpha2.ashroad.refugee']=true;state.events.completed['alpha2.ashroad.homestead']=true");
+ h.evaluate("runTriggeredEvent('object','burnedHomestead',{map:'ashroad'})");
+ h.evaluate("dialogueChoiceIndex=1;finishDialogueTyping();activateDialogueChoice()");
+ assert.equal(h.evaluate("state.events.choices['early.ashroadHeightMarks']"),undefined);
+ h.evaluate("closeDialogue();runTriggeredEvent('object','burnedHomestead',{map:'ashroad'})");
+ h.evaluate("finishDialogueTyping();activateDialogueChoice()");
+ const changed=h.evaluate("ashRoadFamilyMemoryLines('alpha2.ashroad.orders',EVENT_DEFS.find(e=>e.id==='alpha2.ashroad.orders').lines)");
+ assert.match(changed.map(x=>x.text).join(' '),/子どもの背丈/);
+ assert.equal(JSON.stringify(h.evaluate("EVENT_DEFS.find(e=>e.id==='alpha2.ashroad.orders').lines")),canonical);
+ h.evaluate("closeDialogue();runTriggeredEvent('npc','refugee',{map:'ashroad'})");
+ assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/西の焼けた家/);
+ assert.equal(h.evaluate('SAVE_SCHEMA'),23);
+});

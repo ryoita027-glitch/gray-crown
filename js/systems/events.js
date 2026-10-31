@@ -124,6 +124,54 @@ function granzBriefingPlayerLines(original){
  return original.map(line=>line.speaker==='ソフィ'&&line.text==='「避難民の治療を手伝っても？」'
   ?{...line,text:'「昨日、白鹿亭で避難家族に部屋を譲りました。街道の避難民にも、治療を手伝っていいですか？」'}:line);
 }
+
+ // The old ash-road homestead has a tangible, voluntary trace of its residents.
+ // This uses existing objects and Save v23 choices, not a new quest or item.
+function ashRoadHomesteadMemoryVisit(){
+ const key='early.ashroadHeightMarks';
+ if(state.events.choices[key]==='cleared')
+  return say('焼けた農家','煤を払った柱には、子どもの背丈を記した三つの刻みと、小さな星が残っている。');
+ return say('焼けた農家','柱の背丈の刻みは煤に埋もれかけている。ここで暮らした誰かが、毎年つけた印だ。',[
+  {label:'煤を払って刻みを残す',fn:ashRoadHomesteadMemoryCommit},
+  {label:'今はそのままにする',fn:()=>say('マーガレット','「今は急ぎましょう。気になったら、ここに戻れるわ」')}
+ ]);
+}
+function ashRoadHomesteadMemoryCommit(){
+ const key='early.ashroadHeightMarks';
+ if(state.events.choices[key]==='cleared')return ashRoadHomesteadMemoryVisit();
+ if(!isEventComplete('alpha2.ashroad.homestead'))return false;
+ state.events.choices[key]='cleared';
+ addJournal('灰の街道の焼けた農家で、煤に埋もれた子どもの背丈の刻みと小さな星を見えるようにした。');
+ renderHud();draw();sfx('discovery');
+ return saySequence([
+  {speaker:'トリトン',text:'「……これで、誰かがここで大きくなったって分かるな」'},
+  {speaker:'ソフィ',text:'「街道にいるお母さんにも、伝えてみたいです」'}
+ ]);
+}
+function ashRoadRefugeeMemoryVisit(){
+ if(state.events.choices['early.ashroadHeightMarks']!=='cleared')return false;
+ if(state.events.choices['early.ashroadHeightMarksShared']==='shared')
+  return say('避難民の母','「あの柱の印を見つけてくれて、ありがとう。夫の行方はまだ分からないけれど、あの子が育った記録は残ったんですね」');
+ return saySequence([
+  {speaker:'カレン',text:'「西の焼けた家で、子どもの背丈を刻んだ柱を見つけました。煤を払って、読めるようにしてきたんです」'},
+  {speaker:'避難民の母',text:'「……うちの柱です。夫が毎年、星を刻んでいました。あの人が帰るかはまだ分からない。でも、あの子の背丈は残ったんですね」'}
+ ],()=>{
+  if(state.events.choices['early.ashroadHeightMarksShared']==='shared')return;
+  state.events.choices['early.ashroadHeightMarksShared']='shared';
+  addJournal('灰の街道の避難民の母に、焼けた家の柱の刻みを残したことを伝えた。夫の行方はまだ分からない。');
+  renderHud();
+ });
+}
+function ashRoadFamilyMemoryLines(id,original){
+ if(state.events.choices['early.ashroadHeightMarks']!=='cleared')return original;
+ if(id==='alpha2.ashroad.orders')
+  return original.map(line=>line.speaker==='カレン'&&line.text.includes('避けろって書いてあるのに')
+   ?{...line,text:'「“民間人との不要な交戦は避ける”……でも、あの家の柱には子どもの背丈が残っていた。何を守れた命令なの？」'}:line);
+ if(id==='alpha2.ashroad.orders.repeat')
+  return original.map(line=>({...line,text:'命令書には「民間人との不要な交戦は避ける」とある。西の家で残した子どもの背丈の刻みを思うと、その一行が重い。'}));
+ return original;
+}
+
 function ashRoadPriorityLines(id,original){
  const priority=state.events?.choices?.['early.granzPriority'];
  if(priority==='refugees'&&id==='alpha2.ashroad.homestead')
@@ -134,7 +182,7 @@ function ashRoadPriorityLines(id,original){
    ?{...line,text:'「グランツは補給路が焼かれたと言った。これは農家の荷車を軍が徴発したもの。軍事目標でも、持ち主には暮らしそのものだった」'}:line);
  return original;
 }
-function playEventDialogue(def,after=null){if(!def){after?.();return false}const finish=()=>{if(def.postLines?.length)saySequence(def.postLines,after);else after?.()};const lines=def.id==='alpha.capital.whiteStagNight'?capitalNightEchoLines(def.lines||[]):def.id==='alpha2.capital.granzBriefing'?granzBriefingPlayerLines(def.lines||[]):ashRoadPriorityLines(def.id,def.lines||[]);if(lines?.length)saySequence(lines,finish);else finish();return true}
+function playEventDialogue(def,after=null){if(!def){after?.();return false}const finish=()=>{if(def.postLines?.length)saySequence(def.postLines,after);else after?.()};const lines=def.id==='alpha.capital.whiteStagNight'?capitalNightEchoLines(def.lines||[]):def.id==='alpha2.capital.granzBriefing'?granzBriefingPlayerLines(def.lines||[]):ashRoadFamilyMemoryLines(def.id,ashRoadPriorityLines(def.id,def.lines||[]));if(lines?.length)saySequence(lines,finish);else finish();return true}
 function routeCompanionScene(route){
  const scenes={
   kingdom:{
@@ -393,7 +441,7 @@ function runTriggeredEvent(type,target,context={}){
     : '「墓に立ち止まらなかったことを責めはしない。生存者を守るにも時間は要るからな」';
    say('前線将校',response);return true
  }
- const def=findTriggeredEvent(type,target,context);if(!def)return false;if(def.id==='alpha2.capital.granzBriefing.repeat'){granzPriorityVisit();return true}if(def.id==='alpha.village.appointment'&&GC.RyuneActing?.runAppointment)return GC.RyuneActing.runAppointment(def,context);if(def.id==='alpha.capital.ceremony'&&typeof CapitalActing!=='undefined')return CapitalActing.runCeremony(def,context);GC.Log?.info('Story Event Start',{id:def.id,type,target,map:context.map??state.map});GC.Dev?.noteEvent?.(def.id);const optionalActing=GC.CommercialActing?.openMoment?.(def.id)===true;playEventDialogue(def,()=>{if(optionalActing)GC.CommercialActing?.closeMoment?.(def.id);applyEventEffects(def,context);if(def.id==='alpha2.capital.granzBriefing')return granzPriorityVisit();if(def.postLines?.length===0&&typeof canvas!=='undefined')canvas.focus()});return true}
+ const def=findTriggeredEvent(type,target,context);if(!def)return false;if(def.id==='alpha2.capital.granzBriefing.repeat'){granzPriorityVisit();return true}if(def.id==='alpha2.ashroad.homestead.repeat'){ashRoadHomesteadMemoryVisit();return true}if(def.id==='alpha2.ashroad.refugee.repeat'&&state.events.choices['early.ashroadHeightMarks']==='cleared'){ashRoadRefugeeMemoryVisit();return true}if(def.id==='alpha.village.appointment'&&GC.RyuneActing?.runAppointment)return GC.RyuneActing.runAppointment(def,context);if(def.id==='alpha.capital.ceremony'&&typeof CapitalActing!=='undefined')return CapitalActing.runCeremony(def,context);GC.Log?.info('Story Event Start',{id:def.id,type,target,map:context.map??state.map});GC.Dev?.noteEvent?.(def.id);const optionalActing=GC.CommercialActing?.openMoment?.(def.id)===true;playEventDialogue(def,()=>{if(optionalActing)GC.CommercialActing?.closeMoment?.(def.id);applyEventEffects(def,context);if(def.id==='alpha2.capital.granzBriefing')return granzPriorityVisit();if(def.id==='alpha2.ashroad.homestead')return ashRoadHomesteadMemoryVisit();if(def.id==='alpha2.ashroad.refugee'&&state.events.choices['early.ashroadHeightMarks']==='cleared')return ashRoadRefugeeMemoryVisit();if(def.postLines?.length===0&&typeof canvas!=='undefined')canvas.focus()});return true}
 
 // Early-game choices are local, optional and save-schema-23 compatible.
 // Record a decision only once; all repeated conversations read that same history.
