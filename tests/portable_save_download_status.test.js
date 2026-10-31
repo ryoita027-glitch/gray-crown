@@ -115,3 +115,38 @@ test('unsafe in-memory sessions remain ineligible for portable recovery export',
  assert.equal(calls.filter(x=>x[0]==='blob').length,0);
  assert.equal(calls.filter(x=>x[0]==='click').length,0);
 });
+
+for(const [scenario,postSaveRead] of [
+ ['older valid checkpoint','stale'],
+ ['corrupted checkpoint','malformed']
+]){
+ test('portable export rejects '+scenario+' returned after an acknowledged Save',()=>{
+  const h=createHarness(),s=h.GC.Save;
+  h.evaluate('ALPHA_SESSION.started=true;state.gold=17');
+  const oldCheckpoint=s.serializeSave();
+  h.evaluate('state.gold=654');
+  const unexpected=postSaveRead==='stale'?oldCheckpoint:'{"schema":23';
+  const realSet=h.storage.setItem.bind(h.storage);
+  const realGet=h.storage.getItem.bind(h.storage);
+  let wrotePrimary=false,primaryReadsAfterWrite=0;
+  h.storage.setItem=(key,value)=>{
+   realSet(key,value);
+   if(key===s.SAVE_KEY){wrotePrimary=true;primaryReadsAfterWrite=0}
+  };
+  h.storage.getItem=key=>{
+   if(key===s.SAVE_KEY&&wrotePrimary&&++primaryReadsAfterWrite===2)
+    return unexpected; // Save's first read-back succeeded; export's read is wrong.
+   return realGet(key)
+  };
+  const calls=mockPortableDownload(h);
+  h.context.say=(who,message)=>calls.push(['say',who,message]);
+  assert.equal(s.downloadPortableSave(),true);
+  assert.equal(JSON.parse(calls.find(x=>x[0]==='blob')[1]).gold,654,
+   'download must contain current progress, never stale or corrupted bytes');
+  assert.equal(JSON.parse(realGet(s.SAVE_KEY)).gold,654);
+  assert.match(calls.find(x=>x[0]==='say')[2],/ブラウザ内の保存を確認できませんでした/);
+  assert.match(calls.find(x=>x[0]==='say')[2],/必ず確認・保管/);
+  h.flushTimers();
+  assert.equal(calls.filter(x=>x[0]==='revoke').length,1);
+ });
+}
