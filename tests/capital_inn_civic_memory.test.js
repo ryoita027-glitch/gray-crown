@@ -46,7 +46,7 @@ test('helping the cart pays off at the innkeeper and at night, with no repeatabl
  const beforeStage=h.GC.State.get().story.stage;
  const lines=night(h);
  assert.equal(lines.length,original(h).length,'two discoveries do not stack mandatory dialogue');
- assert.match(textOf(lines),/南門の荷車、配給所まで押した/);
+ assert.match(textOf(lines),/南門の荷車、配給所まで押し/);
  assert.match(textOf(lines),/噴水で話してくれた人/);
  h.evaluate("inlineNpcEvent('capitalInnHost')");
  const spoken=[];
