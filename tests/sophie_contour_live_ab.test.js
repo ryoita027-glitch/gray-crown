@@ -10,7 +10,8 @@ const html=read('index.html').toString('utf8');
 new Function(live);new Function(world);
 assert.equal(html.split('src="js/render/sophie_contour_live_ab.js"').length-1,1);
 for(const p of ['assets/characters/sophie/sophie_walk.png','assets/characters/sophie/studies/sophie_contour_v1_walk.png',
- 'assets/characters/sophie/studies/sophie_v2_handdrawn_walk.png']){
+ 'assets/characters/sophie/studies/sophie_v2_handdrawn_walk.png',
+ 'assets/characters/sophie/studies/sophie_v3_profile_eyes_hold_walk.png']){
  const png=read(p);assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
  assert.equal(png.readUInt32BE(16),288);assert.equal(png.readUInt32BE(20),192);
 }
@@ -40,7 +41,7 @@ function run(mode='stable',query='?gcSophieContour=1'){
   leaderQueue:[],leaderGoal:[5,5],followerQueues:[[],[],[]],raf:0,ambientTimer:null};
  if(mode==='unsettled')v.followers[1][0]=3.2;
  const status={optIn:true,enabled:true,ready:true,originalReady:true,display:44,
-  variant:query.includes('gcSophieContour=2')?2:1};
+  variant:query.includes('gcSophieContour=3')?3:query.includes('gcSophieContour=2')?2:1};
  const trace=[];
  const worldMock={VISUAL:v,sophieContourStudyStatus:()=>({...status}),
   setSophieContourStudy:(value,redraw)=>{status.enabled=value;trace.push('toggle:'+value+':'+redraw)},
@@ -81,10 +82,17 @@ assert.match(v2.gallery[1].download,/_v2_/);
 assert.match(v2.message,/撮影成立/);
 assert.deepEqual(v2.trace.filter(t=>t.startsWith('scene:')),
  ['scene:false:12:24','scene:true:12:24','scene:false:12:24']);
+const v3=run('stable','?gcSophieContour=3');
+assert.equal(v3.status.variant,3);
+assert.match(v3.heading,/V3/);
+assert.match(v3.gallery[1].download,/_v3_/);
+assert.match(v3.message,/撮影成立/);
+assert.deepEqual(v3.trace.filter(t=>t.startsWith('scene:')),
+ ['scene:false:12:24','scene:true:12:24','scene:false:12:24']);
 for(const [mode,reason] of [['drift','再描画'],['same','画素差が0'],['wide','表示範囲'],['unsettled','追従']]){
  const x=run(mode);assert.match(x.message,new RegExp(reason),mode);
  assert.equal(x.gallery.length,0,mode);
 }
 const a=new Uint8ClampedArray(16),b=new Uint8ClampedArray(16);b[4]=1;
 assert.deepEqual(ok.api.pixelDiff(a,b,2,2),{count:1,bounds:{x:1,y:0,w:1,h:1}});
-console.log('PASS: Sophie original/V1/V2 stable A-B-A pixels, 44px diff bounds, drift/visibility/movement guards and restore');
+console.log('PASS: Sophie original/V1/V2/V3 stable A-B-A pixels, 44px diff bounds, drift/visibility/movement guards and restore');
