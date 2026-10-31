@@ -42,6 +42,8 @@ test('the physical sign draws readable city directions',()=>{
 
 test('arrival hint is optional, remembered and does not repeat dialogue',()=>{
  const h=setup();
+ const beforeJournal=h.GC.State.get().journal.length;
+ const beforeStage=h.GC.State.get().story.stage;
  const first=read(h);
  assert.match(first,/中央大通り/);
  assert.equal(h.evaluate("state.events.choices['early.capitalGateGuide']"),'read');
@@ -49,7 +51,8 @@ test('arrival hint is optional, remembered and does not repeat dialogue',()=>{
  const again=read(h);
  assert.match(again,/王城前広場/);
  assert.equal(h.evaluate('dialogueChoices.length'),0);
- assert.equal(h.evaluate('state.journal.length'),h.evaluate('state.journal.length'));
+ assert.equal(h.GC.State.get().journal.length,beforeJournal);
+ assert.equal(h.GC.State.get().story.stage,beforeStage);
  assert.equal(h.GC.Save.save(true),true);
  h.evaluate("delete state.events.choices['early.capitalGateGuide']");
  assert.equal(h.GC.Save.load(true),true);
