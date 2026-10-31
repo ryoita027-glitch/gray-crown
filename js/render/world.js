@@ -610,6 +610,24 @@ function drawObject(o){if(RyuneOutskirts.drawObject(ctx,state.map,o,!!state.worl
   // The tile remains blocked in both states, so Save/Continue cannot alter paths.
   const moved=state.events?.choices?.['early.capitalWagonGuide']==='guided';
   const late=structuredCondition('returnedKingdom');
+  // Two subtle wheel grooves connect the avenue to the optional wagon.
+  // Once guided, they continue north toward the ration queue, making the
+  // player's action legible without a quest arrow or additional dialogue.
+  if(!late){
+   ctx.fillStyle='rgba(103,80,58,.35)';
+   for(const x of [12,13,14]){
+    const ax=x*TILE;
+    ctx.fillRect(ax+4,12*TILE+12,24,2);
+    ctx.fillRect(ax+4,12*TILE+23,24,2);
+   }
+   if(moved){
+    for(let y=8;y<=12;y++){
+     const yy=y*TILE,shift=y%2;
+     ctx.fillRect(15*TILE+8+shift,yy+2,2,28);
+     ctx.fillRect(15*TILE+22+shift,yy+2,2,28);
+    }
+   }
+  }
   ctx.fillStyle='rgba(65,53,43,.3)';ctx.fillRect(px+2,py+27,28,3);
   if(!moved&&!late){
    ctx.fillStyle='#795d42';ctx.fillRect(px+3,py+12,25,12);

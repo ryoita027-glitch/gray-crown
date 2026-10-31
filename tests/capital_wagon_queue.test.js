@@ -56,7 +56,7 @@ test('guiding the wagon is optional, one-time and visually moves supplies',()=>{
  assert.equal(h.evaluate('isBlocked(14,13)'),true,'collision is stable after choice');
  h.evaluate("closeDialogue();inlineObjectEvent('capitalWagonQueue')");
  assert.equal(h.evaluate('dialogueChoices.length'),0);
- assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/車輪の跡だけ/);
+ assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/車輪の跡は噴水の東へ続き/);
  assert.equal(h.GC.State.get().journal.length,before+1);
 });
 
@@ -95,4 +95,22 @@ test('Continue preserves delivery, and the late-war scene takes priority',()=>{
  assert.equal(hasColor(cartPixels(h),'#b6a077'),false,'early delivery is not frozen into late-war city');
  h.evaluate("closeDialogue();inlineNpcEvent('rationMother')");
  assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/息子は前線から戻りました/);
+});
+
+test('wheel ruts make the optional cart discoverable and its destination traceable',()=>{
+ const h=setup();
+ const hasRect=(rects,color,x,y)=>rects.some(r=>r[0]===color&&r[1]===x&&r[2]===y);
+ const before=cartPixels(h),rut='rgba(103,80,58,.35)';
+ assert.equal(hasRect(before,rut,12*32+4,12*32+12),true,'ruts begin on main avenue');
+ assert.equal(hasRect(before,rut,15*32+9,9*32+2),false,'delivery route not yet present');
+ h.evaluate("inlineObjectEvent('capitalWagonQueue')");
+ assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/噴水の東の配給所/);
+ choice(h,0);
+ const delivered=cartPixels(h);
+ assert.equal(hasRect(delivered,rut,15*32+9,9*32+2),true,'ruts reach ration lane');
+ for(let y=8;y<=12;y++)assert.equal(h.evaluate(`isBlocked(15,${y})`),false,'visible delivery path stays walkable');
+ h.evaluate("setStructuredCondition('returnedKingdom',true)");
+ const later=cartPixels(h);
+ assert.equal(hasColor(later,rut),false,'early route does not overwrite the late-war city');
+ assert.equal(hasColor(later,'#b6a077'),false,'early produce no longer appears');
 });

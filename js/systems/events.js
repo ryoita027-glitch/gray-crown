@@ -640,11 +640,11 @@ function northRoadVistaVisit(){
 function capitalWagonQueueVisit(){
  const key='early.capitalWagonGuide';
  if(structuredCondition('returnedKingdom'))return say('南門の荷車跡','石畳には古い轍が残る。あの頃の配給列とは、もう違う人々がここを行き来している。');
- if(state.events.choices[key]==='guided')return say('南門の荷車跡','荷車は配給所へ移った。南門脇には車輪の跡だけが残っている。');
+ if(state.events.choices[key]==='guided')return say('南門の荷車跡','荷車は配給所へ移った。車輪の跡は噴水の東へ続き、南門脇には荷車がない。');
  const seen=state.events.choices['early.northroadVista']==='seen';
  return say('ナレーション',seen
-  ?'旧街道から見えた荷車の列の一台が、南門脇で止まっている。近郊の野菜を積んだ荷車番が道を探している。'
-  :'南門脇で近郊の野菜を積んだ荷車が止まっている。荷車番は配給所への道を探している。',[
+  ?'旧街道から見えた荷車の列の一台が、南門脇で止まっている。荷車番が「噴水の東の配給所はどっちだ？」と尋ねた。'
+  :'南門脇で近郊の野菜を積んだ荷車が止まっている。荷車番が「噴水の東の配給所はどっちだ？」と尋ねた。',[
   {label:'配給所への道を教え、荷車を一緒に押す',fn:()=>{
    if(state.events.choices[key]==='guided')return capitalWagonQueueVisit();
    state.events.choices[key]='guided';
