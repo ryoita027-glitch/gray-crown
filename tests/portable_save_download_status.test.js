@@ -352,3 +352,48 @@ test('previous-adventure restore warns about unsaved live progress and cancellat
  assert.equal(h.storage.getItem(s.SAVE_KEY),null);
  assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),null);
 });
+
+test('portable import rejects malformed story/world containers before asking to replace progress',async()=>{
+ for(const field of ['story','world']){
+  const h=createHarness(),s=h.GC.Save;
+  h.evaluate('ALPHA_SESSION.started=true;state.gold=777');
+  assert.equal(s.save(true),true);
+  const before=[...h.storage.data],live=JSON.stringify(h.GC.State.get());
+  const payload=JSON.parse(s.serializeSave());
+  payload[field]=[];
+  const raw=JSON.stringify(payload);
+  let confirmations=0;
+  const messages=[];
+  h.context.confirm=()=>{confirmations++;return true};
+  h.context.say=(_who,message)=>messages.push(message);
+  assert.equal(await s.readPortableSaveFile({size:raw.length,text:async()=>raw}),false,field);
+  assert.equal(confirmations,0,field+' must be rejected before confirmation');
+  assert.deepEqual([...h.storage.data],before,field+' must not change save slots');
+  assert.equal(JSON.stringify(h.GC.State.get()),live,field+' must not change live progress');
+  assert.match(messages.at(-1),/有効なGray Crownセーブではありません/);
+ }
+});
+
+test('migration falls back to village for inherited Object property map names',()=>{
+ const h=createHarness(),s=h.GC.Save;
+ for(const invalidMap of ['constructor','toString','__proto__']){
+  const payload=JSON.parse(s.serializeSave());
+  payload.map=invalidMap;
+  assert.equal(s.migrateLoaded(JSON.stringify(payload)).map,'village',invalidMap);
+ }
+});
+
+test('portable file import rejects inherited map names before overwrite confirmation',async()=>{
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=778');
+ assert.equal(s.save(true),true);
+ const before=[...h.storage.data];
+ const payload=JSON.parse(s.serializeSave());
+ payload.map='constructor';
+ const raw=JSON.stringify(payload);
+ let confirmations=0;
+ h.context.confirm=()=>{confirmations++;return true};
+ assert.equal(await s.readPortableSaveFile({size:raw.length,text:async()=>raw}),false);
+ assert.equal(confirmations,0);
+ assert.deepEqual([...h.storage.data],before);
+});
