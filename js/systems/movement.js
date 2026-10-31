@@ -103,7 +103,25 @@ function enterBorderland(source='frontier'){
  travelScene('borderland',11,13,'up','第三章 — 第一の四天王','まず偵察兵から国境地帯の状況を聞く','前線を離れて半日。道は旧関所跡で枝分かれし、その先に小さな宿場の煙が見える。ここからは「北へ歩けば次の場所」ではない。国境を越える準備が必要だ。');
 }
 function enterRelay(){enterBorderland()}
-function enterWatchfort(){markVisited('watchfort',true);travelScene('watchfort',11,13,'up','第三章 — 第一の四天王','砦長から国境橋の状況を聞く','翌朝。ハルムを出た四人は、王国最後の常設拠点ベルド砦へ着く。砦の北門の向こうはそのままラゼル峡谷の橋へ続いている。')}
+// A return trip must not replay the morning arrival or erase the fort's actual task.
+function watchfortNextObjective(){
+ if(!structuredCondition('fortBriefed'))return '砦長から国境橋の状況を聞く';
+ if(!structuredCondition('fortMapSeen'))return '西の作戦図を調べて、国境橋の位置を確認する';
+ if(!structuredCondition('fortGateOpen'))return '砦長へ戻り、北門を開けてもらう';
+ if(!structuredCondition('metKlein'))return '開いた北門を抜け、ラゼル峡谷橋へ出る';
+ return '北側の道から帝国領へ進む';
+}
+function enterWatchfort(){
+ if(hasVisited('watchfort')){
+  setMap('watchfort',11,13,'up',[[12,13],[13,13],[14,13]]);
+  state.chapter='第三章 — 第一の四天王';
+  state.story.objective=watchfortNextObjective();
+  renderHud();
+  return;
+ }
+ markVisited('watchfort',true);
+ travelScene('watchfort',11,13,'up','第三章 — 第一の四天王','砦長から国境橋の状況を聞く','翌朝。ハルムを出た四人は、王国最後の常設拠点ベルド砦へ着く。砦の北門の向こうはそのままラゼル峡谷の橋へ続いている。');
+}
 function enterRavine(){enterWatchfort()}
 function enterEmpireVillage(){setWorldSwitch('strandedEmpire',true);markVisited('empirevillage',true);travelScene('empirevillage',11,13,'up','第四章 — 敵国','身分を隠して帝国領を北へ進む','渓谷橋の崩落で四人は帝国側へ取り残された。長い国境地帯を越えた先で、ようやく最初の帝国村が見えた。そこで目にしたのは「魔王軍の巣」ではなく、水車と果樹畑、そして青い喪章だった。')}
 function enterImperialCity(){markVisited('imperialcity',true);travelScene('imperialcity',11,13,'up','第四章 — 敵国','帝国の町で情報を集める','辺境村で何度も目にした「ユウキ」という名を確かめるため、四人は地方都市の公文書館を目指す。市場も運河も役所もある。ここは敵の本拠地である前に、人が暮らす国だった。')}
@@ -210,7 +228,7 @@ function move(dir){if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started
  if(state.map==='frontierfield'&&ny>=15&&[11,12].includes(nx)){returnFrontierFromField();return}
  if(state.map==='frontierfield'&&ny<0&&[11,12].includes(nx)){say('マーガレット',isEventComplete('alpha2.frontier2.complete')?'「旧関所へはセラド北防壁から行ける。ここは調査済みよ。前線の道を使いましょう」':'「任務は戦闘跡の確認まで。これ以上北へ進む前に、残った痕跡を調べてセラドへ報告しましょう」');return}
  if(state.map==='borderland'&&ny>=15&&[11,12].includes(nx)){enterFrontier('borderland');return}
- if(state.map==='borderland'&&ny<0&&[11,12].includes(nx)){if(!(isEventComplete('borderBriefed')&&isEventComplete('borderMerchantHelped')&&isEventComplete('borderRested'))){say('カレン','「まだここでやることがある。偵察兵、足止めされた商人、それから今夜の休息……全部済ませてから進もう」');return}enterWatchfort();return}
+ if(state.map==='borderland'&&ny<0&&[11,12].includes(nx)){if(!(isEventComplete('borderBriefed')&&isEventComplete('borderMerchantHelped')&&isEventComplete('borderRested'))){const next=borderlandNextObjective();state.story.objective=next;renderHud();say('マーガレット','「この先はベルド砦。まずは'+next+'。終わったらこの北門から進みましょう」');return}enterWatchfort();return}
  if(state.map==='relayvillage'&&ny>=15&&[11,12].includes(nx)){enterBorderland('relayvillage');return}
  if(state.map==='relayvillage'&&ny<0&&[11,12].includes(nx)){enterWatchfort();return}
  if(state.map==='watchfort'&&ny>=15&&[11,12].includes(nx)){enterBorderland('watchfort');return}
