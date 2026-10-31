@@ -27,9 +27,25 @@ function heroAlphaFootline(image){
  }catch(_){return 44}
 }
 const HERO_RUNTIME={frameW:48,frameH:48,display:heroDisplayStudySize(),anchor:[24,44],directions:{down:0,left:1,right:2,up:3},images:{}};
+// Reversible Sophie V1 source-PNG art trial. It is never active in the normal game.
+const SOPHIE_CONTOUR_STUDY={
+ optIn:typeof window!=='undefined'&&/(?:^|[?&])gcSophieContour=1(?:&|$)/.test(window.location.search||''),
+ enabled:false,ready:false,error:false,image:null
+};
+SOPHIE_CONTOUR_STUDY.enabled=SOPHIE_CONTOUR_STUDY.optIn;
 if(typeof Image!=='undefined'){
  const fallback=new Image();HERO_SPRITES.image=fallback;fallback.onload=()=>{HERO_SPRITES.ready=true};fallback.onerror=()=>{HERO_SPRITES.ready=false};fallback.src='assets/hero_party_walk.png';
  for(const id of Object.keys(HERO_SPRITES.characters)){const rec={image:new Image(),ready:false,error:false};rec.image.onload=()=>{rec.ready=true;rec.error=false;rec.footline=HERO_FOOTLINE_ALPHA_STUDY?heroAlphaFootline(rec.image):44;rec.face44Image=typeof HeroFacePriority44!=='undefined'&&HeroFacePriority44.enabled()?HeroFacePriority44.makeCandidate(rec.image):null;rec.face44FeetImage=typeof HeroFacePriority44!=='undefined'&&HeroFacePriority44.enabled()?HeroFacePriority44.makeCandidate(rec.image,'feet'):null;if(id==='margaret'&&typeof MargaretSilverStudy!=='undefined'&&MargaretSilverStudy.enabled())rec.studyImage=MargaretSilverStudy.makeCandidate(rec.image)};rec.image.onerror=()=>{rec.ready=false;rec.error=true};rec.image.src='assets/characters/'+id+'/'+id+'_walk.png';HERO_RUNTIME.images[id]=rec}
+ if(SOPHIE_CONTOUR_STUDY.optIn){
+  const candidate=new Image();
+  SOPHIE_CONTOUR_STUDY.image=candidate;
+  candidate.onload=()=>{
+   SOPHIE_CONTOUR_STUDY.ready=candidate.naturalWidth===288&&candidate.naturalHeight===192;
+   SOPHIE_CONTOUR_STUDY.error=!SOPHIE_CONTOUR_STUDY.ready;
+  };
+  candidate.onerror=()=>{SOPHIE_CONTOUR_STUDY.ready=false;SOPHIE_CONTOUR_STUDY.error=true};
+  candidate.src='assets/characters/sophie/studies/sophie_contour_v1_walk.png';
+ }
 }
 function heroWalkFrame(motion){if(!motion)return 0;const cycle=[0,1,2,3,4,5,4,3,2,1];return cycle[Math.floor(motion)%cycle.length]}
 function drawHeroMarker(cx,topY){ctx.fillStyle='#f0d178';ctx.beginPath();ctx.moveTo(cx,topY-3);ctx.lineTo(cx+5,topY-9);ctx.lineTo(cx,topY-14);ctx.lineTo(cx-5,topY-9);ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(66,46,20,.86)';ctx.lineWidth=1;ctx.stroke()}
@@ -41,13 +57,25 @@ function drawHeroSpriteSheet(x,y,heroId,leader,facing,motion){
   ctx.save();ctx.fillStyle='rgba(16,18,18,.28)';ctx.beginPath();ctx.ellipse(footX,footY-1,10*size/44,4*size/44,0,0,Math.PI*2);ctx.fill();ctx.imageSmoothingEnabled=false;
   const face44=HERO_RUNTIME.display===44&&rec.face44Image&&typeof HeroFacePriority44!=='undefined'&&HeroFacePriority44.active();
   const foot44=face44&&rec.face44FeetImage&&HeroFacePriority44.feetActive();
-  const art=foot44?rec.face44FeetImage:face44?rec.face44Image:(heroId==='margaret'&&typeof MargaretSilverStudy!=='undefined'&&MargaretSilverStudy.active()?(rec.studyImage||rec.image):rec.image);
+  const sophieTrial=heroId==='sophie'&&SOPHIE_CONTOUR_STUDY.optIn&&SOPHIE_CONTOUR_STUDY.enabled&&SOPHIE_CONTOUR_STUDY.ready&&!face44;
+  const art=sophieTrial?SOPHIE_CONTOUR_STUDY.image:foot44?rec.face44FeetImage:face44?rec.face44Image:(heroId==='margaret'&&typeof MargaretSilverStudy!=='undefined'&&MargaretSilverStudy.active()?(rec.studyImage||rec.image):rec.image);
   const cell=face44?44:48;ctx.drawImage(art,frame*cell,row*cell,cell,cell,dx,dy,size,size);ctx.restore();
   if(leader)drawHeroMarker(footX,dy);return true
  }
  const cfg=HERO_SPRITES;if(!cfg.ready||!cfg.image||cfg.characters[heroId]===undefined)return false;
  const fallbackFrame=motion?[0,1,2,1][Math.floor(motion)%4]:1,fallbackRow=cfg.characters[heroId]*4+(cfg.directions[facing]??0);
  ctx.save();ctx.imageSmoothingEnabled=false;ctx.drawImage(cfg.image,fallbackFrame*32,fallbackRow*32,32,32,px,py,32,32);ctx.restore();if(leader)drawHeroMarker(px+16,py);return true
+}
+function sophieContourStudyStatus(){
+ return {optIn:SOPHIE_CONTOUR_STUDY.optIn,enabled:SOPHIE_CONTOUR_STUDY.enabled,
+  ready:SOPHIE_CONTOUR_STUDY.ready,error:SOPHIE_CONTOUR_STUDY.error,
+  originalReady:!!HERO_RUNTIME.images.sophie?.ready,display:HERO_RUNTIME.display};
+}
+function setSophieContourStudy(value,redraw=true){
+ if(!SOPHIE_CONTOUR_STUDY.optIn)return false;
+ SOPHIE_CONTOUR_STUDY.enabled=!!value;
+ if(redraw)draw();
+ return true
 }
 function heroFaceStudyStatus(){const ids=Object.keys(HERO_SPRITES.characters);return {ready:ids.every(id=>!!HERO_RUNTIME.images[id]?.face44Image&&!!HERO_RUNTIME.images[id]?.face44FeetImage),display:HERO_RUNTIME.display,active:typeof HeroFacePriority44!=='undefined'&&HeroFacePriority44.active(),feet:typeof HeroFacePriority44!=='undefined'&&HeroFacePriority44.feetActive()}}
 function heroFaceStudyAtlas(id,variant='face'){const rec=HERO_RUNTIME.images[id];return (variant==='feet'?rec?.face44FeetImage:rec?.face44Image)||null}
@@ -757,4 +785,4 @@ function drawScene(){
 }
 function draw(){clearTimeout(VISUAL.ambientTimer);cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene);GC.MobileCamera?.update?.()}
 
-GC.Render=GC.Render||{};GC.Render.World={draw,drawScene,renderHud:()=>renderHud(),VISUAL,drawCharacterSprite,drawHeroSpriteSheet,heroRuntimeStatus,heroFaceStudyStatus,heroFaceStudyAtlas,drawPartyRuntime,heroVisualStudyStatus,setHeroDisplayStudySize,setHeroFootlineStudy};
+GC.Render=GC.Render||{};GC.Render.World={draw,drawScene,renderHud:()=>renderHud(),VISUAL,drawCharacterSprite,drawHeroSpriteSheet,heroRuntimeStatus,heroFaceStudyStatus,heroFaceStudyAtlas,drawPartyRuntime,heroVisualStudyStatus,setHeroDisplayStudySize,setHeroFootlineStudy,sophieContourStudyStatus,setSophieContourStudy};
