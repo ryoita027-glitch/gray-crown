@@ -20,7 +20,7 @@
 - **Unverified:** Japanese review sampling, quantitative preference, actual first-time players' response, 44px readability and human testing.
 
 ## Validation / acceptance
-- The changed JavaScript and new Node test were parsed by V8 before upload.
+- The changed JavaScript and new Node test were parsed by V8. Four isolated runtime dialogue checks passed: no offer/before night, offer/before night, offer/after night, no offer/after night. The existing 24×15 interior floor and obstacle coordinates were also reviewed; this is not a browser collision test.
 - The new Node harness test covers the entrance-to-mother route, interaction before/after offering, no inventory reward, Save/Continue, next morning, skipping, and late-war hiding. **Node test itself and full `npm run check` have not run** because the private GitHub repository cannot be cloned from the isolated local runtime.
 - Still required: actual browser playthrough and Save/Continue integration; verify family silhouette at 44px, interaction radius, room-night transition, whether the mother and notice feel redundant, and whether the scene becomes overly sentimental.
 - Keep Draft. Do not merge into main before parent #176 and all stacked dependencies are reconciled and browser acceptance passes.
