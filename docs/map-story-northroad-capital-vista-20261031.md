@@ -1,0 +1,23 @@
+# 2026-10-31 — First sight of Aldina from the old north road (11:41 JST)
+
+## Baseline and scope
+- Private repository `ryoita027-glitch/gray-crown`; checked main HEAD `d689aabb5146c9f45466a4f74f397e664c08fb4f`, Draft PR #161 HEAD `bbcb77db66c480228e11300896699a212f1adecc`, and the open map/story stack #146 → #153 → #155 → #157 → #159 → #161. This work branches from **#161**, not main, and must not be merged independently. Visual-art and save-system PRs remain separate; PR #98 is frozen.
+- Existing `northroad` is a 15-row north/south corridor, with a west waystone and an east scout layby. Its old-road stretch has no visible distant Aldina, although it leads directly to the city. Use existing east layby (13,5) without adding a map area or blocking the corridor.
+- No new enemies, loot, economy/karma, NPCs, story gate, Save v23 schema change, or mandatory cutscene. The optional vista uses the existing `state.events.choices` save dictionary.
+
+## External player signals — verified 2026-10-31 JST
+- **Observed individual Steam reviews, not a representative survey:** [Chained Echoes, Steam reviews](https://steamcommunity.com/app/1229240/reviews/) — Oct 29 reviewer describes repeated searching for an inconspicuous door; Oct 28 reviewer praises exploration and environmental detail but says characters lack meaningful agency; Oct 24 reviewer criticizes excessive exposition and indistinct character voices. The positive Oct 28 review also praises small details and world discovery.
+- **Design guidance, not market proof:** [4Gamer's Japanese report of GDC 2025 talk](https://www.4gamer.net/games/512/G051218/20250319025/) describes pacing discoveries, reusing locations in new contexts, and player-driven environmental storytelling. Its suggested timing heuristics are not a validated universal rule for this short 2D JRPG.
+- **Inference:** a readable silhouette of the destination and a voluntary, concise character exchange should make the last old-road segment feel like an approach to a living capital rather than a blank transition. No reviewed game's location, scenario, characters, text or unique mechanics are copied. **Not yet verified by players.**
+
+## Implemented player experience
+1. The old road's **existing east layby** now ends at a low stone lookout (13,5). A distant white Aldina wall, towers, red banner and a tiny wagon queue are painted on non-walkable northeast grass. The ordinary adjacent interaction marker indicates the slab; no fake doorway or pickup cue.
+2. An optional first inspection shows the city and the queue, then gives Karen's wonder, Triton's practical observation, Sophie's hope for village food, and Margaret's reminder to separate observation from official claims. One journal note records what was **seen**, not a plot revelation. Walking straight north skips it without cost.
+3. Revisiting gives one short geographical line. If the party returns after the capital ceremony, the view gains a changed emotional context without repeating the original dialogue; first-time post-ceremony visitors get an appropriate shorter variant.
+4. Added `tests/northroad_capital_vista.test.js` for reachable corridor and layby, optional discovery/revisit, post-ceremony response, actual render calls, and Save/Continue persistence.
+
+## Acceptance and limitations
+- **Executed against re-fetched committed source:** 10/10 isolated V8 checks passed (first five-character dialogue sequence, one-time journal and unchanged inventory, concise revisit, post-ceremony first visit/revisit, 15×24 map and layby geometry, south-to-north BFS with a reachable interaction tile, actual skyline/flag and stone renderer calls, off-route skyline bounds). These execute the extracted real functions with mocks, **not** the full Node harness or Chromium game. V8 syntax compilation passed for all three edited game scripts and the new test file.
+- The new visual and interaction still need **real Chromium native-scale inspection** and a **complete Node test run** at the exact final commit. The local private-repository checkout currently cannot resolve github.com, and no paid/hosted Actions minutes were consumed.
+- Player walkthrough hypothesis: from south entrance, pass the west waystone, notice a white skyline to the northeast, optionally inspect the lookout, then proceed north to the scout and city. Verify that the silhouette reads as distant (not a traversable castle), the stone is not mistaken for a treasure, the detour is under ~10 seconds, and the dialogue does not slow the main path.
+- **Unverified:** full Node regression, `npm run check`, actual Chromium walk, save reload integration, collision perception at 44px, human playtest. Keep Draft/HOLD; no main merge.
