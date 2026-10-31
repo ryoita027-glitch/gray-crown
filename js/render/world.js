@@ -2,12 +2,11 @@
 const COLORS={grass:'#6f8059',grass2:'#62724f',path:'#b49a6c',tree:'#496345',trunk:'#6c513c',gold:'#c9aa61',skin:'#ddb99e',shadow:'rgba(0,0,0,.22)',cave:'#3c3b41'};
 const HERO_SPRITES={image:null,ready:false,frameW:32,frameH:32,columns:3,directions:{down:0,left:1,right:2,up:3},characters:{karen:0,triton:1,sophie:2,margaret:3}};
 const HERO_RUNTIME={frameW:48,frameH:48,display:44,anchor:[24,44],directions:{down:0,left:1,right:2,up:3},images:{}};
-// Art-only trial: Margaret's actual walk-frame shoe line is y45–46; the shared y44 anchor
-// leaves her visible shoe pixels below the existing ground-contact shadow at Medium44.
-// Do not change the locked source PNGs or the other three heroes' anchor positions.
-const HERO_FOOT_ANCHOR_Y=Object.freeze({margaret:46});
+// Art-only trial: use the same authored pose anchor for field walking and dialogue.
+// Margaret's source shoe line is y45–46; other heroes retain y44. Do not alter PNGs.
 function heroGroundedOrigin(footX,footY,heroId,size){
- const scale=size/HERO_RUNTIME.frameW,anchorY=HERO_FOOT_ANCHOR_Y[heroId]??HERO_RUNTIME.anchor[1];
+ const poseAnchor=GC.Data?.Animations?.definitions?.[heroId]?.walk?.anchor;
+ const scale=size/HERO_RUNTIME.frameW,anchorY=Array.isArray(poseAnchor)?poseAnchor[1]:HERO_RUNTIME.anchor[1];
  return {dx:Math.round(footX-HERO_RUNTIME.anchor[0]*scale),dy:Math.round(footY-anchorY*scale)}
 }
 if(typeof Image!=='undefined'){
