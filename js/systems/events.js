@@ -32,7 +32,27 @@ function applyEventEffect(effect,context={}){
  }
 }
 function applyEventEffects(def,context={}){for(const effect of def?.effects||[])applyEventEffect(effect,context);if(def?.id)GC.Log?.info('Story Event Effects',{id:def.id,stage:state.story.stage,context});GC.Dev?.noteEvent?.(def?.id||null);GC.Dev?.refresh?.();return def}
-function playEventDialogue(def,after=null){if(!def){after?.();return false}const finish=()=>{if(def.postLines?.length)saySequence(def.postLines,after);else after?.()};if(def.lines?.length)saySequence(def.lines,finish);else finish();return true}
+// A player's voluntary street encounters must not be overwritten by the
+// canonical first night. Derive the scene at playback; never mutate EVENT_DEFS
+// or introduce a Save v23 field. Untouched routes keep the original pacing.
+function capitalNightEchoLines(original){
+ const choices=state.events?.choices||{};
+ const sawQueue=isEventComplete('early.capitalRationIntro');
+ const guided=choices['early.capitalWagonGuide']==='guided';
+ const perspective=choices['early.capitalFountainPerspective'];
+ const lines=original.map(line=>
+  line.speaker==='マーガレット'&&line.text.includes('でも市場には配給の列があった')&&!sawQueue
+   ?{...line,text:'「私も花を見て少し嬉しかった。でも、この街を式だけで知った気にはなれないの」'}
+   :line);
+ const at=lines.findIndex(line=>line.speaker==='ソフィ'&&line.text.includes('王都にも苦しい人はいる'));
+ if(at<0)return lines;
+ const echo=[];
+ if(guided)echo.push({speaker:'トリトン',text:'「南門の荷車、配給所まで押しただろ。あれ一台で全部足りるわけじゃない。でも、今夜の食事にはなるといいな」'});
+ if(perspective==='asked')echo.push({speaker:'カレン',text:'「噴水で話してくれた人がいた。勝つことだけじゃなくて、明日の食事と、帰ってくる人のことも考えてた」'});
+ else if(perspective==='observed')echo.push({speaker:'マーガレット',text:'「噴水で見たポスターと配給列、どちらもこの街の本当の姿よ。片方だけで決めつけないようにしたい」'});
+ return [...lines.slice(0,at),...echo,...lines.slice(at)];
+}
+function playEventDialogue(def,after=null){if(!def){after?.();return false}const finish=()=>{if(def.postLines?.length)saySequence(def.postLines,after);else after?.()};const lines=def.id==='alpha.capital.whiteStagNight'?capitalNightEchoLines(def.lines||[]):def.lines;if(lines?.length)saySequence(lines,finish);else finish();return true}
 function routeCompanionScene(route){
  const scenes={
   kingdom:{
@@ -804,7 +824,7 @@ function inlineNpcEvent(id){
   if(id==='soldierSister')return say('兵士の妹・ユナ','「兄さんからの手紙、三か月来てないの。でも母さんの前では心配してないふりしてる」')
  }
  if(state.map==='capitalinn'){
-  if(id==='capitalInnHost')return structuredCondition('capitalFirstNight')?say('白鹿亭の女将','「二度目からは普通のお客だよ。休むなら帳場で24G。勇者だからって宿の薪が無料になるわけじゃないからね」'):saySequence([{speaker:'白鹿亭の女将',text:'「勇者様でも宿代は取るよ。……と言いたいところだけど、今夜だけは軍持ちだそうだ」'},{speaker:'トリトン',text:'「勇者って初めて得したかも」'},{speaker:'白鹿亭の女将',text:'「前線から戻れたら、その時は自分の金で泊まりな。帰ってきた客から取る金が一番うれしいんだ」'}])
+  if(id==='capitalInnHost')return structuredCondition('capitalFirstNight')?say('白鹿亭の女将','「二度目からは普通のお客だよ。休むなら帳場で24G。勇者だからって宿の薪が無料になるわけじゃないからね」'):saySequence([{speaker:'白鹿亭の女将',text:'「勇者様でも宿代は取るよ。……と言いたいところだけど、今夜だけは軍持ちだそうだ」'},{speaker:'トリトン',text:'「勇者って初めて得したかも」'},{speaker:'白鹿亭の女将',text:'「前線から戻れたら、その時は自分の金で泊まりな。帰ってきた客から取る金が一番うれしいんだ」'}].concat(!structuredCondition('returnedKingdom')&&state.events.choices['early.capitalWagonGuide']==='guided'?[{speaker:'白鹿亭の女将',text:'「南門の荷車、あんたたちが押したんだって？　配給所から今夜の野菜が届いたよ。全部は変わらないけど、助かった」'}]:[]))
   if(id==='offDutySoldier')return say('非番の王国兵','「明日また灰の街道へ戻る。勇者様を見たら安心すると思ってたけど……あんたらも緊張してるんだな。少し安心したよ」')
  }
  if(state.map==='capitalarmory'){
