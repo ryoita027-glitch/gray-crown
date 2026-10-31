@@ -9,6 +9,9 @@ const SAVE_SCHEMA=23;
 // A committed import may need a page refresh if nonessential presentation fails.
 let lastLoadPresentationFailed=false;
 let lastImportPresentationFailed=false;
+// Only promise that an old primary was backed up after its write was verified.
+let lastImportBackupRotated=false;
+let lastPortableExportNeedsManualBackup=false;
 function safeNumber(v,fallback,min=-Infinity,max=Infinity){return Number.isFinite(v)?Math.max(min,Math.min(max,v)):fallback}
 function nearestSafeTile(mapId,x,y,saveState=state){
  const m=maps[mapId];if(!m)return[11,13];
@@ -279,9 +282,31 @@ function load(silent=false){
 // Portable JSON is necessary for player ZIP/file:// releases: browser
 // localStorage belongs to the specific browser/origin, not the game folder.
 function exportPortableSaveText(){
- if(!save(true))return null;
- try{return localStorage.getItem(SAVE_KEY)}
- catch(e){GC.Log?.error('Portable save export read failed',{error:String(e)});return null}
+ lastPortableExportNeedsManualBackup=false;
+ // Never export an in-progress battle, event or developer-tainted session.
+ if(!canPersistNow('save'))return null;
+ if(save(true)){
+  try{
+   const stored=localStorage.getItem(SAVE_KEY);
+   // Storage may expose stale/corrupt bytes after Save acknowledged its write.
+   // Only export the exact current checkpoint after structural validation.
+   if(stored&&stored===serializeSave()&&isUsableSavedAdventure(stored))return stored;
+   GC.Log?.warn?.('Portable save read-back mismatch; using validated live snapshot');
+  }catch(e){GC.Log?.warn?.('Portable save export read failed',{error:String(e)})}
+ }
+ // Quota denial or blocked localStorage must not strand the player's current
+ // progress. A validated, in-memory JSON download can still be rescued without
+ // modifying any existing browser save or corrupt recovery bytes.
+ try{
+  const raw=serializeSave();
+  if(!isUsableSavedAdventure(raw))return null;
+  lastPortableExportNeedsManualBackup=true;
+  GC.Log?.warn?.('Portable save is an unverified in-memory recovery export');
+  return raw
+ }catch(e){
+  GC.Log?.error?.('Portable save in-memory recovery export failed',{error:String(e)});
+  return null
+ }
 }
 function downloadPortableSave(){
  const raw=exportPortableSaveText();
@@ -311,7 +336,9 @@ function downloadPortableSave(){
   notifySaveStatus('セーブの書き出しに失敗しました。ブラウザのダウンロード設定を確認してください。');
   return false
  }
- notifySaveStatus('セーブの書き出しを開始しました。ブラウザのダウンロード一覧で保存を確認してください。別のPCで遊ぶ時は「セーブを読み込む」を使ってください。');
+ notifySaveStatus(lastPortableExportNeedsManualBackup?
+  'ブラウザ内の保存を確認できませんでしたが、現在の冒険のJSON書き出しを開始しました。ダウンロード一覧でファイルを必ず確認・保管してください。復旧時は「セーブを読み込む」を使ってください。':
+  'セーブの書き出しを開始しました。ブラウザのダウンロード一覧で保存を確認してください。別のPCで遊ぶ時は「セーブを読み込む」を使ってください。');
  return true
 }
 // Portable import must not erase unreadable old slots. Preserve their exact
@@ -338,15 +365,12 @@ function preserveInvalidSaveSlotsBeforeWrite(primary,backup,
   return false
  }
 }
-function importPortableSaveText(raw){
- lastImportPresentationFailed=false;
- // Strict structural gate before migration: a generic JSON is not a valid save.
- // Supports real earlier-version saves, but never silently imports future schema.
- if(typeof raw!=='string'||raw.length>2*1024*1024) return false;
- if(!canPersistNow('load'))return false;
- let parsed,loaded;
+// Share the exact import validation with the file picker. Invalid files must
+// never request permission to replace a player's current checkpoint.
+function preparePortableSaveText(raw){
+ if(typeof raw!=='string'||raw.length>2*1024*1024)return null;
  try{
-  parsed=JSON.parse(raw);
+  const parsed=JSON.parse(raw);
   const canonical=createGameState().party;
   const expected=['karen','triton','sophie','margaret'];
   if(!parsed||!Number.isInteger(parsed.schema)||parsed.schema<1||parsed.schema>SAVE_SCHEMA||
@@ -355,9 +379,16 @@ function importPortableSaveText(raw){
      Object.keys(parsed.inventory).some(id=>!Object.hasOwn(ITEM_DEFS,id))||
      !Array.isArray(parsed.party)||parsed.party.length!==4||
      !parsed.party.every((p,i)=>p&&p.id===expected[i]&&p.name===canonical[i].name&&p.job===canonical[i].job)||
-     !maps[parsed.map])return false;
-  loaded=migrateLoaded(raw);
- }catch(e){GC.Log?.warn('Portable save validation failed',{error:String(e)});return false}
+     !maps[parsed.map])return null;
+  return migrateLoaded(raw);
+ }catch(e){GC.Log?.warn?.('Portable save validation failed',{error:String(e)});return null}
+}
+function importPortableSaveText(raw){
+ lastImportPresentationFailed=false;
+ lastImportBackupRotated=false;
+ if(!canPersistNow('load'))return false;
+ const loaded=preparePortableSaveText(raw);
+ if(!loaded)return false;
  let primary,backup;
  try{primary=localStorage.getItem(SAVE_KEY);backup=localStorage.getItem(SAVE_BACKUP_KEY)}
  catch(e){GC.Log?.error('Portable save import storage read failed',{error:String(e)});return false}
@@ -377,6 +408,7 @@ function importPortableSaveText(raw){
   if(primaryUsable&&primary!==payload){
    localStorage.setItem(SAVE_BACKUP_KEY,primary);
    if(localStorage.getItem(SAVE_BACKUP_KEY)!==primary)throw new Error('Portable import backup write not persisted');
+   lastImportBackupRotated=true;
   }else if(!backupUsable){
    localStorage.setItem(SAVE_BACKUP_KEY,payload);
    if(localStorage.getItem(SAVE_BACKUP_KEY)!==payload)throw new Error('Portable import backup write not persisted');
@@ -403,6 +435,22 @@ async function readPortableSaveFile(file){
  if(!canPersistNow('load')){
   notifySaveStatus('戦闘やイベントの途中ではセーブを読み込めません。');return false
  }
+ // Read and validate before prompting. A malformed file cannot replace a save,
+ // and an async read must not use a stale pre-read permission or slot snapshot.
+ let raw;
+ try{raw=await file.text()}
+ catch(e){
+  GC.Log?.error?.('Portable save file read failed',{error:String(e)});
+  notifySaveStatus('セーブファイルを読み取れませんでした。別のファイルを選んでください。');
+  return false
+ }
+ if(!preparePortableSaveText(raw)){
+  notifySaveStatus('選んだファイルは有効なGray Crownセーブではありません。現在のセーブは変更していません。');
+  return false
+ }
+ if(!canPersistNow('load')){
+  notifySaveStatus('戦闘やイベントの途中ではセーブを読み込めません。');return false
+ }
  let priorPrimary,priorBackup;
  try{
   priorPrimary=localStorage.getItem(SAVE_KEY);
@@ -416,17 +464,19 @@ async function readPortableSaveFile(file){
  const hadPrior=!!(priorPrimary||priorBackup);
  const usablePrimary=isUsableSavedAdventure(priorPrimary);
  const prompt=usablePrimary?
-  '現在のセーブをバックアップして、選んだセーブデータへ切り替えますか？':
+  '選んだセーブデータへ切り替えますか？ 異なる現在のセーブはバックアップに保護し、同じデータなら既存のバックアップを維持します。':
   hadPrior?'既存のセーブやバックアップを保護したうえで、選んだセーブデータへ切り替えますか？':
   '選んだセーブデータを読み込みますか？';
  if(!confirm(prompt))return false;
  let ok=false;
- try{ok=importPortableSaveText(await file.text())}
+ try{ok=importPortableSaveText(raw)}
  catch(e){GC.Log?.error('Portable save read failed',{error:String(e)})}
  try{say('システム',ok&&lastImportPresentationFailed?
   '外部セーブは読み込みましたが、画面の更新に失敗しました。ページを再読み込みしてください。':
   ok?(usablePrimary?
-  '外部セーブを読み込みました。元のセーブはバックアップに保存されています。':
+  (lastImportBackupRotated?
+   '外部セーブを読み込みました。元のセーブはバックアップに保存されています。':
+   '同じセーブを読み込みました。既存のバックアップは維持されています。'):
   hadPrior?'外部セーブを読み込みました。既存の保存データはバックアップまたは復旧用領域に保護されています。':
   '外部セーブを読み込みました。'):
   'セーブの読み込みに失敗しました。形式・データ・ブラウザの保存領域を確認してください。')}
@@ -572,11 +622,20 @@ function restoreArchivedAdventure(){
   return false
  }
  if(!raw)return false;
- if(!confirm('保管していた以前の冒険を復旧しますか？ 現在のセーブはバックアップへ移します。'))return false;
+ // Validate before asking to replace the current adventure. A damaged or
+ // unsupported archive must not display a misleading overwrite prompt.
+ if(!preparePortableSaveText(raw)){
+  notifySaveStatus('以前の冒険データが破損しているか、このバージョンに対応していません。現在のセーブは変更していません。');
+  return false
+ }
+ if(!confirm('保管していた以前の冒険を復旧しますか？ 異なるセーブがある場合は、既存データを保護してから切り替えます。'))return false;
  const ok=importPortableSaveText(raw);
  try{say('システム',ok&&lastImportPresentationFailed?
   '以前の冒険は復旧しましたが、画面の更新に失敗しました。ページを再読み込みしてください。':
-  ok?'以前の冒険を復旧しました。現在のセーブはバックアップに残しています。':'以前の冒険を復旧できませんでした。現在のセーブには変更していません。')}
+  ok?(lastImportBackupRotated?
+   '以前の冒険を復旧しました。現在のセーブはバックアップに残しています。':
+   '以前の冒険を復旧しました。既存のバックアップや復旧用データは維持しています。'):
+  '以前の冒険を復旧できませんでした。現在のセーブには変更していません。')}
  catch(e){GC.Log?.warn?.('Previous adventure status message failed',{error:String(e)})}
  return ok
 }
