@@ -5,7 +5,7 @@
 ## Provenance and isolation
 - Exact parent: Draft PR #114 HEAD `e383de3fba920b70fd685e0ec1bd814000ecd614`; source V2 Git blob `a39fd00215fb227c4031d3fbf53f2ebe182ca2c9`.
 - V5 reference: `assets/npc/featured_residents_charm_v5.png`, blob `b169b58a846e1812dc42f566ca1843a6088e901f`.
-- [V3b candidate](/assets/npc/studies/field_worker_v3b_face_material_HOLD_48x192.png) and [native 44px four-direction board](/docs/art/evidence/field_worker_v2_v3b_farmer_mayor_native44_HOLD.png).
+- [V3b candidate](../../assets/npc/studies/field_worker_v3b_face_material_HOLD_48x192.png) and [native 44px four-direction board](evidence/field_worker_v2_v3b_farmer_mayor_native44_HOLD.png).
 - Rebuild with `python tools/art/field_worker_v3b_face_material_pilot.py` (free Pillow); source and V5 blob checks stop generation if inputs change.
 - The board columns are V2 original / V3b / V5 farmer / V5 mayor; rows front / left / right / back; same 44px nearest-neighbor source sampling and flat neutral background.
 
