@@ -12,14 +12,15 @@ function makeRuntime(){
   constructor(){this.naturalWidth=288;this.naturalHeight=192}
   set src(value){this._src=value;if(this.onload)this.onload()}
  }
- const ctx={save(){},restore(){},beginPath(){},ellipse(){},fill(){},drawImage(...args){calls.push(args)}};
+ const shadows=[];
+ const ctx={save(){},restore(){},beginPath(){},ellipse(...args){shadows.push(args)},fill(){},drawImage(...args){calls.push(args)}};
  const sandbox={GC:{},TILE:32,ctx,Image:FakeImage};
  vm.createContext(sandbox);
  const source=fs.readFileSync(path.join(__dirname,'../js/render/world.js'),'utf8');
  vm.runInContext(fs.readFileSync(path.join(__dirname,'../js/data/animations.js'),'utf8'),sandbox,{filename:'js/data/animations.js'});
  vm.runInContext(fs.readFileSync(path.join(__dirname,'../js/systems/animation.js'),'utf8'),sandbox,{filename:'js/systems/animation.js'});
  vm.runInContext(source,sandbox,{filename:'js/render/world.js'});
- return {draw:sandbox.GC.Render.World.drawHeroSpriteSheet,calls,animation:sandbox.GC.Animation,definitions:sandbox.GC.Data.Animations.definitions};
+ return {draw:sandbox.GC.Render.World.drawHeroSpriteSheet,calls,shadows,ctx,animation:sandbox.GC.Animation,definitions:sandbox.GC.Data.Animations.definitions};
 }
 
 test('Margaret-only 44px foot contact shifts the rendered sheet up by two screen pixels',()=>{
@@ -63,5 +64,18 @@ test('all eight authored poses use the same foot anchor as field walking',()=>{
    assert.equal(geometry.dy,calls[0][6],`${id}/${pose} world/acting foot alignment`);
    assert.equal(geometry.destW,44);assert.equal(geometry.destH,44);
   }
+ }
+});
+
+test('dialogue pose uses the same foot shadow geometry as the field sprite',()=>{
+ const {draw,calls,shadows,ctx,animation}=makeRuntime();
+ for(const id of ['karen','triton','sophie','margaret']){
+  shadows.length=0;calls.length=0;draw(2,3,id,false,'down',0);
+  const fieldShadow=shadows[0];
+  const actor=animation.createActor(id,{x:2,y:3,renderScale:44/48,animation:'talk',matchFieldShadow:true,startedAt:0});
+  shadows.length=0;calls.length=0;
+  assert.equal(animation.drawActor(ctx,actor,500),true);
+  assert.deepEqual(Array.from(shadows[0]),Array.from(fieldShadow));
+  assert.equal(calls[0][6],id==='margaret'?84:86);
  }
 });
