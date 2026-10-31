@@ -95,13 +95,7 @@ function enterBorderland(source='frontier'){
   const y=fromNorth?1:13;
   setMap('borderland',11,y,fromNorth?'down':'up',[[12,y],[13,y],[14,y]]);
   state.chapter='第三章 — 第一の四天王';
-  state.story.objective=!isEventComplete('borderBriefed')
-   ?'王国の偵察兵から国境地帯の状況を聞く'
-   :!isEventComplete('borderMerchantHelped')
-   ?'旧関所で足止めされた商人を助ける'
-   :!isEventComplete('borderRested')
-   ?'ハルム宿場で休息する'
-   :'北のベルド砦へ進む／必要ならセラドへ戻る';
+  state.story.objective=borderlandNextObjective();
   renderHud();
   return;
  }
