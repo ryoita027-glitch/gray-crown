@@ -584,14 +584,19 @@ function drawObject(o){if(RyuneOutskirts.drawObject(ctx,state.map,o,!!state.worl
  if(o.id==='ravineLookout'||o.id==='bridgeMarker'){ctx.fillStyle='#70685d';ctx.fillRect(px+7,py+20,20,7);ctx.fillStyle='#c7b990';ctx.fillRect(px+10,py+8,14,12)}
  if(o.id==='roadSign'){ctx.fillStyle='#73583b';ctx.fillRect(px+14,py+7,4,22);ctx.fillStyle='#b09262';ctx.fillRect(px+3,py+4,26,12);ctx.fillStyle='#403329';ctx.font='bold 8px system-ui';ctx.textAlign='center';ctx.fillText('古砦→',px+16,py+13);ctx.textAlign='start'}
  if(o.id==='milestone'){
-  // A real stone marker, not a wooden "shortcut" sign: the route does not
-  // contain a shortcut. The arrow points along the actual northbound road.
+  // Player care makes the existing, truthful north arrow readable in-world.
+  // Decorative pixels never change passability or the map footprint.
+  const cleared=state.events?.choices?.['early.northroadWaystone']==='cleared';
   ctx.fillStyle='#51564f';ctx.fillRect(px+6,py+27,21,3);
   ctx.fillStyle='#878779';ctx.fillRect(px+8,py+6,17,22);
   ctx.fillStyle='#b5b09a';ctx.fillRect(px+7,py+4,19,5);
-  ctx.fillStyle='#d4c7a6';ctx.fillRect(px+11,py+9,2,3);
-  ctx.fillStyle='#413f37';ctx.font='bold 8px system-ui';ctx.textAlign='center';ctx.fillText('王都',px+16,py+19);ctx.textAlign='start';
-  ctx.fillStyle='#ded0ae';ctx.fillRect(px+15,py+21,2,5);
+  if(cleared){
+   ctx.fillStyle='#45483f';ctx.fillRect(px+9,py+10,15,11);
+  }else{
+   ctx.fillStyle='#617355';ctx.fillRect(px+8,py+9,3,6);ctx.fillRect(px+22,py+12,3,5);
+  }
+  ctx.fillStyle=cleared?'#eee2c3':'#413f37';ctx.font='bold 8px system-ui';ctx.textAlign='center';ctx.fillText('王都',px+16,py+19);ctx.textAlign='start';
+  ctx.fillStyle=cleared?'#f1e4bd':'#ded0ae';ctx.fillRect(px+15,py+21,2,5);
   ctx.fillRect(px+13,py+22,2,2);ctx.fillRect(px+17,py+22,2,2);
  }
 }
