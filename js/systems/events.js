@@ -40,10 +40,14 @@ function capitalNightEchoLines(original){
  const sawQueue=isEventComplete('early.capitalRationIntro');
  const guided=choices['early.capitalWagonGuide']==='guided';
  const perspective=choices['early.capitalFountainPerspective'];
- const lines=original.map(line=>
-  line.speaker==='マーガレット'&&line.text.includes('でも市場には配給の列があった')&&!sawQueue
-   ?{...line,text:'「私も花を見て少し嬉しかった。でも、この街を式だけで知った気にはなれないの」'}
-   :line);
+ const roomOffered=choices['early.capitalRoomOffer']==='offered';
+ const lines=original.map(line=>{
+  if(roomOffered&&line.speaker==='ナレーション'&&line.text.startsWith('任命式の夜。'))
+   return {...line,text:'任命式の夜。女将が用意した奥の狭い相部屋には、四人分の寝具が並んでいた。窓の外ではまだ「勇者万歳」の声が遠く聞こえる。四人とも昼間ほど喋らなくなった。'};
+  if(line.speaker==='マーガレット'&&line.text.includes('でも市場には配給の列があった')&&!sawQueue)
+   return {...line,text:'「私も花を見て少し嬉しかった。でも、この街を式だけで知った気にはなれないの」'};
+  return line;
+ });
  const at=lines.findIndex(line=>line.speaker==='ソフィ'&&line.text.includes('王都にも苦しい人はいる'));
  if(at<0)return lines;
  const echo=[];
@@ -51,6 +55,32 @@ function capitalNightEchoLines(original){
  if(perspective==='asked')echo.push({speaker:'カレン',text:'「噴水で話してくれた人がいた。勝つことだけじゃなくて、明日の食事と、帰ってくる人のことも考えてた」'});
  else if(perspective==='observed')echo.push({speaker:'マーガレット',text:'「噴水で見たポスターと配給列、どちらもこの街の本当の姿よ。片方だけで決めつけないようにしたい」'});
  return [...lines.slice(0,at),...echo,...lines.slice(at)];
+}
+// The inn notice is already on the player's route. A voluntary room swap
+// trades comfort, not money or plot access, for a small visible civic outcome.
+function capitalInnNoticeVisit(){
+ const key='early.capitalRoomOffer';
+ const notice='「前線方面の荷馬車、護衛募集」「北部からの避難家族、空き部屋求む」――戦争が宿の壁まで来ている。';
+ if(structuredCondition('returnedKingdom'))return say('宿の掲示板',notice);
+ if(state.events.choices[key]==='offered')
+  return say('宿の掲示板','避難家族の部屋を求める貼り紙には、女将の字で「部屋の手配済み」と追記されている。');
+ if(!structuredCondition('capitalCeremony')||structuredCondition('capitalFirstNight'))
+  return say('宿の掲示板',notice);
+ return say('宿の掲示板',notice+'軍が今夜の勇者用に部屋を一つ予約している。',[
+  {label:'予約の部屋を避難家族へ回せるか女将に相談する',fn:()=>{
+   if(state.events.choices[key]==='offered')return capitalInnNoticeVisit();
+   state.events.choices[key]='offered';
+   addJournal('白鹿亭で、軍が予約した部屋を北部からの避難家族へ回すよう女将に頼んだ。四人は奥の狭い相部屋で休むことにした。');
+   renderHud();
+   return saySequence([
+    {speaker:'ナレーション',text:'貼り紙を見た四人は、すぐ近くの女将に声をかけた。'},
+    {speaker:'白鹿亭の女将',text:'「軍の予約室を家族に回すのかい？　分かった。あんたたちは奥の狭い相部屋になるけど、それでいいんだね」'},
+    {speaker:'ソフィ',text:'「はい。四人一緒なら、少し狭くても平気です」'},
+    {speaker:'トリトン',text:'「昔は四人で一つの部屋に集まって遊んでたしな」'}
+   ]);
+  }},
+  {label:'今夜は予定どおり休む',fn:()=>say('カレン','「今夜は四人で休もう。明日、何ができるか考えたい」')}
+ ]);
 }
 function playEventDialogue(def,after=null){if(!def){after?.();return false}const finish=()=>{if(def.postLines?.length)saySequence(def.postLines,after);else after?.()};const lines=def.id==='alpha.capital.whiteStagNight'?capitalNightEchoLines(def.lines||[]):def.lines;if(lines?.length)saySequence(lines,finish);else finish();return true}
 function routeCompanionScene(route){
@@ -824,7 +854,7 @@ function inlineNpcEvent(id){
   if(id==='soldierSister')return say('兵士の妹・ユナ','「兄さんからの手紙、三か月来てないの。でも母さんの前では心配してないふりしてる」')
  }
  if(state.map==='capitalinn'){
-  if(id==='capitalInnHost')return structuredCondition('capitalFirstNight')?say('白鹿亭の女将','「二度目からは普通のお客だよ。休むなら帳場で24G。勇者だからって宿の薪が無料になるわけじゃないからね」'):saySequence([{speaker:'白鹿亭の女将',text:'「勇者様でも宿代は取るよ。……と言いたいところだけど、今夜だけは軍持ちだそうだ」'},{speaker:'トリトン',text:'「勇者って初めて得したかも」'},{speaker:'白鹿亭の女将',text:'「前線から戻れたら、その時は自分の金で泊まりな。帰ってきた客から取る金が一番うれしいんだ」'}].concat(!structuredCondition('returnedKingdom')&&state.events.choices['early.capitalWagonGuide']==='guided'?[{speaker:'白鹿亭の女将',text:'「南門の荷車、あんたたちが押したんだって？　配給所から今夜の野菜が届いたよ。全部は変わらないけど、助かった」'}]:[]))
+  if(id==='capitalInnHost')return structuredCondition('capitalFirstNight')?say('白鹿亭の女将',state.events.choices['early.capitalRoomOffer']==='offered'?'「あの家族のために部屋を空けておいたよ。次からは普通のお客だ。休むなら帳場で24Gだよ」':'「二度目からは普通のお客だよ。休むなら帳場で24G。勇者だからって宿の薪が無料になるわけじゃないからね」'):saySequence([{speaker:'白鹿亭の女将',text:'「勇者様でも宿代は取るよ。……と言いたいところだけど、今夜だけは軍持ちだそうだ」'},{speaker:'トリトン',text:'「勇者って初めて得したかも」'},{speaker:'白鹿亭の女将',text:'「前線から戻れたら、その時は自分の金で泊まりな。帰ってきた客から取る金が一番うれしいんだ」'}].concat(!structuredCondition('returnedKingdom')&&state.events.choices['early.capitalWagonGuide']==='guided'?[{speaker:'白鹿亭の女将',text:'「南門の荷車、あんたたちが押したんだって？　配給所から今夜の野菜が届いたよ。全部は変わらないけど、助かった」'}]:[]).concat(state.events.choices['early.capitalRoomOffer']==='offered'?[{speaker:'白鹿亭の女将',text:'「予約の部屋は避難家族のために空けておいたよ。あんたたちは奥の相部屋を使いな」'}]:[]))
   if(id==='offDutySoldier')return say('非番の王国兵','「明日また灰の街道へ戻る。勇者様を見たら安心すると思ってたけど……あんたらも緊張してるんだな。少し安心したよ」')
  }
  if(state.map==='capitalarmory'){
@@ -1037,7 +1067,7 @@ function inlineObjectEvent(id){
   if(id==='soldierLetter'){setWorldSwitch('ryune.baseViewed.soldierLetter',true);return say('兵士の妹・ユナ','「最後の手紙には“次は雪が降る前に帰れるかも”って。……もう春になったけど」')}
   if(id==='emptyBed')return say('兵士の母','「息子の寝床よ。帰った時にそのまま眠れるよう、毎週シーツだけは替えてるの」')
   if(id==='innCounter')return say('白鹿亭の帳場','兵士、商人、避難民。宿帳には王都の外から来た名前がびっしり並んでいる。')
-  if(id==='innNotice')return say('宿の掲示板','「前線方面の荷馬車、護衛募集」「北部からの避難家族、空き部屋求む」――戦争が宿の壁まで来ている。')
+  if(id==='innNotice')return capitalInnNoticeVisit()
   if(id==='weaponRack')return say('武器棚','磨かれた新品より、修理待ちの剣や槍の方が多い。')
   if(id==='repairBench')return say('修理台','欠けた刃、曲がった留め具、乾いた血。道具には持ち主より正直な戦場の痕が残る。')
   if(id==='canalMenu')return say('水鳥亭の献立','川魚の煮込み、豆のスープ、黒パン。王国の宿と違う料理名が並ぶ。')
