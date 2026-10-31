@@ -428,6 +428,12 @@ function importPortableSaveText(raw){
   return false
  }
 }
+// A portable import replaces the live game even when there are no browser
+// save slots. Warn about unsaved play rather than promising only slot backup.
+function activeAdventureUnsavedWarning(){
+ return typeof ALPHA_SESSION!=='undefined'&&ALPHA_SESSION.started?
+  ' 現在のプレイで未保存の進行がある場合は失われます。必要ならキャンセルして、先にセーブかJSON書き出しをしてください。':''
+}
 async function readPortableSaveFile(file){
  if(!file||file.size>2*1024*1024){
   notifySaveStatus('2MB以下のGray Crownセーブファイル（.json）を選んでください。');return false
@@ -467,7 +473,7 @@ async function readPortableSaveFile(file){
   '選んだセーブデータへ切り替えますか？ 異なる現在のセーブはバックアップに保護し、同じデータなら既存のバックアップを維持します。':
   hadPrior?'既存のセーブやバックアップを保護したうえで、選んだセーブデータへ切り替えますか？':
   '選んだセーブデータを読み込みますか？';
- if(!confirm(prompt))return false;
+ if(!confirm(prompt+activeAdventureUnsavedWarning()))return false;
  let ok=false;
  try{ok=importPortableSaveText(raw)}
  catch(e){GC.Log?.error('Portable save read failed',{error:String(e)})}
@@ -628,7 +634,7 @@ function restoreArchivedAdventure(){
   notifySaveStatus('以前の冒険データが破損しているか、このバージョンに対応していません。現在のセーブは変更していません。');
   return false
  }
- if(!confirm('保管していた以前の冒険を復旧しますか？ 異なるセーブがある場合は、既存データを保護してから切り替えます。'))return false;
+ if(!confirm('保管していた以前の冒険を復旧しますか？ 異なるセーブがある場合は、既存データを保護してから切り替えます。'+activeAdventureUnsavedWarning()))return false;
  const ok=importPortableSaveText(raw);
  try{say('システム',ok&&lastImportPresentationFailed?
   '以前の冒険は復旧しましたが、画面の更新に失敗しました。ページを再読み込みしてください。':
