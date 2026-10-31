@@ -1,7 +1,7 @@
 'use strict';
-/* Sophie V1/V2: source-accurate in-game A/B evidence. Experimental, never production art. */
+/* Sophie V1/V2/V3: source-accurate in-game A/B evidence. Experimental, never production art. */
 const SophieContourLiveAB=(()=>{
- const optIn=()=>typeof window!=='undefined'&&/(?:^|[?&])gcSophieContour=(?:1|2)(?:&|$)/.test(window.location.search||'');
+ const optIn=()=>typeof window!=='undefined'&&/(?:^|[?&])gcSophieContour=(?:1|2|3)(?:&|$)/.test(window.location.search||'');
  function pixelDiff(a,b,width,height){
   if(!a||!b||a.length!==b.length||a.length!==width*height*4)throw Error('invalid RGBA comparison');
   let count=0,minX=width,minY=height,maxX=-1,maxY=-1;
@@ -27,16 +27,16 @@ const SophieContourLiveAB=(()=>{
   if(!optIn()||typeof document==='undefined'||document.getElementById('gcSophieContourAB'))return;
   const world=typeof GC!=='undefined'?GC.Render?.World:null,host=document.querySelector('.game-column');
   if(!host||!world?.sophieContourStudyStatus)return;
-  const trialLabel=world.sophieContourStudyStatus().variant===2?'V2':'V1';
+  const trialLabel=world.sophieContourStudyStatus().variant===3?'V3':world.sophieContourStudyStatus().variant===2?'V2':'V1';
   const panel=document.createElement('section');
-  panel.id='gcSophieContourAB';panel.setAttribute('aria-label','ソフィ原画と輪郭V1の実ゲーム比較');
+  panel.id='gcSophieContourAB';panel.setAttribute('aria-label','ソフィ原画と試作PNGの実ゲーム比較');
   panel.style.cssText='margin:10px 0;padding:10px;border:1px solid #8886;border-radius:6px;background:#191b20;color:#f1eee6';
   const heading=document.createElement('div');
   heading.textContent='ソフィ原画 / '+trialLabel+' — 実ゲームA/B（美術未採用）';
   heading.style.cssText='font-weight:700;margin-bottom:8px';
   const message=document.createElement('p');message.setAttribute('role','status');
   message.style.cssText='font-size:12px;margin:8px 0';
-  message.textContent='リュネ村で歩行停止後に比較。原画→V1→原画の3回描画で背景の変化を検査します。';
+  message.textContent='リュネ村で歩行停止後に比較。原画→試作→原画の3回描画で背景の変化を検査します。';
   const toggle=document.createElement('button'),capture=document.createElement('button');
   toggle.type=capture.type='button';capture.textContent='原画 / '+trialLabel+' の安定した実画面比較を撮影';
   const controls=document.createElement('div');controls.style.cssText='display:flex;gap:8px;flex-wrap:wrap';
@@ -47,7 +47,7 @@ const SophieContourLiveAB=(()=>{
   }
   toggle.addEventListener('click',()=>{
    const s=world.sophieContourStudyStatus();
-   if(!s.ready||!s.originalReady){message.textContent='原画またはV1試作PNGが未読込です。';return}
+   if(!s.ready||!s.originalReady){message.textContent='原画または試作PNGが未読込です。';return}
    world.setSophieContourStudy(!s.enabled);sync();
   });
   capture.addEventListener('click',()=>{
