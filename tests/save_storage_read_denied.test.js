@@ -1110,3 +1110,31 @@ test('visible Continue blocked by combat handles a broken failure dialogue', () 
  assert.doesNotThrow(()=>assert.equal(s.load(false),false));
  assert.ok(h.GC.Log.get('warn').some(e=>e.message==='Save status message failed'));
 });
+
+test('restart refuses denied storage even if its failure dialogue throws', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=614;say=()=>{throw new Error("dialogue unavailable")}');
+ const before=JSON.stringify(h.GC.State.get()),stored=[...h.storage.data];
+ let prompted=false;
+ h.context.confirm=()=>{prompted=true;return true};
+ denyReads(h);
+ assert.doesNotThrow(()=>assert.equal(s.restart(),false));
+ assert.equal(prompted,false);
+ assert.equal(JSON.stringify(h.GC.State.get()),before);
+ assert.deepEqual([...h.storage.data],stored);
+ assert.ok(h.GC.Log.get('warn').some(e=>e.message==='Save status message failed'));
+});
+
+test('previous-adventure restore refuses denied storage even if its failure dialogue throws', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=615;say=()=>{throw new Error("dialogue unavailable")}');
+ const before=JSON.stringify(h.GC.State.get()),stored=[...h.storage.data];
+ let prompted=false;
+ h.context.confirm=()=>{prompted=true;return true};
+ denyReads(h);
+ assert.doesNotThrow(()=>assert.equal(s.restoreArchivedAdventure(),false));
+ assert.equal(prompted,false);
+ assert.equal(JSON.stringify(h.GC.State.get()),before);
+ assert.deepEqual([...h.storage.data],stored);
+ assert.ok(h.GC.Log.get('warn').some(e=>e.message==='Save status message failed'));
+});
