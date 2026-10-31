@@ -14,6 +14,8 @@ let lastImportBackupRotated=false;
 // A failed rollback means we must not promise that browser save slots are intact.
 let lastImportRollbackFailed=false;
 let lastPortableExportNeedsManualBackup=false;
+// Prevent overlapping asynchronous file reads from importing out of selection order.
+let portableFileImportInProgress=false;
 function safeNumber(v,fallback,min=-Infinity,max=Infinity){return Number.isFinite(v)?Math.max(min,Math.min(max,v)):fallback}
 function nearestSafeTile(mapId,x,y,saveState=state){
  const m=maps[mapId];if(!m)return[11,13];
@@ -457,6 +459,14 @@ async function readPortableSaveFile(file){
  }
  // Read and validate before prompting. A malformed file cannot replace a save,
  // and an async read must not use a stale pre-read permission or slot snapshot.
+ // Only one file-picker import may own the read/confirmation sequence.
+ // A second asynchronous selection must not overtake and overwrite the first.
+ if(portableFileImportInProgress){
+  GC.Log?.warn?.('Portable file import already in progress');
+  return false
+ }
+ portableFileImportInProgress=true;
+ try{
  let raw;
  try{raw=await file.text()}
  catch(e){
@@ -504,6 +514,7 @@ async function readPortableSaveFile(file){
    'セーブの読み込みに失敗しました。形式・データ・ブラウザの保存領域を確認してください。')}
  catch(e){GC.Log?.warn?.('Portable file status message failed',{error:String(e)})}
  return ok
+ }finally{portableFileImportInProgress=false}
 }
 
 function hasArchivedAdventure(){try{return isUsableSavedAdventure(localStorage.getItem(SAVE_ARCHIVE_KEY))}catch(_){return false}}
