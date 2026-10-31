@@ -14,12 +14,27 @@ function eventConditionPass(c,context={}){
  return true
 }
 function findTriggeredEvent(type,target,context={}){const map=context.map??state.map;return EVENT_DEFS.filter(e=>e.trigger.type===type&&e.trigger.target===target&&(!e.trigger.map||e.trigger.map===map)&&(e.when||[]).every(c=>eventConditionPass(c,context))).sort((a,b)=>(b.priority||0)-(a.priority||0))[0]||null}
+// Keep the objective aligned with the actual next discoverable landmark.
+// Players may investigate in any order; nothing here locks a quest step.
+function ashRoadNextObjective(s=state){
+ const done=s.events?.completed||{};
+ const supplyFirst=s.events?.choices?.['early.granzPriority']==='supplies';
+ if(supplyFirst&&!done['alpha2.ashroad.orders']){
+  if(!done['alpha2.ashroad.burnedCart'])return '街道東側の焼けた荷車を調べる';
+  return '荷車の轍をたどり、東側の命令書を調べる';
+ }
+ if(!done['alpha2.ashroad.refugee'])return '街道西側の避難民に話を聞く';
+ if(!done['alpha2.ashroad.orders'])return '街道東側の焦げた命令書を調べる';
+ if(!done['alpha2.ashroad.patrolVictory'])return '街道北側の帝国斥候を退ける';
+ return '灰の街道北端からセラド前線へ進む';
+}
 function applyEventEffect(effect,context={}){
  switch(effect.type){
   case'completeEvent':return completeEvent(effect.id,effect.value!==false);
   case'advanceStory':return advanceStory(effect.stage,null,effect.objective);
   case'setChapter':state.story.chapter=effect.value;renderHud();return effect.value;
   case'setObjective':state.story.objective=effect.value;renderHud();return effect.value;
+  case'syncAshRoadObjective':state.story.objective=ashRoadNextObjective();renderHud();return state.story.objective;
   case'journal':return addJournal(effect.text);
   case'worldSwitch':return setWorldSwitch(effect.id,effect.value??true);
   case'visit':return markVisited(effect.map,effect.value??true);
