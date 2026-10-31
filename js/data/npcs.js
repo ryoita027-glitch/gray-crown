@@ -6,7 +6,7 @@ const PARTY_STYLE={
  margaret:{heroId:'margaret',body:'#72568f',accent:'#b99ad1',hair:'#e4e7ec',weapon:'staff'}
 };
 const NPC_STYLE={
- capitalVendor:{body:'#85623f',accent:'#d5bd78',hair:'#5d4230',hat:true},rationMother:{body:'#7b5a59',accent:'#d2b985',hair:'#59463f'},capitalInnHost:{body:'#8f6254',accent:'#dec394',hair:'#72503f'},offDutySoldier:{body:'#7f4148',accent:'#d8c69a',hair:'#4a3d36'},capitalSmith:{body:'#5e5149',accent:'#b4774f',hair:'#42352f'},armoryApprentice:{body:'#726457',accent:'#c8995d',hair:'#6d4d38'},
+ capitalVendor:{body:'#85623f',accent:'#d5bd78',hair:'#5d4230',hat:true},rationMother:{body:'#7b5a59',accent:'#d2b985',hair:'#59463f'},capitalInnHost:{body:'#8f6254',accent:'#dec394',hair:'#72503f'},innRefugeeMother:{body:'#795c58',accent:'#bfa779',hair:'#74594d'},offDutySoldier:{body:'#7f4148',accent:'#d8c69a',hair:'#4a3d36'},capitalSmith:{body:'#5e5149',accent:'#b4774f',hair:'#42352f'},armoryApprentice:{body:'#726457',accent:'#c8995d',hair:'#6d4d38'},
  imperialInnHost:{body:'#506c78',accent:'#b9a579',hair:'#4f4842'},canalBoatman:{body:'#536977',accent:'#9fb4bd',hair:'#5a4a3e',hat:true},bookSeller:{body:'#5b6370',accent:'#b9a570',hair:'#92877a'},studentReader:{body:'#607381',accent:'#b7a981',hair:'#4b3e39'},
  fieldWorker:{body:'#73875a',accent:'#d6bd88',hair:'#796349',hat:true},
  brookKeeper:{body:'#718a7d',accent:'#c1c6aa',hair:'#606354'},
