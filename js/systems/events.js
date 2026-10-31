@@ -607,6 +607,31 @@ function northRoadMilestoneVisit(){
  ])
 }
 
+// The existing east layby is a voluntary first glimpse of the capital, not
+// another required stop, treasure pickup or spoiler-bearing cutscene.
+function northRoadVistaVisit(){
+ const seen=state.events.choices['early.northroadVista']==='seen';
+ const afterCeremony=structuredCondition('capitalCeremony');
+ if(seen)return say('旧街道の見晴らし台',afterCeremony
+  ?'白い城壁と門前の荷車が見える。あの旗の下で自分たちが何を期待されたか、四人はもう知っている。'
+  :'北にアルディナの白い城壁が見える。門の外には荷車の列。ここから北へ進めば城門だ。');
+ state.events.choices['early.northroadVista']='seen';
+ addJournal('旧街道の見晴らし台からアルディナの城壁と、門の外で順番を待つ荷車の列を見た。');
+ renderHud();
+ if(afterCeremony)return saySequence([
+  {speaker:'ナレーション',text:'石台から王都を見下ろす。白い城壁と赤い旗は、式典の前に想像していたものと同じだった。'},
+  {speaker:'カレン',text:'「遠くから見れば、きれいな街だね。……中で聞いた声は、ここまでは届かないんだ」'},
+  {speaker:'マーガレット',text:'「聞いたことは持って帰れる。私たちが覚えていればね」'}
+ ]);
+ return saySequence([
+  {speaker:'ナレーション',text:'石台の向こうにアルディナの白い城壁が見える。門の外には荷車の列。城の赤い旗だけが高く風を受けていた。'},
+  {speaker:'カレン',text:'「あれが王都……！　村からじゃ想像できなかった」'},
+  {speaker:'トリトン',text:'「門の外、荷車がずいぶん並んでる。道はここから一本だな」'},
+  {speaker:'ソフィ',text:'「あの荷車の中に、リュネへ届く食料もあるといいな」'},
+  {speaker:'マーガレット',text:'「まずは城門へ。見たことと、聞かされたことは分けて覚えておきましょう」'}
+ ]);
+}
+
 function northRoadScoutVisit(){
  const fromFort=!getWorldSwitch('northRoadFromRoad')&&isDefeated('boss');
  const markerCleared=state.events.choices['early.northroadWaystone']==='cleared';
@@ -958,6 +983,7 @@ function inlineObjectEvent(id){
  if(state.map==='northroad'){
   if(id==='southExit')return returnCaveNorth();
   if(id==='milestone')return northRoadMilestoneVisit()
+  if(id==='northroadVista')return northRoadVistaVisit()
  }
  if(state.map==='capital'){
   if(id==='royalCastle')return say('アルディナ王城','白い石壁の奥に王家の居城がそびえている。広場から見上げるだけでも、リュネ村とは規模がまるで違う。')
