@@ -11,6 +11,8 @@ let lastLoadPresentationFailed=false;
 let lastImportPresentationFailed=false;
 // Only promise that an old primary was backed up after its write was verified.
 let lastImportBackupRotated=false;
+// A failed rollback means we must not promise that browser save slots are intact.
+let lastImportRollbackFailed=false;
 let lastPortableExportNeedsManualBackup=false;
 function safeNumber(v,fallback,min=-Infinity,max=Infinity){return Number.isFinite(v)?Math.max(min,Math.min(max,v)):fallback}
 function nearestSafeTile(mapId,x,y,saveState=state){
@@ -388,6 +390,7 @@ function preparePortableSaveText(raw){
 function importPortableSaveText(raw){
  lastImportPresentationFailed=false;
  lastImportBackupRotated=false;
+ lastImportRollbackFailed=false;
  if(!canPersistNow('load'))return false;
  const loaded=preparePortableSaveText(raw);
  if(!loaded)return false;
@@ -426,7 +429,10 @@ function importPortableSaveText(raw){
   return true
  }catch(e){
   GC.Log?.error('Portable save import failed',{error:String(e)});
-  restoreSaveSlots(primary,backup,'Portable save import')
+  if(!restoreSaveSlots(primary,backup,'Portable save import')){
+   lastImportRollbackFailed=true;
+   GC.Log?.error('Portable import rollback incomplete: save slots may have changed')
+  }
   return false
  }
 }
@@ -487,7 +493,9 @@ async function readPortableSaveFile(file){
    '同じセーブを読み込みました。既存のバックアップは維持されています。'):
   hadPrior?'外部セーブを読み込みました。既存の保存データはバックアップまたは復旧用領域に保護されています。':
   '外部セーブを読み込みました。'):
-  'セーブの読み込みに失敗しました。形式・データ・ブラウザの保存領域を確認してください。')}
+  lastImportRollbackFailed?
+   'セーブの読み込みに失敗し、元の保存データへの復元も確認できませんでした。ページを閉じずにセーブとバックアップを確認してください。':
+   'セーブの読み込みに失敗しました。形式・データ・ブラウザの保存領域を確認してください。')}
  catch(e){GC.Log?.warn?.('Portable file status message failed',{error:String(e)})}
  return ok
 }
@@ -643,7 +651,9 @@ function restoreArchivedAdventure(){
   ok?(lastImportBackupRotated?
    '以前の冒険を復旧しました。現在のセーブはバックアップに残しています。':
    '以前の冒険を復旧しました。既存のバックアップや復旧用データは維持しています。'):
-  '以前の冒険を復旧できませんでした。現在のセーブには変更していません。')}
+  lastImportRollbackFailed?
+   '以前の冒険を復旧できず、元の保存データへの復元も確認できませんでした。ページを閉じずにセーブとバックアップを確認してください。':
+   '以前の冒険を復旧できませんでした。現在のセーブには変更していません。')}
  catch(e){GC.Log?.warn?.('Previous adventure status message failed',{error:String(e)})}
  return ok
 }
