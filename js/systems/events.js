@@ -28,6 +28,16 @@ function ashRoadNextObjective(s=state){
  if(!done['alpha2.ashroad.patrolVictory'])return '街道北側の帝国斥候を退ける';
  return '灰の街道北端からセラド前線へ進む';
 }
+// The checkpoint is east of the wagon, not west. Resolve objectives from
+// saved discoveries so optional investigation never causes a needless detour.
+function borderlandNextObjective(s=state){
+ const done=s.events?.completed||{},pin=s.world?.switches?.borderSparePin;
+ if(!done.borderMerchantHelped&&done.borderMerchantAsked)return pin?'東側の荷車へ鉄杭を届ける':'荷車のさらに東、旧関所の柵で鉄杭を探す';
+ if(!done.borderBriefed)return '西側の王国偵察兵から国境地帯の状況を聞く';
+ if(!done.borderMerchantHelped)return pin?'東側の荷車へ鉄杭を届ける':'東側の荷車で商人に話を聞く';
+ if(!done.borderRested)return '北のハルム宿場で女将に話し、休息する';
+ return '北の道からベルド砦へ進む';
+}
 function applyEventEffect(effect,context={}){
  switch(effect.type){
   case'completeEvent':return completeEvent(effect.id,effect.value!==false);
@@ -1062,14 +1072,19 @@ function inlineNpcEvent(id){
   } }
  if(state.map==='borderland'){
   if(id==='borderScout'){
-   if(structuredCondition('borderBriefed'))return say('王国の偵察兵','「商人の荷車が直って、日が落ちたら宿場で休め。明朝ベルド砦へ向かうのが一番安全だ」');
-   setStructuredCondition('borderBriefed',true);state.objective='東の荷車を調べ、足止めされた商人を助ける';addJournal('ハルム国境地帯は旧関所・荒野・宿場が一つの道でつながっている。日没後の移動は危険だと聞いた。');renderHud();
-   return saySequence([{speaker:'王国の偵察兵',text:'「ここからベルド砦まで、昔は商人が一日で抜けた。今は関所跡も道標も壊れて、夜は両軍の哨戒が出る」'},{speaker:'マーガレット',text:'「帝国の村は、砦を越えてすぐ？」'},{speaker:'王国の偵察兵',text:'「いや。砦の北にラゼル峡谷がある。橋を越えて、さらに歩いてようやく最初の村だ」'},{speaker:'カレン',text:'「地図だと、本当に隣に見えたのに」'},{speaker:'王国の偵察兵',text:'「地図は腹も減らないし、足も痛くならんからな。……東で商人が立ち往生してる。余裕があるなら見てやってくれ」'}])
+   if(structuredCondition('borderBriefed'))return say('王国の偵察兵',
+     structuredCondition('borderRested')?'「準備はできたな。北のベルド砦へ向かえ。谷の橋は慎重に渡れ」':
+     structuredCondition('borderMerchantHelped')?'「商人の荷車は直った。北の宿場で女将に話し、今夜は休め」':
+     structuredCondition('borderSparePin')?'「鉄杭が見つかったなら、東の荷車へ届けてやれ」':
+     structuredCondition('borderMerchantAsked')?'「荷車のさらに東、崩れた関所の柵に鉄杭が残っているはずだ」':
+     '「東の商人が立ち往生している。荷車を見てやってくれ」');
+   setStructuredCondition('borderBriefed',true);state.objective=borderlandNextObjective();addJournal('ハルム国境地帯は旧関所・荒野・宿場が一つの道でつながっている。日没後の移動は危険だと聞いた。');renderHud();
+   return saySequence([{speaker:'王国の偵察兵',text:'「ここからベルド砦まで、昔は商人が一日で抜けた。今は関所跡も道標も壊れて、夜は両軍の哨戒が出る」'},{speaker:'マーガレット',text:'「帝国の村は、砦を越えてすぐ？」'},{speaker:'王国の偵察兵',text:'「いや。砦の北にラゼル峡谷がある。橋を越えて、さらに歩いてようやく最初の村だ」'},{speaker:'カレン',text:'「地図だと、本当に隣に見えたのに」'},{speaker:'王国の偵察兵',text:structuredCondition('borderMerchantHelped')?'「東の商人をもう助けたのか。なら北の宿場で休め。ベルド砦は明朝だ」':'「地図は腹も減らないし、足も痛くならんからな。……東で商人が立ち往生してる。余裕があるなら見てやってくれ」'}])
   }
   if(id==='lostMerchant'){
    if(structuredCondition('borderMerchantHelped'))return say('足止めされた商人','「助かったよ。日が落ちる前に宿場へ荷を運べる。戦争になっても、道が完全に死んだわけじゃないんだな」');
-   if(!structuredCondition('borderSparePin')){setStructuredCondition('borderMerchantAsked',true);state.objective='西の旧関所で荷車に使える鉄杭を探す';renderHud();return saySequence([{speaker:'足止めされた商人',text:'「車軸の留め具が折れた。昔の関所に、太い鉄杭が一本残ってるはずなんだ」'},{speaker:'トリトン',text:'「西の崩れた門か。見てくる」'}])};
-   setStructuredCondition('borderMerchantHelped',true);state.objective='北の宿場で女将に話し、日が落ちるまで休む';addJournal('旧関所の鉄杭を使って商人の荷車を直した。戦争前は王国の麦と帝国の塩を運んでいた商人だった。');renderHud();
+   if(!structuredCondition('borderSparePin')){setStructuredCondition('borderMerchantAsked',true);state.objective=borderlandNextObjective();renderHud();return saySequence([{speaker:'足止めされた商人',text:'「車軸の留め具が折れた。荷車のさらに東、崩れた関所の柵に太い鉄杭が一本残ってるはずなんだ」'},{speaker:'トリトン',text:'「すぐ東の柵だな。探してくる」'}])};
+   setStructuredCondition('borderMerchantHelped',true);state.objective=borderlandNextObjective();addJournal('旧関所の鉄杭を使って商人の荷車を直した。戦争前は王国の麦と帝国の塩を運んでいた商人だった。');renderHud();
    return saySequence([{speaker:'足止めされた商人',text:'「それだ！ ちょっと車体を持ち上げてくれ。……よし、入った」'},{speaker:'トリトン',text:'「こういう仕事なら父ちゃんに仕込まれてる」'},{speaker:'足止めされた商人',text:'「勇者が荷車直してくれるとは思わなかったよ」'},{speaker:'カレン',text:'「私たちも、勇者になる前は普通に村で働いてたから」'},{speaker:'足止めされた商人',text:'「そうか。……戦争前は、この荷車で帝国の塩を王国へ運んでた。道ってのは、本当は兵隊より商人が使うものなんだ」'}])
   }
   if(id==='relayHost'){
@@ -1077,7 +1092,7 @@ function inlineNpcEvent(id){
    if(structuredCondition('borderRested'))return say('ハルム宿場の女将','「朝飯は包んでおいた。ベルド砦までなら昼前には着くよ」');
    return say('ハルム宿場の女将','「今日はここまでにしな。峡谷へ夜に入る馬鹿はいないよ」',[{label:'日が落ちるまで休む',fn:()=>objectEvent('borderCampfire')},{label:'まだ周辺を見る',fn:()=>say('カレン','「もう少しだけ見て回ろう」')}])
   }
-  if(id==='relayChild')return saySequence([{speaker:'宿場の子ども',text:'「昔は帝国の子もここに泊まったって、おばあちゃんが言ってた」'},{speaker:'ソフィ',text:'「今は？」'},{speaker:'宿場の子ども',text:'「兵隊さんばっかり。大人は“向こう側”って言うけど、僕は橋の向こうを見たことない」'}])
+  if(id==='relayChild')return saySequence([{speaker:'宿場の子ども',text:structuredCondition('borderMerchantHelped')?'「東の荷車が戻ってきたよ！　おばあちゃんが塩の袋を運ぶのを手伝ってた」':'「昔は帝国の子もここに泊まったって、おばあちゃんが言ってた」'},{speaker:'ソフィ',text:'「今は？」'},{speaker:'宿場の子ども',text:'「兵隊さんばっかり。大人は“向こう側”って言うけど、僕は橋の向こうを見たことない」'}])
  }
  if(state.map==='relayvillage'){
   if(id==='relayHost'||id==='relayChild')return say('ナレーション','この場所はv11でハルム国境地帯へ統合された。北か南へ進むと新しいルートへ戻れる。')
@@ -1144,15 +1159,15 @@ function inlineObjectEvent(id){
  if(state.map==='borderland'){
   if(id==='borderGrave')return saySequence([{speaker:'名のない墓標',text:'王国語と帝国語、両方で短い祈りが刻まれている。名前は雨で読めない。'},{speaker:'ソフィ',text:'「どちらの国の人だったんでしょう」'},{speaker:'マーガレット',text:'「分からない。たぶん、ここではそれが一番正しいのかも」'}])
   if(id==='oldCheckpoint'){
-   if(!structuredCondition('borderSparePin')){setStructuredCondition('borderSparePin',true);state.objective=structuredCondition('borderBriefed')?'東の商人へ鉄杭を届ける':'偵察兵に国境地帯の状況を聞く';renderHud();return saySequence([{speaker:'古い関所跡',text:'崩れた柵の根元に、まだ使えそうな太い鉄杭が一本残っている。戦争前の通行札も散らばっている。'},{speaker:'トリトン',text:'「これなら荷車の車軸を留められる」'},{speaker:'マーガレット',text:'「帝国の商人印と王国の税印が同じ板に押してある。ここ、本当に普通の国境だったのね」'}])}
+   if(!structuredCondition('borderSparePin')){setStructuredCondition('borderSparePin',true);state.objective=borderlandNextObjective();renderHud();return saySequence([{speaker:'古い関所跡',text:'崩れた柵の根元に、まだ使えそうな太い鉄杭が一本残っている。戦争前の通行札も散らばっている。'},{speaker:'トリトン',text:'「これなら荷車の車軸を留められる」'},{speaker:'マーガレット',text:'「帝国の商人印と王国の税印が同じ板に押してある。ここ、本当に普通の国境だったのね」'}])}
    return say('古い関所跡','戦争前の通行札が散らばっている。人の往来があった痕跡だけが残っている。')
   }
-  if(id==='brokenWagon')return say('壊れた荷車',structuredCondition('borderMerchantHelped')?'応急修理された車軸。商人は北の宿場へ荷を運んでいった。':'片側の車輪が外れ、荷袋が道脇に積まれている。持ち主はすぐ近くにいる。')
-  if(id==='relayBoard')return say('ハルム宿場の掲示板','「国境便停止」「ベルド砦への荷役募集」「帝国産塩・入荷未定」。戦争で途切れたものが、短い紙切れだけでも分かる。')
+  if(id==='brokenWagon')return say('壊れた荷車',structuredCondition('borderMerchantHelped')?'応急修理された車軸。商人は北の宿場へ荷を運んでいった。':structuredCondition('borderMerchantAsked')?'片側の車輪が外れている。荷車の東側に、崩れた関所の柵が見える。':'片側の車輪が外れ、荷袋が道脇に積まれている。持ち主はすぐ近くにいる。')
+  if(id==='relayBoard')return say('ハルム宿場の掲示板',structuredCondition('borderMerchantHelped')?'「国境便停止」の下に、女将の字で「東の荷車、修理済み。塩の荷は宿場で預かる」と追記されている。':'「国境便停止」「ベルド砦への荷役募集」「帝国産塩・入荷未定」。戦争で途切れたものが、短い紙切れだけでも分かる。')
   if(id==='borderCampfire'){
    if(!structuredCondition('borderMerchantHelped'))return say('宿場の焚き火','まだ日が高い。東で足止めされた商人も戻っていない。');
    if(structuredCondition('borderRested'))return limitedRecovery('borderCampfire','宿場の焚き火','残った薪と保存食で、もう一度だけまともに休めそうだ。','field','焚き火のそばで短く休んだ。HPが全回復し、MPも少し戻った。');
-   setStructuredCondition('borderRested',true);spendRecovery('borderCampfire');recoverParty('full');state.objective='北の道からベルド国境砦へ向かう';addJournal('ハルム宿場で一晩休み、王都を出てから見たものを4人で整理した。');renderHud();
+   setStructuredCondition('borderRested',true);spendRecovery('borderCampfire');recoverParty('full');state.objective=borderlandNextObjective();addJournal('ハルム宿場で一晩休み、王都を出てから見たものを4人で整理した。');renderHud();
    return saySequence([{speaker:'ナレーション',text:'日が落ちる。街道の音が消え、焚き火の向こうに旧関所の影だけが見える。王都を出てから、四人が何も急がず座ったのは初めてだった。'},{speaker:'トリトン',text:'「……思ってたより、遠いな」'},{speaker:'カレン',text:'「帝国が？」'},{speaker:'トリトン',text:'「全部。魔王も四天王も、王都じゃ“倒しに行く相手”って一言だった。でも歩いてると、その間に人が多すぎる」'},{speaker:'ソフィ',text:'「灰の街道の人も、前線の怪我人も、今日の商人さんも」'},{speaker:'マーガレット',text:'「私たちはまだ帝国にすら入ってない。それなのに、王都で聞いた説明だけじゃ足りないことがもう増えてる」'},{speaker:'カレン',text:'「怖い？」'},{speaker:'マーガレット',text:'「当然。でも、あなたが怖いって言ってくれたら、少し安心するかも。……あなたは？」'},{speaker:'カレン',text:'「怖い。でも……分からないまま魔王を倒して帰る方が、今はもっと嫌」'},{speaker:'トリトン',text:'「じゃあ明日も見る。それでいい」'},{speaker:'ソフィ',text:'「四人で、ですね」'},{speaker:'マーガレット',text:'「ええ。私の地図にも、四人で歩いた道をちゃんと残しておく」'},{speaker:'ナレーション',text:'翌朝。宿場の女将から黒パンを受け取り、四人はベルド砦へ向かった。'}])
   }
  }
