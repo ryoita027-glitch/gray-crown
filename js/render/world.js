@@ -604,6 +604,14 @@ function drawObject(o){if(RyuneOutskirts.drawObject(ctx,state.map,o,!!state.worl
  if(['fortGate','fortGateRight'].includes(o.id)&&!getWorldSwitch('fortGateOpen')){ctx.fillStyle='#4e4640';ctx.fillRect(px-10,py+4,52,26);ctx.fillStyle='#866c50';for(let i=0;i<6;i++)ctx.fillRect(px-6+i*9,py+4,4,26);ctx.fillStyle='#c0a16d';ctx.fillRect(px-10,py+4,52,4)}
  if(o.id==='ravineLookout'||o.id==='bridgeMarker'){ctx.fillStyle='#70685d';ctx.fillRect(px+7,py+20,20,7);ctx.fillStyle='#c7b990';ctx.fillRect(px+10,py+8,14,12)}
  if(o.id==='roadSign'){ctx.fillStyle='#73583b';ctx.fillRect(px+14,py+7,4,22);ctx.fillStyle='#b09262';ctx.fillRect(px+3,py+4,26,12);ctx.fillStyle='#403329';ctx.font='bold 8px system-ui';ctx.textAlign='center';ctx.fillText('古砦→',px+16,py+13);ctx.textAlign='start'}
+ if(o.id==='capitalGateGuide'){
+  // Low roadside sign, not a quest marker. It occupies a grass verge west
+  // of the two-tile main avenue; both northbound lanes stay open.
+  ctx.fillStyle='#615142';ctx.fillRect(px+14,py+9,4,21);
+  ctx.fillStyle='#c4b08a';ctx.fillRect(px+2,py+3,28,11);ctx.fillRect(px+4,py+16,24,10);
+  ctx.fillStyle='#504235';ctx.font='bold 8px system-ui';ctx.textAlign='center';
+  ctx.fillText('城↑',px+16,py+11);ctx.fillText('宿←',px+16,py+23);ctx.textAlign='start';
+ }
  if(o.id==='capitalWagonQueue'){
   // This is a real city arrival choice, not loot: the cart is a low roadside
   // silhouette; guiding it leaves ruts and puts produce beside the ration lane.

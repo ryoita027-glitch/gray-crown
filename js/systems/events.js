@@ -663,6 +663,28 @@ function capitalWagonQueueVisit(){
 // The existing fountain becomes a short, optional conversation only after the
 // player has actually seen both the ration queue and the victory poster.
 // A local voice, not an omniscient narrator, makes the contradiction tangible.
+// A visible, optional south-gate landmark gives stage-accurate directions
+// without teleporting the party or turning the city into a checklist.
+function capitalGateGuideVisit(){
+ const routes='王城前広場 ↑　白鹿亭 ←　配給所 →。';
+ if(structuredCondition('returnedKingdom'))
+  return say('南門の道案内',routes+'古い案内板には、雨で薄れた文字が残っている。');
+ if(isEventComplete('alpha2.capital.granzBriefing'))
+  return say('南門の道案内',routes+'次の任務は北門から灰の街道へ。');
+ if(isEventComplete('alpha.capital.whiteStagNight'))
+  return say('南門の道案内',routes+'総司令グランツは北西の王城前にいる。');
+ if(isEventComplete('alpha.capital.ceremony'))
+  return say('南門の道案内',routes+'今夜の宿は西の白鹿亭。南門から西の通りへ。');
+ const key='early.capitalGateGuide';
+ if(state.events.choices[key]==='read')
+  return say('南門の道案内',routes+'任命式の係官は中央大通りを北へ進んだ先。');
+ state.events.choices[key]='read';
+ return saySequence([
+  {speaker:'南門の道案内',text:routes+'任命式の係官は中央大通りを北へ進んだ先。'},
+  {speaker:'カレン',text:'「王城は北だね。式が終わったら、街の人の話も聞いてみたい」'}
+ ]);
+}
+
 function capitalFountainVisit(){
  const key='early.capitalFountainPerspective';
  const inscription='聖地エルシアの泉を模したという噴水。観光客向けの説明板には「奪われた故郷を忘れるな」と刻まれている。';
@@ -1055,7 +1077,8 @@ function inlineObjectEvent(id){
   if(id==='northroadVista')return northRoadVistaVisit()
  }
  if(state.map==='capital'){
-  if(id==='capitalWagonQueue')return capitalWagonQueueVisit()
+  if(id==='capitalGateGuide')return capitalGateGuideVisit()
+   if(id==='capitalWagonQueue')return capitalWagonQueueVisit()
   if(id==='royalCastle')return say('アルディナ王城','白い石壁の奥に王家の居城がそびえている。広場から見上げるだけでも、リュネ村とは規模がまるで違う。')
   if(id==='capitalMarket')return capitalShop()
   if(id==='capitalFountain')return capitalFountainVisit()
