@@ -1,0 +1,67 @@
+{
+  "status": "ART_NO_GO",
+  "date": "2026-10-31",
+  "parent": "42d8b084374f224cff40fcc4bb3f4be475a8cfdd",
+  "sourceSophieBlob": "47065a719b16b3da0c3f0f2457d69ccfcf8a8a04",
+  "sourceV5Blob": "b169b58a846e1812dc42f566ca1843a6088e901f",
+  "studyFrames": "4 directions x frame 0 only",
+  "candidateDimensions": [
+    192,
+    48
+  ],
+  "boardDimensions": [
+    264,
+    88
+  ],
+  "nativeDisplay": 44,
+  "backgroundRGB": [
+    94,
+    105,
+    89
+  ],
+  "columns": [
+    "Sophie down",
+    "Sophie left",
+    "Sophie right",
+    "Sophie up",
+    "Mayor V5",
+    "Messenger V5"
+  ],
+  "rows": [
+    "original",
+    "trial"
+  ],
+  "V7": {
+    "pixelsChanged": [
+      56,
+      31,
+      30,
+      28
+    ],
+    "alphaChanged": [
+      28,
+      16,
+      16,
+      17
+    ],
+    "verdict": "NO_GO"
+  },
+  "V8": {
+    "pixelsChanged": [
+      168,
+      123,
+      120,
+      154
+    ],
+    "alphaChanged": [
+      123,
+      89,
+      87,
+      110
+    ],
+    "verdict": "NO_GO"
+  },
+  "runtimeScreenshot": false,
+  "fullTests": false,
+  "productionAssetChanged": false
+}
