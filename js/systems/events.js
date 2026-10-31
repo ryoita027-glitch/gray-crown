@@ -89,7 +89,52 @@ function capitalInnNoticeVisit(){
   {label:'今夜は予定どおり休む',fn:()=>say('カレン','「今夜は四人で休もう。明日、何ができるか考えたい」')}
  ]);
 }
-function playEventDialogue(def,after=null){if(!def){after?.();return false}const finish=()=>{if(def.postLines?.length)saySequence(def.postLines,after);else after?.()};const lines=def.id==='alpha.capital.whiteStagNight'?capitalNightEchoLines(def.lines||[]):def.lines;if(lines?.length)saySequence(lines,finish);else finish();return true}
+// A brief optional tactical question at the end of Granz's orders gives the
+// player a concrete first landmark in the ash road. It never locks a route.
+function granzPriorityVisit(){
+ const key='early.granzPriority',chosen=state.events?.choices?.[key];
+ if(chosen==='refugees')return say('総司令グランツ','「避難民は灰の街道の西、焼けた家の近くで目撃された。北門から進め。見つけたら無理に動かすな」');
+ if(chosen==='supplies')return say('総司令グランツ','「焼けた荷車は街道の東側だ。近くに命令書が残っている可能性がある。危険なら引き返せ」');
+ return say('総司令グランツ','「出発前に一つだけ聞け。北門から灰の街道へ向かう。何を先に確かめる？」',[
+  {label:'避難民の居場所を聞く',fn:()=>granzPriorityCommit('refugees')},
+  {label:'焼けた補給路の手掛かりを聞く',fn:()=>granzPriorityCommit('supplies')},
+  {label:'今は聞かずに出発する',fn:()=>say('カレン','「分かりました。北門から、四人で向かいます」')}
+ ]);
+}
+function granzPriorityCommit(priority){
+ if(!['refugees','supplies'].includes(priority)||!isEventComplete('alpha2.capital.granzBriefing'))return false;
+ const key='early.granzPriority';
+ if(state.events.choices[key])return granzPriorityVisit();
+ state.events.choices[key]=priority;
+ addJournal(priority==='refugees'
+  ?'グランツに避難民の居場所を確認した。灰の街道の西、焼けた家の近くを探せる。'
+  :'グランツに補給路の手掛かりを確認した。灰の街道の東、焼けた荷車と命令書を調べられる。');
+ renderHud();
+ return saySequence(priority==='refugees'?[
+  {speaker:'総司令グランツ',text:'「街道の西、焼けた家の近くに避難民がいる。見つけたら、まず状態を確かめろ」'},
+  {speaker:'ソフィ',text:'「はい。先に声をかけてみます」'}
+ ]:[
+  {speaker:'総司令グランツ',text:'「東側に焼けた荷車がある。近くの命令書が残っていれば、補給路を断った意図が分かるかもしれん」'},
+  {speaker:'マーガレット',text:'「誰の命令だったか、現物を確かめます」'}
+ ]);
+}
+function granzBriefingPlayerLines(original){
+ const offered=state.events?.choices?.['early.capitalRoomOffer']==='offered';
+ if(!offered)return original;
+ return original.map(line=>line.speaker==='ソフィ'&&line.text==='「避難民の治療を手伝っても？」'
+  ?{...line,text:'「昨日、白鹿亭で避難家族に部屋を譲りました。街道の避難民にも、治療を手伝っていいですか？」'}:line);
+}
+function ashRoadPriorityLines(id,original){
+ const priority=state.events?.choices?.['early.granzPriority'];
+ if(priority==='refugees'&&id==='alpha2.ashroad.homestead')
+  return original.map(line=>line.speaker==='ソフィ'&&line.text.includes('ここに住んでいた人たち')
+   ?{...line,text:'「グランツは西の焼けた家の近くに避難民がいると言っていました。ここに住んでいた人たち、今は無事なんでしょうか」'}:line);
+ if(priority==='supplies'&&id==='alpha2.ashroad.burnedCart')
+  return original.map(line=>line.speaker==='マーガレット'&&line.text.includes('もともとは農家の荷車')
+   ?{...line,text:'「グランツは補給路が焼かれたと言った。これは農家の荷車を軍が徴発したもの。軍事目標でも、持ち主には暮らしそのものだった」'}:line);
+ return original;
+}
+function playEventDialogue(def,after=null){if(!def){after?.();return false}const finish=()=>{if(def.postLines?.length)saySequence(def.postLines,after);else after?.()};const lines=def.id==='alpha.capital.whiteStagNight'?capitalNightEchoLines(def.lines||[]):def.id==='alpha2.capital.granzBriefing'?granzBriefingPlayerLines(def.lines||[]):ashRoadPriorityLines(def.id,def.lines||[]);if(lines?.length)saySequence(lines,finish);else finish();return true}
 function routeCompanionScene(route){
  const scenes={
   kingdom:{
@@ -348,7 +393,7 @@ function runTriggeredEvent(type,target,context={}){
     : '「墓に立ち止まらなかったことを責めはしない。生存者を守るにも時間は要るからな」';
    say('前線将校',response);return true
  }
- const def=findTriggeredEvent(type,target,context);if(!def)return false;if(def.id==='alpha.village.appointment'&&GC.RyuneActing?.runAppointment)return GC.RyuneActing.runAppointment(def,context);if(def.id==='alpha.capital.ceremony'&&typeof CapitalActing!=='undefined')return CapitalActing.runCeremony(def,context);GC.Log?.info('Story Event Start',{id:def.id,type,target,map:context.map??state.map});GC.Dev?.noteEvent?.(def.id);const optionalActing=GC.CommercialActing?.openMoment?.(def.id)===true;playEventDialogue(def,()=>{if(optionalActing)GC.CommercialActing?.closeMoment?.(def.id);applyEventEffects(def,context);if(def.postLines?.length===0&&typeof canvas!=='undefined')canvas.focus()});return true}
+ const def=findTriggeredEvent(type,target,context);if(!def)return false;if(def.id==='alpha2.capital.granzBriefing.repeat'){granzPriorityVisit();return true}if(def.id==='alpha.village.appointment'&&GC.RyuneActing?.runAppointment)return GC.RyuneActing.runAppointment(def,context);if(def.id==='alpha.capital.ceremony'&&typeof CapitalActing!=='undefined')return CapitalActing.runCeremony(def,context);GC.Log?.info('Story Event Start',{id:def.id,type,target,map:context.map??state.map});GC.Dev?.noteEvent?.(def.id);const optionalActing=GC.CommercialActing?.openMoment?.(def.id)===true;playEventDialogue(def,()=>{if(optionalActing)GC.CommercialActing?.closeMoment?.(def.id);applyEventEffects(def,context);if(def.id==='alpha2.capital.granzBriefing')return granzPriorityVisit();if(def.postLines?.length===0&&typeof canvas!=='undefined')canvas.focus()});return true}
 
 // Early-game choices are local, optional and save-schema-23 compatible.
 // Record a decision only once; all repeated conversations read that same history.
