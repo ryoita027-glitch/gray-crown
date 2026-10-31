@@ -240,7 +240,10 @@ const maps={
  ],objects:[{id:'soldierLetter',x:16,y:4},{id:'emptyBed',x:6,y:4},{id:'indoorExit',x:11,y:12}]},
  capitalinn:{name:'王都・白鹿亭',tag:'兵士と旅人が集う宿',tiles:makeInteriorTiles(),npcs:[
   {id:'capitalInnHost',x:8,y:6,name:'白鹿亭の女将'},
-  {id:'offDutySoldier',x:15,y:8,name:'非番の王国兵'}
+  {id:'offDutySoldier',x:15,y:8,name:'非番の王国兵'},
+  // A waiting family is visible beside the existing room-request notice.
+  // The west aisle and the route from the entrance to the rest bed remain open.
+  {id:'innRefugeeMother',x:6,y:8,name:'北部から来た母親',hideWhen:'returnedKingdom'}
  ],objects:[{id:'innCounter',x:17,y:5},{id:'innNotice',x:6,y:5},{id:'innRest',x:17,y:4},{id:'indoorExit',x:11,y:12}]},
  capitalarmory:{name:'王都・兵装店',tag:'前線向けの武具と修理工房',tiles:makeInteriorTiles(),npcs:[
   {id:'capitalSmith',x:8,y:6,name:'王都の鍛冶師'},
