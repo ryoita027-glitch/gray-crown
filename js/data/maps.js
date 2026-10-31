@@ -20,6 +20,14 @@ function makeRouteTiles(){return[
  'TGGGGGGGGGGPPGGGGGGGGGGT','TGGGGGGGGGGPPGGGGGGGGGGT','TGGGGGGGGGGPPGGGGGGGGGGT',
  'TGGGGGGGGGGPPGGGGGGGGGGT','TGGGGGGGGGGPPGGGGGGGGGGT','TGGGGGGGGGGPPGGGGGGGGGGT',
  'TGGGGGGGGGGPPGGGGGGGGGGT','TGGGGGGGGGGPPGGGGGGGGGGT','TTTTTTTTTTTPPTTTTTTTTTTT']}
+// Keep the two-tile north/south route intact. A short worn spur leads to the
+// already-existing stone milestone, while the scout has a modest roadside layby.
+// Both are discoveries along the route, not extra mandatory travel distance.
+function makeNorthRoadTiles(){
+ const g=makeRouteTiles().map(row=>row.split(''));
+ for(const [x,y] of [[10,5],[10,6],[9,6],[10,7],[13,4],[13,5]])g[y][x]='P';
+ return g.map(row=>row.join(''))
+}
 function makeTownTiles(){return[
  'TTTTTTTTTTTPPTTTTTTTTTTT','TGGGGGGGGGGPPGGGGGGGGGGT','TGGHHHGGGGGPPGGGGHHHGGGT',
  'TGGHHHGGGGGPPGGGGHHHGGGT','TGGHHHGGGGGPPGGGGHHHGGGT','TGGGGGGGGGGPPGGGGGGGGGGT',
@@ -267,7 +275,7 @@ const maps={
    {id:'chest1',x:4,y:3},{id:'chest2',x:19,y:10},{id:'bats',x:4,y:8},{id:'crawler',x:20,y:6},
    {id:'leverWest',x:3,y:8},{id:'leverEast',x:21,y:6},{id:'banner',x:3,y:6},{id:'fortShield',x:16,y:8},{id:'caveRest',x:5,y:12},{id:'rations',x:20,y:12},{id:'innerGate',x:12,y:4},{id:'boss',x:12,y:3},{id:'exit',x:12,y:14},{id:'northExit',x:11,y:0}
  ]},
- northroad:{name:'王都への旧街道',tag:'城壁へ続く古道',tiles:makeRouteTiles(),npcs:[{id:'scout',x:12,y:3,name:'王国軍の斥候'}],objects:[{id:'southExit',x:11,y:14},{id:'milestone',x:9,y:6}]},
+ northroad:{name:'王都への旧街道',tag:'城壁へ続く古道',tiles:makeNorthRoadTiles(),npcs:[{id:'scout',x:12,y:3,name:'王国軍の斥候'}],objects:[{id:'southExit',x:11,y:14},{id:'milestone',x:9,y:6}]},
  capital:{name:'アルディナ王都',tag:'白石の王城と大通り',tiles:makeCapitalTiles(),npcs:[
   {id:'capitalOfficial',x:12,y:6,name:'王都係官',hideWhen:'capitalCeremony'},
   {id:'capitalCitizen',x:9,y:8,name:'王都市民'},
