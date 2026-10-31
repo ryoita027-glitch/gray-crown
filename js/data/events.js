@@ -175,7 +175,7 @@ const EVENT_DEFS=Object.freeze([
   ],
   effects:[
    {type:'completeEvent',id:'alpha2.ashroad.refugee'},
-   {type:'setObjective',value:'街道の焼け跡を調べ、帝国軍が何を狙ったのか確かめる'},
+   {type:'syncAshRoadObjective'},
    {type:'journal',text:'灰の街道の避難民から、補給路への攻撃で家と畑を失った話を聞いた。'}
   ]
  },
@@ -195,7 +195,7 @@ const EVENT_DEFS=Object.freeze([
    {speaker:'焼けた荷車',text:'荷台には穀物袋の焼け跡が残っている。車体の側面には、薄く[[王国軍徴発済]]の焼印が見える。'},
    {speaker:'マーガレット',text:'「もともとは農家の荷車。軍が徴発して補給に使ったから、帝国軍には軍事目標になった」'},
    {speaker:'カレン',text:'「でも、これを失った農家から見たら“軍の荷車”じゃないよね」'}
-  ],effects:[{type:'completeEvent',id:'alpha2.ashroad.burnedCart'}]
+  ],effects:[{type:'completeEvent',id:'alpha2.ashroad.burnedCart'},{type:'syncAshRoadObjective'}]
  },
  {id:'alpha2.ashroad.burnedCart.repeat',priority:10,trigger:{type:'object',map:'ashroad',target:'burnedCart'},when:[{eventComplete:'alpha2.ashroad.burnedCart'}],lines:[{speaker:'焼けた荷車',text:'王国軍の徴発印と、農家の古い所有印が同じ車体に残っている。軍事目標と生活道具が、一つの荷車に重なっている。'}]},
  {
@@ -219,7 +219,7 @@ const EVENT_DEFS=Object.freeze([
   ],
   effects:[
    {type:'completeEvent',id:'alpha2.ashroad.orders'},
-   {type:'setObjective',value:'街道北側の帝国斥候を退け、先へ進む'},
+   {type:'syncAshRoadObjective'},
    {type:'journal',text:'焦げた帝国軍命令書を発見。「民間人との不要な交戦は避ける」としつつ、王国の補給路・穀倉・橋梁を破壊する命令だった。'}
   ]
  },
@@ -239,7 +239,7 @@ const EVENT_DEFS=Object.freeze([
   id:'alpha2.ashroad.patrolVictory',priority:120,trigger:{type:'battleWin',target:'imperialRaid'},when:[{eventIncomplete:'alpha2.ashroad.patrolVictory'}],
   effects:[
    {type:'completeEvent',id:'alpha2.ashroad.patrolVictory'},{type:'defeatSymbol',id:'imperialPatrol'},
-   {type:'setObjective',value:'北へ進む前に、避難民の話と帝国軍命令書を確かめる'},
+   {type:'syncAshRoadObjective'},
    {type:'journal',text:'灰の街道で帝国斥候隊と交戦。負傷して取り残された斥候兵をソフィが治療した。'}
   ],
   lines:[
