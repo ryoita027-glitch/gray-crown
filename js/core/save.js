@@ -311,7 +311,7 @@ function downloadPortableSave(){
   notifySaveStatus('セーブの書き出しに失敗しました。ブラウザのダウンロード設定を確認してください。');
   return false
  }
- notifySaveStatus('セーブを書き出しました。別のPCで遊ぶ時は「セーブを読み込む」を使ってください。');
+ notifySaveStatus('セーブの書き出しを開始しました。ブラウザのダウンロード一覧で保存を確認してください。別のPCで遊ぶ時は「セーブを読み込む」を使ってください。');
  return true
 }
 // Portable import must not erase unreadable old slots. Preserve their exact
