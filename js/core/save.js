@@ -9,6 +9,8 @@ const SAVE_SCHEMA=23;
 // A committed import may need a page refresh if nonessential presentation fails.
 let lastLoadPresentationFailed=false;
 let lastImportPresentationFailed=false;
+// Only promise that an old primary was backed up after its write was verified.
+let lastImportBackupRotated=false;
 let lastPortableExportNeedsManualBackup=false;
 function safeNumber(v,fallback,min=-Infinity,max=Infinity){return Number.isFinite(v)?Math.max(min,Math.min(max,v)):fallback}
 function nearestSafeTile(mapId,x,y,saveState=state){
@@ -365,6 +367,7 @@ function preserveInvalidSaveSlotsBeforeWrite(primary,backup,
 }
 function importPortableSaveText(raw){
  lastImportPresentationFailed=false;
+ lastImportBackupRotated=false;
  // Strict structural gate before migration: a generic JSON is not a valid save.
  // Supports real earlier-version saves, but never silently imports future schema.
  if(typeof raw!=='string'||raw.length>2*1024*1024) return false;
@@ -402,6 +405,7 @@ function importPortableSaveText(raw){
   if(primaryUsable&&primary!==payload){
    localStorage.setItem(SAVE_BACKUP_KEY,primary);
    if(localStorage.getItem(SAVE_BACKUP_KEY)!==primary)throw new Error('Portable import backup write not persisted');
+   lastImportBackupRotated=true;
   }else if(!backupUsable){
    localStorage.setItem(SAVE_BACKUP_KEY,payload);
    if(localStorage.getItem(SAVE_BACKUP_KEY)!==payload)throw new Error('Portable import backup write not persisted');
@@ -451,7 +455,9 @@ async function readPortableSaveFile(file){
  try{say('システム',ok&&lastImportPresentationFailed?
   '外部セーブは読み込みましたが、画面の更新に失敗しました。ページを再読み込みしてください。':
   ok?(usablePrimary?
-  '外部セーブを読み込みました。元のセーブはバックアップに保存されています。':
+  (lastImportBackupRotated?
+   '外部セーブを読み込みました。元のセーブはバックアップに保存されています。':
+   '同じセーブを読み込みました。既存のバックアップは維持されています。'):
   hadPrior?'外部セーブを読み込みました。既存の保存データはバックアップまたは復旧用領域に保護されています。':
   '外部セーブを読み込みました。'):
   'セーブの読み込みに失敗しました。形式・データ・ブラウザの保存領域を確認してください。')}
@@ -597,11 +603,14 @@ function restoreArchivedAdventure(){
   return false
  }
  if(!raw)return false;
- if(!confirm('保管していた以前の冒険を復旧しますか？ 現在のセーブはバックアップへ移します。'))return false;
+ if(!confirm('保管していた以前の冒険を復旧しますか？ 異なるセーブがある場合は、既存データを保護してから切り替えます。'))return false;
  const ok=importPortableSaveText(raw);
  try{say('システム',ok&&lastImportPresentationFailed?
   '以前の冒険は復旧しましたが、画面の更新に失敗しました。ページを再読み込みしてください。':
-  ok?'以前の冒険を復旧しました。現在のセーブはバックアップに残しています。':'以前の冒険を復旧できませんでした。現在のセーブには変更していません。')}
+  ok?(lastImportBackupRotated?
+   '以前の冒険を復旧しました。現在のセーブはバックアップに残しています。':
+   '以前の冒険を復旧しました。既存のバックアップや復旧用データは維持しています。'):
+  '以前の冒険を復旧できませんでした。現在のセーブには変更していません。')}
  catch(e){GC.Log?.warn?.('Previous adventure status message failed',{error:String(e)})}
  return ok
 }
