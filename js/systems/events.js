@@ -585,11 +585,34 @@ function visitRenPractice(){
 // The north-road scout sees the route the party actually took. A cleared fort
 // earns one practical, modest supply, not an invisible karma or chapter change.
 // The existing Save v23 choice dictionary persists this receipt on Continue.
+// Optional, one-time care for a landmark already on the player's route.
+// The existing Save v23 choices object records the result; no new item or gate.
+function northRoadMilestoneVisit(){
+ const route=getWorldSwitch('northRoadFromRoad')?'南は森の本道へ戻る道だ。':'南へ戻れば古砦の北門だ。';
+ if(state.events.choices['early.northroadWaystone']==='cleared')
+  return say('石の道標','苔を落とした石に「アルディナ王都まで三里」と北向きの矢印がはっきり見える。'+route);
+ return say('石の道標','苔の隙間に「アルディナ王都まで三里」と読める。'+route,[
+  {label:'苔を落として、次の旅人にも読めるようにする',fn:()=>{
+   if(state.events.choices['early.northroadWaystone']==='cleared')return northRoadMilestoneVisit();
+   state.events.choices['early.northroadWaystone']='cleared';
+   addJournal('王都への旧街道で石の道標の苔を落とし、後から来る旅人にも方角が分かるようにした。');
+   renderHud();draw();
+   return saySequence([
+    {speaker:'ナレーション',text:'四人で苔を払い落とすと、石に刻まれた「王都」の字と北向きの矢印がくっきり現れた。'},
+    {speaker:'マーガレット',text:'「これなら帰り道でも迷わない。道しるべって、誰かが手入れしてるから役に立つのね」'},
+    {speaker:'カレン',text:'「うん。帰る時も、四人でここを通ろう」'}
+   ]);
+  }},
+  {label:'方角だけ確かめて先へ進む',fn:()=>say('カレン','「王都は北だね。行こう」')}
+ ])
+}
+
 function northRoadScoutVisit(){
  const fromFort=!getWorldSwitch('northRoadFromRoad')&&isDefeated('boss');
- if(!fromFort)return say('王国軍の斥候','「森の本道から来たのか。古砦を通らなくても王都へ行ける。北へ進めば城門、南へ戻れば森の街道だ」');
+ const markerCleared=state.events.choices['early.northroadWaystone']==='cleared';
+ if(!fromFort)return say('王国軍の斥候','「森の本道から来たのか。古砦を通らなくても王都へ行ける。北へ進めば城門、南へ戻れば森の街道だ。'+(markerCleared?'道標を磨いてくれたのか。これなら後から来る旅人も迷わないな。':'')+'」');
  if(state.events.choices['early.fortScoutAid']==='received')
-  return say('王国軍の斥候','「古砦の北門が通れるようになったのは助かる。王都へは北だ。渡せる薬草はもうないが、無事に着いてくれよ」');
+  return say('王国軍の斥候','「古砦の北門が通れるようになったのは助かる。王都へは北だ。渡せる薬草はもうないが、無事に着いてくれよ。'+(markerCleared?'道標も読めるようになって、助かるよ。':'')+'」');
  state.events.choices['early.fortScoutAid']='received';
  state.inventory['薬草']=(state.inventory['薬草']||0)+1;
  addJournal('古砦跡の北門を抜けたことを王国軍の斥候に伝え、旅の備えとして薬草を1個受け取った。');
@@ -934,7 +957,7 @@ function inlineObjectEvent(id){
  }
  if(state.map==='northroad'){
   if(id==='southExit')return returnCaveNorth();
-  if(id==='milestone')return say('石の道標',getWorldSwitch('northRoadFromRoad')?'苔を払うと「アルディナ王都まで三里」と刻まれている。南は森の本道へ戻る道だ。':'苔を払うと「アルディナ王都まで三里」と刻まれている。南へ戻れば古砦の北門だ。')
+  if(id==='milestone')return northRoadMilestoneVisit()
  }
  if(state.map==='capital'){
   if(id==='royalCastle')return say('アルディナ王城','白い石壁の奥に王家の居城がそびえている。広場から見上げるだけでも、リュネ村とは規模がまるで違う。')
