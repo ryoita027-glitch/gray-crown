@@ -161,6 +161,9 @@ function makeBorderlandTiles(){
   // A two-step worn spur visibly connects the wagon layby to the east checkpoint.
   // Both cells were already walkable B: only the ground material changes.
   paintH(g,19,20,10,'D');
+ // Worn two-tile trail from the inn campfire to the northern fort gate.
+ // Campfire at (12,5) remains; the (11,5) parallel lane is unobstructed.
+ paintV(g,1,5,11,'D');paintV(g,1,5,12,'D');
  paintH(g,3,20,6,'D');paintV(g,2,6,7,'D');paintV(g,2,6,16,'D');
  paintV(g,0,6,11,'P');paintV(g,0,6,12,'P');
  // 宿場の建物と旧関所の崩れた壁

@@ -1089,9 +1089,10 @@ function inlineNpcEvent(id){
   }
   if(id==='relayHost'){
    if(!structuredCondition('borderMerchantHelped'))return say('ハルム宿場の女将','「東の商人がまだ戻ってない。暗くなる前に帰ってくればいいけどね」');
-   if(structuredCondition('borderRested'))return say('ハルム宿場の女将','「朝飯は包んでおいた。ベルド砦までなら昼前には着くよ」');
+   if(structuredCondition('borderRested'))return say('ハルム宿場の女将','「朝飯は包んでおいた。焚き火の北に続く踏み道をたどりな。あの道の先がベルド砦だよ」');
    return say('ハルム宿場の女将','「東の荷車を直したんだってね。塩が届くなら宿場も助かる。……今夜は休みな。峡谷へ夜に入る馬鹿はいないよ」',[{label:'日が落ちるまで休む',fn:()=>objectEvent('borderCampfire')},{label:'まだ周辺を見る',fn:()=>say('カレン','「もう少しだけ見て回ろう」')}])
   }
+  if(id==='relayChild'&&structuredCondition('borderRested'))return say('宿場の子ども','「北へ行くの？ 焚き火の向こうの踏み道をまっすぐだよ。……いつか、兵隊さんじゃなく商人さんが通る道に戻るといいな」');
   if(id==='relayChild')return structuredCondition('borderMerchantHelped')
     ?saySequence([{speaker:'宿場の子ども',text:'「東の荷車、直ったんだって！　おばあちゃんが塩が届くかもって喜んでた」'},{speaker:'ソフィ',text:'「帝国の塩も、ここへ届いていたんですね」'},{speaker:'宿場の子ども',text:'「うん。昔は帝国の子も泊まったって。今は兵隊さんばっかりだけど、また来てほしいな」'}])
     :saySequence([{speaker:'宿場の子ども',text:'「昔は帝国の子もここに泊まったって、おばあちゃんが言ってた」'},{speaker:'ソフィ',text:'「今は？」'},{speaker:'宿場の子ども',text:'「兵隊さんばっかり。大人は“向こう側”って言うけど、僕は橋の向こうを見たことない」'}])
@@ -1170,7 +1171,7 @@ function inlineObjectEvent(id){
    if(!structuredCondition('borderMerchantHelped'))return say('宿場の焚き火','まだ日が高い。東で足止めされた商人も戻っていない。');
    if(structuredCondition('borderRested'))return limitedRecovery('borderCampfire','宿場の焚き火','残った薪と保存食で、もう一度だけまともに休めそうだ。','field','焚き火のそばで短く休んだ。HPが全回復し、MPも少し戻った。');
    setStructuredCondition('borderRested',true);spendRecovery('borderCampfire');recoverParty('full');state.objective=borderlandNextObjective();addJournal('ハルム宿場で一晩休み、王都を出てから見たものを4人で整理した。');renderHud();
-   return saySequence([{speaker:'ナレーション',text:'日が落ちる。街道の音が消え、焚き火の向こうに旧関所の影だけが見える。王都を出てから、四人が何も急がず座ったのは初めてだった。'},{speaker:'トリトン',text:'「……思ってたより、遠いな」'},{speaker:'カレン',text:'「帝国が？」'},{speaker:'トリトン',text:'「全部。魔王も四天王も、王都じゃ“倒しに行く相手”って一言だった。でも歩いてると、その間に人が多すぎる」'},{speaker:'ソフィ',text:'「灰の街道の人も、前線の怪我人も、今日の商人さんも」'},{speaker:'マーガレット',text:'「私たちはまだ帝国にすら入ってない。それなのに、王都で聞いた説明だけじゃ足りないことがもう増えてる」'},{speaker:'カレン',text:'「怖い？」'},{speaker:'マーガレット',text:'「当然。でも、あなたが怖いって言ってくれたら、少し安心するかも。……あなたは？」'},{speaker:'カレン',text:'「怖い。でも……分からないまま魔王を倒して帰る方が、今はもっと嫌」'},{speaker:'トリトン',text:'「じゃあ明日も見る。それでいい」'},{speaker:'ソフィ',text:'「四人で、ですね」'},{speaker:'マーガレット',text:'「ええ。私の地図にも、四人で歩いた道をちゃんと残しておく」'},{speaker:'ナレーション',text:'翌朝。宿場の女将から黒パンを受け取り、四人はベルド砦へ向かった。'}])
+   return saySequence([{speaker:'ナレーション',text:'日が落ちる。街道の音が消え、焚き火の向こうに旧関所の影だけが見える。王都を出てから、四人が何も急がず座ったのは初めてだった。'},{speaker:'トリトン',text:'「……思ってたより、遠いな」'},{speaker:'カレン',text:'「帝国が？」'},{speaker:'トリトン',text:'「全部。魔王も四天王も、王都じゃ“倒しに行く相手”って一言だった。でも歩いてると、その間に人が多すぎる」'},{speaker:'ソフィ',text:'「灰の街道の人も、前線の怪我人も、今日の商人さんも」'},{speaker:'マーガレット',text:'「私たちはまだ帝国にすら入ってない。それなのに、王都で聞いた説明だけじゃ足りないことがもう増えてる」'},{speaker:'カレン',text:'「怖い？」'},{speaker:'マーガレット',text:'「当然。でも、あなたが怖いって言ってくれたら、少し安心するかも。……あなたは？」'},{speaker:'カレン',text:'「怖い。でも……分からないまま魔王を倒して帰る方が、今はもっと嫌」'},{speaker:'トリトン',text:'「じゃあ明日も見る。それでいい」'},{speaker:'ソフィ',text:'「四人で、ですね」'},{speaker:'マーガレット',text:'「ええ。私の地図にも、四人で歩いた道をちゃんと残しておく」'},{speaker:'ナレーション',text:'翌朝。宿場の女将から黒パンを受け取る。焚き火の北には、ベルド砦へ続く踏み道が見える。四人は荷を整えた。'}])
   }
  }
  if(state.map==='relayvillage'){
