@@ -286,7 +286,10 @@ function exportPortableSaveText(){
  if(save(true)){
   try{
    const stored=localStorage.getItem(SAVE_KEY);
-   if(stored)return stored
+   // Storage may expose stale/corrupt bytes after Save acknowledged its write.
+   // Only export the exact current checkpoint after structural validation.
+   if(stored&&stored===serializeSave()&&isUsableSavedAdventure(stored))return stored;
+   GC.Log?.warn?.('Portable save read-back mismatch; using validated live snapshot');
   }catch(e){GC.Log?.warn?.('Portable save export read failed',{error:String(e)})}
  }
  // Quota denial or blocked localStorage must not strand the player's current
