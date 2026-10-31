@@ -14,7 +14,7 @@
 - Original source PNG decoded from GitHub, RGBA 8-bit, 288×192; study PNG generated and uploaded as a new Git blob.
 - **1,635 changed opaque pixel positions** across 24 frames, directions [456,325,326,528]. Alpha mask identical, face and footline untouched. These are technical invariants, **not** visual acceptance.
 - At native 44px the lower hair has marginally calmer warm-brown groupings while the original face remains attractive. However the difference is subtle and may flatten hair texture. The head/shoulder ratio and the V5 Mayor/Envoy quality gap are **not proven resolved**. **ART HOLD.**
-- Existing [four-hero/V5 Mayor/Envoy reference](evidence/four_heroes_v11_v5_native44_anchor_20261031.svg) remains the comparison anchor; no claim that this study surpasses it.
+- [Same-scale Sophie original / V5 HOLD / Mayor V5 / Envoy V5 comparison](evidence/sophie_v5_original_vs_mayor_envoy_native44_20261031.svg): four directions, actual source PNGs, 44px display boxes. **Not** a real game screenshot.\n- Existing [four-hero/V5 Mayor/Envoy reference](evidence/four_heroes_v11_v5_native44_anchor_20261031.svg) remains the comparison anchor; no claim that this study surpasses it.
 
 ## Outstanding
 - Real Chromium screenshot in Ryune village with V5 Mayor/Envoy and consistent world scale: **NOT RUN**.
