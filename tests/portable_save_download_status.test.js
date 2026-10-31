@@ -207,3 +207,74 @@ test('restoring an identical previous adventure never claims that the primary wa
  assert.match(messages.at(-1),/既存のバックアップや復旧用データは維持/);
  assert.doesNotMatch(messages.at(-1),/現在のセーブはバックアップに残しています/);
 });
+
+test('invalid portable JSON is rejected before confirmation and leaves existing save untouched',async()=>{
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=421');
+ assert.equal(s.save(true),true);
+ const original=h.storage.getItem(s.SAVE_KEY);
+ let confirmations=0;
+ const messages=[];
+ h.context.confirm=()=>{confirmations++;return true};
+ h.context.say=(_who,message)=>messages.push(message);
+ assert.equal(await s.readPortableSaveFile({size:12,text:async()=>'{broken json'}),false);
+ assert.equal(confirmations,0);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),original);
+ assert.match(messages.at(-1),/有効なGray Crownセーブではありません/);
+});
+
+test('structurally invalid portable JSON never asks to overwrite the current adventure',async()=>{
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=422');
+ assert.equal(s.save(true),true);
+ const original=h.storage.getItem(s.SAVE_KEY);
+ let confirmations=0;
+ h.context.confirm=()=>{confirmations++;return true};
+ const invalid=JSON.stringify({schema:999,map:'village',story:{},world:{},inventory:{},party:[]});
+ assert.equal(await s.readPortableSaveFile({size:invalid.length,text:async()=>invalid}),false);
+ assert.equal(confirmations,0);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),original);
+});
+
+test('file-read rejection never asks for confirmation or changes the existing save',async()=>{
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=423');
+ assert.equal(s.save(true),true);
+ const original=h.storage.getItem(s.SAVE_KEY);
+ let confirmations=0;
+ h.context.confirm=()=>{confirmations++;return true};
+ assert.equal(await s.readPortableSaveFile({size:32,text:async()=>{throw Error('File read denied')}}),false);
+ assert.equal(confirmations,0);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),original);
+});
+
+test('battle beginning while portable file is read blocks import before confirmation',async()=>{
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=424');
+ assert.equal(s.save(true),true);
+ const original=h.storage.getItem(s.SAVE_KEY);
+ const incoming=s.serializeSave();
+ let confirmations=0;
+ h.context.confirm=()=>{confirmations++;return true};
+ assert.equal(await s.readPortableSaveFile({
+  size:incoming.length,
+  text:async()=>{h.evaluate('state.locked=true');return incoming}
+ }),false);
+ assert.equal(confirmations,0);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),original);
+});
+
+test('valid portable file confirms only after it is read and validated',async()=>{
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=425');
+ assert.equal(s.save(true),true);
+ const original=h.storage.getItem(s.SAVE_KEY);
+ h.evaluate('state.gold=900');
+ const incoming=s.serializeSave();
+ const order=[];
+ h.context.confirm=prompt=>{order.push('confirm');assert.match(prompt,/異なる現在のセーブ/);return true};
+ assert.equal(await s.readPortableSaveFile({size:incoming.length,text:async()=>{order.push('read');return incoming}}),true);
+ assert.deepEqual(order,['read','confirm']);
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),original);
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_KEY)).gold,900);
+});
