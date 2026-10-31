@@ -20,6 +20,7 @@
 ## Verification / HOLD
 - Actual changed JS source parsed with JavaScript Function syntax compilation; exact anchors matched once.
 - Source-derived 24×15 watchfort tile generation confirmed x=9,y=6..10 are all `D`; static walkability BFS on authored tile grammar and object/NPC blockers found entry→map 6 steps, entry→lookout 9, lookout→guard 10, guard→bridge 11 after gate unlock. This is **not** a browser playthrough.
+- Executed actual `js/systems/events.js` in a dependency-mocked JavaScript environment: optional lookout choice and decline, one-time journal, guard reward/no duplicate, Klein warning echo/decline, full 15-line scene and transition only after dialogue **PASS (10 checks)**. This is not the full game harness.
 - Added Node harness regression cases for optional decline, route movement, report one-time reward, Save v23 persistence, and contextual Klein warning; **not executed** in this environment.
 - **Not run:** full Node suite, `npm run check`, actual browser 44px view, real movement with live input/collision, Save/Load runtime, human playtest. Keep Draft/HOLD.
 - Recommended: `node --test tests/watchfort_bridge_scouting.test.js tests/klein_bridge_one_way.test.js tests/watchfort_reentry_context.test.js`; then `npm run check`; then real 5–10 minute run south entrance → commander → map → lookout → guard → north gate → Klein, both with and without scouting.

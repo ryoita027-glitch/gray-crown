@@ -35,7 +35,7 @@ test('south-plaza worn stone spur leads to an optional, reachable lookout',()=>{
   h.evaluate('VISUAL.nextMoveAt=0');h.GC.Movement.move('up');
   assert.deepEqual([s.x,s.y],[9,y]);
  }
- h.GC.Movement.move('left');
+ h.evaluate('VISUAL.nextMoveAt=0');h.GC.Movement.move('left');
  assert.deepEqual([s.x,s.y],[9,6],'lookout remains an interactable object');
  h.GC.Movement.interact();h.GC.Dialogue.finishDialogueTyping();
  assert.equal(h.getElement('choiceBox').children.length,2);
