@@ -1,0 +1,30 @@
+/* Gray Crown: zero-dependency PNG RGBA codec for reproducible source-faithful pixel studies.
+ * Supports 8-bit RGBA/RGB/indexed PNG input, PNG RGBA output. Never changes original files.
+ * Deliberately isolated from production. */
+const GCCodec=(()=>{
+const abc="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+function unb64(s){const out=new Uint8Array(Math.floor(s.length*3/4)+3);let acc=0,bits=0,p=0;for(const c of s){if(c==="=")break;const v=abc.indexOf(c);if(v<0)continue;acc=(acc<<6)|v;bits+=6;if(bits>=8){bits-=8;out[p++]=(acc>>>bits)&255;}}return out.slice(0,p)}
+function b64(a){let s="";for(let i=0;i<a.length;i+=3){let v=(a[i]<<16)|((a[i+1]||0)<<8)|(a[i+2]||0);s+=abc[(v>>>18)&63]+abc[(v>>>12)&63]+(i+1<a.length?abc[(v>>>6)&63]:"=")+(i+2<a.length?abc[v&63]:"=");}return s}
+function inflate(z){
+let bp=16, out=new Uint8Array(2000000),p=0;
+const rb=n=>{let v=0;for(let i=0;i<n;i++,bp++)v|=((z[bp>>3]>>(bp&7))&1)<<i;return v};
+const huff=lens=>{let max=Math.max(...lens),counts=Array(max+1).fill(0),next=Array(max+1).fill(0),table=Array.from({length:max+1},()=>new Map());for(let n of lens)if(n)counts[n]++;let code=0;for(let n=1;n<=max;n++){code=(code+(counts[n-1]||0))<<1;next[n]=code;}for(let i=0;i<lens.length;i++){let n=lens[i];if(n)table[n].set(next[n]++,i);}return ()=>{let code=0;for(let n=1;n<=max;n++){code=(code<<1)|rb(1);if(table[n].has(code))return table[n].get(code);}throw Error("bad huffman "+bp)}};
+const lengths=[3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258],lex=[0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0];
+const distances=[1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577],dex=[0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13];
+let final=0;do{final=rb(1);let type=rb(2),lit,dist;if(type===0){bp=(bp+7)&~7;let n=rb(16);rb(16);for(let i=0;i<n;i++)out[p++]=rb(8);continue}
+if(type===1){lit=huff(Array.from({length:288},(_,i)=>i<=143?8:i<=255?9:i<=279?7:8));dist=huff(Array(32).fill(5))}
+else if(type===2){let hl=rb(5)+257,hd=rb(5)+1,hc=rb(4)+4,order=[16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15],cl=Array(19).fill(0);for(let i=0;i<hc;i++)cl[order[i]]=rb(3);let rd=huff(cl),lens=[];while(lens.length<hl+hd){let v=rd();if(v<16)lens.push(v);else if(v===16){let n=rb(2)+3,val=lens[lens.length-1];while(n--)lens.push(val)}else if(v===17){let n=rb(3)+3;while(n--)lens.push(0)}else{let n=rb(7)+11;while(n--)lens.push(0)}}lit=huff(lens.slice(0,hl));dist=huff(lens.slice(hl,hl+hd))}
+else throw Error("reserved block");
+while(true){let sym=lit();if(sym<256){out[p++]=sym;continue}if(sym===256)break;let li=sym-257,len=lengths[li]+rb(lex[li]),di=dist(),d=distances[di]+rb(dex[di]);if(d>p)throw Error("bad dist "+d);for(let i=0;i<len;i++)out[p]=out[p++-d]}
+}while(!final);return out.slice(0,p)}
+function decode(data){let off=8,w=0,h=0,type=0,depth=0,idats=[],pal=null,trans=null;const u32=(a,i)=>((a[i]*16777216)+(a[i+1]<<16)+(a[i+2]<<8)+a[i+3])>>>0;
+while(off<data.length){let n=u32(data,off),tag=String.fromCharCode(...data.slice(off+4,off+8)),chunk=data.slice(off+8,off+8+n);off+=12+n;if(tag==="IHDR"){w=u32(chunk,0);h=u32(chunk,4);depth=chunk[8];type=chunk[9]}if(tag==="IDAT")idats.push(chunk);if(tag==="PLTE")pal=chunk;if(tag==="tRNS")trans=chunk;if(tag==="IEND")break}
+if(depth!==8||![6,3,2].includes(type))throw Error("PNG type "+type+" depth "+depth);
+let bpp=type===6?4:type===2?3:1,stride=w*bpp,z=new Uint8Array(idats.reduce((n,a)=>n+a.length,0)),q=0;for(let a of idats){z.set(a,q);q+=a.length}let raw=inflate(z),rows=new Uint8Array(h*stride),r=0;for(let y=0;y<h;y++){let filter=raw[r++];for(let x=0;x<stride;x++){let left=x>=bpp?rows[y*stride+x-bpp]:0,up=y?rows[(y-1)*stride+x]:0,ul=y&&x>=bpp?rows[(y-1)*stride+x-bpp]:0,v=raw[r++];if(filter===1)v+=left;else if(filter===2)v+=up;else if(filter===3)v+=Math.floor((left+up)/2);else if(filter===4){let p=left+up-ul,a=Math.abs(p-left),b=Math.abs(p-up),c=Math.abs(p-ul);v+=a<=b&&a<=c?left:b<=c?up:ul;}else if(filter!==0)throw Error("filter "+filter);rows[y*stride+x]=v&255;}}
+let rgba=new Uint8Array(w*h*4);for(let i=0;i<w*h;i++){let k=i*4;if(type===6){rgba.set(rows.slice(i*4,i*4+4),k)}else if(type===3){let index=rows[i];rgba[k]=pal[index*3];rgba[k+1]=pal[index*3+1];rgba[k+2]=pal[index*3+2];rgba[k+3]=trans&&index<trans.length?trans[index]:255}else{rgba[k]=rows[i*3];rgba[k+1]=rows[i*3+1];rgba[k+2]=rows[i*3+2];rgba[k+3]=255}}return {width:w,height:h,rgba,type,depth}}
+function encode(w,h,rgba){let scan=new Uint8Array(h*(w*4+1));for(let y=0;y<h;y++)scan.set(rgba.slice(y*w*4,(y+1)*w*4),y*(w*4+1)+1);let blocks=[],n=scan.length,off=0;while(off<n){let len=Math.min(65535,n-off),fin=off+len===n;let b=new Uint8Array(5+len);b[0]=fin?1:0;b[1]=len&255;b[2]=len>>>8;b[3]=~len&255;b[4]=~(len>>>8)&255;b.set(scan.slice(off,off+len),5);blocks.push(b);off+=len}let a=1,b=0;for(let v of scan){a=(a+v)%65521;b=(b+a)%65521}let z=new Uint8Array(2+blocks.reduce((s,x)=>s+x.length,0)+4);z[0]=120;z[1]=1;off=2;for(let block of blocks){z.set(block,off);off+=block.length}z[off++]=(b>>>8)&255;z[off++]=b&255;z[off++]=(a>>>8)&255;z[off++]=a&255;
+const be=n=>new Uint8Array([n>>>24&255,n>>>16&255,n>>>8&255,n&255]);let table=new Uint32Array(256);for(let i=0;i<256;i++){let c=i;for(let k=0;k<8;k++)c=c&1?0xedb88320^(c>>>1):c>>>1;table[i]=c>>>0}function chunk(tag,data){let out=new Uint8Array(data.length+12);out.set(be(data.length));for(let i=0;i<4;i++)out[4+i]=tag.charCodeAt(i);out.set(data,8);let crc=0xffffffff;for(let i=4;i<out.length-4;i++)crc=table[(crc^out[i])&255]^(crc>>>8);out.set(be((crc^0xffffffff)>>>0),out.length-4);return out}
+let hdr=new Uint8Array(13);hdr.set(be(w));hdr.set(be(h),4);hdr[8]=8;hdr[9]=6;let chunks=[new Uint8Array([137,80,78,71,13,10,26,10]),chunk("IHDR",hdr),chunk("IDAT",z),chunk("IEND",new Uint8Array(0))],out=new Uint8Array(chunks.reduce((n,x)=>n+x.length,0));off=0;for(let c of chunks){out.set(c,off);off+=c.length}return out}
+return {unb64,b64,decode,encode}
+})();
+if(typeof module!=="undefined"&&module.exports)module.exports=GCCodec;
