@@ -446,3 +446,46 @@ test('failed previous-adventure restore does not claim the current save is uncha
  assert.match(messages.at(-1),/元の保存データへの復元も確認できませんでした/);
  assert.doesNotMatch(messages.at(-1),/現在のセーブには変更していません/);
 });
+
+function setupManualSaveRollbackFailure({denyBackupRollback=false}={}){
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=101');
+ assert.equal(s.save(true),true);
+ h.evaluate('state.gold=202');
+ assert.equal(s.save(true),true);
+ const originalPrimary=h.storage.getItem(s.SAVE_KEY);
+ const originalBackup=h.storage.getItem(s.SAVE_BACKUP_KEY);
+ assert.notEqual(originalPrimary,originalBackup);
+ h.evaluate('state.gold=303');
+ const originalSet=h.storage.setItem.bind(h.storage);
+ h.storage.setItem=(key,value)=>{
+  if(key===s.SAVE_KEY&&value!==originalPrimary)throw Error('primary write denied');
+  if(denyBackupRollback&&key===s.SAVE_BACKUP_KEY&&value===originalBackup)
+   throw Error('backup rollback denied');
+  return originalSet(key,value)
+ };
+ return {h,s,originalPrimary,originalBackup}
+}
+
+test('manual Save warns that existing slots may have changed if rollback fails',()=>{
+ const {h,s,originalPrimary,originalBackup}=setupManualSaveRollbackFailure({denyBackupRollback:true});
+ const messages=[];
+ h.context.say=(_who,message)=>messages.push(message);
+ assert.equal(s.save(false),false);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),originalPrimary);
+ assert.notEqual(h.storage.getItem(s.SAVE_BACKUP_KEY),originalBackup);
+ assert.match(messages.at(-1),/元の保存データへの復元も確認できませんでした/);
+ assert.match(messages.at(-1),/ページを閉じずに/);
+ assert.match(messages.at(-1),/JSON書き出し/);
+});
+
+test('manual Save keeps the ordinary failure notice when both slots roll back',()=>{
+ const {h,s,originalPrimary,originalBackup}=setupManualSaveRollbackFailure();
+ const messages=[];
+ h.context.say=(_who,message)=>messages.push(message);
+ assert.equal(s.save(false),false);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),originalPrimary);
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),originalBackup);
+ assert.match(messages.at(-1),/セーブに失敗しました。ブラウザの保存領域を確認してください/);
+ assert.doesNotMatch(messages.at(-1),/復元も確認できませんでした/);
+});
