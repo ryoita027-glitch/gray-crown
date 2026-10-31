@@ -113,7 +113,15 @@ const AshFrontierEnvironment=(()=>{
  function objectAccent(ctx,map,o){
   if(!inScope(map)||!o)return false;
   const x=o.x*32,y=o.y*32;
-  if(map==='ashroad'&&o.id==='burnedCart'){
+  if(map==='ashroad'&&o.id==='burnedHomestead'){
+   // Existing charred post: clearing soot exposes three 1px height notches.
+   pix(ctx,'#302a27',x+7,y+4,9,24);
+   pix(ctx,'#665348',x+9,y+6,5,19);
+   const cleared=state.events?.choices?.['early.ashroadHeightMarks']==='cleared';
+   for(const [dy,w] of [[12,3],[17,4],[22,5]])
+    pix(ctx,cleared?'#ddc6a0':'#746053',x+9,y+dy,w,1);
+   if(cleared)pix(ctx,'#ddc6a0',x+16,y+19,2,2);
+  }else if(map==='ashroad'&&o.id==='burnedCart'){
    pix(ctx,'#38342f',x+3,y+23,26,3);
    pix(ctx,'#7b6150',x+6,y+17,20,4);
   }else if(map==='ashroad'&&o.id==='scorchedOrders'){
