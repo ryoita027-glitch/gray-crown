@@ -471,17 +471,19 @@ async function readPortableSaveFile(file){
  try{raw=await file.text()}
  catch(e){
   GC.Log?.error?.('Portable save file read failed',{error:String(e)});
+  // A dialogue or battle may begin during the file read; do not interrupt it.
+  if(!canPersistNow('load'))return false;
   notifySaveStatus('セーブファイルを読み取れませんでした。別のファイルを選んでください。');
+  return false
+ }
+ // Check the live UI before validating bytes or displaying an invalid-file
+ // notice: both paths must leave a newly started story scene untouched.
+ if(!canPersistNow('load')){
+  GC.Log?.warn?.('Portable save file import abandoned: gameplay became busy during file read');
   return false
  }
  if(!preparePortableSaveText(raw)){
   notifySaveStatus('選んだファイルは有効なGray Crownセーブではありません。現在のセーブは変更していません。');
-  return false
- }
- if(!canPersistNow('load')){
-  // Gameplay may have entered a dialogue or battle while file.text() awaited.
-  // Showing a new status dialogue here would interrupt that active scene.
-  GC.Log?.warn?.('Portable save file import abandoned: gameplay became busy during file read');
   return false
  }
  let priorPrimary,priorBackup;
