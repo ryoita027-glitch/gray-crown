@@ -1110,9 +1110,15 @@ function inlineNpcEvent(id){
   }
   if(id==='tiredGuard')return saySequence([{speaker:'若い王国兵',text:'「三週間ここにいます。でも帝国兵の顔をまともに見たのは二回だけです」'},{speaker:'トリトン',text:'「ずっと戦ってるわけじゃないんだな」'},{speaker:'若い王国兵',text:'「待つ時間の方が長いです。……待ってる間に、相手が怪物じゃなく人間だって考えちゃうのが一番怖い」'}])
   if(id==='klein'){
-   if(structuredCondition('metKlein'))return say('クラインテッド','「もう言葉は交わした。橋が落ちる前に東へ行け」');
-   showEncounterCinematic('帝国四将','クラインテッド','「……赤白の外套。また勇者か」');
-   return saySequence([{speaker:'ナレーション',text:'砦を抜けると景色が突然途切れた。眼下はラゼル峡谷。石橋の中央、帝国側の青黒い外套が風にはためいている。'},{speaker:'クラインテッド',text:'「……赤白の外套。また勇者か」'},{speaker:'カレン',text:'「“また”って、どういう意味？」'},{speaker:'クラインテッド',text:'「一年前、ユウキを討った連中も同じ呼び名だった」'},{speaker:'マーガレット',text:'「王都では王国軍が討伐したとしか聞いてない」'},{speaker:'ナレーション',text:'クラインテッドの指が、剣の柄を強く握る。けれど抜かない。'},{speaker:'クラインテッド',text:'「……そうか。先任者の存在まで消したか」'},{speaker:'トリトン',text:'「ここで戦うの？」'},{speaker:'クラインテッド',text:'「今日は違う。俺の任務は橋の監視だ。勇者一組のために四将が決闘するほど、戦争は小さくない」'},{speaker:'カレン',text:'「じゃあ通して」'},{speaker:'クラインテッド',text:'「その目は嫌いじゃない。……ユウキも、考える前にそう言った」'},{speaker:'ナレーション',text:'遠くで砲声が響く。谷壁への着弾。石橋が大きく揺れ、王国側の橋脚に亀裂が走る。'},{speaker:'クラインテッド',text:'「走れ！」'},{speaker:'ナレーション',text:'四人が帝国側へ駆け抜けた直後、背後で橋の一部が崩れ落ちた。ベルド砦は、もう谷の向こうだ。'},{speaker:'クラインテッド',text:'「戻れなくなったな。なら見ていけ。お前たちの国が“魔王の国”と呼ぶ場所を」'}],()=>{setStructuredCondition('metKlein',true);setStructuredCondition('kleinBattleDone',true);state.objective='北側の道から帝国領へ進む';addJournal('ベルド砦を抜けたラゼル峡谷橋でクラインテッドと初対面。戦闘ではなく、橋の崩落によって帝国側へ取り残された。');renderHud()})
+   if(structuredCondition('metKlein'))return say('クラインテッド','「橋はもう崩れた。帝国側の道を進め」');
+   // The bridge collapse is a one-way story turn: warn before committing.
+   return say('カレン','「橋の先には帝国四将がいる。渡れば砦に戻れなくなるかもしれない。準備はいい？」',[
+    {label:'四将と向き合い、橋を渡る',fn:()=>{
+     showEncounterCinematic('帝国四将','クラインテッド','「……赤白の外套。また勇者か」');
+     saySequence([{speaker:'ナレーション',text:'砦を抜けると景色が突然途切れた。眼下はラゼル峡谷。石橋の中央、帝国側の青黒い外套が風にはためいている。'},{speaker:'クラインテッド',text:'「……赤白の外套。また勇者か」'},{speaker:'カレン',text:'「“また”って、どういう意味？」'},{speaker:'クラインテッド',text:'「一年前、ユウキを討った連中も同じ呼び名だった」'},{speaker:'マーガレット',text:'「王都では王国軍が討伐したとしか聞いてない」'},{speaker:'ナレーション',text:'クラインテッドの指が、剣の柄を強く握る。けれど抜かない。'},{speaker:'クラインテッド',text:'「……そうか。先任者の存在まで消したか」'},{speaker:'トリトン',text:'「ここで戦うの？」'},{speaker:'クラインテッド',text:'「今日は違う。俺の任務は橋の監視だ。勇者一組のために四将が決闘するほど、戦争は小さくない」'},{speaker:'カレン',text:'「じゃあ通して」'},{speaker:'クラインテッド',text:'「その目は嫌いじゃない。……ユウキも、考える前にそう言った」'},{speaker:'ナレーション',text:'遠くで砲声が響く。谷壁への着弾。石橋が大きく揺れ、王国側の橋脚に亀裂が走る。'},{speaker:'クラインテッド',text:'「走れ！」'},{speaker:'ナレーション',text:'四人が帝国側へ駆け抜けた直後、背後で橋の一部が崩れ落ちた。ベルド砦は、もう谷の向こうだ。'},{speaker:'クラインテッド',text:'「戻れなくなったな。なら見ていけ。お前たちの国が“魔王の国”と呼ぶ場所を」'}],()=>{setStructuredCondition('metKlein',true);setStructuredCondition('kleinBattleDone',true);state.objective='北側の道から帝国領へ進む';addJournal('ベルド砦を抜けたラゼル峡谷橋でクラインテッドと初対面。戦闘ではなく、橋の崩落によって帝国側へ取り残された。');renderHud();enterEmpireVillage()})
+    }},
+    {label:'砦へ戻って準備する',fn:()=>say('ソフィ','「砦の休憩所も使えます。準備を整えてから進みましょう」')}
+   ])
   }
  }
  if(state.map==='ravine'){
