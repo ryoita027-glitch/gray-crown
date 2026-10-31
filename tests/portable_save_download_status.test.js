@@ -377,9 +377,9 @@ test('portable import rejects malformed story/world containers before asking to 
 test('migration falls back to village for inherited Object property map names',()=>{
  const h=createHarness(),s=h.GC.Save;
  for(const invalidMap of ['constructor','toString','__proto__']){
-  const payload=JSON.parse(s.serializeSave());
-  payload.map=invalidMap;
-  assert.equal(s.migrateLoaded(JSON.stringify(payload)).map,'village',invalidMap);
+  const loaded=s.migrateLoaded(s.serializeSave());
+  loaded.map=invalidMap;
+  assert.equal(s.validateLoadedState(loaded).map,'village',invalidMap);
  }
 });
 
