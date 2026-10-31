@@ -96,7 +96,11 @@ function makeCapitalTiles(){
  return finishTiles(g)
 }
 function makeAshRoadTiles(){
- const g=makeBlankRegion('B','T');paintV(g,0,14,11,'D');paintV(g,0,14,12,'D');paintH(g,3,12,5,'D');paintH(g,11,21,9,'D');paintV(g,5,10,4,'D');paintV(g,8,12,20,'D');paintRect(g,2,2,4,2,'B');paintRect(g,17,2,4,2,'B');return finishTiles(g)
+ const g=makeBlankRegion('B','T');paintV(g,0,14,11,'D');paintV(g,0,14,12,'D');paintH(g,3,12,5,'D');paintH(g,11,21,9,'D');paintV(g,5,10,4,'D');paintV(g,8,12,20,'D');
+ // Burned supply cart -> surviving orders -> central road: a short, legible loop.
+ // These were already walkable B cells; only their ground material changes.
+ paintV(g,5,8,17,'D');paintH(g,13,18,5,'D');paintH(g,16,17,8,'D');
+ paintRect(g,2,2,4,2,'B');paintRect(g,17,2,4,2,'B');return finishTiles(g)
 }
 function makeFrontierTiles(){
  const g=makeBlankRegion('M','K');paintV(g,0,14,11,'D');paintV(g,0,14,12,'D');paintH(g,2,21,7,'D');paintH(g,4,19,11,'D');
