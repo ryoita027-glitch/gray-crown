@@ -604,6 +604,32 @@ function drawObject(o){if(RyuneOutskirts.drawObject(ctx,state.map,o,!!state.worl
  if(['fortGate','fortGateRight'].includes(o.id)&&!getWorldSwitch('fortGateOpen')){ctx.fillStyle='#4e4640';ctx.fillRect(px-10,py+4,52,26);ctx.fillStyle='#866c50';for(let i=0;i<6;i++)ctx.fillRect(px-6+i*9,py+4,4,26);ctx.fillStyle='#c0a16d';ctx.fillRect(px-10,py+4,52,4)}
  if(o.id==='ravineLookout'||o.id==='bridgeMarker'){ctx.fillStyle='#70685d';ctx.fillRect(px+7,py+20,20,7);ctx.fillStyle='#c7b990';ctx.fillRect(px+10,py+8,14,12)}
  if(o.id==='roadSign'){ctx.fillStyle='#73583b';ctx.fillRect(px+14,py+7,4,22);ctx.fillStyle='#b09262';ctx.fillRect(px+3,py+4,26,12);ctx.fillStyle='#403329';ctx.font='bold 8px system-ui';ctx.textAlign='center';ctx.fillText('古砦→',px+16,py+13);ctx.textAlign='start'}
+ if(o.id==='capitalWagonQueue'){
+  // This is a real city arrival choice, not loot: the cart is a low roadside
+  // silhouette; guiding it leaves ruts and puts produce beside the ration lane.
+  // The tile remains blocked in both states, so Save/Continue cannot alter paths.
+  const moved=state.events?.choices?.['early.capitalWagonGuide']==='guided';
+  const late=structuredCondition('returnedKingdom');
+  ctx.fillStyle='rgba(65,53,43,.3)';ctx.fillRect(px+2,py+27,28,3);
+  if(!moved&&!late){
+   ctx.fillStyle='#795d42';ctx.fillRect(px+3,py+12,25,12);
+   ctx.fillStyle='#b8a079';ctx.fillRect(px+7,py+7,17,8);
+   ctx.fillStyle='#d0bb8b';ctx.fillRect(px+9,py+9,12,3);
+   ctx.fillStyle='#3d3b38';ctx.fillRect(px+5,py+24,6,6);ctx.fillRect(px+21,py+24,6,6);
+   ctx.fillStyle='#66523c';ctx.fillRect(px+26,py+15,5,3);
+  }else{
+   ctx.fillStyle='#796a55';ctx.fillRect(px+6,py+22,3,7);ctx.fillRect(px+22,py+22,3,7);
+   ctx.fillStyle='#a99878';ctx.fillRect(px+12,py+24,8,2);
+  }
+  if(moved&&!late){
+   // Delivered produce stays visibly beside the mother (16,8), away from
+   // the central 11/12 avenue. Decorative only: no collectible or collision.
+   const sx=15*TILE,sy=8*TILE;
+   ctx.fillStyle='#6a5943';ctx.fillRect(sx+4,sy+25,24,3);
+   ctx.fillStyle='#b6a077';ctx.fillRect(sx+6,sy+17,10,9);ctx.fillRect(sx+17,sy+19,10,7);
+   ctx.fillStyle='#d0ba8e';ctx.fillRect(sx+8,sy+18,6,2);ctx.fillRect(sx+19,sy+20,6,2);
+  }
+ }
  if(o.id==='northroadVista'){
   // Low, worn viewing slab at the end of the existing east layby. No glowing
   // pickup treatment; the ordinary adjacent interaction diamond is enough.
