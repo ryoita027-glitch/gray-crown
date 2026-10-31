@@ -1074,3 +1074,39 @@ test('unchanged manual Save quarantines an invalid backup without rewriting prim
  const records=JSON.parse(h.storage.getItem(s.SAVE_QUARANTINE_KEY));
  assert.equal(records.at(-1).backup,corrupt);
 });
+
+test('visible Continue returns false when denied storage and its error dialogue both fail', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=991;say=()=>{throw new Error("dialogue unavailable")}');
+ const before=JSON.stringify(h.GC.State.get());
+ denyReads(h);
+ assert.doesNotThrow(()=>assert.equal(s.load(false),false));
+ assert.equal(JSON.stringify(h.GC.State.get()),before);
+ assert.ok(h.GC.Log.get('warn').some(e=>e.message==='Save status message failed'));
+});
+
+test('visible Continue with no checkpoint handles a broken failure dialogue', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;say=()=>{throw new Error("dialogue unavailable")}');
+ assert.doesNotThrow(()=>assert.equal(s.load(false),false));
+ assert.equal(h.storage.getItem(s.SAVE_KEY),null);
+ assert.ok(h.GC.Log.get('warn').some(e=>e.message==='Save status message failed'));
+});
+
+test('visible Continue with two corrupt checkpoints handles a broken failure dialogue', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.storage.setItem(s.SAVE_KEY,'{broken-primary');
+ h.storage.setItem(s.SAVE_BACKUP_KEY,'{broken-backup');
+ const before=[...h.storage.data];
+ h.evaluate('ALPHA_SESSION.started=true;say=()=>{throw new Error("dialogue unavailable")}');
+ assert.doesNotThrow(()=>assert.equal(s.load(false),false));
+ assert.deepEqual([...h.storage.data],before);
+ assert.ok(h.GC.Log.get('warn').some(e=>e.message==='Save status message failed'));
+});
+
+test('visible Continue blocked by combat handles a broken failure dialogue', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.battle={};say=()=>{throw new Error("dialogue unavailable")}');
+ assert.doesNotThrow(()=>assert.equal(s.load(false),false));
+ assert.ok(h.GC.Log.get('warn').some(e=>e.message==='Save status message failed'));
+});

@@ -218,17 +218,17 @@ function save(silent=false){
 function clearTransientPanels(){for(const id of ['battlePanel','levelUpPanel','battleResult','battleFlash','bossCinematic','chapterCard'])$(id)?.classList.add('hidden');if($('dialogueBox')&&!$('dialogueBox').classList.contains('hidden'))closeDialogue(false)}
 function load(silent=false){
  lastLoadPresentationFailed=false;
- if(!canPersistNow('load')){if(!silent&&$('dialogueBox')?.classList.contains('hidden'))say('システム','イベントや戦闘の途中ではロードできません。操作可能な場所でロードしてください。');return false}
+ if(!canPersistNow('load')){if(!silent&&$('dialogueBox')?.classList.contains('hidden'))notifySaveStatus('イベントや戦闘の途中ではロードできません。操作可能な場所でロードしてください。');return false}
  let primary,backup;
  try{primary=localStorage.getItem(SAVE_KEY);backup=localStorage.getItem(SAVE_BACKUP_KEY)}
- catch(e){GC.Log?.error('Save load storage read failed',{error:String(e)});if(!silent)say('システム','ブラウザの保存領域を読み込めません。設定を確認してください。');return false}
- if(!primary&&!backup){if(!silent)say('システム','セーブデータがありません。');return false}let recovered=false,next;
+ catch(e){GC.Log?.error('Save load storage read failed',{error:String(e)});if(!silent)notifySaveStatus('ブラウザの保存領域を読み込めません。設定を確認してください。');return false}
+ if(!primary&&!backup){if(!silent)notifySaveStatus('セーブデータがありません。');return false}let recovered=false,next;
  // Migration can fill missing fields from defaults. Before migrating, ensure
  // a partially truncated but parseable JSON is not mistaken for a fresh game.
  if(!isUsableSavedAdventure(primary)){
   if(!isUsableSavedAdventure(backup)){
    GC.Log?.error('No structurally usable save or backup');
-   if(!silent)say('システム','セーブデータとバックアップの両方を読み込めませんでした。');
+   if(!silent)notifySaveStatus('セーブデータとバックアップの両方を読み込めませんでした。');
    return false
   }
   recovered=true;next=migrateLoaded(backup)
