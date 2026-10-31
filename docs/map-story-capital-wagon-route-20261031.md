@@ -20,6 +20,7 @@
 ## Verification and limits
 - V8 syntax compilation of edited `world.js` and `events.js`: **2/2 pass**.
 - Isolated V8 execution of the **actual edited** wagon renderer branch, with stubbed canvas and three event states: **10/10 checks pass** (cart before, entry marks, no premature route, route after, sacks after, cart gone, late marks absent, late sacks absent, first direction, revisit direction).
+- Evaluated the **actual** `makeCapitalTiles()` source in isolated V8: **9/9 route-tile checks pass** (avenue x12–14 at y12, delivery lane x15 at y8–12, and blocked cart layby x14,y13).
 - Updated existing Node test assertion for the changed revisit text; added a regression for trail before/after, actual walkable tiles, and late-war hiding.
 - **Not run:** full Node harness, full `npm run check`, Chromium 44px camera view, actual Save/Continue after this change, human 5–10-minute playtest. The local container cannot resolve github.com for a private clone; connector-side isolated V8 checks are **not** integrated tests. Do not mark as production ready.
 - **Draft/HOLD:** inspect whether wheel grooves are legible but not visually noisy at 44px, and whether the cart is visible from the south-gate approach. Check the shared `js/render/world.js` conflict against the separate visual-art stack before integration.
