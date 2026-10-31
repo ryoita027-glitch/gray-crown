@@ -501,3 +501,640 @@ test('restart shows a storage-access error without discarding unsaved progress',
  assert.match(h.getElement('dialogueText').innerHTML, /保存領域/,
   'the player must see why Restart was refused');
 });
+
+test('New Game preserves unreadable previous-adventure archive bytes before replacing it', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=901');
+ assert.equal(s.save(true),true);
+ const current=h.storage.getItem(s.SAVE_KEY),corrupt='{broken-previous-adventure';
+ h.storage.setItem(s.SAVE_ARCHIVE_KEY,corrupt);
+ assert.equal(s.archiveBeforeNewGame(),true);
+ assert.equal(h.storage.getItem(s.SAVE_ARCHIVE_KEY),current);
+ const records=JSON.parse(h.storage.getItem(s.SAVE_QUARANTINE_KEY));
+ assert.equal(records.length,1);
+ assert.equal(records[0].archive,corrupt,'exact original archive bytes must remain exportable');
+ assert.equal(records[0].primary,null);
+ assert.equal(records[0].backup,null);
+});
+
+test('New Game refuses to overwrite an unreadable previous archive when recovery write is denied', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=902');
+ assert.equal(s.save(true),true);
+ const beforeState=JSON.stringify(h.GC.State.get());
+ const primary=h.storage.getItem(s.SAVE_KEY),backup=h.storage.getItem(s.SAVE_BACKUP_KEY);
+ const corrupt='{broken-previous-adventure';
+ h.storage.setItem(s.SAVE_ARCHIVE_KEY,corrupt);
+ const set=h.storage.setItem.bind(h.storage);
+ h.storage.setItem=(key,value)=>{
+  if(key===s.SAVE_QUARANTINE_KEY)throw new Error('QuotaExceededError: recovery denied');
+  return set(key,value);
+ };
+ h.context.confirm=()=>true;
+ h.context.alert=()=>{};
+ assert.equal(h.GC.App.startNewGameSafely(),false);
+ assert.equal(JSON.stringify(h.GC.State.get()),beforeState);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),primary);
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),backup);
+ assert.equal(h.storage.getItem(s.SAVE_ARCHIVE_KEY),corrupt);
+});
+
+test('New Game reuses quarantined archive bytes without redundant quota-sensitive writes', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=903');
+ assert.equal(s.save(true),true);
+ const corrupt='{broken-previous-adventure';
+ h.storage.setItem(s.SAVE_ARCHIVE_KEY,corrupt);
+ const existing=JSON.stringify([{savedAt:'2026-10-01T00:00:00Z',primary:null,backup:null,archive:corrupt}]);
+ h.storage.setItem(s.SAVE_QUARANTINE_KEY,existing);
+ const set=h.storage.setItem.bind(h.storage);
+ let attempted=0;
+ h.storage.setItem=(key,value)=>{
+  if(key===s.SAVE_QUARANTINE_KEY){attempted++;throw new Error('quota')}
+  return set(key,value);
+ };
+ assert.equal(s.archiveBeforeNewGame(),true);
+ assert.equal(attempted,0);
+ assert.equal(h.storage.getItem(s.SAVE_QUARANTINE_KEY),existing);
+});
+
+test('New Game preserves normal valid-archive replacement without creating quarantine', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=904');
+ assert.equal(s.save(true),true);
+ assert.equal(s.archiveBeforeNewGame(),true);
+ const older=h.storage.getItem(s.SAVE_ARCHIVE_KEY);
+ h.evaluate('state.gold=905');
+ assert.equal(s.save(true),true);
+ assert.equal(s.archiveBeforeNewGame(),true);
+ assert.notEqual(h.storage.getItem(s.SAVE_ARCHIVE_KEY),older);
+ assert.equal(h.storage.getItem(s.SAVE_QUARANTINE_KEY),null);
+});
+
+test('New Game restores the older archive when its replacement writes then throws', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=911');
+ assert.equal(s.save(true),true);
+ assert.equal(s.archiveBeforeNewGame(),true);
+ const oldArchive=h.storage.getItem(s.SAVE_ARCHIVE_KEY);
+ h.evaluate('state.gold=912');
+ assert.equal(s.save(true),true);
+ const primary=h.storage.getItem(s.SAVE_KEY);
+ const beforeState=JSON.stringify(h.GC.State.get());
+ const set=h.storage.setItem.bind(h.storage);
+ let injected=false;
+ h.storage.setItem=(key,value)=>{
+  if(key===s.SAVE_ARCHIVE_KEY&&!injected){
+   injected=true;set(key,value);
+   throw new Error('QuotaExceededError: write changed storage before throwing');
+  }
+  return set(key,value);
+ };
+ h.context.confirm=()=>true;
+ h.context.alert=()=>{};
+ assert.equal(h.GC.App.startNewGameSafely(),false);
+ assert.equal(injected,true);
+ assert.equal(h.storage.getItem(s.SAVE_ARCHIVE_KEY),oldArchive,
+  'a failed New Game must not erase the prior recoverable adventure');
+ assert.equal(h.storage.getItem(s.SAVE_KEY),primary);
+ assert.equal(JSON.stringify(h.GC.State.get()),beforeState,
+  'the live adventure must remain active after failed archive replacement');
+});
+
+test('New Game rolls back a silently corrupted archive replacement', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=921');
+ assert.equal(s.save(true),true);
+ assert.equal(s.archiveBeforeNewGame(),true);
+ const oldArchive=h.storage.getItem(s.SAVE_ARCHIVE_KEY);
+ h.evaluate('state.gold=922');
+ assert.equal(s.save(true),true);
+ const set=h.storage.setItem.bind(h.storage);
+ let injected=false;
+ h.storage.setItem=(key,value)=>{
+  if(key===s.SAVE_ARCHIVE_KEY&&!injected){
+   injected=true;return set(key,'{truncated-archive');
+  }
+  return set(key,value);
+ };
+ assert.equal(s.archiveBeforeNewGame(),false);
+ assert.equal(injected,true);
+ assert.equal(h.storage.getItem(s.SAVE_ARCHIVE_KEY),oldArchive,
+  'a false-success write must not destroy the previous archive');
+});
+
+test('failed first archive write removes a partially created archive', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=931');
+ assert.equal(s.save(true),true);
+ assert.equal(h.storage.getItem(s.SAVE_ARCHIVE_KEY),null);
+ const primary=h.storage.getItem(s.SAVE_KEY);
+ const set=h.storage.setItem.bind(h.storage);
+ let injected=false;
+ h.storage.setItem=(key,value)=>{
+  if(key===s.SAVE_ARCHIVE_KEY&&!injected){
+   injected=true;set(key,value);
+   throw new Error('SecurityError: partial first archive write');
+  }
+  return set(key,value);
+ };
+ assert.equal(s.archiveBeforeNewGame(),false);
+ assert.equal(injected,true);
+ assert.equal(h.storage.getItem(s.SAVE_ARCHIVE_KEY),null);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),primary);
+});
+
+test('Save skips a redundant primary rollback when backup rotation is denied', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=411');
+ assert.equal(s.save(true),true);
+ const before=[...h.storage.data];
+ const set=h.storage.setItem.bind(h.storage);
+ let primaryWrites=0;
+ h.storage.setItem=(key,value)=>{
+  if(key===s.SAVE_BACKUP_KEY)throw new Error('QuotaExceededError: backup rotation denied');
+  if(key===s.SAVE_KEY){primaryWrites++;throw new Error('QuotaExceededError: redundant primary rollback denied')}
+  return set(key,value);
+ };
+ h.evaluate('state.gold=412');
+ assert.equal(s.save(true),false);
+ assert.equal(primaryWrites,0,'an unchanged primary must not be rewritten during rollback');
+ assert.deepEqual([...h.storage.data],before,'both original save slots must remain intact');
+ assert.equal(h.GC.State.get().gold,412,'failed Save must not reset unsaved progress');
+});
+
+test('Save detects a silent backup rollback failure after a partial rotation', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=421');
+ assert.equal(s.save(true),true);
+ h.evaluate('state.gold=422');
+ assert.equal(s.save(true),true);
+ const beforePrimary=h.storage.getItem(s.SAVE_KEY);
+ const beforeBackup=h.storage.getItem(s.SAVE_BACKUP_KEY);
+ const set=h.storage.setItem.bind(h.storage);
+ let backupWrites=0;
+ h.storage.setItem=(key,value)=>{
+  if(key===s.SAVE_BACKUP_KEY){
+   backupWrites++;
+   if(backupWrites===1){set(key,value);throw new Error('SecurityError: backup rotated then threw')}
+   return; // Simulate an adapter silently ignoring the attempted rollback.
+  }
+  return set(key,value);
+ };
+ h.evaluate('state.gold=423');
+ assert.equal(s.save(true),false);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),beforePrimary);
+ assert.notEqual(h.storage.getItem(s.SAVE_BACKUP_KEY),beforeBackup);
+ const rollbackErrors=h.GC.Log.get('error').filter(e=>e.message==='Save rollback failed');
+ assert.equal(rollbackErrors.length,1,'silent rollback failure must be logged, not treated as success');
+ assert.equal(rollbackErrors[0].data.slot,s.SAVE_BACKUP_KEY);
+ assert.match(rollbackErrors[0].data.error,/not persisted/);
+ assert.equal(h.GC.State.get().gold,423);
+});
+
+test('portable import keeps its committed checkpoint when map redraw throws', () => {
+ const h=createHarness();
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=101');
+ assert.equal(h.GC.Save.save(true),true);
+ const imported=h.storage.getItem(h.GC.Save.SAVE_KEY);
+ h.evaluate('state.gold=202');
+ assert.equal(h.GC.Save.save(true),true);
+ h.evaluate('draw=()=>{throw new Error("map redraw unavailable after load");}');
+ assert.equal(h.GC.Save.importPortableSaveText(imported),true,
+  'presentation failure after state replacement must not roll back the imported save');
+ assert.equal(h.GC.State.get().gold,101);
+ assert.equal(JSON.parse(h.storage.getItem(h.GC.Save.SAVE_KEY)).gold,101,
+  'live progress and the primary checkpoint must agree');
+ assert.equal(JSON.parse(h.storage.getItem(h.GC.Save.SAVE_BACKUP_KEY)).gold,202,
+  'the preceding adventure must remain recoverable in the backup');
+});
+
+test('Continue survives a HUD refresh exception and still attempts the map redraw', () => {
+ const h=createHarness();
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=404');
+ assert.equal(h.GC.Save.save(true),true);
+ h.evaluate('state.gold=999;renderHud=()=>{throw new Error("HUD refresh unavailable");};draw=()=>{globalThis.__drawAfterHudError=true;}');
+ assert.equal(h.GC.Save.load(true),true);
+ assert.equal(h.GC.State.get().gold,404);
+ assert.equal(h.evaluate('globalThis.__drawAfterHudError'),true,
+  'an independent map refresh should still run after a HUD failure');
+});
+
+test('file import warns about a failed redraw without losing the imported checkpoint', async () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=131');
+ assert.equal(s.save(true),true);
+ const imported=h.storage.getItem(s.SAVE_KEY);
+ h.evaluate('state.gold=242');
+ assert.equal(s.save(true),true);
+ h.evaluate('draw=()=>{throw new Error("redraw unavailable");}');
+ const ok=await s.readPortableSaveFile({size:imported.length,async text(){return imported;}});
+ assert.equal(ok,true,'a committed import must not be reported as a storage failure');
+ assert.equal(h.GC.State.get().gold,131);
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_KEY)).gold,131);
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_BACKUP_KEY)).gold,242);
+ h.GC.Dialogue.finishDialogueTyping();
+ assert.match(h.getElement('dialogueText').innerHTML,/画面の更新に失敗/);
+ assert.match(h.getElement('dialogueText').innerHTML,/ページを再読み込み/);
+});
+
+test('previous-adventure restore warns when the title refresh fails after commit', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=313');
+ assert.equal(s.save(true),true);
+ assert.equal(s.archiveBeforeNewGame(),true);
+ h.evaluate('state.gold=424');
+ assert.equal(s.save(true),true);
+ h.evaluate('updateTitleContinue=()=>{throw new Error("title UI unavailable");}');
+ assert.equal(s.restoreArchivedAdventure(),true);
+ assert.equal(h.GC.State.get().gold,313);
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_KEY)).gold,313);
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_BACKUP_KEY)).gold,424);
+ h.GC.Dialogue.finishDialogueTyping();
+ assert.match(h.getElement('dialogueText').innerHTML,/以前の冒険は復旧しました/);
+ assert.match(h.getElement('dialogueText').innerHTML,/ページを再読み込み/);
+});
+
+test('normal file import keeps its ordinary success message without a refresh warning', async () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=515');
+ assert.equal(s.save(true),true);
+ const imported=h.storage.getItem(s.SAVE_KEY);
+ h.evaluate('state.gold=626');
+ assert.equal(s.save(true),true);
+ assert.equal(await s.readPortableSaveFile({size:imported.length,async text(){return imported;}}),true);
+ assert.equal(h.GC.State.get().gold,515);
+ h.GC.Dialogue.finishDialogueTyping();
+ assert.match(h.getElement('dialogueText').innerHTML,/外部セーブを読み込みました/);
+ assert.doesNotMatch(h.getElement('dialogueText').innerHTML,/ページを再読み込み/);
+});
+
+test('visible Continue keeps a loaded checkpoint when the status dialogue throws', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=711');
+ assert.equal(s.save(true),true);
+ h.evaluate('state.gold=722');
+ h.evaluate('say=()=>{throw new Error("status dialogue unavailable")}');
+ assert.equal(s.load(false),true,'dialogue failure must not turn a committed Continue into a failed load');
+ assert.equal(h.GC.State.get().gold,711);
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_KEY)).gold,711);
+});
+
+test('file import resolves successfully after a committed save even if status dialogue throws', async () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=811');
+ assert.equal(s.save(true),true);
+ const imported=h.storage.getItem(s.SAVE_KEY);
+ h.evaluate('state.gold=822');
+ assert.equal(s.save(true),true);
+ h.evaluate('say=()=>{throw new Error("status dialogue unavailable")}');
+ assert.equal(await s.readPortableSaveFile({size:imported.length,async text(){return imported;}}),true);
+ assert.equal(h.GC.State.get().gold,811);
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_KEY)).gold,811);
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_BACKUP_KEY)).gold,822);
+});
+
+test('previous-adventure restore remains successful if the final status dialogue throws', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=911');
+ assert.equal(s.save(true),true);
+ assert.equal(s.archiveBeforeNewGame(),true);
+ h.evaluate('state.gold=922');
+ assert.equal(s.save(true),true);
+ h.evaluate('say=()=>{throw new Error("status dialogue unavailable")}');
+ assert.equal(s.restoreArchivedAdventure(),true);
+ assert.equal(h.GC.State.get().gold,911);
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_KEY)).gold,911);
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_BACKUP_KEY)).gold,922);
+});
+
+test('repeat Save keeps an older usable backup instead of replacing it with identical primary', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=601');
+ assert.equal(s.save(true),true);
+ h.evaluate('state.gold=602');
+ assert.equal(s.save(true),true);
+ const primary=h.storage.getItem(s.SAVE_KEY);
+ const olderBackup=h.storage.getItem(s.SAVE_BACKUP_KEY);
+ assert.equal(JSON.parse(olderBackup).gold,601);
+ assert.equal(s.save(true),true);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),primary);
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),olderBackup,
+  'saving an unchanged adventure must not erase the earlier recovery checkpoint');
+});
+
+test('repeat Save does not require quota-sensitive writes when both checkpoints are usable', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=611');
+ assert.equal(s.save(true),true);
+ h.evaluate('state.gold=612');
+ assert.equal(s.save(true),true);
+ const before=[...h.storage.data];
+ let attempted=0;
+ h.storage.setItem=()=>{attempted++;throw new Error('QuotaExceededError: unnecessary write');};
+ assert.equal(s.save(true),true);
+ assert.equal(attempted,0);
+ assert.deepEqual([...h.storage.data],before);
+});
+
+test('repeat Save still repairs a missing backup before returning success', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=621');
+ assert.equal(s.save(true),true);
+ const primary=h.storage.getItem(s.SAVE_KEY);
+ h.storage.removeItem(s.SAVE_BACKUP_KEY);
+ assert.equal(s.save(true),true);
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),primary,
+  'backup repair must not be skipped by the unchanged-checkpoint optimization');
+});
+
+test('visible Save remains successful when the status dialogue throws after persistence', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=701');
+ h.evaluate('say=()=>{throw new Error("dialogue render failed")}');
+ assert.equal(s.save(false),true,
+  'a failed success notification must not turn a committed Save into failure');
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_KEY)).gold,701);
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_BACKUP_KEY)).gold,701);
+ assert.equal(h.GC.Log.get('error').filter(e=>e.message==='Save failed').length,0);
+ assert.equal(h.GC.Log.get('warn').filter(e=>e.message==='Save status message failed').length,1);
+});
+
+test('unchanged visible Save preserves older backup when its status dialogue throws', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=711');
+ assert.equal(s.save(true),true);
+ h.evaluate('state.gold=712');
+ assert.equal(s.save(true),true);
+ const primary=h.storage.getItem(s.SAVE_KEY),backup=h.storage.getItem(s.SAVE_BACKUP_KEY);
+ h.evaluate('say=()=>{throw new Error("dialogue render failed")}');
+ assert.equal(s.save(false),true);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),primary);
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),backup,
+  'an unchanged Save must retain the earlier recoverable checkpoint');
+ assert.equal(h.GC.Log.get('error').filter(e=>e.message==='Save failed').length,0);
+});
+
+test('failed visible Save returns false even when the failure notification throws', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=721');
+ assert.equal(s.save(true),true);
+ const primary=h.storage.getItem(s.SAVE_KEY),backup=h.storage.getItem(s.SAVE_BACKUP_KEY);
+ const set=h.storage.setItem.bind(h.storage);
+ h.storage.setItem=(key,value)=>{
+  if(key===s.SAVE_KEY)throw new Error('QuotaExceededError: primary denied');
+  return set(key,value);
+ };
+ h.evaluate('state.gold=722;say=()=>{throw new Error("dialogue render failed")}');
+ assert.equal(s.save(false),false);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),primary);
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),backup);
+ assert.equal(h.GC.Log.get('error').filter(e=>e.message==='Save failed').length,1);
+ assert.equal(h.GC.Log.get('warn').filter(e=>e.message==='Save status message failed').length,1);
+});
+
+test('portable download remains successful when its final status dialogue throws', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=833');
+ let clicks=0,removals=0,revocations=0,cleanup=null,filename='';
+ h.context.Blob=class {constructor(parts,options){assert.ok(parts[0].includes('"gold":833'));assert.match(options.type,/json/)}};
+ h.context.URL={createObjectURL:()=> 'blob:gray-crown-test',revokeObjectURL:()=>{revocations++}};
+ h.context.document.body={appendChild:()=>{}};
+ h.context.document.createElement=()=>({
+  set download(v){filename=v;},set href(v){assert.equal(v,'blob:gray-crown-test')},
+  click(){clicks++},remove(){removals++}
+ });
+ h.context.setTimeout=(fn,ms)=>{assert.equal(ms,3000);cleanup=fn;return 1};
+ h.evaluate('say=()=>{throw new Error("dialogue unavailable after download")}');
+ assert.equal(s.downloadPortableSave(),true);
+ assert.equal(clicks,1);
+ assert.equal(removals,1);
+ assert.match(filename,/GrayCrown_Save_v23_.*\.json/);
+ assert.equal(typeof cleanup,'function');
+ cleanup();
+ assert.equal(revocations,1);
+ assert.equal(h.GC.Log.get('error').filter(e=>e.message==='Portable save export failed').length,0);
+ assert.equal(h.GC.Log.get('warn').filter(e=>e.message==='Save status message failed').length,1);
+});
+
+test('portable download reports a failed browser click even if failure dialogue also throws', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=844');
+ let revoked=0,removed=0;
+ h.context.Blob=class {};
+ h.context.URL={createObjectURL:()=> 'blob:failed-click',revokeObjectURL:()=>{revoked++}};
+ h.context.document.body={appendChild:()=>{}};
+ h.context.document.createElement=()=>({
+  click(){throw new Error('browser download denied')},remove(){removed++}
+ });
+ h.evaluate('say=()=>{throw new Error("dialogue unavailable during download failure")}');
+ assert.equal(s.downloadPortableSave(),false);
+ assert.equal(removed,1,'the temporary link must be removed on click failure');
+ assert.equal(revoked,1,'the object URL must be revoked when the click fails');
+ assert.equal(h.GC.Log.get('error').filter(e=>e.message==='Portable save export failed').length,1);
+ assert.equal(h.GC.Log.get('warn').filter(e=>e.message==='Save status message failed').length,1);
+});
+
+test('portable download does not fail after click because temporary link cleanup throws', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=855');
+ let clicks=0;
+ h.context.Blob=class {};
+ h.context.URL={createObjectURL:()=> 'blob:cleanup-test',revokeObjectURL:()=>{}};
+ h.context.document.body={appendChild:()=>{}};
+ h.context.document.createElement=()=>({
+  click(){clicks++},remove(){throw new Error('link removal denied')}
+ });
+ h.context.setTimeout=()=>1;
+ assert.equal(s.downloadPortableSave(),true);
+ assert.equal(clicks,1);
+ assert.equal(h.GC.Log.get('warn').filter(e=>e.message==='Portable save link cleanup failed').length,1);
+ assert.equal(h.GC.Log.get('error').filter(e=>e.message==='Portable save export failed').length,0);
+});
+
+test('identical portable import preserves an older usable backup without storage writes', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=811');
+ assert.equal(s.save(true),true);
+ const older=h.storage.getItem(s.SAVE_KEY);
+ h.evaluate('state.gold=812');
+ assert.equal(s.save(true),true);
+ const raw=h.storage.getItem(s.SAVE_KEY);
+ // Seed the exact validated payload the import would commit.
+ const canonical=JSON.stringify({...s.migrateLoaded(raw),schema:s.SAVE_SCHEMA,
+  locked:false,battle:null,battleReturn:null,symbolEncounter:null});
+ h.storage.setItem(s.SAVE_KEY,canonical);
+ h.storage.setItem(s.SAVE_BACKUP_KEY,older);
+ const before=[...h.storage.data];
+ let writes=0;
+ h.storage.setItem=()=>{writes++;throw new Error('QuotaExceededError: unnecessary import write');};
+ assert.equal(s.importPortableSaveText(raw),true);
+ assert.equal(writes,0,'identical import must not rotate backup or rewrite primary');
+ assert.deepEqual([...h.storage.data],before);
+ assert.equal(h.GC.State.get().gold,812);
+});
+
+test('identical portable import repairs a missing backup without rewriting primary', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=821');
+ assert.equal(s.save(true),true);
+ const raw=h.storage.getItem(s.SAVE_KEY);
+ const canonical=JSON.stringify({...s.migrateLoaded(raw),schema:s.SAVE_SCHEMA,
+  locked:false,battle:null,battleReturn:null,symbolEncounter:null});
+ h.storage.setItem(s.SAVE_KEY,canonical);
+ h.storage.removeItem(s.SAVE_BACKUP_KEY);
+ const originalSet=h.storage.setItem.bind(h.storage);
+ const writes=[];
+ h.storage.setItem=(key,value)=>{writes.push(key);return originalSet(key,value);};
+ assert.equal(s.importPortableSaveText(raw),true);
+ assert.deepEqual(writes,[s.SAVE_BACKUP_KEY],
+  'missing backup should be repaired without rewriting unchanged primary');
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),canonical);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),canonical);
+});
+
+test('importing a different checkpoint still rotates prior primary into backup', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=831');
+ assert.equal(s.save(true),true);
+ const older=h.storage.getItem(s.SAVE_KEY);
+ h.evaluate('state.gold=832');
+ assert.equal(s.save(true),true);
+ const current=h.storage.getItem(s.SAVE_KEY);
+ assert.equal(s.importPortableSaveText(older),true);
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),current);
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_KEY)).gold,831);
+});
+
+test('Continue restores the checkpoint and warns when transient-panel cleanup fails', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=717');
+ assert.equal(s.save(true),true);
+ h.evaluate('state.gold=818;clearTransientPanels=()=>{throw new Error("panel reset denied")};');
+ assert.equal(s.load(false),true);
+ assert.equal(h.GC.State.get().gold,717);
+ const warnings=h.GC.Log.get('warn').filter(e=>e.message==='Load panel cleanup failed');
+ assert.equal(warnings.length,1);
+ h.GC.Dialogue.finishDialogueTyping();
+ assert.match(h.getElement('dialogueText').innerHTML,/ページを再読み込み/);
+});
+
+test('portable file import preserves live and stored progress when panel cleanup fails', async () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=721');
+ assert.equal(s.save(true),true);
+ const imported=h.storage.getItem(s.SAVE_KEY);
+ h.evaluate('state.gold=822');
+ assert.equal(s.save(true),true);
+ h.evaluate('clearTransientPanels=()=>{throw new Error("panel reset denied")};');
+ h.context.confirm=()=>true;
+ const ok=await s.readPortableSaveFile({size:imported.length,async text(){return imported}});
+ assert.equal(ok,true);
+ assert.equal(h.GC.State.get().gold,721);
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_KEY)).gold,721);
+ assert.equal(JSON.parse(h.storage.getItem(s.SAVE_BACKUP_KEY)).gold,822);
+ h.GC.Dialogue.finishDialogueTyping();
+ assert.match(h.getElement('dialogueText').innerHTML,/ページを再読み込み/);
+});
+
+test('unchanged manual Save repairs a missing backup without rewriting primary', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=881');
+ assert.equal(s.save(true),true);
+ const original=h.storage.getItem(s.SAVE_KEY);
+ h.storage.removeItem(s.SAVE_BACKUP_KEY);
+ const set=h.storage.setItem.bind(h.storage),writes=[];
+ h.storage.setItem=(key,value)=>{
+  writes.push(key);
+  if(key===s.SAVE_KEY)throw new Error('QuotaExceededError: unchanged primary denied');
+  return set(key,value);
+ };
+ assert.equal(s.save(true),true);
+ assert.deepEqual(writes,[s.SAVE_BACKUP_KEY]);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),original);
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),original);
+});
+
+test('unchanged manual Save quarantines an invalid backup without rewriting primary', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=882');
+ assert.equal(s.save(true),true);
+ const original=h.storage.getItem(s.SAVE_KEY),corrupt='{broken-backup';
+ h.storage.setItem(s.SAVE_BACKUP_KEY,corrupt);
+ const set=h.storage.setItem.bind(h.storage),writes=[];
+ h.storage.setItem=(key,value)=>{
+  writes.push(key);
+  if(key===s.SAVE_KEY)throw new Error('QuotaExceededError: unchanged primary denied');
+  return set(key,value);
+ };
+ assert.equal(s.save(true),true);
+ assert.deepEqual(writes,[s.SAVE_QUARANTINE_KEY,s.SAVE_BACKUP_KEY]);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),original);
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),original);
+ const records=JSON.parse(h.storage.getItem(s.SAVE_QUARANTINE_KEY));
+ assert.equal(records.at(-1).backup,corrupt);
+});
+
+test('visible Continue returns false when denied storage and its error dialogue both fail', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=991;say=()=>{throw new Error("dialogue unavailable")}');
+ const before=JSON.stringify(h.GC.State.get());
+ denyReads(h);
+ assert.doesNotThrow(()=>assert.equal(s.load(false),false));
+ assert.equal(JSON.stringify(h.GC.State.get()),before);
+ assert.ok(h.GC.Log.get('warn').some(e=>e.message==='Save status message failed'));
+});
+
+test('visible Continue with no checkpoint handles a broken failure dialogue', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;say=()=>{throw new Error("dialogue unavailable")}');
+ assert.doesNotThrow(()=>assert.equal(s.load(false),false));
+ assert.equal(h.storage.getItem(s.SAVE_KEY),null);
+ assert.ok(h.GC.Log.get('warn').some(e=>e.message==='Save status message failed'));
+});
+
+test('visible Continue with two corrupt checkpoints handles a broken failure dialogue', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.storage.setItem(s.SAVE_KEY,'{broken-primary');
+ h.storage.setItem(s.SAVE_BACKUP_KEY,'{broken-backup');
+ const before=[...h.storage.data];
+ h.evaluate('ALPHA_SESSION.started=true;say=()=>{throw new Error("dialogue unavailable")}');
+ assert.doesNotThrow(()=>assert.equal(s.load(false),false));
+ assert.deepEqual([...h.storage.data],before);
+ assert.ok(h.GC.Log.get('warn').some(e=>e.message==='Save status message failed'));
+});
+
+test('visible Continue blocked by combat handles a broken failure dialogue', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.battle={};say=()=>{throw new Error("dialogue unavailable")}');
+ assert.doesNotThrow(()=>assert.equal(s.load(false),false));
+ assert.ok(h.GC.Log.get('warn').some(e=>e.message==='Save status message failed'));
+});
+
+test('restart refuses denied storage even if its failure dialogue throws', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=614;say=()=>{throw new Error("dialogue unavailable")}');
+ const before=JSON.stringify(h.GC.State.get()),stored=[...h.storage.data];
+ let prompted=false;
+ h.context.confirm=()=>{prompted=true;return true};
+ denyReads(h);
+ assert.doesNotThrow(()=>assert.equal(s.restart(),false));
+ assert.equal(prompted,false);
+ assert.equal(JSON.stringify(h.GC.State.get()),before);
+ assert.deepEqual([...h.storage.data],stored);
+ assert.ok(h.GC.Log.get('warn').some(e=>e.message==='Save status message failed'));
+});
+
+test('previous-adventure restore refuses denied storage even if its failure dialogue throws', () => {
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=615;say=()=>{throw new Error("dialogue unavailable")}');
+ const before=JSON.stringify(h.GC.State.get()),stored=[...h.storage.data];
+ let prompted=false;
+ h.context.confirm=()=>{prompted=true;return true};
+ denyReads(h);
+ assert.doesNotThrow(()=>assert.equal(s.restoreArchivedAdventure(),false));
+ assert.equal(prompted,false);
+ assert.equal(JSON.stringify(h.GC.State.get()),before);
+ assert.deepEqual([...h.storage.data],stored);
+ assert.ok(h.GC.Log.get('warn').some(e=>e.message==='Save status message failed'));
+});
