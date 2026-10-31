@@ -80,6 +80,18 @@ const AshFrontierEnvironment=(()=>{
    for(const y of [2,4,6,8,10,12]){
     for(const off of [-8,8])pix(ctx,'#776755',11*32+16+off,y*32+6,2,18);
    }
+   // Faint parallel wheel ruts connect the burned cart's eastern spur to
+   // the orders near the northern fork. Drawn on passable D, never obstacles.
+   for(let y=6;y<=8;y++){
+    const x=17*32,py=y*32;
+    pix(ctx,'#88765f',x+8,py+1,2,30);
+    pix(ctx,'#88765f',x+23,py+1,2,30);
+   }
+   for(let x=13;x<=17;x++){
+    const px=x*32,py=5*32;
+    pix(ctx,'#88765f',px+1,py+9,29,2);
+    pix(ctx,'#88765f',px+1,py+23,29,2);
+   }
    // Neutral bundles by the eastern refugee/priest route; no path blocking.
    for(const [x,y] of [[0,9],[23,9]]){
     pix(ctx,'#594a3d',x*32+5,y*32+24,21,3);

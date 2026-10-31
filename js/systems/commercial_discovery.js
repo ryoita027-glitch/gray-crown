@@ -49,8 +49,16 @@
    if(!isDefeated('boss'))return{id:'boss',kind:'object'};
   }
   if(map==='ashroad'){
+   const ordersDone=isEventComplete('alpha2.ashroad.orders');
+   // Granz's optional question changes the first *visible* lead, not the
+   // requirements. Players who chose supplies follow the cart to the orders;
+   // everyone else meets the refugees first. Any order remains playable.
+   if(state.events?.choices?.['early.granzPriority']==='supplies'&&!ordersDone){
+    if(!isEventComplete('alpha2.ashroad.burnedCart'))return{id:'burnedCart',kind:'object'};
+    return{id:'scorchedOrders',kind:'object'};
+   }
    if(!isEventComplete('alpha2.ashroad.refugee'))return{id:'refugee',kind:'npc'};
-   if(!isEventComplete('alpha2.ashroad.orders'))return{id:'scorchedOrders',kind:'object'};
+   if(!ordersDone)return{id:'scorchedOrders',kind:'object'};
    if(!isEventComplete('alpha2.ashroad.patrolVictory'))return{id:'imperialPatrol',kind:'object'};
   }
   return null
