@@ -2,6 +2,14 @@
 const COLORS={grass:'#6f8059',grass2:'#62724f',path:'#b49a6c',tree:'#496345',trunk:'#6c513c',gold:'#c9aa61',skin:'#ddb99e',shadow:'rgba(0,0,0,.22)',cave:'#3c3b41'};
 const HERO_SPRITES={image:null,ready:false,frameW:32,frameH:32,columns:3,directions:{down:0,left:1,right:2,up:3},characters:{karen:0,triton:1,sophie:2,margaret:3}};
 const HERO_RUNTIME={frameW:48,frameH:48,display:44,anchor:[24,44],directions:{down:0,left:1,right:2,up:3},images:{}};
+// Art-only trial: Margaret's actual walk-frame shoe line is y45–46; the shared y44 anchor
+// leaves her visible shoe pixels below the existing ground-contact shadow at Medium44.
+// Do not change the locked source PNGs or the other three heroes' anchor positions.
+const HERO_FOOT_ANCHOR_Y=Object.freeze({margaret:46});
+function heroGroundedOrigin(footX,footY,heroId,size){
+ const scale=size/HERO_RUNTIME.frameW,anchorY=HERO_FOOT_ANCHOR_Y[heroId]??HERO_RUNTIME.anchor[1];
+ return {dx:Math.round(footX-HERO_RUNTIME.anchor[0]*scale),dy:Math.round(footY-anchorY*scale)}
+}
 if(typeof Image!=='undefined'){
  const fallback=new Image();HERO_SPRITES.image=fallback;fallback.onload=()=>{HERO_SPRITES.ready=true};fallback.onerror=()=>{HERO_SPRITES.ready=false};fallback.src='assets/hero_party_walk.png';
  for(const id of Object.keys(HERO_SPRITES.characters)){const rec={image:new Image(),ready:false,error:false};rec.image.onload=()=>{rec.ready=true;rec.error=false};rec.image.onerror=()=>{rec.ready=false;rec.error=true};rec.image.src='assets/characters/'+id+'/'+id+'_walk.png';HERO_RUNTIME.images[id]=rec}
@@ -12,7 +20,7 @@ function drawHeroSpriteSheet(x,y,heroId,leader,facing,motion){
  const frame=heroWalkFrame(motion),row=HERO_RUNTIME.directions[facing]??0,px=Math.round(x*TILE),py=Math.round(y*TILE),footX=px+16,footY=py+30;
  const rec=HERO_RUNTIME.images[heroId];
  if(rec?.ready&&rec.image){
-  const size=HERO_RUNTIME.display,scale=size/HERO_RUNTIME.frameW,dx=Math.round(footX-HERO_RUNTIME.anchor[0]*scale),dy=Math.round(footY-HERO_RUNTIME.anchor[1]*scale);
+  const size=HERO_RUNTIME.display,{dx,dy}=heroGroundedOrigin(footX,footY,heroId,size);
   ctx.save();ctx.fillStyle='rgba(16,18,18,.28)';ctx.beginPath();ctx.ellipse(footX,footY-1,10,4,0,0,Math.PI*2);ctx.fill();ctx.imageSmoothingEnabled=false;
   ctx.drawImage(rec.image,frame*48,row*48,48,48,dx,dy,size,size);ctx.restore();
   if(leader)drawHeroMarker(footX,dy);return true
