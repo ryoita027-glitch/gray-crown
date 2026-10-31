@@ -855,6 +855,21 @@ function inlineNpcEvent(id){
  }
  if(state.map==='capitalinn'){
   if(id==='capitalInnHost')return structuredCondition('capitalFirstNight')?say('白鹿亭の女将',state.events.choices['early.capitalRoomOffer']==='offered'?'「あの家族のために部屋を空けておいたよ。次からは普通のお客だ。休むなら帳場で24Gだよ」':'「二度目からは普通のお客だよ。休むなら帳場で24G。勇者だからって宿の薪が無料になるわけじゃないからね」'):saySequence([{speaker:'白鹿亭の女将',text:'「勇者様でも宿代は取るよ。……と言いたいところだけど、今夜だけは軍持ちだそうだ」'},{speaker:'トリトン',text:'「勇者って初めて得したかも」'},{speaker:'白鹿亭の女将',text:'「前線から戻れたら、その時は自分の金で泊まりな。帰ってきた客から取る金が一番うれしいんだ」'}].concat(!structuredCondition('returnedKingdom')&&state.events.choices['early.capitalWagonGuide']==='guided'?[{speaker:'白鹿亭の女将',text:'「南門の荷車、あんたたちが押したんだって？　配給所から今夜の野菜が届いたよ。全部は変わらないけど、助かった」'}]:[]).concat(state.events.choices['early.capitalRoomOffer']==='offered'?[{speaker:'白鹿亭の女将',text:'「予約の部屋は避難家族のために空けておいたよ。あんたたちは奥の相部屋を使いな」'}]:[]))
+  if(id==='innRefugeeMother'){
+   // One short optional exchange, with a genuine next-morning consequence.
+   // No moral points, consumable rewards or mandatory scene are attached.
+   const offered=state.events.choices['early.capitalRoomOffer']==='offered';
+   if(offered&&structuredCondition('capitalFirstNight'))return saySequence([
+    {speaker:'北部から来た母親',text:'「昨夜、子どもが久しぶりに朝まで眠れました。明日の行き先はまだ決まっていないけど、今朝は顔色がいいんです」'},
+    {speaker:'ソフィ',text:'「一晩でも、ちゃんと休めたならよかったです」'}
+   ]);
+   if(offered)return saySequence([
+    {speaker:'北部から来た母親',text:'「女将さんから聞きました。部屋を譲ってくださったんですね。子どもに、今夜は屋根の下で眠れるよって言えました」'},
+    {speaker:'カレン',text:'「私たちも休めるから。今夜はゆっくり眠ってください」'}
+   ]);
+   if(structuredCondition('capitalFirstNight'))return say('北部から来た母親','「空き部屋はまだ探しています。今日も女将さんに相談してみるつもりです」');
+   return say('北部から来た母親','「北の村から子どもと来たんです。今夜の寝床が決まらなくて……掲示板にお願いを貼らせてもらいました」');
+  }
   if(id==='offDutySoldier')return say('非番の王国兵','「明日また灰の街道へ戻る。勇者様を見たら安心すると思ってたけど……あんたらも緊張してるんだな。少し安心したよ」')
  }
  if(state.map==='capitalarmory'){
@@ -1066,7 +1081,7 @@ function inlineObjectEvent(id){
   if(id==='warMap')return say('マーガレット','「補給路に赤い印が増えてる。前線が近づいたんじゃなくて、戦争が生活の方へ伸びてきてるんだ」')
   if(id==='soldierLetter'){setWorldSwitch('ryune.baseViewed.soldierLetter',true);return say('兵士の妹・ユナ','「最後の手紙には“次は雪が降る前に帰れるかも”って。……もう春になったけど」')}
   if(id==='emptyBed')return say('兵士の母','「息子の寝床よ。帰った時にそのまま眠れるよう、毎週シーツだけは替えてるの」')
-  if(id==='innCounter')return say('白鹿亭の帳場','兵士、商人、避難民。宿帳には王都の外から来た名前がびっしり並んでいる。')
+  if(id==='innCounter')return say('白鹿亭の帳場',state.events.choices['early.capitalRoomOffer']==='offered'&&structuredCondition('capitalFirstNight')&&!structuredCondition('returnedKingdom')?'宿帳に北部から来た親子の名前が増えている。「昨夜は白鹿亭に宿泊」。次の行き先の欄は、まだ空白のままだ。':'兵士、商人、避難民。宿帳には王都の外から来た名前がびっしり並んでいる。')
   if(id==='innNotice')return capitalInnNoticeVisit()
   if(id==='weaponRack')return say('武器棚','磨かれた新品より、修理待ちの剣や槍の方が多い。')
   if(id==='repairBench')return say('修理台','欠けた刃、曲がった留め具、乾いた血。道具には持ち主より正直な戦場の痕が残る。')
