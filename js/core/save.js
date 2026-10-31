@@ -398,10 +398,10 @@ function importPortableSaveText(raw){
 }
 async function readPortableSaveFile(file){
  if(!file||file.size>2*1024*1024){
-  say('システム','2MB以下のGray Crownセーブファイル（.json）を選んでください。');return false
+  notifySaveStatus('2MB以下のGray Crownセーブファイル（.json）を選んでください。');return false
  }
  if(!canPersistNow('load')){
-  say('システム','戦闘やイベントの途中ではセーブを読み込めません。');return false
+  notifySaveStatus('戦闘やイベントの途中ではセーブを読み込めません。');return false
  }
  let priorPrimary,priorBackup;
  try{
@@ -409,7 +409,7 @@ async function readPortableSaveFile(file){
   priorBackup=localStorage.getItem(SAVE_BACKUP_KEY)
  }catch(e){
   GC.Log?.error('Portable save file storage read failed',{error:String(e)});
-  say('システム','ブラウザの保存領域を読み込めません。設定を確認してください。');return false
+  notifySaveStatus('ブラウザの保存領域を読み込めません。設定を確認してください。');return false
  }
  // A missing or unreadable primary does not mean there is no previous
  // adventure: a usable backup (or recoverable corrupt bytes) may remain.
