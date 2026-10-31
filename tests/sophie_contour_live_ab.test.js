@@ -49,7 +49,7 @@ function run(mode='stable',query='?gcSophieContour=1'){
    const pixels=new Uint8ClampedArray(w*h*4);
    if(status.enabled&&mode!=='same')pixels[(45*w+45)*4]=255;
    if(mode==='drift'&&draw===3)pixels[(10*w+10)*4]=99;
-   if(mode==='wide'&&status.enabled)pixels[(119*w+119)*4]=255;
+   if(mode==='wide'&&status.enabled){pixels[0]=255;pixels[(119*w+119)*4]=255;}
    canvas.pixels=pixels;
   },draw:()=>trace.push('draw')};
  const GC={Render:{World:worldMock},State:{get:()=>({map:'village',x:5,y:5,battle:false})},
