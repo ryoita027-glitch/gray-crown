@@ -150,3 +150,60 @@ for(const [scenario,postSaveRead] of [
   assert.equal(calls.filter(x=>x[0]==='revoke').length,1);
  });
 }
+
+
+test('re-importing the same checkpoint keeps the older backup and does not claim a new backup rotation',async()=>{
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=19');
+ assert.equal(s.save(true),true);
+ const older=h.storage.getItem(s.SAVE_KEY);
+ h.evaluate('state.gold=48');
+ assert.equal(s.save(true),true);
+ const originalBackup=h.storage.getItem(s.SAVE_BACKUP_KEY);
+ assert.equal(originalBackup,older);
+ const current=h.storage.getItem(s.SAVE_KEY);
+ // Normalize through the same importer first; then import that exact checkpoint.
+ assert.equal(s.importPortableSaveText(current),true);
+ const normalized=h.storage.getItem(s.SAVE_KEY);
+ const preservedBackup=h.storage.getItem(s.SAVE_BACKUP_KEY);
+ const messages=[];
+ h.context.say=(_who,message)=>messages.push(message);
+ assert.equal(await s.readPortableSaveFile({size:normalized.length,text:async()=>normalized}),true);
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),preservedBackup);
+ assert.match(messages.at(-1),/同じセーブを読み込みました/);
+ assert.match(messages.at(-1),/既存のバックアップは維持/);
+ assert.doesNotMatch(messages.at(-1),/元のセーブはバックアップに保存/);
+});
+
+test('importing a different checkpoint confirms that the old primary was rotated to backup',async()=>{
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=63');
+ assert.equal(s.save(true),true);
+ const original=h.storage.getItem(s.SAVE_KEY);
+ h.evaluate('state.gold=912');
+ const incoming=s.serializeSave();
+ const messages=[];
+ h.context.say=(_who,message)=>messages.push(message);
+ assert.equal(await s.readPortableSaveFile({size:incoming.length,text:async()=>incoming}),true);
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),original);
+ assert.match(messages.at(-1),/元のセーブはバックアップに保存されています/);
+});
+
+test('restoring an identical previous adventure never claims that the primary was newly backed up',()=>{
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=74');
+ assert.equal(s.save(true),true);
+ const current=h.storage.getItem(s.SAVE_KEY);
+ assert.equal(s.importPortableSaveText(current),true);
+ const normalized=h.storage.getItem(s.SAVE_KEY);
+ h.storage.setItem(s.SAVE_ARCHIVE_KEY,normalized);
+ const beforeBackup=h.storage.getItem(s.SAVE_BACKUP_KEY);
+ const prompts=[],messages=[];
+ h.context.confirm=prompt=>{prompts.push(prompt);return true};
+ h.context.say=(_who,message)=>messages.push(message);
+ assert.equal(s.restoreArchivedAdventure(),true);
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),beforeBackup);
+ assert.match(prompts[0],/既存データを保護/);
+ assert.match(messages.at(-1),/既存のバックアップや復旧用データは維持/);
+ assert.doesNotMatch(messages.at(-1),/現在のセーブはバックアップに残しています/);
+});
