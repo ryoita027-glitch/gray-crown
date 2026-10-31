@@ -69,3 +69,30 @@ test('invalid overlapping file selections cannot interrupt the first import with
  assert.equal(h.GC.State.get().gold,92);
  assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),original);
 });
+
+
+test('a dialogue starting during file read is not interrupted by an import error notice',async()=>{
+ const h=createHarness(),s=h.GC.Save;
+ const original=checkpoint(h,41);
+ assert.equal(s.save(true),true);
+ const incoming=checkpoint(h,92);
+ let finishRead,statusNotices=0,confirmations=0;
+ const pending=s.readPortableSaveFile({size:incoming.length,text:()=>new Promise(resolve=>{finishRead=resolve})});
+ assert.equal(typeof finishRead,'function');
+ // A story dialogue can open while the OS file read is pending. The import
+ // must not replace that dialogue with a status message or touch saved slots.
+ h.getElement('dialogueBox').classList.remove('hidden');
+ h.context.say=()=>{statusNotices++};
+ h.context.confirm=()=>{confirmations++;return true};
+ finishRead(incoming);
+ assert.equal(await pending,false);
+ assert.equal(statusNotices,0,'do not interrupt the story with a status dialogue');
+ assert.equal(confirmations,0,'do not prompt while an event is active');
+ assert.equal(h.getElement('dialogueBox').classList.contains('hidden'),false);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),original);
+ h.getElement('dialogueBox').classList.add('hidden');
+ assert.equal(await s.readPortableSaveFile({size:incoming.length,async text(){return incoming}}),true,
+  'the file-import lock must be released after the interrupted read');
+ assert.equal(h.GC.State.get().gold,92);
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),original);
+});
