@@ -351,6 +351,27 @@ function drawRegionDecor(){if(RoadCaveQuality.enabled&&RoadCaveQuality.active.ha
   for(let i=0;i<14;i++){const yy=(i*43)%420+26,c=rc[Math.max(0,Math.min(14,Math.floor(yy/TILE)))];const x=(c+(i%2?1.8:-1.7))*TILE+(i%3)*5;ctx.fillStyle='#817866';ctx.beginPath();ctx.ellipse(x,yy,4+(i%3)*2,2+(i%2),0,0,Math.PI*2);ctx.fill()}
  }
  if(state.map==='northroad'){
+  // A small distant Aldina silhouette is a visible destination from the
+  // existing east layby. It sits entirely on non-walkable grass, never a gate.
+  const sx=17*TILE,sy=2*TILE;
+  ctx.fillStyle='rgba(55,67,65,.35)';ctx.fillRect(sx-8,sy+46,5*TILE+13,5);
+  ctx.fillStyle='#87948f';ctx.fillRect(sx,sy+24,4*TILE+15,22);
+  ctx.fillStyle='#b8c0b7';ctx.fillRect(sx+4,sy+25,4*TILE+6,3);
+  for(const [dx,h] of [[14,28],[61,41],[111,31]]){
+   ctx.fillStyle='#778681';ctx.fillRect(sx+dx,sy+46-h,16,h);
+   ctx.fillStyle='#c1c8bf';ctx.fillRect(sx+dx+2,sy+47-h,12,3);
+   ctx.fillStyle='#64716f';ctx.fillRect(sx+dx+6,sy+34,4,8);
+  }
+  ctx.fillStyle='#6d5553';ctx.fillRect(sx+69,sy-6,2,13);
+  ctx.fillStyle='#965963';ctx.fillRect(sx+71,sy-5,14,6);
+  ctx.fillStyle='#d1c3a7';ctx.fillRect(sx+4,sy+44,4*TILE+8,2);
+  // Two waiting wagons outside the distant wall hint at the capital's
+  // supply pressure; these are scenery, not loot or additional NPCs.
+  for(const dx of [27,45]){
+   ctx.fillStyle='#5f5348';ctx.fillRect(sx+dx,sy+52,12,4);
+   ctx.fillStyle='#a18b6c';ctx.fillRect(sx+dx+2,sy+48,8,5);
+   ctx.fillStyle='#393e3c';ctx.fillRect(sx+dx+2,sy+55,3,3);ctx.fillRect(sx+dx+9,sy+55,3,3);
+  }
   // The old northbound road keeps its main corridor. Small worn patches lead
   // toward the existing stone milestone and scout rather than to empty grass.
   for(const [tx,ty] of [[10,5],[10,6],[10,7],[13,4],[13,5]]){
@@ -583,6 +604,14 @@ function drawObject(o){if(RyuneOutskirts.drawObject(ctx,state.map,o,!!state.worl
  if(['fortGate','fortGateRight'].includes(o.id)&&!getWorldSwitch('fortGateOpen')){ctx.fillStyle='#4e4640';ctx.fillRect(px-10,py+4,52,26);ctx.fillStyle='#866c50';for(let i=0;i<6;i++)ctx.fillRect(px-6+i*9,py+4,4,26);ctx.fillStyle='#c0a16d';ctx.fillRect(px-10,py+4,52,4)}
  if(o.id==='ravineLookout'||o.id==='bridgeMarker'){ctx.fillStyle='#70685d';ctx.fillRect(px+7,py+20,20,7);ctx.fillStyle='#c7b990';ctx.fillRect(px+10,py+8,14,12)}
  if(o.id==='roadSign'){ctx.fillStyle='#73583b';ctx.fillRect(px+14,py+7,4,22);ctx.fillStyle='#b09262';ctx.fillRect(px+3,py+4,26,12);ctx.fillStyle='#403329';ctx.font='bold 8px system-ui';ctx.textAlign='center';ctx.fillText('古砦→',px+16,py+13);ctx.textAlign='start'}
+ if(o.id==='northroadVista'){
+  // Low, worn viewing slab at the end of the existing east layby. No glowing
+  // pickup treatment; the ordinary adjacent interaction diamond is enough.
+  ctx.fillStyle='#4d564e';ctx.fillRect(px+2,py+26,28,4);
+  ctx.fillStyle='#8d9388';ctx.fillRect(px+5,py+18,22,9);
+  ctx.fillStyle='#c8c1aa';ctx.fillRect(px+7,py+16,18,3);
+  ctx.fillStyle='#a8a18b';ctx.fillRect(px+9,py+22,14,2);
+ }
  if(o.id==='milestone'){
   // Player care makes the existing, truthful north arrow readable in-world.
   // Decorative pixels never change passability or the map footprint.
