@@ -28,7 +28,7 @@ test('portable export reports download start, preserves exact JSON, and delays U
  assert.equal(s.downloadPortableSave(),true);
  const stored=h.storage.getItem(s.SAVE_KEY);
  assert.equal(calls.find(x=>x[0]==='blob')[1],stored);
- assert.match(calls.find(x=>x[0]==='append')[1],/^GrayCrown_Save_v23_\\d{4}-\\d{2}-\\d{2}\\.json$/);
+ assert.match(calls.find(x=>x[0]==='append')[1],/^GrayCrown_Save_v23_\d{4}-\d{2}-\d{2}\.json$/);
  const message=calls.find(x=>x[0]==='say')[2];
  assert.match(message,/書き出しを開始しました/);
  assert.match(message,/ダウンロード一覧で保存を確認/);
