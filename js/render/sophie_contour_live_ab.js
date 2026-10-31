@@ -74,7 +74,7 @@ const SophieContourLiveAB=(()=>{
    const before=visualSnapshot(v),wasEnabled=s.enabled;
    const stopTimers=()=>{
     if(v.ambientTimer!=null)clearTimeout(v.ambientTimer);
-    if(v.raf!=null)cancelAnimationFrame(v.raf);
+    if(v.raf!=null&&typeof cancelAnimationFrame==='function')cancelAnimationFrame(v.raf);
     v.ambientTimer=null;v.raf=0;
    };
    try{
