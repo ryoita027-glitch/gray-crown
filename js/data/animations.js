@@ -1,7 +1,7 @@
 'use strict';
 (function(){
- const D={down:0,left:1,right:2,up:3},A=[24,44];
- function def(character,name,frames,fps,loop){return{id:character+'.'+name,src:'assets/characters/'+character+'/'+character+'_'+name+'.png',frameW:48,frameH:48,frames:Array.from({length:frames},(_,i)=>i),fps,loop,directions:D,anchor:A,offset:[0,0],prototypeTemporary:true}}
+ const D={down:0,left:1,right:2,up:3},A=[24,44],MARGARET_A=[24,46];
+ function def(character,name,frames,fps,loop){return{id:character+'.'+name,src:'assets/characters/'+character+'/'+character+'_'+name+'.png',frameW:48,frameH:48,frames:Array.from({length:frames},(_,i)=>i),fps,loop,directions:D,anchor:character==='margaret'?MARGARET_A:A,offset:[0,0],prototypeTemporary:true}}
  const karen={
   idle:def('karen','idle',4,4,true),walk:def('karen','walk',6,8,true),turn:def('karen','turn',3,12,false),talk:def('karen','talk',4,7,true),
   surprise:def('karen','surprise',4,10,false),approach:def('karen','approach',4,10,false),laugh:def('karen','laugh',6,10,false),run:def('karen','run',6,11,true)
@@ -34,7 +34,7 @@
   unresolved:['exactEyeColor','surname','formalWeaponDesign','formalWeaponName','stageBFinalHeroCostume','kingdomEmblem','heroCertificationMark','religiousEmblem']
  });
  const margaretVisualRules=Object.freeze({
-  prototypeTemporary:true,character:'margaret',sourceCell:[48,48],logicalTile:32,anchor:[24,44],dominantHand:'right',stage:'A',
+  prototypeTemporary:true,character:'margaret',sourceCell:[48,48],logicalTile:32,anchor:[24,46],dominantHand:'right',stage:'A',
   designDirection:'margaret-chibi-direction-appeal-v7',reference:'docs/pixel/reference/margaret_chibi_direction_appeal_v7_48.png',
   face:'readable violet eyes + gentle composed smile + cute protagonist-grade calm intelligence; never severe or blank',
   hair:'silver-lavender high ponytail + face-framing bangs + old-gold clasp; strong clean silhouette with restrained sway',
