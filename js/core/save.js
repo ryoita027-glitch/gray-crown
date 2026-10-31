@@ -467,14 +467,32 @@ async function readPortableSaveFile(file){
  // and an async read must not use a stale pre-read permission or slot snapshot.
  portableFileImportInProgress=true;
  try{
- let raw;
- try{raw=await file.text()}
+ let raw,readTimeoutId=null,readTimedOut=false;
+ try{
+  // Some browser/OS file reads can remain pending indefinitely. Bound only
+  // the byte read, not validation or the player's confirmation dialogue.
+  // Promise.race also ignores late bytes after the timeout has released the lock.
+  const read=file.text();
+  raw=await Promise.race([
+   read,
+   new Promise((_,reject)=>{
+    readTimeoutId=setTimeout(()=>{
+     readTimedOut=true;
+     reject(new Error('Portable save file read timed out'))
+    },30000)
+   })
+  ])
+ }
  catch(e){
   GC.Log?.error?.('Portable save file read failed',{error:String(e)});
   // A dialogue or battle may begin during the file read; do not interrupt it.
   if(!canPersistNow('load'))return false;
-  notifySaveStatus('セーブファイルを読み取れませんでした。別のファイルを選んでください。');
+  notifySaveStatus(readTimedOut?
+   'セーブファイルの読み込みが30秒以内に完了しませんでした。別のファイルを選んで再試行してください。':
+   'セーブファイルを読み取れませんでした。別のファイルを選んでください。');
   return false
+ }finally{
+  if(readTimeoutId!==null)clearTimeout(readTimeoutId)
  }
  // Check the live UI before validating bytes or displaying an invalid-file
  // notice: both paths must leave a newly started story scene untouched.
