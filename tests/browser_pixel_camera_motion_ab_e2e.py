@@ -65,8 +65,8 @@ def capture(page, url, viewport_name):
       // drawScene advances camera easing, party movement and follower phases.
       // Restore all of them before EACH render, not merely before each offset.
       const frozen = JSON.stringify(v), initial = JSON.parse(frozen);
-      const result = [], realNow = Date.now;
-      Date.now = () => 1772323200000;
+      const result = [], realNow = Date.now, frozenNow = realNow();
+      Date.now = () => frozenNow;
       try {
         for (const offset of offsets) {
           for (const mode of ['baseline', 'snap']) {
