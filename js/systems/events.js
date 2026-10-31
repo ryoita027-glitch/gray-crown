@@ -1081,7 +1081,7 @@ function inlineObjectEvent(id){
   if(id==='warMap')return say('マーガレット','「補給路に赤い印が増えてる。前線が近づいたんじゃなくて、戦争が生活の方へ伸びてきてるんだ」')
   if(id==='soldierLetter'){setWorldSwitch('ryune.baseViewed.soldierLetter',true);return say('兵士の妹・ユナ','「最後の手紙には“次は雪が降る前に帰れるかも”って。……もう春になったけど」')}
   if(id==='emptyBed')return say('兵士の母','「息子の寝床よ。帰った時にそのまま眠れるよう、毎週シーツだけは替えてるの」')
-  if(id==='innCounter')return say('白鹿亭の帳場','兵士、商人、避難民。宿帳には王都の外から来た名前がびっしり並んでいる。')
+  if(id==='innCounter')return say('白鹿亭の帳場',state.events.choices['early.capitalRoomOffer']==='offered'&&structuredCondition('capitalFirstNight')&&!structuredCondition('returnedKingdom')?'宿帳に北部から来た親子の名前が増えている。「昨夜は白鹿亭に宿泊」。次の行き先の欄は、まだ空白のままだ。':'兵士、商人、避難民。宿帳には王都の外から来た名前がびっしり並んでいる。')
   if(id==='innNotice')return capitalInnNoticeVisit()
   if(id==='weaponRack')return say('武器棚','磨かれた新品より、修理待ちの剣や槍の方が多い。')
   if(id==='repairBench')return say('修理台','欠けた刃、曲がった留め具、乾いた血。道具には持ち主より正直な戦場の痕が残る。')
