@@ -40,7 +40,7 @@ test('visiting the queue keeps the observed line, while choices get distinct sho
 
 test('helping the cart pays off at the innkeeper and at night, with no repeatable reward',()=>{
  const h=createHarness();
- h.evaluate("ALPHA_SESSION.started=true;state.map='capitalinn';state.events.choices['early.capitalWagonGuide']='guided';state.events.choices['early.capitalFountainPerspective']='asked'");
+ h.evaluate("ALPHA_SESSION.started=true;state.map='capitalinn';state.events.completed['early.capitalRationIntro']=true;state.events.choices['early.capitalWagonGuide']='guided';state.events.choices['early.capitalFountainPerspective']='asked'");
  const beforeItems=h.evaluate('JSON.stringify(state.inventory)');
  const beforeJournal=h.GC.State.get().journal.length;
  const beforeStage=h.GC.State.get().story.stage;
