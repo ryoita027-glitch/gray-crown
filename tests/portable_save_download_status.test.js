@@ -397,3 +397,52 @@ test('portable file import rejects inherited map names before overwrite confirma
  assert.equal(confirmations,0);
  assert.deepEqual([...h.storage.data],before);
 });
+
+function createImportRollbackFailureHarness(){
+ const h=createHarness(),s=h.GC.Save;
+ h.evaluate('ALPHA_SESSION.started=true;state.gold=101');
+ assert.equal(s.save(true),true);
+ h.evaluate('state.gold=202');
+ assert.equal(s.save(true),true);
+ const oldPrimary=h.storage.getItem(s.SAVE_KEY);
+ const oldBackup=h.storage.getItem(s.SAVE_BACKUP_KEY);
+ assert.notEqual(oldPrimary,oldBackup);
+ h.evaluate('state.gold=303');
+ const incoming=s.serializeSave();
+ const originalSet=h.storage.setItem.bind(h.storage);
+ // Rotation of the old primary succeeds. The incoming primary write fails,
+ // and then restoring the original backup fails too.
+ h.storage.setItem=(key,value)=>{
+  if(key===s.SAVE_KEY&&value!==oldPrimary)throw Error('primary write denied');
+  if(key===s.SAVE_BACKUP_KEY&&value===oldBackup)throw Error('backup rollback denied');
+  return originalSet(key,value)
+ };
+ return {h,s,incoming,oldPrimary,oldBackup}
+}
+
+test('failed portable import warns when backup rollback is incomplete',async()=>{
+ const {h,s,incoming,oldPrimary,oldBackup}=createImportRollbackFailureHarness();
+ const messages=[];
+ h.context.confirm=()=>true;
+ h.context.say=(_who,message)=>messages.push(message);
+ assert.equal(await s.readPortableSaveFile({size:incoming.length,text:async()=>incoming}),false);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),oldPrimary);
+ assert.notEqual(h.storage.getItem(s.SAVE_BACKUP_KEY),oldBackup,
+  'the failed rollback must be observable instead of silently reported as safe');
+ assert.match(messages.at(-1),/元の保存データへの復元も確認できませんでした/);
+ assert.match(messages.at(-1),/ページを閉じずに/);
+});
+
+test('failed previous-adventure restore does not claim the current save is unchanged when rollback fails',()=>{
+ const {h,s,incoming,oldPrimary,oldBackup}=createImportRollbackFailureHarness();
+ // Archive write is independent of the failing primary/backup slot writes.
+ h.storage.setItem(s.SAVE_ARCHIVE_KEY,incoming);
+ const messages=[];
+ h.context.confirm=()=>true;
+ h.context.say=(_who,message)=>messages.push(message);
+ assert.equal(s.restoreArchivedAdventure(),false);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),oldPrimary);
+ assert.notEqual(h.storage.getItem(s.SAVE_BACKUP_KEY),oldBackup);
+ assert.match(messages.at(-1),/元の保存データへの復元も確認できませんでした/);
+ assert.doesNotMatch(messages.at(-1),/現在のセーブには変更していません/);
+});
