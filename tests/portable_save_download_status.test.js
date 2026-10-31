@@ -278,3 +278,28 @@ test('valid portable file confirms only after it is read and validated',async()=
  assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),original);
  assert.equal(JSON.parse(h.storage.getItem(s.SAVE_KEY)).gold,900);
 });
+
+for(const [label,archiveRaw] of [
+ ['malformed JSON','{broken json'],
+ ['unsupported future schema',JSON.stringify({schema:999,map:'village',story:{stage:'00'},world:{},inventory:{},party:[]})]
+]){
+ test('previous-adventure restore rejects '+label+' before overwrite confirmation',()=>{
+  const h=createHarness(),s=h.GC.Save;
+  h.evaluate('ALPHA_SESSION.started=true;state.gold=583');
+  assert.equal(s.save(true),true);
+  const primary=h.storage.getItem(s.SAVE_KEY);
+  const backup=h.storage.getItem(s.SAVE_BACKUP_KEY);
+  h.storage.setItem(s.SAVE_ARCHIVE_KEY,archiveRaw);
+  let confirmations=0;
+  const messages=[];
+  h.context.confirm=()=>{confirmations++;return true};
+  h.context.say=(_who,message)=>messages.push(message);
+  assert.equal(s.restoreArchivedAdventure(),false);
+  assert.equal(confirmations,0,'invalid archive must not request overwrite confirmation');
+  assert.equal(h.storage.getItem(s.SAVE_KEY),primary);
+  assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),backup);
+  assert.equal(h.storage.getItem(s.SAVE_ARCHIVE_KEY),archiveRaw);
+  assert.match(messages.at(-1),/以前の冒険データが破損しているか/);
+  assert.match(messages.at(-1),/現在のセーブは変更していません/);
+ });
+}
