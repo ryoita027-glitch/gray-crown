@@ -3,10 +3,18 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const {createHarness}=require('./harness');
 function start(priority){
- const h=createHarness();const s=h.GC.State.get();
+ const h=createHarness();h.evaluate('ALPHA_SESSION.started=true');const s=h.GC.State.get();
  h.GC.Story.applyCanonicalAlphaStage(s,h.GC.Story.STORY_STAGES.ASH_ROAD_ORDER);
  if(priority)s.events.choices['early.granzPriority']=priority;
  h.GC.Movement.enterAshRoad();
+ // Let the chapter card and arrival dialogue finish before Save is tested.
+ h.flushRaf();h.flushTimers();h.flushRaf();
+ for(let i=0;i<100&&!h.getElement('dialogueBox').classList.contains('hidden');i++){
+  if(h.GC.Dialogue.dialogueTyping())h.GC.Dialogue.finishDialogueTyping();
+  h.GC.App.primaryAction();h.flushRaf();
+ }
+ assert.equal(h.getElement('dialogueBox').classList.contains('hidden'),true,'arrival dialogue closes');
+ assert.equal(s.locked,false,'chapter card closes');
  return h;
 }
 function objective(h){return h.GC.State.get().story.objective}
