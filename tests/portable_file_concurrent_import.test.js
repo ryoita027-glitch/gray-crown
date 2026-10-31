@@ -41,3 +41,31 @@ test('a rejected file read releases the import lock for a later valid selection'
  assert.equal(h.GC.State.get().gold,92);
  assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),original);
 });
+
+test('invalid overlapping file selections cannot interrupt the first import with a status dialogue',async()=>{
+ const h=createHarness(),s=h.GC.Save;
+ const original=checkpoint(h,41);
+ assert.equal(s.save(true),true);
+ const incoming=checkpoint(h,92);
+ let finishRead,ignoredReads=0,prematureNotices=0;
+ const first=s.readPortableSaveFile({size:incoming.length,text:()=>new Promise(resolve=>{finishRead=resolve})});
+ assert.equal(typeof finishRead,'function');
+ // A rejected selection's notification opens the dialogue panel. The first
+ // import would then fail its post-read transient-UI check despite being valid.
+ h.context.say=()=>{
+  prematureNotices++;
+  h.getElement('dialogueBox').classList.remove('hidden');
+ };
+ assert.equal(await s.readPortableSaveFile({
+  size:2*1024*1024+1,async text(){ignoredReads++;return incoming}
+ }),false);
+ assert.equal(await s.readPortableSaveFile(null),false);
+ assert.equal(ignoredReads,0,'the oversized file must not be read');
+ assert.equal(prematureNotices,0,'ignored selections must not open status dialogue');
+ assert.equal(h.getElement('dialogueBox').classList.contains('hidden'),true);
+ h.context.confirm=()=>true;
+ finishRead(incoming);
+ assert.equal(await first,true,'the first valid selection must complete');
+ assert.equal(h.GC.State.get().gold,92);
+ assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),original);
+});
