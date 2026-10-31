@@ -15,11 +15,9 @@ The SVG contains the **actual GitHub PNG bytes**, not a mock sprite, for Karen, 
 | Karen production walk | `2d1085e3e07aaa2550dccf2d33fe961ea6f2d3de` |
 | Triton production walk | `a151bff9e4a54668b99923450658d85c7ec2b9bb` |
 | Sophie production walk | `47065a719b16b3da0c3f0f2457d69ccfcf8a8a04` |
-| Margaret production walk | `1923f1315c377418cea0f2dd7` |
+| Margaret production walk | `1923f1315c377418cea0f2f94ab6431c987f2dd7` |
 | Margaret V11 HOLD | `b039e2bcbf7ba2175d7f9c1952cd2041e0b381c3` |
 | Featured V5 NPCs (Mayor/Envoy) | `b169b58a846e1812dc42f566ca1843a6088e901f` |
-
-**Correction for audit:** Margaret production SHA above must be read as its complete 40-character Git blob SHA `1923f1315c377418cea0f2f94ab6431c987f2dd7`; do not use a truncated identifier.
 
 ## Art judgment, not technical PASS
 
