@@ -107,7 +107,7 @@ function validateLoadedState(loaded,fresh=createGameState()){
  for(const k of Object.keys(loaded.inventory||{}))loaded.inventory[k]=Math.floor(safeNumber(loaded.inventory[k],0,0,999));
  for(const k of Object.keys(loaded.world.recoveryUses||{}))loaded.world.recoveryUses[k]=Math.floor(safeNumber(loaded.world.recoveryUses[k],0,0,99));
  const savedMap=loaded.map;
- loaded.map=maps[loaded.map]?loaded.map:'village';if(loaded.map==='relayvillage'){loaded.map='borderland';loaded.x=11;loaded.y=5}if(loaded.map==='ravine'){loaded.map='watchfort';loaded.x=11;loaded.y=8}
+ loaded.map=Object.hasOwn(maps,loaded.map)?loaded.map:'village';if(loaded.map==='relayvillage'){loaded.map='borderland';loaded.x=11;loaded.y=5}if(loaded.map==='ravine'){loaded.map='watchfort';loaded.x=11;loaded.y=8}
  loaded.world.visited[loaded.map]=true;loaded.battle=null;loaded.battleReturn=null;loaded.symbolEncounter=null;loaded.locked=false;
  loaded.encounterSteps=Number.isFinite(loaded.encounterSteps)?loaded.encounterSteps:0;loaded.nextEncounterAt=Number.isFinite(loaded.nextEncounterAt)?loaded.nextEncounterAt:rollEncounterThreshold(loaded.map);
  const pos=nearestSafeTile(loaded.map,loaded.x,loaded.y,loaded);
@@ -374,12 +374,14 @@ function preparePortableSaveText(raw){
   const canonical=createGameState().party;
   const expected=['karen','triton','sophie','margaret'];
   if(!parsed||!Number.isInteger(parsed.schema)||parsed.schema<1||parsed.schema>SAVE_SCHEMA||
-     !parsed.story||typeof parsed.story!=='object'||!parsed.world||typeof parsed.world!=='object'||
+     !parsed.story||typeof parsed.story!=='object'||Array.isArray(parsed.story)||
+     typeof parsed.story.stage!=='string'||
+     !parsed.world||typeof parsed.world!=='object'||Array.isArray(parsed.world)||
      !parsed.inventory||typeof parsed.inventory!=='object'||Array.isArray(parsed.inventory)||
      Object.keys(parsed.inventory).some(id=>!Object.hasOwn(ITEM_DEFS,id))||
      !Array.isArray(parsed.party)||parsed.party.length!==4||
      !parsed.party.every((p,i)=>p&&p.id===expected[i]&&p.name===canonical[i].name&&p.job===canonical[i].job)||
-     !maps[parsed.map])return null;
+     !Object.hasOwn(maps,parsed.map))return null;
   return migrateLoaded(raw);
  }catch(e){GC.Log?.warn?.('Portable save validation failed',{error:String(e)});return null}
 }
