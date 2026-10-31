@@ -17,8 +17,8 @@ The 48px original Sophie has a large detailed head/hair volume and dense hair ed
 ## Verification performed
 
 - Local Pillow opened the exact uploaded PNG bytes and confirmed lossless RGBA pixels, 288×192 dimensions and 24 nonempty 48px cells.
-- Four directions each have **five unique walk-frame pixel states** across six slots; feet stay at y46 and top bounds at y7–8. SHA256: `04362a0fcbd56aa253293f4dac4cf1991f53571a6efd7c4ed53873c06a291b3b`.
-- Connected GitHub blob SHA `857e424fbc4eb36a0d10d216efe6c7a2fa32dbf8` matched the independently calculated Git blob hash for the local PNG.
+- Four directions each have **five unique walk-frame pixel states** across six slots; feet now end at source-matched bottom-exclusive y45 (last painted y44), top bounds y7–8. SHA256: `08c8d3d7db15e45e6f9a9898444b7e6817fb8700305c0849ce2350a27ab3bd69`.
+- Connected GitHub blob SHA `2b59686bba1c7462046a8da2b89721e8826651cb` matched the independently calculated Git blob hash for the local PNG.
 - **NOT RUN:** actual Chromium village screenshot, full Node/Python game regression, eight-action sprite coverage, real NPC/crowd/camera visual acceptance. Local environment cannot clone the private repo due to network/DNS restrictions; GitHub Actions paid or exhausted quota not used.
 - **Do not mistake PNG integrity or branch renderer wiring for art acceptance.**
 
