@@ -67,12 +67,14 @@ function enterAshRoad(source='capital'){
  state.story.objective=objective;
  renderHud();
 }
-function enterFrontier(){
+function enterFrontier(source='ashroad'){
  const firstVisit=!hasVisited('frontier');
  if(!firstVisit){
-  // Reaching Serad again is ordinary travel, not another first-arrival scene.
-  // Keep the actual mission stage: a return must not send veterans to the initial briefing.
-  setMap('frontier',11,13,'up',[[12,13],[13,13],[14,13]]);
+  // The old checkpoint lies NORTH of Serad. Returning from Borderland must
+  // arrive at the north wall, not teleport the party to the Ash Road gate.
+  const fromNorth=source==='borderland';
+  const y=fromNorth?1:13;
+  setMap('frontier',11,y,fromNorth?'down':'up',[[12,y],[13,y],[14,y]]);
   state.chapter='第二章 — セラド前線';
   state.story.objective=STORY_FLOW[state.story.stage]?.objective||state.story.objective;
   renderHud();
@@ -84,7 +86,28 @@ function enterFrontier(){
 }
 function enterFrontierField(){markVisited('frontierfield',true);travelScene('frontierfield',11,13,'up','第二章 — セラド前線','戦闘跡で帝国軍の撤退痕跡を調べる','北防壁の外は、昨日までの戦闘が嘘のように静かだった。泥には北へ向かう轍と担架の跡が残り、壊れた装備だけが両軍の位置を示している。',()=>runTriggeredEvent('arrival','frontierfield',{map:'frontierfield'}))}
 function returnFrontierFromField(){setMap('frontier',11,1,'down',[[12,1],[13,1],[14,1]]);renderHud();say('ナレーション','北防壁をくぐり、セラド前線拠点へ戻った。')}
-function enterBorderland(){markVisited('borderland',true);travelScene('borderland',11,13,'up','第三章 — 第一の四天王','まず偵察兵から国境地帯の状況を聞く','前線を離れて半日。道は旧関所跡で枝分かれし、その先に小さな宿場の煙が見える。ここからは「北へ歩けば次の場所」ではない。国境を越える準備が必要だ。')}
+function enterBorderland(source='frontier'){
+ const firstVisit=!hasVisited('borderland');
+ if(!firstVisit){
+  // Keep the player's actual entry side on return visits. Do not replay the
+  // half-day journey or send a rested party back to the first scout briefing.
+  const fromNorth=source==='watchfort'||source==='relayvillage';
+  const y=fromNorth?1:13;
+  setMap('borderland',11,y,fromNorth?'down':'up',[[12,y],[13,y],[14,y]]);
+  state.chapter='第三章 — 第一の四天王';
+  state.story.objective=!isEventComplete('borderBriefed')
+   ?'王国の偵察兵から国境地帯の状況を聞く'
+   :!isEventComplete('borderMerchantHelped')
+   ?'旧関所で足止めされた商人を助ける'
+   :!isEventComplete('borderRested')
+   ?'ハルム宿場で休息する'
+   :'北のベルド砦へ進む／必要ならセラドへ戻る';
+  renderHud();
+  return;
+ }
+ markVisited('borderland',true);
+ travelScene('borderland',11,13,'up','第三章 — 第一の四天王','まず偵察兵から国境地帯の状況を聞く','前線を離れて半日。道は旧関所跡で枝分かれし、その先に小さな宿場の煙が見える。ここからは「北へ歩けば次の場所」ではない。国境を越える準備が必要だ。');
+}
 function enterRelay(){enterBorderland()}
 function enterWatchfort(){markVisited('watchfort',true);travelScene('watchfort',11,13,'up','第三章 — 第一の四天王','砦長から国境橋の状況を聞く','翌朝。ハルムを出た四人は、王国最後の常設拠点ベルド砦へ着く。砦の北門の向こうはそのままラゼル峡谷の橋へ続いている。')}
 function enterRavine(){enterWatchfort()}
@@ -192,11 +215,11 @@ function move(dir){if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started
  if(state.map==='frontier'&&ny<0&&[11,12].includes(nx)){if(!isEventComplete('alpha2.frontier.complete')){say('セラド北防壁','追撃命令は出ていない。前線将校へ報告し、この区間の任務を終えよう。');return}if(!isEventComplete('alpha2.frontier2.order')){say('カレン','「先に前線将校から、戦後の次の指示を聞こう」');return}if(!isEventComplete('alpha2.frontier2.aftermath')){say('ソフィ','「北へ出る前に、野戦病院の状況を確認しましょう」');return}if(isEventComplete('alpha2.frontier2.complete')){enterBorderland();return}enterFrontierField();return}
  if(state.map==='frontierfield'&&ny>=15&&[11,12].includes(nx)){returnFrontierFromField();return}
  if(state.map==='frontierfield'&&ny<0&&[11,12].includes(nx)){say('マーガレット',isEventComplete('alpha2.frontier2.complete')?'「旧関所へはセラド北防壁から行ける。ここは調査済みよ。前線の道を使いましょう」':'「任務は戦闘跡の確認まで。これ以上北へ進む前に、残った痕跡を調べてセラドへ報告しましょう」');return}
- if(state.map==='borderland'&&ny>=15&&[11,12].includes(nx)){enterFrontier();return}
+ if(state.map==='borderland'&&ny>=15&&[11,12].includes(nx)){enterFrontier('borderland');return}
  if(state.map==='borderland'&&ny<0&&[11,12].includes(nx)){if(!(isEventComplete('borderBriefed')&&isEventComplete('borderMerchantHelped')&&isEventComplete('borderRested'))){say('カレン','「まだここでやることがある。偵察兵、足止めされた商人、それから今夜の休息……全部済ませてから進もう」');return}enterWatchfort();return}
- if(state.map==='relayvillage'&&ny>=15&&[11,12].includes(nx)){enterBorderland();return}
+ if(state.map==='relayvillage'&&ny>=15&&[11,12].includes(nx)){enterBorderland('relayvillage');return}
  if(state.map==='relayvillage'&&ny<0&&[11,12].includes(nx)){enterWatchfort();return}
- if(state.map==='watchfort'&&ny>=15&&[11,12].includes(nx)){enterBorderland();return}
+ if(state.map==='watchfort'&&ny>=15&&[11,12].includes(nx)){enterBorderland('watchfort');return}
  if(state.map==='watchfort'&&ny<0&&[11,12].includes(nx)){if(!isEventComplete('metKlein')){say('カレン','「橋の上にクラインテッドがいる。あの人と話さないまま帝国側へは行けない」');return}enterEmpireVillage();return}
  if(state.map==='ravine'&&ny>=15&&[11,12].includes(nx)){enterWatchfort();return}
  if(state.map==='ravine'&&ny<0&&[11,12].includes(nx)){if(!isEventComplete('metKlein')){enterWatchfort();return}enterEmpireVillage();return}
