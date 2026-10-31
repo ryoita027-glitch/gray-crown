@@ -67,7 +67,21 @@ function enterAshRoad(source='capital'){
  state.story.objective=objective;
  renderHud();
 }
-function enterFrontier(){markVisited('frontier',true);advanceStory(STORY_STAGES.FRONTIER_ARRIVAL,null,'前線将校からセラドの戦況を聞く');travelScene('frontier',11,13,'up','第二章 — セラド前線','前線将校からセラドの戦況を聞く','灰の街道の先に王国前線拠点セラドが見えた。勇者到着を告げる声より早く、泥を跳ね上げる担架が四人の横を通り過ぎる。ここでは英雄譚より、負傷者と補給箱の数の方が戦況を語っていた。',()=>runTriggeredEvent('arrival','frontier',{map:'frontier'}))}
+function enterFrontier(){
+ const firstVisit=!hasVisited('frontier');
+ if(!firstVisit){
+  // Reaching Serad again is ordinary travel, not another first-arrival scene.
+  // Keep the actual mission stage: a return must not send veterans to the initial briefing.
+  setMap('frontier',11,13,'up',[[12,13],[13,13],[14,13]]);
+  state.chapter='第二章 — セラド前線';
+  state.story.objective=STORY_FLOW[state.story.stage]?.objective||state.story.objective;
+  renderHud();
+  return;
+ }
+ markVisited('frontier',true);
+ advanceStory(STORY_STAGES.FRONTIER_ARRIVAL,null,'前線将校からセラドの戦況を聞く');
+ travelScene('frontier',11,13,'up','第二章 — セラド前線','前線将校からセラドの戦況を聞く','灰の街道の先に王国前線拠点セラドが見えた。勇者到着を告げる声より早く、泥を跳ね上げる担架が四人の横を通り過ぎる。ここでは英雄譚より、負傷者と補給箱の数の方が戦況を語っていた。',()=>runTriggeredEvent('arrival','frontier',{map:'frontier'}));
+}
 function enterFrontierField(){markVisited('frontierfield',true);travelScene('frontierfield',11,13,'up','第二章 — セラド前線','戦闘跡で帝国軍の撤退痕跡を調べる','北防壁の外は、昨日までの戦闘が嘘のように静かだった。泥には北へ向かう轍と担架の跡が残り、壊れた装備だけが両軍の位置を示している。',()=>runTriggeredEvent('arrival','frontierfield',{map:'frontierfield'}))}
 function returnFrontierFromField(){setMap('frontier',11,1,'down',[[12,1],[13,1],[14,1]]);renderHud();say('ナレーション','北防壁をくぐり、セラド前線拠点へ戻った。')}
 function enterBorderland(){markVisited('borderland',true);travelScene('borderland',11,13,'up','第三章 — 第一の四天王','まず偵察兵から国境地帯の状況を聞く','前線を離れて半日。道は旧関所跡で枝分かれし、その先に小さな宿場の煙が見える。ここからは「北へ歩けば次の場所」ではない。国境を越える準備が必要だ。')}
