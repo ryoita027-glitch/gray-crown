@@ -96,3 +96,50 @@ test('a dialogue starting during file read is not interrupted by an import error
  assert.equal(h.GC.State.get().gold,92);
  assert.equal(h.storage.getItem(s.SAVE_BACKUP_KEY),original);
 });
+
+
+test('rejected file read during a story dialogue does not interrupt it',async()=>{
+ const h=createHarness(),s=h.GC.Save;
+ const original=checkpoint(h,41);
+ assert.equal(s.save(true),true);
+ let rejectRead,notices=0,confirmations=0;
+ const pending=s.readPortableSaveFile({size:100,text:()=>new Promise((_,reject)=>{rejectRead=reject})});
+ assert.equal(typeof rejectRead,'function');
+ h.getElement('dialogueBox').classList.remove('hidden');
+ h.context.say=()=>{notices++};
+ h.context.confirm=()=>{confirmations++;return false};
+ rejectRead(new Error('permission denied'));
+ assert.equal(await pending,false);
+ assert.equal(notices,0,'do not overwrite active story dialogue with a file error');
+ assert.equal(confirmations,0);
+ assert.equal(h.getElement('dialogueBox').classList.contains('hidden'),false);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),original);
+ h.getElement('dialogueBox').classList.add('hidden');
+ const valid=checkpoint(h,92);
+ assert.equal(await s.readPortableSaveFile({size:valid.length,async text(){return valid}}),false);
+ assert.equal(confirmations,1,'the lock must be released for a valid retry');
+ assert.equal(h.storage.getItem(s.SAVE_KEY),original);
+});
+
+test('invalid file read during a story dialogue does not interrupt it',async()=>{
+ const h=createHarness(),s=h.GC.Save;
+ const original=checkpoint(h,41);
+ assert.equal(s.save(true),true);
+ let finishRead,notices=0,confirmations=0;
+ const pending=s.readPortableSaveFile({size:100,text:()=>new Promise(resolve=>{finishRead=resolve})});
+ assert.equal(typeof finishRead,'function');
+ h.getElement('dialogueBox').classList.remove('hidden');
+ h.context.say=()=>{notices++};
+ h.context.confirm=()=>{confirmations++;return false};
+ finishRead('{invalid-json');
+ assert.equal(await pending,false);
+ assert.equal(notices,0,'do not overwrite active story dialogue with a validation notice');
+ assert.equal(confirmations,0);
+ assert.equal(h.getElement('dialogueBox').classList.contains('hidden'),false);
+ assert.equal(h.storage.getItem(s.SAVE_KEY),original);
+ h.getElement('dialogueBox').classList.add('hidden');
+ const valid=checkpoint(h,92);
+ assert.equal(await s.readPortableSaveFile({size:valid.length,async text(){return valid}}),false);
+ assert.equal(confirmations,1,'the lock must be released for a valid retry');
+ assert.equal(h.storage.getItem(s.SAVE_KEY),original);
+});
