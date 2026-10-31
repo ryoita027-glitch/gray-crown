@@ -1108,11 +1108,26 @@ function inlineNpcEvent(id){
    setStructuredCondition('fortGateOpen',true);state.objective='開いた北門を抜け、ラゼル峡谷橋へ出る';addJournal('ベルド砦で国境周辺の実距離を確認。ラゼル峡谷橋の中央が明確な国境になっている。');renderHud();draw();
    return saySequence([{speaker:'監視砦長',text:'「よし。門を開ける」'},{speaker:'若い王国兵',text:'「砦長、帝国四将が橋にいるのに？」'},{speaker:'監視砦長',text:'「だからだ。ここで勇者を閉じ込めても戦況は変わらん。何を見て戻るかは、この四人に任せる」'},{speaker:'マーガレット',text:'「戻れる保証は？」'},{speaker:'監視砦長',text:'「ない。国境ってのは、門を一枚くぐれば別世界になる場所じゃない。戻れない可能性も含めて国境だ」'}])
   }
-  if(id==='tiredGuard')return saySequence([{speaker:'若い王国兵',text:'「三週間ここにいます。でも帝国兵の顔をまともに見たのは二回だけです」'},{speaker:'トリトン',text:'「ずっと戦ってるわけじゃないんだな」'},{speaker:'若い王国兵',text:'「待つ時間の方が長いです。……待ってる間に、相手が怪物じゃなく人間だって考えちゃうのが一番怖い」'}])
+  if(id==='tiredGuard'){
+   const scouting=state.events.choices['fort.bridgeScouted'];
+   if(scouting==='observed'){
+    state.events.choices['fort.bridgeScouted']='reported';
+    state.inventory['薬草']=(state.inventory['薬草']||0)+1;
+    renderHud();
+    return saySequence([
+     {speaker:'若い王国兵',text:'「橋脚のひびを見つけた？　砦長には俺から伝える。……ここで立っていると、橋が壊れた時に向こう側の兵も帰れなくなるって分かるんだ」'},
+     {speaker:'ソフィ',text:'「どちら側にも、帰りたい人がいるんですね」'},
+     {speaker:'若い王国兵',text:'「報告してくれた礼だ。予備の薬草を一つ持っていけ」'},
+     {speaker:'ナレーション',text:'薬草を1個受け取った。'}
+    ])
+   }
+   if(scouting==='reported')return say('若い王国兵','「橋脚の傷は伝えておいた。向こう側の兵だって、帰る道を失いたくはないだろうな」');
+   return saySequence([{speaker:'若い王国兵',text:'「三週間ここにいます。でも帝国兵の顔をまともに見たのは二回だけです」'},{speaker:'トリトン',text:'「ずっと戦ってるわけじゃないんだな」'},{speaker:'若い王国兵',text:'「待つ時間の方が長いです。……待ってる間に、相手が怪物じゃなく人間だって考えちゃうのが一番怖い」'}])
+  }
   if(id==='klein'){
    if(structuredCondition('metKlein'))return say('クラインテッド','「橋はもう崩れた。帝国側の道を進め」');
    // The bridge collapse is a one-way story turn: warn before committing.
-   return say('カレン','「橋の先には帝国四将がいる。渡れば砦に戻れなくなるかもしれない。準備はいい？」',[
+   return say('カレン',state.events.choices['fort.bridgeScouted']?'「見張り台で橋脚のひびを見た。橋の先には帝国四将もいる。渡れば戻れなくなるかもしれない。準備はいい？」':'「橋の先には帝国四将がいる。渡れば砦に戻れなくなるかもしれない。準備はいい？」',[
     {label:'四将と向き合い、橋を渡る',fn:()=>{
      showEncounterCinematic('帝国四将','クラインテッド','「……赤白の外套。また勇者か」');
      saySequence([{speaker:'ナレーション',text:'砦を抜けると景色が突然途切れた。眼下はラゼル峡谷。石橋の中央、帝国側の青黒い外套が風にはためいている。'},{speaker:'クラインテッド',text:'「……赤白の外套。また勇者か」'},{speaker:'カレン',text:'「“また”って、どういう意味？」'},{speaker:'クラインテッド',text:'「一年前、ユウキを討った連中も同じ呼び名だった」'},{speaker:'マーガレット',text:'「王都では王国軍が討伐したとしか聞いてない」'},{speaker:'ナレーション',text:'クラインテッドの指が、剣の柄を強く握る。けれど抜かない。'},{speaker:'クラインテッド',text:'「……そうか。先任者の存在まで消したか」'},{speaker:'トリトン',text:'「ここで戦うの？」'},{speaker:'クラインテッド',text:'「今日は違う。俺の任務は橋の監視だ。勇者一組のために四将が決闘するほど、戦争は小さくない」'},{speaker:'カレン',text:'「じゃあ通して」'},{speaker:'クラインテッド',text:'「その目は嫌いじゃない。……ユウキも、考える前にそう言った」'},{speaker:'ナレーション',text:'遠くで砲声が響く。谷壁への着弾。石橋が大きく揺れ、王国側の橋脚に亀裂が走る。'},{speaker:'クラインテッド',text:'「走れ！」'},{speaker:'ナレーション',text:'四人が帝国側へ駆け抜けた直後、背後で橋の一部が崩れ落ちた。ベルド砦は、もう谷の向こうだ。'},{speaker:'クラインテッド',text:'「戻れなくなったな。なら見ていけ。お前たちの国が“魔王の国”と呼ぶ場所を」'}],()=>{setStructuredCondition('metKlein',true);setStructuredCondition('kleinBattleDone',true);state.objective='北側の道から帝国領へ進む';addJournal('ベルド砦を抜けたラゼル峡谷橋でクラインテッドと初対面。戦闘ではなく、橋の崩落によって帝国側へ取り残された。');renderHud();enterEmpireVillage()})
@@ -1191,7 +1206,22 @@ function inlineObjectEvent(id){
    return saySequence([{speaker:'ベルド砦作戦図',text:'王都、灰の街道、前線、ハルム、ベルド砦。ここまで歩いてきた道が一本につながっている。橋を越えた先の帝国村までは、さらに半日以上。'},{speaker:'マーガレット',text:'「地図の縮尺で見ると近い。でも、私たちが歩いた時間を書き込むと全然違う」'},{speaker:'カレン',text:'「やっと“隣の国”って言葉の意味が分かった気がする」'}])
   }
   if(['fortGate','fortGateRight'].includes(id))return say('ベルド砦北門',structuredCondition('fortGateOpen')?'重い格子門は上がっている。冷たい谷風が砦の中まで吹き込んでくる。':'閉じた格子門。砦長の許可なしでは開けられない。')
-  if(id==='ravineLookout')return saySequence([{speaker:'砦の見張り台',text:'城壁の向こうで地面が大きく裂けている。ラゼル峡谷。その中央を、一本の石橋だけが渡っている。'},{speaker:'トリトン',text:'「これなら国境線を間違えようがないな」'},{speaker:'マーガレット',text:'「線じゃなくて谷そのもの、か」'}])
+  if(id==='ravineLookout'){
+   const scouting=state.events.choices['fort.bridgeScouted'];
+   if(scouting)return say('マーガレット',scouting==='reported'?'「橋脚の傷は兵にも伝えた。あとは渡るかどうか、私たちで決めるだけね」':'「橋脚の傷は見間違いじゃない。南の若い兵にも知らせておこう」');
+   return say('砦の見張り台','城壁の向こうにラゼル峡谷が開ける。一本の石橋が国境をつなぐ。手すりの下に、古い補修跡が見える。',[
+    {label:'橋脚の補修跡を確かめる',fn:()=>{
+     state.events.choices['fort.bridgeScouted']='observed';
+     addJournal('ベルド砦の見張り台から石橋の橋脚に古いひびを発見。南の若い兵に伝えられる。');
+     saySequence([
+      {speaker:'マーガレット',text:'「あの継ぎ目、補修した石の間に細いひびがある。今すぐ崩れるとは限らないけど、砲撃を受けたら危ない」'},
+      {speaker:'トリトン',text:'「こっちだけじゃない。向こうの兵も同じ橋を使うんだよな」'},
+      {speaker:'ソフィ',text:'「南の若い兵に知らせておきましょう。見張りを続ける人たちのためにも」'}
+     ])
+    }},
+    {label:'橋へ向かう',fn:()=>say('カレン','「道は分かった。先へ進もう」')}
+   ])
+  }
   if(id==='bridgeMarker')return say('国境標','橋の西面にはアルディナ王国紋章、東面にはレグノア帝国紋章。人が作った境界と、谷という地形が同じ場所に重なっている。')
  }
  if(state.map==='ravine'){

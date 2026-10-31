@@ -186,6 +186,8 @@ function makeWatchfortTiles(){
  paintH(g,8,15,6,'A');
  // 見張り塔への脇道
  paintV(g,6,10,18,'D');paintH(g,12,18,10,'D');
+ // South plaza to the optional west lookout: a short worn stone spur.
+ paintV(g,6,10,9,'D');
  return finishTiles(g)
 }
 function makeRavineTiles(){const g=makeBlankRegion('K','K');for(let y=0;y<15;y++){g[y][11]='D';g[y][12]='D'}paintRect(g,2,3,6,8,'B');paintRect(g,16,3,6,8,'B');paintH(g,7,16,7,'D');paintH(g,8,15,7,'A');return finishTiles(g)}
