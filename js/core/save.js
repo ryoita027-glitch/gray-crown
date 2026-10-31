@@ -14,6 +14,8 @@ let lastImportBackupRotated=false;
 // A failed rollback means we must not promise that browser save slots are intact.
 let lastImportRollbackFailed=false;
 let lastPortableExportNeedsManualBackup=false;
+// Prevent overlapping asynchronous file reads from importing out of selection order.
+let portableFileImportInProgress=false;
 function safeNumber(v,fallback,min=-Infinity,max=Infinity){return Number.isFinite(v)?Math.max(min,Math.min(max,v)):fallback}
 function nearestSafeTile(mapId,x,y,saveState=state){
  const m=maps[mapId];if(!m)return[11,13];
@@ -449,6 +451,12 @@ function activeAdventureUnsavedWarning(){
   ' 現在のプレイで未保存の進行がある場合は失われます。必要ならキャンセルして、先にセーブかJSON書き出しをしてください。':''
 }
 async function readPortableSaveFile(file){
+ // Reject overlapping selections before validation or status UI. An invalid
+ // second file must not open a dialogue that cancels the first pending import.
+ if(portableFileImportInProgress){
+  GC.Log?.warn?.('Portable file import already in progress');
+  return false
+ }
  if(!file||file.size>2*1024*1024){
   notifySaveStatus('2MB以下のGray Crownセーブファイル（.json）を選んでください。');return false
  }
@@ -457,19 +465,44 @@ async function readPortableSaveFile(file){
  }
  // Read and validate before prompting. A malformed file cannot replace a save,
  // and an async read must not use a stale pre-read permission or slot snapshot.
- let raw;
- try{raw=await file.text()}
+ portableFileImportInProgress=true;
+ try{
+ let raw,readTimeoutId=null,readTimedOut=false;
+ try{
+  // Some browser/OS file reads can remain pending indefinitely. Bound only
+  // the byte read, not validation or the player's confirmation dialogue.
+  // Promise.race also ignores late bytes after the timeout has released the lock.
+  const read=file.text();
+  raw=await Promise.race([
+   read,
+   new Promise((_,reject)=>{
+    readTimeoutId=setTimeout(()=>{
+     readTimedOut=true;
+     reject(new Error('Portable save file read timed out'))
+    },30000)
+   })
+  ])
+ }
  catch(e){
   GC.Log?.error?.('Portable save file read failed',{error:String(e)});
-  notifySaveStatus('セーブファイルを読み取れませんでした。別のファイルを選んでください。');
+  // A dialogue or battle may begin during the file read; do not interrupt it.
+  if(!canPersistNow('load'))return false;
+  notifySaveStatus(readTimedOut?
+   'セーブファイルの読み込みが30秒以内に完了しませんでした。別のファイルを選んで再試行してください。':
+   'セーブファイルを読み取れませんでした。別のファイルを選んでください。');
+  return false
+ }finally{
+  if(readTimeoutId!==null)clearTimeout(readTimeoutId)
+ }
+ // Check the live UI before validating bytes or displaying an invalid-file
+ // notice: both paths must leave a newly started story scene untouched.
+ if(!canPersistNow('load')){
+  GC.Log?.warn?.('Portable save file import abandoned: gameplay became busy during file read');
   return false
  }
  if(!preparePortableSaveText(raw)){
   notifySaveStatus('選んだファイルは有効なGray Crownセーブではありません。現在のセーブは変更していません。');
   return false
- }
- if(!canPersistNow('load')){
-  notifySaveStatus('戦闘やイベントの途中ではセーブを読み込めません。');return false
  }
  let priorPrimary,priorBackup;
  try{
@@ -504,6 +537,7 @@ async function readPortableSaveFile(file){
    'セーブの読み込みに失敗しました。形式・データ・ブラウザの保存領域を確認してください。')}
  catch(e){GC.Log?.warn?.('Portable file status message failed',{error:String(e)})}
  return ok
+ }finally{portableFileImportInProgress=false}
 }
 
 function hasArchivedAdventure(){try{return isUsableSavedAdventure(localStorage.getItem(SAVE_ARCHIVE_KEY))}catch(_){return false}}
