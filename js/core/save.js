@@ -479,7 +479,10 @@ async function readPortableSaveFile(file){
   return false
  }
  if(!canPersistNow('load')){
-  notifySaveStatus('戦闘やイベントの途中ではセーブを読み込めません。');return false
+  // Gameplay may have entered a dialogue or battle while file.text() awaited.
+  // Showing a new status dialogue here would interrupt that active scene.
+  GC.Log?.warn?.('Portable save file import abandoned: gameplay became busy during file read');
+  return false
  }
  let priorPrimary,priorBackup;
  try{
