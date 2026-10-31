@@ -28,12 +28,12 @@ test('visiting the queue keeps the observed line, while choices get distinct sho
  assert.equal(base.length,original(h).length);
  h.evaluate("state.events.choices['early.capitalFountainPerspective']='asked'");
  const asked=night(h);
- assert.equal(asked.length,base.length+1);
+ assert.equal(asked.length,base.length,'the choice changes an existing line, not the scene length');
  assert.match(textOf(asked),/噴水で話してくれた人/);
  assert.doesNotMatch(textOf(asked),/噴水で見たポスターと配給列/);
  h.evaluate("state.events.choices['early.capitalFountainPerspective']='observed'");
  const observed=night(h);
- assert.equal(observed.length,base.length+1);
+ assert.equal(observed.length,base.length,'quiet observation also replaces rather than appends');
  assert.match(textOf(observed),/噴水で見たポスターと配給列/);
  assert.doesNotMatch(textOf(observed),/噴水で話してくれた人/);
 });
@@ -45,7 +45,7 @@ test('helping the cart pays off at the innkeeper and at night, with no repeatabl
  const beforeJournal=h.GC.State.get().journal.length;
  const beforeStage=h.GC.State.get().story.stage;
  const lines=night(h);
- assert.equal(lines.length,original(h).length+2,'at most two optional echo lines');
+ assert.equal(lines.length,original(h).length,'two discoveries do not stack mandatory dialogue');
  assert.match(textOf(lines),/南門の荷車、配給所まで押した/);
  assert.match(textOf(lines),/噴水で話してくれた人/);
  h.evaluate("inlineNpcEvent('capitalInnHost')");
@@ -84,4 +84,17 @@ test('canonical first-night event uses the adapted scene once, then advances nor
  assert.equal(h.GC.Save.load(true),true);
  assert.equal(h.evaluate("state.events.choices['early.capitalWagonGuide']"),'guided');
  assert.equal(h.GC.State.get().events.completed[nightId],true);
+});
+
+test('unvisited queue cannot be implied by a stale fountain flag, and room offer stays compact',()=>{
+ const h=createHarness();
+ h.evaluate("state.events.choices['early.capitalFountainPerspective']='observed';state.events.choices['early.capitalRoomOffer']='offered'");
+ const lines=night(h);
+ assert.equal(lines.length,original(h).length);
+ assert.match(lines[0].text,/奥の狭い相部屋/);
+ assert.doesNotMatch(textOf(lines),/噴水で見たポスターと配給列/);
+ assert.doesNotMatch(textOf(lines),/でも市場には配給の列があった/);
+ const before=JSON.stringify(h.GC.State.get().events);
+ night(h);
+ assert.equal(JSON.stringify(h.GC.State.get().events),before,'re-reading the scene is side-effect free');
 });
