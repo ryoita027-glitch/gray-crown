@@ -183,6 +183,7 @@ function notifySaveStatus(message){
 }
 function save(silent=false){
  if(!canPersistNow('save')){if(!silent&&!GC.Dev?.isStateTainted?.()&&!state.battle&&$('dialogueBox')?.classList.contains('hidden'))notifySaveStatus('イベントや戦闘の途中ではセーブできません。操作可能な場所でセーブしてください。');else if(!silent&&GC.Dev?.isStateTainted?.())notifySaveStatus('Developer操作後の状態は通常セーブできません。Debug Snapshotを使用してください。');return false}
+ let rollbackIncomplete=false;
  try{
   const payload=serializeSave(),prev=localStorage.getItem(SAVE_KEY);
   // Never rotate a corrupted primary over a usable previous checkpoint.
@@ -216,10 +217,15 @@ function save(silent=false){
   }catch(writeError){
    // A failed primary write must not leave the older backup overwritten.
    // Preserve both original slots as a single logical transaction.
-   restoreSaveSlots(prev,backup,'Save')
+   if(!restoreSaveSlots(prev,backup,'Save')){
+    rollbackIncomplete=true;
+    GC.Log?.error('Manual Save rollback incomplete: original save slots may have changed')
+   }
    throw writeError
   }
-  GC.Log?.info('Save',{map:state.map,x:state.x,y:state.y,stage:state.story.stage});if(!silent)notifySaveStatus('セーブしました。');return true}catch(e){GC.Log?.error('Save failed',{error:String(e)});if(!silent)notifySaveStatus('セーブに失敗しました。ブラウザの保存領域を確認してください。');return false}}
+  GC.Log?.info('Save',{map:state.map,x:state.x,y:state.y,stage:state.story.stage});if(!silent)notifySaveStatus('セーブしました。');return true}catch(e){GC.Log?.error('Save failed',{error:String(e)});if(!silent)notifySaveStatus(rollbackIncomplete?
+  'セーブに失敗し、元の保存データへの復元も確認できませんでした。ページを閉じずにセーブとバックアップを確認し、可能ならJSON書き出しをしてください。':
+  'セーブに失敗しました。ブラウザの保存領域を確認してください。');return false}}
 function clearTransientPanels(){for(const id of ['battlePanel','levelUpPanel','battleResult','battleFlash','bossCinematic','chapterCard'])$(id)?.classList.add('hidden');if($('dialogueBox')&&!$('dialogueBox').classList.contains('hidden'))closeDialogue(false)}
 function load(silent=false){
  lastLoadPresentationFailed=false;
