@@ -660,6 +660,47 @@ function capitalWagonQueueVisit(){
  ]);
 }
 
+// The existing fountain becomes a short, optional conversation only after the
+// player has actually seen both the ration queue and the victory poster.
+// A local voice, not an omniscient narrator, makes the contradiction tangible.
+function capitalFountainVisit(){
+ const key='early.capitalFountainPerspective';
+ const inscription='聖地エルシアの泉を模したという噴水。観光客向けの説明板には「奪われた故郷を忘れるな」と刻まれている。';
+ if(structuredCondition('returnedKingdom'))return say('王都の大噴水',inscription);
+ const chosen=state.events.choices[key];
+ if(chosen==='asked')return say('王都の大噴水','水音の向こうで、さっき話を聞いた市民が配給の列へ歩いていく。カレンは、その言葉を覚えている。');
+ if(chosen==='observed')return say('王都の大噴水','水面に王城の旗が映る。マーガレットは、ポスターと配給列を見比べたことを忘れていない。');
+ const rationSeen=isEventComplete('early.capitalRationIntro');
+ const posterSeen=structuredCondition('capitalYukiPropaganda');
+ if(!rationSeen||!posterSeen){
+  const lead=rationSeen?' 北東には昨年の勝利を祝うポスターがある。':posterSeen?' 東には配給を待つ人々の列が見える。':'';
+  return say('王都の大噴水',inscription+lead);
+ }
+ return say('カレン','「ポスターでは勝利を祝ってる。すぐそこでは今日の食べ物を待ってる。どっちも王都なんだね」',[
+  {label:'近くの市民に、今の暮らしを聞いてみる',fn:()=>{
+   if(state.events.choices[key])return capitalFountainVisit();
+   state.events.choices[key]='asked';
+   addJournal('王都の噴水で、戦勝ポスターと配給列を見比べ、市民から「勝利と明日の食事は両方大切だ」と聞いた。');
+   renderHud();
+   return saySequence([
+    {speaker:'カレン',text:'「あの、勝利のお祝いと配給の列を見て……この街の人は、どう思ってるんですか？」'},
+    {speaker:'王都市民',text:'「勝ってほしいよ。けど、花だけじゃ家族は食べられない。明日のパンも、無事に帰る兵士も、どっちも要るんだ」'},
+    {speaker:'ソフィ',text:'「……聞けてよかったです。私たちも、忘れません」'}
+   ]);
+  }},
+  {label:'まずは四人で、見たことを整理する',fn:()=>{
+   if(state.events.choices[key])return capitalFountainVisit();
+   state.events.choices[key]='observed';
+   addJournal('王都の噴水で、戦勝ポスターと配給列の両方を見たことを四人で確かめた。');
+   renderHud();
+   return saySequence([
+    {speaker:'マーガレット',text:'「ポスターは去年の勝利。配給列は今日の暮らし。片方だけ見て決めつけたくないわ」'},
+    {speaker:'トリトン',text:'「じゃあ、どっちも覚えておこう。私たちは見に来たんだからな」'}
+   ]);
+  }}
+ ]);
+}
+
 function northRoadScoutVisit(){
  const fromFort=!getWorldSwitch('northRoadFromRoad')&&isDefeated('boss');
  const markerCleared=state.events.choices['early.northroadWaystone']==='cleared';
@@ -778,7 +819,7 @@ function inlineNpcEvent(id){
     {speaker:'カレン',text:'「うん。だから忘れないでいよう。私たちが来た理由」'}
    ])
   }
-  if(id==='capitalCitizen')return say('王都市民',structuredCondition('returnedKingdom')?'「勇者様……前よりずっと疲れた顔をしてる。戦争は、まだ終わらないんですか？」':'「勇者様！ 魔王を倒して、聖地を取り戻してください！」')
+  if(id==='capitalCitizen')return say('王都市民',structuredCondition('returnedKingdom')?'「勇者様……前よりずっと疲れた顔をしてる。戦争は、まだ終わらないんですか？」':state.events.choices['early.capitalFountainPerspective']==='asked'?'「噴水で話を聞いてくれた勇者様か。勝利も大事だ。でも明日の食事も、家族が帰ることも忘れないでくれよ」':'「勇者様！ 魔王を倒して、聖地を取り戻してください！」')
   if(id==='capitalFlowerGirl')return say('花売りの少女',structuredCondition('returnedKingdom')?'「前は勇者様の花飾りが一番売れたの。今は、お墓に供える白い花ばっかり」':'「勇者様！ 任命式の日は赤と白の花が飛ぶんだよ。王城の前、すっごくきれい！」')
   if(id==='capitalRecruit'){
    if(structuredCondition('returnedKingdom'))return say('新兵','「次の総攻撃、俺たちも出るそうです。勇者様……勝てば、本当に終わるんでしょうか」');
@@ -1017,7 +1058,7 @@ function inlineObjectEvent(id){
   if(id==='capitalWagonQueue')return capitalWagonQueueVisit()
   if(id==='royalCastle')return say('アルディナ王城','白い石壁の奥に王家の居城がそびえている。広場から見上げるだけでも、リュネ村とは規模がまるで違う。')
   if(id==='capitalMarket')return capitalShop()
-  if(id==='capitalFountain')return say('王都の大噴水','聖地エルシアの泉を模したという噴水。観光客向けの説明板には「奪われた故郷を忘れるな」と刻まれている。')
+  if(id==='capitalFountain')return capitalFountainVisit()
   if(id==='capitalBarracks')return say('王国軍兵舎','整列した新兵たちの掛け声が聞こえる。壁には「聖地奪還」「勇者と共に」の標語が貼られている。')
   if(id==='victoryPoster'){
    if(!structuredCondition('capitalYukiPropaganda')){setStructuredCondition('capitalYukiPropaganda',true);addJournal('王都では一年前のユウキ戦死を「四天王ユウキ討伐・王国大勝利」と宣伝している。');renderHud()}
