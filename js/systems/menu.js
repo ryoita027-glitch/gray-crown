@@ -5,6 +5,17 @@ function escapeMenuText(value){
   '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
  })[ch])
 }
+function restartFromMenu(){
+ const modal=$('modal');
+ modal.classList.add('hidden');
+ const started=restart();
+ // Cancelling the new-game confirmation must not discard the open menu.
+ // A failure that has opened a system dialogue must keep that message visible.
+ if(!started&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
+  modal.classList.remove('hidden')
+ }
+ return started
+}
 function openMenu(){
  if(state.battle)return;
  const inv=Object.entries(state.inventory).map(([k,v])=>`<div class="kv"><strong>${escapeMenuText(k)}</strong><span>${escapeMenuText(v)}</span></div>`).join('');
@@ -25,7 +36,7 @@ function openMenu(){
        onchange="if(this.files?.length){const file=this.files[0];this.value='';$('modal').classList.add('hidden');GC.Save.readPortableSaveFile(file)}">
      ${GC.Save.hasArchivedAdventure()?`<button onclick="$('modal').classList.add('hidden');GC.Save.restoreArchivedAdventure()">以前の冒険を復旧</button>`:''}
      ${GC.Save.hasQuarantinedSaves()?`<button onclick="$('modal').classList.add('hidden');GC.Save.downloadQuarantinedSaves()">破損セーブの元データを書き出す</button>`:''}
-     <button class="menu-danger" onclick="$('modal').classList.add('hidden');restart()">最初から</button>
+     <button class="menu-danger" onclick="restartFromMenu()">最初から</button>
    </div>
  </div>`;
  $('modal').classList.remove('hidden')
