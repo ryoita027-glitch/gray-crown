@@ -622,6 +622,12 @@ function restoreArchivedAdventure(){
   return false
  }
  if(!raw)return false;
+ // Validate before asking to replace the current adventure. A damaged or
+ // unsupported archive must not display a misleading overwrite prompt.
+ if(!preparePortableSaveText(raw)){
+  notifySaveStatus('以前の冒険データが破損しているか、このバージョンに対応していません。現在のセーブは変更していません。');
+  return false
+ }
  if(!confirm('保管していた以前の冒険を復旧しますか？ 異なるセーブがある場合は、既存データを保護してから切り替えます。'))return false;
  const ok=importPortableSaveText(raw);
  try{say('システム',ok&&lastImportPresentationFailed?
