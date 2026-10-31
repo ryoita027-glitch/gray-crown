@@ -481,6 +481,7 @@ function commitCapitalRationGift(){
  return true;
 }
 function capitalRationMotherVisit(){
+ const wagonGuided=state.events.choices['early.capitalWagonGuide']==='guided';
  // The later war-aftermath conversation takes priority, unchanged.
  if(structuredCondition('returnedKingdom'))return saySequence([
   {speaker:'配給待ちの母親',text:'「勇者様。息子は前線から戻りました。片腕を失ったけど、生きてます。……それでも私は、勝ってよかったって言うべきなんでしょうか」'},
@@ -488,14 +489,14 @@ function capitalRationMotherVisit(){
   {speaker:'配給待ちの母親',text:'「……そうね。そう言ってもらえると、少し楽です」'}
  ]);
  if(state.events.choices['early.capitalRationGift']==='donate')return saySequence([
-  {speaker:'配給待ちの母親',text:state.events.choices['early.capitalRecruitHelp']==='water'
+  {speaker:'配給待ちの母親',text:(state.events.choices['early.capitalRecruitHelp']==='water'
    ?'「あの携帯食、大切に使います。新兵さんが水も運んでくれました。……ありがとう」'
-   :'「あの携帯食は大切に使います。配給だけでは足りない日があるから……ありがとう」'},
+   :'「あの携帯食は大切に使います。配給だけでは足りない日があるから……ありがとう」')+(wagonGuided?' 南門の野菜も届いたの。':'')},
   {speaker:'ソフィ',text:'「どうか、あなたも無理をしないでくださいね」'}
  ]);
  const offer=()=>{
   if((state.inventory['携帯食']||0)<1)return;
-  return say('ソフィ','「携帯食が一つあります。私たちの旅にも必要ですが……どうしますか？」',[
+  return say('ソフィ',wagonGuided?'「南門の野菜は届いたけれど、列はまだ長いですね。携帯食が一つあります。どうしますか？」':'「携帯食が一つあります。私たちの旅にも必要ですが……どうしますか？」',[
    {label:'携帯食を1個、母親に渡す',fn:()=>{
     if(!commitCapitalRationGift())return say('ソフィ','「……今は渡せる食料がありません」');
     return saySequence([
@@ -509,6 +510,7 @@ function capitalRationMotherVisit(){
  if(isEventComplete('early.capitalRationIntro')){
   if((state.inventory['携帯食']||0)>0)return offer();
   const shipment=state.events.choices['early.merchantCart'];
+  if(wagonGuided)return say('配給待ちの母親','「南門から野菜の荷車が届いたの。助かったわ。でも今日の列は、まだ長いのよ」');
   return say('配給待ちの母親',shipment==='repair'
    ?'「街道から届いた荷の仕分けが始まったそうです。今日の分が少しでも増えるといいのですが」'
    :shipment==='return'
@@ -516,7 +518,7 @@ function capitalRationMotherVisit(){
    :'「今日も列は長いけれど、みんな順番を守っています」');
  }
  return saySequence([
-  {speaker:'配給待ちの母親',text:'「配給は一人パン二つまで。王都でこれなら、地方はもっとひどいんでしょうね」'},
+  {speaker:'配給待ちの母親',text:wagonGuided?'「南門から野菜が届いたの。ありがとう。でも配給は一人パン二つまで。王都でこれなら、地方はもっとひどいんでしょうね」':'「配給は一人パン二つまで。王都でこれなら、地方はもっとひどいんでしょうね」'},
   {speaker:'ソフィ',text:'「私たちの村では、小麦そのものが足りません」'},
   {speaker:'配給待ちの母親',text:'「なのに任命式にはあんなに花を使う。王都って、不思議なところね」'}
  ].concat(earlyCapitalEcho()),()=>{
@@ -629,6 +631,32 @@ function northRoadVistaVisit(){
   {speaker:'トリトン',text:'「門の外、荷車がずいぶん並んでる。道はここから一本だな」'},
   {speaker:'ソフィ',text:'「あの荷車の中に、リュネへ届く食料もあるといいな」'},
   {speaker:'マーガレット',text:'「まずは城門へ。見たことと、聞かされたことは分けて覚えておきましょう」'}
+ ]);
+}
+
+// The old-road wagon queue has a small, voluntary consequence in the city.
+// This moves one produce cart, not the entire ration supply; Save v23 choices
+// persist the result without a new quest gate or repeatable item reward.
+function capitalWagonQueueVisit(){
+ const key='early.capitalWagonGuide';
+ if(structuredCondition('returnedKingdom'))return say('南門の荷車跡','石畳には古い轍が残る。あの頃の配給列とは、もう違う人々がここを行き来している。');
+ if(state.events.choices[key]==='guided')return say('南門の荷車跡','荷車は配給所へ移った。南門脇には車輪の跡だけが残っている。');
+ const seen=state.events.choices['early.northroadVista']==='seen';
+ return say('ナレーション',seen
+  ?'旧街道から見えた荷車の列の一台が、南門脇で止まっている。近郊の野菜を積んだ荷車番が道を探している。'
+  :'南門脇で近郊の野菜を積んだ荷車が止まっている。荷車番は配給所への道を探している。',[
+  {label:'配給所への道を教え、荷車を一緒に押す',fn:()=>{
+   if(state.events.choices[key]==='guided')return capitalWagonQueueVisit();
+   state.events.choices[key]='guided';
+   addJournal('王都南門で立ち往生していた近郊の野菜荷車を、配給所へ案内した。街の食糧不足が解決したわけではない。');
+   renderHud();draw();
+   return saySequence([
+    {speaker:'トリトン',text:'「こっちだ！　私が後ろを押す。角で荷が崩れないようにして！」'},
+    {speaker:'荷車番',text:'「助かったよ。配給所の人に渡してくる。これで今日の列が少しでも進めばいいんだが」'},
+    {speaker:'ソフィ',text:'「あの人たちに、ちゃんと届くといいですね」'}
+   ]);
+  }},
+  {label:'先に王城へ向かう',fn:()=>say('カレン','「任命式を先に済ませよう。荷車のことは、あとでも見られる」')}
  ]);
 }
 
@@ -986,6 +1014,7 @@ function inlineObjectEvent(id){
   if(id==='northroadVista')return northRoadVistaVisit()
  }
  if(state.map==='capital'){
+  if(id==='capitalWagonQueue')return capitalWagonQueueVisit()
   if(id==='royalCastle')return say('アルディナ王城','白い石壁の奥に王家の居城がそびえている。広場から見上げるだけでも、リュネ村とは規模がまるで違う。')
   if(id==='capitalMarket')return capitalShop()
   if(id==='capitalFountain')return say('王都の大噴水','聖地エルシアの泉を模したという噴水。観光客向けの説明板には「奪われた故郷を忘れるな」と刻まれている。')
