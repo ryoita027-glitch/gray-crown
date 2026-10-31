@@ -27,9 +27,10 @@ function heroAlphaFootline(image){
  }catch(_){return 44}
 }
 const HERO_RUNTIME={frameW:48,frameH:48,display:heroDisplayStudySize(),anchor:[24,44],directions:{down:0,left:1,right:2,up:3},images:{}};
-// Reversible Sophie V1 source-PNG art trial. It is never active in the normal game.
+// Reversible Sophie V1/V2 source-PNG art trials. They are never active in normal gameplay.
 const SOPHIE_CONTOUR_STUDY={
- optIn:typeof window!=='undefined'&&/(?:^|[?&])gcSophieContour=1(?:&|$)/.test(window.location.search||''),
+ optIn:typeof window!=='undefined'&&/(?:^|[?&])gcSophieContour=(?:1|2)(?:&|$)/.test(window.location.search||''),
+ variant:typeof window!=='undefined'&&/(?:^|[?&])gcSophieContour=2(?:&|$)/.test(window.location.search||'')?2:1,
  enabled:false,ready:false,error:false,image:null
 };
 SOPHIE_CONTOUR_STUDY.enabled=SOPHIE_CONTOUR_STUDY.optIn;
@@ -44,7 +45,7 @@ if(typeof Image!=='undefined'){
    SOPHIE_CONTOUR_STUDY.error=!SOPHIE_CONTOUR_STUDY.ready;
   };
   candidate.onerror=()=>{SOPHIE_CONTOUR_STUDY.ready=false;SOPHIE_CONTOUR_STUDY.error=true};
-  candidate.src='assets/characters/sophie/studies/sophie_contour_v1_walk.png';
+  candidate.src=SOPHIE_CONTOUR_STUDY.variant===2?'assets/characters/sophie/studies/sophie_v2_handdrawn_walk.png':'assets/characters/sophie/studies/sophie_contour_v1_walk.png';
  }
 }
 function heroWalkFrame(motion){if(!motion)return 0;const cycle=[0,1,2,3,4,5,4,3,2,1];return cycle[Math.floor(motion)%cycle.length]}
@@ -67,7 +68,7 @@ function drawHeroSpriteSheet(x,y,heroId,leader,facing,motion){
  ctx.save();ctx.imageSmoothingEnabled=false;ctx.drawImage(cfg.image,fallbackFrame*32,fallbackRow*32,32,32,px,py,32,32);ctx.restore();if(leader)drawHeroMarker(px+16,py);return true
 }
 function sophieContourStudyStatus(){
- return {optIn:SOPHIE_CONTOUR_STUDY.optIn,enabled:SOPHIE_CONTOUR_STUDY.enabled,
+ return {optIn:SOPHIE_CONTOUR_STUDY.optIn,enabled:SOPHIE_CONTOUR_STUDY.enabled,variant:SOPHIE_CONTOUR_STUDY.variant,
   ready:SOPHIE_CONTOUR_STUDY.ready,error:SOPHIE_CONTOUR_STUDY.error,
   originalReady:!!HERO_RUNTIME.images.sophie?.ready,display:HERO_RUNTIME.display};
 }
