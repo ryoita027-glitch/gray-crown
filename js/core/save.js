@@ -365,16 +365,12 @@ function preserveInvalidSaveSlotsBeforeWrite(primary,backup,
   return false
  }
 }
-function importPortableSaveText(raw){
- lastImportPresentationFailed=false;
- lastImportBackupRotated=false;
- // Strict structural gate before migration: a generic JSON is not a valid save.
- // Supports real earlier-version saves, but never silently imports future schema.
- if(typeof raw!=='string'||raw.length>2*1024*1024) return false;
- if(!canPersistNow('load'))return false;
- let parsed,loaded;
+// Share the exact import validation with the file picker. Invalid files must
+// never request permission to replace a player's current checkpoint.
+function preparePortableSaveText(raw){
+ if(typeof raw!=='string'||raw.length>2*1024*1024)return null;
  try{
-  parsed=JSON.parse(raw);
+  const parsed=JSON.parse(raw);
   const canonical=createGameState().party;
   const expected=['karen','triton','sophie','margaret'];
   if(!parsed||!Number.isInteger(parsed.schema)||parsed.schema<1||parsed.schema>SAVE_SCHEMA||
@@ -383,9 +379,16 @@ function importPortableSaveText(raw){
      Object.keys(parsed.inventory).some(id=>!Object.hasOwn(ITEM_DEFS,id))||
      !Array.isArray(parsed.party)||parsed.party.length!==4||
      !parsed.party.every((p,i)=>p&&p.id===expected[i]&&p.name===canonical[i].name&&p.job===canonical[i].job)||
-     !maps[parsed.map])return false;
-  loaded=migrateLoaded(raw);
- }catch(e){GC.Log?.warn('Portable save validation failed',{error:String(e)});return false}
+     !maps[parsed.map])return null;
+  return migrateLoaded(raw);
+ }catch(e){GC.Log?.warn?.('Portable save validation failed',{error:String(e)});return null}
+}
+function importPortableSaveText(raw){
+ lastImportPresentationFailed=false;
+ lastImportBackupRotated=false;
+ if(!canPersistNow('load'))return false;
+ const loaded=preparePortableSaveText(raw);
+ if(!loaded)return false;
  let primary,backup;
  try{primary=localStorage.getItem(SAVE_KEY);backup=localStorage.getItem(SAVE_BACKUP_KEY)}
  catch(e){GC.Log?.error('Portable save import storage read failed',{error:String(e)});return false}
@@ -432,6 +435,22 @@ async function readPortableSaveFile(file){
  if(!canPersistNow('load')){
   notifySaveStatus('戦闘やイベントの途中ではセーブを読み込めません。');return false
  }
+ // Read and validate before prompting. A malformed file cannot replace a save,
+ // and an async read must not use a stale pre-read permission or slot snapshot.
+ let raw;
+ try{raw=await file.text()}
+ catch(e){
+  GC.Log?.error?.('Portable save file read failed',{error:String(e)});
+  notifySaveStatus('セーブファイルを読み取れませんでした。別のファイルを選んでください。');
+  return false
+ }
+ if(!preparePortableSaveText(raw)){
+  notifySaveStatus('選んだファイルは有効なGray Crownセーブではありません。現在のセーブは変更していません。');
+  return false
+ }
+ if(!canPersistNow('load')){
+  notifySaveStatus('戦闘やイベントの途中ではセーブを読み込めません。');return false
+ }
  let priorPrimary,priorBackup;
  try{
   priorPrimary=localStorage.getItem(SAVE_KEY);
@@ -445,12 +464,12 @@ async function readPortableSaveFile(file){
  const hadPrior=!!(priorPrimary||priorBackup);
  const usablePrimary=isUsableSavedAdventure(priorPrimary);
  const prompt=usablePrimary?
-  '現在のセーブをバックアップして、選んだセーブデータへ切り替えますか？':
+  '選んだセーブデータへ切り替えますか？ 異なる現在のセーブはバックアップに保護し、同じデータなら既存のバックアップを維持します。':
   hadPrior?'既存のセーブやバックアップを保護したうえで、選んだセーブデータへ切り替えますか？':
   '選んだセーブデータを読み込みますか？';
  if(!confirm(prompt))return false;
  let ok=false;
- try{ok=importPortableSaveText(await file.text())}
+ try{ok=importPortableSaveText(raw)}
  catch(e){GC.Log?.error('Portable save read failed',{error:String(e)})}
  try{say('システム',ok&&lastImportPresentationFailed?
   '外部セーブは読み込みましたが、画面の更新に失敗しました。ページを再読み込みしてください。':
