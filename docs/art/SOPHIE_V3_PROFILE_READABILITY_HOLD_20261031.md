@@ -7,7 +7,7 @@
 - Painted a new **288×192 RGBA PNG** at `assets/characters/sophie/studies/sophie_v3_profile_eyes_hold_walk.png` from the V2 anatomy underdrawing. Four directions × six walking frames, 48×48 cells, with direction-specific eyebrow/cheek, profile eye pixels, hair lock, sleeve and robe fold accents. This is **not** a claim of a full anatomy repaint.
 - V2 → V3 changed **126 opaque RGBA pixels**, without altering any alpha mask or footline; 24 nonempty frames, five unique frame states per direction. Source last painted row y44, consistent with V2. Local SHA256 `de8c54912a01b34dd691189c3650536ac45787d10da6c8c1327b81115434c664`; Git blob SHA `25aaca96739637a11c558ab858f2e827704cc218`.
 - Opt-in only: `?gcSophieContour=3` now selects the V3 PNG in the real field renderer. `?gcSophieContour=1` and `=2` remain available. No parameter preserves original. The stable A-B-A comparison panel labels V3 and rejects moving/background drift.
-- Local native 44px review file generated: `sophie_v2_v3b_native44_AB.png` (available as an automation artifact, **not** a Chromium village screenshot).
+- [V2/V3 native 44px, four-direction A/B](evidence/sophie_v2_v3_profile_native44_20261031.svg): embedded actual source PNGs on identical field-green panels; this is **not** a Chromium village screenshot. A local PNG board `sophie_v2_v3b_native44_AB.png` was also rendered and inspected.
 
 ## Art assessment
 
@@ -15,7 +15,7 @@ At native 44px, the left/right profiles gain a discernible eye/cheek plane that 
 
 ## Verification and limits
 
-Local Pillow validated 288×192 RGBA, 24 occupied cells, five unique states per direction, unchanged alpha and bottom y44; actual V3 PNG hash was independently checked against Git blob SHA. The changed JS/test source was prepared for V8 syntax checks, but **no full repository Node test or real Chromium village screenshot was run** because the private checkout is not available in this container. Browser loading and real V5 in-map comparison remain unverified. No GitHub Actions or paid services used. **Do not merge.**
+Local Pillow validated 288×192 RGBA, 24 occupied cells, five unique states per direction, unchanged alpha and bottom y44; actual V3 PNG hash was independently checked against Git blob SHA. Committed `world.js`, A/B UI and test were re-fetched and **V8 syntax compiled 3/3 PASS**. The actual committed A/B test source was executed in a **V8 mock of Node fs/path/assert and Canvas: PASS** (V1/V2/V3 labels, A-B-A three frames, drift/no-difference/large-diff/follower guards, restore). **This is not the real Node test harness**. **No full repository Node test or real Chromium village screenshot was run** because the private checkout is not available in this container. Browser loading and real V5 in-map comparison remain unverified. No GitHub Actions or paid services used. **Do not merge.**
 
 ## Next
 
