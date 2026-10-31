@@ -57,7 +57,7 @@ test('the child and scout acknowledge the repaired wagon; resting leaves the for
  const h=ready(),s=h.GC.State.get();
  npc(h,'borderScout');npc(h,'lostMerchant');object(h,'oldCheckpoint');npc(h,'lostMerchant');
  h.GC.Events.inlineNpcEvent('relayChild');h.GC.Dialogue.finishDialogueTyping();
- assert.match(h.getElement('dialogueText').innerHTML,/荷車が戻ってきた/);
+ assert.match(h.getElement('dialogueText').innerHTML,/荷車、直った/);
  finish(h);
  object(h,'borderCampfire');assert.equal(s.events.completed.borderRested,true);
  assert.match(s.story.objective,/ベルド砦/);
