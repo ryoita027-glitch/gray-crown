@@ -451,6 +451,12 @@ function activeAdventureUnsavedWarning(){
   ' 現在のプレイで未保存の進行がある場合は失われます。必要ならキャンセルして、先にセーブかJSON書き出しをしてください。':''
 }
 async function readPortableSaveFile(file){
+ // Reject overlapping selections before validation or status UI. An invalid
+ // second file must not open a dialogue that cancels the first pending import.
+ if(portableFileImportInProgress){
+  GC.Log?.warn?.('Portable file import already in progress');
+  return false
+ }
  if(!file||file.size>2*1024*1024){
   notifySaveStatus('2MB以下のGray Crownセーブファイル（.json）を選んでください。');return false
  }
@@ -459,12 +465,6 @@ async function readPortableSaveFile(file){
  }
  // Read and validate before prompting. A malformed file cannot replace a save,
  // and an async read must not use a stale pre-read permission or slot snapshot.
- // Only one file-picker import may own the read/confirmation sequence.
- // A second asynchronous selection must not overtake and overwrite the first.
- if(portableFileImportInProgress){
-  GC.Log?.warn?.('Portable file import already in progress');
-  return false
- }
  portableFileImportInProgress=true;
  try{
  let raw;
