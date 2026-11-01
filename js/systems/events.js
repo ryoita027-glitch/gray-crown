@@ -261,7 +261,7 @@ function companionAftermath(route){
  const path=state.events?.choices?.['route.companions.'+route]||'unresolved';
  const scenes={
   kingdom:{
-   evacuate:[{speaker:'ソフィ',text:'「避難路には人が通れます。間に合ったんですね」'},
+   evacuate:[{speaker:'ソフィ',text:'「道は開きました。でも待っている家族が通れたか、まだ分かりません」'},
      {speaker:'トリトン',text:'「進軍を遅らせた責任なら、私も背負う」'},
      {speaker:'マーガレット',text:'「命令書に無かった人々を、私たちは見つけた」'}],
    orders:[{speaker:'トリトン',text:'「前衛は守った。でも後ろの人たちは……」'},
@@ -270,7 +270,7 @@ function companionAftermath(route){
   },
   empire:{
    protect:[{speaker:'マーガレット',text:'「降伏者の扱いは文書に残した。帝国にも守るべき約束ができた」'},
-     {speaker:'ソフィ',text:'「敵だった人たちも、治療を受けられます」'},
+     {speaker:'ソフィ',text:'「敵だった人たちも治療を受けられるよう、約束を守ってもらいたいです」'},
      {speaker:'トリトン',text:'「故郷を敵扱いせずに済むなら、私も戦える」'}],
    advance:[{speaker:'トリトン',text:'「追撃を止めた。これ以上戦わせないために、剣を抜いたんだ」'},
      {speaker:'ソフィ',text:'「戦線の後ろにも負傷者がいます。置いていけません」'},
@@ -887,8 +887,30 @@ function capitalNorthGateRollVisit(){
   return say('王都北門・出陣名簿','名前の欄には消された跡がある。まず東の軍務街で、歴代勇者の台帳を確かめよう。');
  if(!structuredCondition('heroTruth'))
   return say('王都北門・出陣名簿','消された名前の理由を知るには、北西の王城前でグランツに問い質す必要がある。');
- if(state.events.choices[key]==='written')
-  return say('王都北門・出陣名簿','名簿の末尾に「カレン、トリトン、ソフィ、マーガレット／帰還先：リュネ村」と残っている。次の行はまだ空白だ。');
+ if(state.events.choices[key]==='written'){
+  const route=state.finalChoice;
+  const demand=state.events?.choices?.['route.final.'+route];
+  const recorded=['kingdom','empire'].includes(route)&&FINAL_ACT_APPROACHES[route]?.choices.find(c=>c.id===demand);
+  const heading='名簿の末尾に「カレン、トリトン、ソフィ、マーガレット／帰還先：リュネ村」と残っている。';
+  if(!recorded)return say('王都北門・出陣名簿',heading+'次の行はまだ空白だ。');
+  // A voluntary return-visit payoff, not proof of a granted order.
+  const witnessKey='capital.northGateReturnRecord',witnessValue=route+':'+demand;
+  if(state.events.choices[witnessKey]===witnessValue)
+   return say('王都北門・出陣名簿',heading+'余白に「'+recorded.note+'」と追記されている。軍の返答も人々の安否も、まだ確認されていない。');
+  return say('王都北門・出陣名簿',heading+'帰ってきた四人の名の隣は空白だ。前線で伝えた要求は、まだこの街の記録に残っていない。',[
+   {label:'四人で示した要求を余白に書き残す',fn:()=>{
+    if(state.events.choices[witnessKey]===witnessValue)return capitalNorthGateRollVisit();
+    state.events.choices[witnessKey]=witnessValue;
+    addJournal('王都北門の出陣名簿に、四人が前線で示した要求を書き添えた：'+recorded.note+' 軍が応じたかは未確認。');
+    renderHud();
+    return saySequence([
+     {speaker:'マーガレット',text:'「要求したことと、実現したことは違う。だから、ここには私たちが言ったことだけを書くわ」'},
+     {speaker:'カレン',text:route==='empire'?'「王国の名簿でも、私たちが選んだことを消したくない」':'「帰る場所と、守ろうとしたこと。どちらも残しておきたい」'}
+    ]);
+   }},
+   {label:'書き足さず名簿を閉じる',fn:()=>say('カレン','「ここに名前は残した。今は、それだけでもいい」')}
+  ]);
+ }
  return say('王都北門・出陣名簿','前線へ出る兵士が、名前と帰還先を記す帳面だ。古い欄には何度も書き直した跡がある。',[
   {label:'四人の名前と帰還先を記す',fn:()=>{
    if(state.events.choices[key]==='written')return capitalNorthGateRollVisit();
@@ -899,7 +921,7 @@ function capitalNorthGateRollVisit(){
     {speaker:'カレン',text:'「四人とも、ここに書こう。帰る場所も」'},
     {speaker:'ソフィ',text:'「帰還先はリュネ村。……みんなで帰りましょう」'},
     {speaker:'マーガレット',text:'「記録は約束じゃない。でも、私たちがここにいたことは残る」'}
-   ]);
+   ],()=>{if(['kingdom','empire'].includes(state.finalChoice)&&state.events?.choices?.['route.final.'+state.finalChoice])capitalNorthGateRollVisit()});
   }},
   {label:'今は書かずに北門へ進む',fn:()=>say('トリトン','「書かなくても四人で帰る。そのつもりは変わらない」')}
  ]);
