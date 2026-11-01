@@ -1247,10 +1247,36 @@ function inlineNpcEvent(id){
   if(id==='zester'){if(yukiRoadMissingClue())return say('ゼスター','「'+yukiRoadMissingClue()+'を確かめてこい。英雄譚一つで人間を決めつけるな」');if(structuredCondition('metZester'))return say('ゼスター','「聖域へ行け。そこで千年前と今を、自分の目で比べるといい」');setStructuredCondition('metZester',true);state.objective='北のエルシア聖域へ向かう';addJournal('ゼスターから、王国が四年前にエルシアへ侵攻して現在の戦争が始まった経緯を聞いた。');renderHud();return saySequence([{speaker:'ゼスター',text:'「我々は侵略された。そして撃退した。そこで終わらせれば、十年後か二十年後にまた来る――この国はそう学んできた」'},{speaker:'カレン',text:'「だから王国の村まで焼いていいっていうの？」'},{speaker:'ゼスター',text:'「いいとは言わん。必要だと判断した。皇帝も、私も、その責任から逃げるつもりはない」'}])}
  }
  if(state.map==='elsia'){
-  if(id==='elsiaResident'){setStructuredCondition('elsiaResident',true);return saySequence([{speaker:'聖域の住民',text:'「祖父も、その祖父もここで生まれた。王国の人に“返せ”と言われても……私たちはどこへ帰ればいいんでしょう」'},{speaker:'ソフィ',text:'「……ここが、あなたたちの家なんですね」'}])}
-  if(id==='zenith'){if(!(structuredCondition('elsiaResident')&&structuredCondition('elsiaRecord')))return say('ゼニス','「王国の主張と、今ここに住む人間。その両方を見てから話そう」');if(structuredCondition('metZenith'))return say('ゼニス','「答えが出たとは思わない。ただ、知らなかった頃には戻れない。王国へ戻り、自分たちの答えを出せ」');return saySequence([{speaker:'ゼニス',text:'「王国の古文書は偽物ではない。千年前、この地が王国の前身国家に属した時代はある」'},{speaker:'マーガレット',text:'「でも、その後千年暮らしてきた人を追い出す根拠にはならない」'},{speaker:'ゼニス',text:'「同意する。だが私は帝国軍人だ。君たちを資料ごと王国へ帰せば、次の侵攻に使われる可能性もある」'},{speaker:'カレン',text:'「じゃあ、どうするの？」'},{speaker:'ゼニス',text:'「力ずくで止める。君たちが突破できたなら――その後は、私個人として道を開けよう」'}],()=>startBattle('zenithEncounter'))}
+  if(id==='elsiaResident'){
+   if(!structuredCondition('elsiaResident')){
+    setStructuredCondition('elsiaResident',true);
+    state.objective=elsiaNextObjective();renderHud();
+    return saySequence([
+     {speaker:'聖域の住民',text:'「祖父も、その祖父もここで生まれた。王国の人に“返せ”と言われても……私たちはどこへ帰ればいいんでしょう」'},
+     {speaker:'ソフィ',text:'「……ここが、あなたたちの家なんですね」'}
+    ]);
+   }
+   if(state.events.choices['elsia.tabletCopy']==='shared')
+    return say('聖域の住民','「写しは家の棚に置きました。子どもたちにも、ここに幾つもの時代があったと話せます」');
+   if(!structuredCondition('elsiaRecord'))
+    return say('聖域の住民','「西の石碑には古い文字が残っています。私たちの家のことも、どこかに書いてあるでしょうか」');
+   return say('聖域の住民','「石碑には何と？　王国のものだった時代も、ここで暮らしてきた時代も、どちらも本当なんでしょうか」',[
+    {label:'碑文の写しを住民にも残す',fn:()=>{
+     if(state.events.choices['elsia.tabletCopy']==='shared')return inlineNpcEvent('elsiaResident');
+     state.events.choices['elsia.tabletCopy']='shared';
+     addJournal('エルシア聖域の住民に、王国以前の石材・王国前身国家の祭祀記録・帝国期の増築が併存する碑文の写しを渡した。土地の歴史を住民自身も確かめられるように。');
+     renderHud();
+     return saySequence([
+      {speaker:'マーガレット',text:'「王国の時代があったことも、その後に暮らした人がいることも、両方書き写しました」'},
+      {speaker:'聖域の住民',text:'「ありがとうございます。いつか子どもに聞かれたら、誰かの旗じゃなく、この紙を見せます」'}
+     ]);
+    }},
+    {label:'写しは今は渡さない',fn:()=>say('カレン','「もう少し確かめてからにしよう」')}
+   ]);
+  }
+  if(id==='zenith'){if(!(structuredCondition('elsiaResident')&&structuredCondition('elsiaRecord')))return say('ゼニス','「王国の主張と、今ここに住む人間。その両方を見てから話そう」');if(structuredCondition('metZenith'))return say('ゼニス','「答えが出たとは思わない。ただ、知らなかった頃には戻れない。王国へ戻り、自分たちの答えを出せ」');return saySequence([{speaker:'ゼニス',text:'「王国の古文書は偽物ではない。千年前、この地が王国の前身国家に属した時代はある」'},...(state.events.choices['elsia.tabletCopy']==='shared'?[{speaker:'ゼニス',text:'「あの家に碑文の写しを残したそうだな。記録は軍だけのものではない。それは覚えておく」'}]:[]),{speaker:'マーガレット',text:'「でも、その後千年暮らしてきた人を追い出す根拠にはならない」'},{speaker:'ゼニス',text:'「同意する。だが私は帝国軍人だ。君たちを資料ごと王国へ帰せば、次の侵攻に使われる可能性もある」'},{speaker:'カレン',text:'「じゃあ、どうするの？」'},{speaker:'ゼニス',text:'「力ずくで止める。君たちが突破できたなら――その後は、私個人として道を開けよう」'}],()=>startBattle('zenithEncounter'))}
  }
- if(state.map==='elsia'&&id==='elsiaElder')return say('聖域の老人','「あの崩れた柱は王国より古い。こっちの家は帝国時代に建てた。ここは一つの時代だけの土地じゃないよ」')
+ if(state.map==='elsia'&&id==='elsiaElder')return say('聖域の老人',state.events.choices['elsia.tabletCopy']==='shared'?'「あの家にも碑文の写しが届いたそうだね。石は風化しても、読める人が増えれば言葉は残る」':'「あの崩れた柱は王国より古い。こっちの家は帝国時代に建てた。ここは一つの時代だけの土地じゃないよ」')
  if(state.map==='returnroad'&&id==='returnScout')return say('王国軍伝令','「勇者一行！？ 生きていたのか。王都ではもう……いや、総司令部へ急げ。君たちに見せられない記録を処分しているという噂がある」')
  if(state.map==='finalfield'&&id==='decisionGuide'){
   if(!(structuredCondition('finalKingdomPlan')&&structuredCondition('finalEmpirePlan')))return say('マーガレット','「決める前に両軍の作戦を確認しよう。王国側と帝国側、それぞれの前線を見ておきたい」');
@@ -1491,7 +1517,17 @@ function inlineObjectEvent(id){
  if(state.map==='returnroad'&&id==='mountainOverlook')return say('崖上の見晴らし','西には王国の平野、東には帝国の山地、その間にエルシアが小さく見える。地図の線より、実際の土地はずっと連続している。')
  if(state.map==='finalfield'&&id==='kingdomLine'){setStructuredCondition('finalKingdomPlan',true);renderHud();return saySequence([{speaker:'王国軍・総攻撃命令',text:'「勇者を先鋒とし、エルシア聖域を再占領。帝国軍を東岸まで押し戻す。聖域住民の退避は作戦完了後に実施」'},{speaker:'ソフィ',text:'「作戦完了後……今住んでいる人たちは、戦闘中ずっとそこにいるんですか」'},{speaker:'トリトン',text:'「でもこの軍が崩れたら、そのまま帝国軍が王国側へ来る」'}])}
  if(state.map==='finalfield'&&id==='empireLine'){setStructuredCondition('finalEmpirePlan',true);renderHud();return saySequence([{speaker:'帝国軍・反攻命令',text:'「王国軍の再侵攻能力を完全に喪失させる。必要なら国境を越えて補給拠点・軍都まで追撃を継続」'},{speaker:'カレン',text:'「“完全に”って……灰の街道より先まで行くつもりなんだ」'},{speaker:'マーガレット',text:'「シオンの理屈は分かる。でも、それを最後まで実行すれば新しい恨みも残る」'}])}
- if(state.map==='elsia'&&id==='elsiaTablet'){setStructuredCondition('elsiaRecord',true);renderHud();return say('古い碑文','王国の前身国家がこの地を祭祀の中心としていた記録が残っている。同時に、後世の帝国期に増築された痕跡も明確だった。')}
+ if(state.map==='elsia'&&id==='elsiaTablet'){
+  if(structuredCondition('elsiaRecord'))return say('古い碑文','王国の前身国家の祭祀記録と、後世の帝国期に増築された跡が並んでいる。写しを取ることもできそうだ。');
+  setStructuredCondition('elsiaRecord',true);
+  state.objective=elsiaNextObjective();
+  addJournal('エルシアの碑文には王国の前身国家による祭祀の記録と、後世の帝国期の増築が同時に残っていた。');
+  renderHud();
+  return saySequence([
+   {speaker:'古い碑文',text:'王国の前身国家がこの地を祭祀の中心としていた記録が残る。同じ石組みには、後世の帝国期に増築された痕跡もある。'},
+   {speaker:'マーガレット',text:'「一つの時代だけでは説明できない。これを知っているのは、王国の役人だけでいいのかしら」'}
+  ]);
+ }
 
 }
 

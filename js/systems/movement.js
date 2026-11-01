@@ -189,7 +189,28 @@ function enterYukiRoad(source='imperialcity'){
  }
  travelScene('yukiroad',11,13,'up','第五章 — ユウキ',objective,'王都では「討伐された四天王」、クラインテッドは「ユウキを討った勇者」と口にし、帝国では「皆を逃がした将軍」と語られた。同じ女の話とは思えない。その死んだ場所へ、自分たちの目で確かめに行く。');
 }
-function enterElsia(){markVisited('elsia',true);travelScene('elsia',11,13,'up','第六章 — 千年前の国境','聖域の住民と古い記録を調べる','エルシア聖域。王国の祈りの起源であり、千年近く帝国の人々が暮らしてきた土地へ四人は足を踏み入れた。')}
+// The two necessary witnesses are on opposite sides of the sanctuary. Keep
+// the next destination explicit without spoiling Zenith's later confrontation.
+function elsiaNextObjective(){
+ if(!structuredCondition('elsiaResident'))return '東側の聖域住民の話を聞く';
+ if(!structuredCondition('elsiaRecord'))return '西側の古い碑文を調べる';
+ if(!structuredCondition('metZenith'))return '北側のゼニスと話す';
+ return '北門から王国への帰還路へ進む';
+}
+function enterElsia(source='yukiroad'){
+ const objective=elsiaNextObjective();
+ if(hasVisited('elsia')){
+  // The return road lies north of Elsia; the Yuki battlefield lies south.
+  const fromNorth=source==='returnroad',y=fromNorth?1:13;
+  setMap('elsia',11,y,fromNorth?'down':'up',[[12,y],[13,y],[14,y]]);
+  state.chapter='第六章 — 千年前の国境';
+  state.objective=objective;
+  renderHud();
+  return;
+ }
+ markVisited('elsia',true);
+ travelScene('elsia',11,13,'up','第六章 — 千年前の国境',objective,'エルシア聖域。王国の祈りの起源であり、千年近く帝国の人々が暮らしてきた土地へ四人は足を踏み入れた。');
+}
 function enterReturnRoad(){markVisited('returnroad',true);travelScene('returnroad',11,13,'up','第七章 — 勇者の値段','王国へ戻り、王都を目指す','得た資料を抱え、四人は戦線の隙間を縫う帰還路へ入った。')}
 function enterFinalField(){markVisited('finalfield',true);travelScene('finalfield',11,13,'up','最終章 — 誰のための勇者か','中央の地点で、どちら側に立つか決める','王国の総攻撃と帝国の反攻が始まる。両軍の旗が見える前線で、四人は最後の選択を迫られる。')}
 function enterFinalBranch(){if(state.finalChoice==='kingdom')travelScene('imperialcamp',11,13,'up','最終章 — 王国側','帝国本陣でシオンと向き合う','故郷と王国民を守るため、四人は帝国本陣へ向かう。');else if(state.finalChoice==='ashcrown'){
@@ -306,7 +327,7 @@ function move(dir){if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started
  if(state.map==='yukiroad'&&ny<0&&[11,12].includes(nx)){if(!isEventComplete('metZester')){say('ナレーション','聖域へ続く道には帝国軍が布陣している。ゼスターと話をつける必要がある。');return}enterElsia();return}
  if(state.map==='elsia'&&ny>=15&&[11,12].includes(nx)){enterYukiRoad('elsia');return}
  if(state.map==='elsia'&&ny<0&&[11,12].includes(nx)){if(!isEventComplete('metZenith')){say('ゼニス','「まだ見るべきものがある。住民と古い碑文、その両方を見てから来い」');return}enterReturnRoad();return}
- if(state.map==='returnroad'&&ny>=15&&[11,12].includes(nx)){enterElsia();return}
+ if(state.map==='returnroad'&&ny>=15&&[11,12].includes(nx)){enterElsia('returnroad');return}
  if(state.map==='returnroad'&&ny<0&&[11,12].includes(nx)){enterCapital(false);return}
  if(state.map==='finalfield'&&ny>=15&&[11,12].includes(nx)){if(state.finalChoice==='ashcrown'&&!!state.events?.choices?.['route.companions.ashcrown']){say('カレン','「三人と別れた。戻っても、あの頃の四人には戻れない」');return}travelScene('capital',11,1,'down','最終章 — 誰のための勇者か','最後の選択へ向かう','王都側の前線へ戻った。');return}
  if(state.map==='finalfield'&&ny<0&&[11,12].includes(nx)){if(!state.finalChoice){say('決断の地点','中央にいる人物に話しかけ、どちら側に立つか決める必要がある。');return}enterFinalBranch();return}
