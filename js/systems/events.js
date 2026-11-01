@@ -845,6 +845,8 @@ function capitalGateGuideVisit(){
  if(structuredCondition('returnedKingdom')){
   if(!structuredCondition('heroRecordsFound'))return say('南門の道案内',routes+'軍務街の台帳は東側、兵舎の裏手にある。');
   if(!structuredCondition('heroTruth'))return say('南門の道案内',routes+'総司令グランツは北西の王城前にいる。');
+  if(state.events.choices['capital.ledgerCopy']==='kept'&&state.events.choices['capital.ledgerOriginalSealed']!=='ordered')
+   return say('南門の道案内',routes+'北門から総攻撃前線へ続く。原本の処分を止めたいなら、王城前のグランツにもう一度話せる。');
   return say('南門の道案内',routes+'北門から総攻撃前線へ続く。');
  }
  if(isEventComplete('alpha2.capital.granzBriefing'))
@@ -1017,6 +1019,8 @@ function inlineNpcEvent(id){
  if(state.map==='capital'){
   if(id==='capitalOfficial'){
    if(structuredCondition('returnedKingdom')){
+    if(structuredCondition('heroTruth')&&state.events.choices['capital.ledgerOriginalSealed']==='ordered')
+     return say('王都係官','「軍務街に原本の封印保管命令が届きました。公表ではありません。でも廃棄札は外されました。北門へ向かうなら、どうかご無事で」');
     if(!structuredCondition('heroRecordsFound'))
      return say('王都係官',state.events.choices['returnroad.scoutRumor']==='asked'
       ?'「記録を処分する噂ですか？　私には確認できません。勇者候補の台帳なら東の軍務街です。ご自身で確かめてください」'
@@ -1104,7 +1108,30 @@ function inlineNpcEvent(id){
     return saySequence([{speaker:'総司令グランツ',text:'「勘違いするな。今すぐシオンを斬れとは言わん。まず前線拠点セラドへ行け。生きて着け」'},{speaker:'トリトン',text:'「勇者なのに、やることは顔見せか？」'},{speaker:'総司令グランツ',text:'「前線では昨日まで隣にいた兵が、朝には死ぬ。“勇者が来た”という噂だけで踏みとどまれる者もいる」'},{speaker:'ソフィ',text:'「それは……嘘でも？」'},{speaker:'総司令グランツ',text:'「希望が事実かどうかを、死にかけた兵は確認しない」'},{speaker:'マーガレット',text:'「私たちは戦力である前に、宣伝なんですね」'},{speaker:'総司令グランツ',text:'「そうだ」'},{speaker:'カレン',text:'「村への米も、その宣伝の代金？」'},{speaker:'総司令グランツ',text:'「言い方は好きにしろ。私は君たちを騙しているつもりはない。国全体と四人を比べれば、国を取る。それが私の仕事だ」'},{speaker:'トリトン',text:'「最初から気に食わないな、この人」'},{speaker:'総司令グランツ',text:'「結構。嫌われても命令は変わらん。だが――死ぬな。死なれると困るし、できれば私も寝覚めが悪い」'}])
    }
    if(!structuredCondition('heroRecordsFound'))return say('総司令グランツ','「何を問いに来た。噂だけで私を責めるなら帰れ。軍務街の記録を見てから来い」');
-   if(structuredCondition('heroTruth'))return say('総司令グランツ','「知った上で、それでも進むか。なら私は止めない。国を守るためなら君たちを捨てる。それが私の立場だ」');
+   if(structuredCondition('heroTruth')){
+    const key='capital.ledgerOriginalSealed';
+    if(state.events.choices[key]==='ordered')
+     return say('総司令グランツ','「原本は封印保管させた。公表はしない。……それでも名前を残したいなら、私は止めん」');
+    if(state.events.choices['capital.ledgerCopy']==='kept')
+     return say('総司令グランツ','「君たちは写しを持っているのだろう。知った上で、それでも進むか」',[
+      {label:'廃棄予定の原本も残すよう求める',fn:()=>{
+       if(state.events.choices[key]==='ordered')return inlineNpcEvent('granz');
+       if(state.events.choices['capital.ledgerCopy']!=='kept')return say('マーガレット','「まず写しを確保しましょう」');
+       state.events.choices[key]='ordered';
+       addJournal('歴代勇者台帳の写しを示してグランツに原本の廃棄停止を求めた。公表は拒まれたが、原本は封印保管されることになった。');
+       renderHud();
+       return saySequence([
+        {speaker:'カレン',text:'「前の勇者たちの名前を消さないで。写しは持ってる。原本まで捨てる必要はないでしょう」'},
+        {speaker:'総司令グランツ',text:'「公表はできん。今それをやれば、前線の家族をさらに混乱させる」'},
+        {speaker:'マーガレット',text:'「公表ではなく、廃棄を止めてほしいんです。いつか確かめられるように」'},
+        {speaker:'総司令グランツ',text:'「……封印保管を命じる。国の説明は変えない。それが今、私にできる線だ」'},
+        {speaker:'ソフィ',text:'「名前が残るだけでも、いなかったことにはなりません」'}
+       ]);
+      }},
+      {label:'写しを守って北門へ向かう',fn:()=>say('トリトン','「紙は私たちが持ってる。今は先へ行こう。必要なら戻ればいい」')}
+     ]);
+    return say('総司令グランツ','「知った上で、それでも進むか。なら私は止めない。国を守るためなら君たちを捨てる。それが私の立場だ」');
+   }
    setStructuredCondition('heroTruth',true);state.objective='王都北門から総攻撃前線へ向かう';addJournal('歴代勇者は戦況悪化のたびに選ばれ、死亡後は静かに次の勇者へ置き換えられていた。');renderHud();return saySequence([{speaker:'総司令グランツ',text:'「……台帳を見たのだな」'},{speaker:'カレン',text:'「私たちの前にも、何人もいた。死んだことすら、ほとんど知らされてない」'},{speaker:'総司令グランツ',text:'「そうだ」'},{speaker:'トリトン',text:'「それだけか？」'},{speaker:'総司令グランツ',text:'「何を言えば満足する。謝れば死者が戻るか。私が泣けば制度が無かったことになるか」'},{speaker:'ソフィ',text:'「せめて、あの人たちの家族に本当のことを」'},{speaker:'総司令グランツ',text:'「“あなたの娘は国民の希望として使い潰されました”と？ 国がそれを公表すれば、次に前線へ立つ兵の家族は何を信じる」'},{speaker:'カレン',text:'「だから嘘を続けるの？」'},{speaker:'総司令グランツ',text:'「続ける。四人を犠牲にして数万人が希望を持つなら、私は四人を選ぶ」'},{speaker:'マーガレット',text:'「私たちを嫌いだからじゃない」'},{speaker:'総司令グランツ',text:'「むしろ逆だ。君たちには生きて帰ってほしい。……それでも必要なら捨てる。そこだけは嘘をつかない」'},{speaker:'カレン',text:'「最悪だね」'},{speaker:'総司令グランツ',text:'「ああ」'},{speaker:'カレン',text:'「でも、やっとあなたが何を守ってるのか分かった」'},{speaker:'総司令グランツ',text:'「なら次は、君が何を守るか決めろ。総攻撃が始まる」'}])
   } }
  if(state.map==='borderland'){
@@ -1350,7 +1377,9 @@ function inlineNpcEvent(id){
 function capitalLedgerCopyChoice(){
  const key='capital.ledgerCopy';
  if(state.events.choices[key]==='kept')
-  return say('歴代勇者台帳','氏名と戦況を写し取った紙が手元にある。原本の「戦死」「消息不明」の欄は、まだここに残っている。');
+  return say('歴代勇者台帳',state.events.choices['capital.ledgerOriginalSealed']==='ordered'
+   ?'「廃棄予定」の札は外され、「封印保管」に差し替えられている。写しも手元にある。前の勇者たちの名前は、少なくともここからは消されない。'
+   :'氏名と戦況を写し取った紙が手元にある。原本の「戦死」「消息不明」の欄は、まだここに残っている。');
  return say('歴代勇者台帳','台帳の端には廃棄予定の印がある。ここに残すだけでは、名前ごと消されるかもしれない。',[
   {label:'氏名と記録を写し取る',fn:()=>{
    if(state.events.choices[key]==='kept')return capitalLedgerCopyChoice();
@@ -1512,12 +1541,18 @@ function inlineObjectEvent(id){
  if(state.map==='capital'){
   if(id==='capitalGateGuide')return capitalGateGuideVisit()
    if(id==='capitalWagonQueue')return capitalWagonQueueVisit()
-  if(id==='royalCastle')return say('アルディナ王城','白い石壁の奥に王家の居城がそびえている。広場から見上げるだけでも、リュネ村とは規模がまるで違う。')
+  if(id==='royalCastle')return say('アルディナ王城',structuredCondition('returnedKingdom')&&structuredCondition('heroTruth')&&state.events.choices['capital.ledgerOriginalSealed']==='ordered'
+   ?'王城前の衛兵が持つ命令書には、小さく「旧勇者台帳・封印保管」と書かれている。戦勝の旗は以前と同じ場所で翻っている。'
+   :structuredCondition('returnedKingdom')&&structuredCondition('heroTruth')&&state.events.choices['capital.ledgerCopy']==='kept'
+   ?'王城の石段にグランツが立っている。写しは手元にある。原本の廃棄を止めるよう、もう一度求めることもできる。'
+   :'白い石壁の奥に王家の居城がそびえている。広場から見上げるだけでも、リュネ村とは規模がまるで違う。');
   if(id==='capitalMarket')return capitalShop()
   if(id==='capitalFountain')return capitalFountainVisit()
   if(id==='capitalBarracks'){
    if(structuredCondition('returnedKingdom')){
     if(!structuredCondition('heroRecordsFound'))return say('王国軍兵舎','兵舎の裏手に「旧記録・廃棄待ち」と記された保管箱がある。軍務街の東側を回れば確かめられそうだ。');
+    if(state.events.choices['capital.ledgerOriginalSealed']==='ordered')
+     return say('王国軍兵舎','兵舎裏の保管箱から廃棄札が外され、「封印保管」の札に替わっている。表の壁にはまだ「勇者と共に」の標語が残る。');
     return say('王国軍兵舎',state.events.choices['capital.recruitWitness']==='told'
      ?'兵舎の壁には戦勝標語が残る。新兵は名簿を指でなぞり、隣の兵の名前を確かめている。'
      :'兵舎の裏には、歴代勇者の台帳が収められていた保管箱がある。表の壁にはまだ「勇者と共に」の標語が残っている。');
