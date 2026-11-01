@@ -1,5 +1,19 @@
 # Map and story: player-facing research notes
 
+## 2026-11-02 00:43 JST — the same witness board changes after the player's checkpoint choice
+
+**External signals checked 2026-11-02 (individual reviews, not a population study):**
+- [Chained Echoes Steam reviews](https://steamcommunity.com/app/1229240/reviews/), page displayed an Oct 29 negative review describing repeated map backtracking to find an unobvious door; an Oct 28 positive review valued the journey, cast and world. Steam's displayed excerpts do not state the year; no exact publication year is inferred.
+- [Sea of Stars Steam reviews](https://steamcommunity.com/app/1244090/reviews/), page displayed an Oct 5 negative review citing unclear progression signals and an Oct 3 positive review valuing the sense of finding something around every corner. These are contrasting personal reports, not a verified market-wide trend.
+- **Inference, not fact:** a readable side spur and a board that changes after the player's tactical decision may make the same short area feel discoverable and responsive without requiring a repeat visit.
+
+**Repository source check:** On Draft #254 HEAD `fa3f3d1da1557fb09be42d9d2a904cee72508b38`, both witness boards were at (10,9), but the adjacent ground was undifferentiated battlefield floor. The board's dialogue was identical before and after the route checkpoint, despite the existing four distinct tactical outcomes. The copied witness note already affected ruler dialogue and provisional ending; those effects were preserved.
+
+**Change:** The two camp maps share a short worn two-cell approach at (10,8)-(10,9), retaining the open main corridor. Each board now acknowledges its route-specific **completed** checkpoint and tactical choice on return: limited evacuation passage versus still-blank permission; prisoner protection request versus interrupted pursuit with still-blank names. Pre-checkpoint dialogue does not reveal these outcomes. Skipping/copying remains optional and reversible; no new battle, NPC, map area, Save v23 field, or art replacement. The four childhood friends' existing choices remain authoritative. This is original Graygrow dialogue, not copied from reviewed games.
+
+**Verification scope:** Full changed JS sources syntax-compiled in V8; isolated real-function scenario checks passed before GitHub save. Five Node harness tests are added but **not run natively** in this environment. Browser walking, 44px visual legibility, real battle-to-board progression, full npm check, real Save/Load and human playtest are **not verified** (local container cannot resolve github.com for checkout). Next: execute `node --test tests/finalcamp_aftermath_board.test.js tests/finalcamp_witness_records.test.js tests/finalcamp_evidence_payoff.test.js`, then walk both camps through each checkpoint and revisit the board with/without a copy.
+
+
 ## 2026-11-01 23:43 JST — optional camp evidence: discoverable, then remembered at the ending preview
 
 **Source check (2026-11-01):**
