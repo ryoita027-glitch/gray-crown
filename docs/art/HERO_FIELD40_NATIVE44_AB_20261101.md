@@ -6,7 +6,7 @@
 The source art is 48×48px per cell. The field and conversation render at 44px, and featured V5 mayor/messenger also render at 44px. The original protagonist head/hair mass—especially Margaret—still reads large relative to the torso and NPCs. Repeated mechanical contour trims (Margaret V1–V3, Triton tests) have not resolved that structural difference. This trial tests the **whole 4-hero party** at 40px without modifying any approved PNG, 48px source crop, character identity, collisions, tile sizes, Save v23, story or balance.
 
 ## Implemented changes
-- `js/data/animations.js`: single reversible `GC.Data.Animations.artDisplaySize=40` setting (restore to 44 to revert).
+- `js/data/animations.js`: single reversible `GC.Data.Animations.artDisplaySize` setting: 40px on this Draft, `?heroArtSize=44` query override restores the existing 44px geometry without changing the branch.
 - `js/render/world.js`: field walk uses that size while retaining source-specific shoe anchors (Margaret y46, others y44), shadow and logical foot coordinates.
 - `js/systems/commercial_acting.js`: conversation actor uses the same size.
 - `js/systems/animation.js`: default authored animation for the four heroes inherits the same size; explicit custom renderScale and non-hero actors are preserved.
@@ -23,6 +23,6 @@ Four rows = down / left / right / up. Columns = Karen 44/40, Triton 44/40, Sophi
 - Source PNG identities and dimensions checked through GitHub blobs; original four hero idle assets 192×192 and V5 atlas reference unchanged.
 - Static source-art 44/40 board generated and decoded for preview. This is **not** a Chromium screenshot or a real village A/B.
 - The modified Node test file was updated but **not executed against a full repository checkout** in this connector session. Full npm suite, real browser, movement/idle/talk/turn transition, battle scene and 100%-scale desktop/mobile evaluation remain **NOT RUN**.
-- Test at fixed Ryune camera and background, compare 44/40 for all four heroes next to mayor/messenger, check shadow, footline, head and eye readability, and animation at 4 directions. Do not adopt without visible improvement and complete QA.
+- Test at fixed Ryune camera and background using this Draft's default 40px and `?heroArtSize=44` override, compare 44/40 for all four heroes next to mayor/messenger, check shadow, footline, head and eye readability, and animation at 4 directions. Do not adopt without visible improvement and complete QA.
 
 No paid API or GitHub Actions run. Do not merge this Draft into main or PR #98.

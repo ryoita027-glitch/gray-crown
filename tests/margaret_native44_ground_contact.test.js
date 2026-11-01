@@ -7,7 +7,7 @@ const path=require('node:path');
 const vm=require('node:vm');
 
 const ART_SIZE=40;
-function makeRuntime(){
+function makeRuntime(artSize=40){
  const calls=[];
  class FakeImage{
   constructor(){this.naturalWidth=288;this.naturalHeight=192}
@@ -16,6 +16,7 @@ function makeRuntime(){
  const shadows=[];
  const ctx={save(){},restore(){},beginPath(){},ellipse(...args){shadows.push(args)},fill(){},drawImage(...args){calls.push(args)}};
  const sandbox={GC:{},TILE:32,ctx,Image:FakeImage};
+ if(artSize===44)sandbox.window={location:{search:'?heroArtSize=44'}};
  vm.createContext(sandbox);
  const source=fs.readFileSync(path.join(__dirname,'../js/render/world.js'),'utf8');
  vm.runInContext(fs.readFileSync(path.join(__dirname,'../js/data/animations.js'),'utf8'),sandbox,{filename:'js/data/animations.js'});
@@ -89,4 +90,18 @@ test('default authored hero acting scale follows field trial, other actors remai
   assert.equal(actor.renderScale,ART_SIZE/48);
  }
  assert.equal(animation.createActor('nonHero',{x:2,y:3}).renderScale,1);
+});
+
+test('44px query override restores original field and authored pose geometry',()=>{
+ const {draw,calls,animation,definitions}=makeRuntime(44);
+ for(const id of ['karen','triton','sophie','margaret']){
+  calls.length=0;
+  assert.equal(draw(2,3,id,false,'down',0),true);
+  const args=calls[0];
+  assert.equal(args[7],44);assert.equal(args[8],44);
+  const actor=animation.createActor(id,{x:2,y:3,animation:'talk',startedAt:0});
+  const geometry=animation.renderGeometry(actor,definitions[id].talk);
+  assert.equal(geometry.destW,44);
+  assert.equal(geometry.dy,args[6]);
+ }
 });
