@@ -1,5 +1,15 @@
 # Map and story: player-facing research notes
 
+## 2026-11-02 02:43 JST — restore the post-battle decision the player could not see
+
+**Confirmed source defect:** In PR #259 (HEAD `4749a3aa`), `battleWin` calls `if(!finalCampAfterBattlePrompt(route)) say(...fallback...)`. The prompt helper returned `say(...)`, but `say` is a void dialogue UI function. Thus the condition was always true and the fallback immediately replaced the two-choice menu. The earlier test expected a truthy return but was not executed. This made the intended optional return to the changed witness board unreachable from the battle aftermath, even though its board content and map existed.
+
+**Implemented:** `finalCampAfterBattlePrompt` now explicitly returns `true` after displaying the menu. The existing route/map/checkpoint guards still return `false`, allowing the original fallback when no menu should appear. Both kingdom and empire routes retain the player's option to check the changed board or proceed directly to the leader. No new content is gated, no choice is automatically recorded, and Save v23 remains unchanged. Two additional regression cases exercise the exact caller expression.
+
+**External review signals checked 2026-11-02:** [Chained Echoes Steam reviews](https://steamcommunity.com/app/1229240/reviews/) display an Oct 29 negative individual review about repeatedly circling a map to find an unobvious doorway, alongside positive reviews valuing exploration and the journey. [Sea of Stars Steam reviews](https://steamcommunity.com/app/1244090/reviews/) display an Oct 5 negative individual review mentioning unclear route cues and backtracking, and an Oct 3 positive review valuing discoveries. The snippets do not establish their posting year or a population-wide trend. **Inference:** a promised, visible optional route choice is more useful than a hidden prompt and forced fallback. The defect itself is proven from source, independently of review sentiment.
+
+**Verification:** Executed the extracted actual helper function with a minimal dialogue mock in V8 before editing: the old caller showed `FALLBACK`; the corrected helper preserved both kingdom/empire prompts. The new Node harness tests are committed but **not executed natively**; local checkout remains unavailable due to GitHub DNS. Browser battle-result timing, movement, actual save/load and human playtest remain **unverified**. Next: run the native tests and real win-to-prompt-to-board-to-leader playthrough for both routes before approval.
+
 ## 2026-11-02 01:43 JST — checkpoint aftermath can be seen without a compulsory return walk
 
 **Verified external signals (checked 2026-11-02; individual opinions only):**
