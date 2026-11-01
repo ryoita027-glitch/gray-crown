@@ -31,7 +31,7 @@ function harness({dialogue=false,throwFirst=true}={}){
  vm.runInContext(fs.readFileSync(path.resolve(__dirname,'../js/systems/menu.js'),'utf8'),context,{filename:'js/systems/menu.js'});
  context.GC.Menu.openMenu();
  const markup=$('modalContent').innerHTML;
- assert.match(markup,/<button onclick="saveFromMenu\\(\\)">セーブ<\\/button>/);
+ assert.match(markup,/<button onclick="saveFromMenu\(\)">セーブ<\/button>/);
  const click=()=>vm.runInContext('saveFromMenu()',context);
  return {$,calls,live,click};
 }
