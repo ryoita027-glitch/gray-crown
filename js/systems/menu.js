@@ -111,9 +111,14 @@ function restoreArchivedAdventureFromMenu(){
   }
  }
 }
+// A second file selection must not reopen the menu while an earlier import
+// is still reading/validating bytes. The Save layer separately guards writes.
+let portableMenuImportInProgress=false;
 // The file picker can return false asynchronously (including a cancelled
 // confirmation). Keep the menu available unless a system dialogue is visible.
 async function importPortableSaveFromMenu(file){
+ if(portableMenuImportInProgress)return false;
+ portableMenuImportInProgress=true;
  const modal=$('modal');
  modal.classList.add('hidden');
  let imported=false;
@@ -125,6 +130,7 @@ async function importPortableSaveFromMenu(file){
   GC.Log?.error?.('Portable save menu import failed',{error:String(error)});
   return false
  }finally{
+  portableMenuImportInProgress=false;
   if(!imported&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
    modal.classList.remove('hidden')
   }
