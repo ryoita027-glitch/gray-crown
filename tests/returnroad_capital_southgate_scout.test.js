@@ -94,3 +94,25 @@ test('overlook acknowledges shared Elsia record and scout lead survives Save v23
  assert.equal(h.GC.State.get().schema,23);
  assert.equal(h.GC.State.get().events.choices['returnroad.scoutRumor'],'asked');
 });
+
+test('return road retains a walkable four-direction route past the scout',()=>{
+ const h=ready(),m=h.evaluate('maps.returnroad');
+ const blocked=new Set(['K','H','T','W','S']);
+ const occupied=new Set([...m.npcs,...m.objects].map(p=>p.x+','+p.y));
+ const pass=(x,y)=>y>=0&&y<m.tiles.length&&x>=0&&x<m.tiles[y].length&&!blocked.has(m.tiles[y][x])&&!occupied.has(x+','+y);
+ const distance=(start,goal)=>{
+  const queue=[[...start,0]],seen=new Set([start.join(',')]);
+  for(let i=0;i<queue.length;i++){
+   const [x,y,d]=queue[i];
+   if(x===goal[0]&&y===goal[1])return d;
+   for(const [dx,dy] of [[0,1],[0,-1],[1,0],[-1,0]]){
+    const nx=x+dx,ny=y+dy,k=nx+','+ny;
+    if(pass(nx,ny)&&!seen.has(k)){seen.add(k);queue.push([nx,ny,d+1])}
+   }
+  }
+  return null;
+ };
+ assert.notEqual(distance([11,1],[11,13]),null);
+ assert.notEqual(distance([11,13],[11,6]),null);
+ assert.notEqual(distance([11,13],[5,8]),null);
+});
