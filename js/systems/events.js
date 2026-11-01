@@ -1509,6 +1509,33 @@ function recordFinalCampCheckpointOutcome(route,outcome){
  state.events.choices[key]=outcome==='surrender'?'surrender':'defeat';
  return true;
 }
+// After a checkpoint, offer a short return to the ruler from the optional
+// witness board instead of a second identical walk along the trunk road.
+// No route, evidence, or reward is changed by this travel choice.
+function finalCampReturnToLeader(route){
+ const entries={
+  kingdom:{map:'imperialcamp',leader:'シオン'},
+  empire:{map:'royalcamp',leader:'グランツ'}
+ };
+ const entry=entries[route];
+ if(!entry||state.map!==entry.map||state.finalChoice!==route||
+    !isEventComplete('final.route.'+route+'.checkpoint'))return false;
+ say('カレン','「記録は確かめた。北の'+entry.leader+'へ戻る？　ここから歩いてもいい」',[
+  {label:'北の'+entry.leader+'の近くへ戻る',fn:()=>{
+   // Clear central road (12,5) faces the ruler at (12,4).
+   // Followers remain on other road cells, never the NPC tile.
+   setMap(entry.map,12,5,'up',[[11,5],[11,6],[12,6]]);
+   state.objective=finalCampObjective(route);
+   renderHud();
+   return say('ナレーション','四人は本道を北へ戻り、'+entry.leader+'の待つ旗の下へ向かった。');
+  }},
+  {label:'ここから自分で歩く',fn:()=>{
+   state.objective=finalCampObjective(route);
+   renderHud();
+  }}
+ ]);
+ return true;
+}
 // Optional witness records are not proof that either army has protected anyone.
 function finalCampWitnessEvent(id){
  const entries={
@@ -1552,16 +1579,18 @@ function finalCampWitnessEvent(id){
   ?' 四人が戦った兵は武器を置き、道を譲った。ただし掲示された人々の安全が確保された証拠ではない。'
   :resolution==='defeat'
   ?' 戦いは終わったが、倒れた兵の生死は未確認だ。掲示された人々の安否もまだ分からない。':'';
- if(state.events?.choices?.[key]==='copied')return say(entry.title,entry.revisit+aftermath+battleTrace);
+ if(state.events?.choices?.[key]==='copied')return say(entry.title,entry.revisit+aftermath+battleTrace,[],()=>finalCampReturnToLeader(entry.route));
  return say(entry.title,entry.intro+aftermath+battleTrace,[
   {label:'人数と空欄を手帳に写す',fn:()=>{
    if(state.events.choices[key]==='copied')return finalCampWitnessEvent(id);
    state.events.choices[key]='copied';
    state.objective=finalCampObjective(entry.route);
    addJournal(entry.journal);renderHud();draw();
-   return saySequence(entry.lines);
+   return saySequence(entry.lines,()=>finalCampReturnToLeader(entry.route));
   }},
-  {label:'今は先へ進む',fn:()=>say('カレン','「今は先へ進もう。でも、ここに紙があったことは覚えておく」')}
+  {label:'今は先へ進む',fn:()=>{
+   if(!finalCampReturnToLeader(entry.route))return say('カレン','「今は先へ進もう。でも、ここに紙があったことは覚えておく」');
+  }}
  ]);
 }
 
