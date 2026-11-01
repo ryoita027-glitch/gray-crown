@@ -29,6 +29,17 @@ function loadFromMenu(){
  }
  return loaded
 }
+function restoreArchivedAdventureFromMenu(){
+ const modal=$('modal');
+ modal.classList.add('hidden');
+ const restored=GC.Save.restoreArchivedAdventure();
+ // A declined confirmation must leave the player in the same menu.
+ // A restore error with a visible system dialogue must remain readable.
+ if(!restored&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
+  modal.classList.remove('hidden')
+ }
+ return restored
+}
 function openMenu(){
  if(state.battle)return;
  const inv=Object.entries(state.inventory).map(([k,v])=>`<div class="kv"><strong>${escapeMenuText(k)}</strong><span>${escapeMenuText(v)}</span></div>`).join('');
@@ -47,7 +58,7 @@ function openMenu(){
      <button onclick="document.getElementById('portableSaveUpload').click()">セーブを読み込む（.json）</button>
      <input id="portableSaveUpload" type="file" accept=".json,application/json" style="display:none"
        onchange="if(this.files?.length){const file=this.files[0];this.value='';$('modal').classList.add('hidden');GC.Save.readPortableSaveFile(file)}">
-     ${GC.Save.hasArchivedAdventure()?`<button onclick="$('modal').classList.add('hidden');GC.Save.restoreArchivedAdventure()">以前の冒険を復旧</button>`:''}
+     ${GC.Save.hasArchivedAdventure()?`<button onclick="restoreArchivedAdventureFromMenu()">以前の冒険を復旧</button>`:''}
      ${GC.Save.hasQuarantinedSaves()?`<button onclick="$('modal').classList.add('hidden');GC.Save.downloadQuarantinedSaves()">破損セーブの元データを書き出す</button>`:''}
      <button class="menu-danger" onclick="restartFromMenu()">最初から</button>
    </div>
