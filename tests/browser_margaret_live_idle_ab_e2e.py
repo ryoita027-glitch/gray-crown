@@ -162,7 +162,7 @@ def main():
     for path, expected in SOURCE_BLOBS.items():
         data = (ROOT / path).read_bytes()
         actual = hashlib.sha1(
-            b'blob ' + str(len(data)).encode() + b'\\0' + data).hexdigest()
+            b'blob ' + str(len(data)).encode() + b'\0' + data).hexdigest()
         assert actual == expected, f'asset changed: {path} {actual}'
     records = []
     with helper.served() as url, sync_playwright() as playwright:
