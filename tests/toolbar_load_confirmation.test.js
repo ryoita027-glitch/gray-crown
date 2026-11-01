@@ -5,8 +5,8 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 
-function harness({started=true,approve=false,loadResult=true}={}){
- const elements=new Map(),calls={confirm:[],load:0},live={stage:'unsaved-progress'};
+function harness({started=true,approve=false,loadResult=true,canLoadNow=true}={}){
+ const elements=new Map(),calls={confirm:[],load:0,loadGate:[]},live={stage:'unsaved-progress'};
  const $=id=>{
   if(!elements.has(id)){
    const classes=new Set(['hidden']),listeners={};
@@ -24,9 +24,9 @@ function harness({started=true,approve=false,loadResult=true}={}){
   canvas:{addEventListener:()=>{},focus:()=>{}},
   state:{battle:null,inventory:{},gold:55,map:'village',objective:'旅立ち',party:[]},
   maps:{village:{name:'リュネ村'}},MAX_LEVEL:99,expThreshold:()=>100,
-  GC:{Save:{hasUsableStoredAdventure:()=>true,hasArchivedAdventure:()=>false,hasQuarantinedSaves:()=>false},Log:{info:()=>{}}},
+  GC:{Save:{hasUsableStoredAdventure:()=>true,canPersistNow:mode=>{calls.loadGate.push(mode);return canLoadNow},hasArchivedAdventure:()=>false,hasQuarantinedSaves:()=>false},Log:{info:()=>{}}},
   confirm:message=>{calls.confirm.push(message);return approve},
-  load:()=>{calls.load++;if(loadResult)live.stage='stored-checkpoint';return loadResult},
+  load:()=>{calls.load++;if(!canLoadNow)return false;if(loadResult)live.stage='stored-checkpoint';return loadResult},
   save:()=>true,restart:()=>true,renderHud:()=>{},draw:()=>{},toggleSound:()=>{}
  });
  for(const file of ['js/systems/menu.js','js/game.js']){
@@ -87,4 +87,31 @@ test('confirmed adventure-menu Load still closes its menu',()=>{
  assert.equal(h.calls.confirm.length,1);
  assert.equal(h.calls.load,1);
  assert.equal(h.$('modal').classList.contains('hidden'),true);
+});
+
+// The top-bar control remains clickable during combat/dialogue; a load is
+// impossible there. Do not ask permission to discard progress for a blocked action.
+test('blocked top-bar Load skips discard confirmation and preserves live play',()=>{
+ const h=harness({canLoadNow:false,approve:true});h.toolbar();
+ assert.equal(h.calls.confirm.length,0);
+ assert.deepEqual(h.calls.loadGate,['load']);
+ assert.equal(h.calls.load,1);
+ assert.equal(h.live.stage,'unsaved-progress');
+});
+
+test('blocked adventure-menu Load keeps the menu visible without a false warning',()=>{
+ const h=harness({canLoadNow:false,approve:true});h.menu();
+ assert.equal(h.calls.confirm.length,0);
+ assert.deepEqual(h.calls.loadGate,['load']);
+ assert.equal(h.calls.load,1);
+ assert.equal(h.$('modal').classList.contains('hidden'),false);
+ assert.equal(h.live.stage,'unsaved-progress');
+});
+
+test('allowed top-bar Load still warns before replacing progress',()=>{
+ const h=harness({canLoadNow:true,approve:true});h.toolbar();
+ assert.deepEqual(h.calls.loadGate,['load']);
+ assert.equal(h.calls.confirm.length,1);
+ assert.equal(h.calls.load,1);
+ assert.equal(h.live.stage,'stored-checkpoint');
 });
