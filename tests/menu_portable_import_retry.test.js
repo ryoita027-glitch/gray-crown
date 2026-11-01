@@ -6,7 +6,7 @@ const path=require('node:path');
 const vm=require('node:vm');
 
 function harness({importer}={}){
- const nodes=new Map(),files=[],toolbarLoads=[];
+ const nodes=new Map(),files=[],toolbarLoads=[],menuActions={save:0,restart:0,restore:0};
  const $=id=>{
   if(!nodes.has(id)){
    const classes=new Set(['hidden']);
@@ -21,8 +21,11 @@ function harness({importer}={}){
   state:{battle:null,inventory:{},gold:live.gold,map:'village',objective:'旅立ち',party:[]},
   maps:{village:{name:'リュネ村'}},MAX_LEVEL:99,expThreshold:()=>100,
   confirm:()=>true,load:()=>{toolbarLoads.push('load');return true},
+  save:()=>{menuActions.save++;return true},
+  restart:()=>{menuActions.restart++;return true},
   GC:{Save:{canPersistNow:()=>true,hasUsableStoredAdventure:()=>true,hasArchivedAdventure:()=>false,hasQuarantinedSaves:()=>false,
-   readPortableSaveFile:file=>{files.push(file);return importer?.(file,$,live)??false}},
+   readPortableSaveFile:file=>{files.push(file);return importer?.(file,$,live)??false},
+   restoreArchivedAdventure:()=>{menuActions.restore++;return true}},
    Log:{error:()=>{}}}
  });
  vm.runInContext(fs.readFileSync(path.resolve(__dirname,'../js/systems/menu.js'),'utf8'),context,{filename:'js/systems/menu.js'});
@@ -32,7 +35,13 @@ function harness({importer}={}){
  assert.ok(match,'the real menu must expose its file-picker handler');
  const onChange=vm.runInContext('(function(){'+match[1]+'})',context);
  const picker={files:[{size:100}],value:'C:\\fakepath\\save.json'};
- return {$,live,files,picker,toolbarLoads,toolbarLoad:()=>vm.runInContext('loadFromToolbar()',context),select:()=>onChange.call(picker),
+ return {$,live,files,picker,toolbarLoads,menuActions,
+  toolbarLoad:()=>vm.runInContext('loadFromToolbar()',context),
+  menuLoad:()=>vm.runInContext('loadFromMenu()',context),
+  menuSave:()=>vm.runInContext('saveFromMenu()',context),
+  menuRestart:()=>vm.runInContext('restartFromMenu()',context),
+  menuRestore:()=>vm.runInContext('restoreArchivedAdventureFromMenu()',context),
+  select:()=>onChange.call(picker),
   reopen:()=>context.GC.Menu.openMenu(),
   hidden:()=>$('modal').classList.contains('hidden')};
 }
@@ -199,4 +208,42 @@ test('failed portable import restores the previous toolbar disabled state',async
  finish(false);await settle();
  assert.equal(h.$('btnLoad').disabled,true,'an existing disabled state must not be cleared');
  assert.equal(h.toolbarLoads.length,0);
+});
+
+// A queued click from the now-hidden menu must not mutate the live adventure
+// while an imported checkpoint is still being read. Toolbar Load has its own
+// guard, but menu actions need independent entry-point protection.
+test('pending portable import blocks stale menu Load, Save, Restart and archive Restore',async()=>{
+ let finish;
+ const h=harness({importer:()=>new Promise(resolve=>{finish=resolve})});
+ h.select();await settle();
+ assert.equal(h.hidden(),true);
+ for(const action of [h.menuLoad,h.menuSave,h.menuRestart,h.menuRestore]){
+  assert.equal(action(),false,'a queued menu action must not change checkpoints');
+ }
+ assert.equal(h.toolbarLoads.length,0);
+ assert.deepEqual(h.menuActions,{save:0,restart:0,restore:0});
+ assert.equal(h.hidden(),true,'blocked actions must not reopen or replace the import menu');
+ finish(true);await settle();
+ assert.equal(h.hidden(),true,'successful import keeps the menu closed');
+ assert.equal(h.menuLoad(),true,'normal menu Load works after the import settles');
+ assert.equal(h.toolbarLoads.length,1);
+});
+
+test('failed portable import releases all menu checkpoint action guards',async()=>{
+ let finish;
+ const h=harness({importer:()=>new Promise(resolve=>{finish=resolve})});
+ h.select();await settle();
+ assert.equal(h.menuLoad(),false);
+ assert.equal(h.menuSave(),false);
+ assert.equal(h.menuRestart(),false);
+ assert.equal(h.menuRestore(),false);
+ finish(false);await settle();
+ assert.equal(h.hidden(),false,'retry menu should return after import failure');
+ assert.equal(h.menuLoad(),true);
+ assert.equal(h.menuSave(),true);
+ assert.equal(h.menuRestart(),true);
+ assert.equal(h.menuRestore(),true);
+ assert.equal(h.toolbarLoads.length,1);
+ assert.deepEqual(h.menuActions,{save:1,restart:1,restore:1});
 });
