@@ -1,5 +1,20 @@
 # Map and story: player-facing research notes
 
+## 2026-11-01 23:43 JST — optional camp evidence: discoverable, then remembered at the ending preview
+
+**Source check (2026-11-01):**
+- [Japan Society for the Science of Design, *マップ構造における探索誘導の設計分析*, 2025, DOI 10.11247/jssd.72.0_672](https://www.jstage.jst.go.jp/article/jssd/72/0/72_672/_article/-char/ja): research abstract identifies categories of spatial exploration cues and suggests cue density, variety and context matter for exploratory motivation. This is design research, **not** a Steam-review sample or a measured Graygrow outcome.
+- [4Gamer, GDC 2025 Cameron Williams exploration-design talk, 2025-03-19](https://www.4gamer.net/games/512/G051218/20250319025/): describes reuse of places under changing context and player-driven storytelling as presented at the talk. These are a speaker's design proposals, **not** independently validated commercial-success causality.
+- New 2026-11-01 individual Steam RPG reviews with verified timestamps were **not** established in this run. Previous Steam examples remain recorded below; no popularity or player consensus is inferred from them.
+
+**Verified in the previous Draft #252 source (HEAD `cf8ed24f95803df189f3925c1674415ea96c8417`):** both camps now had an optional board at (10,9) and a conditional ruler line after copying. However, the objective on first arrival only said to face the ruler, and the ending preview never mentioned the copied witness record. The empire-protect preview implied a filled list of returning places despite the actual camp ledger having blank names. This was a source-level narrative continuity gap; no human player had yet verified its effect.
+
+**Implemented on a new isolated branch:** camp objectives now mention the nearby board as **optional** until it is copied, then immediately return to the ruler objective; skipping never gates the route. Kingdom/empire provisional ending previews conditionally recall the specific copied evidence and explicitly preserve uncertainty about evacuees/prisoners. The empire-protect scene no longer silently turns an incomplete name list into a complete one. Ash Crown does not inherit evidence from another route. Existing map positions, battle gates, choices, Save v23 and final ending's unfinished label remain unchanged.
+
+**Player-experience hypothesis, not verified:** a short objective cue increases the chance of discovering the board without forcing an extra trip; a conditional end-scene callback makes the optional interaction feel consequential without fabricating a rescue. This is Graygrow-specific application of contextual cues and persistent narrative feedback, not copied scenes or layout.
+
+**Validation:** full modified `movement.js` and `events.js` compiled in isolated V8. Isolated real-source objective checks and provisional-ending calls passed for kingdom, empire and Ash Crown. Added five Node harness regression cases, **not executed natively**. Browser walking, 44px readability, real Save/Load, full npm check and external human feedback remain **not verified** because container GitHub DNS prevents full checkout. Next: run the exact-head Node tests and browser camp board -> ruler -> ending, including skip/copy/reload on both routes.
+
 ## 2026-11-01 22:43 JST — final camps: evidence before confronting a ruler
 
 **Evidence checked on 2026-11-01:**
