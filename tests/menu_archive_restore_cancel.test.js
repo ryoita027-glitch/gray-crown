@@ -34,7 +34,7 @@ function harness({approved=false,restored=false,dialogue=false}={}){
  });
  vm.runInContext(fs.readFileSync(path.resolve(__dirname,'../js/systems/menu.js'),'utf8'),context,{filename:'js/systems/menu.js'});
  context.GC.Menu.openMenu();
- assert.match($('modalContent').innerHTML,/<button onclick="restoreArchivedAdventureFromMenu\\(\\)">以前の冒険を復旧<\\/button>/);
+ assert.match($('modalContent').innerHTML,/<button onclick="restoreArchivedAdventureFromMenu\(\)">以前の冒険を復旧<\/button>/);
  return {$,calls,live,click:()=>vm.runInContext('restoreArchivedAdventureFromMenu()',context)};
 }
 
