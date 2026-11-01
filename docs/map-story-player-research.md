@@ -1,5 +1,22 @@
 # Map and story: player-facing research notes
 
+## 2026-11-01 20:43 JST — final battlefield: commitment that persists across return trips
+
+**Verified observations (checked 2026-11-01; individual opinions, not market-wide results):**
+- [Chained Echoes Steam reviews](https://steamcommunity.com/app/1229240/reviews/): a review displayed as **Oct 24** criticizes lengthy exposition and indistinct voices despite enjoying the game; another displayed as **Oct 28** values a journey with distinct party members and a consequential story. The review page did not independently establish the publication year, so only the displayed month/day is claimed.
+- [Sea of Stars Steam reviews](https://steamcommunity.com/app/1244090/reviews/): a review displayed as **Oct 10** criticizes weak protagonist characterization and optional areas that appear open but offer little agency. The publication year is not independently verified. This is a single negative review, not a genre consensus.
+- Prior note (19:43 JST) already records discoverability feedback; it was not treated as new research this run.
+
+**Direct code finding (verified in the repository):** In the existing `finalfield` decision NPC, both orders being read always reopened the allegiance choices, even when `state.finalChoice` was already committed. Re-selecting could silently overwrite a saved allegiance and leave the earlier `route.companions.<route>` result in place. Returning south from either army camp replayed a generic battlefield-arrival narration and objective instead of acknowledging the actual chosen route. These are source-code observations; the player impact is a hypothesis until browser-tested.
+
+**Design inference (unverified):** A concise, explicit irreversible choice with a safe defer option, persistent return acknowledgement and route-specific north-gate direction should preserve narrative causality without adding a long exposition scene. A Save v23 committed before the companion conversation finishes should resume that conversation rather than offering a different faction. This specifically differentiates Graygrow's four childhood friends and three conflicting allegiances; no third-party dialogue, layout, or mechanics were copied.
+
+**Implementation:** Guarded the finalfield decision NPC against re-selection after commitment; added a defer option before commitment; resume a missing route-specific companion decision after reload; route-aware short NPC response on return; removed repeated army-camp-to-battlefield arrival narration; restored the north-edge entry position and correct destination objective. Existing flags and Save schema v23 are reused; no main merge, art, balance or route-gate changes.
+
+**Verification:** Fetched exact parent #247 GitHub source and PRs, compiled modified `events.js` and `movement.js` with V8, and executed isolated real-source scenarios for initial menu/defer/commit/missing-companion recovery/locked revisit plus four objective variants. Five Node harness regression cases were committed **but not executed**. Full `npm test`, browser travel, 44px visuals, Save/Load integration and human playtest are **not verified** because the private GitHub repository cannot be cloned in the local container (DNS lookup failed). No paid API or Actions rerun.
+
+**Next:** Run `node --test tests/finalfield_commitment_return.test.js`, then walk both final-field plans → choose/defer → companion decision → army camp → return → decision NPC, including reload immediately after choosing a faction. Confirm no dialogue lock or route swap, and that each north gate destination is legible.
+
 ## 2026-11-01 19:43 JST — final battlefield: clear army-plan paths and comparison
 
 **Verified individual reviews, checked 2026-11-01:** On https://steamcommunity.com/app/1229240/reviews/ an Oct 29 negative *Chained Echoes* review describes circling a map repeatedly before noticing a hard-to-see door; an Oct 28 positive review values the world and party journey, while another Oct 28 negative review praises exploration but criticizes limited protagonist agency. On https://steamcommunity.com/app/1244090/reviews/ an Oct 5 negative *Sea of Stars* review reports unclear paths, while an Oct 3 positive review values exploration and discoveries. These are individual experiences, not representative population data. No fresh Japanese primary review was verified this run.
