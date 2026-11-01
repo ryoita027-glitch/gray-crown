@@ -72,10 +72,10 @@ test('declining recruit disclosure is reversible and does not change heroTruth',
  const h=ready(),s=h.GC.State.get();
  h.evaluate("setWorldSwitch('returnedKingdom',true);setStructuredCondition('heroRecordsFound',true);state.events.choices['capital.ledgerCopy']='kept'");
  h.GC.Movement.setMap('capital',18,9,'up');
- h.GC.Movement.interact();choose(h,1);finish(h);
+ h.GC.Movement.interact();h.GC.Dialogue.finishDialogueTyping();choose(h,1);finish(h);
  assert.equal(s.events.choices['capital.recruitWitness'],undefined);
  assert.equal(h.evaluate("structuredCondition('heroTruth')"),false);
- h.GC.Movement.interact();choose(h,0);finish(h);
+ h.GC.Movement.interact();h.GC.Dialogue.finishDialogueTyping();choose(h,0);finish(h);
  assert.equal(s.events.choices['capital.recruitWitness'],'told');
 });
 test('recruit memory persists with Save v23 without a repeat reward',()=>{
