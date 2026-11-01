@@ -143,6 +143,9 @@ let portableMenuImportInProgress=false;
 async function importPortableSaveFromMenu(file){
  if(portableMenuImportInProgress)return false;
  portableMenuImportInProgress=true;
+ // A previous unexpected read error may have replaced the menu heading.
+ // A new attempt must clear that stale warning before its own outcome is known.
+ $('modalTitle').textContent='冒険メニュー';
  const modal=$('modal');
  // The menu is hidden during file reads. Show non-blocking visible feedback.
  const importStatus=$('portableImportStatus');
