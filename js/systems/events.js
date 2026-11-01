@@ -414,6 +414,16 @@ function runFinalRouteConfrontation(route){
     {speaker:'カレン',text:'「故郷を嫌いになったわけじゃない。だからこそ、この戦争を止める」'},
     consequences.empire[decision],
     {speaker:'総司令グランツ',text:'「それも君たちが選んだ勇者の形か。……しかし軍の命令は止まらない」'}];
+ // A copied document gives the friends a concrete question for the ruler.
+ // Neither ruler is assumed to accept the demand or guarantee safety.
+ if(state.events?.choices?.['finalcamp.witness.'+route]==='copied'){
+  const echo=route==='kingdom'
+   ?[{speaker:'マーガレット',text:'「本陣の避難待ち札を写しました。通行許可欄は空白のままです」'},
+     {speaker:'皇帝シオン',text:'「その記録は否定しない。だが、今ここで全員の通行を約束することはできない」'}]
+   :[{speaker:'マーガレット',text:'「降伏者の人数を写しました。氏名欄が空白のままでは、誰が戻ったかも分かりません」'},
+     {speaker:'総司令グランツ',text:'「記録があることと、軍の命令が変わることは別だ。そこは理解してもらう」'}];
+  lines.splice(lines.length-1,0,...echo);
+ }
  return saySequence(lines,()=>runFinalActNegotiation(route))
 }
 function grayCrownMorality(){const v=state.events?.choices||{};const lethal=Object.keys(v).filter(k=>k.startsWith('moral.lethal.')&&v[k]==='kill').length;const spared=Object.keys(v).filter(k=>k.startsWith('moral.lethal.')&&v[k]==='spare').length;return{lethal,spared,ashCrownUnlocked:lethal>=1,route:'uncommitted'}}
@@ -1479,7 +1489,43 @@ function capitalLedgerCopyChoice(){
  ]);
 }
 
+// Optional witness records are not proof that either army has protected anyone.
+function finalCampWitnessEvent(id){
+ const entries={
+  campEvacuationSlips:{
+   map:'imperialcamp',route:'kingdom',title:'避難待ちの札',
+   intro:'本道脇の板に、避難を待つ家族の人数と村名が書かれている。通行許可の欄は、まだ空白だ。',
+   journal:'帝国本陣前で、避難待ちの家族の人数と未記入の通行許可欄を写し取った。許可されたわけではない。',
+   revisit:'家族の人数と空白の許可欄が残る。マーガレットの手帳には、見た時点の写しがある。',
+   lines:[{speaker:'ソフィ',text:'「この人たち、道が開くのを待っているんですね」'},
+    {speaker:'マーガレット',text:'「人数と空欄を残す。後から“誰も待っていなかった”とは言わせない」'}]
+  },
+  campPrisonerLedger:{
+   map:'royalcamp',route:'empire',title:'降伏者の仮名簿',
+   intro:'軍用机に、降伏した兵の人数だけを記した紙がある。氏名欄はまだ埋まっていない。',
+   journal:'王国軍総司令部前で、降伏者の人数と未記入の氏名欄を写し取った。保護の実施は確認できていない。',
+   revisit:'降伏者の人数は残っているが、氏名欄はまだ空白だ。手帳には写しがある。',
+   lines:[{speaker:'トリトン',text:'「王国の兵なのに、名前も残ってないのか」'},
+    {speaker:'マーガレット',text:'「保護したかどうかも、記録がなければ確かめられない。写しておくわ」'}]
+  }
+ };
+ const entry=entries[id];
+ if(!entry||state.map!==entry.map)return false;
+ const key='finalcamp.witness.'+entry.route;
+ if(state.events?.choices?.[key]==='copied')return say(entry.title,entry.revisit);
+ return say(entry.title,entry.intro,[
+  {label:'人数と空欄を手帳に写す',fn:()=>{
+   if(state.events.choices[key]==='copied')return finalCampWitnessEvent(id);
+   state.events.choices[key]='copied';
+   addJournal(entry.journal);renderHud();draw();
+   return saySequence(entry.lines);
+  }},
+  {label:'今は先へ進む',fn:()=>say('カレン','「今は先へ進もう。でも、ここに紙があったことは覚えておく」')}
+ ]);
+}
+
 function inlineObjectEvent(id){
+ if(['campEvacuationSlips','campPrisonerLedger'].includes(id))return finalCampWitnessEvent(id);
  if(TREASURE_DEFS[id])return openTreasure(id);
  if(state.map==='village'){
   if(id==='renPracticeDummy')return visitRenPractice();
