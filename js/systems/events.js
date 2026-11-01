@@ -950,6 +950,24 @@ function northRoadScoutVisit(){
  ])
 }
 
+// Lock an allegiance only after both army orders have been examined.
+// No new Save v23 field: finalChoice and the route-scoped companion choice
+// are already persisted by the existing save system.
+function finalFieldCommitChoice(route){
+ if(state.finalChoice)return inlineNpcEvent('decisionGuide');
+ if(!['kingdom','empire'].includes(route)||!structuredCondition('finalKingdomPlan')||!structuredCondition('finalEmpirePlan'))return false;
+ const kingdom=route==='kingdom';
+ state.finalChoice=route;
+ state.objective=kingdom?'北へ進み、帝国本陣へ向かう':'北へ進み、王国軍総司令部へ向かう';
+ addJournal(kingdom
+  ?'最終局面で、故郷と王国民を守るためアルディナ王国側に立つと決めた。'
+  :'最終局面で、聖域侵攻と勇者制度を止めるためレグノア帝国側に協力すると決めた。');
+ renderHud();
+ return say(kingdom?'トリトン':'マーガレット',kingdom
+  ?'「決めたなら行こう。誰かに決められた勇者じゃなく、私たちで選んだんだ」'
+  :'「自分の国に剣を向けることになる。それでも、ここまで見てきたものを無かったことにはできない」',[],()=>routeCompanionScene(route));
+}
+
 function inlineNpcEvent(id){
  if(state.map==='village'){
   if(id==='father'){setStructuredCondition('father',true);addJournal('トリトンの父は「勝つより帰ってこい」と教えてきた。');return say('トリトンの父','「剣を持つなら、勝つことより帰ってくることを覚えろ。トリトンにも昔からそう教えてきた。……カレン、お前もだぞ」')}
@@ -1393,12 +1411,44 @@ function inlineNpcEvent(id){
   ]);
  }
  if(state.map==='finalfield'&&id==='decisionGuide'){
+  // A final allegiance is a lasting decision, not a menu that reopens on return.
+  // If a save was made before the companion discussion finished, resume it.
+  if(state.finalChoice){
+   const route=state.finalChoice;
+   if(!state.events?.choices?.['route.companions.'+route])return routeCompanionScene(route);
+   const reminders={
+    kingdom:'「王国側に立つと決めた。北の帝国本陣へ向かおう。守ると決めた人たちのことも忘れない」',
+    empire:'「帝国側に協力すると決めた。北の王国軍総司令部へ向かおう。故郷の人を敵と決めたわけじゃない」',
+    ashcrown:'「どちらの旗にも従わない。北へ進もう。三人の言葉も、私が選んだ責任も忘れない」'
+   };
+   return say('カレン',reminders[route]||'「北へ進もう。もう決めたことだ」');
+  }
   if(!(structuredCondition('finalKingdomPlan')&&structuredCondition('finalEmpirePlan'))){
    if(structuredCondition('finalKingdomPlan'))return say('マーガレット','「王国軍の命令は読んだ。次は東の青旗で帝国軍の作戦を確かめよう。中央の横道から行けるわ」');
    if(structuredCondition('finalEmpirePlan'))return say('マーガレット','「帝国軍の命令は読んだ。次は西の赤旗で王国軍の作戦を確かめよう。中央の横道から行けるわ」');
    return say('マーガレット','「西の赤旗が王国軍、東の青旗が帝国軍。中央の横道からそれぞれの命令書を確かめよう」');
   }
-  return say('カレン','「王国が戦争を始めた。でも、帝国の反攻で今の王国民まで潰していいわけじゃない。逆に王国の総攻撃を通せば、聖域の人たちがまた戦場になる。……ここからは、私たちが誰を守るために剣を使うか決める」',[{label:'アルディナ王国側に立つ',fn:()=>{state.finalChoice='kingdom';state.objective='北へ進み、帝国本陣へ向かう';addJournal('最終局面で、故郷と王国民を守るためアルディナ王国側に立つと決めた。');renderHud();say('トリトン','「決めたなら行こう。誰かに決められた勇者じゃなく、私たちで選んだんだ」',[],()=>routeCompanionScene('kingdom'))}},{label:'レグノア帝国側に立つ',fn:()=>{state.finalChoice='empire';state.objective='北へ進み、王国軍総司令部へ向かう';addJournal('最終局面で、聖域侵攻と勇者制度を止めるためレグノア帝国側に協力すると決めた。');renderHud();say('マーガレット','「自分の国に剣を向けることになる。それでも、ここまで見てきたものを無かったことにはできない」',[],()=>routeCompanionScene('empire'))}},...(grayCrownMorality().ashCrownUnlocked?[{label:'両国に従わず、灰冠の道を選ぶ',fn:()=>{saySequence([{speaker:'マーガレット',text:'「両国を倒した後に何が残るの？　王国も帝国も、そこに住む人たちまで敵なの？」'},{speaker:'ソフィ',text:'「私たちが守ると約束した人たちは、どうなるんですか」'},{speaker:'トリトン',text:'「カレン。ここから先は、間違えたで済まないぞ」'}],()=>say('カレン','「これは誰かに選ばされた勇者の道じゃない。私自身の責任になる」',[{label:'灰冠の道に進む（取り消せない決意）',fn:()=>{state.finalChoice='ashcrown';state.events.choices['moral.ashcrownCommitment']='confirmed';state.objective='灰冠ルート・未完成';addJournal('仲間の反対を聞いたうえで、両国の支配を拒絶し、灰冠の道を選んだ。');renderHud();say('マーガレット','「……それでも進むなら、私も黙って従うことはできない」',[],()=>routeCompanionScene('ashcrown'))}},{label:'決断を保留する',fn:()=>{addJournal('灰冠への決断を保留し、誰を守るべきか考え直した。');say('カレン','「まだ戻れる。みんなで考えよう」')}}]))}}]:[])])
+  return say('カレン','「王国の総攻撃は聖域の人を危険にさらす。帝国の追撃は故郷の人を巻き込む。……両方の命令を読んだ。誰を守るために剣を使うか、私たちで決めよう」',[
+   {label:'王国側に立つ（決断後は変更不可）',fn:()=>finalFieldCommitChoice('kingdom')},
+   {label:'帝国側に立つ（決断後は変更不可）',fn:()=>finalFieldCommitChoice('empire')},
+   ...(grayCrownMorality().ashCrownUnlocked?[{label:'両国に従わず、灰冠の道を選ぶ',fn:()=>{saySequence([
+    {speaker:'マーガレット',text:'「両国を倒した後に何が残るの？　王国も帝国も、そこに住む人たちまで敵なの？」'},
+    {speaker:'ソフィ',text:'「私たちが守ると約束した人たちは、どうなるんですか」'},
+    {speaker:'トリトン',text:'「カレン。ここから先は、間違えたで済まないぞ」'}
+   ],()=>say('カレン','「これは誰かに選ばされた勇者の道じゃない。私自身の責任になる」',[
+    {label:'灰冠の道に進む（取り消せない決意）',fn:()=>{
+     if(state.finalChoice)return inlineNpcEvent('decisionGuide');
+     state.finalChoice='ashcrown';
+     state.events.choices['moral.ashcrownCommitment']='confirmed';
+     state.objective='灰冠ルート・未完成';
+     addJournal('仲間の反対を聞いたうえで、両国の支配を拒絶し、灰冠の道を選んだ。');
+     renderHud();
+     say('マーガレット','「……それでも進むなら、私も黙って従うことはできない」',[],()=>routeCompanionScene('ashcrown'));
+    }},
+    {label:'決断を保留する',fn:()=>say('カレン','「まだ戻れる。みんなで考えよう」')}
+   ]))}}]:[]),
+   {label:'まだ決めずに調べ直す',fn:()=>say('カレン','「両軍の命令と避難路を、もう一度見てから決めよう」')}
+  ]);
  }
  if(state.map==='imperialcamp'&&id==='shion')return runFinalRouteConfrontation('kingdom')
  if(state.map==='royalcamp'&&id==='granzFinal')return runFinalRouteConfrontation('empire')
