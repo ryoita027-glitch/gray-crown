@@ -25,7 +25,7 @@ test('Granz only offers the optional preservation when the ledger copy is secure
  h.GC.Movement.interact();
  h.GC.Dialogue.finishDialogueTyping();
  assert.equal(h.getElement('choiceBox').children.length,2);
- finish(h);
+ choose(h,1);finish(h);
 });
 test('declining Granz does not force a decision and preserves the main story stage',()=>{
  const h=ready(),s=h.GC.State.get();
@@ -36,7 +36,7 @@ test('declining Granz does not force a decision and preserves the main story sta
  assert.equal(h.evaluate("structuredCondition('heroTruth')"),true);
  h.evaluate("inlineNpcEvent('granz')");h.GC.Dialogue.finishDialogueTyping();
  assert.equal(h.getElement('choiceBox').children.length,2);
- finish(h);
+ choose(h,1);finish(h);
 });
 test('preservation changes the original ledger and the city without repeating a reward',()=>{
  const h=ready(),s=h.GC.State.get();
