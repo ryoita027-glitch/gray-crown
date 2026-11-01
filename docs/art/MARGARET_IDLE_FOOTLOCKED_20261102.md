@@ -22,6 +22,7 @@ Therefore PR #258's four-frame playback is primarily **whole-body bouncing**, no
 - Exact comparison: **1,352 changed RGBA pixels** in the experimental atlas, including **250 alpha changes**; no edits outside frame 2 lower halves. Source frame 2 foot bottoms were at y45 while frame 0 was at y46. The candidate has y46 in both frames for all four directions.
 - Reproducer: `node tools/build_margaret_idle_footlocked_v1.js` (dependency-free codec in `tools/art_pixel_png_codec.js`).
 - [Native-44px same-ground A/B PNG](../art/evidence/margaret_idle_footlocked_native44_AB.png): first row is original lifted frame 2, second row is foot-locked candidate frame 2, directions down/left/right/up. Same background, scale and shadow. **This is a source-based board, not a game screenshot.**
+- [Native-44px V5 NPC reference board](evidence/margaret_footlocked_vs_v5_npc_native44.png): left to right **mayor / kingdom messenger / Margaret original / Margaret contact candidate** (front, same grass, 44px, common nominal shoe contact). Real indexed-color V5 NPC atlas decoded; the comparison is source-based, not a Ryune screenshot. **Visual verdict:** both NPCs have firmer warm/dark outer contours and compact head/shoulder masses. Margaret's broad cool-lavender hair, large head and softer outline remain visibly out of family; the contact change alone does not solve the requested art unification.
 
 ## Live game opt-in
 
