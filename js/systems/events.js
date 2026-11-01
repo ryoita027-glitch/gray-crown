@@ -1013,7 +1013,14 @@ function inlineNpcEvent(id){
  if(state.map==='northroad'&&id==='scout')return northRoadScoutVisit()
  if(state.map==='capital'){
   if(id==='capitalOfficial'){
-   if(structuredCondition('returnedKingdom'))return say('王都係官','「……勇者殿。今は総司令部へ。任命式の頃とは、街の空気も変わりました」');
+   if(structuredCondition('returnedKingdom')){
+    if(!structuredCondition('heroRecordsFound'))
+     return say('王都係官',state.events.choices['returnroad.scoutRumor']==='asked'
+      ?'「記録を処分する噂ですか？　私には確認できません。勇者候補の台帳なら東の軍務街です。ご自身で確かめてください」'
+      :'「……勇者殿。軍務街の記録なら東側へ。任命式の頃とは、街の空気も変わりました」');
+    if(!structuredCondition('heroTruth'))return say('王都係官','「台帳を読まれたのですね。グランツ総司令は北の総司令部にいます」');
+    return say('王都係官','「北門から前線へ向かうのですか。どうか、今度は自分の意思で」');
+   }
    if(structuredCondition('capitalCeremony'))return say('王都係官','「任命式は済んでいます。今夜は白鹿亭に部屋が用意されています。街を見たら休んでください」');
    advanceStory(STORY_STAGES.CEREMONY,{capitalCeremony:true},'王都を見て回り、白鹿亭で今夜休む');addJournal('王都で「美しい勇者一行」として大々的に任命された。');
    return saySequence([
@@ -1277,7 +1284,28 @@ function inlineNpcEvent(id){
   if(id==='zenith'){if(!(structuredCondition('elsiaResident')&&structuredCondition('elsiaRecord')))return say('ゼニス','「王国の主張と、今ここに住む人間。その両方を見てから話そう」');if(structuredCondition('metZenith'))return say('ゼニス','「答えが出たとは思わない。ただ、知らなかった頃には戻れない。王国へ戻り、自分たちの答えを出せ」');return saySequence([{speaker:'ゼニス',text:'「王国の古文書は偽物ではない。千年前、この地が王国の前身国家に属した時代はある」'},...(state.events.choices['elsia.tabletCopy']==='shared'?[{speaker:'ゼニス',text:'「あの家に碑文の写しを残したそうだな。記録は軍だけのものではない。それは覚えておく」'}]:[]),{speaker:'マーガレット',text:'「でも、その後千年暮らしてきた人を追い出す根拠にはならない」'},{speaker:'ゼニス',text:'「同意する。だが私は帝国軍人だ。君たちを資料ごと王国へ帰せば、次の侵攻に使われる可能性もある」'},{speaker:'カレン',text:'「じゃあ、どうするの？」'},{speaker:'ゼニス',text:'「力ずくで止める。君たちが突破できたなら――その後は、私個人として道を開けよう」'}],()=>startBattle('zenithEncounter'))}
  }
  if(state.map==='elsia'&&id==='elsiaElder')return say('聖域の老人',state.events.choices['elsia.tabletCopy']==='shared'?'「あの家にも碑文の写しが届いたそうだね。石は風化しても、読める人が増えれば言葉は残る」':'「あの崩れた柱は王国より古い。こっちの家は帝国時代に建てた。ここは一つの時代だけの土地じゃないよ」')
- if(state.map==='returnroad'&&id==='returnScout')return say('王国軍伝令','「勇者一行！？ 生きていたのか。王都ではもう……いや、総司令部へ急げ。君たちに見せられない記録を処分しているという噂がある」')
+ if(state.map==='returnroad'&&id==='returnScout'){
+  const choices=state.events.choices;
+  if(choices['returnroad.scoutRumor']==='asked')
+   return say('王国軍伝令','「軍務街は王都の東だ。処分の話は噂にすぎない。確かなものを見つけたら、自分の目で判断してくれ」');
+  const first=choices['returnroad.scoutMet']!=='met';
+  choices['returnroad.scoutMet']='met';
+  return say('王国軍伝令',first
+   ?'「勇者一行！？ 生きていたのか。王都ではもう帰らないと……。軍務街で記録を処分しているという噂がある。俺自身は見ていない」'
+   :'「北へ進めば王都の南門だ。軍務街の噂が気になるなら、もう少し話そう」',[
+   {label:'処分される記録について聞く',fn:()=>{
+    if(choices['returnroad.scoutRumor']==='asked')return inlineNpcEvent('returnScout');
+    choices['returnroad.scoutRumor']='asked';
+    addJournal('帰還路の王国軍伝令から、軍務街で記録が処分されているという未確認の噂を聞いた。まず台帳の現物を確かめる。');
+    renderHud();
+    return saySequence([
+     {speaker:'王国軍伝令',text:'「北門じゃない。王都に入ったら東の軍務街だ。俺が見たわけじゃないから、噂だけで誰かを責めないでくれ」'},
+     {speaker:'マーガレット',text:'「分かった。まず残っている記録を自分たちで読む。話してくれてありがとう」'}
+    ]);
+   }},
+   {label:'まず王都へ急ぐ',fn:()=>say('カレン','「うん。行って確かめよう」')}
+  ]);
+ }
  if(state.map==='finalfield'&&id==='decisionGuide'){
   if(!(structuredCondition('finalKingdomPlan')&&structuredCondition('finalEmpirePlan')))return say('マーガレット','「決める前に両軍の作戦を確認しよう。王国側と帝国側、それぞれの前線を見ておきたい」');
   return say('カレン','「王国が戦争を始めた。でも、帝国の反攻で今の王国民まで潰していいわけじゃない。逆に王国の総攻撃を通せば、聖域の人たちがまた戦場になる。……ここからは、私たちが誰を守るために剣を使うか決める」',[{label:'アルディナ王国側に立つ',fn:()=>{state.finalChoice='kingdom';state.objective='北へ進み、帝国本陣へ向かう';addJournal('最終局面で、故郷と王国民を守るためアルディナ王国側に立つと決めた。');renderHud();say('トリトン','「決めたなら行こう。誰かに決められた勇者じゃなく、私たちで選んだんだ」',[],()=>routeCompanionScene('kingdom'))}},{label:'レグノア帝国側に立つ',fn:()=>{state.finalChoice='empire';state.objective='北へ進み、王国軍総司令部へ向かう';addJournal('最終局面で、聖域侵攻と勇者制度を止めるためレグノア帝国側に協力すると決めた。');renderHud();say('マーガレット','「自分の国に剣を向けることになる。それでも、ここまで見てきたものを無かったことにはできない」',[],()=>routeCompanionScene('empire'))}},...(grayCrownMorality().ashCrownUnlocked?[{label:'両国に従わず、灰冠の道を選ぶ',fn:()=>{saySequence([{speaker:'マーガレット',text:'「両国を倒した後に何が残るの？　王国も帝国も、そこに住む人たちまで敵なの？」'},{speaker:'ソフィ',text:'「私たちが守ると約束した人たちは、どうなるんですか」'},{speaker:'トリトン',text:'「カレン。ここから先は、間違えたで済まないぞ」'}],()=>say('カレン','「これは誰かに選ばされた勇者の道じゃない。私自身の責任になる」',[{label:'灰冠の道に進む（取り消せない決意）',fn:()=>{state.finalChoice='ashcrown';state.events.choices['moral.ashcrownCommitment']='confirmed';state.objective='灰冠ルート・未完成';addJournal('仲間の反対を聞いたうえで、両国の支配を拒絶し、灰冠の道を選んだ。');renderHud();say('マーガレット','「……それでも進むなら、私も黙って従うことはできない」',[],()=>routeCompanionScene('ashcrown'))}},{label:'決断を保留する',fn:()=>{addJournal('灰冠への決断を保留し、誰を守るべきか考え直した。');say('カレン','「まだ戻れる。みんなで考えよう」')}}]))}}]:[])])
@@ -1514,7 +1542,9 @@ function inlineObjectEvent(id){
   if(id==='sacredSpring')return limitedRecovery('sacredSpring','エルシアの泉','泉そのものは尽きないが、長く留まれば巡回兵に見つかる。安全に休める機会は多くない。','full','泉のそばで休んだ。HPとMPが全回復した。')
   if(id==='elsiaCache'&&!structuredCondition('elsiaCache')){setStructuredCondition('elsiaCache',true);state.inventory['魔力草']=(state.inventory['魔力草']||0)+2;draw();return say('旅人の供物箱','使われていない供物箱から魔力草を2個見つけた。')}
  }
- if(state.map==='returnroad'&&id==='mountainOverlook')return say('崖上の見晴らし','西には王国の平野、東には帝国の山地、その間にエルシアが小さく見える。地図の線より、実際の土地はずっと連続している。')
+ if(state.map==='returnroad'&&id==='mountainOverlook')return say('崖上の見晴らし',state.events.choices['elsia.tabletCopy']==='shared'
+  ?'西には王国の平野、東には帝国の山地。その間の聖域に、碑文の写しを持つ家が一軒ある。四人が渡した記録は、もう軍だけのものではない。'
+  :'西には王国の平野、東には帝国の山地、その間にエルシアが小さく見える。地図の線より、実際の土地はずっと連続している。')
  if(state.map==='finalfield'&&id==='kingdomLine'){setStructuredCondition('finalKingdomPlan',true);renderHud();return saySequence([{speaker:'王国軍・総攻撃命令',text:'「勇者を先鋒とし、エルシア聖域を再占領。帝国軍を東岸まで押し戻す。聖域住民の退避は作戦完了後に実施」'},{speaker:'ソフィ',text:'「作戦完了後……今住んでいる人たちは、戦闘中ずっとそこにいるんですか」'},{speaker:'トリトン',text:'「でもこの軍が崩れたら、そのまま帝国軍が王国側へ来る」'}])}
  if(state.map==='finalfield'&&id==='empireLine'){setStructuredCondition('finalEmpirePlan',true);renderHud();return saySequence([{speaker:'帝国軍・反攻命令',text:'「王国軍の再侵攻能力を完全に喪失させる。必要なら国境を越えて補給拠点・軍都まで追撃を継続」'},{speaker:'カレン',text:'「“完全に”って……灰の街道より先まで行くつもりなんだ」'},{speaker:'マーガレット',text:'「シオンの理屈は分かる。でも、それを最後まで実行すれば新しい恨みも残る」'}])}
  if(state.map==='elsia'&&id==='elsiaTablet'){
