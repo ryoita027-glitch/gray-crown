@@ -6,7 +6,7 @@ const path=require('node:path');
 const vm=require('node:vm');
 
 function harness({started=true,approve=false,loadResult=true,canLoadNow=true,showBlockedDialogue=false,hasStoredAdventure=true,importer}={}){
- const elements=new Map(),calls={confirm:[],load:0,loadGate:[],save:0,restart:0,export:0},live={stage:'unsaved-progress'};
+ const elements=new Map(),calls={confirm:[],load:0,loadGate:[],save:0,restart:0,export:0,quarantine:0},live={stage:'unsaved-progress'};
  const $=id=>{
   if(!elements.has(id)){
    const classes=new Set(['hidden']),listeners={};
@@ -26,7 +26,8 @@ function harness({started=true,approve=false,loadResult=true,canLoadNow=true,sho
   maps:{village:{name:'リュネ村'}},MAX_LEVEL:99,expThreshold:()=>100,
   GC:{Save:{hasUsableStoredAdventure:()=>hasStoredAdventure,canPersistNow:mode=>{calls.loadGate.push(mode);return canLoadNow},hasArchivedAdventure:()=>false,hasQuarantinedSaves:()=>false,
    readPortableSaveFile:file=>importer?.(file)??false,
-   downloadPortableSave:()=>{calls.export++;return true}},Log:{info:()=>{},error:()=>{}}},
+   downloadPortableSave:()=>{calls.export++;return true},
+   downloadQuarantinedSaves:()=>{calls.quarantine++;return false}},Log:{info:()=>{},error:()=>{}}},
   confirm:message=>{calls.confirm.push(message);return approve},
   load:()=>{calls.load++;if(!canLoadNow){if(showBlockedDialogue)$('dialogueBox').classList.remove('hidden');return false}if(loadResult)live.stage='stored-checkpoint';return loadResult},
   save:()=>{calls.save++;return true},restart:()=>{calls.restart++;return true},renderHud:()=>{},draw:()=>{},toggleSound:()=>{}
@@ -38,6 +39,7 @@ function harness({started=true,approve=false,loadResult=true,canLoadNow=true,sho
  return {$,calls,live,
   importPortable:()=>vm.runInContext('importPortableSaveFromMenu({size:128})',context),
   exportPortable:()=>vm.runInContext('exportPortableSaveFromMenu()',context),
+  exportQuarantine:()=>vm.runInContext('exportQuarantinedSavesFromMenu()',context),
   toolbarSave:()=>$('btnSave').click(),
   toolbarRestart:()=>$('btnRestart').click(),
   toolbar:()=>$('btnLoad').click(),
@@ -206,4 +208,27 @@ test('unexpected import rejection unlocks Save/Restart and allows a later retry'
  assert.equal(h.toolbarSave(),true);
  assert.equal(h.toolbarRestart(),true);
  assert.equal(h.calls.save,1);assert.equal(h.calls.restart,1);
+});
+
+// Even a read-only quarantine download can restore the stale menu on failure.
+// An in-flight portable import must exclusively own the visible modal.
+test('queued quarantine export cannot reopen the menu during a portable import',async()=>{
+ let finish;
+ const h=harness({importer:()=>new Promise(resolve=>{finish=resolve})});
+ const pending=h.importPortable();
+ assert.equal(h.$('modal').classList.contains('hidden'),true);
+ assert.equal(h.exportQuarantine(),false);
+ assert.equal(h.calls.quarantine,0,'stale quarantine export must not start');
+ assert.equal(h.$('modal').classList.contains('hidden'),true,'import menu must remain hidden');
+ finish(true);assert.equal(await pending,true);
+ assert.equal(h.exportQuarantine(),false,'normal failed download remains retryable');
+ assert.equal(h.calls.quarantine,1,'quarantine export must unlock after import');
+ assert.equal(h.$('modal').classList.contains('hidden'),false,'normal download failure restores menu');
+});
+
+test('rejected portable import releases the quarantine export guard',async()=>{
+ const h=harness({importer:async()=>{throw Error('import rejected')}});
+ assert.equal(await h.importPortable(),false);
+ assert.equal(h.exportQuarantine(),false);
+ assert.equal(h.calls.quarantine,1,'quarantine export must unlock after rejection');
 });
