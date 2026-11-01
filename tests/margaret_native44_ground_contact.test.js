@@ -6,8 +6,8 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 
-const ART_SIZE=40;
-function makeRuntime(artSize=40){
+const ART_SIZE=44;
+function makeRuntime(artSize=44){
  const calls=[];
  class FakeImage{
   constructor(){this.naturalWidth=288;this.naturalHeight=192}
@@ -16,7 +16,7 @@ function makeRuntime(artSize=40){
  const shadows=[];
  const ctx={save(){},restore(){},beginPath(){},ellipse(...args){shadows.push(args)},fill(){},drawImage(...args){calls.push(args)}};
  const sandbox={GC:{},TILE:32,ctx,Image:FakeImage};
- if(artSize===44)sandbox.window={location:{search:'?heroArtSize=44'}};
+ if(artSize===40)sandbox.window={location:{search:'?heroArtSize=40'}};
  vm.createContext(sandbox);
  const source=fs.readFileSync(path.join(__dirname,'../js/render/world.js'),'utf8');
  vm.runInContext(fs.readFileSync(path.join(__dirname,'../js/data/animations.js'),'utf8'),sandbox,{filename:'js/data/animations.js'});
@@ -83,7 +83,7 @@ test('dialogue pose uses the same foot shadow geometry as the field sprite',()=>
 });
 
 // All authored actions use the same trial scale when a scene does not override it.
-test('default authored hero acting scale follows field trial, other actors remain untouched',()=>{
+test('default authored hero acting retains 44px until visual adoption, other actors unchanged',()=>{
  const {animation}=makeRuntime();
  for(const id of ['karen','triton','sophie','margaret']){
   const actor=animation.createActor(id,{x:2,y:3,startedAt:0});
@@ -92,16 +92,16 @@ test('default authored hero acting scale follows field trial, other actors remai
  assert.equal(animation.createActor('nonHero',{x:2,y:3}).renderScale,1);
 });
 
-test('44px query override restores original field and authored pose geometry',()=>{
- const {draw,calls,animation,definitions}=makeRuntime(44);
+test('40px query opt-in keeps field and authored pose geometry aligned',()=>{
+ const {draw,calls,animation,definitions}=makeRuntime(40);
  for(const id of ['karen','triton','sophie','margaret']){
   calls.length=0;
   assert.equal(draw(2,3,id,false,'down',0),true);
   const args=calls[0];
-  assert.equal(args[7],44);assert.equal(args[8],44);
+  assert.equal(args[7],40);assert.equal(args[8],40);
   const actor=animation.createActor(id,{x:2,y:3,animation:'talk',startedAt:0});
   const geometry=animation.renderGeometry(actor,definitions[id].talk);
-  assert.equal(geometry.destW,44);
+  assert.equal(geometry.destW,40);
   assert.equal(geometry.dy,args[6]);
  }
 });
