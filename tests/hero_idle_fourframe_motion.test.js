@@ -22,7 +22,7 @@ function rig({trial=true,motion=true,ready=true}={}){
  const calls=[],time={value:0};
  const runtime={frameW:48,frameH:48,display:44,anchor:[24,44],
   directions:{down:0,left:1,right:2,up:3},idleFrameDuration:420,
-  idleTrialEnabled:trial,idleMotionEnabled:motion,
+  idleTrialEnabled:trial,idleMotionEnabled:motion,idleFrameTimeOverride:null,
   images:{margaret:{ready:true,image:{src:'walk.png'}}},
   idleImages:{margaret:{ready,image:{src:'idle.png'}}}};
  const context=vm.createContext({
@@ -34,7 +34,7 @@ function rig({trial=true,motion=true,ready=true}={}){
  });
  for(const name of ['heroGroundedOrigin','heroWalkFrame','heroIdleFrame','drawHeroSpriteSheet'])
   vm.runInContext(extract(name),context);
- return {time,calls,draw:(stationary=true,phase=0,facing='down')=>
+ return {time,calls,runtime,draw:(stationary=true,phase=0,facing='down')=>
   vm.runInContext('drawHeroSpriteSheet(9,8,"margaret",false,'+
    JSON.stringify(facing)+','+phase+','+stationary+')',context)};
 }
@@ -48,6 +48,12 @@ test('four authored idle frames play forward and backward at 420ms intervals',()
   assert.equal(t.calls[i][2],0);
   assert.deepEqual(t.calls[i].slice(7,9),[44,44]);
  }
+});
+test('frame override advances only hero art while the world clock stays fixed',()=>{
+ const t=rig();t.time.value=0;t.runtime.idleFrameTimeOverride=1260;
+ t.draw(true);assert.equal(t.calls[0][1],144);
+ t.runtime.idleFrameTimeOverride=0;
+ t.draw(true);assert.equal(t.calls[1][1],0);
 });
 test('original frame-zero idle A/B mode remains still',()=>{
  const t=rig({motion:false});
