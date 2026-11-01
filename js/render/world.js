@@ -614,6 +614,7 @@ function drawObject(o){if(RyuneOutskirts.drawObject(ctx,state.map,o,!!state.worl
  if(o.id==='ravineLookout'||o.id==='bridgeMarker'){ctx.fillStyle='#70685d';ctx.fillRect(px+7,py+20,20,7);ctx.fillStyle='#c7b990';ctx.fillRect(px+10,py+8,14,12)}
  if(o.id==='roadSign'){ctx.fillStyle='#73583b';ctx.fillRect(px+14,py+7,4,22);ctx.fillStyle='#b09262';ctx.fillRect(px+3,py+4,26,12);ctx.fillStyle='#403329';ctx.font='bold 8px system-ui';ctx.textAlign='center';ctx.fillText('古砦→',px+16,py+13);ctx.textAlign='start'}
  if(o.id==='civilianWaymark'){
+  ctx.save();
   // The restored sign becomes readable, while the broken version leans toward the road.
   const restored=state.events?.choices?.['finalfield.civilianWaymark']==='restored';
   ctx.fillStyle='#5c4b3a';ctx.fillRect(px+14,py+10,4,20);
@@ -627,6 +628,7 @@ function drawObject(o){if(RyuneOutskirts.drawObject(ctx,state.map,o,!!state.worl
    ctx.fillStyle='#9b876a';ctx.fillRect(-12,-5,24,10);
    ctx.fillStyle='#5b4a3d';ctx.fillRect(-7,-1,13,2);ctx.restore();
   }
+  ctx.restore();
  }
  if(o.id==='capitalNorthGateRoll'){
   // Wall-mounted departure roll on the west side of the two-tile north gate.
