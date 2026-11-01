@@ -271,6 +271,12 @@ function enterFinalField(){
  const namesWritten=state.events?.choices?.['capital.northGateNames']==='written';
  travelScene('finalfield',11,13,'up','最終章 — 誰のための勇者か',objective,'王国の総攻撃と帝国の反攻が始まる。両軍の旗が見える前線で、四人は最後の選択を迫られる。'+(namesWritten?' 北門の名簿に残した四人の名前と「リュネ村」の文字が、カレンの胸に残っている。':''));
 }
+// Keep the optional witness board discoverable without gating the ruler fight.
+function finalCampObjective(route){
+ const destination=route==='kingdom'?'帝国本陣でシオンと向き合う':'王国軍総司令部でグランツと向き合う';
+ return state.events?.choices?.['finalcamp.witness.'+route]==='copied'
+  ?destination:'本道脇の記録を確認（任意）／'+destination;
+}
 function enterFinalBranch(){
  const route=state.finalChoice;
  if(!['kingdom','empire','ashcrown'].includes(route))return false;
@@ -283,7 +289,7 @@ function enterFinalBranch(){
   const kingdom=route==='kingdom';
   const map=kingdom?'imperialcamp':'royalcamp';
   const chapter=kingdom?'最終章 — 王国側':'最終章 — 帝国側';
-  const objective=kingdom?'帝国本陣でシオンと向き合う':'王国軍総司令部でグランツと向き合う';
+  const objective=finalCampObjective(route);
   if(hasVisited(map)){
    // The player has already seen the first approach; return control promptly.
    setMap(map,11,13,'up',[[12,13],[13,13],[14,13]]);
@@ -337,7 +343,7 @@ function showWorldSkeletonEnding(route){
   empire:{
    title:'帝国ルート — 裏切りの名前',
    scene:selected==='protect'
-    ?'救護幕舎には、赤と青の布が並んでいた。降伏した兵士たちの名簿には国籍と同じだけ帰る場所がある。'
+    ?'救護幕舎には赤と青の布が並ぶ。降伏者の人数は記されているが、名前と帰還先を埋める仕事はまだ終わっていない。'
     :'追撃の伝令が途絶え、前線に短い静寂が訪れる。明日また軍が動くかもしれない。それでも今日は止めた。',
    karen:'「王国を捨てたんじゃない。王国の人を守る方法が、王国の命令と違っただけ」',
    conclusion:'裏切り者と呼ばれても、見てきた命を無かったことにはしない。'
@@ -358,6 +364,13 @@ function showWorldSkeletonEnding(route){
  const knownApproach=FINAL_ACT_APPROACHES[route]?.choices.find(c=>c.id===approachId);
  const approachText=knownApproach?
   '<p class="ending-request"><strong>最後に示した条件：</strong>'+knownApproach.note+'</p>':'';
+ // The optional evidence must have a visible later payoff, but a copied
+ // document is not proof that either army has actually rescued anyone.
+ const witnessCopied=state.events?.choices?.['finalcamp.witness.'+route]==='copied';
+ const witnessText=!witnessCopied?'':route==='kingdom'
+  ?'<p><strong>手帳に残した記録：</strong>帝国本陣で写した避難待ちの札には、まだ通行許可のない家族がいる。避難路を渡れた人がいても、全員の安全は確認できていない。</p>'
+  :route==='empire'
+  ?'<p><strong>手帳に残した記録：</strong>王国軍本陣で写した降伏者の仮名簿には人数だけが残る。氏名と帰還先は、これから確かめなければならない。</p>':'';
 
  if(!isEventComplete('worldSkeletonCleared')){
   completeEvent('worldSkeletonCleared',true);
@@ -370,7 +383,7 @@ function showWorldSkeletonEnding(route){
  setWorldSwitch('cleared',false);
  state.objective='最終章の仮エピローグ到達：本編結末は未実装';
  renderHud();
- say('ナレーション','<div class="ending"><h2>'+p.title+'</h2><p>'+p.scene+'</p>'+approachText+'<p>カレン '+p.karen+'</p><p>'+p.conclusion+'</p><p class="ending-note">ここは未完成エンディングの演出プレビューです。王国・帝国との決着や灰冠への過程は、今後の正式な物語で制作します。</p></div>');
+ say('ナレーション','<div class="ending"><h2>'+p.title+'</h2><p>'+p.scene+'</p>'+approachText+witnessText+'<p>カレン '+p.karen+'</p><p>'+p.conclusion+'</p><p class="ending-note">ここは未完成エンディングの演出プレビューです。王国・帝国との決着や灰冠への過程は、今後の正式な物語で制作します。</p></div>');
  return true
 }
 

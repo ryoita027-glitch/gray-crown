@@ -1517,6 +1517,7 @@ function finalCampWitnessEvent(id){
   {label:'人数と空欄を手帳に写す',fn:()=>{
    if(state.events.choices[key]==='copied')return finalCampWitnessEvent(id);
    state.events.choices[key]='copied';
+   state.objective=finalCampObjective(entry.route);
    addJournal(entry.journal);renderHud();draw();
    return saySequence(entry.lines);
   }},
