@@ -181,6 +181,11 @@ def main():
                       ['karen','triton','sophie','margaret'].every(
                         id => GC.Render.World.heroRuntimeStatus()[id]?.ready)
                     """, timeout=20000)
+                    page.wait_for_function("""() =>
+                      typeof OpeningPixelAssets !== 'undefined' &&
+                      OpeningPixelAssets.featuredStatus().ready &&
+                      !OpeningPixelAssets.featuredStatus().failed
+                    """, timeout=20000)
                     for direction in DIRECTIONS:
                         records.append(review(view, direction,
                                               capture_three(page, direction)))
