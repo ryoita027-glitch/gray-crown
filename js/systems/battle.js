@@ -204,11 +204,13 @@ function battleWin(outcome='defeat'){const b=state.battle,id=b.id,bd=battles[id]
  if(id==='zenithEncounter'){completeEvent('metZenith',true);state.objective='北側の帰還路から王国へ戻る';addJournal('ゼニスとの対決を経て、王国の歴史的主張に根拠があることと、現在の住民を追い出す正当性は別問題だという認識を共有した。');draw()}
  const won=id,wasRandom=!!battles[id].random;resetEncounterCounter();const ev=$('enemyVisual');if(ev&&outcome!=='surrender')ev.classList.add('defeated');state.battle=null;state.locked=true;const finishBattle=()=>{restoreBattleReturn();state.symbolEncounter=null;$('battlePanel').classList.add('hidden');if(ev)ev.classList.remove('defeated');renderHud();draw();const afterLevel=()=>{state.locked=false;if(scriptedEvent)playEventDialogue(aftermath);
  else if(['kingdomEvacuation','kingdomOrders','empireProtect','empireAdvance'].includes(won)){
+  const route=won.startsWith('kingdom')?'kingdom':'empire';
   saySequence([
    {speaker:'ナレーション',text:outcome==='surrender'?'相手は武器を置き、進路を譲った。':'敵兵は戦う力を失い、進路が開いた。'},
-   {speaker:'カレン',text:'「先へ進もう。私たちは勝敗だけを伝えに来たんじゃない」'},
-   {speaker:'ナレーション',text:'指揮官へ話しかけ、交渉を続けよう。'}
-  ])
+   {speaker:route==='kingdom'?'ソフィ':'マーガレット',text:route==='kingdom'
+    ?'「南の避難待ち札、戦いの後で何が変わったか確かめたいです」'
+    :'「南の降伏者名簿、戦いの後も空欄のままか確かめたい」'}
+  ],()=>{if(!finalCampAfterBattlePrompt(route))say('カレン','「北の指揮官へ進もう」')})
  }
 
  else if(won==='ashcrownCheckpoint')saySequence([

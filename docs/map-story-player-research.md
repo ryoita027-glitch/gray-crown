@@ -1,5 +1,17 @@
 # Map and story: player-facing research notes
 
+## 2026-11-02 01:43 JST — checkpoint aftermath can be seen without a compulsory return walk
+
+**Verified external signals (checked 2026-11-02; individual opinions only):**
+- [Chained Echoes Steam reviews](https://steamcommunity.com/app/1229240/reviews/): displayed Oct 29 negative review describes repeated map laps before noticing a doorway; Oct 28 positive review values the journey and world. The displayed snippets do not confirm the publication year.
+- [Sea of Stars Steam reviews](https://steamcommunity.com/app/1244090/reviews/): displayed Oct 5 negative review complains about unclear route signals and excessive return walks; Oct 3 positive review praises discovery around corners. These are not a market-wide statistical finding.
+
+**Repository fact:** On Draft PR #257 HEAD `9a11bcfb4802c77755d167fc7b4f3c9cdcecea1d`, the witness board at (10,9) changes text after the route checkpoint. The battle-win dialogue only said to approach the ruler, leaving the new board response easy to miss; returning from the ruler's northern position required walking back. Both camps share the same 24x15 geometry.
+
+**Implemented player-facing change:** After either of four tactical checkpoint battles, Sophie or Margaret notices the unresolved record. The player can (a) take a narrated, optional short return directly to the existing board interaction at (11,9), or (b) keep position and head north to the ruler. The board's existing before/after dialogue and explicit copy choice remain authoritative; no evidence is awarded automatically, no extra forced dialogue loop, no changed final allegiance, no new Save v23 field. The original battle and ruler sequence remain reachable. This uses an original interaction principle, not a copied layout or script.
+
+**Inference:** Making a newly changed world object easy to revisit may improve perceived agency and prevent the battle's consequence from being missed. **Not verified:** native Node tests, browser movement/44px legibility, battle result timing, real save/load, or human evaluation (no local GitHub checkout: DNS resolution unavailable). Tests added to exercise both return and continue branches. Next check real battle-win-to-board-to-ruler sequence for all four stances.
+
 ## 2026-11-02 00:43 JST — the same witness board changes after the player's checkpoint choice
 
 **External signals checked 2026-11-02 (individual reviews, not a population study):**
