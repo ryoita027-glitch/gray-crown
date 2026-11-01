@@ -147,6 +147,43 @@ test('unexpected synchronous importer error shows the same retry message',async(
  assert.match(h.$('modalTitle').textContent,/読み込み.*エラー/);
 });
 
+// A failed read can leave the menu open with an error heading. The next file
+// selection must clear that warning immediately; a cancellation is not a
+// second error and must not inherit the previous attempt's failure message.
+test('retry clears a previous unexpected-error heading before a pending read settles',async()=>{
+ let finish,attempt=0;
+ const h=harness({importer:()=>{
+  attempt++;
+  if(attempt===1)throw Error('disk read failed');
+  return new Promise(resolve=>{finish=resolve});
+ }});
+ h.select();await settle();
+ assert.match(h.$('modalTitle').textContent,/エラー/);
+ assert.equal(h.hidden(),false);
+ h.select();
+ assert.equal(h.pending(),true);
+ assert.equal(h.$('modalTitle').textContent,'冒険メニュー','retry must clear stale failure immediately');
+ finish(false);await settle();
+ assert.equal(h.hidden(),false);
+ assert.equal(h.$('modalTitle').textContent,'冒険メニュー','cancelled retry must not display the previous error');
+ assert.equal(attempt,2);
+});
+
+test('retry that succeeds does not retain the previous failed-read warning',async()=>{
+ let attempt=0;
+ const h=harness({importer:async()=>{
+  attempt++;
+  if(attempt===1)throw Error('file read failed');
+  return true;
+ }});
+ h.select();await settle();
+ assert.match(h.$('modalTitle').textContent,/エラー/);
+ h.select();await settle();
+ assert.equal(h.hidden(),true);
+ assert.equal(h.$('modalTitle').textContent,'冒険メニュー');
+ assert.equal(attempt,2);
+});
+
 test('cancelled import does not show an unexpected-error warning',async()=>{
  const h=harness({importer:async()=>false});
  h.select();await settle();
