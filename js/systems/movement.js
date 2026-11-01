@@ -162,7 +162,33 @@ function returnEmpireVillageFromCity(){
  else state.objective='村の人の話を聞く／北の町へ戻る';
  renderHud();
 }
-function enterYukiRoad(){travelScene('yukiroad',11,13,'up','第五章 — ユウキ','旧戦場でユウキの記録を探す','王都では「討伐された四天王」、クラインテッドは「ユウキを討った勇者」と口にし、帝国では「皆を逃がした将軍」と語られた。同じ女の話とは思えない。その死んだ場所へ、自分たちの目で確かめに行く。')}
+// Old battlefield evidence can be discovered in any order. Guide to the next
+// unexamined place without treating a voluntary detour as a mandatory gate.
+function yukiRoadMissingClue(){
+ if(!structuredCondition('yukiWitness'))return '西側の帝国の老兵の証言';
+ if(!structuredCondition('yukiLetter'))return '西側の泥に埋もれた手紙';
+ if(!structuredCondition('yukiMemorial'))return '東側の慰霊碑';
+ return '';
+}
+function yukiRoadNextObjective(){
+ const missing=yukiRoadMissingClue();
+ if(missing)return '旧戦場の'+missing+'を確かめる';
+ if(!structuredCondition('metZester'))return '北側のゼスターと三つの記録について話す';
+ return '北門からエルシア聖域へ進む';
+}
+function enterYukiRoad(source='imperialcity'){
+ const objective=yukiRoadNextObjective();
+ if(hasVisited('yukiroad')){
+  // Elsia is north of the battlefield, while the imperial city is south.
+  const fromNorth=source==='elsia',y=fromNorth?1:13;
+  setMap('yukiroad',11,y,fromNorth?'down':'up',[[12,y],[13,y],[14,y]]);
+  state.chapter='第五章 — ユウキ';
+  state.objective=objective;
+  renderHud();
+  return;
+ }
+ travelScene('yukiroad',11,13,'up','第五章 — ユウキ',objective,'王都では「討伐された四天王」、クラインテッドは「ユウキを討った勇者」と口にし、帝国では「皆を逃がした将軍」と語られた。同じ女の話とは思えない。その死んだ場所へ、自分たちの目で確かめに行く。');
+}
 function enterElsia(){markVisited('elsia',true);travelScene('elsia',11,13,'up','第六章 — 千年前の国境','聖域の住民と古い記録を調べる','エルシア聖域。王国の祈りの起源であり、千年近く帝国の人々が暮らしてきた土地へ四人は足を踏み入れた。')}
 function enterReturnRoad(){markVisited('returnroad',true);travelScene('returnroad',11,13,'up','第七章 — 勇者の値段','王国へ戻り、王都を目指す','得た資料を抱え、四人は戦線の隙間を縫う帰還路へ入った。')}
 function enterFinalField(){markVisited('finalfield',true);travelScene('finalfield',11,13,'up','最終章 — 誰のための勇者か','中央の地点で、どちら側に立つか決める','王国の総攻撃と帝国の反攻が始まる。両軍の旗が見える前線で、四人は最後の選択を迫られる。')}
@@ -278,7 +304,7 @@ function move(dir){if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started
  if(state.map==='imperialcity'&&ny<0&&[11,12].includes(nx)){if(!isEventComplete('heardYuki')){say('マーガレット','「ユウキについて、町の記録係から話を聞いておきたい」');return}enterYukiRoad();return}
  if(state.map==='yukiroad'&&ny>=15&&[11,12].includes(nx)){enterImperialCity('yukiroad');return}
  if(state.map==='yukiroad'&&ny<0&&[11,12].includes(nx)){if(!isEventComplete('metZester')){say('ナレーション','聖域へ続く道には帝国軍が布陣している。ゼスターと話をつける必要がある。');return}enterElsia();return}
- if(state.map==='elsia'&&ny>=15&&[11,12].includes(nx)){enterYukiRoad();return}
+ if(state.map==='elsia'&&ny>=15&&[11,12].includes(nx)){enterYukiRoad('elsia');return}
  if(state.map==='elsia'&&ny<0&&[11,12].includes(nx)){if(!isEventComplete('metZenith')){say('ゼニス','「まだ見るべきものがある。住民と古い碑文、その両方を見てから来い」');return}enterReturnRoad();return}
  if(state.map==='returnroad'&&ny>=15&&[11,12].includes(nx)){enterElsia();return}
  if(state.map==='returnroad'&&ny<0&&[11,12].includes(nx)){enterCapital(false);return}

@@ -1189,7 +1189,28 @@ function inlineNpcEvent(id){
  }
  if(state.map==='imperialcity'){
   if(id==='imperialCitizen')return say('帝国市民','「王国軍がまた聖域を取りに来るって噂だ。四年前みたいになるのは御免だよ」')
-  if(id==='recordKeeper'){if(structuredCondition('heardYuki'))return say('記録係','「ユウキ将軍の記録なら北の旧戦場にも残っている。現地を見た方が分かるだろう」');setStructuredCondition('heardYuki',true);setStructuredCondition('yukiKleinLink',true);state.objective='北の旧戦場でユウキの記録を探す';addJournal('帝国公文書では、ユウキは撤退部隊を逃がすため殿を務めて戦死。クラインテッドとは私生活でも伴侶だったと記録されている。');renderHud();return saySequence([{speaker:'記録係',text:'「ユウキ・レイナード。帝国四将。享年二十一。昨年のラゼル撤退戦で、三個部隊を逃がすため殿を引き受け戦死」'},{speaker:'マーガレット',text:'「王国では“残虐な四天王を討伐した”としか……。勇者が関わった記録もない」'},{speaker:'記録係',text:'「王国の勇者に討たれた、というのが帝国側の記録だ。あと……クラインテッド将軍とは恋人だった」'},{speaker:'カレン',text:'「だから、あの人は私たちを見た時……」'},{speaker:'記録係',text:'「記録だけで人間は分からない。北の旧戦場へ行け。生き残った兵もいる」'}])}
+   if(id==='recordKeeper'){
+    if(structuredCondition('heardYuki')){
+     const evidence=structuredCondition('yukiMemorial')&&structuredCondition('yukiLetter')&&structuredCondition('yukiWitness');
+     const compared=state.events.choices['empire.battlefieldRecordCompared']==='noted';
+     if(compared)return say('記録係','「君たちが持ち帰った碑文と証言の対照記録、ここに保管してある。戦勝だけでは残らない名前も、記録なら残せる」');
+     if(evidence)return say('記録係','「旧戦場で三つとも確かめたのか。軍報には書かれていない言葉もある。君たちが見たことを注記として残せるよ」',[
+      {label:'碑文・手紙・証言を照合して記録する',fn:()=>{
+       if(state.events.choices['empire.battlefieldRecordCompared']==='noted')return inlineNpcEvent('recordKeeper');
+       state.events.choices['empire.battlefieldRecordCompared']='noted';
+       addJournal('レグノア地方都市の公文書館に、旧戦場の慰霊碑・ユウキの手紙・老兵の証言を照合した注記を残した。勝者の戦果と帰還した人々の記憶を、どちらも消さないために。');
+       renderHud();
+       return saySequence([
+        {speaker:'マーガレット',text:'「勝敗の記録は残す。でも、帰れた人の名前も消さない。両方が同じ日の出来事だったと書いてください」'},
+        {speaker:'記録係',text:'「分かった。君たちの注記として残そう。誰かの都合で、片方だけが歴史にならないように」'}
+       ]);
+      }},
+      {label:'今は記録を持ち帰る',fn:()=>say('カレン','「まだ考えたい。見たことは、忘れないようにする」')}
+     ]);
+     return say('記録係','「北の旧戦場には、生き残りの兵士、泥に埋もれた手紙、東の慰霊碑がある。記録を照らし合わせてみてほしい」');
+    }
+    setStructuredCondition('heardYuki',true);setStructuredCondition('yukiKleinLink',true);state.objective='北の旧戦場でユウキの記録を探す';addJournal('帝国公文書では、ユウキは撤退部隊を逃がすため殿を務めて戦死。クラインテッドとは私生活でも伴侶だったと記録されている。');renderHud();return saySequence([{speaker:'記録係',text:'「ユウキ・レイナード。帝国四将。享年二十一。昨年のラゼル撤退戦で、三個部隊を逃がすため殿を引き受け戦死」'},{speaker:'マーガレット',text:'「王国では“残虐な四天王を討伐した”としか……。勇者が関わった記録もない」'},{speaker:'記録係',text:'「王国の勇者に討たれた、というのが帝国側の記録だ。あと……クラインテッド将軍とは恋人だった」'},{speaker:'カレン',text:'「だから、あの人は私たちを見た時……」'},{speaker:'記録係',text:'「記録だけで人間は分からない。北の旧戦場へ行け。生き残った兵もいる」'}]);
+   }
  }
  if(state.map==='empirevillage'&&id==='empireFarmer'){
   if(state.events.choices['empire.millCleared']==='cleared'){
@@ -1209,8 +1230,21 @@ function inlineNpcEvent(id){
  }
  if(state.map==='imperialcity'&&id==='canalVendor')return say('運河商人','「川舟が止まると町は一日で困る。戦争ってのは剣より先に、荷物の流れを止めるんだよ」')
  if(state.map==='yukiroad'){
-  if(id==='oldImperialSoldier'){setStructuredCondition('yukiWitness',true);renderHud();return saySequence([{speaker:'帝国の老兵',text:'「俺はユウキ将軍に逃がされた側だ。包囲が閉じる前に、あの人だけが残った」'},{speaker:'カレン',text:'「クラインテッドは？」'},{speaker:'帝国の老兵',text:'「残ると言って聞かなかった。ユウキ将軍が殴ってでも連れて行けと命じてな。俺たち三人で引きずって撤退させた」'},{speaker:'帝国の老兵',text:'「数日後、王国では“大勝利”の鐘が鳴ったそうだな。こっちでは、その日から和平を口にする奴が一気に減った」'}])}
-  if(id==='zester'){if(!(structuredCondition('yukiMemorial')&&structuredCondition('yukiLetter')&&structuredCondition('yukiWitness')))return say('ゼスター','「慰霊碑だけでなく、残された手紙と生き残りの証言も見ろ。英雄譚一つで人間を決めつけるな」');if(structuredCondition('metZester'))return say('ゼスター','「聖域へ行け。そこで千年前と今を、自分の目で比べるといい」');setStructuredCondition('metZester',true);state.objective='北のエルシア聖域へ向かう';addJournal('ゼスターから、王国が四年前にエルシアへ侵攻して現在の戦争が始まった経緯を聞いた。');renderHud();return saySequence([{speaker:'ゼスター',text:'「我々は侵略された。そして撃退した。そこで終わらせれば、十年後か二十年後にまた来る――この国はそう学んできた」'},{speaker:'カレン',text:'「だから王国の村まで焼いていいっていうの？」'},{speaker:'ゼスター',text:'「いいとは言わん。必要だと判断した。皇帝も、私も、その責任から逃げるつもりはない」'}])}
+   if(id==='oldImperialSoldier'){
+    if(structuredCondition('yukiWitness')){
+     if(structuredCondition('yukiMemorial')&&structuredCondition('yukiLetter'))
+      return say('帝国の老兵','「碑の数も手紙の言葉も本当だ。でも、それだけであの人のすべてを知ったとは思わないでくれ」');
+     if(structuredCondition('yukiMemorial'))return say('帝国の老兵','「碑の四百十八人には俺の名もある。救われた人数で、あの人の死を正当化したくはない」');
+     if(structuredCondition('yukiLetter'))return say('帝国の老兵','「手紙を見つけたのか。将軍である前に、帰る約束をした人だったんだ」');
+     return say('帝国の老兵','「西に残った手紙と東の慰霊碑も見てくれ。俺の話だけじゃ足りない」');
+    }
+    return saySequence([{speaker:'帝国の老兵',text:'「俺はユウキ将軍に逃がされた側だ。包囲が閉じる前に、あの人だけが残った」'},{speaker:'カレン',text:'「クラインテッドは？」'},{speaker:'帝国の老兵',text:'「残ると言って聞かなかった。ユウキ将軍が殴ってでも連れて行けと命じてな。俺たち三人で引きずって撤退させた」'},{speaker:'帝国の老兵',text:'「数日後、王国では“大勝利”の鐘が鳴ったそうだな。こっちでは、その日から和平を口にする奴が一気に減った」'}],()=>{
+     if(structuredCondition('yukiWitness'))return;
+     setStructuredCondition('yukiWitness',true);
+     state.objective=yukiRoadNextObjective();renderHud();
+    });
+   }
+  if(id==='zester'){if(yukiRoadMissingClue())return say('ゼスター','「'+yukiRoadMissingClue()+'を確かめてこい。英雄譚一つで人間を決めつけるな」');if(structuredCondition('metZester'))return say('ゼスター','「聖域へ行け。そこで千年前と今を、自分の目で比べるといい」');setStructuredCondition('metZester',true);state.objective='北のエルシア聖域へ向かう';addJournal('ゼスターから、王国が四年前にエルシアへ侵攻して現在の戦争が始まった経緯を聞いた。');renderHud();return saySequence([{speaker:'ゼスター',text:'「我々は侵略された。そして撃退した。そこで終わらせれば、十年後か二十年後にまた来る――この国はそう学んできた」'},{speaker:'カレン',text:'「だから王国の村まで焼いていいっていうの？」'},{speaker:'ゼスター',text:'「いいとは言わん。必要だと判断した。皇帝も、私も、その責任から逃げるつもりはない」'}])}
  }
  if(state.map==='elsia'){
   if(id==='elsiaResident'){setStructuredCondition('elsiaResident',true);return saySequence([{speaker:'聖域の住民',text:'「祖父も、その祖父もここで生まれた。王国の人に“返せ”と言われても……私たちはどこへ帰ればいいんでしょう」'},{speaker:'ソフィ',text:'「……ここが、あなたたちの家なんですね」'}])}
@@ -1432,9 +1466,20 @@ function inlineObjectEvent(id){
   if(id==='imperialMarket')return imperialShop()
   if(id==='imperialCache'&&!structuredCondition('imperialCache')){setStructuredCondition('imperialCache',true);state.inventory['魔力草']=(state.inventory['魔力草']||0)+1;draw();return say('運河脇の木箱','古い木箱から魔力草を1個見つけた。')}
  }
- if(state.map==='yukiroad'&&id==='yukiMemorial'){setStructuredCondition('yukiMemorial',true);addJournal('ユウキの戦死地点に、部下たちが建てた小さな碑が残されていた。');renderHud();return saySequence([{speaker:'ユウキ慰霊碑',text:'「第十二・第十四・第十九隊、計四百十八名の撤退完了を確認。ユウキ将軍、帰還せず」'},{speaker:'ナレーション',text:'碑の下には「娘を抱けた」「弟が帰った」「あの日の借りを忘れない」と、兵士や家族の短い言葉が刻まれている。'},{speaker:'マーガレット',text:'「王国の“大勝利”と、帝国の“四百十八人が帰った日”……同じ戦闘の記録なのね」'}])}
+  if(state.map==='yukiroad'&&id==='yukiMemorial'){
+   if(structuredCondition('yukiMemorial'))return say('ユウキ慰霊碑','「第十二・第十四・第十九隊、計四百十八名の撤退完了を確認。ユウキ将軍、帰還せず」。家族の短い言葉が碑の下に残っている。');
+   setStructuredCondition('yukiMemorial',true);
+   addJournal('ユウキの戦死地点に、部下たちが建てた小さな碑が残されていた。');
+   state.objective=yukiRoadNextObjective();renderHud();
+   return saySequence([{speaker:'ユウキ慰霊碑',text:'「第十二・第十四・第十九隊、計四百十八名の撤退完了を確認。ユウキ将軍、帰還せず」'},{speaker:'ナレーション',text:'碑の下には「娘を抱けた」「弟が帰った」「あの日の借りを忘れない」と、兵士や家族の短い言葉が刻まれている。'},{speaker:'マーガレット',text:'「王国の“大勝利”と、帝国の“四百十八人が帰った日”……同じ戦闘の記録なのね」'}]);
+  }
  if(state.map==='yukiroad'){
-  if(id==='tornLetter'){setStructuredCondition('yukiLetter',true);renderHud();return saySequence([{speaker:'泥に汚れた手紙',text:'「クラインへ。次の休暇こそ二人で帰省しよう。あなたは働きすぎるから、私が先に予定を決めます。――ユウキ」'},{speaker:'ソフィ',text:'「……将軍の手紙じゃない。普通の、恋人への手紙です」'},{speaker:'カレン',text:'「王都のポスターには、こういう顔は一つもなかった」'}])}
+   if(id==='tornLetter'){
+    if(structuredCondition('yukiLetter'))return say('泥に汚れた手紙','「クラインへ。次の休暇こそ二人で帰省しよう。――ユウキ」。もう届かなかった約束が残っている。');
+    setStructuredCondition('yukiLetter',true);
+    state.objective=yukiRoadNextObjective();renderHud();
+    return saySequence([{speaker:'泥に汚れた手紙',text:'「クラインへ。次の休暇こそ二人で帰省しよう。あなたは働きすぎるから、私が先に予定を決めます。――ユウキ」'},{speaker:'ソフィ',text:'「……将軍の手紙じゃない。普通の、恋人への手紙です」'},{speaker:'カレン',text:'「王都のポスターには、こういう顔は一つもなかった」'}]);
+   }
   if(id==='brokenStandard')return say('折れた帝国軍旗','柄の根元に何人もの手形が残っている。ユウキ隊が撤退した時、この旗を誰かが最後まで運んだらしい。')
   if(id==='yukiCache'&&!structuredCondition('yukiCache')){setStructuredCondition('yukiCache',true);state.inventory['薬草']=(state.inventory['薬草']||0)+2;draw();return say('旧陣地の救急箱','風化した救急箱から、まだ使える薬草を2個回収した。')}
  }
