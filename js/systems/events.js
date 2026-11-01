@@ -840,6 +840,33 @@ function capitalWagonQueueVisit(){
 // A local voice, not an omniscient narrator, makes the contradiction tangible.
 // A visible, optional south-gate landmark gives stage-accurate directions
 // without teleporting the party or turning the city into a checklist.
+// A voluntary, visible north-gate interaction turns the erased-names theme
+// into one small action. It is never a prerequisite for the final route.
+function capitalNorthGateRollVisit(){
+ const key='capital.northGateNames';
+ if(!structuredCondition('returnedKingdom'))
+  return say('王都北門・出陣名簿','前線へ向かった部隊の名前と帰還先が書かれている。まだ任命式の新しい勇者の欄は空白だ。');
+ if(!structuredCondition('heroRecordsFound'))
+  return say('王都北門・出陣名簿','名前の欄には消された跡がある。まず東の軍務街で、歴代勇者の台帳を確かめよう。');
+ if(!structuredCondition('heroTruth'))
+  return say('王都北門・出陣名簿','消された名前の理由を知るには、北西の王城前でグランツに問い質す必要がある。');
+ if(state.events.choices[key]==='written')
+  return say('王都北門・出陣名簿','名簿の末尾に「カレン、トリトン、ソフィ、マーガレット／帰還先：リュネ村」と残っている。次の行はまだ空白だ。');
+ return say('王都北門・出陣名簿','前線へ出る兵士が、名前と帰還先を記す帳面だ。古い欄には何度も書き直した跡がある。',[
+  {label:'四人の名前と帰還先を記す',fn:()=>{
+   if(state.events.choices[key]==='written')return capitalNorthGateRollVisit();
+   state.events.choices[key]='written';
+   addJournal('王都北門の出陣名簿に四人の名前と帰還先「リュネ村」を残した。帰還を保証するものではないが、名前を消させないと決めた。');
+   renderHud();
+   return saySequence([
+    {speaker:'カレン',text:'「四人とも、ここに書こう。帰る場所も」'},
+    {speaker:'ソフィ',text:'「帰還先はリュネ村。……みんなで帰りましょう」'},
+    {speaker:'マーガレット',text:'「記録は約束じゃない。でも、私たちがここにいたことは残る」'}
+   ]);
+  }},
+  {label:'今は書かずに北門へ進む',fn:()=>say('トリトン','「書かなくても四人で帰る。そのつもりは変わらない」')}
+ ]);
+}
 function capitalGateGuideVisit(){
  const routes='王城前広場 ↑　白鹿亭 ←　配給所 →。';
  if(structuredCondition('returnedKingdom')){
@@ -1539,6 +1566,7 @@ function inlineObjectEvent(id){
   if(id==='northroadVista')return northRoadVistaVisit()
  }
  if(state.map==='capital'){
+  if(id==='capitalNorthGateRoll')return capitalNorthGateRollVisit()
   if(id==='capitalGateGuide')return capitalGateGuideVisit()
    if(id==='capitalWagonQueue')return capitalWagonQueueVisit()
   if(id==='royalCastle')return say('アルディナ王城',structuredCondition('returnedKingdom')&&structuredCondition('heroTruth')&&state.events.choices['capital.ledgerOriginalSealed']==='ordered'

@@ -88,7 +88,7 @@ function makeCapitalTiles(){
  // 東の軍務地区
  paintRect(g,15,6,7,6,'A');paintH(g,12,21,12,'A');paintV(g,7,12,18,'A');
  // 王城外壁と街区の建物。左右対称にしすぎない
- paintRect(g,4,1,6,2,'H');paintRect(g,14,1,6,2,'H');
+ paintRect(g,4,1,6,2,'H');paintRect(g,10,1,1,1,'K');paintRect(g,14,1,6,2,'H');
  paintRect(g,2,2,3,3,'H');paintRect(g,19,2,3,3,'H');
  paintRect(g,2,11,3,2,'H');paintRect(g,7,10,3,2,'H');paintRect(g,16,10,2,2,'H');paintRect(g,20,10,2,2,'H');
  // 小庭と街路樹用の緑地
@@ -299,7 +299,7 @@ const maps={
   {id:'capitalVendor',x:4,y:8,name:'市場商人マロ'},
   {id:'rationMother',x:16,y:8,name:'配給待ちの母親'},
   {id:'granz',x:8,y:5,name:'総司令グランツ'}
- ],objects:[{id:'royalCastle',x:7,y:5},{id:'capitalMarket',x:5,y:9},{id:'capitalFountain',x:12,y:8},{id:'capitalBarracks',x:19,y:9},{id:'victoryPoster',x:15,y:6},{id:'heroLedger',x:20,y:11},{id:'capitalInnDoor',x:6,y:12},{id:'capitalArmoryDoor',x:18,y:12},{id:'capitalWagonQueue',x:14,y:13},{id:'capitalGateGuide',x:10,y:13}]},
+ ],objects:[{id:'royalCastle',x:7,y:5},{id:'capitalMarket',x:5,y:9},{id:'capitalFountain',x:12,y:8},{id:'capitalBarracks',x:19,y:9},{id:'victoryPoster',x:15,y:6},{id:'heroLedger',x:20,y:11},{id:'capitalInnDoor',x:6,y:12},{id:'capitalArmoryDoor',x:18,y:12},{id:'capitalWagonQueue',x:14,y:13},{id:'capitalGateGuide',x:10,y:13},{id:'capitalNorthGateRoll',x:10,y:1}]},
  ashroad:{name:'灰の街道',tag:'焼けた農地と避難路',tiles:makeAshRoadTiles(),npcs:[
   {id:'refugee',x:8,y:5,name:'避難民の母'},
   {id:'fieldPriest',x:18,y:9,name:'従軍僧'}
