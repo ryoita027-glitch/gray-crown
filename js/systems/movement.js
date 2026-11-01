@@ -271,16 +271,46 @@ function enterFinalField(){
  const namesWritten=state.events?.choices?.['capital.northGateNames']==='written';
  travelScene('finalfield',11,13,'up','最終章 — 誰のための勇者か',objective,'王国の総攻撃と帝国の反攻が始まる。両軍の旗が見える前線で、四人は最後の選択を迫られる。'+(namesWritten?' 北門の名簿に残した四人の名前と「リュネ村」の文字が、カレンの胸に残っている。':''));
 }
-function enterFinalBranch(){if(state.finalChoice==='kingdom')travelScene('imperialcamp',11,13,'up','最終章 — 王国側','帝国本陣でシオンと向き合う','故郷と王国民を守るため、四人は帝国本陣へ向かう。');else if(state.finalChoice==='ashcrown'){
- if(!state.events?.choices?.['route.companions.ashcrown']){routeCompanionScene('ashcrown');return}
+function enterFinalBranch(){
+ const route=state.finalChoice;
+ if(!['kingdom','empire','ashcrown'].includes(route))return false;
+ // Save v23 may hold allegiance before the childhood friends finish deciding
+ // how to act. The north gate must not skip their consequential choice.
+ if(!state.events?.choices?.['route.companions.'+route]){
+  routeCompanionScene(route);return;
+ }
+ if(route==='kingdom'||route==='empire'){
+  const kingdom=route==='kingdom';
+  const map=kingdom?'imperialcamp':'royalcamp';
+  const chapter=kingdom?'最終章 — 王国側':'最終章 — 帝国側';
+  const objective=kingdom?'帝国本陣でシオンと向き合う':'王国軍総司令部でグランツと向き合う';
+  if(hasVisited(map)){
+   // The player has already seen the first approach; return control promptly.
+   setMap(map,11,13,'up',[[12,13],[13,13],[14,13]]);
+   state.chapter=chapter;state.objective=objective;renderHud();return;
+  }
+  const stance=state.events.choices['route.companions.'+route];
+  const arrival=kingdom
+   ?(stance==='evacuate'
+    ?'トリトンは前衛の位置を確かめ、ソフィは避難路を塞ぐ兵の動きを見ている。'
+    :'トリトンは正面の警戒隊を見据え、ソフィは後方に残る住民を気にかけている。')
+   :(stance==='protect'
+    ?'ソフィは護送される王国兵を見つけた。マーガレットは保護の条件を記した紙を握り直す。'
+    :'トリトンは追撃の伝令を探し、カレンは故郷へ向かう兵の列を見つめている。');
+  const marker=state.events.choices['finalfield.civilianWaymark']==='restored'
+   ?' 前線で立て直した避難標の先に、まだ人の通れる道があるかもしれない。':'';
+  travelScene(map,11,13,'up',chapter,objective,
+   (kingdom?'四人は帝国本陣へ近づいた。':'四人は王国軍総司令部へ近づいた。')+arrival+marker);
+  return;
+ }
  if(!isEventComplete('ashcrownCheckpointCleared')){
   saySequence([{speaker:'ナレーション',text:'旗を外したカレンの前に、関所の守備兵が立ち塞がった。かつて勇者を迎えた王国の兵だ。'},
    {speaker:'国境の守備兵',text:'「どちらの旗でもないなら、ここを通すわけにはいかない。……引き返してくれ」'},
    {speaker:'カレン',text:'「退くことはできない。でも、あなたを殺すために来たわけじゃない」'}],()=>startBattle('ashcrownCheckpoint'));
-  return
+  return;
  }
- runFinalActNegotiation('ashcrown');return
-}if(state.finalChoice==='empire')travelScene('royalcamp',11,13,'up','最終章 — 帝国側','王国軍総司令部でグランツと向き合う','侵攻と勇者制度を終わらせるため、四人は自国の軍へ剣を向ける。')}
+ runFinalActNegotiation('ashcrown');
+}
 function playRouteAftermath(route){
  if(!['kingdom','empire','ashcrown'].includes(route))return false;
  const key='route.aftermath.'+route;
