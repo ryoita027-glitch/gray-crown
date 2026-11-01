@@ -58,6 +58,8 @@ function exportFromMenu(download){
  }
 }
 function exportPortableSaveFromMenu(){
+ // Portable export saves a checkpoint; it must not race with an in-flight import.
+ if(portableMenuImportInProgress)return false;
  return exportFromMenu(()=>GC.Save.downloadPortableSave())
 }
 function exportQuarantinedSavesFromMenu(){
@@ -70,6 +72,14 @@ function confirmActiveAdventureLoad(){
  // Let the save system explain the missing/corrupt checkpoint instead.
  if(GC.Save.hasUsableStoredAdventure?.()===false)return true;
  return confirm('最後に保存した冒険をロードしますか？\n現在の未保存の進行は失われます。')
+}
+function saveFromToolbar(){
+ if(portableMenuImportInProgress)return false;
+ return save(false)
+}
+function restartFromToolbar(){
+ if(portableMenuImportInProgress)return false;
+ return restart()
 }
 function loadFromToolbar(){
  // A portable import is already choosing a checkpoint. Do not let the
@@ -133,9 +143,11 @@ async function importPortableSaveFromMenu(file){
  const modal=$('modal');
  // Keep the competing top-bar Load visibly unavailable while file bytes are
  // pending. Preserve any disabled state that another UI gate already set.
- const toolbarLoad=$('btnLoad');
- const toolbarLoadWasDisabled=toolbarLoad?.disabled;
- if(toolbarLoad)toolbarLoad.disabled=true;
+ // The three persistent checkpoint controls must not race with file import.
+ const toolbarButtons=['btnLoad','btnSave','btnRestart']
+  .map(id=>$(id)).filter(Boolean);
+ const toolbarWasDisabled=toolbarButtons.map(button=>button.disabled);
+ for(const button of toolbarButtons)button.disabled=true;
  modal.classList.add('hidden');
  let imported=false;
  try{
@@ -153,7 +165,7 @@ async function importPortableSaveFromMenu(file){
   return false
  }finally{
   portableMenuImportInProgress=false;
-  if(toolbarLoad)toolbarLoad.disabled=toolbarLoadWasDisabled;
+  toolbarButtons.forEach((button,index)=>{button.disabled=toolbarWasDisabled[index]});
   if(!imported&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
    modal.classList.remove('hidden')
   }
