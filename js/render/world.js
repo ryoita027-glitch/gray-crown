@@ -6,7 +6,9 @@ const HERO_RUNTIME={frameW:48,frameH:48,display:44,anchor:[24,44],directions:{do
   idleTrialEnabled:typeof window!=='undefined'&&/(?:^|[?&])heroIdleArt=(?:1|2)(?:&|$)/.test(window.location.search||''),
  // A separate, reversible trial of all four authored idle frames.
  idleMotionEnabled:typeof window!=='undefined'&&/(?:^|[?&])heroIdleArt=2(?:&|$)/.test(window.location.search||''),
- idleFrameDuration:420};
+ idleFrameDuration:420,
+ // Browser art evidence may step idle frames without changing NPC/world time.
+ idleFrameTimeOverride:null};
 // Art-only trial: use the same authored pose anchor for field walking and dialogue.
 // Margaret's source shoe line is y45–46; other heroes retain y44. Do not alter PNGs.
 function heroGroundedOrigin(footX,footY,heroId,size){
@@ -33,7 +35,7 @@ function drawHeroSpriteSheet(x,y,heroId,leader,facing,motion,stationary=false){
  const row=HERO_RUNTIME.directions[facing]??0,px=Math.round(x*TILE),py=Math.round(y*TILE),footX=px+16,footY=py+30;
  const idle=stationary&&HERO_RUNTIME.idleTrialEnabled?HERO_RUNTIME.idleImages[heroId]:null;
  // The idle atlas is 4 columns; walk is 6. No frame leakage between them.
- const useIdle=!!idle?.ready,frame=useIdle?(HERO_RUNTIME.idleMotionEnabled?heroIdleFrame(Date.now()):0):heroWalkFrame(motion);
+ const useIdle=!!idle?.ready,frame=useIdle?(HERO_RUNTIME.idleMotionEnabled?heroIdleFrame(Number.isFinite(HERO_RUNTIME.idleFrameTimeOverride)?HERO_RUNTIME.idleFrameTimeOverride:Date.now()):0):heroWalkFrame(motion);
  const rec=useIdle?idle:HERO_RUNTIME.images[heroId];
  if(rec?.ready&&rec.image){
   const size=GC.Data?.Animations?.artDisplaySize||HERO_RUNTIME.display,{dx,dy}=heroGroundedOrigin(footX,footY,heroId,size);
