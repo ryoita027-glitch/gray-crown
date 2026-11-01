@@ -879,6 +879,43 @@ function capitalWagonQueueVisit(){
 // without teleporting the party or turning the city into a checklist.
 // A voluntary, visible north-gate interaction turns the erased-names theme
 // into one small action. It is never a prerequisite for the final route.
+// The resident only learns the demand if the player tells them.
+// A north-gate inscription is not proof of a ruler's approval.
+function capitalCitizenReturnVisit(){
+ const route=state.finalChoice,demand=state.events?.choices?.['route.final.'+route];
+ const record=route+':'+demand,choices=state.events.choices;
+ const valid=['kingdom','empire'].includes(route)&&FINAL_ACT_APPROACHES[route]?.choices.some(c=>c.id===demand);
+ if(!valid||choices['capital.northGateReturnRecord']!==record)
+  return say('王都市民','「勇者様……前よりずっと疲れた顔をしてる。戦争は、まだ終わらないんですか？」');
+ const heardKey='capital.citizenHeardDemand';
+ if(choices[heardKey]===record)
+  return say('王都市民','「前線で何を求めたか、覚えています。まだ結果は分からない。でも、聞かなかったことにはしません」');
+ const reactions={
+  kingdom:{
+   evacuation:'「避難路を開けるよう求めたんですね。許可が出たか分からないなら、待つ家族にもそう伝えます」',
+   witnesses:'「戦争の記録を残すよう求めたんですね。帰らなかった人の名前まで消えるのは、もう嫌です」'
+  },
+  empire:{
+   captives:'「降伏した兵士を守るよう求めたんですね。敵と呼ばれた人にも、帰りを待つ家族がいます」',
+   dispatch:'「追撃を止めるよう求めたんですね。命令が変わったか分からないなら、まだ安心はできませんね」'
+  }
+ };
+ const response=reactions[route]?.[demand];
+ if(!response)return say('王都市民','「勇者様……戦争は、まだ終わらないんですか？」');
+ return say('王都市民','「前よりずっと疲れた顔をしてる。戦争は、まだ終わらないんですか？」',[
+  {label:'北門の名簿に記した要求を伝える',fn:()=>{
+   if(choices[heardKey]===record)return capitalCitizenReturnVisit();
+   choices[heardKey]=record;
+   addJournal('王都の市民に、北門の名簿へ記した前線での要求を伝えた。実現したかはまだ不明。');
+   renderHud();
+   return saySequence([
+    {speaker:'カレン',text:'「前線で、私たちが求めたことは名簿に残した。でも、実現したとはまだ言えない」'},
+    {speaker:'王都市民',text:response}
+   ]);
+  }},
+  {label:'今は答えず、街を歩く',fn:()=>say('カレン','「まだ答えを持っていないんです。……ごめんなさい」')}
+ ]);
+}
 function capitalNorthGateRollVisit(){
  const key='capital.northGateNames';
  if(!structuredCondition('returnedKingdom'))
@@ -902,6 +939,7 @@ function capitalNorthGateRollVisit(){
     if(state.events.choices[witnessKey]===witnessValue)return capitalNorthGateRollVisit();
     state.events.choices[witnessKey]=witnessValue;
     addJournal('王都北門の出陣名簿に、四人が前線で示した要求を書き添えた：'+recorded.note+' 軍が応じたかは未確認。');
+    if(state.map==='capital')state.objective=finalFieldCapitalReturnObjective();
     renderHud();
     return saySequence([
      {speaker:'マーガレット',text:'「要求したことと、実現したことは違う。だから、ここには私たちが言ったことだけを書くわ」'},
@@ -1153,7 +1191,7 @@ function inlineNpcEvent(id){
     {speaker:'カレン',text:'「うん。だから忘れないでいよう。私たちが来た理由」'}
    ])
   }
-  if(id==='capitalCitizen')return say('王都市民',structuredCondition('returnedKingdom')?'「勇者様……前よりずっと疲れた顔をしてる。戦争は、まだ終わらないんですか？」':state.events.choices['early.capitalFountainPerspective']==='asked'?'「噴水で話を聞いてくれた勇者様か。勝利も大事だ。でも明日の食事も、家族が帰ることも忘れないでくれよ」':'「勇者様！ 魔王を倒して、聖地を取り戻してください！」')
+  if(id==='capitalCitizen')return structuredCondition('returnedKingdom')?capitalCitizenReturnVisit():say('王都市民',state.events.choices['early.capitalFountainPerspective']==='asked'?'「噴水で話を聞いてくれた勇者様か。勝利も大事だ。でも明日の食事も、家族が帰ることも忘れないでくれよ」':'「勇者様！ 魔王を倒して、聖地を取り戻してください！」')
   if(id==='capitalFlowerGirl')return say('花売りの少女',structuredCondition('returnedKingdom')?'「前は勇者様の花飾りが一番売れたの。今は、お墓に供える白い花ばっかり」':'「勇者様！ 任命式の日は赤と白の花が飛ぶんだよ。王城の前、すっごくきれい！」')
   if(id==='capitalRecruit'){
    if(structuredCondition('returnedKingdom')){
