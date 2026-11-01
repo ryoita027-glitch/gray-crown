@@ -250,7 +250,7 @@ function enterReturnRoad(source='elsia'){
  markVisited('returnroad',true);
  travelScene('returnroad',11,13,'up','第七章 — 勇者の値段','北へ進み、王都の軍務街で記録を確かめる','得た資料を抱え、四人は戦線の隙間を縫う帰還路へ入った。');
 }
-function enterFinalField(){markVisited('finalfield',true);travelScene('finalfield',11,13,'up','最終章 — 誰のための勇者か','中央の地点で、どちら側に立つか決める','王国の総攻撃と帝国の反攻が始まる。両軍の旗が見える前線で、四人は最後の選択を迫られる。')}
+function enterFinalField(){markVisited('finalfield',true);const namesWritten=state.events?.choices?.['capital.northGateNames']==='written';travelScene('finalfield',11,13,'up','最終章 — 誰のための勇者か','両軍の作戦を確認してから中央で決断する','王国の総攻撃と帝国の反攻が始まる。両軍の旗が見える前線で、四人は最後の選択を迫られる。'+(namesWritten?' 北門の名簿に残した四人の名前と「リュネ村」の文字が、カレンの胸に残っている。':''))}
 function enterFinalBranch(){if(state.finalChoice==='kingdom')travelScene('imperialcamp',11,13,'up','最終章 — 王国側','帝国本陣でシオンと向き合う','故郷と王国民を守るため、四人は帝国本陣へ向かう。');else if(state.finalChoice==='ashcrown'){
  if(!state.events?.choices?.['route.companions.ashcrown']){routeCompanionScene('ashcrown');return}
  if(!isEventComplete('ashcrownCheckpointCleared')){
@@ -342,7 +342,7 @@ function move(dir){if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started
  if(state.map==='road'&&ny<0){if(!isDefeated('wolf')){say('トリトン','「先に街道を塞いでいる灰牙狼を何とかしよう」');return}enterNorthRoad('road');return}
  // 全章マップ骨組み
  if(state.map==='capital'&&ny>=15&&[11,12].includes(nx)){if(getWorldSwitch('returnedKingdom')){enterReturnRoad('capital');return}travelScene('northroad',11,1,'down','第一章 — 白い旗','王都へ戻る／周辺を確認する','王都南側の旧街道へ戻った。');return}
- if(state.map==='capital'&&ny<0&&[11,12].includes(nx)){if(getWorldSwitch('returnedKingdom')){if(!isEventComplete('heroRecordsFound')){say('マーガレット','「軍務街に“勇者候補管理”の記録がある。まずそれを確かめたい」');return}if(!isEventComplete('heroTruth')){say('総司令部','台帳の内容をグランツ本人に問い質す必要がある。');return}enterFinalField();return}if(!isEventComplete('alpha.capital.ceremony')){say('王都北門','正式な任命式を終えるまでは前線へ出られない。');return}if(!isEventComplete('alpha2.capital.granzBriefing')){say('王都北門','総司令グランツから前線任務の説明を受けてから出発しよう。');return}enterAshRoad();return}
+ if(state.map==='capital'&&ny<0&&[11,12].includes(nx)){if(getWorldSwitch('returnedKingdom')){if(!structuredCondition('heroRecordsFound')){say('マーガレット','「軍務街に“勇者候補管理”の記録がある。まずそれを確かめたい」');return}if(!structuredCondition('heroTruth')){say('総司令部','台帳の内容をグランツ本人に問い質す必要がある。');return}enterFinalField();return}if(!isEventComplete('alpha.capital.ceremony')){say('王都北門','正式な任命式を終えるまでは前線へ出られない。');return}if(!isEventComplete('alpha2.capital.granzBriefing')){say('王都北門','総司令グランツから前線任務の説明を受けてから出発しよう。');return}enterAshRoad();return}
  if(state.map==='ashroad'&&ny>=15&&[11,12].includes(nx)){travelScene('capital',11,1,'down','第二章 — 灰の街道','前線へ向かう／王都へ戻る','王都へ戻った。');return}
  if(state.map==='ashroad'&&ny<0&&[11,12].includes(nx)){if(isEventComplete('alpha2.ashroad.complete')){enterFrontier();return}if(!isEventComplete('alpha2.ashroad.patrolVictory')){say('カレン','「前方に帝国軍の斥候がいる。街道を抜けるなら、避けては通れない」');return}if(!isEventComplete('alpha2.ashroad.refugee')){say('ソフィ','「先へ行く前に、避難してきた人の話を聞いておきたいです」');return}if(!isEventComplete('alpha2.ashroad.orders')){say('マーガレット','「焼け跡に残った命令書を確認しましょう。何を狙った攻撃なのか知っておきたい」');return}runTriggeredEvent('boundary','north',{map:'ashroad'});return}
  if(state.map==='frontier'&&ny>=15&&[11,12].includes(nx)){enterAshRoad('frontier');return}
