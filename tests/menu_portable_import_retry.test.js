@@ -35,7 +35,7 @@ function harness({importer}={}){
  assert.ok(match,'the real menu must expose its file-picker handler');
  const onChange=vm.runInContext('(function(){'+match[1]+'})',context);
  const picker={files:[{size:100}],value:'C:\\fakepath\\save.json'};
- return {$,live,files,picker,toolbarLoads,menuActions,
+ return {$,live,files,picker,toolbarLoads,menuActions,pending:()=>context.GC.Menu.isPortableImportPending(),
   toolbarLoad:()=>vm.runInContext('loadFromToolbar()',context),
   menuLoad:()=>vm.runInContext('loadFromMenu()',context),
   menuSave:()=>vm.runInContext('saveFromMenu()',context),
@@ -246,4 +246,67 @@ test('failed portable import releases all menu checkpoint action guards',async()
  assert.equal(h.menuRestore(),true);
  assert.equal(h.toolbarLoads.length,1);
  assert.deepEqual(h.menuActions,{save:1,restart:1,restore:1});
+});
+
+
+// A file-picker import hides the menu while its bytes are pending. During that
+// gap, keyboard and touch inputs must not move the old character, activate a
+// story choice, or start a second transition that the import then overwrites.
+function inputControlHarness(isImportPending){
+ const source=fs.readFileSync(path.resolve(__dirname,'../js/game.js'),'utf8');
+ const definitions=['primaryAction','handleKeydown','bindAppControls'].map(name=>{
+  const found=source.match(new RegExp('^function '+name+'\\([^\\n]*$','m'));
+  assert.ok(found,'missing actual game handler: '+name);
+  return found[0];
+ }).join('\n');
+ const calls={move:[],interact:0,audio:0,prevent:0};
+ const nodes=new Map();
+ const $=id=>{
+  if(!nodes.has(id)){
+   const listeners={};
+   nodes.set(id,{listeners,classList:{contains:()=>true},
+    addEventListener:(type,fn)=>{listeners[type]=fn}});
+  }
+  return nodes.get(id);
+ };
+ const touchMove={dataset:{move:'left'},listeners:{},
+  addEventListener(type,fn){this.listeners[type]=fn}};
+ const context=vm.createContext({
+  GC:{Menu:{isPortableImportPending}},ALPHA_SESSION:{started:true},
+  state:{battle:null},$,document:{activeElement:null,
+   addEventListener:()=>{},querySelectorAll:()=>[touchMove]},
+  canvas:{addEventListener:()=>{}},dialogueChoices:[],
+  dialogueTyping:()=>false,isInputLocked:()=>false,
+  ensureAudio:()=>{calls.audio++},move:direction=>{calls.move.push(direction)},
+  interact:()=>{calls.interact++},toggleSound:()=>{}
+ });
+ vm.runInContext(definitions,context,{filename:'js/game.js input controls'});
+ vm.runInContext('bindAppControls()',context);
+ return {calls,
+  key:key=>vm.runInContext('handleKeydown',context)({
+   key,repeat:false,preventDefault:()=>{calls.prevent++}}),
+  act:()=>vm.runInContext('primaryAction()',context),
+  touchMove:()=>touchMove.listeners.click(),
+  touchAct:()=>$('mobileAct').listeners.click()};
+}
+
+test('pending portable import blocks keyboard and touch movement/interaction; success and failure unlock',async()=>{
+ for(const outcome of [true,false]){
+  let finish;
+  const h=harness({importer:()=>new Promise(resolve=>{finish=resolve})});
+  const ui=inputControlHarness(()=>h.pending());
+  h.select();await settle();
+  assert.equal(h.pending(),true);
+  ui.key('ArrowRight');ui.key('Enter');ui.act();ui.touchMove();ui.touchAct();
+  assert.deepEqual(ui.calls.move,[]);
+  assert.equal(ui.calls.interact,0);
+  assert.equal(ui.calls.audio,0);
+  assert.equal(ui.calls.prevent,1,'blocked arrow key should not scroll page');
+  finish(outcome);await settle();
+  assert.equal(h.pending(),false,'all import results must release input');
+  ui.key('ArrowRight');ui.key('Enter');ui.act();ui.touchMove();ui.touchAct();
+  assert.deepEqual(ui.calls.move,['right','left']);
+  assert.equal(ui.calls.interact,3);
+  assert.equal(ui.calls.audio,3);
+ }
 });
