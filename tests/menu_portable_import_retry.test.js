@@ -86,3 +86,37 @@ test('synchronous file import throw restores menu without uncaught exception',as
  assert.doesNotThrow(h.select);await settle();
  assert.equal(h.hidden(),false);assert.equal(h.live.stage,'unsaved');
 });
+
+
+test('a second file selection cannot reopen the menu during an unfinished import',async()=>{
+ let finish,reads=0;
+ const h=harness({importer:()=>{reads++;return new Promise(resolve=>{finish=resolve})}});
+ h.select();await settle();assert.equal(h.hidden(),true);
+ h.picker.value='C:\\fakepath\\second.json';h.select();await settle();
+ assert.equal(reads,1,'the second selection must be ignored by the menu');
+ assert.equal(h.hidden(),true,'the pending import must keep its menu hidden');
+ finish(true);await settle();
+ assert.equal(h.hidden(),true,'success must not be overwritten by a stale second result');
+});
+
+test('failed first import restores menu and releases selection guard for retry',async()=>{
+ let finish,reads=0;
+ const h=harness({importer:()=>{reads++;if(reads===1)return new Promise(resolve=>{finish=resolve});return true}});
+ h.select();await settle();h.select();await settle();
+ assert.equal(reads,1);assert.equal(h.hidden(),true);
+ finish(false);await settle();assert.equal(h.hidden(),false);
+ h.select();await settle();
+ assert.equal(reads,2,'a retry after the first import finishes must be accepted');
+ assert.equal(h.hidden(),true);
+});
+
+test('rejected pending import releases the selection guard without losing retry access',async()=>{
+ let rejectRead,reads=0;
+ const h=harness({importer:()=>{reads++;if(reads===1)return new Promise((_,reject)=>{rejectRead=reject});return false}});
+ h.select();await settle();h.select();await settle();
+ assert.equal(reads,1);assert.equal(h.hidden(),true);
+ rejectRead(new Error('permission denied'));await settle();
+ assert.equal(h.hidden(),false);
+ h.select();await settle();
+ assert.equal(reads,2);assert.equal(h.hidden(),false);
+});
