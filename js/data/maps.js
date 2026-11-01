@@ -152,7 +152,9 @@ function makeReturnRoadTiles(){
 function makeFinalFieldTiles(){
  const g=makeBlankRegion('M','K');paintV(g,0,14,11,'D');paintV(g,0,14,12,'D');paintH(g,2,21,7,'D');paintRect(g,2,2,6,4,'B');paintRect(g,16,2,6,4,'E');
  // One-step worn spur to the civilian waymark; both army lanes remain open.
- g[8][10]='D';return finishTiles(g)
+ g[8][10]='D';
+ // Short worn approaches link both army order boards to the central crossroads.
+ g[6][6]='D';g[6][18]='D';return finishTiles(g)
 }
 
 function makeBorderlandTiles(){

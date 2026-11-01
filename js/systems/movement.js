@@ -250,7 +250,25 @@ function enterReturnRoad(source='elsia'){
  markVisited('returnroad',true);
  travelScene('returnroad',11,13,'up','第七章 — 勇者の値段','北へ進み、王都の軍務街で記録を確かめる','得た資料を抱え、四人は戦線の隙間を縫う帰還路へ入った。');
 }
-function enterFinalField(){markVisited('finalfield',true);const namesWritten=state.events?.choices?.['capital.northGateNames']==='written';travelScene('finalfield',11,13,'up','最終章 — 誰のための勇者か','両軍の作戦を確認してから中央で決断する','王国の総攻撃と帝国の反攻が始まる。両軍の旗が見える前線で、四人は最後の選択を迫られる。'+(namesWritten?' 北門の名簿に残した四人の名前と「リュネ村」の文字が、カレンの胸に残っている。':''))}
+function finalFieldObjective(){
+ if(state.finalChoice)return '北門から選んだ道へ進む';
+ const kingdom=structuredCondition('finalKingdomPlan'),empire=structuredCondition('finalEmpirePlan');
+ if(kingdom&&empire)return '中央の決断地点で仲間と話す';
+ if(kingdom)return '東の青旗で帝国軍の作戦を確認する';
+ if(empire)return '西の赤旗で王国軍の作戦を確認する';
+ return '西の赤旗と東の青旗で両軍の作戦を確認する';
+}
+function enterFinalField(){
+ const firstVisit=!hasVisited('finalfield'),objective=finalFieldObjective();
+ if(!firstVisit){
+  setMap('finalfield',11,13,'up',[[12,13],[13,13],[14,13]]);
+  state.chapter='最終章 — 誰のための勇者か';
+  state.objective=objective;renderHud();return;
+ }
+ markVisited('finalfield',true);
+ const namesWritten=state.events?.choices?.['capital.northGateNames']==='written';
+ travelScene('finalfield',11,13,'up','最終章 — 誰のための勇者か',objective,'王国の総攻撃と帝国の反攻が始まる。両軍の旗が見える前線で、四人は最後の選択を迫られる。'+(namesWritten?' 北門の名簿に残した四人の名前と「リュネ村」の文字が、カレンの胸に残っている。':''));
+}
 function enterFinalBranch(){if(state.finalChoice==='kingdom')travelScene('imperialcamp',11,13,'up','最終章 — 王国側','帝国本陣でシオンと向き合う','故郷と王国民を守るため、四人は帝国本陣へ向かう。');else if(state.finalChoice==='ashcrown'){
  if(!state.events?.choices?.['route.companions.ashcrown']){routeCompanionScene('ashcrown');return}
  if(!isEventComplete('ashcrownCheckpointCleared')){
