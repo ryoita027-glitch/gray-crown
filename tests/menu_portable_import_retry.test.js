@@ -120,3 +120,33 @@ test('rejected pending import releases the selection guard without losing retry 
  h.select();await settle();
  assert.equal(reads,2);assert.equal(h.hidden(),false);
 });
+
+test('unexpected rejected import shows a visible retry message instead of failing silently',async()=>{
+ const h=harness({importer:async()=>{throw Error('read failed')}});
+ h.select();await settle();
+ assert.equal(h.hidden(),false);
+ assert.match(h.$('modalTitle').textContent,/読み込み.*エラー/);
+ assert.equal(h.live.stage,'unsaved');
+});
+
+test('unexpected synchronous importer error shows the same retry message',async()=>{
+ const h=harness({importer:()=>{throw Error('unexpected callback')}});
+ assert.doesNotThrow(h.select);await settle();
+ assert.equal(h.hidden(),false);
+ assert.match(h.$('modalTitle').textContent,/読み込み.*エラー/);
+});
+
+test('cancelled import does not show an unexpected-error warning',async()=>{
+ const h=harness({importer:async()=>false});
+ h.select();await settle();
+ assert.equal(h.hidden(),false);
+ assert.equal(h.$('modalTitle').textContent,'冒険メニュー');
+});
+
+test('unexpected import error with a system dialogue does not cover the dialogue',async()=>{
+ const h=harness({importer:async(_, $)=>{$('dialogueBox').classList.remove('hidden');throw Error('status failure')}});
+ h.select();await settle();
+ assert.equal(h.hidden(),true);
+ assert.equal(h.$('modalTitle').textContent,'冒険メニュー');
+ assert.equal(h.$('dialogueBox').classList.contains('hidden'),false);
+});
