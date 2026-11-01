@@ -251,6 +251,9 @@ function enterReturnRoad(source='elsia'){
  travelScene('returnroad',11,13,'up','第七章 — 勇者の値段','北へ進み、王都の軍務街で記録を確かめる','得た資料を抱え、四人は戦線の隙間を縫う帰還路へ入った。');
 }
 function finalFieldObjective(){
+ // A recorded demand is progress, not a new order to repeat the same encounter.
+ if(['kingdom','empire'].includes(state.finalChoice)&&state.events?.choices?.['route.final.'+state.finalChoice])
+  return '最終局面の要求は記録済み／北門から本陣を再訪（任意）・南門から王都へ戻る';
  if(state.finalChoice==='kingdom')return '北門から帝国本陣へ向かう';
  if(state.finalChoice==='empire')return '北門から王国軍総司令部へ向かう';
  if(state.finalChoice==='ashcrown')return '北門から灰冠の道へ進む';
@@ -273,9 +276,29 @@ function enterFinalField(){
 }
 // Keep the optional witness board discoverable without gating the ruler fight.
 function finalCampObjective(route){
+ const copied=state.events?.choices?.['finalcamp.witness.'+route]==='copied';
+ if(state.events?.choices?.['route.final.'+route])
+  return (copied?'':'本道脇の記録を確認（任意）／')+'南門から前線へ戻る／指導者と再び話す（任意）';
  const destination=route==='kingdom'?'帝国本陣でシオンと向き合う':'王国軍総司令部でグランツと向き合う';
- return state.events?.choices?.['finalcamp.witness.'+route]==='copied'
-  ?destination:'本道脇の記録を確認（任意）／'+destination;
+ return copied?destination:'本道脇の記録を確認（任意）／'+destination;
+}
+// The south exit is still available after a ruler's demand. Returning to
+// Aldina must not erase the player's progress or suggest choosing again.
+function finalFieldCapitalReturnObjective(){
+ const route=state.finalChoice;
+ if(['kingdom','empire'].includes(route)&&state.events?.choices?.['route.final.'+route])
+  return '最終局面の要求は記録済み／北門から前線を再訪（任意）';
+ if(route==='kingdom'||route==='empire')
+  return '北門から前線へ戻り、選んだ道の決断を進める';
+ return '北門から前線へ戻り、進む道を選ぶ';
+}
+function finalFieldCapitalReturnScene(){
+ const route=state.finalChoice;
+ if(!state.events?.choices?.['route.final.'+route])
+  return '王都側の前線へ戻った。四人の決断はまだ終わっていない。';
+ return route==='kingdom'
+  ?'王都側の前線へ戻った。シオンに伝えた要求は残るが、避難路の安全が確かめられたわけではない。'
+  :'王都側の前線へ戻った。グランツに伝えた要求は残るが、軍の命令が変わったわけではない。';
 }
 function enterFinalBranch(){
  const route=state.finalChoice;
@@ -430,7 +453,7 @@ function move(dir){if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started
  if(state.map==='elsia'&&ny<0&&[11,12].includes(nx)){if(!isEventComplete('metZenith')){say('ゼニス','「まだ見るべきものがある。住民と古い碑文、その両方を見てから来い」');return}enterReturnRoad();return}
  if(state.map==='returnroad'&&ny>=15&&[11,12].includes(nx)){enterElsia('returnroad');return}
  if(state.map==='returnroad'&&ny<0&&[11,12].includes(nx)){enterCapital(false);return}
- if(state.map==='finalfield'&&ny>=15&&[11,12].includes(nx)){if(state.finalChoice==='ashcrown'&&!!state.events?.choices?.['route.companions.ashcrown']){say('カレン','「三人と別れた。戻っても、あの頃の四人には戻れない」');return}travelScene('capital',11,1,'down','最終章 — 誰のための勇者か','最後の選択へ向かう','王都側の前線へ戻った。');return}
+ if(state.map==='finalfield'&&ny>=15&&[11,12].includes(nx)){if(state.finalChoice==='ashcrown'&&!!state.events?.choices?.['route.companions.ashcrown']){say('カレン','「三人と別れた。戻っても、あの頃の四人には戻れない」');return}travelScene('capital',11,1,'down','最終章 — 誰のための勇者か',finalFieldCapitalReturnObjective(),finalFieldCapitalReturnScene());return}
  if(state.map==='finalfield'&&ny<0&&[11,12].includes(nx)){if(!state.finalChoice){say('決断の地点','中央にいる人物に話しかけ、どちら側に立つか決める必要がある。');return}enterFinalBranch();return}
  if(['imperialcamp','royalcamp'].includes(state.map)&&ny>=15&&[11,12].includes(nx)){
   // Return to the north edge of the SAME battlefield. Do not replay the
