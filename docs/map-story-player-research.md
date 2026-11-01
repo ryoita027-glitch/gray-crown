@@ -1,5 +1,16 @@
 # Map and story: player-facing research notes
 
+## 2026-11-02 03:43 JST — non-lethal checkpoint results matter after the fight
+
+**Source verified 2026-11-02:** Draft #261 HEAD `fdd6b19a` fixes the post-battle return prompt. All four final-camp checkpoint enemies have morale and can surrender; battleWin already distinguishes surrender from HP defeat in the journal. However the nearby witness boards and ruler conversations did not distinguish those outcomes.
+
+**Implemented:** The first valid final checkpoint resolution is stored in the existing Save v23 event choices. Both camp boards and the friends' confrontation with Shion/Granz now acknowledge soldiers putting down weapons after surrender, or explicitly leave casualties unknown after defeat. This does not imply evacuation permission, prisoner safety, an accepted treaty or a changed route. Optional board copying remains voluntary; old saves without the outcome key display the original wording. Distinct Sophie/Triton reactions preserve the four friends' established voices.
+
+**Review checked 2026-11-02:** [Sea of Stars Steam individual review, published 2025-03-06](https://steamcommunity.com/id/TirOrah/recommended) praises combat and visuals but criticizes character traits that are told rather than shown and narrative setups without payoff. [Chained Echoes Steam individual review, displayed Aug 9, year unverified](https://steamcommunity.com/profiles/76561198149021695/recommended/) values logically motivated NPCs and meaningful encounters. **Inference:** a locally visible, proportionate consequence for a non-lethal resolution may strengthen perceived agency. These reviews are individual opinions, not a population trend or sales metric.
+
+**Verification:** Modified JS syntax compiled in V8; isolated actual helper checks for both routes and both battle outcomes passed. New native Node harness tests were committed but not run. Full browser battle, result-screen timing, actual Save/Load, 44px legibility and human feedback are unverified. Next: execute the new Node tests and play the exact win → optional board → ruler flow before approval.
+
+
 ## 2026-11-02 02:43 JST — restore the post-battle decision the player could not see
 
 **Confirmed source defect:** In PR #259 (HEAD `4749a3aa`), `battleWin` calls `if(!finalCampAfterBattlePrompt(route)) say(...fallback...)`. The prompt helper returned `say(...)`, but `say` is a void dialogue UI function. Thus the condition was always true and the fallback immediately replaced the two-choice menu. The earlier test expected a truthy return but was not executed. This made the intended optional return to the changed witness board unreachable from the battle aftermath, even though its board content and map existed.
