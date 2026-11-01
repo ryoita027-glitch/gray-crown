@@ -1540,6 +1540,41 @@ function finalCampWitnessEvent(id){
  ]);
 }
 
+// After a route checkpoint, the player can inspect the changed witness board
+// without retracing the whole camp. This is a short, optional walk cut, not
+// a new route gate or an automatic evidence reward.
+function finalCampAfterBattlePrompt(route){
+ const entries={
+  kingdom:{map:'imperialcamp',board:'campEvacuationSlips',person:'ソフィ',
+   line:'「南の避難待ち札、戦いの後で何が変わったか確かめたいです」',
+   leader:'シオン'},
+  empire:{map:'royalcamp',board:'campPrisonerLedger',person:'マーガレット',
+   line:'「南の降伏者名簿、戦いの後も空欄のままか確かめたい」',
+   leader:'グランツ'}
+ };
+ const entry=entries[route];
+ if(!entry||state.map!==entry.map||state.finalChoice!==route||
+    !isEventComplete('final.route.'+route+'.checkpoint'))return false;
+ const copied=state.events?.choices?.['finalcamp.witness.'+route]==='copied';
+ return say('カレン','「北の'+entry.leader+'に会う前に、南の記録板へ戻る？　それとも先へ進む？」',[
+  {label:copied?'南の記録板を見直す（任意）':'南の記録板を確かめる（任意）',fn:()=>{
+   // Both camps share the same 24x15 layout; (11,9) faces the board at (10,9).
+   // No item or choice is granted by this movement: the board remains opt-in.
+   setMap(entry.map,11,9,'left',[[12,9],[13,9],[14,9]]);
+   state.objective=finalCampObjective(route);
+   renderHud();
+   return saySequence([
+    {speaker:'ナレーション',text:'四人は南へ数歩戻り、本道脇の踏み道にある記録板の前へ立った。'}
+   ],()=>finalCampWitnessEvent(entry.board));
+  }},
+  {label:'北の'+entry.leader+'へ進む',fn:()=>{
+   state.objective=finalCampObjective(route);
+   renderHud();
+   return say('カレン','「今は指揮官と話そう。記録板には後から戻れる」');
+  }}
+ ]);
+}
+
 function inlineObjectEvent(id){
  if(['campEvacuationSlips','campPrisonerLedger'].includes(id))return finalCampWitnessEvent(id);
  if(TREASURE_DEFS[id])return openTreasure(id);
