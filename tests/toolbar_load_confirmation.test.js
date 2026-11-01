@@ -5,7 +5,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 
-function harness({started=true,approve=false,loadResult=true,canLoadNow=true,showBlockedDialogue=false}={}){
+function harness({started=true,approve=false,loadResult=true,canLoadNow=true,showBlockedDialogue=false,hasStoredAdventure=true}={}){
  const elements=new Map(),calls={confirm:[],load:0,loadGate:[]},live={stage:'unsaved-progress'};
  const $=id=>{
   if(!elements.has(id)){
@@ -24,7 +24,7 @@ function harness({started=true,approve=false,loadResult=true,canLoadNow=true,sho
   canvas:{addEventListener:()=>{},focus:()=>{}},
   state:{battle:null,inventory:{},gold:55,map:'village',objective:'旅立ち',party:[]},
   maps:{village:{name:'リュネ村'}},MAX_LEVEL:99,expThreshold:()=>100,
-  GC:{Save:{hasUsableStoredAdventure:()=>true,canPersistNow:mode=>{calls.loadGate.push(mode);return canLoadNow},hasArchivedAdventure:()=>false,hasQuarantinedSaves:()=>false},Log:{info:()=>{}}},
+  GC:{Save:{hasUsableStoredAdventure:()=>hasStoredAdventure,canPersistNow:mode=>{calls.loadGate.push(mode);return canLoadNow},hasArchivedAdventure:()=>false,hasQuarantinedSaves:()=>false},Log:{info:()=>{}}},
   confirm:message=>{calls.confirm.push(message);return approve},
   load:()=>{calls.load++;if(!canLoadNow){if(showBlockedDialogue)$('dialogueBox').classList.remove('hidden');return false}if(loadResult)live.stage='stored-checkpoint';return loadResult},
   save:()=>true,restart:()=>true,renderHud:()=>{},draw:()=>{},toggleSound:()=>{}
@@ -123,5 +123,29 @@ test('blocked menu Load does not cover a visible system status dialogue',()=>{
  assert.equal(h.calls.load,1);
  assert.equal(h.$('dialogueBox').classList.contains('hidden'),false);
  assert.equal(h.$('modal').classList.contains('hidden'),true);
+ assert.equal(h.live.stage,'unsaved-progress');
+});
+
+// A missing or invalid checkpoint cannot replace the live adventure. Let the
+// Save system report the real problem instead of warning about lost progress.
+test('top-bar Load without a usable checkpoint reports failure without discard warning',()=>{
+ const h=harness({hasStoredAdventure:false,loadResult:false});h.toolbar();
+ assert.equal(h.calls.confirm.length,0);
+ assert.equal(h.calls.load,1);
+ assert.equal(h.live.stage,'unsaved-progress');
+});
+
+test('adventure-menu Load without a usable checkpoint remains retryable',()=>{
+ const h=harness({hasStoredAdventure:false,loadResult:false});h.menu();
+ assert.equal(h.calls.confirm.length,0);
+ assert.equal(h.calls.load,1);
+ assert.equal(h.live.stage,'unsaved-progress');
+ assert.equal(h.$('modal').classList.contains('hidden'),false);
+});
+
+test('usable checkpoint still requires confirmation before replacing unsaved progress',()=>{
+ const h=harness({hasStoredAdventure:true,approve:false});h.toolbar();
+ assert.equal(h.calls.confirm.length,1);
+ assert.equal(h.calls.load,0);
  assert.equal(h.live.stage,'unsaved-progress');
 });
