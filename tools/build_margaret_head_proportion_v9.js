@@ -56,7 +56,7 @@ function validate(src,trial){
    const i=((d*48+y)*192+x)*4;
    for(let f=0;f<4;f++){
     const j=((d*48+y)*192+f*48+x)*4;
-    if(trial.pixels.slice(j,j+4).some((v,k)=>v!==src.pixels[i+k]))changed++;
+    if(trial.pixels.slice(j,j+4).some((v,k)=>v!==src.pixels[j+k]))changed++;
     if(trial.pixels.slice(j,j+4).some((v,k)=>v!==trial.pixels[i+k]))throw Error('idle bob');
    }
    if(y>=35||(y>=14&&y<=24&&x>=16&&x<=31))
