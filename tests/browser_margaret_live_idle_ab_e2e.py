@@ -21,8 +21,16 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'prototype_artifacts/margaret_live_idle_ab'
 VIEWS = (('desktop', 1365, 900), ('phone', 390, 844))
 DIRECTIONS = ('down', 'left', 'right', 'up')
+SOURCE_BLOBS = {
+    'assets/characters/margaret/margaret_idle.png':
+        '910458eabfcfaef7442f885f319d0e2a09c88a66',
+    'docs/art/evidence/margaret_identity_safe_hair_HOLD.png':
+        '081aa3e9c8e1bc06693dac081c7182c990942d0f',
+    'docs/art/evidence/margaret_front_structural_redraw_HOLD.png':
+        '1823d20a7438f6a578da8fffd9cb207f1efff65d',
+}
 SOURCES = {
-    'original': None,
+    'original': 'assets/characters/margaret/margaret_idle.png',
     'hair_hold': 'docs/art/evidence/margaret_identity_safe_hair_HOLD.png',
     'front_no_go': 'docs/art/evidence/margaret_front_structural_redraw_HOLD.png',
 }
@@ -75,7 +83,7 @@ def capture_three(page, direction):
                 args.length === 9 && args[3] === 48 && args[4] === 48) {
               calls++;
               if (args[1] !== 0) nonIdleCalls++;
-              if (key !== 'original') args[0] = images[key];
+              args[0] = images[key];
             }
             return originalDraw.apply(this, args);
           };
@@ -151,6 +159,11 @@ def review(view, direction, shots):
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
+    for path, expected in SOURCE_BLOBS.items():
+        data = (ROOT / path).read_bytes()
+        actual = hashlib.sha1(
+            b'blob ' + str(len(data)).encode() + b'\\0' + data).hexdigest()
+        assert actual == expected, f'asset changed: {path} {actual}'
     records = []
     with helper.served() as url, sync_playwright() as playwright:
         browser = launch_chromium(playwright)
