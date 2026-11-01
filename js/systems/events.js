@@ -1512,8 +1512,23 @@ function finalCampWitnessEvent(id){
  const entry=entries[id];
  if(!entry||state.map!==entry.map)return false;
  const key='finalcamp.witness.'+entry.route;
- if(state.events?.choices?.[key]==='copied')return say(entry.title,entry.revisit);
- return say(entry.title,entry.intro,[
+ // Return visits show the limited consequences of the player's chosen
+ // checkpoint tactic, without implying universal rescue or identified names.
+ const cleared=isEventComplete('final.route.'+entry.route+'.checkpoint');
+ const stance=state.events?.choices?.['route.companions.'+entry.route];
+ const aftermathByChoice={
+  kingdom:{
+   evacuate:' 戦闘後、板の端に「避難路の一部通行可」と追記された。ただし許可欄は空白のまま。家族全員が通れたかは分からない。',
+   orders:' 前衛は退いたが、板の通行許可欄は空白のままだ。軍の勝敗だけでは家族は移動できない。'
+  },
+  empire:{
+   protect:' 護送の衝突は収まったが、氏名欄はまだ空白だ。四人は保護条件を文書に残すよう求めている。',
+   advance:' 追撃の伝令は止まった。それでも氏名欄は空白で、誰が帰れたかはまだ確かめられない。'
+  }
+ };
+ const aftermath=cleared?(aftermathByChoice[entry.route]?.[stance]||''):'';
+ if(state.events?.choices?.[key]==='copied')return say(entry.title,entry.revisit+aftermath);
+ return say(entry.title,entry.intro+aftermath,[
   {label:'人数と空欄を手帳に写す',fn:()=>{
    if(state.events.choices[key]==='copied')return finalCampWitnessEvent(id);
    state.events.choices[key]='copied';
