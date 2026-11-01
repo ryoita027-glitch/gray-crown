@@ -75,3 +75,17 @@ test('copied board remains repeat-safe after optional return',()=>{
  assert.equal(s.journal.length,journal);
  assert.equal(s.events.choices['finalcamp.witness.kingdom'],'copied');
 });
+
+for(const c of [cases[0],cases[2]]){
+ test(c.route+' battle-result caller must not overwrite the witness choice',()=>{
+  const {h}=setup(c);
+  // This is the exact conditional used after the final-camp battle dialogue.
+  // say() returns undefined, so a handled prompt must return true explicitly.
+  h.evaluate("if(!finalCampAfterBattlePrompt("+JSON.stringify(c.route)+"))say('カレン','FALLBACK')");
+  h.GC.Dialogue.finishDialogueTyping();
+  assert.match(h.getElement('dialogueText').innerHTML,c.leader);
+  assert.doesNotMatch(h.getElement('dialogueText').innerHTML,/FALLBACK/);
+  assert.equal(h.evaluate('dialogueChoices.length'),2);
+  assert.match(h.evaluate('dialogueChoices[0].label'),/南の記録板/);
+ });
+}

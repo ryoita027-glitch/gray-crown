@@ -1556,7 +1556,7 @@ function finalCampAfterBattlePrompt(route){
  if(!entry||state.map!==entry.map||state.finalChoice!==route||
     !isEventComplete('final.route.'+route+'.checkpoint'))return false;
  const copied=state.events?.choices?.['finalcamp.witness.'+route]==='copied';
- return say('カレン','「北の'+entry.leader+'に会う前に、南の記録板へ戻る？　それとも先へ進む？」',[
+ say('カレン','「北の'+entry.leader+'に会う前に、南の記録板へ戻る？　それとも先へ進む？」',[
   {label:copied?'南の記録板を見直す（任意）':'南の記録板を確かめる（任意）',fn:()=>{
    // Both camps share the same 24x15 layout; (11,9) faces the board at (10,9).
    // No item or choice is granted by this movement: the board remains opt-in.
@@ -1573,6 +1573,9 @@ function finalCampAfterBattlePrompt(route){
    return say('カレン','「今は指揮官と話そう。記録板には後から戻れる」');
   }}
  ]);
+ // say() is a void UI operation. Report that the prompt was handled so
+ // battleWin does not immediately replace it with its fallback line.
+ return true;
 }
 
 function inlineObjectEvent(id){
