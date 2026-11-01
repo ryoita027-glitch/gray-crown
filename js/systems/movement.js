@@ -124,7 +124,44 @@ function enterWatchfort(){
 }
 function enterRavine(){enterWatchfort()}
 function enterEmpireVillage(){setWorldSwitch('strandedEmpire',true);markVisited('empirevillage',true);travelScene('empirevillage',11,13,'up','第四章 — 敵国','身分を隠して帝国領を北へ進む','渓谷橋の崩落で四人は帝国側へ取り残された。長い国境地帯を越えた先で、ようやく最初の帝国村が見えた。そこで目にしたのは「魔王軍の巣」ではなく、水車と果樹畑、そして青い喪章だった。')}
-function enterImperialCity(){markVisited('imperialcity',true);travelScene('imperialcity',11,13,'up','第四章 — 敵国','帝国の町で情報を集める','辺境村で何度も目にした「ユウキ」という名を確かめるため、四人は地方都市の公文書館を目指す。市場も運河も役所もある。ここは敵の本拠地である前に、人が暮らす国だった。')}
+// Return visits use the gate the party actually crossed. The first arrival
+// does not assume the player investigated the village's optional Yuki clues.
+function imperialCityNextObjective(){
+ if(structuredCondition('heardYuki'))return '北の旧戦場でユウキの記録を確かめる';
+ return structuredCondition('empireYukiMention')
+  ?'町の公文書館でユウキの記録を確かめる'
+  :'町の公文書館で国境の戦いの記録を調べる';
+}
+function enterImperialCity(source='empirevillage'){
+ const firstVisit=!hasVisited('imperialcity');
+ const objective=imperialCityNextObjective();
+ if(!firstVisit){
+  const fromNorth=source==='yukiroad';
+  const y=fromNorth?1:13;
+  setMap('imperialcity',11,y,fromNorth?'down':'up',[[12,y],[13,y],[14,y]]);
+  state.chapter='第四章 — 敵国';
+  state.objective=objective;
+  renderHud();
+  return;
+ }
+ markVisited('imperialcity',true);
+ travelScene('imperialcity',11,13,'up','第四章 — 敵国',objective,
+  'レグノア辺境村の北に、運河の町が広がっていた。市場には水路の修理予定が貼られ、広場には戦没者を悼む青い布が揺れる。王国で聞いた戦勝の話と何が違うのか。町の公文書館なら手掛かりがありそうだ。');
+}
+function returnEmpireVillageFromCity(){
+ // The city is north of the village. Re-enter at the village's north gate,
+ // without replaying the bridge-collapse arrival or overwriting discoveries.
+ setMap('empirevillage',11,1,'down',[[12,1],[13,1],[14,1]]);
+ state.chapter='第四章 — 敵国';
+ if(structuredCondition('heardYuki'))
+  state.objective='北の町を抜け、旧戦場でユウキの足跡を確かめる';
+ else if(state.events.choices['empire.millCleared']==='cleared'&&state.events.choices['empire.millThanks']!=='given')
+  state.objective='水車の西の果樹農家に修理を知らせる／北の町へ戻る';
+ else if(structuredCondition('empireYukiMention'))
+  state.objective='北の町の公文書館でユウキの記録を調べる';
+ else state.objective='村の人の話を聞く／北の町へ戻る';
+ renderHud();
+}
 function enterYukiRoad(){travelScene('yukiroad',11,13,'up','第五章 — ユウキ','旧戦場でユウキの記録を探す','王都では「討伐された四天王」、クラインテッドは「ユウキを討った勇者」と口にし、帝国では「皆を逃がした将軍」と語られた。同じ女の話とは思えない。その死んだ場所へ、自分たちの目で確かめに行く。')}
 function enterElsia(){markVisited('elsia',true);travelScene('elsia',11,13,'up','第六章 — 千年前の国境','聖域の住民と古い記録を調べる','エルシア聖域。王国の祈りの起源であり、千年近く帝国の人々が暮らしてきた土地へ四人は足を踏み入れた。')}
 function enterReturnRoad(){markVisited('returnroad',true);travelScene('returnroad',11,13,'up','第七章 — 勇者の値段','王国へ戻り、王都を目指す','得た資料を抱え、四人は戦線の隙間を縫う帰還路へ入った。')}
@@ -237,9 +274,9 @@ function move(dir){if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started
  if(state.map==='ravine'&&ny<0&&[11,12].includes(nx)){if(!isEventComplete('metKlein')){enterWatchfort();return}enterEmpireVillage();return}
  if(state.map==='empirevillage'&&ny>=15&&[11,12].includes(nx)){say('崩れた渡河点','戦闘で橋が落ちている。今は王国側へ戻れない。帝国内で別の道を探すしかない。');return}
  if(state.map==='empirevillage'&&ny<0&&[11,12].includes(nx)){enterImperialCity();return}
- if(state.map==='imperialcity'&&ny>=15&&[11,12].includes(nx)){travelScene('empirevillage',11,1,'down','第四章 — 敵国','帝国領を調べる','辺境の村へ戻った。');return}
+ if(state.map==='imperialcity'&&ny>=15&&[11,12].includes(nx)){returnEmpireVillageFromCity();return}
  if(state.map==='imperialcity'&&ny<0&&[11,12].includes(nx)){if(!isEventComplete('heardYuki')){say('マーガレット','「ユウキについて、町の記録係から話を聞いておきたい」');return}enterYukiRoad();return}
- if(state.map==='yukiroad'&&ny>=15&&[11,12].includes(nx)){enterImperialCity();return}
+ if(state.map==='yukiroad'&&ny>=15&&[11,12].includes(nx)){enterImperialCity('yukiroad');return}
  if(state.map==='yukiroad'&&ny<0&&[11,12].includes(nx)){if(!isEventComplete('metZester')){say('ナレーション','聖域へ続く道には帝国軍が布陣している。ゼスターと話をつける必要がある。');return}enterElsia();return}
  if(state.map==='elsia'&&ny>=15&&[11,12].includes(nx)){enterYukiRoad();return}
  if(state.map==='elsia'&&ny<0&&[11,12].includes(nx)){if(!isEventComplete('metZenith')){say('ゼニス','「まだ見るべきものがある。住民と古い碑文、その両方を見てから来い」');return}enterReturnRoad();return}

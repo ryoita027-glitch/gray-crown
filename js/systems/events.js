@@ -1140,7 +1140,39 @@ function inlineNpcEvent(id){
   if(id==='klein')return say('ナレーション','この場所はv11でベルド砦・ラゼル峡谷へ統合された。南へ戻ると新しいルートへ移れる。')
  }
  if(state.map==='empirevillage'){
-  if(id==='empireInnkeeper')return saySequence([{speaker:'帝国の宿主',text:'「旅人かい？ ひどい泥だね。西の橋が落ちたって聞いたけど、巻き込まれたのかい」'},{speaker:'カレン',text:'「えっと……はい。四人で、東へ向かう途中で」'},{speaker:'帝国の宿主',text:'「そう。なら今夜は空いてる。先に手を洗いな。スープは薄いけど温かいよ」'},{speaker:'ソフィ',text:'「……私たちが誰か、聞かないんですか？」'},{speaker:'帝国の宿主',text:'「聞いてほしい顔してないだろ」'},{speaker:'トリトン',text:'「もし私たちが王国人でも？」'},{speaker:'帝国の宿主',text:'「だったら何だい。腹減ってる人間に国境なんて書いてないよ。兵隊を連れてきたなら別だけどね」'},{speaker:'ナレーション',text:'四人は返事ができなかった。王国で何度も聞いた“魔王の国”という言葉が、湯気の向こうで急に薄っぺらく感じられた。'},{speaker:'マーガレット',text:'「……カレン。今、“ありがとう”だけ言って」'},{speaker:'カレン',text:'「うん。……ありがとうございます」'}])
+  if(id==='empireInnkeeper'){
+   // The first welcome is a character moment, not a repeatable exposition dump.
+   // Commit the memory after the final line so an interrupted scene can be read.
+   if(state.events.choices['empire.innWelcome']!=='heard')
+    return saySequence([
+     {speaker:'帝国の宿主',text:'「旅人かい？ ひどい泥だね。西の橋が落ちたって聞いたけど、巻き込まれたのかい」'},
+     {speaker:'カレン',text:'「えっと……はい。四人で、東へ向かう途中で」'},
+     {speaker:'帝国の宿主',text:'「そう。なら今夜は空いてる。先に手を洗いな。スープは薄いけど温かいよ」'},
+     {speaker:'ソフィ',text:'「……私たちが誰か、聞かないんですか？」'},
+     {speaker:'帝国の宿主',text:'「聞いてほしい顔してないだろ」'},
+     {speaker:'トリトン',text:'「もし私たちが王国人でも？」'},
+     {speaker:'帝国の宿主',text:'「だったら何だい。腹減ってる人間に国境なんて書いてないよ。兵隊を連れてきたなら別だけどね」'},
+     {speaker:'ナレーション',text:'四人は返事ができなかった。王国で何度も聞いた“魔王の国”という言葉が、湯気の向こうで急に薄っぺらく感じられた。'},
+     {speaker:'マーガレット',text:'「……カレン。今、“ありがとう”だけ言って」'},
+     {speaker:'カレン',text:'「うん。……ありがとうございます」'}
+    ],()=>{
+     state.events.choices['empire.innWelcome']='heard';
+     addJournal('レグノア辺境村の宿主は、出身を詮索せず四人を迎え入れた。');
+     renderHud();
+    });
+   const millFixed=state.events.choices['empire.millCleared']==='cleared';
+   const greeting=millFixed
+    ?'「西の水車がまた回ってるね。畑の人も助かったろう。旅人が直したなんて、まだ誰も知らないよ」'
+    :'「西の水車が止まって、畑の人が困ってる。無理に手伝わなくていい。まずは体を休めな」';
+   return say('帝国の宿主',greeting,[
+    {label:'青い喪章について聞く',fn:()=>say('帝国の宿主',
+     state.events.choices['empire.ribbonRead']==='read'
+      ?'「あの札を読んだんだね。詳しい戦いの記録なら、北の町の公文書館にあるはずだよ」'
+      :'「東の道端に青い布が結んである。誰を悼んでるのか、札を読めば分かるよ」')},
+    {label:'北の道について聞く',fn:()=>say('帝国の宿主','「中央の石道を北へまっすぐ。運河の町に着くよ。記録を調べるなら公文書館へ」')},
+    {label:'礼を言って出る',fn:()=>say('カレン','「ありがとうございます。もう少し村を見てから行きます」')}
+   ]);
+  }
   if(id==='empireChild'){
    // Reading the memorial first must not suppress this child's first Yuki story.
    if(state.events.choices['empire.childYukiHeard']!=='heard'){
