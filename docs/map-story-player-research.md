@@ -1,5 +1,19 @@
 # Map and story: player-facing research notes
 
+## 2026-11-01 22:43 JST — final camps: evidence before confronting a ruler
+
+**Evidence checked on 2026-11-01:**
+- [Sea of Stars player discussion, 2026-10-22](https://www.reddit.com/r/seaofstars/comments/1xcixou/7_hours_into_the_game_and_loving_every_moment_of/): some players praised the characters and journey, while another criticized planted story concepts that did not pay off later. Individual opinions, **not** a representative Steam survey.
+- [Chained Echoes review-theme aggregation, analysis updated 2026-10-05](https://niklasnotes.com/dashboard/game/108411/chained_echoes): sampled criticism includes continuity/save-data concerns. The aggregate method and representativeness were not independently verified.
+- [Sea of Stars review sample, checked 2026-11-01](https://imho.run/games/1244090/sea-of-stars): sampled praise for rewarding secrets and complaints about repetition. The site reports its price check as 2026-10-29; this is not a verified date for individual reviews.
+- **No newly dated Steam individual review was independently verified this run.** Do not infer player consensus or sales from these sources.
+
+**Code observation verified on PR #250 HEAD `df40cf087a9697d136455f3164b2dceb00d24f5e`:** both final camp maps contained only their ruler NPC, no optional objects. Players entered at y=13 and approached the ruler at y=4. The previous route decision already affected arrival and checkpoint combat, but no inspectable local evidence was available during the walk.
+
+**Implemented, player-value hypothesis unverified:** a small contrasting paper board at (10,9), immediately beside the central route, in each camp. The imperial camp lists families waiting for evacuation permission; the royal camp records surrendered soldiers but leaves their names blank. The player can copy the visible information or continue; a copy is saved as an existing Save v23 event choice and one journal entry. On revisiting, the board remembers the copy. After the existing checkpoint, Margaret confronts Shion/Granz with the specific evidence; neither ruler promises a rescue or order change. No new map area, forced detour, battle gate, or claimed political victory. This makes civilian stakes discoverable before the ruler encounter without borrowing any external game scene.
+
+**Verification:** syntax compilation of modified runtime and test JS passed in V8. Isolated real-function V8 execution passed 10/10 branch scenarios (both routes: skip, copy, repeat, journal, ruler echo). These are not native Node, Chromium, full game Save/Load or human-playtest results. The new Node harness regression source is committed **but not executed**. Local git clone still cannot resolve github.com. Next: run `node --test tests/finalcamp_witness_records.test.js tests/finalfield_camp_continuity.test.js` and full checks; walk both maps and confirm the board's native 44px readability, dialogue sequence, boss checkpoint, return and real Save/Load.
+
 ## 2026-11-01 21:43 JST — final army camps: no skipped friend decision, no repeated arrival
 
 **Evidence checked (2026-11-01; individual Steam opinions, not population statistics):**
