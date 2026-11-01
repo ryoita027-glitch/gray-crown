@@ -32,11 +32,17 @@ function saveFromMenu(){
 function exportFromMenu(download){
  const modal=$('modal');
  modal.classList.add('hidden');
- const started=download();
- if(!started&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
-  modal.classList.remove('hidden')
+ let started=false;
+ try{
+  started=download();
+  return started
+ }finally{
+  // Even an unexpected exception must not strand the player outside the menu.
+  // Leave an already-visible system message unobstructed.
+  if(!started&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
+   modal.classList.remove('hidden')
+  }
  }
- return started
 }
 function exportPortableSaveFromMenu(){
  return exportFromMenu(()=>GC.Save.downloadPortableSave())
