@@ -24,7 +24,7 @@ HAIR = {(184,170,205),(216,207,229),(242,238,247),(139,121,166),(245,232,255)}
 HIGHLIGHT = {(242,238,247),(245,232,255)}
 
 def blob_sha(data):
-    return hashlib.sha1(b"blob " + str(len(data)).encode() + b"\\0".replace(b"\\0", b"\0") + data).hexdigest()
+    return hashlib.sha1(b"blob " + str(len(data)).encode() + bytes([0]) + data).hexdigest()
 
 def build(source):
     if source.size != (192,192):
