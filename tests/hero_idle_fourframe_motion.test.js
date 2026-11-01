@@ -75,8 +75,8 @@ test('missing idle atlas and default mode safely preserve walk art',()=>{
  }
 });
 test('animated idle is isolated to URL mode 2 and a stationary repaint timer',()=>{
- assert.match(source,/heroIdleArt=\(\?:1\|2\)/);
- assert.match(source,/heroIdleArt=2/);
+ assert.match(source,/heroIdleArt=\(\?:1\|2\|3\)/);
+ assert.match(source,/heroIdleArt=\(\?:2\|3\)/);
  assert.match(source,/idleMotionWait=ambientAllowed&&HERO_RUNTIME\.idleMotionEnabled/);
  assert.match(source,/Math\.min\(workerWait,streamWait,idleMotionWait\)/);
  assert.match(source,/Math\.max\(80,nextAmbient\)/);
