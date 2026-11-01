@@ -286,8 +286,13 @@ function finalCampObjective(route){
 // Aldina must not erase the player's progress or suggest choosing again.
 function finalFieldCapitalReturnObjective(){
  const route=state.finalChoice;
- if(['kingdom','empire'].includes(route)&&state.events?.choices?.['route.final.'+route])
-  return '最終局面の要求は記録済み／北門から前線を再訪（任意）';
+ if(['kingdom','empire'].includes(route)&&state.events?.choices?.['route.final.'+route]){
+  const demand=state.events.choices['route.final.'+route];
+  const annotated=state.events.choices['capital.northGateReturnRecord']===route+':'+demand;
+  return annotated
+   ?'最終局面の要求は記録済み／北門から前線を再訪（任意）'
+   :'最終局面の要求は記録済み／北門脇の出陣名簿を確認（任意）・北門から前線を再訪（任意）';
+ }
  if(route==='kingdom'||route==='empire')
   return '北門から前線へ戻り、選んだ道の決断を進める';
  return '北門から前線へ戻り、進む道を選ぶ';
