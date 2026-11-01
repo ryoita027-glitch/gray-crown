@@ -16,6 +16,19 @@ function restartFromMenu(){
  }
  return started
 }
+function loadFromMenu(){
+ // Loading a checkpoint replaces unsaved progress in the current session.
+ // The title-screen Continue action is intentionally unaffected.
+ if(!confirm('最後に保存した冒険をロードしますか？\n現在の未保存の進行は失われます。'))return false;
+ const modal=$('modal');
+ modal.classList.add('hidden');
+ const loaded=load(false);
+ // Do not cover a system error dialogue, but preserve retry access if none appeared.
+ if(!loaded&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
+  modal.classList.remove('hidden')
+ }
+ return loaded
+}
 function openMenu(){
  if(state.battle)return;
  const inv=Object.entries(state.inventory).map(([k,v])=>`<div class="kv"><strong>${escapeMenuText(k)}</strong><span>${escapeMenuText(v)}</span></div>`).join('');
@@ -29,7 +42,7 @@ function openMenu(){
    <div class="menu-inventory">${inv}</div>
    <div class="menu-actions">
      <button onclick="$('modal').classList.add('hidden');save(false)">セーブ</button>
-     <button onclick="$('modal').classList.add('hidden');load(false)">ロード</button>
+     <button onclick="loadFromMenu()">ロード</button>
      <button onclick="$('modal').classList.add('hidden');GC.Save.downloadPortableSave()">セーブを書き出す（PC移行用）</button>
      <button onclick="document.getElementById('portableSaveUpload').click()">セーブを読み込む（.json）</button>
      <input id="portableSaveUpload" type="file" accept=".json,application/json" style="display:none"
