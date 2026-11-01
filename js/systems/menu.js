@@ -6,6 +6,8 @@ function escapeMenuText(value){
  })[ch])
 }
 function restartFromMenu(){
+ // The portable import owns checkpoint transitions until it settles.
+ if(portableMenuImportInProgress)return false;
  const modal=$('modal');
  modal.classList.add('hidden');
  let started=false;
@@ -21,6 +23,8 @@ function restartFromMenu(){
  }
 }
 function saveFromMenu(){
+ // The portable import owns checkpoint transitions until it settles.
+ if(portableMenuImportInProgress)return false;
  const modal=$('modal');
  modal.classList.add('hidden');
  let saved=false;
@@ -79,6 +83,8 @@ function loadFromToolbar(){
  return load(false)
 }
 function loadFromMenu(){
+ // The portable import owns checkpoint transitions until it settles.
+ if(portableMenuImportInProgress)return false;
  // A blocked load must not ask a false discard confirmation. Still close
  // the menu while the save system presents its own error dialogue.
  const blocked=GC.Save.canPersistNow?.('load')===false;
@@ -100,6 +106,8 @@ function loadFromMenu(){
  }
 }
 function restoreArchivedAdventureFromMenu(){
+ // The portable import owns checkpoint transitions until it settles.
+ if(portableMenuImportInProgress)return false;
  const modal=$('modal');
  modal.classList.add('hidden');
  let restored=false;
