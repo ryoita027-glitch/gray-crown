@@ -414,6 +414,17 @@ function runFinalRouteConfrontation(route){
     {speaker:'カレン',text:'「故郷を嫌いになったわけじゃない。だからこそ、この戦争を止める」'},
     consequences.empire[decision],
     {speaker:'総司令グランツ',text:'「それも君たちが選んだ勇者の形か。……しかし軍の命令は止まらない」'}];
+ // Let a surrender affect the friends' reaction, not only the battle result.
+ // A defeated soldier is never presumed dead.
+ const resolution=state.events?.choices?.['finalcamp.checkpointOutcome.'+route];
+ if(resolution==='surrender'){
+  lines.splice(lines.length-1,0,route==='kingdom'
+   ?{speaker:'ソフィ',text:'「前衛の兵は武器を置きました。でも避難の許可が出たわけではありません」'}
+   :{speaker:'トリトン',text:'「兵は武器を置いた。追撃や護送の命令まで消えたわけじゃない」'});
+ }else if(resolution==='defeat'){
+  lines.splice(lines.length-1,0,
+   {speaker:'ソフィ',text:'「倒れた兵の生死はまだ分かりません。これ以上戦いを広げたくありません」'});
+ }
  // A copied document gives the friends a concrete question for the ruler.
  // Neither ruler is assumed to accept the demand or guarantee safety.
  if(state.events?.choices?.['finalcamp.witness.'+route]==='copied'){
@@ -1489,6 +1500,15 @@ function capitalLedgerCopyChoice(){
  ]);
 }
 
+// Record the observed local battle resolution without declaring anyone saved.
+function recordFinalCampCheckpointOutcome(route,outcome){
+ if(!['kingdom','empire'].includes(route)||state.finalChoice!==route||
+    !isEventComplete('final.route.'+route+'.checkpoint'))return false;
+ const key='finalcamp.checkpointOutcome.'+route;
+ if(state.events?.choices?.[key])return false;
+ state.events.choices[key]=outcome==='surrender'?'surrender':'defeat';
+ return true;
+}
 // Optional witness records are not proof that either army has protected anyone.
 function finalCampWitnessEvent(id){
  const entries={
@@ -1527,8 +1547,13 @@ function finalCampWitnessEvent(id){
   }
  };
  const aftermath=cleared?(aftermathByChoice[entry.route]?.[stance]||''):'';
- if(state.events?.choices?.[key]==='copied')return say(entry.title,entry.revisit+aftermath);
- return say(entry.title,entry.intro+aftermath,[
+ const resolution=cleared?state.events?.choices?.['finalcamp.checkpointOutcome.'+entry.route]:null;
+ const battleTrace=resolution==='surrender'
+  ?' 四人が戦った兵は武器を置き、道を譲った。ただし掲示された人々の安全が確保された証拠ではない。'
+  :resolution==='defeat'
+  ?' 戦いは終わったが、倒れた兵の生死は未確認だ。掲示された人々の安否もまだ分からない。':'';
+ if(state.events?.choices?.[key]==='copied')return say(entry.title,entry.revisit+aftermath+battleTrace);
+ return say(entry.title,entry.intro+aftermath+battleTrace,[
   {label:'人数と空欄を手帳に写す',fn:()=>{
    if(state.events.choices[key]==='copied')return finalCampWitnessEvent(id);
    state.events.choices[key]='copied';

@@ -188,6 +188,7 @@ function battleWin(outcome='defeat'){const b=state.battle,id=b.id,bd=battles[id]
   if(state.finalChoice===finalRouteBattle.route&&
      state.events?.choices?.['route.companions.'+finalRouteBattle.route]===finalRouteBattle.choice){
    completeEvent(key,true);
+   recordFinalCampCheckpointOutcome(finalRouteBattle.route,outcome);
    addJournal(finalRouteBattle.context+(outcome==='surrender'?'相手は降伏して武器を下ろした。':'戦闘不能となった相手の死亡は確定していない。'));
   }
  }
