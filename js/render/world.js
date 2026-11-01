@@ -1,7 +1,9 @@
 'use strict';
 const COLORS={grass:'#6f8059',grass2:'#62724f',path:'#b49a6c',tree:'#496345',trunk:'#6c513c',gold:'#c9aa61',skin:'#ddb99e',shadow:'rgba(0,0,0,.22)',cave:'#3c3b41'};
 const HERO_SPRITES={image:null,ready:false,frameW:32,frameH:32,columns:3,directions:{down:0,left:1,right:2,up:3},characters:{karen:0,triton:1,sophie:2,margaret:3}};
-const HERO_RUNTIME={frameW:48,frameH:48,display:44,anchor:[24,44],directions:{down:0,left:1,right:2,up:3},images:{}};
+const HERO_RUNTIME={frameW:48,frameH:48,display:44,anchor:[24,44],directions:{down:0,left:1,right:2,up:3},images:{},idleImages:{},
+ // Opt-in art review only. Default gameplay keeps the approved walk atlas at rest.
+ idleTrialEnabled:typeof window!=='undefined'&&/(?:^|[?&])heroIdleArt=1(?:&|$)/.test(window.location.search||'')};
 // Art-only trial: use the same authored pose anchor for field walking and dialogue.
 // Margaret's source shoe line is y45–46; other heroes retain y44. Do not alter PNGs.
 function heroGroundedOrigin(footX,footY,heroId,size){
@@ -11,13 +13,22 @@ function heroGroundedOrigin(footX,footY,heroId,size){
 }
 if(typeof Image!=='undefined'){
  const fallback=new Image();HERO_SPRITES.image=fallback;fallback.onload=()=>{HERO_SPRITES.ready=true};fallback.onerror=()=>{HERO_SPRITES.ready=false};fallback.src='assets/hero_party_walk.png';
- for(const id of Object.keys(HERO_SPRITES.characters)){const rec={image:new Image(),ready:false,error:false};rec.image.onload=()=>{rec.ready=true;rec.error=false};rec.image.onerror=()=>{rec.ready=false;rec.error=true};rec.image.src='assets/characters/'+id+'/'+id+'_walk.png';HERO_RUNTIME.images[id]=rec}
+ for(const id of Object.keys(HERO_SPRITES.characters)){const rec={image:new Image(),ready:false,error:false};rec.image.onload=()=>{rec.ready=true;rec.error=false};rec.image.onerror=()=>{rec.ready=false;rec.error=true};rec.image.src='assets/characters/'+id+'/'+id+'_walk.png';HERO_RUNTIME.images[id]=rec;
+  // Load authored 4-frame idle atlases only for the isolated visual trial.
+  if(HERO_RUNTIME.idleTrialEnabled){const idle={image:new Image(),ready:false,error:false};
+   idle.image.onload=()=>{idle.ready=idle.image.naturalWidth===192&&idle.image.naturalHeight===192;idle.error=!idle.ready};
+   idle.image.onerror=()=>{idle.ready=false;idle.error=true};
+   idle.image.src='assets/characters/'+id+'/'+id+'_idle.png';HERO_RUNTIME.idleImages[id]=idle}
+ }
 }
 function heroWalkFrame(motion){if(!motion)return 0;const cycle=[0,1,2,3,4,5,4,3,2,1];return cycle[Math.floor(motion)%cycle.length]}
 function drawHeroMarker(cx,topY){ctx.fillStyle='#f0d178';ctx.beginPath();ctx.moveTo(cx,topY-3);ctx.lineTo(cx+5,topY-9);ctx.lineTo(cx,topY-14);ctx.lineTo(cx-5,topY-9);ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(66,46,20,.86)';ctx.lineWidth=1;ctx.stroke()}
-function drawHeroSpriteSheet(x,y,heroId,leader,facing,motion){
- const frame=heroWalkFrame(motion),row=HERO_RUNTIME.directions[facing]??0,px=Math.round(x*TILE),py=Math.round(y*TILE),footX=px+16,footY=py+30;
- const rec=HERO_RUNTIME.images[heroId];
+function drawHeroSpriteSheet(x,y,heroId,leader,facing,motion,stationary=false){
+ const row=HERO_RUNTIME.directions[facing]??0,px=Math.round(x*TILE),py=Math.round(y*TILE),footX=px+16,footY=py+30;
+ const idle=stationary&&HERO_RUNTIME.idleTrialEnabled?HERO_RUNTIME.idleImages[heroId]:null;
+ // The idle atlas is 4 columns; walk is 6. No frame leakage between them.
+ const useIdle=!!idle?.ready,frame=useIdle?0:heroWalkFrame(motion);
+ const rec=useIdle?idle:HERO_RUNTIME.images[heroId];
  if(rec?.ready&&rec.image){
   const size=GC.Data?.Animations?.artDisplaySize||HERO_RUNTIME.display,{dx,dy}=heroGroundedOrigin(footX,footY,heroId,size);
   ctx.save();ctx.fillStyle='rgba(16,18,18,.28)';ctx.beginPath();ctx.ellipse(footX,footY-1,10,4,0,0,Math.PI*2);ctx.fill();ctx.imageSmoothingEnabled=false;
@@ -28,7 +39,8 @@ function drawHeroSpriteSheet(x,y,heroId,leader,facing,motion){
  const fallbackFrame=motion?[0,1,2,1][Math.floor(motion)%4]:1,fallbackRow=cfg.characters[heroId]*4+(cfg.directions[facing]??0);
  ctx.save();ctx.imageSmoothingEnabled=false;ctx.drawImage(cfg.image,fallbackFrame*32,fallbackRow*32,32,32,px,py,32,32);ctx.restore();if(leader)drawHeroMarker(px+16,py);return true
 }
-function heroRuntimeStatus(){const out={};for(const id of Object.keys(HERO_SPRITES.characters)){const rec=HERO_RUNTIME.images[id];out[id]={ready:!!rec?.ready,error:!!rec?.error,naturalWidth:rec?.image?.naturalWidth||0,naturalHeight:rec?.image?.naturalHeight||0}}return out}
+function heroRuntimeStatus(){const out={};for(const id of Object.keys(HERO_SPRITES.characters)){const rec=HERO_RUNTIME.images[id],idle=HERO_RUNTIME.idleImages[id];out[id]={ready:!!rec?.ready,error:!!rec?.error,naturalWidth:rec?.image?.naturalWidth||0,naturalHeight:rec?.image?.naturalHeight||0,
+  idleTrialEnabled:HERO_RUNTIME.idleTrialEnabled,idleReady:!!idle?.ready,idleError:!!idle?.error}}return out}
 function tileAt(mapId,x,y){const m=maps[mapId];if(!m||x<0||y<0||x>=COLS||y>=ROWS)return'S';return m.tiles[y][x]}
 function objectCleared(id){if(TREASURE_DEFS[id]&&state.world.treasures[id])return true;return (id==='wolf'&&isDefeated('wolf'))||(id==='bandit'&&isDefeated('bandit'))||(id==='bats'&&isDefeated('bats'))||(id==='crawler'&&isDefeated('crawler'))||(id==='boss'&&isDefeated('boss'))||(id==='scavengerWolves'&&isDefeated('scavengerWolves'))||(id==='chest1'&&state.world.treasures.chest1)||(id==='chest2'&&state.world.treasures.chest2)||(id==='innerGate'&&getWorldSwitch('leverWest')&&getWorldSwitch('leverEast'))||((id==='imperialPatrol'&&isDefeated('imperialPatrol'))||((['fortGate','fortGateRight'].includes(id)&&getWorldSwitch('fortGateOpen'))||(['ashCache','frontierCache','empireCache','imperialCache','yukiCache','elsiaCache'].includes(id)&&state.world.treasures[id])))}
 function npcVisible(n){if(n.showWhen&&!structuredCondition(n.showWhen))return false;if(n.hideWhen&&structuredCondition(n.hideWhen))return false;return true}
@@ -141,8 +153,8 @@ function drawHouse(h){const px=h.x*TILE,py=h.y*TILE,w=TILE*3;
  ctx.fillStyle='#775538';ctx.fillRect(px+10,py+72,19,13);ctx.strokeStyle='#a77b4e';ctx.strokeRect(px+10,py+72,19,13);ctx.fillStyle='#72503a';ctx.fillRect(px+66,py+68,21,7);ctx.fillStyle='#d3a958';for(const dx of [70,77,84]){ctx.fillRect(px+dx,py+64,3,4)}
  // no floating building-name plate: doors and in-world signs carry navigation now
  ctx.fillStyle='#5a4430';ctx.fillRect(px+35,py+86,30,4);ctx.fillStyle='rgba(220,196,143,.18)';ctx.fillRect(px+38,py+86,24,1)}
-function drawCharacterSprite(x,y,style={},leader=false,facing='down',motion=0){
- if(style.heroId&&drawHeroSpriteSheet(x,y,style.heroId,leader,facing,motion))return;
+function drawCharacterSprite(x,y,style={},leader=false,facing='down',motion=0,stationary=false){
+ if(style.heroId&&drawHeroSpriteSheet(x,y,style.heroId,leader,facing,motion,stationary))return;
  const px=x*TILE,py=y*TILE,small=style.small?.84:1,walk=Math.sin(motion)*2.2,bob=Math.abs(Math.sin(motion))*1.1,side=facing==='left'||facing==='right',back=facing==='up',flip=facing==='left'?-1:1;
  const cx=px+16,baseY=py+1-bob,skin=COLORS.skin,body=style.body||'#776a5e',accent=style.accent||'#c2ad86',hair=style.hair||'#443b34';
  ctx.fillStyle='rgba(16,18,18,.34)';ctx.beginPath();ctx.ellipse(cx,py+29,side?9:10,4,0,0,Math.PI*2);ctx.fill();
@@ -183,14 +195,14 @@ function drawPartyRuntime(leaderMoving,phase){
  const p=trailPoints[i],vp=VISUAL.followers[i]||p,member=visibleParty[i+1],
   moving=Math.hypot(p[0]-vp[0],p[1]-vp[1])>.022;
  actors.push({x:vp[0],y:vp[1],style:PARTY_STYLE[member?.id]||PARTY_STYLE.triton,
-  facing:VISUAL.followerFaces[i]||state.dir,motion:moving?VISUAL.followerPhases[i]:0,leader:false});
+  facing:VISUAL.followerFaces[i]||state.dir,motion:moving?VISUAL.followerPhases[i]:0,stationary:!moving,leader:false});
 }
- actors.push({x:VISUAL.playerX,y:VISUAL.playerY,style:PARTY_STYLE.karen,facing:state.dir,motion:leaderMoving?VISUAL.travelPhase:0,leader:true});
+ actors.push({x:VISUAL.playerX,y:VISUAL.playerY,style:PARTY_STYLE.karen,facing:state.dir,motion:leaderMoving?VISUAL.travelPhase:0,stationary:!leaderMoving,leader:true});
  actors.sort((a,b)=>(a.y-b.y)||(a.x-b.x)||(a.leader?1:-1));
  GC.CommercialActing?.beginFrame?.(actors);
  for(const a of actors){
   const expressed=a.style?.heroId&&GC.CommercialActing?.draws?.(a.style.heroId,ctx,a.x,a.y,a.facing);
-  if(!expressed)drawCharacterSprite(a.x,a.y,a.style,false,a.facing,a.motion);
+  if(!expressed)drawCharacterSprite(a.x,a.y,a.style,false,a.facing,a.motion,a.stationary);
  }
  drawLeaderWorldMarker(VISUAL.playerX,VISUAL.playerY)
 }
