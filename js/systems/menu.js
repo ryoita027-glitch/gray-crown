@@ -143,7 +143,9 @@ async function importPortableSaveFromMenu(file){
  }
 }
 function openMenu(){
- if(state.battle)return;
+ // An in-flight portable import owns the menu until it settles. Keyboard
+ // shortcuts must not reopen stale controls over a newly loaded adventure.
+ if(state.battle||portableMenuImportInProgress)return;
  const inv=Object.entries(state.inventory).map(([k,v])=>`<div class="kv"><strong>${escapeMenuText(k)}</strong><span>${escapeMenuText(v)}</span></div>`).join('');
  const levels=state.party.map(p=>`<div class="menu-character"><div class="party-head"><strong>${escapeMenuText(p.name)}　Lv.${escapeMenuText(p.level)}</strong><span>${escapeMenuText(p.job)}</span></div><div class="menu-statline"><span>HP ${escapeMenuText(p.hp)}/${escapeMenuText(p.maxHp)}</span><span>MP ${escapeMenuText(p.mp)}/${escapeMenuText(p.maxMp)}</span><span>攻撃 ${escapeMenuText(p.atk)}</span><span>防御 ${escapeMenuText(p.def)}</span><span>素早さ ${escapeMenuText(p.spd)}</span></div><div class="party-sub">EXP ${escapeMenuText(p.exp)}${p.level<MAX_LEVEL?` / ${escapeMenuText(expThreshold(p.level))}`:' / MAX'}</div></div>`).join('');
  $('modalTitle').textContent='冒険メニュー';
