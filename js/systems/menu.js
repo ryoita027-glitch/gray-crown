@@ -8,13 +8,17 @@ function escapeMenuText(value){
 function restartFromMenu(){
  const modal=$('modal');
  modal.classList.add('hidden');
- const started=restart();
- // Cancelling the new-game confirmation must not discard the open menu.
- // A failure that has opened a system dialogue must keep that message visible.
- if(!started&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
-  modal.classList.remove('hidden')
+ let started=false;
+ try{
+  started=restart();
+  return started
+ }finally{
+  // Cancellation or an unexpected restart error must not strand the player.
+  // Leave any system error dialogue unobstructed.
+  if(!started&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
+   modal.classList.remove('hidden')
+  }
  }
- return started
 }
 function saveFromMenu(){
  const modal=$('modal');
@@ -61,23 +65,32 @@ function loadFromMenu(){
  if(!confirm('最後に保存した冒険をロードしますか？\n現在の未保存の進行は失われます。'))return false;
  const modal=$('modal');
  modal.classList.add('hidden');
- const loaded=load(false);
- // Do not cover a system error dialogue, but preserve retry access if none appeared.
- if(!loaded&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
-  modal.classList.remove('hidden')
+ let loaded=false;
+ try{
+  loaded=load(false);
+  return loaded
+ }finally{
+  // Preserve retry access even if a storage callback throws unexpectedly.
+  // Do not cover a visible system error dialogue.
+  if(!loaded&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
+   modal.classList.remove('hidden')
+  }
  }
- return loaded
 }
 function restoreArchivedAdventureFromMenu(){
  const modal=$('modal');
  modal.classList.add('hidden');
- const restored=GC.Save.restoreArchivedAdventure();
- // A declined confirmation must leave the player in the same menu.
- // A restore error with a visible system dialogue must remain readable.
- if(!restored&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
-  modal.classList.remove('hidden')
+ let restored=false;
+ try{
+  restored=GC.Save.restoreArchivedAdventure();
+  return restored
+ }finally{
+  // Cancellation, failure, or an unexpected exception must allow retry.
+  // A visible system error dialogue takes precedence over the menu.
+  if(!restored&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
+   modal.classList.remove('hidden')
+  }
  }
- return restored
 }
 function openMenu(){
  if(state.battle)return;
