@@ -73,11 +73,12 @@ function loadFromToolbar(){
  return load(false)
 }
 function loadFromMenu(){
- // When an event locks loading, preserve the menu and avoid a false warning.
- if(GC.Save.canPersistNow?.('load')===false)return load(false);
+ // A blocked load must not ask a false discard confirmation. Still close
+ // the menu while the save system presents its own error dialogue.
+ const blocked=GC.Save.canPersistNow?.('load')===false;
  // Loading a checkpoint replaces unsaved progress in the current session.
  // The title-screen Continue action is intentionally unaffected.
- if(!confirmActiveAdventureLoad())return false;
+ if(!blocked&&!confirmActiveAdventureLoad())return false;
  const modal=$('modal');
  modal.classList.add('hidden');
  let loaded=false;
