@@ -68,6 +68,9 @@ function confirmActiveAdventureLoad(){
  return confirm('最後に保存した冒険をロードしますか？\n現在の未保存の進行は失われます。')
 }
 function loadFromToolbar(){
+ // A portable import is already choosing a checkpoint. Do not let the
+ // persistent toolbar start a competing Load while its file read is pending.
+ if(portableMenuImportInProgress)return false;
  if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started)return load(false);
  // An active battle or scripted event cannot be loaded over.
  // Let the save system explain the lock without asking a misleading warning.
@@ -120,6 +123,11 @@ async function importPortableSaveFromMenu(file){
  if(portableMenuImportInProgress)return false;
  portableMenuImportInProgress=true;
  const modal=$('modal');
+ // Keep the competing top-bar Load visibly unavailable while file bytes are
+ // pending. Preserve any disabled state that another UI gate already set.
+ const toolbarLoad=$('btnLoad');
+ const toolbarLoadWasDisabled=toolbarLoad?.disabled;
+ if(toolbarLoad)toolbarLoad.disabled=true;
  modal.classList.add('hidden');
  let imported=false;
  try{
@@ -137,6 +145,7 @@ async function importPortableSaveFromMenu(file){
   return false
  }finally{
   portableMenuImportInProgress=false;
+  if(toolbarLoad)toolbarLoad.disabled=toolbarLoadWasDisabled;
   if(!imported&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
    modal.classList.remove('hidden')
   }
