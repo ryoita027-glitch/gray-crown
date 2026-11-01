@@ -49,7 +49,32 @@ function returnCaveNorth(){if(getWorldSwitch('northRoadFromRoad')){useMapTransit
 
 function showChapterCard(chapter,objective,done){const box=$('chapterCard');if(!box){if(done)done();return}state.locked=true;$('chapterCardTitle').textContent=chapter;$('chapterCardObjective').textContent=objective;box.classList.remove('hidden');requestAnimationFrame(()=>box.classList.add('show'));setTimeout(()=>{box.classList.remove('show');setTimeout(()=>{box.classList.add('hidden');state.locked=false;if(done)done()},180)},1250)}
 function travelScene(map,x,y,dir,chapter,objective,text,done=null){const chapterChanged=state.chapter!==chapter;setMap(map,x,y,dir,[[x+1,y],[x+2,y],[x+3,y]]);state.chapter=chapter;state.objective=objective;renderHud();const finish=()=>done?.();const after=()=>{if(text)say('ナレーション',text,[],finish);else finish()};if(chapterChanged)showChapterCard(chapter,objective,after);else after()}
-function enterCapital(first=true){markVisited('capital',true);if(!first)setWorldSwitch('returnedKingdom',true);travelScene('capital',11,first?13:1,first?'up':'down',first?'第一章 — 白い旗':'第七章 — 勇者の値段',first?'王城前で任命式に出る':'軍務街で歴代勇者の記録を探す',first?'城壁をくぐると、四人の名を呼ぶ歓声が石造りの街に響いた。|リュネ村とは別世界のような熱気だ。':'長い迂回路を経て四人は王都へ戻った。出発時の歓声と同じ街なのに、今は聞こえ方が違う。');if(first)advanceStory(STORY_STAGES.CAPITAL,null,'王城前で任命式に出る')}
+// Returning from Elsia reaches the SOUTH gate. Keep late-game objectives
+// attached to actual discoveries instead of replaying the first homecoming.
+function capitalReturnObjective(){
+ if(!structuredCondition('heroRecordsFound'))return '王都東の軍務街で歴代勇者の記録を探す';
+ if(!structuredCondition('heroTruth'))return 'グランツに勇者候補の台帳について問い質す';
+ return '王都北門から総攻撃前線へ向かう';
+}
+function enterCapital(first=true){
+ if(first){
+  markVisited('capital',true);
+  travelScene('capital',11,13,'up','第一章 — 白い旗','王城前で任命式に出る','城壁をくぐると、四人の名を呼ぶ歓声が石造りの街に響いた。|リュネ村とは別世界のような熱気だ。');
+  advanceStory(STORY_STAGES.CAPITAL,null,'王城前で任命式に出る');
+  return;
+ }
+ const firstHomecoming=!getWorldSwitch('returnedKingdom');
+ setWorldSwitch('returnedKingdom',true);
+ const objective=capitalReturnObjective();
+ if(!firstHomecoming){
+  setMap('capital',11,13,'up',[[12,13],[13,13],[14,13]]);
+  state.chapter='第七章 — 勇者の値段';
+  state.objective=objective;
+  renderHud();
+  return;
+ }
+ travelScene('capital',11,13,'up','第七章 — 勇者の値段',objective,'長い迂回路を経て四人は王都へ戻った。出発時の歓声と同じ街なのに、今は聞こえ方が違う。');
+}
 function enterAshRoad(source='capital'){
  const firstVisit=!hasVisited('ashroad');
  const objective=ashRoadNextObjective();
@@ -211,7 +236,20 @@ function enterElsia(source='yukiroad'){
  markVisited('elsia',true);
  travelScene('elsia',11,13,'up','第六章 — 千年前の国境',objective,'エルシア聖域。王国の祈りの起源であり、千年近く帝国の人々が暮らしてきた土地へ四人は足を踏み入れた。');
 }
-function enterReturnRoad(){markVisited('returnroad',true);travelScene('returnroad',11,13,'up','第七章 — 勇者の値段','王国へ戻り、王都を目指す','得た資料を抱え、四人は戦線の隙間を縫う帰還路へ入った。')}
+function enterReturnRoad(source='elsia'){
+ const firstVisit=!hasVisited('returnroad');
+ if(!firstVisit){
+  // The capital is NORTH of this winding road; Elsia lies SOUTH.
+  const fromNorth=source==='capital',y=fromNorth?1:13;
+  setMap('returnroad',11,y,fromNorth?'down':'up',[[12,y],[13,y],[14,y]]);
+  state.chapter='第七章 — 勇者の値段';
+  state.objective=fromNorth?'南へ進むとエルシア聖域へ戻れる':'北へ進み、王都の軍務街で記録を確かめる';
+  renderHud();
+  return;
+ }
+ markVisited('returnroad',true);
+ travelScene('returnroad',11,13,'up','第七章 — 勇者の値段','北へ進み、王都の軍務街で記録を確かめる','得た資料を抱え、四人は戦線の隙間を縫う帰還路へ入った。');
+}
 function enterFinalField(){markVisited('finalfield',true);travelScene('finalfield',11,13,'up','最終章 — 誰のための勇者か','中央の地点で、どちら側に立つか決める','王国の総攻撃と帝国の反攻が始まる。両軍の旗が見える前線で、四人は最後の選択を迫られる。')}
 function enterFinalBranch(){if(state.finalChoice==='kingdom')travelScene('imperialcamp',11,13,'up','最終章 — 王国側','帝国本陣でシオンと向き合う','故郷と王国民を守るため、四人は帝国本陣へ向かう。');else if(state.finalChoice==='ashcrown'){
  if(!state.events?.choices?.['route.companions.ashcrown']){routeCompanionScene('ashcrown');return}
@@ -303,7 +341,7 @@ function move(dir){if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started
  if(INTERIOR_MAPS.includes(state.map)&&ny>=13&&[11,12].includes(nx)){leaveInterior();return}
  if(state.map==='road'&&ny<0){if(!isDefeated('wolf')){say('トリトン','「先に街道を塞いでいる灰牙狼を何とかしよう」');return}enterNorthRoad('road');return}
  // 全章マップ骨組み
- if(state.map==='capital'&&ny>=15&&[11,12].includes(nx)){if(getWorldSwitch('returnedKingdom')){enterReturnRoad();return}travelScene('northroad',11,1,'down','第一章 — 白い旗','王都へ戻る／周辺を確認する','王都南側の旧街道へ戻った。');return}
+ if(state.map==='capital'&&ny>=15&&[11,12].includes(nx)){if(getWorldSwitch('returnedKingdom')){enterReturnRoad('capital');return}travelScene('northroad',11,1,'down','第一章 — 白い旗','王都へ戻る／周辺を確認する','王都南側の旧街道へ戻った。');return}
  if(state.map==='capital'&&ny<0&&[11,12].includes(nx)){if(getWorldSwitch('returnedKingdom')){if(!isEventComplete('heroRecordsFound')){say('マーガレット','「軍務街に“勇者候補管理”の記録がある。まずそれを確かめたい」');return}if(!isEventComplete('heroTruth')){say('総司令部','台帳の内容をグランツ本人に問い質す必要がある。');return}enterFinalField();return}if(!isEventComplete('alpha.capital.ceremony')){say('王都北門','正式な任命式を終えるまでは前線へ出られない。');return}if(!isEventComplete('alpha2.capital.granzBriefing')){say('王都北門','総司令グランツから前線任務の説明を受けてから出発しよう。');return}enterAshRoad();return}
  if(state.map==='ashroad'&&ny>=15&&[11,12].includes(nx)){travelScene('capital',11,1,'down','第二章 — 灰の街道','前線へ向かう／王都へ戻る','王都へ戻った。');return}
  if(state.map==='ashroad'&&ny<0&&[11,12].includes(nx)){if(isEventComplete('alpha2.ashroad.complete')){enterFrontier();return}if(!isEventComplete('alpha2.ashroad.patrolVictory')){say('カレン','「前方に帝国軍の斥候がいる。街道を抜けるなら、避けては通れない」');return}if(!isEventComplete('alpha2.ashroad.refugee')){say('ソフィ','「先へ行く前に、避難してきた人の話を聞いておきたいです」');return}if(!isEventComplete('alpha2.ashroad.orders')){say('マーガレット','「焼け跡に残った命令書を確認しましょう。何を狙った攻撃なのか知っておきたい」');return}runTriggeredEvent('boundary','north',{map:'ashroad'});return}
