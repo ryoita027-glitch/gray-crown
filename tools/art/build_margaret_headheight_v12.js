@@ -13,7 +13,7 @@ const BOARD='docs/art/evidence/margaret_headheight_v12_native44_npc.png';
 const LOCK={ [SOURCE]:'910458eabfcfaef7442f885f319d0e2a09c88a66',
 [NPC]:'b169b58a846e1812dc42f566ca1843a6088e901f' };
 function read(rel){const bytes=fs.readFileSync(path.join(ROOT,rel));if(LOCK[rel]){
- const sha=crypto.createHash('sha1').update(Buffer.from('blob '+bytes.length+'\\0')).update(bytes).digest('hex');
+ const sha=crypto.createHash('sha1').update(Buffer.from('blob '+bytes.length+'\0')).update(bytes).digest('hex');
  if(sha!==LOCK[rel])throw Error('approved source changed: '+rel);
  }return PNG.decode(bytes);}
 function build(src,top=6){if(src.width!==192||src.height!==192||![6,8].includes(top))throw Error('size/top');
