@@ -3,7 +3,10 @@ const COLORS={grass:'#6f8059',grass2:'#62724f',path:'#b49a6c',tree:'#496345',tru
 const HERO_SPRITES={image:null,ready:false,frameW:32,frameH:32,columns:3,directions:{down:0,left:1,right:2,up:3},characters:{karen:0,triton:1,sophie:2,margaret:3}};
 const HERO_RUNTIME={frameW:48,frameH:48,display:44,anchor:[24,44],directions:{down:0,left:1,right:2,up:3},images:{},idleImages:{},
  // Opt-in art review only. Default gameplay keeps the approved walk atlas at rest.
- idleTrialEnabled:typeof window!=='undefined'&&/(?:^|[?&])heroIdleArt=1(?:&|$)/.test(window.location.search||'')};
+  idleTrialEnabled:typeof window!=='undefined'&&/(?:^|[?&])heroIdleArt=(?:1|2)(?:&|$)/.test(window.location.search||''),
+ // A separate, reversible trial of all four authored idle frames.
+ idleMotionEnabled:typeof window!=='undefined'&&/(?:^|[?&])heroIdleArt=2(?:&|$)/.test(window.location.search||''),
+ idleFrameDuration:420};
 // Art-only trial: use the same authored pose anchor for field walking and dialogue.
 // Margaret's source shoe line is y45–46; other heroes retain y44. Do not alter PNGs.
 function heroGroundedOrigin(footX,footY,heroId,size){
@@ -22,12 +25,15 @@ if(typeof Image!=='undefined'){
  }
 }
 function heroWalkFrame(motion){if(!motion)return 0;const cycle=[0,1,2,3,4,5,4,3,2,1];return cycle[Math.floor(motion)%cycle.length]}
+// 0-1-2-3-2-1: a gentle reversal avoids a visible jump from frame 3 to 0.
+// This is opt-in only; the existing frame-zero idle comparison is unchanged.
+function heroIdleFrame(at){const cycle=[0,1,2,3,2,1];return cycle[Math.floor(Math.max(0,at)/HERO_RUNTIME.idleFrameDuration)%cycle.length]}
 function drawHeroMarker(cx,topY){ctx.fillStyle='#f0d178';ctx.beginPath();ctx.moveTo(cx,topY-3);ctx.lineTo(cx+5,topY-9);ctx.lineTo(cx,topY-14);ctx.lineTo(cx-5,topY-9);ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(66,46,20,.86)';ctx.lineWidth=1;ctx.stroke()}
 function drawHeroSpriteSheet(x,y,heroId,leader,facing,motion,stationary=false){
  const row=HERO_RUNTIME.directions[facing]??0,px=Math.round(x*TILE),py=Math.round(y*TILE),footX=px+16,footY=py+30;
  const idle=stationary&&HERO_RUNTIME.idleTrialEnabled?HERO_RUNTIME.idleImages[heroId]:null;
  // The idle atlas is 4 columns; walk is 6. No frame leakage between them.
- const useIdle=!!idle?.ready,frame=useIdle?0:heroWalkFrame(motion);
+ const useIdle=!!idle?.ready,frame=useIdle?(HERO_RUNTIME.idleMotionEnabled?heroIdleFrame(Date.now()):0):heroWalkFrame(motion);
  const rec=useIdle?idle:HERO_RUNTIME.images[heroId];
  if(rec?.ready&&rec.image){
   const size=GC.Data?.Animations?.artDisplaySize||HERO_RUNTIME.display,{dx,dy}=heroGroundedOrigin(footX,footY,heroId,size);
@@ -720,7 +726,11 @@ function drawScene(){
  const at=Date.now();
  const workerWait=ambientAllowed?OpeningWorldLife.nextWorkFrameDelay(state.map,state.x,state.y,m.npcs,at):Infinity;
  const streamWait=ambientAllowed?RyuneOutskirts.nextWaterFrameDelay(state.map,state.x,state.y,at):Infinity;
- const nextAmbient=Math.min(workerWait,streamWait);
+ // Only the explicit motion trial requests periodic repaint while the party rests.
+ // Normal play and frame-zero comparison keep the existing low-work scheduler.
+ const idleMotionWait=ambientAllowed&&HERO_RUNTIME.idleMotionEnabled&&Object.values(HERO_RUNTIME.idleImages).some(r=>r.ready)
+  ?HERO_RUNTIME.idleFrameDuration-(at%HERO_RUNTIME.idleFrameDuration):Infinity;
+ const nextAmbient=Math.min(workerWait,streamWait,idleMotionWait);
  if(moving||GC.CommercialActing?.active?.()){
   clearTimeout(VISUAL.ambientTimer);VISUAL.ambientTimer=null;
   cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene);
