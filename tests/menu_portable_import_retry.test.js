@@ -32,6 +32,7 @@ function harness({importer}={}){
  const onChange=vm.runInContext('(function(){'+match[1]+'})',context);
  const picker={files:[{size:100}],value:'C:\\fakepath\\save.json'};
  return {$,live,files,picker,select:()=>onChange.call(picker),
+  reopen:()=>context.GC.Menu.openMenu(),
   hidden:()=>$('modal').classList.contains('hidden')};
 }
 const settle=async()=>{await Promise.resolve();await Promise.resolve();await Promise.resolve()};
@@ -149,4 +150,27 @@ test('unexpected import error with a system dialogue does not cover the dialogue
  assert.equal(h.hidden(),true);
  assert.equal(h.$('modalTitle').textContent,'冒険メニュー');
  assert.equal(h.$('dialogueBox').classList.contains('hidden'),false);
+});
+
+// A player can press M while a file is still being read. That shortcut must
+// not bring stale menu controls back over a successfully imported adventure.
+test('M menu shortcut stays blocked until a pending portable import succeeds',async()=>{
+ let finish;
+ const h=harness({importer:()=>new Promise(resolve=>{finish=resolve})});
+ h.select();await settle();assert.equal(h.hidden(),true);
+ h.reopen();assert.equal(h.hidden(),true,'pending import reopened stale menu');
+ finish(true);await settle();
+ assert.equal(h.hidden(),true,'successful import must leave the menu closed');
+ h.reopen();assert.equal(h.hidden(),false,'menu must unlock after import completes');
+});
+
+test('failed pending import restores retry menu and unlocks M shortcut',async()=>{
+ let finish;
+ const h=harness({importer:()=>new Promise(resolve=>{finish=resolve})});
+ h.select();await settle();h.reopen();
+ assert.equal(h.hidden(),true,'pending import must retain exclusive menu ownership');
+ finish(false);await settle();
+ assert.equal(h.hidden(),false,'failed import must restore retry access');
+ h.$('modal').classList.add('hidden');
+ h.reopen();assert.equal(h.hidden(),false,'M shortcut must work after failure');
 });
