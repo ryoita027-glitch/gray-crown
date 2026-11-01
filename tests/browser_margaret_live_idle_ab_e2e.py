@@ -22,6 +22,8 @@ OUT = ROOT / 'prototype_artifacts/margaret_live_idle_ab'
 VIEWS = (('desktop', 1365, 900), ('phone', 390, 844))
 DIRECTIONS = ('down', 'left', 'right', 'up')
 SOURCE_BLOBS = {
+    'assets/characters/margaret/margaret_walk.png':
+        '1923f1315c377418cea0f2f94ab6431c987f2dd7',
     'assets/characters/margaret/margaret_idle.png':
         '910458eabfcfaef7442f885f319d0e2a09c88a66',
     'docs/art/evidence/margaret_identity_safe_hair_HOLD.png':
@@ -119,6 +121,7 @@ def capture_four(page, direction):
 
 def review(view, direction, shots):
     assert [s['key'] for s in shots] == list(SOURCES)
+    assert len(shots) == 4 and shots[0]['key'] == 'live_walk'
     assert all(s['canvas'] == [768, 480] for s in shots)
     assert all(s['state'] == shots[0]['state'] for s in shots)
     assert all(s['visual'] == shots[0]['visual'] for s in shots), 'camera/follower drift'
@@ -162,7 +165,7 @@ def review(view, direction, shots):
         board.paste(picture, (768*index, 30))
         pen.text((768*index+12, 9),
                  f'{view} {direction} / {shots[index]["key"]}', fill='white')
-    board_name = f'{view}_{direction}_three_way.png'
+    board_name = f'{view}_{direction}_four_way.png'
     board.save(OUT / board_name)
     # Enlarged context around the *actual rendered* Margaret difference.
     # This is a game-canvas crop, not a sprite-atlas collage.
