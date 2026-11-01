@@ -235,7 +235,9 @@ function routeCompanionScene(route){
  };
  const scene=scenes[route];if(!scene)return false;
  if(state.events.choices['route.companions.'+route])return false;
- saySequence(scene.lines,()=>say('カレン',route==='ashcrown'?'「……三人に、どう答える？」':'「私たちの進み方を決めよう」',scene.choices.map(c=>({label:c.label,fn:()=>{
+ const waymarkEcho=state.events?.choices?.['finalfield.civilianWaymark']==='restored'
+  ?[{speaker:'ソフィ',text:'「前線で直した避難標、見つけた人が使えるといい。でも軍が道を塞いだら、私たちが判断しなければ」'}]:[];
+ saySequence(waymarkEcho.concat(scene.lines),()=>say('カレン',route==='ashcrown'?'「……三人に、どう答える？」':'「私たちの進み方を決めよう」',scene.choices.map(c=>({label:c.label,fn:()=>{
    const key='route.companions.'+route;
    if(state.events.choices[key])return;
    state.events.choices[key]=c.id;
@@ -1391,7 +1393,7 @@ function inlineNpcEvent(id){
   ]);
  }
  if(state.map==='finalfield'&&id==='decisionGuide'){
-  if(!(structuredCondition('finalKingdomPlan')&&structuredCondition('finalEmpirePlan')))return say('マーガレット','「決める前に両軍の作戦を確認しよう。王国側と帝国側、それぞれの前線を見ておきたい」');
+  if(!(structuredCondition('finalKingdomPlan')&&structuredCondition('finalEmpirePlan')))return say('マーガレット','「決める前に両軍の作戦を確認しよう。西が王国の赤旗、東が帝国の青旗。中央の横道から両方へ行ける」');
   return say('カレン','「王国が戦争を始めた。でも、帝国の反攻で今の王国民まで潰していいわけじゃない。逆に王国の総攻撃を通せば、聖域の人たちがまた戦場になる。……ここからは、私たちが誰を守るために剣を使うか決める」',[{label:'アルディナ王国側に立つ',fn:()=>{state.finalChoice='kingdom';state.objective='北へ進み、帝国本陣へ向かう';addJournal('最終局面で、故郷と王国民を守るためアルディナ王国側に立つと決めた。');renderHud();say('トリトン','「決めたなら行こう。誰かに決められた勇者じゃなく、私たちで選んだんだ」',[],()=>routeCompanionScene('kingdom'))}},{label:'レグノア帝国側に立つ',fn:()=>{state.finalChoice='empire';state.objective='北へ進み、王国軍総司令部へ向かう';addJournal('最終局面で、聖域侵攻と勇者制度を止めるためレグノア帝国側に協力すると決めた。');renderHud();say('マーガレット','「自分の国に剣を向けることになる。それでも、ここまで見てきたものを無かったことにはできない」',[],()=>routeCompanionScene('empire'))}},...(grayCrownMorality().ashCrownUnlocked?[{label:'両国に従わず、灰冠の道を選ぶ',fn:()=>{saySequence([{speaker:'マーガレット',text:'「両国を倒した後に何が残るの？　王国も帝国も、そこに住む人たちまで敵なの？」'},{speaker:'ソフィ',text:'「私たちが守ると約束した人たちは、どうなるんですか」'},{speaker:'トリトン',text:'「カレン。ここから先は、間違えたで済まないぞ」'}],()=>say('カレン','「これは誰かに選ばされた勇者の道じゃない。私自身の責任になる」',[{label:'灰冠の道に進む（取り消せない決意）',fn:()=>{state.finalChoice='ashcrown';state.events.choices['moral.ashcrownCommitment']='confirmed';state.objective='灰冠ルート・未完成';addJournal('仲間の反対を聞いたうえで、両国の支配を拒絶し、灰冠の道を選んだ。');renderHud();say('マーガレット','「……それでも進むなら、私も黙って従うことはできない」',[],()=>routeCompanionScene('ashcrown'))}},{label:'決断を保留する',fn:()=>{addJournal('灰冠への決断を保留し、誰を守るべきか考え直した。');say('カレン','「まだ戻れる。みんなで考えよう」')}}]))}}]:[])])
  }
  if(state.map==='imperialcamp'&&id==='shion')return runFinalRouteConfrontation('kingdom')
@@ -1691,8 +1693,29 @@ function inlineObjectEvent(id){
  if(state.map==='returnroad'&&id==='mountainOverlook')return say('崖上の見晴らし',state.events.choices['elsia.tabletCopy']==='shared'
   ?'西には王国の平野、東には帝国の山地。その間の聖域に、碑文の写しを持つ家が一軒ある。四人が渡した記録は、もう軍だけのものではない。'
   :'西には王国の平野、東には帝国の山地、その間にエルシアが小さく見える。地図の線より、実際の土地はずっと連続している。')
- if(state.map==='finalfield'&&id==='kingdomLine'){setStructuredCondition('finalKingdomPlan',true);renderHud();return saySequence([{speaker:'王国軍・総攻撃命令',text:'「勇者を先鋒とし、エルシア聖域を再占領。帝国軍を東岸まで押し戻す。聖域住民の退避は作戦完了後に実施」'},{speaker:'ソフィ',text:'「作戦完了後……今住んでいる人たちは、戦闘中ずっとそこにいるんですか」'},{speaker:'トリトン',text:'「でもこの軍が崩れたら、そのまま帝国軍が王国側へ来る」'}])}
- if(state.map==='finalfield'&&id==='empireLine'){setStructuredCondition('finalEmpirePlan',true);renderHud();return saySequence([{speaker:'帝国軍・反攻命令',text:'「王国軍の再侵攻能力を完全に喪失させる。必要なら国境を越えて補給拠点・軍都まで追撃を継続」'},{speaker:'カレン',text:'「“完全に”って……灰の街道より先まで行くつもりなんだ」'},{speaker:'マーガレット',text:'「シオンの理屈は分かる。でも、それを最後まで実行すれば新しい恨みも残る」'}])}
+ if(state.map==='finalfield'&&id==='civilianWaymark'){
+  const key='finalfield.civilianWaymark';
+  if(state.events.choices[key]==='restored')
+   return say('避難路の道標','四人で立て直した木札に「避難←」と読める。軍の作戦書にはない道だ。人が実際に通れるかは、まだ分からない。');
+  return saySequence([
+   {speaker:'ナレーション',text:'本道から一歩外れた所に、折れた木札が倒れている。土を払うと「避難」の二文字と、西の低地を指す矢印が見えた。'},
+   {speaker:'ソフィ',text:'「作戦書には住民の逃げ道がありません。でも、この道を使っていた人がいたんですね」'}
+  ],()=>say('カレン','「今、私たちにできることは？」',[
+   {label:'道標を立て直して避難路を示す',fn:()=>{
+    if(state.events.choices[key]==='restored')return inlineObjectEvent('civilianWaymark');
+    state.events.choices[key]='restored';
+    addJournal('最終前線の本道脇で倒れた民間人の避難標を立て直した。西の低地への道を示したが、実際の安全はまだ確認できていない。');
+    renderHud();draw();
+    return saySequence([
+     {speaker:'ナレーション',text:'トリトンが折れた支柱を地面に固定し、マーガレットが矢印を塗り直した。道を行く者にも「避難←」が見える。'},
+     {speaker:'マーガレット',text:'「これで道の存在は伝わる。でも、両軍が通してくれるとは限らない。選ぶ時に忘れないで」'}
+    ]);
+   }},
+   {label:'今はそのままにする',fn:()=>say('カレン','「両軍の作戦を確かめてからでも遅くない。場所は覚えておこう」')}
+  ]));
+ }
+ if(state.map==='finalfield'&&id==='kingdomLine'){if(structuredCondition('finalKingdomPlan'))return say('王国軍・総攻撃命令',state.events.choices['finalfield.civilianWaymark']==='restored'?'聖域住民の退避は作戦完了後。道標は立て直したが、この命令書には避難路の確保がまだ書かれていない。':'聖域住民の退避は作戦完了後。西の低地には、古い避難路を示す木札が残っている。');setStructuredCondition('finalKingdomPlan',true);renderHud();return saySequence([{speaker:'王国軍・総攻撃命令',text:'「勇者を先鋒とし、エルシア聖域を再占領。帝国軍を東岸まで押し戻す。聖域住民の退避は作戦完了後に実施」'},{speaker:'ソフィ',text:'「作戦完了後……今住んでいる人たちは、戦闘中ずっとそこにいるんですか」'},{speaker:'トリトン',text:'「でもこの軍が崩れたら、そのまま帝国軍が王国側へ来る」'}])}
+ if(state.map==='finalfield'&&id==='empireLine'){if(structuredCondition('finalEmpirePlan'))return say('帝国軍・反攻命令',state.events.choices['finalfield.civilianWaymark']==='restored'?'国境を越えた追撃も許可されている。避難路の道標を直しても、この命令は変わっていない。':'国境を越えた追撃も許可されている。命令書には避難路の扱いが記されていない。');setStructuredCondition('finalEmpirePlan',true);renderHud();return saySequence([{speaker:'帝国軍・反攻命令',text:'「王国軍の再侵攻能力を完全に喪失させる。必要なら国境を越えて補給拠点・軍都まで追撃を継続」'},{speaker:'カレン',text:'「“完全に”って……灰の街道より先まで行くつもりなんだ」'},{speaker:'マーガレット',text:'「シオンの理屈は分かる。でも、それを最後まで実行すれば新しい恨みも残る」'}])}
  if(state.map==='elsia'&&id==='elsiaTablet'){
   if(structuredCondition('elsiaRecord'))return say('古い碑文','王国の前身国家の祭祀記録と、後世の帝国期に増築された跡が並んでいる。写しを取ることもできそうだ。');
   setStructuredCondition('elsiaRecord',true);
