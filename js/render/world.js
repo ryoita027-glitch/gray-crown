@@ -3,7 +3,7 @@ const COLORS={grass:'#6f8059',grass2:'#62724f',path:'#b49a6c',tree:'#496345',tru
 const HERO_SPRITES={image:null,ready:false,frameW:32,frameH:32,columns:3,directions:{down:0,left:1,right:2,up:3},characters:{karen:0,triton:1,sophie:2,margaret:3}};
 const HERO_RUNTIME={frameW:48,frameH:48,display:44,anchor:[24,44],directions:{down:0,left:1,right:2,up:3},images:{},idleImages:{},
  // Opt-in art review only. Default gameplay keeps the approved walk atlas at rest.
-  idleTrialEnabled:typeof window!=='undefined'&&(/(?:^|[?&])heroIdleArt=(?:1|2|3)(?:&|$)/.test(window.location.search||'')||/(?:^|[?&])heroIdleArt=4(?:&|$)/.test(window.location.search||'')||/(?:^|[?&])heroIdleArt=5(?:&|$)/.test(window.location.search||'')),
+  idleTrialEnabled:typeof window!=='undefined'&&(/(?:^|[?&])heroIdleArt=(?:1|2|3)(?:&|$)/.test(window.location.search||'')||/(?:^|[?&])heroIdleArt=4(?:&|$)/.test(window.location.search||'')||/(?:^|[?&])heroIdleArt=5(?:&|$)/.test(window.location.search||'')||/(?:^|[?&])heroIdleArt=6(?:&|$)/.test(window.location.search||'')),
  // A separate, reversible trial of all four authored idle frames.
  idleMotionEnabled:typeof window!=='undefined'&&/(?:^|[?&])heroIdleArt=(?:2|3)(?:&|$)/.test(window.location.search||''),
   // Mode 3 isolates a real contact-locked Margaret atlas. Other heroes stay still.
@@ -11,6 +11,7 @@ const HERO_RUNTIME={frameW:48,frameH:48,display:44,anchor:[24,44],directions:{do
   // Mode 4: static, original-face-preserving Margaret head-mass art review.
   idleHeadmassTrialEnabled:typeof window!=='undefined'&&/(?:^|[?&])heroIdleArt=4(?:&|$)/.test(window.location.search||''),
   idleProportionTrialEnabled:typeof window!=='undefined'&&/(?:^|[?&])heroIdleArt=5(?:&|$)/.test(window.location.search||''),
+  idleShoulderTrialEnabled:typeof window!=='undefined'&&/(?:^|[?&])heroIdleArt=6(?:&|$)/.test(window.location.search||''),
  idleFrameDuration:420,
  // Browser art evidence may step idle frames without changing NPC/world time.
  idleFrameTimeOverride:null};
@@ -28,7 +29,9 @@ if(typeof Image!=='undefined'){
   if(HERO_RUNTIME.idleTrialEnabled){const idle={image:new Image(),ready:false,error:false};
    idle.image.onload=()=>{idle.ready=idle.image.naturalWidth===192&&idle.image.naturalHeight===192;idle.error=!idle.ready};
    idle.image.onerror=()=>{idle.ready=false;idle.error=true};
-   idle.image.src=HERO_RUNTIME.idleProportionTrialEnabled&&id==='margaret'
+   idle.image.src=HERO_RUNTIME.idleShoulderTrialEnabled&&id==='margaret'
+     ?'assets/character_trials/margaret_idle_shoulder_plane_v10.png'
+     :HERO_RUNTIME.idleProportionTrialEnabled&&id==='margaret'
      ?'assets/character_trials/margaret_idle_head_proportion_v9.png'
      :HERO_RUNTIME.idleHeadmassTrialEnabled&&id==='margaret'
      ?'assets/character_trials/margaret_idle_headmass_v8.png'
