@@ -92,6 +92,25 @@ function restoreArchivedAdventureFromMenu(){
   }
  }
 }
+// The file picker can return false asynchronously (including a cancelled
+// confirmation). Keep the menu available unless a system dialogue is visible.
+async function importPortableSaveFromMenu(file){
+ const modal=$('modal');
+ modal.classList.add('hidden');
+ let imported=false;
+ try{
+  imported=await GC.Save.readPortableSaveFile(file);
+  return imported
+ }catch(error){
+  // Do not create an unhandled rejection from an inline change handler.
+  GC.Log?.error?.('Portable save menu import failed',{error:String(error)});
+  return false
+ }finally{
+  if(!imported&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
+   modal.classList.remove('hidden')
+  }
+ }
+}
 function openMenu(){
  if(state.battle)return;
  const inv=Object.entries(state.inventory).map(([k,v])=>`<div class="kv"><strong>${escapeMenuText(k)}</strong><span>${escapeMenuText(v)}</span></div>`).join('');
@@ -109,7 +128,7 @@ function openMenu(){
      <button onclick="exportPortableSaveFromMenu()">セーブを書き出す（PC移行用）</button>
      <button onclick="document.getElementById('portableSaveUpload').click()">セーブを読み込む（.json）</button>
      <input id="portableSaveUpload" type="file" accept=".json,application/json" style="display:none"
-       onchange="if(this.files?.length){const file=this.files[0];this.value='';$('modal').classList.add('hidden');GC.Save.readPortableSaveFile(file)}">
+       onchange="if(this.files?.length){const file=this.files[0];this.value='';importPortableSaveFromMenu(file)}">
      ${GC.Save.hasArchivedAdventure()?`<button onclick="restoreArchivedAdventureFromMenu()">以前の冒険を復旧</button>`:''}
      ${GC.Save.hasQuarantinedSaves()?`<button onclick="exportQuarantinedSavesFromMenu()">破損セーブの元データを書き出す</button>`:''}
      <button class="menu-danger" onclick="restartFromMenu()">最初から</button>
