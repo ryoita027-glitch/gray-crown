@@ -328,3 +328,36 @@ test('pending portable import blocks F2 developer controls and restores shortcut
   assert.equal(ui.calls.prevent,2);
  }
 });
+
+test('portable import status exists in the real game stage with an accessible label',()=>{
+ const html=fs.readFileSync(path.resolve(__dirname,'../index.html'),'utf8');
+ assert.match(html,/<div id="portableImportStatus"[^>]*role="status"[^>]*aria-live="polite"[^>]*>/);
+ assert.match(html,/外部セーブを確認しています/);
+});
+
+test('portable import progress is visible while reading and hidden on success',async()=>{
+ let finish;
+ const h=harness({importer:()=>new Promise(resolve=>{finish=resolve})});
+ const status=h.$('portableImportStatus');
+ assert.equal(status.classList.contains('hidden'),true);
+ h.select();
+ assert.equal(status.classList.contains('hidden'),false,'hidden menu left no loading feedback');
+ assert.equal(h.hidden(),true);
+ h.reopen();
+ assert.equal(status.classList.contains('hidden'),false);
+ finish(true);await settle();
+ assert.equal(status.classList.contains('hidden'),true,'success left stale progress');
+ assert.equal(h.hidden(),true);
+});
+
+test('cancelled and rejected portable imports clear progress and unlock retry',async()=>{
+ for(const importer of [async()=>false,async()=>{throw Error('read failed')}]){
+  const h=harness({importer});
+  const status=h.$('portableImportStatus');
+  h.select();
+  assert.equal(status.classList.contains('hidden'),false);
+  await settle();
+  assert.equal(status.classList.contains('hidden'),true,'failure left stale progress');
+  assert.equal(h.pending(),false);
+ }
+});

@@ -144,6 +144,9 @@ async function importPortableSaveFromMenu(file){
  if(portableMenuImportInProgress)return false;
  portableMenuImportInProgress=true;
  const modal=$('modal');
+ // The menu is hidden during file reads. Show non-blocking visible feedback.
+ const importStatus=$('portableImportStatus');
+ importStatus?.classList.remove('hidden');
  // Keep the competing top-bar Load visibly unavailable while file bytes are
  // pending. Preserve any disabled state that another UI gate already set.
  // The three persistent checkpoint controls must not race with file import.
@@ -167,6 +170,7 @@ async function importPortableSaveFromMenu(file){
   }
   return false
  }finally{
+  importStatus?.classList.add('hidden');
   portableMenuImportInProgress=false;
   toolbarButtons.forEach((button,index)=>{button.disabled=toolbarWasDisabled[index]});
   if(!imported&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
