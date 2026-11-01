@@ -75,3 +75,15 @@ test('actual candidate PNG preserves head, identity, and all non-frame2 pixels',
  }
  assert.ok(changed>100,'this is a real image edit, not a no-op');
 });
+
+test('real indexed V5 mayor/messenger reference is decoded at matching native44 scale',()=>{
+ const npc=decodePng(fs.readFileSync(path.join(ROOT,'assets/npc/featured_residents_charm_v5.png')));
+ const board=decodePng(fs.readFileSync(path.join(ROOT,'docs/art/evidence/margaret_footlocked_vs_v5_npc_native44.png')));
+ assert.deepEqual([npc.width,npc.height],[432,192]);
+ assert.deepEqual([board.width,board.height],[256,64]);
+ for(const col of [3,4]){
+  let opaque=0;for(let y=0;y<48;y++)for(let x=0;x<48;x++)
+   if(npc.pixels[(y*432+col*48+x)*4+3]>100)opaque++;
+  assert.ok(opaque>200,'reference NPC should be a real visible sprite');
+ }
+});
