@@ -292,7 +292,7 @@ const maps={
  ]},
  northroad:{name:'王都への旧街道',tag:'城壁へ続く古道',tiles:makeNorthRoadTiles(),npcs:[{id:'scout',x:12,y:3,name:'王国軍の斥候'}],objects:[{id:'southExit',x:11,y:14},{id:'milestone',x:9,y:6},{id:'northroadVista',x:13,y:5}]},
  capital:{name:'アルディナ王都',tag:'白石の王城と大通り',tiles:makeCapitalTiles(),npcs:[
-  {id:'capitalOfficial',x:12,y:6,name:'王都係官',hideWhen:'capitalCeremony'},
+  {id:'capitalOfficial',x:13,y:6,name:'王都係官'},
   {id:'capitalCitizen',x:9,y:8,name:'王都市民'},
   {id:'capitalFlowerGirl',x:5,y:8,name:'花売りの少女'},
   {id:'capitalRecruit',x:18,y:8,name:'新兵'},
