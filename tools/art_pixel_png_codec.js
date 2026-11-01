@@ -49,19 +49,23 @@ function decodePng(data){
  const bytes=typeof data==='string'?fromBase64(data):data;
  const sig=[137,80,78,71,13,10,26,10];for(let i=0;i<8;i++)if(bytes[i]!==sig[i])throw Error('not PNG');
  const u32=(p)=>((bytes[p]*16777216)+(bytes[p+1]<<16)+(bytes[p+2]<<8)+bytes[p+3])>>>0;
- let p=8,w=0,h=0,depth=0,color=0,idat=[];
+ let p=8,w=0,h=0,depth=0,color=0,idat=[],palette=null,transparency=null;
  while(p<bytes.length){const n=u32(p),tag=String.fromCharCode(...bytes.slice(p+4,p+8)),start=p+8;p=start+n+4;
  if(tag==='IHDR'){w=u32(start);h=u32(start+4);depth=bytes[start+8];color=bytes[start+9];if(bytes[start+12])throw Error('interlaced unsupported')}
+ if(tag==='PLTE')palette=bytes.slice(start,start+n);
+ if(tag==='tRNS')transparency=bytes.slice(start,start+n);
  if(tag==='IDAT')idat.push(bytes.slice(start,start+n));if(tag==='IEND')break}
- if(depth!==8||![2,6].includes(color))throw Error('only RGB/RGBA 8-bit PNG supported '+depth+'/'+color);
- const bpp=color===6?4:3,stride=w*bpp,z=Uint8Array.from(idat.flatMap(a=>Array.from(a))),raw=inflateZlib(z),rgba=new Uint8Array(w*h*4);
+ if(depth!==8||![2,3,6].includes(color))throw Error('only RGB/RGBA/indexed 8-bit PNG supported '+depth+'/'+color);
+ if(color===3&&(!palette||palette.length%3))throw Error('indexed PNG missing PLTE');
+ const bpp=color===6?4:color===2?3:1,stride=w*bpp,z=Uint8Array.from(idat.flatMap(a=>Array.from(a))),raw=inflateZlib(z),rgba=new Uint8Array(w*h*4);
  let src=0;const prev=new Uint8Array(stride),row=new Uint8Array(stride);
  for(let y=0;y<h;y++){const filter=raw[src++];for(let i=0;i<stride;i++){
   const x=raw[src++],a=i>=bpp?row[i-bpp]:0,b=prev[i],c=i>=bpp?prev[i-bpp]:0;
   const pred=a+b-c,pa=Math.abs(pred-a),pb=Math.abs(pred-b),pc=Math.abs(pred-c);
   const predictor=pa<=pb&&pa<=pc?a:pb<=pc?b:c;
   row[i]=(x+(filter===0?0:filter===1?a:filter===2?b:filter===3?((a+b)>>1):filter===4?predictor:(()=>{throw Error('bad PNG filter')})()))&255
- }for(let x=0;x<w;x++){const d=(y*w+x)*4,s=x*bpp;rgba[d]=row[s];rgba[d+1]=row[s+1];rgba[d+2]=row[s+2];rgba[d+3]=bpp===4?row[s+3]:255}prev.set(row)}
+ }for(let x=0;x<w;x++){const d=(y*w+x)*4,s=x*bpp;if(color===3){const idx=row[s],q=idx*3;if(q+2>=palette.length)throw Error('bad palette index');rgba[d]=palette[q];rgba[d+1]=palette[q+1];rgba[d+2]=palette[q+2];rgba[d+3]=transparency&&idx<transparency.length?transparency[idx]:255}
+  else{rgba[d]=row[s];rgba[d+1]=row[s+1];rgba[d+2]=row[s+2];rgba[d+3]=bpp===4?row[s+3]:255}}prev.set(row)}
  return {width:w,height:h,pixels:rgba}
 }
 function encodePng({width:w,height:h,pixels:rgba}){
