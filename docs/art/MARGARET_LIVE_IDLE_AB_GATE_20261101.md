@@ -7,6 +7,7 @@
 - Stacked from PR #248 exact HEAD `f2136f5926bfa59873292afa497c94558a51197d`; PR #98 remains frozen at `075f9cb7dc0321361ad1a8674adbc0938ce3ed8c`.
 - The original approved Margaret idle atlas is `assets/characters/margaret/margaret_idle.png` (Git blob `910458eabfcfaef7442f885f319d0e2a09c88a66`).
 - Compare the *same idle pose* against `margaret_identity_safe_hair_HOLD.png` (blob `081aa3e9c8e1bc06693dac081c7182c990942d0f`) and the already rejected front redraw `margaret_front_structural_redraw_HOLD.png` (blob `1823d20a7438f6a578da8fffd9cb207f1efff65d`).
+- Existing `docs/art/GRAY_CROWN_ART_BIBLE_v2.md` remains **PROVISIONAL** and prioritizes face, individual silhouette, large color masses and adult neck/shoulder anatomy. This review updates evidence, not the style rules or character canon.
 - The previous A/B evidence was static atlas composition, **not the game scene**. Comparing an original *walk* frame with a modified *idle* frame would also be invalid; this script explicitly swaps the approved original idle atlas for the original column too.
 
 ## Implemented in the isolated Draft
