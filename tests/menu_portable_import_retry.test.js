@@ -6,11 +6,11 @@ const path=require('node:path');
 const vm=require('node:vm');
 
 function harness({importer}={}){
- const nodes=new Map(),files=[];
+ const nodes=new Map(),files=[],toolbarLoads=[];
  const $=id=>{
   if(!nodes.has(id)){
    const classes=new Set(['hidden']);
-   nodes.set(id,{innerHTML:'',textContent:'',classList:{
+   nodes.set(id,{innerHTML:'',textContent:'',disabled:false,classList:{
     add:x=>classes.add(x),remove:x=>classes.delete(x),contains:x=>classes.has(x)
    }});
   }
@@ -20,7 +20,8 @@ function harness({importer}={}){
  const context=vm.createContext({$,document:{getElementById:$},
   state:{battle:null,inventory:{},gold:live.gold,map:'village',objective:'旅立ち',party:[]},
   maps:{village:{name:'リュネ村'}},MAX_LEVEL:99,expThreshold:()=>100,
-  GC:{Save:{hasArchivedAdventure:()=>false,hasQuarantinedSaves:()=>false,
+  confirm:()=>true,load:()=>{toolbarLoads.push('load');return true},
+  GC:{Save:{canPersistNow:()=>true,hasUsableStoredAdventure:()=>true,hasArchivedAdventure:()=>false,hasQuarantinedSaves:()=>false,
    readPortableSaveFile:file=>{files.push(file);return importer?.(file,$,live)??false}},
    Log:{error:()=>{}}}
  });
@@ -31,7 +32,7 @@ function harness({importer}={}){
  assert.ok(match,'the real menu must expose its file-picker handler');
  const onChange=vm.runInContext('(function(){'+match[1]+'})',context);
  const picker={files:[{size:100}],value:'C:\\fakepath\\save.json'};
- return {$,live,files,picker,select:()=>onChange.call(picker),
+ return {$,live,files,picker,toolbarLoads,toolbarLoad:()=>vm.runInContext('loadFromToolbar()',context),select:()=>onChange.call(picker),
   reopen:()=>context.GC.Menu.openMenu(),
   hidden:()=>$('modal').classList.contains('hidden')};
 }
@@ -173,4 +174,29 @@ test('failed pending import restores retry menu and unlocks M shortcut',async()=
  assert.equal(h.hidden(),false,'failed import must restore retry access');
  h.$('modal').classList.add('hidden');
  h.reopen();assert.equal(h.hidden(),false,'M shortcut must work after failure');
+});
+
+
+test('top-bar Load cannot compete with a pending portable import',async()=>{
+ let finish;
+ const h=harness({importer:()=>new Promise(resolve=>{finish=resolve})});
+ h.select();await settle();
+ assert.equal(h.$('btnLoad').disabled,true,'toolbar Load should visibly be unavailable');
+ assert.equal(h.toolbarLoad(),false,'direct toolbar handler must also reject the overlap');
+ assert.equal(h.toolbarLoads.length,0,'stored checkpoint must not replace the in-flight import');
+ finish(true);await settle();
+ assert.equal(h.$('btnLoad').disabled,false,'successful import must unlock toolbar Load');
+ assert.equal(h.toolbarLoad(),true);
+ assert.equal(h.toolbarLoads.length,1);
+});
+
+test('failed portable import restores the previous toolbar disabled state',async()=>{
+ let finish;
+ const h=harness({importer:()=>new Promise(resolve=>{finish=resolve})});
+ h.$('btnLoad').disabled=true;
+ h.select();await settle();
+ assert.equal(h.toolbarLoad(),false);
+ finish(false);await settle();
+ assert.equal(h.$('btnLoad').disabled,true,'an existing disabled state must not be cleared');
+ assert.equal(h.toolbarLoads.length,0);
 });
