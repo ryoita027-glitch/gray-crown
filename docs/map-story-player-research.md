@@ -8,7 +8,7 @@
 
 **Changes:** Two worn approach tiles, progression-aware decision guide and objectives, one-time comparison journal and short response after the second order, no replay of the first battlefield arrival on return. Prior civilian waymark, route choices, Save v23 and main storyline remain unchanged.
 
-**Checks:** JavaScript source and added test syntax parsed; original waymark and third-route gate source preserved. Node harness tests are authored but NOT run (local container cannot reach the private repository). Real browser navigation, 44px visibility, save/load integration and human feedback are unverified. The UX benefit remains a hypothesis.
+**Checks:** JavaScript source and added test syntax parsed; original waymark and third-route gate source preserved. The saved map generator was executed in isolation (24×15 dimensions; paths to both order boards, waymark, decision NPC and north exit reachable). Saved event code passed 8 isolated mocked-state checks (either reading order, objective, single journal, repeat, decision unlock, sign callback); saved movement code passed 4 isolated mocked-state checks (return entrance, objective and no replay). These are NOT full gameplay tests. Five Node harness tests were authored but NOT run (local container cannot reach the private repository). Real browser navigation, 44px visibility, save/load integration and human feedback are unverified. The UX benefit remains a hypothesis.
 
 **Next:** Run `node --test tests/finalfield_plan_wayfinding.test.js`; walk capital gate → west/east orders (both sequences) → central decision → north exit; verify revisits and visual clarity.
 
