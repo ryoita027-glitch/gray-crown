@@ -59,10 +59,20 @@ function exportPortableSaveFromMenu(){
 function exportQuarantinedSavesFromMenu(){
  return exportFromMenu(()=>GC.Save.downloadQuarantinedSaves())
 }
+// Both in-game Load entry points must protect unsaved progress.
+// Title-screen Continue has no active adventure to discard.
+function confirmActiveAdventureLoad(){
+ return confirm('最後に保存した冒険をロードしますか？\n現在の未保存の進行は失われます。')
+}
+function loadFromToolbar(){
+ if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started)return load(false);
+ if(!confirmActiveAdventureLoad())return false;
+ return load(false)
+}
 function loadFromMenu(){
  // Loading a checkpoint replaces unsaved progress in the current session.
  // The title-screen Continue action is intentionally unaffected.
- if(!confirm('最後に保存した冒険をロードしますか？\n現在の未保存の進行は失われます。'))return false;
+ if(!confirmActiveAdventureLoad())return false;
  const modal=$('modal');
  modal.classList.add('hidden');
  let loaded=false;
