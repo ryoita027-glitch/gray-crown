@@ -62,6 +62,9 @@ function exportQuarantinedSavesFromMenu(){
 // Both in-game Load entry points must protect unsaved progress.
 // Title-screen Continue has no active adventure to discard.
 function confirmActiveAdventureLoad(){
+ // Without a usable primary or backup, loading cannot discard live progress.
+ // Let the save system explain the missing/corrupt checkpoint instead.
+ if(GC.Save.hasUsableStoredAdventure?.()===false)return true;
  return confirm('最後に保存した冒険をロードしますか？\n現在の未保存の進行は失われます。')
 }
 function loadFromToolbar(){
