@@ -63,6 +63,9 @@ function exportPortableSaveFromMenu(){
  return exportFromMenu(()=>GC.Save.downloadPortableSave())
 }
 function exportQuarantinedSavesFromMenu(){
+ // A stale menu action must not reopen the modal over an in-flight import.
+ // This export is read-only, but its failure path restores the menu.
+ if(portableMenuImportInProgress)return false;
  return exportFromMenu(()=>GC.Save.downloadQuarantinedSaves())
 }
 // Both in-game Load entry points must protect unsaved progress.
