@@ -1141,13 +1141,40 @@ function inlineNpcEvent(id){
  }
  if(state.map==='empirevillage'){
   if(id==='empireInnkeeper')return saySequence([{speaker:'帝国の宿主',text:'「旅人かい？ ひどい泥だね。西の橋が落ちたって聞いたけど、巻き込まれたのかい」'},{speaker:'カレン',text:'「えっと……はい。四人で、東へ向かう途中で」'},{speaker:'帝国の宿主',text:'「そう。なら今夜は空いてる。先に手を洗いな。スープは薄いけど温かいよ」'},{speaker:'ソフィ',text:'「……私たちが誰か、聞かないんですか？」'},{speaker:'帝国の宿主',text:'「聞いてほしい顔してないだろ」'},{speaker:'トリトン',text:'「もし私たちが王国人でも？」'},{speaker:'帝国の宿主',text:'「だったら何だい。腹減ってる人間に国境なんて書いてないよ。兵隊を連れてきたなら別だけどね」'},{speaker:'ナレーション',text:'四人は返事ができなかった。王国で何度も聞いた“魔王の国”という言葉が、湯気の向こうで急に薄っぺらく感じられた。'},{speaker:'マーガレット',text:'「……カレン。今、“ありがとう”だけ言って」'},{speaker:'カレン',text:'「うん。……ありがとうございます」'}])
-  if(id==='empireChild'){setStructuredCondition('empireYukiMention',true);addJournal('帝国の子どもたちはユウキを「皆を逃がした将軍」として英雄視している。');renderHud();return saySequence([{speaker:'帝国の子ども',text:'「見て！ ユウキ将軍ごっこ。ぼくが最後に残って、みんなを逃がす役！」'},{speaker:'カレン',text:'「ユウキ……？」'},{speaker:'帝国の子ども',text:'「知らないの？ 一年前にみんなを逃がして死んだ英雄だよ。クラインテッド将軍の大事な人だったんだって」'},{speaker:'マーガレット',text:'「王都のポスターと、同じ人の話……？」'}])}
+  if(id==='empireChild'){
+   // Reading the memorial first must not suppress this child's first Yuki story.
+   if(state.events.choices['empire.childYukiHeard']!=='heard'){
+    state.events.choices['empire.childYukiHeard']='heard';
+    setStructuredCondition('empireYukiMention',true);
+    addJournal('帝国の子どもたちはユウキを「皆を逃がした将軍」として英雄視している。');
+    renderHud();
+    return saySequence([{speaker:'帝国の子ども',text:'「見て！ ユウキ将軍ごっこ。ぼくが最後に残って、みんなを逃がす役！」'},{speaker:'カレン',text:'「ユウキ……？」'},{speaker:'帝国の子ども',text:'「知らないの？ 一年前にみんなを逃がして死んだ英雄だよ。クラインテッド将軍の大事な人だったんだって」'},{speaker:'マーガレット',text:'「王都のポスターと、同じ人の話……？」'}]);
+   }
+   if(state.events.choices['empire.millCleared']==='cleared')
+    return saySequence([{speaker:'帝国の子ども',text:'「水車がまた回ってる！　おじいちゃん、今夜は畑に水が届くって」'},{speaker:'ソフィ',text:'「よかった。あの畑、枯れずに済みそうですね」'}]);
+   return say('帝国の子ども','「ユウキ将軍ごっこはまた明日。今日は畑の水が少ないって、大人が困ってるんだ」');
+  }
  }
  if(state.map==='imperialcity'){
   if(id==='imperialCitizen')return say('帝国市民','「王国軍がまた聖域を取りに来るって噂だ。四年前みたいになるのは御免だよ」')
   if(id==='recordKeeper'){if(structuredCondition('heardYuki'))return say('記録係','「ユウキ将軍の記録なら北の旧戦場にも残っている。現地を見た方が分かるだろう」');setStructuredCondition('heardYuki',true);setStructuredCondition('yukiKleinLink',true);state.objective='北の旧戦場でユウキの記録を探す';addJournal('帝国公文書では、ユウキは撤退部隊を逃がすため殿を務めて戦死。クラインテッドとは私生活でも伴侶だったと記録されている。');renderHud();return saySequence([{speaker:'記録係',text:'「ユウキ・レイナード。帝国四将。享年二十一。昨年のラゼル撤退戦で、三個部隊を逃がすため殿を引き受け戦死」'},{speaker:'マーガレット',text:'「王国では“残虐な四天王を討伐した”としか……。勇者が関わった記録もない」'},{speaker:'記録係',text:'「王国の勇者に討たれた、というのが帝国側の記録だ。あと……クラインテッド将軍とは恋人だった」'},{speaker:'カレン',text:'「だから、あの人は私たちを見た時……」'},{speaker:'記録係',text:'「記録だけで人間は分からない。北の旧戦場へ行け。生き残った兵もいる」'}])}
  }
- if(state.map==='empirevillage'&&id==='empireFarmer')return say('果樹農家','「水路があるから、この辺りは戦争中でも果樹だけは何とか育つ。兵隊さんも子どもも、食べる実は同じさ」')
+ if(state.map==='empirevillage'&&id==='empireFarmer'){
+  if(state.events.choices['empire.millCleared']==='cleared'){
+   if(state.events.choices['empire.millThanks']==='given')
+    return say('果樹農家','「水車が動いて、畑に水が戻ったよ。あんたたちも道中気をつけな」');
+   state.events.choices['empire.millThanks']='given';
+   state.inventory['携帯食']=(state.inventory['携帯食']||0)+1;
+   renderHud();
+   return saySequence([
+    {speaker:'果樹農家',text:'「水車の流木を外してくれたのか。これで畑に水が戻る。助かったよ」'},
+    {speaker:'トリトン',text:'「うちの村でも、雨の後は水路の枝をどけてたから」'},
+    {speaker:'果樹農家',text:'「旅の途中なら、干した果実を持っていきな。国境の先は長いぞ」'},
+    {speaker:'ナレーション',text:'携帯食を1個受け取った。'}
+   ]);
+  }
+  return say('果樹農家','「西の水車に流木が引っかかって、畑の水が細くなってる。水路があるから戦争中でも果樹だけは何とか育つんだが……」');
+ }
  if(state.map==='imperialcity'&&id==='canalVendor')return say('運河商人','「川舟が止まると町は一日で困る。戦争ってのは剣より先に、荷物の流れを止めるんだよ」')
  if(state.map==='yukiroad'){
   if(id==='oldImperialSoldier'){setStructuredCondition('yukiWitness',true);renderHud();return saySequence([{speaker:'帝国の老兵',text:'「俺はユウキ将軍に逃がされた側だ。包囲が閉じる前に、あの人だけが残った」'},{speaker:'カレン',text:'「クラインテッドは？」'},{speaker:'帝国の老兵',text:'「残ると言って聞かなかった。ユウキ将軍が殴ってでも連れて行けと命じてな。俺たち三人で引きずって撤退させた」'},{speaker:'帝国の老兵',text:'「数日後、王国では“大勝利”の鐘が鳴ったそうだな。こっちでは、その日から和平を口にする奴が一気に減った」'}])}
@@ -1336,9 +1363,35 @@ function inlineObjectEvent(id){
 
  }
  if(state.map==='empirevillage'){
-  if(id==='waterMill')return say('水車小屋','細い水路が村中の畑と果樹園へ水を運んでいる。王国で聞いていた「魔王の国」とは結びつかない、ごく普通の農村設備だ。')
+  if(id==='waterMill'){
+   if(state.events.choices['empire.millCleared']==='cleared')
+    return say('水車小屋','取水口の流木は取り除かれ、水車が規則正しく回っている。水は果樹畑へ流れ始めた。');
+   return say('水車小屋','水車の羽根に流木が噛み、取水口の水が滞っている。西の果樹畑へ続く水路も細い。',[
+    {label:'流木を引き上げ、水路を通す',fn:()=>{
+     if(state.events.choices['empire.millCleared']==='cleared')return say('水車小屋','もう水は流れている。');
+     state.events.choices['empire.millCleared']='cleared';
+     addJournal('レグノア辺境村で水車の流木を取り除き、果樹畑への水路を通した。西の果樹農家に話せる。');
+     renderHud();draw();
+     return saySequence([
+      {speaker:'トリトン',text:'「カレン、そっちの枝を引いて！　私が水車を押さえる」'},
+      {speaker:'カレン',text:'「せーのっ！　……動いた！」'},
+      {speaker:'ナレーション',text:'詰まっていた水が流れ、畑へ続く溝に小さな波が走った。'},
+      {speaker:'ソフィ',text:'「畑の人に、もう水が流れるって伝えましょう」'}
+     ]);
+    }},
+    {label:'今は先へ進む',fn:()=>say('カレン','「あとで見に来ることもできるね」')}
+   ]);
+  }
   if(id==='empireShrine')return say('村の小祠','戦死者の名前と、収穫への感謝が同じ板に書かれている。')
-  if(id==='yukiRibbon'){setStructuredCondition('empireYukiMention',true);addJournal('帝国の村ではユウキの一周忌を示す青い喪章が今も残っている。');renderHud();return say('青い喪章','小さな札に「ユウキ将軍一周忌。帰れた命を忘れない」とある。王都の“討伐記念”と、同じ死を指している。')}
+  if(id==='yukiRibbon'){
+   if(state.events.choices['empire.ribbonRead']!=='read'){
+    state.events.choices['empire.ribbonRead']='read';
+    setStructuredCondition('empireYukiMention',true);
+    addJournal('帝国の村ではユウキの一周忌を示す青い喪章が今も残っている。');
+    renderHud();
+   }
+   return say('青い喪章','小さな札に「ユウキ将軍一周忌。帰れた命を忘れない」とある。王都の“討伐記念”と、同じ死を指している。');
+  }
   if(id==='empireCache'&&!structuredCondition('empireCache')){setStructuredCondition('empireCache',true);state.inventory['薬草']=(state.inventory['薬草']||0)+1;draw();return say('果樹籠','落ちた果実の下に薬草が束ねてあった。薬草を1個手に入れた。')}
  }
  if(state.map==='imperialcity'){
