@@ -51,9 +51,17 @@ def capture_pair(page, direction):
           CanvasRenderingContext2D.prototype.drawImage = function(...args) {
             const src = args[0]?.currentSrc || args[0]?.src || '';
             const m = String(src).match(/assets\\/characters\\/(karen|triton|sophie|margaret)\\/\\1_(walk|idle)\\.png(?:[?#]|$)/);
-            if (m && args.length === 9 && args[3] === 48 && args[4] === 48)
+            if (m && args.length === 9 && args[3] === 48 && args[4] === 48) {
+              const [dx,dy,dw,dh] = args.slice(5,9), t=this.getTransform();
+              const pts=[[dx,dy],[dx+dw,dy],[dx,dy+dh],[dx+dw,dy+dh]]
+                .map(([x,y])=>[t.a*x+t.c*y+t.e,t.b*x+t.d*y+t.f]);
               draws.push({hero:m[1],pose:m[2],frame:args[1]/48,
-                direction:args[2]/48,dest:args.slice(5,9)});
+                direction:args[2]/48,dest:args.slice(5,9),
+                canvas_bbox:[Math.floor(Math.min(...pts.map(p=>p[0]))),
+                  Math.floor(Math.min(...pts.map(p=>p[1]))),
+                  Math.ceil(Math.max(...pts.map(p=>p[0]))),
+                  Math.ceil(Math.max(...pts.map(p=>p[1])))]});
+            }
             return originalDraw.apply(this,args);
           };
           v.map = null; v.travelPhase = 0; v.followerPhases = [0,0,0];
@@ -96,6 +104,7 @@ def save_pair(view, direction, shots):
         assert all(p == expected for p in poses.values()), f'wrong draw source: {poses}'
         assert all(d['frame'] == 0 for d in shot['draws']), 'standing pose used moving frame'
         assert all(d['direction'] == DIRECTIONS.index(direction) for d in shot['draws'])
+        assert all(d['dest'][2:] == [44, 44] for d in shot['draws'])
         data = base64.b64decode(shot['png'])
         im = Image.open(io.BytesIO(data)).convert('RGB')
         assert im.size == (768, 480)
@@ -104,10 +113,27 @@ def save_pair(view, direction, shots):
         pictures.append(im)
         records.append({'name':name,'sha256':hashlib.sha256(data).hexdigest(),
                         'draws':shot['draws']})
+    base = {d['hero']:d for d in shots[0]['draws']}
+    trial = {d['hero']:d for d in shots[1]['draws']}
+    assert all(base[h]['canvas_bbox'] == trial[h]['canvas_bbox'] for h in HEROES), \
+        'hero positions changed between art source captures'
     delta = ImageChops.difference(*pictures)
-    mask = ImageChops.lighter(ImageChops.lighter(*delta.split()[:2]),delta.split()[2])
+    channels = delta.split()
+    mask = ImageChops.lighter(ImageChops.lighter(channels[0],channels[1]),channels[2])
     bbox = mask.getbbox()
     changed = sum(1 for pixel in mask.getdata() if pixel)
+    boxes = [base[h]['canvas_bbox'] for h in HEROES]
+    # The only allowed visible changes are the four sprite cells, not NPCs,
+    # terrain, shadows, HUD or camera. 2px edge allowance for canvas rounding.
+    outside = 0
+    if bbox:
+        for y in range(bbox[1],bbox[3]):
+            for x in range(bbox[0],bbox[2]):
+                if mask.getpixel((x,y)) and not any(
+                    b[0]-2 <= x < b[2]+2 and b[1]-2 <= y < b[3]+2
+                    for b in boxes):
+                    outside += 1
+    assert outside == 0, f'non-hero scene pixels changed: {view}/{direction}: {outside}'
     board = Image.new('RGB', (1536, 510), '#242424')
     pen = ImageDraw.Draw(board)
     for i, image in enumerate(pictures):
@@ -118,7 +144,8 @@ def save_pair(view, direction, shots):
     board_name = f'{view}_{direction}_ab.png'
     board.save(OUT / board_name)
     return {'view':view,'direction':direction,'files':records,'board':board_name,
-            'changed_rgb_pixels':changed,'bbox':bbox,'same_scene':True,
+            'changed_rgb_pixels':changed,'bbox':bbox,'outside_hero_pixels':outside,
+            'same_scene':True,
             'art_verdict':'HOLD'}
 
 
