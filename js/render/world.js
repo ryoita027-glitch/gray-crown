@@ -19,7 +19,7 @@ function drawHeroSpriteSheet(x,y,heroId,leader,facing,motion){
  const frame=heroWalkFrame(motion),row=HERO_RUNTIME.directions[facing]??0,px=Math.round(x*TILE),py=Math.round(y*TILE),footX=px+16,footY=py+30;
  const rec=HERO_RUNTIME.images[heroId];
  if(rec?.ready&&rec.image){
-  const size=HERO_RUNTIME.display,{dx,dy}=heroGroundedOrigin(footX,footY,heroId,size);
+  const size=GC.Data?.Animations?.artDisplaySize||HERO_RUNTIME.display,{dx,dy}=heroGroundedOrigin(footX,footY,heroId,size);
   ctx.save();ctx.fillStyle='rgba(16,18,18,.28)';ctx.beginPath();ctx.ellipse(footX,footY-1,10,4,0,0,Math.PI*2);ctx.fill();ctx.imageSmoothingEnabled=false;
   ctx.drawImage(rec.image,frame*48,row*48,48,48,dx,dy,size,size);ctx.restore();
   if(leader)drawHeroMarker(footX,dy);return true

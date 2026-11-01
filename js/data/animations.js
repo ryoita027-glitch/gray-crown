@@ -55,6 +55,8 @@
  });
  GC.Data=GC.Data||{};
  GC.Data.Animations={
+  // Reversible art-scale A/B: 40px trial. Set to 44 to restore current field presentation.
+  artDisplaySize:40,
   definitions:Object.freeze({karen:Object.freeze(karen),triton:Object.freeze(triton),sophie:Object.freeze(sophie),margaret:Object.freeze(margaret)}),
   visualRules,tritonVisualRules,sophieVisualRules,margaretVisualRules
  };

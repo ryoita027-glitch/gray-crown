@@ -6,6 +6,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 
+const ART_SIZE=40;
 function makeRuntime(){
  const calls=[];
  class FakeImage{
@@ -23,7 +24,7 @@ function makeRuntime(){
  return {draw:sandbox.GC.Render.World.drawHeroSpriteSheet,calls,shadows,ctx,animation:sandbox.GC.Animation,definitions:sandbox.GC.Data.Animations.definitions};
 }
 
-test('Margaret-only 44px foot contact shifts the rendered sheet up by two screen pixels',()=>{
+test('trial scale keeps all four authored source-foot anchors and horizontal centering',()=>{
  const {draw,calls}=makeRuntime();
  for(const id of ['karen','triton','sophie','margaret']){
   for(const facing of ['down','left','right','up']){
@@ -31,9 +32,9 @@ test('Margaret-only 44px foot contact shifts the rendered sheet up by two screen
    assert.equal(draw(2,3,id,false,facing,0),true);
    assert.equal(calls.length,1);
    const args=calls[0];
-   assert.equal(args[5],58,'horizontal centering must not change');
-   assert.equal(args[6],id==='margaret'?84:86,'only Margaret moves up 2px');
-   assert.equal(args[7],44);assert.equal(args[8],44);
+   assert.equal(args[5],Math.round(80-24*ART_SIZE/48),'horizontal centering');
+   assert.equal(args[6],Math.round(126-(id==='margaret'?46:44)*ART_SIZE/48),'source-foot anchor');
+   assert.equal(args[7],ART_SIZE);assert.equal(args[8],ART_SIZE);
    assert.equal(args[3],48);assert.equal(args[4],48);
   }
  }
@@ -58,11 +59,11 @@ test('all eight authored poses use the same foot anchor as field walking',()=>{
   for(const pose of poses){
    const def=definitions[id][pose],expected=id==='margaret'?46:44;
    assert.equal(def.anchor[1],expected,`${id}/${pose} source anchor`);
-   const actor=animation.createActor(id,{x:2,y:3,renderScale:44/48,animation:pose,startedAt:0});
+   const actor=animation.createActor(id,{x:2,y:3,renderScale:ART_SIZE/48,animation:pose,startedAt:0});
    const geometry=animation.renderGeometry(actor,def);
    calls.length=0;assert.equal(draw(2,3,id,false,'down',0),true);
    assert.equal(geometry.dy,calls[0][6],`${id}/${pose} world/acting foot alignment`);
-   assert.equal(geometry.destW,44);assert.equal(geometry.destH,44);
+   assert.equal(geometry.destW,ART_SIZE);assert.equal(geometry.destH,ART_SIZE);
   }
  }
 });
@@ -72,10 +73,20 @@ test('dialogue pose uses the same foot shadow geometry as the field sprite',()=>
  for(const id of ['karen','triton','sophie','margaret']){
   shadows.length=0;calls.length=0;draw(2,3,id,false,'down',0);
   const fieldShadow=shadows[0];
-  const actor=animation.createActor(id,{x:2,y:3,renderScale:44/48,animation:'talk',matchFieldShadow:true,startedAt:0});
+  const actor=animation.createActor(id,{x:2,y:3,renderScale:ART_SIZE/48,animation:'talk',matchFieldShadow:true,startedAt:0});
   shadows.length=0;calls.length=0;
   assert.equal(animation.drawActor(ctx,actor,500),true);
   assert.deepEqual(Array.from(shadows[0]),Array.from(fieldShadow));
-  assert.equal(calls[0][6],id==='margaret'?84:86);
+  assert.equal(calls[0][6],Math.round(126-(id==='margaret'?46:44)*ART_SIZE/48));
  }
+});
+
+// All authored actions use the same trial scale when a scene does not override it.
+test('default authored hero acting scale follows field trial, other actors remain untouched',()=>{
+ const {animation}=makeRuntime();
+ for(const id of ['karen','triton','sophie','margaret']){
+  const actor=animation.createActor(id,{x:2,y:3,startedAt:0});
+  assert.equal(actor.renderScale,ART_SIZE/48);
+ }
+ assert.equal(animation.createActor('nonHero',{x:2,y:3}).renderScale,1);
 });
