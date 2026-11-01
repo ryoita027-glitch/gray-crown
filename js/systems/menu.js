@@ -19,12 +19,17 @@ function restartFromMenu(){
 function saveFromMenu(){
  const modal=$('modal');
  modal.classList.add('hidden');
- const saved=save(false);
- // Keep retry available if saving failed without opening a visible status dialogue.
- if(!saved&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
-  modal.classList.remove('hidden')
+ let saved=false;
+ try{
+  saved=save(false);
+  return saved
+ }finally{
+  // Even an unexpected save exception must leave the player able to retry.
+  // Do not obscure an already-visible storage error dialogue.
+  if(!saved&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
+   modal.classList.remove('hidden')
+  }
  }
- return saved
 }
 // Keep export and recovery actions retryable if a browser download fails
 // without a visible system message. An accepted click is not proof that the
