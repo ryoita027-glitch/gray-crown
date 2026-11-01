@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Real Ryune village A/B: original Margaret idle vs two existing draft atlases.
+"""Real Ryune village: LIVE walk baseline, authored idle, and two draft atlases.
 
 This is an isolated browser capture. It does not replace production PNGs,
 change save data, or automatically approve any artwork.
@@ -22,6 +22,8 @@ OUT = ROOT / 'prototype_artifacts/margaret_live_idle_ab'
 VIEWS = (('desktop', 1365, 900), ('phone', 390, 844))
 DIRECTIONS = ('down', 'left', 'right', 'up')
 SOURCE_BLOBS = {
+    'assets/characters/margaret/margaret_walk.png':
+        '1923f1315c377418cea0f2f94ab6431c987f2dd7',
     'assets/characters/margaret/margaret_idle.png':
         '910458eabfcfaef7442f885f319d0e2a09c88a66',
     'docs/art/evidence/margaret_identity_safe_hair_HOLD.png':
@@ -30,14 +32,15 @@ SOURCE_BLOBS = {
         '1823d20a7438f6a578da8fffd9cb207f1efff65d',
 }
 SOURCES = {
+    'live_walk': None,  # Unmodified game draw source; never an authored-idle A/B substitute.
     'original': 'assets/characters/margaret/margaret_idle.png',
     'hair_hold': 'docs/art/evidence/margaret_identity_safe_hair_HOLD.png',
     'front_no_go': 'docs/art/evidence/margaret_front_structural_redraw_HOLD.png',
 }
 
 
-def capture_three(page, direction):
-    """Three real world.drawScene() calls with a frozen state and audited source."""
+def capture_four(page, direction):
+    """Four real world.drawScene() calls; first is the unmodified live walk atlas."""
     return page.evaluate("""async ({direction, sources}) => {
       const world = GC.Render.World, s = GC.State.get(), v = world.VISUAL;
       const originalSize = GC.Data.Animations.artDisplaySize;
@@ -83,7 +86,7 @@ def capture_three(page, direction):
                 args.length === 9 && args[3] === 48 && args[4] === 48) {
               calls++;
               if (args[1] !== 0) nonIdleCalls++;
-              args[0] = images[key];
+              if (images[key]) args[0] = images[key];
             }
             return originalDraw.apply(this, args);
           };
@@ -118,6 +121,7 @@ def capture_three(page, direction):
 
 def review(view, direction, shots):
     assert [s['key'] for s in shots] == list(SOURCES)
+    assert len(shots) == 4 and shots[0]['key'] == 'live_walk'
     assert all(s['canvas'] == [768, 480] for s in shots)
     assert all(s['state'] == shots[0]['state'] for s in shots)
     assert all(s['visual'] == shots[0]['visual'] for s in shots), 'camera/follower drift'
@@ -134,27 +138,55 @@ def review(view, direction, shots):
         records.append({'key':shot['key'], 'file':name,
                         'sha256':hashlib.sha256(data).hexdigest(),
                         'margaret_draw_calls':shot['calls']})
-    diffs = {}
-    for index in (1, 2):
-        diff = ImageChops.difference(pictures[0], pictures[index])
-        mask = diff.convert('L').point(lambda p: 255 if p else 0)
-        count = sum(1 for p in mask.getdata() if p)
-        if index == 1:
+    # Only idle-to-idle is a same-pose art A/B. The actual live walk-sheet
+    # frame is retained separately so a reviewer sees what players see today.
+    def diff_metrics(a, b):
+        delta = ImageChops.difference(a, b)
+        channels = delta.split()
+        mask = ImageChops.lighter(ImageChops.lighter(channels[0], channels[1]), channels[2])
+        mask = mask.point(lambda p: 255 if p else 0)
+        return sum(1 for p in mask.getdata() if p), mask.getbbox()
+
+    live_count, live_bbox = diff_metrics(pictures[0], pictures[1])
+    diffs = {'live_walk_vs_original_idle_DIAGNOSTIC':
+             {'rgb_pixels':live_count, 'bbox':live_bbox, 'same_pose_ab':False}}
+    for index in (2, 3):
+        count, bbox = diff_metrics(pictures[1], pictures[index])
+        if index == 2:
             assert count > 0, f'hair study not visible: {view}/{direction}'
         elif direction == 'down':
             assert count > 0, f'front redraw not visible: {view}/{direction}'
         assert count < 7000, f'unrelated scene changed: {view}/{direction}/{index} ({count})'
-        diffs[shots[index]['key']] = {'rgb_pixels':count, 'bbox':mask.getbbox()}
-    board = Image.new('RGB', (768*3, 510), '#242424')
+        diffs[shots[index]['key']] = {'rgb_pixels':count, 'bbox':bbox,
+                                     'same_pose_ab':True}
+    board = Image.new('RGB', (768*4, 510), '#242424')
     pen = ImageDraw.Draw(board)
     for index, picture in enumerate(pictures):
         board.paste(picture, (768*index, 30))
         pen.text((768*index+12, 9),
                  f'{view} {direction} / {shots[index]["key"]}', fill='white')
-    board_name = f'{view}_{direction}_three_way.png'
+    board_name = f'{view}_{direction}_four_way.png'
     board.save(OUT / board_name)
+    # Enlarged context around the *actual rendered* Margaret difference.
+    # This is a game-canvas crop, not a sprite-atlas collage.
+    hair_bbox = diffs['hair_hold']['bbox']
+    cx = (hair_bbox[0] + hair_bbox[2]) // 2
+    cy = (hair_bbox[1] + hair_bbox[3]) // 2
+    x0 = max(0, min(768 - 128, cx - 64))
+    y0 = max(0, min(480 - 128, cy - 64))
+    detail = Image.new('RGB', (256*4, 282), '#242424')
+    labels = ImageDraw.Draw(detail)
+    for index, picture in enumerate(pictures):
+        crop = picture.crop((x0, y0, x0+128, y0+128))
+        detail.paste(crop.resize((256,256), Image.Resampling.NEAREST),
+                     (256*index, 26))
+        labels.text((256*index+8, 7), shots[index]['key'], fill='white')
+    detail_name = f'{view}_{direction}_live_detail_2x.png'
+    detail.save(OUT / detail_name)
     return {'view':view, 'direction':direction, 'shots':records,
-            'board':board_name, 'diffs':diffs, 'same_state':True}
+            'board':board_name, 'detail':detail_name,
+            'detail_crop':[x0,y0,128,128], 'diffs':diffs,
+            'same_state':True}
 
 
 def main():
@@ -188,19 +220,19 @@ def main():
                     """, timeout=20000)
                     for direction in DIRECTIONS:
                         records.append(review(view, direction,
-                                              capture_three(page, direction)))
+                                              capture_four(page, direction)))
                     assert not errors, errors
                 finally:
                     page.close()
         finally:
             browser.close()
-    manifest = {'type':'real game canvas, seeded Ryune scene',
+    manifest = {'type':'real game canvas, seeded Ryune scene; live walk + three authored idle',
                 'art_verdict':'HOLD; rejected front remains NO-GO',
                 'source_head':helper.source_head(), 'views':VIEWS,
-                'sources':SOURCES, 'shots':24, 'boards':8, 'pairs':records}
+                'sources':SOURCES, 'shots':32, 'boards':8, 'detail_boards':8, 'pairs':records}
     (OUT / 'manifest.json').write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2), encoding='utf-8')
-    print(json.dumps({'shots':24,'boards':8,
+    print(json.dumps({'shots':32,'boards':8,'detail_boards':8,
                       'source_head':manifest['source_head'],
                       'art_verdict':manifest['art_verdict']}, ensure_ascii=False))
 
