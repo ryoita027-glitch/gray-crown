@@ -586,7 +586,16 @@ function drawObject(o){if(RyuneOutskirts.drawObject(ctx,state.map,o,!!state.worl
  if(o.id==='capitalFountain'||o.id==='sacredSpring'){ctx.fillStyle='#68757b';ctx.beginPath();ctx.arc(px+16,py+18,12,0,Math.PI*2);ctx.fill();ctx.fillStyle='#9fc8cf';ctx.beginPath();ctx.arc(px+16,py+18,7,0,Math.PI*2);ctx.fill()}
  if(['capitalBarracks','fieldHospital','imperialArchive'].includes(o.id)){ctx.fillStyle='#74685a';ctx.fillRect(px+5,py+8,22,19);ctx.fillStyle='#d6caa7';ctx.fillRect(px+9,py+12,14,5)}
  if(o.id==='watchTower'){ctx.fillStyle='#5a4938';ctx.fillRect(px+13,py+4,6,25);ctx.fillRect(px+5,py+5,22,5);ctx.fillStyle='#8a7657';ctx.fillRect(px+8,py+1,16,5)}
- if(o.id==='waterMill'){ctx.strokeStyle='#8e7755';ctx.lineWidth=3;ctx.beginPath();ctx.arc(px+16,py+17,12,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#66503b';ctx.fillRect(px+13,py+7,6,20)}
+ if(o.id==='waterMill'){
+  ctx.strokeStyle='#8e7755';ctx.lineWidth=3;ctx.beginPath();ctx.arc(px+16,py+17,12,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#66503b';ctx.fillRect(px+13,py+7,6,20);
+  // Native-tile before/after cue: lodged timber -> flowing water.
+  if(state.events?.choices?.['empire.millCleared']==='cleared'){
+   ctx.fillStyle='#83b7c5';ctx.fillRect(px+2,py+25,28,5);
+   ctx.fillStyle='#d2e9e6';ctx.fillRect(px+7,py+25,11,2);ctx.fillRect(px+22,py+28,6,1);
+  }else{
+   ctx.strokeStyle='#765238';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(px+3,py+24);ctx.lineTo(px+27,py+29);ctx.moveTo(px+10,py+27);ctx.lineTo(px+22,py+21);ctx.stroke();
+  }
+ }
  if(o.id==='empireShrine'||o.id==='ruinedShrine'||o.id==='oldSanctum'){ctx.fillStyle='#8e8879';ctx.fillRect(px+8,py+10,16,18);ctx.fillStyle='#b0a993';ctx.fillRect(px+5,py+8,22,4);ctx.fillRect(px+11,py+4,10,5)}
  if(o.id==='canalMonument'){ctx.fillStyle='#92989a';ctx.fillRect(px+11,py+5,10,24);ctx.fillStyle='#c4c0aa';ctx.fillRect(px+8,py+4,16,5)}
  if(o.id==='tornLetter'){ctx.fillStyle='#d6c9a8';ctx.fillRect(px+7,py+9,18,14);ctx.strokeStyle='#776b59';ctx.strokeRect(px+7,py+9,18,14)}
