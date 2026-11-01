@@ -66,10 +66,15 @@ function confirmActiveAdventureLoad(){
 }
 function loadFromToolbar(){
  if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started)return load(false);
+ // An active battle or scripted event cannot be loaded over.
+ // Let the save system explain the lock without asking a misleading warning.
+ if(GC.Save.canPersistNow?.('load')===false)return load(false);
  if(!confirmActiveAdventureLoad())return false;
  return load(false)
 }
 function loadFromMenu(){
+ // When an event locks loading, preserve the menu and avoid a false warning.
+ if(GC.Save.canPersistNow?.('load')===false)return load(false);
  // Loading a checkpoint replaces unsaved progress in the current session.
  // The title-screen Continue action is intentionally unaffected.
  if(!confirmActiveAdventureLoad())return false;
