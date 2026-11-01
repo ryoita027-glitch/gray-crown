@@ -1048,7 +1048,30 @@ function inlineNpcEvent(id){
   if(id==='capitalCitizen')return say('王都市民',structuredCondition('returnedKingdom')?'「勇者様……前よりずっと疲れた顔をしてる。戦争は、まだ終わらないんですか？」':state.events.choices['early.capitalFountainPerspective']==='asked'?'「噴水で話を聞いてくれた勇者様か。勝利も大事だ。でも明日の食事も、家族が帰ることも忘れないでくれよ」':'「勇者様！ 魔王を倒して、聖地を取り戻してください！」')
   if(id==='capitalFlowerGirl')return say('花売りの少女',structuredCondition('returnedKingdom')?'「前は勇者様の花飾りが一番売れたの。今は、お墓に供える白い花ばっかり」':'「勇者様！ 任命式の日は赤と白の花が飛ぶんだよ。王城の前、すっごくきれい！」')
   if(id==='capitalRecruit'){
-   if(structuredCondition('returnedKingdom'))return say('新兵','「次の総攻撃、俺たちも出るそうです。勇者様……勝てば、本当に終わるんでしょうか」');
+   if(structuredCondition('returnedKingdom')){
+    const key='capital.recruitWitness';
+    if(state.events.choices[key]==='told')return say('新兵',structuredCondition('heroTruth')
+     ?'「総攻撃に出る前に、同じ隊の名前を全部覚えます。誰かが帰らなくても、いなかったことにはしません」'
+     :'「前の勇者たちにも名前があったんですね。まずは同じ隊の仲間の名前から、ちゃんと覚えます」');
+    if(!structuredCondition('heroRecordsFound'))return say('新兵','「次の総攻撃、俺たちも出るそうです。勇者様……勝てば、本当に終わるんでしょうか」');
+    if(state.events.choices['capital.ledgerCopy']!=='kept')return say('新兵','「前の勇者たちの記録が軍務街にあると聞きました。……俺たちも、帰らなければ忘れられるんでしょうか」');
+    return say('新兵','「前の勇者たちの記録を見たんですか。俺たちにも、名前が残るんでしょうか」',[
+     {label:'台帳の写しを一部見せ、名前を忘れないよう頼む',fn:()=>{
+      if(state.events.choices[key]==='told')return inlineNpcEvent('capitalRecruit');
+      if(state.events.choices['capital.ledgerCopy']!=='kept')return say('マーガレット','「写しがない。まずは記録を確かめ直しましょう」');
+      state.events.choices[key]='told';
+      addJournal('王都の新兵に、歴代勇者台帳の写しの一部を見せた。新兵は同じ隊の仲間の名を覚えておくと約束した。');
+      renderHud();
+      return saySequence([
+       {speaker:'マーガレット',text:'「これは公表されなかった勇者たちの名前。紙は渡せないけれど、見たことは覚えていて」'},
+       {speaker:'新兵',text:'「……俺たちと同じくらいの歳だ。名前があるのに、いなかったことにされるなんて」'},
+       {speaker:'ソフィ',text:'「危険なことを頼んでごめんなさい。あなた自身も、どうか帰ってください」'},
+       {speaker:'新兵',text:'「まずは同じ隊の名前を全部覚えます。それなら、今からでもできます」'}
+      ]);
+     }},
+     {label:'写しを守り、今は話さない',fn:()=>say('マーガレット','「ここは人目が多い。話す相手と場所は、慎重に選びましょう」')}
+    ]);
+   }
    const roadDecision=state.events?.choices?.['moral.lethal.roadBandit'];
    const witnessedGift=state.events?.choices?.['early.capitalRationGift']==='donate';
    const greeting='「勇者様と同じ前線に行けるなら光栄です。俺も聖地を取り戻してみせます！」';
@@ -1492,16 +1515,47 @@ function inlineObjectEvent(id){
   if(id==='royalCastle')return say('アルディナ王城','白い石壁の奥に王家の居城がそびえている。広場から見上げるだけでも、リュネ村とは規模がまるで違う。')
   if(id==='capitalMarket')return capitalShop()
   if(id==='capitalFountain')return capitalFountainVisit()
-  if(id==='capitalBarracks')return say('王国軍兵舎','整列した新兵たちの掛け声が聞こえる。壁には「聖地奪還」「勇者と共に」の標語が貼られている。')
+  if(id==='capitalBarracks'){
+   if(structuredCondition('returnedKingdom')){
+    if(!structuredCondition('heroRecordsFound'))return say('王国軍兵舎','兵舎の裏手に「旧記録・廃棄待ち」と記された保管箱がある。軍務街の東側を回れば確かめられそうだ。');
+    return say('王国軍兵舎',state.events.choices['capital.recruitWitness']==='told'
+     ?'兵舎の壁には戦勝標語が残る。新兵は名簿を指でなぞり、隣の兵の名前を確かめている。'
+     :'兵舎の裏には、歴代勇者の台帳が収められていた保管箱がある。表の壁にはまだ「勇者と共に」の標語が残っている。');
+   }
+   return say('王国軍兵舎','整列した新兵たちの掛け声が聞こえる。壁には「聖地奪還」「勇者と共に」の標語が貼られている。');
+  }
   if(id==='victoryPoster'){
-   if(!structuredCondition('capitalYukiPropaganda')){setStructuredCondition('capitalYukiPropaganda',true);addJournal('王都では一年前のユウキ戦死を「四天王ユウキ討伐・王国大勝利」と宣伝している。');renderHud()}
+   const returned=structuredCondition('returnedKingdom');
+   const seen=structuredCondition('capitalYukiPropaganda');
+   if(!seen){
+    setStructuredCondition('capitalYukiPropaganda',true);
+    addJournal(returned
+     ?'王都帰還後、ユウキの死を「討伐」と祝う戦勝ポスターを見直した。帝国の弔いと旧戦場で確かめた事実は記されていない。'
+     :'王都では一年前のユウキ戦死を「四天王ユウキ討伐・王国大勝利」と宣伝している。');
+    renderHud();
+   }
+   // Returning players know Yuki and must not repeat the naive first-visit reaction.
+   // Record the new reading after its final line so an interrupted scene can resume.
+   if(returned){
+    if(state.events.choices['capital.posterReturnSeen']==='read')
+     return say('戦勝ポスター','「ユウキ討伐・王国大勝利」。旧戦場で聞いた人々の声も、台帳に残る勇者たちの名前も、この壁には書かれていない。');
+    return saySequence([
+     {speaker:'戦勝ポスター',text:'「一年前の大勝利――四天王ユウキ討伐！ 英雄たちの意思を継ぎ、聖地奪還へ！」'},
+     {speaker:'カレン',text:'「帝国の村ではユウキを悼んでいた。ここでは、勝ったことしか書いてないんだね」'},
+     {speaker:'マーガレット',text:state.events.choices['capital.ledgerCopy']==='kept'
+      ?'「台帳の写しには前の勇者たちの名前がある。でも、このポスターには誰の名前もない」'
+      :'「旧戦場で聞いたことも、この国で祝われたことも、同じ日の出来事なのね」'},
+     {speaker:'ソフィ',text:'「誰かが帰れなかったことまで、勝利の言葉で消したくありません」'}
+    ],()=>{state.events.choices['capital.posterReturnSeen']='read';});
+   }
+   if(seen)return say('戦勝ポスター','「四天王ユウキ討伐・王国大勝利」。英雄たちの名前は、どこにも書かれていない。');
    const remembered=state.events.choices['early.caveBanner'];
    return saySequence([
     {speaker:'戦勝ポスター',text:'「一年前の大勝利――四天王ユウキ討伐！ 英雄たちの意思を継ぎ、聖地奪還へ！」'},
     {speaker:'カレン',text:'「この人がユウキ……。敵の大将だったんだね」'},
     {speaker:'マーガレット',text:'「“英雄たち”って誰のことか、名前が書いてないのが少し変ね」'}
    ].concat(remembered==='names'?[{speaker:'マーガレット',text:'「古砦の軍旗には普通の兵士の名前が残っていた。このポスターには、勇者の名前すらない」'}]:
-    remembered==='raise'?[{speaker:'カレン',text:'「古砦では、誰かの帰る場所だった旗を直した。でもここでは旗の方が人より大事みたいだね」'}]:[]))
+    remembered==='raise'?[{speaker:'カレン',text:'「古砦では、誰かの帰る場所だった旗を直した。でもここでは旗の方が人より大事みたいだね」'}]:[]));
   }
   if(id==='heroLedger'){
    if(!structuredCondition('returnedKingdom'))return say('王国軍・保管箱','封蝋に「軍務機密・勇者候補管理」とある。今の立場では勝手に開けられない。');
