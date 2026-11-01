@@ -25,11 +25,14 @@ for(const c of routes)for(const copied of [false,true]){
   assert.match(s.objective,/南門から前線へ戻る/);
   assert.doesNotMatch(s.objective,/向き合う/);
   assert.equal(/記録を確認/.test(s.objective),!copied);
-  h.GC.Movement.setMap('finalfield',11,1,'down');
-  assert.match(h.evaluate('finalFieldObjective()'),/要求は記録済み/);
-  assert.match(h.evaluate('finalFieldObjective()'),/南門から王都へ戻る/);
+  // Exercise the actual camp south gate, which also restores the battlefield chapter.
+  h.GC.Movement.setMap(c.camp,11,14,'down');
+  h.evaluate('VISUAL.nextMoveAt=0;move("down")');
+  assert.equal(s.map,'finalfield');
+  assert.match(s.objective,/要求は記録済み/);
+  assert.match(s.objective,/南門から王都へ戻る/);
   h.GC.Movement.setMap('finalfield',11,14,'down');
-  h.evaluate('move("down")'); // Real south-boundary movement path.
+  h.evaluate('VISUAL.nextMoveAt=0;move("down")'); // Real battlefield south exit.
   assert.equal(s.map,'capital');
   assert.match(s.objective,/要求は記録済み/);
   assert.match(s.objective,/再訪（任意）/);
