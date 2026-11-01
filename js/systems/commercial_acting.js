@@ -101,7 +101,7 @@
   if(!a){
    a=GC.Animation.createActor(id,{id:'conversation.'+id,x,y,
     facing:plan.facing||facing,animation:plan.pose,startedAt:now,
-    renderScale:44/48,renderMode:'pixel48-medium',prototypeTemporary:true,matchFieldShadow:true});
+    renderScale:(GC.Data?.Animations?.artDisplaySize||44)/48,renderMode:'pixel48-medium',prototypeTemporary:true,matchFieldShadow:true});
    actors.set(id,a)
   }
   a.x=x;a.y=y;a.facing=plan.facing||facing;
