@@ -26,6 +26,24 @@ function saveFromMenu(){
  }
  return saved
 }
+// Keep export and recovery actions retryable if a browser download fails
+// without a visible system message. An accepted click is not proof that the
+// user saved the file; the download handler reports only that it was started.
+function exportFromMenu(download){
+ const modal=$('modal');
+ modal.classList.add('hidden');
+ const started=download();
+ if(!started&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
+  modal.classList.remove('hidden')
+ }
+ return started
+}
+function exportPortableSaveFromMenu(){
+ return exportFromMenu(()=>GC.Save.downloadPortableSave())
+}
+function exportQuarantinedSavesFromMenu(){
+ return exportFromMenu(()=>GC.Save.downloadQuarantinedSaves())
+}
 function loadFromMenu(){
  // Loading a checkpoint replaces unsaved progress in the current session.
  // The title-screen Continue action is intentionally unaffected.
@@ -64,12 +82,12 @@ function openMenu(){
    <div class="menu-actions">
      <button onclick="saveFromMenu()">セーブ</button>
      <button onclick="loadFromMenu()">ロード</button>
-     <button onclick="$('modal').classList.add('hidden');GC.Save.downloadPortableSave()">セーブを書き出す（PC移行用）</button>
+     <button onclick="exportPortableSaveFromMenu()">セーブを書き出す（PC移行用）</button>
      <button onclick="document.getElementById('portableSaveUpload').click()">セーブを読み込む（.json）</button>
      <input id="portableSaveUpload" type="file" accept=".json,application/json" style="display:none"
        onchange="if(this.files?.length){const file=this.files[0];this.value='';$('modal').classList.add('hidden');GC.Save.readPortableSaveFile(file)}">
      ${GC.Save.hasArchivedAdventure()?`<button onclick="restoreArchivedAdventureFromMenu()">以前の冒険を復旧</button>`:''}
-     ${GC.Save.hasQuarantinedSaves()?`<button onclick="$('modal').classList.add('hidden');GC.Save.downloadQuarantinedSaves()">破損セーブの元データを書き出す</button>`:''}
+     ${GC.Save.hasQuarantinedSaves()?`<button onclick="exportQuarantinedSavesFromMenu()">破損セーブの元データを書き出す</button>`:''}
      <button class="menu-danger" onclick="restartFromMenu()">最初から</button>
    </div>
  </div>`;
