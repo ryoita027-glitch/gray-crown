@@ -9,6 +9,7 @@ const cases=[
 ];
 function setup(c,cleared=true){
  const h=createHarness(),s=h.GC.State.get();
+ h.evaluate('ALPHA_SESSION.started=true');
  s.finalChoice=c.route;
  s.events.choices['route.companions.'+c.route]=c.stance;
  h.GC.Movement.setMap(c.map,11,9,'left');
