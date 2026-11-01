@@ -59,10 +59,29 @@ function exportPortableSaveFromMenu(){
 function exportQuarantinedSavesFromMenu(){
  return exportFromMenu(()=>GC.Save.downloadQuarantinedSaves())
 }
+// Both in-game Load entry points must protect unsaved progress.
+// Title-screen Continue has no active adventure to discard.
+function confirmActiveAdventureLoad(){
+ // Without a usable primary or backup, loading cannot discard live progress.
+ // Let the save system explain the missing/corrupt checkpoint instead.
+ if(GC.Save.hasUsableStoredAdventure?.()===false)return true;
+ return confirm('最後に保存した冒険をロードしますか？\n現在の未保存の進行は失われます。')
+}
+function loadFromToolbar(){
+ if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started)return load(false);
+ // An active battle or scripted event cannot be loaded over.
+ // Let the save system explain the lock without asking a misleading warning.
+ if(GC.Save.canPersistNow?.('load')===false)return load(false);
+ if(!confirmActiveAdventureLoad())return false;
+ return load(false)
+}
 function loadFromMenu(){
+ // A blocked load must not ask a false discard confirmation. Still close
+ // the menu while the save system presents its own error dialogue.
+ const blocked=GC.Save.canPersistNow?.('load')===false;
  // Loading a checkpoint replaces unsaved progress in the current session.
  // The title-screen Continue action is intentionally unaffected.
- if(!confirm('最後に保存した冒険をロードしますか？\n現在の未保存の進行は失われます。'))return false;
+ if(!blocked&&!confirmActiveAdventureLoad())return false;
  const modal=$('modal');
  modal.classList.add('hidden');
  let loaded=false;
@@ -92,9 +111,14 @@ function restoreArchivedAdventureFromMenu(){
   }
  }
 }
+// A second file selection must not reopen the menu while an earlier import
+// is still reading/validating bytes. The Save layer separately guards writes.
+let portableMenuImportInProgress=false;
 // The file picker can return false asynchronously (including a cancelled
 // confirmation). Keep the menu available unless a system dialogue is visible.
 async function importPortableSaveFromMenu(file){
+ if(portableMenuImportInProgress)return false;
+ portableMenuImportInProgress=true;
  const modal=$('modal');
  modal.classList.add('hidden');
  let imported=false;
@@ -104,15 +128,24 @@ async function importPortableSaveFromMenu(file){
  }catch(error){
   // Do not create an unhandled rejection from an inline change handler.
   GC.Log?.error?.('Portable save menu import failed',{error:String(error)});
+  // An unexpected importer exception may not open a system status dialogue.
+  // Explain the failure in the restored menu without asserting that stored
+  // checkpoint bytes were left unchanged.
+  if(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden')){
+   $('modalTitle').textContent='外部セーブの読み込みでエラーが発生しました（再試行できます）'
+  }
   return false
  }finally{
+  portableMenuImportInProgress=false;
   if(!imported&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
    modal.classList.remove('hidden')
   }
  }
 }
 function openMenu(){
- if(state.battle)return;
+ // An in-flight portable import owns the menu until it settles. Keyboard
+ // shortcuts must not reopen stale controls over a newly loaded adventure.
+ if(state.battle||portableMenuImportInProgress)return;
  const inv=Object.entries(state.inventory).map(([k,v])=>`<div class="kv"><strong>${escapeMenuText(k)}</strong><span>${escapeMenuText(v)}</span></div>`).join('');
  const levels=state.party.map(p=>`<div class="menu-character"><div class="party-head"><strong>${escapeMenuText(p.name)}　Lv.${escapeMenuText(p.level)}</strong><span>${escapeMenuText(p.job)}</span></div><div class="menu-statline"><span>HP ${escapeMenuText(p.hp)}/${escapeMenuText(p.maxHp)}</span><span>MP ${escapeMenuText(p.mp)}/${escapeMenuText(p.maxMp)}</span><span>攻撃 ${escapeMenuText(p.atk)}</span><span>防御 ${escapeMenuText(p.def)}</span><span>素早さ ${escapeMenuText(p.spd)}</span></div><div class="party-sub">EXP ${escapeMenuText(p.exp)}${p.level<MAX_LEVEL?` / ${escapeMenuText(expThreshold(p.level))}`:' / MAX'}</div></div>`).join('');
  $('modalTitle').textContent='冒険メニュー';
