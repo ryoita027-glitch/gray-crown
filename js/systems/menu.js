@@ -128,6 +128,12 @@ async function importPortableSaveFromMenu(file){
  }catch(error){
   // Do not create an unhandled rejection from an inline change handler.
   GC.Log?.error?.('Portable save menu import failed',{error:String(error)});
+  // An unexpected importer exception may not open a system status dialogue.
+  // Explain the failure in the restored menu without asserting that stored
+  // checkpoint bytes were left unchanged.
+  if(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden')){
+   $('modalTitle').textContent='外部セーブの読み込みでエラーが発生しました（再試行できます）'
+  }
   return false
  }finally{
   portableMenuImportInProgress=false;
