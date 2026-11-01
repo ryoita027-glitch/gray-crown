@@ -842,8 +842,11 @@ function capitalWagonQueueVisit(){
 // without teleporting the party or turning the city into a checklist.
 function capitalGateGuideVisit(){
  const routes='王城前広場 ↑　白鹿亭 ←　配給所 →。';
- if(structuredCondition('returnedKingdom'))
-  return say('南門の道案内',routes+'古い案内板には、雨で薄れた文字が残っている。');
+ if(structuredCondition('returnedKingdom')){
+  if(!structuredCondition('heroRecordsFound'))return say('南門の道案内',routes+'軍務街の台帳は東側、兵舎の裏手にある。');
+  if(!structuredCondition('heroTruth'))return say('南門の道案内',routes+'総司令グランツは北西の王城前にいる。');
+  return say('南門の道案内',routes+'北門から総攻撃前線へ続く。');
+ }
  if(isEventComplete('alpha2.capital.granzBriefing'))
   return say('南門の道案内',routes+'次の任務は北門から灰の街道へ。');
  if(isEventComplete('alpha.capital.whiteStagNight'))
@@ -1018,8 +1021,12 @@ function inlineNpcEvent(id){
      return say('王都係官',state.events.choices['returnroad.scoutRumor']==='asked'
       ?'「記録を処分する噂ですか？　私には確認できません。勇者候補の台帳なら東の軍務街です。ご自身で確かめてください」'
       :'「……勇者殿。軍務街の記録なら東側へ。任命式の頃とは、街の空気も変わりました」');
-    if(!structuredCondition('heroTruth'))return say('王都係官','「台帳を読まれたのですね。グランツ総司令は北の総司令部にいます」');
-    return say('王都係官','「北門から前線へ向かうのですか。どうか、今度は自分の意思で」');
+    if(!structuredCondition('heroTruth'))return say('王都係官',state.events.choices['capital.ledgerCopy']==='kept'
+     ?'「台帳の写しを取ったのですか……私は見なかったことにします。グランツ総司令は北西の王城前にいます」'
+     :'「台帳を読まれたのですね。グランツ総司令は北西の王城前にいます」');
+    return say('王都係官',state.events.choices['capital.ledgerCopy']==='kept'
+     ?'「その写しは、なくさないでください。北門から前線へ向かうのですね……どうかご無事で」'
+     :'「北門から前線へ向かうのですか。どうか、今度は自分の意思で」');
    }
    if(structuredCondition('capitalCeremony'))return say('王都係官','「任命式は済んでいます。今夜は白鹿亭に部屋が用意されています。街を見たら休んでください」');
    advanceStory(STORY_STAGES.CEREMONY,{capitalCeremony:true},'王都を見て回り、白鹿亭で今夜休む');addJournal('王都で「美しい勇者一行」として大々的に任命された。');
@@ -1315,6 +1322,28 @@ function inlineNpcEvent(id){
 
 }
 
+// Optional, repeat-safe preservation of evidence after the player has read
+// the ledger. The choice is journal-backed and does not change the main gate.
+function capitalLedgerCopyChoice(){
+ const key='capital.ledgerCopy';
+ if(state.events.choices[key]==='kept')
+  return say('歴代勇者台帳','氏名と戦況を写し取った紙が手元にある。原本の「戦死」「消息不明」の欄は、まだここに残っている。');
+ return say('歴代勇者台帳','台帳の端には廃棄予定の印がある。ここに残すだけでは、名前ごと消されるかもしれない。',[
+  {label:'氏名と記録を写し取る',fn:()=>{
+   if(state.events.choices[key]==='kept')return capitalLedgerCopyChoice();
+   state.events.choices[key]='kept';
+   addJournal('王都軍務街で歴代勇者台帳の氏名と戦況を写し取った。原本が失われても、前の勇者たちがいた証拠を持っている。');
+   renderHud();
+   return saySequence([
+    {speaker:'ソフィ',text:'「名前を、ただの数字に戻したくありません」'},
+    {speaker:'マーガレット',text:'「写しは私が預かる。原本を動かさなければ、今すぐ誰かに気づかれることもないはず」'},
+    {speaker:'カレン',text:'「この人たちがいたことを、忘れないでいよう」'}
+   ]);
+  }},
+  {label:'今は原本を閉じる',fn:()=>say('カレン','「……まずグランツに話を聞こう。ここへはまた戻れる」')}
+ ]);
+}
+
 function inlineObjectEvent(id){
  if(TREASURE_DEFS[id])return openTreasure(id);
  if(state.map==='village'){
@@ -1476,9 +1505,9 @@ function inlineObjectEvent(id){
   }
   if(id==='heroLedger'){
    if(!structuredCondition('returnedKingdom'))return say('王国軍・保管箱','封蝋に「軍務機密・勇者候補管理」とある。今の立場では勝手に開けられない。');
-   if(structuredCondition('heroRecordsFound'))return say('歴代勇者台帳','名前の横に「戦死」「消息不明」「宣伝終了」。同じ言葉が何度も並んでいる。');
+   if(structuredCondition('heroRecordsFound'))return capitalLedgerCopyChoice();
    setStructuredCondition('heroRecordsFound',true);state.objective='王城前でグランツを問い詰める';addJournal('軍務街の廃棄予定台帳から、カレンたち以前にも複数の「勇者一行」が存在し、戦死後は公表されず次の候補へ置き換えられていた事実を発見した。');renderHud();
-   return saySequence([{speaker:'歴代勇者台帳',text:'「第七次勇者候補――全滅。国民向け発表不要」「第八次――二名消息不明。新規選定へ」……同じ形式の記録が何頁も続いている。'},{speaker:'カレン',text:'「“また勇者か”……クラインテッドが言ってたのは、これだったんだ」'},{speaker:'トリトン',text:'「候補って何だよ。私たち、人間だぞ」'},{speaker:'ナレーション',text:'トリトンが机を殴る。舞い上がった埃の中、マーガレットはその拳にそっと手を添えた。叱りも慰めもしなかった。'},{speaker:'ソフィ',text:'「この人……二十歳。私たちより年下です。家族への通知、“戦死ではなく長期任務中と説明”……」'},{speaker:'カレン',text:'「村のみんなも、私たちが死んだらそう言われるの？」'},{speaker:'マーガレット',text:'「たぶん新しい勇者が選ばれる。私たちの名前を使わなくなったら、それで終わり」'},{speaker:'カレン',text:'「……嫌だ」'},{speaker:'マーガレット',text:'「カレン？」'},{speaker:'カレン',text:'「死ぬのが嫌なんじゃない。私たちがいなかったことにされるのが嫌。前の人たちも、そんなふうに消していいわけない」'},{speaker:'ソフィ',text:'「消させません。名前、全部覚えて帰りましょう」'},{speaker:'マーガレット',text:'「一緒にグランツに聞こう。四人の名前も、前の人たちの名前も消させない」'}])
+   return saySequence([{speaker:'歴代勇者台帳',text:'「第七次勇者候補――全滅。国民向け発表不要」「第八次――二名消息不明。新規選定へ」……同じ形式の記録が何頁も続いている。'},{speaker:'カレン',text:'「“また勇者か”……クラインテッドが言ってたのは、これだったんだ」'},{speaker:'トリトン',text:'「候補って何だよ。私たち、人間だぞ」'},{speaker:'ナレーション',text:'トリトンが机を殴る。舞い上がった埃の中、マーガレットはその拳にそっと手を添えた。叱りも慰めもしなかった。'},{speaker:'ソフィ',text:'「この人……二十歳。私たちより年下です。家族への通知、“戦死ではなく長期任務中と説明”……」'},{speaker:'カレン',text:'「村のみんなも、私たちが死んだらそう言われるの？」'},{speaker:'マーガレット',text:'「たぶん新しい勇者が選ばれる。私たちの名前を使わなくなったら、それで終わり」'},{speaker:'カレン',text:'「……嫌だ」'},{speaker:'マーガレット',text:'「カレン？」'},{speaker:'カレン',text:'「死ぬのが嫌なんじゃない。私たちがいなかったことにされるのが嫌。前の人たちも、そんなふうに消していいわけない」'},{speaker:'ソフィ',text:'「消させません。名前、全部覚えて帰りましょう」'},{speaker:'マーガレット',text:'「一緒にグランツに聞こう。四人の名前も、前の人たちの名前も消させない」'}],()=>capitalLedgerCopyChoice())
   }
 
  }
