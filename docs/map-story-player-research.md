@@ -1,5 +1,23 @@
 # Map and story: player-facing research notes
 
+## 2026-11-01 21:43 JST — final army camps: no skipped friend decision, no repeated arrival
+
+**Evidence checked (2026-11-01; individual Steam opinions, not population statistics):**
+- [Chained Echoes Steam reviews](https://steamcommunity.com/app/1229240/reviews/): one review displayed as **Oct 29** reports walking the same map repeatedly before noticing a doorway; a positive **Oct 28** review praises the journey, party and world. The page did not independently verify those reviews' year.
+- [Sea of Stars Steam reviews](https://steamcommunity.com/app/1244090/reviews/): an **Oct 5** negative review criticizes unclear progression and repeated walks back to camp; an **Oct 3** positive review values the expectation of discovery around corners. The page did not independently verify those reviews' year.
+- These are contrasting individual experiences, **not** proof that every player prefers shorter transitions.
+
+**Direct code finding (verified on PR #249 HEAD `7d8345fc`):** `enterFinalBranch()` let kingdom/empire players cross the north gate after allegiance was saved even if `route.companions.<route>` was absent. The ruler NPC later offered the conversation, but the entry into camp had already skipped the intended friend discussion. Every camp re-entry also replayed the first approach narration. Both are code-level observations, not claims from a human playtest.
+
+**Player-experience hypothesis (unverified):** Restore the friends' meaningful tactical choice *at the north exit*, before the player crosses; reflect the chosen stance and an optionally repaired civilian waymark in the **first** camp approach; skip the introduction on later visits. This makes the same short corridor express different priorities without increasing map size or copying another game's story.
+
+**Implemented:** `js/systems/movement.js` now gates all three allegiances against missing companion decisions, makes the two army-camp first approaches stance-aware, and uses a silent return to already visited camps. Existing route battles, gates, positions, journal, artwork and Save v23 are unchanged. Added `tests/finalfield_camp_continuity.test.js` (five regression cases).
+
+**Verification:** V8 parsed the full modified movement source. Isolated execution of the real replacement function checked both routes, all four tactical variants, missing-choice gate and silent revisits. The five committed Node harness tests are **not executed**. Browser play, full `npm test`, Save/Load integration, 44px readability and external human feedback remain unverified.
+
+**Next:** Run `node --test tests/finalfield_camp_continuity.test.js tests/finalfield_commitment_return.test.js` on this branch, then actually walk the two north exits after saving mid-conversation and return from each camp; check dialogue order, no replay, and no unintended objective reset.
+
+
 ## 2026-11-01 20:43 JST — final battlefield: commitment that persists across return trips
 
 **Verified observations (checked 2026-11-01; individual opinions, not market-wide results):**
