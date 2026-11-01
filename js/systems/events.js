@@ -395,9 +395,23 @@ function runFinalRouteConfrontation(route){
   };
   return saySequence(openings[battleId],()=>startBattle(battleId))
  }
+ // The final demand was already recorded. Do not force the first meeting
+ // or the provisional ending to replay on every ruler revisit.
+ if(state.events?.choices?.['route.final.'+route]){
+  const copied=state.events.choices['finalcamp.witness.'+route]==='copied';
+  const kingdom=route==='kingdom';
+  const speaker=kingdom?'皇帝シオン':'総司令グランツ';
+  const reply=kingdom
+   ?copied?'「避難待ちの札の空欄は見た。お前たちの要求も聞いた。だが許可はまだ出せない」':'「お前たちの要求は聞いた。これ以上、同じ言葉を繰り返す必要はない」'
+   :copied?'「名簿の氏名欄が空白なのは事実だ。お前たちの要求は記録に残る。だが命令はまだ変わらない」':'「お前たちの要求は聞いた。軍の命令が変わったわけではない」';
+  return say(speaker,reply,[
+   {label:'仲間との決断と仮エピローグを見直す',fn:()=>playRouteAftermath(route)},
+   {label:'今は先へ進む',fn:()=>say('カレン','「伝えるべきことは伝えた。先へ進もう」')}
+  ]);
+ }
  const consequences={
   kingdom:{
-   evacuate:{speaker:'ソフィ',text:'「避難路が開きました。これで戦いの前に逃げられる人がいます」'},
+   evacuate:{speaker:'ソフィ',text:'「前衛は退きました。でも、待っている家族が通れる許可まで出たわけじゃありません」'},
    orders:{speaker:'トリトン',text:'「前衛は退いた。でも後ろの人まで守れたかは、まだ分からない」'}
   },
   empire:{

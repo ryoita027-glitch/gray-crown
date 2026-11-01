@@ -1,3 +1,13 @@
+## 2026-11-02 05:43 JST — voluntary ruler revisit and honest evacuation consequence
+
+**Verified repository fact (Draft #265 HEAD `cf0f0cb6`):** After recording `route.final.kingdom` or `route.final.empire`, revisiting Shion or Granz replayed the initial confrontation (including surrender/evidence lines) and automatically reopened the provisional ending. This offered no new decision and imposed repeated exposition. Sophie's evacuation dialogue and the kingdom ending also claimed an evacuation outcome not established by the still-blank permit on the witness board.
+
+**Player signals checked 2026-11-02:** [Chained Echoes Steam reviews](https://steamcommunity.com/app/1229240/reviews/) include an individual October 24 complaint about lengthy exposition and indistinct voices, alongside praise for cast and journey. [Sea of Stars Steam reviews](https://steamcommunity.com/app/1244090/reviews/) include an individual October 10 criticism of repetitive progression and limited rewards. Displayed snippets do not confirm publication years. These are individual opinions, not a November 2026 representative sample. **Inference:** a brief context-aware reply and optional recap reduce return-visit friction; this is not measured player feedback.
+
+**Implemented:** After a final demand, a ruler revisit offers a short route-specific response (also reacting to whether the player copied the witness board), then a choice to reopen the existing companion/provisional ending or leave. First meeting, irreversible demand, Ash Crown, Save v23, route checkpoint, and the preview remain unchanged. Sophie and the kingdom preview no longer assert an unverified family evacuation. No external content copied.
+
+**Validation:** Full edited `events.js` and `movement.js` syntax compiled in V8; four isolated actual-source scenarios checked both routes and witness states, voluntary review and skip. Added Node harness tests but **not run natively** (container GitHub DNS unavailable). Browser playthrough, real save/load, 44px readability, human testing **unverified**. Next: native `node --test tests/finalcamp_ruler_revisit.test.js` and real first-confrontation → demand → revisit → optional ending on both routes.
+
 # Map and story: player-facing research notes
 
 ## 2026-11-02 04:43 JST — close the optional witness-board exploration loop without a compulsory return walk
