@@ -5,7 +5,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 
-function harness({started=true,approve=false,loadResult=true,canLoadNow=true}={}){
+function harness({started=true,approve=false,loadResult=true,canLoadNow=true,showBlockedDialogue=false}={}){
  const elements=new Map(),calls={confirm:[],load:0,loadGate:[]},live={stage:'unsaved-progress'};
  const $=id=>{
   if(!elements.has(id)){
@@ -26,7 +26,7 @@ function harness({started=true,approve=false,loadResult=true,canLoadNow=true}={}
   maps:{village:{name:'リュネ村'}},MAX_LEVEL:99,expThreshold:()=>100,
   GC:{Save:{hasUsableStoredAdventure:()=>true,canPersistNow:mode=>{calls.loadGate.push(mode);return canLoadNow},hasArchivedAdventure:()=>false,hasQuarantinedSaves:()=>false},Log:{info:()=>{}}},
   confirm:message=>{calls.confirm.push(message);return approve},
-  load:()=>{calls.load++;if(!canLoadNow)return false;if(loadResult)live.stage='stored-checkpoint';return loadResult},
+  load:()=>{calls.load++;if(!canLoadNow){if(showBlockedDialogue)$('dialogueBox').classList.remove('hidden');return false}if(loadResult)live.stage='stored-checkpoint';return loadResult},
   save:()=>true,restart:()=>true,renderHud:()=>{},draw:()=>{},toggleSound:()=>{}
  });
  for(const file of ['js/systems/menu.js','js/game.js']){
@@ -114,4 +114,14 @@ test('allowed top-bar Load still warns before replacing progress',()=>{
  assert.equal(h.calls.confirm.length,1);
  assert.equal(h.calls.load,1);
  assert.equal(h.live.stage,'stored-checkpoint');
+});
+
+// The system's explanation of a blocked load must remain unobstructed.
+test('blocked menu Load does not cover a visible system status dialogue',()=>{
+ const h=harness({canLoadNow:false,approve:true,showBlockedDialogue:true});h.menu();
+ assert.equal(h.calls.confirm.length,0);
+ assert.equal(h.calls.load,1);
+ assert.equal(h.$('dialogueBox').classList.contains('hidden'),false);
+ assert.equal(h.$('modal').classList.contains('hidden'),true);
+ assert.equal(h.live.stage,'unsaved-progress');
 });
