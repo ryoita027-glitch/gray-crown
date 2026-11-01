@@ -251,7 +251,9 @@ function enterReturnRoad(source='elsia'){
  travelScene('returnroad',11,13,'up','第七章 — 勇者の値段','北へ進み、王都の軍務街で記録を確かめる','得た資料を抱え、四人は戦線の隙間を縫う帰還路へ入った。');
 }
 function finalFieldObjective(){
- if(state.finalChoice)return '北門から選んだ道へ進む';
+ if(state.finalChoice==='kingdom')return '北門から帝国本陣へ向かう';
+ if(state.finalChoice==='empire')return '北門から王国軍総司令部へ向かう';
+ if(state.finalChoice==='ashcrown')return '北門から灰冠の道へ進む';
  const kingdom=structuredCondition('finalKingdomPlan'),empire=structuredCondition('finalEmpirePlan');
  if(kingdom&&empire)return '中央の決断地点で仲間と話す';
  if(kingdom)return '東の青旗で帝国軍の作戦を確認する';
@@ -387,7 +389,13 @@ function move(dir){if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started
  if(state.map==='returnroad'&&ny<0&&[11,12].includes(nx)){enterCapital(false);return}
  if(state.map==='finalfield'&&ny>=15&&[11,12].includes(nx)){if(state.finalChoice==='ashcrown'&&!!state.events?.choices?.['route.companions.ashcrown']){say('カレン','「三人と別れた。戻っても、あの頃の四人には戻れない」');return}travelScene('capital',11,1,'down','最終章 — 誰のための勇者か','最後の選択へ向かう','王都側の前線へ戻った。');return}
  if(state.map==='finalfield'&&ny<0&&[11,12].includes(nx)){if(!state.finalChoice){say('決断の地点','中央にいる人物に話しかけ、どちら側に立つか決める必要がある。');return}enterFinalBranch();return}
- if(['imperialcamp','royalcamp'].includes(state.map)&&ny>=15&&[11,12].includes(nx)){travelScene('finalfield',11,1,'down','最終章 — 誰のための勇者か','最終決戦の相手へ向かう','両軍がぶつかる前線へ戻った。');return}
+ if(['imperialcamp','royalcamp'].includes(state.map)&&ny>=15&&[11,12].includes(nx)){
+  // Return to the north edge of the SAME battlefield. Do not replay the
+  // first arrival or replace the player's chosen allegiance with a generic hint.
+  setMap('finalfield',11,1,'down',[[12,1],[13,1],[14,1]]);
+  state.chapter='最終章 — 誰のための勇者か';
+  state.objective=finalFieldObjective();renderHud();return;
+ }
  if(isBlocked(nx,ny)){draw();return}state.trail.unshift([state.x,state.y]);state.trail=state.trail.slice(0,10);state.x=nx;state.y=ny;state.worldStepsOnMap=(state.worldStepsOnMap||0)+1;handleStep();draw()}
 
 function randomEncounterPool(map){
