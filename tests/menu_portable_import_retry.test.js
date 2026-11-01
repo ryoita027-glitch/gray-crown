@@ -259,7 +259,7 @@ function inputControlHarness(isImportPending){
   assert.ok(found,'missing actual game handler: '+name);
   return found[0];
  }).join('\n');
- const calls={move:[],interact:0,audio:0,prevent:0};
+ const calls={move:[],interact:0,audio:0,prevent:0,dev:0};
  const nodes=new Map();
  const $=id=>{
   if(!nodes.has(id)){
@@ -272,7 +272,7 @@ function inputControlHarness(isImportPending){
  const touchMove={dataset:{move:'left'},listeners:{},
   addEventListener(type,fn){this.listeners[type]=fn}};
  const context=vm.createContext({
-  GC:{Menu:{isPortableImportPending}},ALPHA_SESSION:{started:true},
+  GC:{Menu:{isPortableImportPending},Dev:{toggle:()=>{calls.dev++}}},ALPHA_SESSION:{started:true},
   state:{battle:null},$,document:{activeElement:null,
    addEventListener:()=>{},querySelectorAll:()=>[touchMove]},
   canvas:{addEventListener:()=>{}},dialogueChoices:[],
@@ -308,5 +308,23 @@ test('pending portable import blocks keyboard and touch movement/interaction; su
   assert.deepEqual(ui.calls.move,['right','left']);
   assert.equal(ui.calls.interact,3);
   assert.equal(ui.calls.audio,3);
+ }
+});
+
+// F2 opens developer controls that can mutate the active adventure. The file
+// import must remain the only checkpoint transition until it settles.
+test('pending portable import blocks F2 developer controls and restores shortcut afterwards',async()=>{
+ for(const outcome of [true,false]){
+  let finish;
+  const h=harness({importer:()=>new Promise(resolve=>{finish=resolve})});
+  const ui=inputControlHarness(()=>h.pending());
+  h.select();await settle();
+  ui.key('F2');
+  assert.equal(ui.calls.dev,0,'developer panel must not open during import');
+  assert.equal(ui.calls.prevent,1,'F2 default should be suppressed during import');
+  finish(outcome);await settle();
+  ui.key('F2');
+  assert.equal(ui.calls.dev,1,'developer shortcut must recover after import');
+  assert.equal(ui.calls.prevent,2);
  }
 });
