@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gray Crown — Margaret same-pose 44px A/B (ART NO-GO)</title>
+<style>
+body{font:14px/1.55 system-ui,sans-serif;background:#1e2329;color:#e7ebed;margin:20px auto;padding:0 18px;max-width:840px}
+h1{font-size:20px}h2{font-size:15px}strong,.no{color:#ffbdad}button,select{padding:7px 10px;margin:4px;color:#e9ecef;background:#37434c;border:1px solid #78848d;border-radius:4px}
+section{display:flex;flex-wrap:wrap;gap:14px;margin:12px 0 20px}figure{margin:0;min-width:130px}
+canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+figure canvas{width:44px;height:72px;border:1px solid #8c979d}figcaption{margin-top:8px;font-size:12px}
+#diff{width:48px;height:48px;border:1px solid #8c979d}small{color:#b9c6ca}#status{white-space:pre-wrap}
+</style>
+<h1>マーガレット実ソース：首・襟 44px A/B</h1>
+<p class="no"><strong>ART NO-GO / ゲーム採用禁止。</strong> 元の待機正面フレームを直接参照した同一ポーズ比較。候補は5画素の首・襟の試作だが、明るい画素が浮いて見え、44pxで明確な改善は確認できない。</p>
+<p><label>背景 <select id="bg"><option value="grass">草地</option><option value="stone">石畳</option><option value="check">チェッカー</option></select></label>
+<label><input id="zoom" type="checkbox"> CSS 4倍拡大（評価基準は44px）</label>
+<button id="export" type="button">44px A/B画像を保存</button></p>
+<section id="panels"></section>
+<h2>差分（48px原画座標）</h2>
+<canvas id="diff" width="48" height="48"></canvas>
+<p id="status">画像を読み込み中…</p>
+<p><small>左から：現行マーガレット／5画素試作／村長V5／王国使者V5。すべて48pxセルを44pxに最近傍描画。地面・足位置を同条件で揃える。候補は正面待機1フレームのみで、他方向・他動作は未作成。比較パネルの実際の表示幅は44px。</small></p>
+<script>
+'use strict';
+const root=document.getElementById('panels'),bg=document.getElementById('bg'),zoom=document.getElementById('zoom'),status=document.getElementById('status');
+const sprites=[
+ {label:'Margaret original',url:'../../assets/characters/margaret/margaret_idle.png',sx:0,foot:46},
+ {label:'Neck bridge A / NO-GO',url:'../../docs/art/evidence/margaret_original_front_neck_bridge_A_NO_GO.png',sx:0,foot:46},
+ {label:'Mayor V5',url:'../../assets/npc/featured_residents_charm_v5.png',sx:144,foot:44},
+ {label:'Messenger V5',url:'../../assets/npc/featured_residents_charm_v5.png',sx:192,foot:44}
+];
+const cache=new Map(),views=[];
+for(const s of sprites){
+ const figure=document.createElement('figure'),c=document.createElement('canvas'),label=document.createElement('figcaption');
+ c.width=44;c.height=72;label.textContent=s.label;figure.append(c,label);root.append(figure);views.push(c);
+ if(!cache.has(s.url)){const im=new Image();cache.set(s.url,im);im.onload=render;im.onerror=render;im.src=s.url}
+}
+function backdrop(ctx){
+ const type=bg.value;ctx.fillStyle=type==='grass'?'#788572':type==='stone'?'#777a7b':'#696969';ctx.fillRect(0,0,44,72);
+ if(type==='check'){for(let y=0;y<72;y+=4)for(let x=0;x<44;x+=4)if((x+y)/4%2===0){ctx.fillStyle='#838383';ctx.fillRect(x,y,4,4)}}
+ ctx.fillStyle='rgba(29,36,34,.28)';ctx.fillRect(0,54,44,1);
+}
+function sourcePixels(s){const im=cache.get(s.url);if(!im||!im.complete||!im.naturalWidth)return null;
+ const c=document.createElement('canvas');c.width=48;c.height=48;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,s.sx,0,48,48,0,0,48,48);return x.getImageData(0,0,48,48).data}
+function render(){
+ for(let i=0;i<sprites.length;i++){const s=sprites[i],c=views[i],ctx=c.getContext('2d');ctx.imageSmoothingEnabled=false;backdrop(ctx);
+ const im=cache.get(s.url);if(im&&im.complete&&im.naturalWidth){const y=54-Math.round(s.foot*44/48);ctx.drawImage(im,s.sx,0,48,48,0,y,44,44)}
+ else{ctx.fillStyle='#ff8c87';ctx.fillRect(5,15,34,3)}}
+ const a=sourcePixels(sprites[0]),b=sourcePixels(sprites[1]),d=document.getElementById('diff'),ctx=d.getContext('2d');ctx.clearRect(0,0,48,48);
+ if(!a||!b){status.textContent='元画像または試作PNGが読み込めません。リポジトリ直下からローカルHTTPサーバーで開いてください。';return}
+ let changed=0,alphaChanged=0,protectedChanged=0;for(let i=0;i<48*48;i++){let off=i*4,hit=false;for(let k=0;k<4;k++)if(a[off+k]!==b[off+k])hit=true;
+ if(hit){changed++;let y=Math.floor(i/48);if(y<=24||y>=28)protectedChanged++;ctx.fillStyle='#ff4cc6';ctx.fillRect(i%48,y,1,1)}
+ if(a[off+3]!==b[off+3])alphaChanged++}
+ status.textContent='原画比較：変更 '+changed+' 画素 / アルファ差 '+alphaChanged+' / 保護領域差 '+protectedChanged+'。'+(changed===5&&alphaChanged===0&&protectedChanged===0?' 技術的な差分条件は一致。':' 差分条件が想定外。')+' 美術評価は NO-GO。';
+}
+bg.addEventListener('change',render);
+zoom.addEventListener('change',()=>{for(const c of views){c.style.width=zoom.checked?'176px':'44px';c.style.height=zoom.checked?'288px':'72px'}const d=document.getElementById('diff');d.style.width=zoom.checked?'192px':'48px';d.style.height=zoom.checked?'192px':'48px'});
+document.getElementById('export').addEventListener('click',()=>{const c=document.createElement('canvas');c.width=44*4;c.height=72;const x=c.getContext('2d');for(let i=0;i<4;i++)x.drawImage(views[i],i*44,0);const a=document.createElement('a');a.href=c.toDataURL('image/png');a.download='margaret_neck_bridge_A_native44_NO_GO.png';a.click()});
+render();
+</script></html>
