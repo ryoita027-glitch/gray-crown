@@ -201,4 +201,4 @@ function openMenu(){
  </div>`;
  $('modal').classList.remove('hidden')
 }
-GC.Menu={openMenu};
+GC.Menu={openMenu,isPortableImportPending:()=>portableMenuImportInProgress};
