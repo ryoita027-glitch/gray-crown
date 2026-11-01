@@ -13,9 +13,9 @@
 A one-step, visually marked detour should be easier to notice than a large empty battlefield; letting players restore a civilian escape sign without choosing an army provides a small, morally grounded action with immediate visual and later dialogue feedback. A restored sign does **not** magically guarantee civilian safety or force the player's ending.
 
 ### Implementation / verification status
-- Added a one-tile spur off the central battlefield road, broken/repaired waymark artwork, a reversible optional interaction, one-time journal entry, return-visit plan dialogue, and a companion callback at the final route.
+- Added a one-tile spur off the central battlefield road, broken/repaired waymark artwork, a deferrable optional interaction, one-time journal entry, return-visit plan dialogue, and a companion callback at the final route.
 - Kept the three-route gate, save schema v23, existing army plans, and main crossroads.
-- Source syntax and static map construction were checked in the tool runtime. Added Node harness regression tests, but they **have not been executed**; full browser play, real save/load, 44px legibility, human evaluation, and collision testing remain unverified.
+- Source syntax and static map construction were checked in the tool runtime. The actual `inlineObjectEvent` function was executed in an isolated mocked state: introduction, both choices, restored flag, one-time journal, redraw, both initial plan reads, and concise revisit all passed. Added Node harness regression tests, but they **have not been executed**; full browser play, real save/load, 44px legibility, human evaluation, and collision testing remain unverified.
 - Distinctive feature vs. references: this is a non-factional civilian choice embedded between two opposing military plans, with consequences shown through the game's own cast; no third-party map, plot, dialogue, or art was copied.
 
 ### Next concrete check
