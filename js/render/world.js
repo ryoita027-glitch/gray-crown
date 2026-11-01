@@ -602,6 +602,16 @@ function drawObject(o){if(RyuneOutskirts.drawObject(ctx,state.map,o,!!state.worl
  if(o.id==='brokenStandard'){ctx.fillStyle='#5a4534';ctx.fillRect(px+14,py+5,4,24);ctx.fillStyle='#405d80';ctx.fillRect(px+18,py+6,10,9)}
  if(o.id==='mountainOverlook'){ctx.fillStyle='#807a68';ctx.fillRect(px+3,py+20,26,7);ctx.fillStyle='#b6b199';ctx.fillRect(px+7,py+17,18,4)}
  if(['kingdomLine','empireLine'].includes(o.id)){ctx.fillStyle=o.id==='kingdomLine'?'#8d3d46':'#354f78';ctx.fillRect(px+5,py+8,22,13);ctx.fillStyle='#5d4b37';ctx.fillRect(px+14,py+4,4,25)}
+ if(['campEvacuationSlips','campPrisonerLedger'].includes(o.id)){
+  // Contrasting army colors and a pale paper face make the optional record
+  // legible as a discoverable object at native tile scale.
+  const imperial=o.id==='campEvacuationSlips';
+  ctx.fillStyle='#5c4836';ctx.fillRect(px+3,py+20,26,7);
+  ctx.fillStyle=imperial?'#4b6886':'#904b4b';ctx.fillRect(px+6,py+6,20,17);
+  ctx.fillStyle='#eee0bd';ctx.fillRect(px+9,py+8,14,12);
+  ctx.fillStyle='#665c4b';ctx.fillRect(px+11,py+11,10,2);ctx.fillRect(px+11,py+15,7,2);
+  ctx.fillStyle=imperial?'#b8d2df':'#f0c4b1';ctx.fillRect(px+19,py+16,3,3);
+ }
  if(o.id==='borderGrave'){ctx.fillStyle='#807a70';ctx.fillRect(px+10,py+7,12,22);ctx.fillStyle='#a39b88';ctx.fillRect(px+7,py+10,18,4)}
  if(o.id==='oldCheckpoint'){ctx.fillStyle='#5e4937';ctx.fillRect(px+5,py+4,5,26);ctx.fillRect(px+23,py+4,5,26);ctx.fillRect(px+5,py+6,23,4)}
  if(o.id==='relayWell'){ctx.fillStyle='#74787a';ctx.beginPath();ctx.ellipse(px+16,py+18,13,8,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#28353b';ctx.beginPath();ctx.ellipse(px+16,py+17,8,4,0,0,Math.PI*2);ctx.fill()}
