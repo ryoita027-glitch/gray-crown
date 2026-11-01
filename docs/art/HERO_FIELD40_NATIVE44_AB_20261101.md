@@ -22,7 +22,8 @@ Four rows = down / left / right / up. Columns = Karen 44/40, Triton 44/40, Sophi
 ## Verification / remaining gates
 - Source PNG identities and dimensions checked through GitHub blobs; original four hero idle assets 192×192 and V5 atlas reference unchanged.
 - Static source-art 44/40 board generated and decoded for preview. This is **not** a Chromium screenshot or a real village A/B.
-- The modified Node test file was updated but **not executed against a full repository checkout** in this connector session. Full npm suite, real browser, movement/idle/talk/turn transition, battle scene and 100%-scale desktop/mobile evaluation remain **NOT RUN**.
+- **Executed in isolated JavaScript with the actual saved branch sources:** 128/128 field-versus-authored geometry and shadow cases at 40px and 128/128 with the 44px URL override, across 4 heroes × 8 actions × 4 directions. Nonhero default scale remained 1. This is a mocked Canvas/Image test, **not a real game screenshot**.
+- The modified Node test file was updated but **not executed against a full repository checkout** in this connector session. Full npm suite, real browser, movement/idle/talk/turn visual transitions, battle scene and 100%-scale desktop/mobile evaluation remain **NOT RUN**.
 - Test at fixed Ryune camera and background using this Draft's default 40px and `?heroArtSize=44` override, compare 44/40 for all four heroes next to mayor/messenger, check shadow, footline, head and eye readability, and animation at 4 directions. Do not adopt without visible improvement and complete QA.
 
 No paid API or GitHub Actions run. Do not merge this Draft into main or PR #98.
