@@ -23,6 +23,6 @@ test('V12 is opt-in and does not change default walking/animation',()=>{
  const w=fs.readFileSync(path.join(root,'js/render/world.js'),'utf8');
  assert.match(w,/heroIdleArt=8/);
  assert.match(w,/idleHeadheightTrialEnabled/);
- assert.match(w,/margaret_idle_headheight_v12\\.png/);
- assert.match(w,/idleMotionEnabled:[^\\n]*heroIdleArt=\\(\\?:2\\|3\\)/);
+ assert.match(w,/margaret_idle_headheight_v12\.png/);
+ assert.match(w,/idleMotionEnabled:[^\n]*heroIdleArt=\(\?:2\|3\)/);
 });
