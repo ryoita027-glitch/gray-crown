@@ -16,6 +16,16 @@ function restartFromMenu(){
  }
  return started
 }
+function saveFromMenu(){
+ const modal=$('modal');
+ modal.classList.add('hidden');
+ const saved=save(false);
+ // Keep retry available if saving failed without opening a visible status dialogue.
+ if(!saved&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
+  modal.classList.remove('hidden')
+ }
+ return saved
+}
 function loadFromMenu(){
  // Loading a checkpoint replaces unsaved progress in the current session.
  // The title-screen Continue action is intentionally unaffected.
@@ -52,7 +62,7 @@ function openMenu(){
    ${levels}
    <div class="menu-inventory">${inv}</div>
    <div class="menu-actions">
-     <button onclick="$('modal').classList.add('hidden');save(false)">セーブ</button>
+     <button onclick="saveFromMenu()">セーブ</button>
      <button onclick="loadFromMenu()">ロード</button>
      <button onclick="$('modal').classList.add('hidden');GC.Save.downloadPortableSave()">セーブを書き出す（PC移行用）</button>
      <button onclick="document.getElementById('portableSaveUpload').click()">セーブを読み込む（.json）</button>
