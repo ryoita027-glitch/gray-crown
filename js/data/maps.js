@@ -150,7 +150,9 @@ function makeReturnRoadTiles(){
  paintH(g,5,11,7,'D');g[5][11]='D';paintRect(g,3,6,4,3,'G');paintRect(g,17,4,4,4,'G');return finishTiles(g)
 }
 function makeFinalFieldTiles(){
- const g=makeBlankRegion('M','K');paintV(g,0,14,11,'D');paintV(g,0,14,12,'D');paintH(g,2,21,7,'D');paintRect(g,2,2,6,4,'B');paintRect(g,16,2,6,4,'E');return finishTiles(g)
+ const g=makeBlankRegion('M','K');paintV(g,0,14,11,'D');paintV(g,0,14,12,'D');paintH(g,2,21,7,'D');paintRect(g,2,2,6,4,'B');paintRect(g,16,2,6,4,'E');
+ // One-step worn spur to the civilian waymark; both army lanes remain open.
+ g[8][10]='D';return finishTiles(g)
 }
 
 function makeBorderlandTiles(){
@@ -343,7 +345,7 @@ const maps={
   {id:'elsiaElder',x:5,y:7,name:'聖域の老人'}
  ],objects:[{id:'elsiaTablet',x:6,y:6},{id:'oldSanctum',x:4,y:5},{id:'sacredSpring',x:5,y:10},{id:'elsiaCache',x:20,y:11}]},
  returnroad:{name:'王国への帰還路',tag:'崖沿いの迂回山道',tiles:makeReturnRoadTiles(),npcs:[{id:'returnScout',x:10,y:6,name:'王国軍伝令'}],objects:[{id:'mountainOverlook',x:5,y:7}]},
- finalfield:{name:'エルシア総攻撃前線',tag:'赤旗と青旗が向かい合う無人地帯',tiles:makeFinalFieldTiles(),npcs:[{id:'decisionGuide',x:12,y:6,name:'決断の地点'}],objects:[{id:'kingdomLine',x:6,y:5},{id:'empireLine',x:18,y:5}]},
+ finalfield:{name:'エルシア総攻撃前線',tag:'赤旗と青旗が向かい合う無人地帯',tiles:makeFinalFieldTiles(),npcs:[{id:'decisionGuide',x:12,y:6,name:'決断の地点'}],objects:[{id:'kingdomLine',x:6,y:5},{id:'empireLine',x:18,y:5},{id:'civilianWaymark',x:9,y:8}]},
  imperialcamp:{name:'帝国本陣前',tag:'青旗の帝国陣地',tiles:makeBattlefieldTiles(),npcs:[{id:'shion',x:12,y:4,name:'皇帝シオン'}],objects:[]},
  royalcamp:{name:'王国軍総司令部前',tag:'赤旗の王国陣地',tiles:makeBattlefieldTiles(),npcs:[{id:'granzFinal',x:12,y:4,name:'総司令グランツ'}],objects:[]}
 
