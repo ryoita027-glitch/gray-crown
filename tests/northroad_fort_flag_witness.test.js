@@ -92,3 +92,36 @@ test('save and load keep the shared story detail and original one-time aid',()=>
  assert.match(line(h),/巡回帳に書いた/);
  assert.equal(herbs(h),herbCount);
 });
+
+test('deferred fort-flag disclosure survives a later arrival by the forest road',()=>{
+ const h=setup('names'),before=herbs(h);
+ intro(h);
+ h.evaluate('dialogueChoices[1].fn()');
+ assert.equal(witness(h),undefined);
+ h.evaluate("closeDialogue();setWorldSwitch('northRoadFromRoad',true);inlineNpcEvent('scout')");
+ assert.match(line(h),/森の本道/,'directions must describe the current route');
+ assert.match(line(h),/前に古砦を抜けた話/,'the scout remembers an earlier visit');
+ assert.match(choices(h),/写した兵の名前を伝える/,'deferring must not force a return through the fort');
+ const count=journal(h);
+ h.evaluate('dialogueChoices[0].fn()');
+ assert.equal(witness(h),'names');
+ assert.equal(journal(h),count+1);
+ assert.equal(herbs(h),before+1,'switching route never grants a second herb');
+ h.evaluate("closeDialogue();inlineNpcEvent('scout')");
+ assert.match(line(h),/巡回帳に書いた/);
+ assert.equal(choices(h),'','a disclosure is recorded only once');
+ assert.equal(herbs(h),before+1);
+ const save=h.GC.Save.migrateLoaded(h.GC.Save.serializeSave());
+ assert.equal(save.schema,23);
+ assert.equal(save.events.choices['early.fortScoutWitness'],'names');
+});
+
+test('first-time forest-road visitors cannot claim an earlier fort conversation',()=>{
+ const h=setup('raise',false),before=herbs(h);
+ h.evaluate("inlineNpcEvent('scout')");
+ assert.match(line(h),/森の本道/);
+ assert.doesNotMatch(line(h),/前に古砦を抜けた話/);
+ assert.equal(choices(h),'');
+ assert.equal(witness(h),undefined);
+ assert.equal(herbs(h),before);
+});

@@ -1,3 +1,17 @@
+## 2026-11-03 08 JST — keep the fort witness choice available after changing roads
+
+**Verified repository behavior:** On Draft #314 at `040c8857`, the scout remembers a player's fort-banner choice only while `northRoadFromRoad` is false. After taking the scout's herb, declining the optional disclosure, and returning by the forest road, `northRoadScoutVisit()` exits through the direct-road branch before offering the deferred choice. The promise that players can tell the scout later is therefore route-dependent. This is a code-derived bug, not human feedback. Main remains `d689aabb`; no art, input, boss, map, or Save v23 changes.
+
+**External player signals (checked 2026-11-03):** A [Chained Echoes Steam player review](https://steamcommunity.com/profiles/76561198149021695/recommended/) praises NPCs behaving logically but criticizes losing access to earlier content; a separate [Chained Echoes review](https://steamcommunity.com/profiles/76561198019594192/recommended) criticizes excessive systems and exposition. Publication years were not independently verified. These are individual perspectives, not a market consensus. **Design hypothesis:** remembering an earlier voluntary conversation despite a different return route respects player time and makes the scout feel like a person, without a new quest or another explanation.
+
+**Playable change:** On a forest-road arrival, a scout who has **already** given the party the one-time fort herb remembers the earlier fort encounter and still offers an unshared flag disclosure. If the flag was shared, he remembers the particular response. First-time direct-road visitors still get only truthful forest-road directions, no fort witness choice and no herb. Declining remains reversible; sharing adds the existing one-time journal record. The map and save schema are unchanged. The experience is specific to Graygrow's old soldiers' names and the party's voluntary care for the flag; no external scenario was copied.
+
+**Verification scope:** Actual GitHub source was syntax-compiled and the modified scout functions were run in an isolated V8 state mock for first-time road, deferred road, shared road, and first-time fort cases. Two Node harness regression cases added, including Save v23. **Not verified:** native Node tests, browser choice navigation, real save/load UI, full check, human playtest, and actual map walking. Draft / HOLD; no main merge.
+
+**Next player risk:** In-browser, test fort → scout → defer → south forest road → scout → share → capital, and the same sequence after Save/Continue. Confirm the optional line is short enough and the scout's north/south directions stay accurate.
+
+---
+
 ## 2026-11-03 07 JST — let the old fort's optional flag decision matter beyond the fort
 
 **Repository facts (verified):** main HEAD `d689aabb`; parent map-story Draft #313 HEAD `b945e54e` (stacked on #312 and earlier fort Drafts). `early.caveBanner` already records a voluntary `names` or `raise` choice in Save v23. The existing north-road scout awards one herb only to parties that actually exit the cleared fort, but until this change his dialogue is identical regardless of what the party decided about the old soldiers' flag. This is a source-backed missed consequence, **not a verified player complaint**. Mobile-input and character-art PRs remain outside this branch.
