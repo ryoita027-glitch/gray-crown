@@ -845,3 +845,6 @@ body:has(.battle-panel:not(.hidden)) .party-battle-line{left:5%;bottom:38px}
  .statusbar{min-height:42px;align-items:center;flex-wrap:wrap;gap:6px}
  #qualityHint{display:none}
 }
+
+/* Keep held directional touch input from turning into page scroll. */
+@media(max-width:850px){.mobile-pad [data-move]{touch-action:none}}
