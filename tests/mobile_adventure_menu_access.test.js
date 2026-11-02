@@ -164,9 +164,10 @@ test('Escape still closes an open modal when its close button has keyboard focus
  const game=read('js/game.js');
  const handler=game.match(/^function handleKeydown\(e\)\{.*$/m);
  assert.ok(handler,'real keyboard handler exists');
- let modalOpen=true;
+ let modalOpen=true,canvasFocused=false;
  const context=vm.createContext({
   document:{activeElement:{id:'modalClose',matches:()=>true}},
+  canvas:{focus:()=>{canvasFocused=true}},
   GC:{Menu:{isPortableImportPending:()=>false}},
   ALPHA_SESSION:{started:true},state:{battle:null},
   $:id=>({classList:{
@@ -178,6 +179,7 @@ test('Escape still closes an open modal when its close button has keyboard focus
  vm.runInContext(handler[0],context,{filename:'js/game.js handleKeydown'});
  vm.runInContext('handleKeydown',context)({key:'Escape',repeat:false,preventDefault:()=>{}});
  assert.equal(modalOpen,false,'focused modal close button must not trap Escape');
+ assert.equal(canvasFocused,true,'Escape returns keyboard focus to the game canvas');
 });
 
 
@@ -215,4 +217,63 @@ test('pending import preserves native control keys while suppressing world input
  flags.pending=false;
  assert.equal(press('ArrowUp'),true,'world arrow key resumes after import');
  assert.equal(calls.move,1,'movement resumes once the import settles');
+});
+
+test('touch and M-key menu opening focus the close button; dismissals restore game focus',()=>{
+ const game=read('js/game.js');
+ const handler=game.match(/^function handleKeydown\\(e\\)\\{.*$/m);
+ const bind=game.match(/^function bindAppControls\\(\\)\\{.*$/m);
+ assert.ok(handler&&bind,'use actual committed keyboard and button handlers');
+ const hidden=new Set(['modal','dialogueBox','levelUpPanel','battleResult']);
+ const nodes=new Map();
+ const $=id=>{
+  if(!nodes.has(id)){
+   const listeners={};
+   const node={id,listeners,matches:()=>id!=='game',
+    classList:{
+     contains:name=>name==='hidden'&&hidden.has(id),
+     add:name=>{if(name==='hidden')hidden.add(id)},
+     remove:name=>{if(name==='hidden')hidden.delete(id)}
+    },
+    addEventListener:(type,fn)=>{listeners[type]=fn},
+    click:()=>listeners.click?.(),
+    focus:()=>{document.activeElement=node}
+   };
+   nodes.set(id,node);
+  }
+  return nodes.get(id);
+ };
+ const canvas={id:'game',matches:()=>false,addEventListener:()=>{},focus:()=>{document.activeElement=canvas}};
+ const document={activeElement:canvas,addEventListener:()=>{},querySelectorAll:()=>[]};
+ const context=vm.createContext({
+  $,canvas,document,ALPHA_SESSION:{started:true},state:{battle:null},
+  GC:{Menu:{isPortableImportPending:()=>false}},
+  isInputLocked:()=>false,
+  openMenu:()=>{hidden.delete('modal')},
+  ensureAudio:()=>{},move:()=>{},primaryAction:()=>{},
+  toggleSound:()=>{},startNewGameSafely:()=>{},continueAlphaFromTitle:()=>{},
+  saveFromToolbar:()=>{},loadFromToolbar:()=>{},restartFromToolbar:()=>{}
+ });
+ vm.runInContext(handler[0]+'\\n'+bind[0],context,{filename:'js/game.js controls'});
+ vm.runInContext('bindAppControls()',context);
+ const modal=$('modal'),close=$('modalClose');
+ $('mobileMenu').click();
+ assert.equal(hidden.has('modal'),false,'touch button opens menu');
+ assert.equal(document.activeElement,close,'touch opening moves focus into the menu');
+ close.click();
+ assert.equal(hidden.has('modal'),true,'close button dismisses menu');
+ assert.equal(document.activeElement,canvas,'close button restores world keyboard focus');
+ vm.runInContext('handleKeydown',context)({key:'m',repeat:false,preventDefault:()=>{}});
+ assert.equal(hidden.has('modal'),false,'M key opens menu');
+ assert.equal(document.activeElement,close,'M key focuses close button');
+ vm.runInContext('handleKeydown',context)({key:'Escape',repeat:false,preventDefault:()=>{}});
+ assert.equal(hidden.has('modal'),true,'Escape dismisses menu');
+ assert.equal(document.activeElement,canvas,'Escape restores world keyboard focus');
+ $('mobileMenu').click();
+ modal.listeners.click({target:modal});
+ assert.equal(hidden.has('modal'),true,'backdrop dismisses menu');
+ assert.equal(document.activeElement,canvas,'backdrop restores world keyboard focus');
+ $('mobileMenu').click();
+ modal.listeners.click({target:$('modalContent')});
+ assert.equal(hidden.has('modal'),false,'clicking inside modal does not dismiss it');
 });
