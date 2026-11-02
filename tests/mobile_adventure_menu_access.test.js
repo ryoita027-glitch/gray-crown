@@ -280,7 +280,7 @@ test('touch and M-key menu opening focus the close button; dismissals restore ga
 
 test('Tab and Shift+Tab stay inside the adventure menu without trapping hidden controls',()=>{
  const game=read('js/game.js');
- const handler=game.match(/^function handleKeydown\\(e\\)\\{.*$/m);
+ const handler=game.match(/^function handleKeydown\(e\)\{.*$/m);
  assert.ok(handler,'actual keyboard handler exists');
  let audio=0,modalOpen=true;
  const document={activeElement:null};
