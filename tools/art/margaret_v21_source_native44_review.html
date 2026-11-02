@@ -54,4 +54,40 @@ for(const id of ['frame','bg','anchor'])document.getElementById(id).addEventList
 document.querySelector('#zoom').addEventListener('change',e=>cv.style.width=e.target.checked?'1980px':'990px');
 document.querySelector('#export').addEventListener('click',()=>{const a=document.createElement('a');a.download='margaret_v21_v22_native44_source_review.png';a.href=cv.toDataURL('image/png');a.click()});
 draw();
-</script></body></html>
+</script>
+<section aria-label="Margaret walk continuity" style="margin-top:26px">
+<h2>V22 歩行試作 vs 正式歩行 — 44px・4方向×6コマ</h2>
+<p><strong>NO-GO / 参考比較のみ。</strong> 正式歩行とV22歩行試作を実PNGから同一倍率・背景・足元で描画。別デザイン同士の比較であり、正式素材の変更・採用・実ゲーム画面の撮影ではありません。</p>
+<div id="walkScroller" style="overflow-x:auto"><canvas id="walkBoard" width="840" height="432" style="display:block;image-rendering:pixelated"></canvas></div>
+<p id="walkStatus">Loading walk PNGs...</p>
+</section>
+<script>
+(function(){
+'use strict';
+const cv=document.getElementById('walkBoard'),cx=cv.getContext('2d');
+const paths=['../../assets/characters/margaret/margaret_walk.png','../../assets/character_trials/margaret_walk_adult_mage_v22_motion_trial.png'];
+const imgs=paths.map(p=>{const im=new Image();im.onload=render;im.onerror=render;im.src=p;return im;});
+function render(){
+cx.fillStyle='#20272a';cx.fillRect(0,0,840,432);cx.font='12px system-ui';cx.textBaseline='top';
+const names=['正面','左','右','背面'];
+const ok=imgs.every(im=>im.complete&&im.naturalWidth===288&&im.naturalHeight===192);
+if(!ok){document.getElementById('walkStatus').textContent='Loading or missing/invalid walk PNG (expect 288×192): '+paths.join(', ');return;}
+for(let d=0;d<4;d++){
+const y=30+d*100;
+cx.fillStyle='#eceae0';cx.fillText(names[d],5,y+22);
+for(let g=0;g<2;g++)for(let f=0;f<6;f++){
+const x=42+g*398+f*62;
+cx.fillStyle=(f%2===0)?'#6e826c':'#778b74';cx.fillRect(x,y,52,66);
+cx.fillStyle='#415848';cx.fillRect(x,y+57,52,1);
+cx.imageSmoothingEnabled=false;
+cx.drawImage(imgs[g],f*48,d*48,48,48,x+4,y+13,44,44);
+cx.fillStyle='#e8e9e4';cx.fillText(String(f+1),x+21,y+67);
+}
+}
+cx.fillStyle='#e8e9e4';cx.fillText('正式 walk',50,8);cx.fillText('V22 motion trial (NO-GO)',440,8);
+document.getElementById('walkStatus').textContent='実PNG読み込み完了。視覚的採用：NO-GO。これは実ゲームCanvasではありません。';
+}
+render();
+})();
+</script>
+</body></html>
