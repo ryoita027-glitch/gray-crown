@@ -3,7 +3,7 @@ const COLORS={grass:'#6f8059',grass2:'#62724f',path:'#b49a6c',tree:'#496345',tru
 const HERO_SPRITES={image:null,ready:false,frameW:32,frameH:32,columns:3,directions:{down:0,left:1,right:2,up:3},characters:{karen:0,triton:1,sophie:2,margaret:3}};
 const HERO_RUNTIME={frameW:48,frameH:48,display:44,anchor:[24,44],directions:{down:0,left:1,right:2,up:3},images:{},idleImages:{},
  // Opt-in art review only. Default gameplay keeps the approved walk atlas at rest.
-  idleTrialEnabled:typeof window!=='undefined'&&(/(?:^|[?&])heroIdleArt=(?:1|2|3)(?:&|$)/.test(window.location.search||'')||/(?:^|[?&])heroIdleArt=4(?:&|$)/.test(window.location.search||'')||/(?:^|[?&])heroIdleArt=5(?:&|$)/.test(window.location.search||'')||/(?:^|[?&])heroIdleArt=6(?:&|$)/.test(window.location.search||'')||/(?:^|[?&])heroIdleArt=7(?:&|$)/.test(window.location.search||'')||/(?:^|[?&])heroIdleArt=(?:8|9|10|11|12|13|14|15|16)(?:&|$)/.test(window.location.search||'')),
+  idleTrialEnabled:typeof window!=='undefined'&&(/(?:^|[?&])heroIdleArt=(?:1|2|3)(?:&|$)/.test(window.location.search||'')||/(?:^|[?&])heroIdleArt=4(?:&|$)/.test(window.location.search||'')||/(?:^|[?&])heroIdleArt=5(?:&|$)/.test(window.location.search||'')||/(?:^|[?&])heroIdleArt=6(?:&|$)/.test(window.location.search||'')||/(?:^|[?&])heroIdleArt=7(?:&|$)/.test(window.location.search||'')||/(?:^|[?&])heroIdleArt=(?:8|9|10|11|12|13|14|15|16|17)(?:&|$)/.test(window.location.search||'')),
  // A separate, reversible trial of all four authored idle frames.
  idleMotionEnabled:typeof window!=='undefined'&&/(?:^|[?&])heroIdleArt=(?:2|3)(?:&|$)/.test(window.location.search||''),
   // Mode 3 isolates a real contact-locked Margaret atlas. Other heroes stay still.
@@ -23,6 +23,7 @@ const HERO_RUNTIME={frameW:48,frameH:48,display:44,anchor:[24,44],directions:{do
   idleFacePlaneV17BTrialEnabled:typeof window!=='undefined'&&/(?:^|[?&])heroIdleArt=14(?:&|$)/.test(window.location.search||''),
   idleRobePlaneV18ATrialEnabled:typeof window!=='undefined'&&/(?:^|[?&])heroIdleArt=15(?:&|$)/.test(window.location.search||''),
   idleRobePlaneV18BTrialEnabled:typeof window!=='undefined'&&/(?:^|[?&])heroIdleArt=16(?:&|$)/.test(window.location.search||''),
+  idleSilhouetteV19TrialEnabled:typeof window!=='undefined'&&/(?:^|[?&])heroIdleArt=17(?:&|$)/.test(window.location.search||''),
  idleFrameDuration:420,
  // Browser art evidence may step idle frames without changing NPC/world time.
  idleFrameTimeOverride:null};
@@ -40,7 +41,9 @@ if(typeof Image!=='undefined'){
   if(HERO_RUNTIME.idleTrialEnabled){const idle={image:new Image(),ready:false,error:false};
    idle.image.onload=()=>{idle.ready=idle.image.naturalWidth===192&&idle.image.naturalHeight===192;idle.error=!idle.ready};
    idle.image.onerror=()=>{idle.ready=false;idle.error=true};
-   idle.image.src=HERO_RUNTIME.idleRobePlaneV18BTrialEnabled&&id==='margaret'
+   idle.image.src=HERO_RUNTIME.idleSilhouetteV19TrialEnabled&&id==='margaret'
+     ?'assets/character_trials/margaret_idle_silhouette_sculpt_v19.png'
+     :HERO_RUNTIME.idleRobePlaneV18BTrialEnabled&&id==='margaret'
      ?'assets/character_trials/margaret_idle_robe_plane_v18B.png'
      :HERO_RUNTIME.idleRobePlaneV18ATrialEnabled&&id==='margaret'
      ?'assets/character_trials/margaret_idle_robe_plane_v18A.png'
