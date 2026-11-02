@@ -122,3 +122,40 @@ test('keyboard Enter/Space activates the focused touch menu instead of interacti
  assert.equal(prevented,true,'unfocused game hotkey must still prevent default');
  assert.equal(calls.action,1,'unfocused game hotkey must still interact');
 });
+
+test('focused native controls retain keyboard input without moving the party',()=>{
+ const game=read('js/game.js');
+ const handler=game.match(/^function handleKeydown\\(e\\)\\{.*$/m);
+ assert.ok(handler,'real keyboard handler exists');
+ const calls={action:0,move:0,menu:0,dev:0};
+ const focus={id:'btnSound',matches:()=>true};
+ const context=vm.createContext({
+  document:{activeElement:focus},
+  GC:{Menu:{isPortableImportPending:()=>false},Dev:{toggle:()=>{calls.dev++}}},
+  ALPHA_SESSION:{started:true},state:{battle:null},
+  $:()=>({classList:{contains:()=>true}}),
+  ensureAudio:()=>{},isInputLocked:()=>false,
+  primaryAction:()=>{calls.action++},move:()=>{calls.move++},
+  openMenu:()=>{calls.menu++}
+ });
+ vm.runInContext(handler[0],context,{filename:'js/game.js handleKeydown'});
+ const keydown=vm.runInContext('handleKeydown',context);
+ for(const id of ['btnSound','btnCameraMode','devSnapshotName']){
+  focus.id=id;
+  focus.matches=()=>true;
+  for(const key of ['Enter',' ','ArrowUp','m','F2']){
+   let prevented=false;
+   keydown({key,repeat:false,preventDefault:()=>{prevented=true}});
+   assert.equal(prevented,false,id+' '+JSON.stringify(key)+' keeps native control handling');
+  }
+ }
+ assert.deepEqual(calls,{action:0,move:0,menu:0,dev:0},'focused UI must not trigger world commands');
+ focus.id='game';
+ focus.matches=()=>false;
+ let prevented=false;
+ keydown({key:'Enter',repeat:false,preventDefault:()=>{prevented=true}});
+ assert.equal(prevented,true,'canvas Enter still consumes the world hotkey');
+ keydown({key:'ArrowUp',repeat:false,preventDefault:()=>{}});
+ keydown({key:'m',repeat:false,preventDefault:()=>{}});
+ assert.deepEqual(calls,{action:1,move:1,menu:1,dev:0},'unfocused gameplay hotkeys remain available');
+});
