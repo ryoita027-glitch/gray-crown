@@ -2051,7 +2051,7 @@ function inlineObjectEvent(id){
      {label:'東の石門から古砦を調べる',fn:()=>{
       state.events.choices['early.roadForkIntent']='fort';
       state.objective=roadReturnObjective();renderHud();
-      return say('マーガレット','「石門はこの東。古砦を調べるなら、危険だと思った時に引き返せるよう道を覚えておきましょう」');
+      return say('マーガレット','「石門はこの東。道標から踏み固められた小道が続いている。危険だと思ったら引き返しましょう」');
      }},
      {label:'北の本道から王都へ急ぐ',fn:()=>{
       state.events.choices['early.roadForkIntent']='north';
@@ -2093,7 +2093,9 @@ function inlineObjectEvent(id){
    state.inventory['携帯食']=(state.inventory['携帯食']||0)+1;
    addJournal('古砦の保存食箱から封の残った携帯食を1個見つけた。');
    renderHud();sfx('discovery');
-   return say('トリトン','「箱はほぼ空だ。でも奥に一食分だけある。携帯食を1個手に入れた！」');
+   return say('トリトン',state.events.choices['early.fortSupplyMark']==='seen'
+    ?'「入口の補給印が指してたのはこれか！　箱はほぼ空だけど、携帯食が1個残ってたぞ」'
+    :'「箱はほぼ空だ。でも奥に一食分だけある。携帯食を1個手に入れた！」');
   }
   if(id==='boss'&&!structuredCondition('bossDead')){if(!(structuredCondition('leverWest')&&structuredCondition('leverEast')))return say('マーガレット','「中央の鉄格子が閉じてる。左右の開閉機構を両方動かさないと奥へ行けないわ」');return say('カレン','「こいつが北の通路を塞いでる……！」',[{label:'戦う',fn:()=>startBattle('boss')},{label:'いったん下がる',fn:()=>say('マーガレット','「先に宝箱や脇道を調べてもいいわ」')}]);}
  }

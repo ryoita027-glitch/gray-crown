@@ -1,3 +1,15 @@
+## 2026-11-02 21:45 JST — a discoverable fort supply trail
+
+**Verified repository:** main HEAD `d689aabb`, Draft #297 HEAD `0f7f04d7`, other open art and UX PRs. The existing road sign at (10,2) directs players to the optional old fort at (13,1); tile (13,2) was walkable grass rather than a visible path. The fort already has a one-time ration box at (20,12), but the first-entry scene offered no environmental hint to that eastern corner. No extra map or combat is needed.
+
+**Player signals checked 2026-11-02:** [2026-02-23 Japanese Chained Echoes player review](https://gamelog-jp.com/game/1229240/) praises a few meaningful optional side quests; [2026-03-04 Japanese review](https://gamelog-jp.com/game/1229240/) says text-only worldbuilding can be hard to visualize; [2026-01-24 negative review](https://gamelog-jp.com/game/1229240/) criticizes cumbersome restrictions. These are individual reviews, not a representative market sample or a Graygrow playtest. **Hypothesis:** a visible short trail, environmental clue and real existing supply reward make the optional route worth discovering without compulsory errands.
+
+**Implemented:** Repaint one already-walkable grass tile (13,2) as a worn path, completing the visible sign-to-gate spur. First entry at the stone gate reveals an old east-barracks supply mark; Sophie or Karen reacts based on the player's earlier optional fork choice, but the clue and existing ration reward are available to everyone. The east ration box echoes the clue and still awards exactly one ration, once. A one-time journal entry and choice flag persist in the existing Save v23 dictionary. The boss, main story, two exits, map dimensions, collisions, existing items, karma and all visual sprite assets are unchanged. No copied content.
+
+**Verification:** Actual source anchors and JS syntax checked with V8; isolated cave-entry and map-spur checks performed. A Node harness regression test is added but not executed. **Not verified:** native Node tests, npm check, Chromium movement and 44px visuals, actual Save/Load UI or human player feedback. Keep Draft and do not merge main.
+
+**Next:** Run `node --test tests/road_fort_supply_spur.test.js tests/road_fork_choice_wayfinding.test.js tests/road_wolf_fort_wayfinding.test.js` and `npm run check`. In the browser, walk sign → east spur → cave gate → east rations, compare both sign choices, and check that the small trail is visible at native 44px.
+
 ## 2026-11-02 20:44 JST — an in-world road fork players can actually choose
 
 **Repository facts:** Checked main HEAD `d689aabb`, Draft #296 HEAD `446b1d1a`, and open art/UX PRs. On the road, the old-fort entrance is at (13,1), the road sign at (10,2), and the northern boundary also reaches the capital approach after the wolf. Previously the sign's *visible art* only read "古砦→"; after the wolf its dialogue mentioned the fort but did not explicitly say the northern route bypasses it. Returning from the high road replaced the objective with a generic string. The existing map, interactions, route switch and Save v23 are reused.
