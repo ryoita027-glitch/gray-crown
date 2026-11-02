@@ -624,12 +624,19 @@ function finishEarlyOrphanMedicine(choice){
 function commitEarlyMerchantChoice(choice){
  const key='early.merchantCart';
  if(state.events.choices[key]||!['repair','return'].includes(choice))return false;
+ const knowsVillageShortage=state.events.choices['early.ryuneGranaryWitness']==='counted';
  state.events.choices[key]=choice;
+ // Snapshot what the merchant heard at the decision, not what a later revisit uncovers.
+ if(knowsVillageShortage)state.events.choices['early.merchantGranaryMentioned']='told';
  if(choice==='repair')state.inventory['携帯食']=(state.inventory['携帯食']||0)+1;
  else state.inventory['薬草']=(state.inventory['薬草']||0)+1;
  addJournal(choice==='repair'
-  ?'街道で行商人の荷車を修理し、荷を王都へ運べるようにした。礼に携帯食を1個受け取った。'
-  :'行商人に危険な街道の引き返しを勧めた。商人は村へ向かい、礼に薬草を1個渡した。');
+  ?knowsVillageShortage
+   ?'リュネ村の食料不足を商人に伝えた上で荷車を修理し、契約どおり王都へ運ぶのを助けた。携帯食を1個受け取ったが、村の備蓄が補充されたわけではない。'
+   :'街道で行商人の荷車を修理し、荷を王都へ運べるようにした。礼に携帯食を1個受け取った。'
+  :knowsVillageShortage
+   ?'村の食料庫が不足していることを商人に伝え、危険な街道を南へ引き返すよう勧めた。礼に薬草を1個受け取った。荷が村に届くかは未確認。'
+   :'行商人に危険な街道の引き返しを勧めた。商人は村へ向かい、礼に薬草を1個渡した。');
  renderHud();
  // Refresh the roadside cart immediately after the choice; no new collision.
  GC.Render?.World?.draw?.();
@@ -638,9 +645,12 @@ function commitEarlyMerchantChoice(choice){
 // Returning to an undecided wagon should not replay the entire introduction.
 // A completed introduction is only recorded after its final line is read.
 function offerEarlyMerchantChoice(){
- return say('カレン','「荷車はまだここにある。どうする？」',[
-  {label:'トリトンと荷車を直し、王都への輸送を助ける',fn:()=>finishEarlyMerchantChoice('repair')},
-  {label:'危険を伝え、村へ引き返すよう勧める',fn:()=>finishEarlyMerchantChoice('return')},
+ const counted=state.events.choices['early.ryuneGranaryWitness']==='counted';
+ return say('カレン',counted
+  ?'「村の食料庫は半分以上空いてた。でも王都にも待ってる人がいる。荷車をどうしよう？」'
+  :'「荷車はまだここにある。どうする？」',[
+  {label:counted?'荷車を直し、契約どおり王都へ届ける':'トリトンと荷車を直し、王都への輸送を助ける',fn:()=>finishEarlyMerchantChoice('repair')},
+  {label:counted?'村の食料不足を伝え、南へ戻るよう勧める':'危険を伝え、村へ引き返すよう勧める',fn:()=>finishEarlyMerchantChoice('return')},
   {label:'今は判断を保留する',fn:()=>say('行商人','「迷ったらまた声をかけてくれ。荷はまだここにある」')}
  ]);
 }
@@ -654,7 +664,10 @@ function earlyMerchantVisit(){
  return saySequence([
   {speaker:'行商人',text:'「やれやれ、荷車の軸が曲がった。食料を王都へ届けるはずが、このままじゃ狼の餌だ」'},
   {speaker:'トリトン',text:'「固定具ならその場で直せる。少し時間はかかるけどな」'},
-  {speaker:'行商人',text:'「東の古砦跡に抜け道があるとも聞くが、獣の声がする。どれも楽な道じゃない」'}
+  {speaker:'行商人',text:'「東の古砦跡に抜け道があるとも聞くが、獣の声がする。どれも楽な道じゃない」'},
+  ...(state.events.choices['early.ryuneGranaryWitness']==='counted'
+   ?[{speaker:'マーガレット',text:'「リュネ村の食料庫も半分以上空いてた。この荷を待ってる人が、王都にも村にもいるのね」'}]
+   :[])
  ],()=>{
   completeEvent('early.merchantIntro');
   offerEarlyMerchantChoice();
@@ -662,12 +675,17 @@ function earlyMerchantVisit(){
 }
 function finishEarlyMerchantChoice(choice){
  if(!commitEarlyMerchantChoice(choice))return say('行商人','「さっきの話はもう決めただろう？」');
+ const briefed=state.events.choices['early.merchantGranaryMentioned']==='told';
  return saySequence(choice==='repair'
   ?[{speaker:'トリトン',text:'「よし、これで回る！　戦わないで役に立てるのはいいな」'},
-    {speaker:'行商人',text:'「助かった。礼に携帯食を一つ。お前たちが王都に着く頃には、俺も着けるといいんだが」'},
+    {speaker:'行商人',text:briefed
+     ?'「村の食料庫の話は聞いた。でもこの荷は王都行きの契約だ。礼に携帯食を一つ。村の分も届いたことにはできん」'
+     :'「助かった。礼に携帯食を一つ。お前たちが王都に着く頃には、俺も着けるといいんだが」'},
     {speaker:'ソフィ',text:'「届ける人も受け取る人も、どうか無事で」'}]
   :[{speaker:'マーガレット',text:'「北側は獣の痕跡が多い。積荷を守るだけなら戻る判断も合理的よ」'},
-    {speaker:'行商人',text:'「村なら受け取る人もいるだろう。礼に薬草を渡す。助言がなけりゃ進んでた」'},
+    {speaker:'行商人',text:briefed
+     ?'「村の棚のことは聞いた。南へ戻って村長に相談するよ。ただ、荷をすぐ卸せるかは分からん。礼に薬草を渡す」'
+     :'「村なら受け取る人もいるだろう。礼に薬草を渡す。助言がなけりゃ進んでた」'},
     {speaker:'カレン',text:'「王都の人には申し訳ないけど、商人さんの命も大切だ」'}])
 }
 function earlyCapitalEcho(){
@@ -1226,13 +1244,27 @@ function inlineNpcEvent(id){
   if(id==='mika')return saySequence([{speaker:'ミカ',text:'「カレン姉ちゃん、勇者って王都のお菓子食べ放題なの？」'},{speaker:'カレン',text:'「たぶん、そういう仕事じゃないかな……」'}])
   if(id==='ren')return visitRenPractice()
   if(id==='lulu')return saySequence([{speaker:'ルル',text:'「ソフィお姉ちゃん、ちゃんと帰ってくる？」'},{speaker:'ソフィ',text:'「もちろん。約束します」'}])
-  if(id==='baker')return say('パン屋のエダ',state.events.choices['early.ryuneGranaryWitness']==='counted'
+  if(id==='baker'){
+   // A report is optional: returning to Ryune is never required for progress.
+   // Only a merchant briefed BEFORE the wagon decision can be mentioned here.
+   const reported=state.events.choices['early.merchantGranaryMentioned']==='told'&&state.events.choices['early.merchantCart']==='return';
+   if(reported&&state.events.choices['early.bakerMerchantReport']!=='heard')return saySequence([
+    {speaker:'カレン',text:'「街道で、村の食料庫のことを商人さんに伝えたよ。危ないから荷車を南へ戻すって」'},
+    {speaker:'パン屋のエダ',text:'「ありがとう。でも荷が届いたわけじゃない。村長に相談するよ。届くまでは、今ある粉で焼かないとね」'}
+   ],()=>{
+    if(state.events.choices['early.bakerMerchantReport']==='heard')return;
+    state.events.choices['early.bakerMerchantReport']='heard';
+    addJournal('街道で村の食料不足を伝えた商人が南へ引き返すと、パン屋エダに報告した。荷が村に届いたかはまだ確認できていない。');
+    renderHud();
+   });
+   return say('パン屋のエダ',state.events.choices['early.ryuneGranaryWitness']==='counted'
    ?isEventComplete('alpha.village.appointment')
     ?'「食料庫の数字を確かめたんだって？　使者の約束は聞いたよ。でも米が届くまで、今ある粉で焼くしかないね」'
     :'「食料庫の数字を見たのかい。なら使者にも聞いておくれ。いつ米が届くか、私らには分からないんだ」'
    :isEventComplete('alpha.village.appointment')
     ?'「使者は米を約束したね。でも届くのはこれからだ。井戸の東の共同食料庫に帳簿があるよ。今ある分だけでも確かめておくれ」'
-    :'「今朝は小麦が足りなくて、いつもの半分しか焼けなかったよ。井戸の東の共同食料庫に帳簿がある。使者の話を聞く前に確かめるのもいいね」')
+    :'「今朝は小麦が足りなくて、いつもの半分しか焼けなかったよ。井戸の東の共同食料庫に帳簿がある。使者の話を聞く前に確かめるのもいいね」');
+  }
   if(id==='farmer')return say('農夫のボル',
    isEventComplete('ryune.outskirts.reward')
     ?'「教えてもらった場所から順に水路を確かめるよ。すぐに畑が戻るわけじゃないが、何も分からなかった昨日よりは前に進めそうだ」'
