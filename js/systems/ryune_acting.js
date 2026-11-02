@@ -49,7 +49,12 @@
   ];
   return{id:ACTING_ID,actors,commands:[
    {type:'camera',actors:['messenger','karen','triton','sophie','margaret'],scale:1.12},
-   ...def.lines.map((line,lineIndex)=>({type:'say',speaker:line.speaker,text:line.text,lineIndex})),
+   ...def.lines.map((line,lineIndex)=>({
+    type:'say',speaker:line.speaker,
+    text:lineIndex===8&&state.events?.choices?.['early.ryuneGranaryWitness']==='counted'
+     ?'使者が去ったあと、四人はさっき数えた食料庫の棚を思い出した。去年の半分も残っていない。米の約束は、まだ帳簿のどこにもない。'
+     :line.text,lineIndex
+   })),
    {type:'camera',action:'return'}
   ]}
  }

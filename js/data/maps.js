@@ -71,6 +71,9 @@ function makeVillageTilesV2(){
  ].map(line=>line.split(''));
  // Wagonless pedestrian side passages, joining existing north/south spokes.
  for(const x of [1,2,3,4,5,18,19,20,21,22])rows[8][x]='P';
+ // The existing granary at (16,9) has a two-step footpath off the east
+ // cross street, visible before the player meets the messenger.
+ for(const y of [7,8])rows[y][16]='P';
  // Short, worn thresholds lead toward the southwest mayor and southeast home,
  // but do not cross the homes, courtyard NPC positions or central well.
  for(const x of [7,8,9,10,14,15,16,17])rows[12][x]='P';

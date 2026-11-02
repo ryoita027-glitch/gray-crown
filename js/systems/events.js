@@ -1226,7 +1226,11 @@ function inlineNpcEvent(id){
   if(id==='mika')return saySequence([{speaker:'ミカ',text:'「カレン姉ちゃん、勇者って王都のお菓子食べ放題なの？」'},{speaker:'カレン',text:'「たぶん、そういう仕事じゃないかな……」'}])
   if(id==='ren')return visitRenPractice()
   if(id==='lulu')return saySequence([{speaker:'ルル',text:'「ソフィお姉ちゃん、ちゃんと帰ってくる？」'},{speaker:'ソフィ',text:'「もちろん。約束します」'}])
-  if(id==='baker')return say('パン屋のエダ','「今朝は小麦が足りなくてね。いつもの半分しか焼けなかったよ。子どもらには黙って大きい方を渡したけどさ」')
+  if(id==='baker')return say('パン屋のエダ',state.events.choices['early.ryuneGranaryWitness']==='counted'
+   ?isEventComplete('alpha.village.appointment')
+    ?'「食料庫の数字を確かめたんだって？　使者の約束は聞いたよ。でも米が届くまで、今ある粉で焼くしかないね」'
+    :'「食料庫の数字を見たのかい。なら使者にも聞いておくれ。いつ米が届くか、私らには分からないんだ」'
+   :'「今朝は小麦が足りなくてね。いつもの半分しか焼けなかったよ。子どもらには黙って大きい方を渡したけどさ」')
   if(id==='farmer')return say('農夫のボル',
    isEventComplete('ryune.outskirts.reward')
     ?'「教えてもらった場所から順に水路を確かめるよ。すぐに畑が戻るわけじゃないが、何も分からなかった昨日よりは前に進めそうだ」'
@@ -1827,12 +1831,44 @@ function finalCampAfterBattlePrompt(route){
  return true;
 }
 
+// The food store is already on the route around the village square. A short
+// voluntary check gives the first appointment an immediate, factual payoff.
+function commitRyuneGranaryWitness(){
+ const key='early.ryuneGranaryWitness';
+ if(state.events.choices[key]||state.map!=='village'||isEventComplete('alpha.village.appointment'))return false;
+ state.events.choices[key]='counted';
+ setStructuredCondition('store',true);
+ addJournal('出発前、リュネ村の共同食料庫で帳簿と棚を照合した。備蓄は前年同期の半分以下で、王国の食料支援はまだ届いていない。');
+ renderHud();
+ return true
+}
+function visitRyuneGranary(){
+ // Preserve the pre-existing 'store visited' world flag even when counting is deferred.
+ if(!structuredCondition('store'))setStructuredCondition('store',true);
+ const key='early.ryuneGranaryWitness';
+ if(state.events.choices[key]==='counted')return say('共同食料庫','空いた棚と帳簿の数字は変わらない。王国の米が届いたという記録は、まだない。');
+ if(isEventComplete('alpha.village.appointment'))return say('共同食料庫','半分以上空いた棚。使者は米を約束したが、まだ届いてはいない。北門へ進むか、村を見て回るかは四人で決められる。');
+ return saySequence([
+  {speaker:'共同食料庫',text:'棚の半分以上が空いている。帳簿の去年の欄には、今よりずっと多い袋数が書かれている。'},
+  {speaker:'マーガレット',text:'「使者の話を聞く前に、今ある食料を確かめておきたい。約束と現物は違うから」'}
+ ],()=>say('カレン','「四人で帳簿と棚を見比べる？」',[
+  {label:'四人で備蓄を数え、帳簿に印を付ける',fn:()=>{
+   if(!commitRyuneGranaryWitness())return visitRyuneGranary();
+   return saySequence([
+    {speaker:'ソフィ',text:'「これが村の今の食料なんですね。孤児院の分も、ちゃんと考えないと」'},
+    {speaker:'トリトン',text:'「使者に聞こう。米はいつ、誰が運んでくるんだ？」'}
+   ])
+  }},
+  {label:'今は使者の話を聞く（後から調べられる）',fn:()=>say('カレン','「うん。中央広場の使者の話を先に聞こう」')}
+ ]))
+}
+
 function inlineObjectEvent(id){
  if(['campEvacuationSlips','campPrisonerLedger'].includes(id))return finalCampWitnessEvent(id);
  if(TREASURE_DEFS[id])return openTreasure(id);
  if(state.map==='village'){
   if(id==='renPracticeDummy')return visitRenPractice();
-  if(id==='store'){setStructuredCondition('store',true);addJournal('共同食料庫の備蓄は前年同期の半分以下。');return say('共同食料庫','棚の半分以上が空いている。帳簿では前年同期の半分以下まで備蓄が落ちていた。')}
+  if(id==='store')return visitRyuneGranary()
   if(id==='well'){setWorldSwitch('ryune.baseViewed.well',true);return say('村の井戸','何人もの桶が並んでいる。子どもたちの笑い声と、夕食の相談をする大人たちの声が聞こえる。')}
   if(id==='home')return enterInterior('karenhome',4,5)
   if(id==='doorOrphanage')return enterInterior('orphanage',19,5)
