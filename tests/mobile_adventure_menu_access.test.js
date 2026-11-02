@@ -94,3 +94,31 @@ test('touch menu cannot cover title, battle, story, level-up, results or an open
   assert.equal(h.calls.menu,1,name+' must recover once safe');
  }
 });
+
+test('keyboard Enter/Space activates the focused touch menu instead of interacting with the world',()=>{
+ const game=read('js/game.js');
+ const handler=game.match(/^function handleKeydown\(e\)\{.*$/m);
+ assert.ok(handler,'actual keyboard handler must exist');
+ const calls={action:0};
+ const context=vm.createContext({
+  document:{activeElement:{id:'mobileMenu'}},
+  GC:{Menu:{isPortableImportPending:()=>false}},
+  ALPHA_SESSION:{started:true},state:{battle:null},
+  $:()=>({classList:{contains:()=>true}}),
+  ensureAudio:()=>{},isInputLocked:()=>false,
+  primaryAction:()=>{calls.action++},openMenu:()=>{}
+ });
+ vm.runInContext(handler[0],context,{filename:'js/game.js handleKeydown'});
+ const keydown=vm.runInContext('handleKeydown',context);
+ for(const key of ['Enter',' ']){
+  let prevented=false;
+  keydown({key,repeat:false,preventDefault:()=>{prevented=true}});
+  assert.equal(prevented,false,key+' must keep the native button click available');
+  assert.equal(calls.action,0,key+' must not interact with the world');
+ }
+ context.document.activeElement={id:'game'};
+ let prevented=false;
+ keydown({key:'Enter',repeat:false,preventDefault:()=>{prevented=true}});
+ assert.equal(prevented,true,'unfocused game hotkey must still prevent default');
+ assert.equal(calls.action,1,'unfocused game hotkey must still interact');
+});
