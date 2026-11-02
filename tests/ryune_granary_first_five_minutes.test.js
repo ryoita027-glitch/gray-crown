@@ -38,11 +38,47 @@ test('counting the granary pays off in baker and existing 22-line cinematic once
  assert.equal(restored.schema,23);
  assert.equal(restored.events.choices['early.ryuneGranaryWitness'],'counted');
 });
-test('post-appointment discovery cannot rewrite a past appointment',()=>{
+test('post-appointment investigation is still playable without rewriting the past cinematic',()=>{
  const h=createHarness();
  h.evaluate("state.map='village';completeEvent('alpha.village.appointment')");
- assert.equal(h.evaluate('commitRyuneGranaryWitness()'),false);
- assert.match(narration(h),/共同食料庫の軽い扉/);
+ const before=narration(h);
+ assert.match(before,/共同食料庫の軽い扉/);
  h.evaluate("objectEvent('store')");
- assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/米を約束したが/);
+ assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/受け取りの記録/);
+ assert.match(h.evaluate("dialogueChoices.map(c=>c.label).join('|')"),/備蓄を数え/);
+ h.evaluate('activateDialogueChoice()');
+ assert.equal(h.evaluate("state.events.choices['early.ryuneGranaryWitness']"),'counted');
+ assert.equal(narration(h),before);
+ assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/使者の約束はもう聞いた/);
+ h.evaluate("objectEvent('store')");
+ assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/帳簿の数字は変わらない/);
+ const restored=h.GC.Save.migrateLoaded(h.GC.Save.serializeSave());
+ assert.equal(restored.schema,23);
+ assert.equal(restored.events.choices['early.ryuneGranaryWitness'],'counted');
+});
+
+test('baker naturally points to the eastern granary and remembers the later check',()=>{
+ const h=createHarness();
+ h.evaluate("state.map='village';npcEvent('baker')");
+ assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/井戸の東の共同食料庫/);
+ h.evaluate("completeEvent('alpha.village.appointment');npcEvent('baker')");
+ assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/届くのはこれから/);
+ h.evaluate("commitRyuneGranaryWitness();npcEvent('baker')");
+ assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/米が届くまで/);
+});
+
+test('counting after appointment but before first departure pays off on the forward route',()=>{
+ const h=createHarness();
+ h.evaluate("state.map='village';state.story.stage=STORY_STAGES.APPOINTED;completeEvent('alpha.village.appointment');commitRyuneGranaryWitness();leaveVillage()");
+ assert.equal(h.evaluate('state.map'),'road');
+ h.evaluate('dialogueContinue()');
+ h.evaluate('dialogueContinue()');
+ assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/食料庫の数字は覚えてる/);
+});
+
+test('declining the late check leaves the story and granary choice unchanged',()=>{
+ const h=createHarness();
+ h.evaluate("state.map='village';completeEvent('alpha.village.appointment');objectEvent('store');dialogueChoiceIndex=1;activateDialogueChoice()");
+ assert.equal(h.evaluate("state.events.choices['early.ryuneGranaryWitness']"),undefined);
+ assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/必要なら戻って確かめられる/);
 });
