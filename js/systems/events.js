@@ -2041,9 +2041,12 @@ function inlineObjectEvent(id){
     const guide=scouted
      ?'「足跡は覚えたわ。狼はもういない。古砦は右手の崩れた石門。北の本道も王都への旧街道に続くわ」'
      :'「王都　北」「旧砦　東」。狼の足跡は残るが、獣の気配は消えた。東の崩れた石門が古砦の入口。北の本道は王都への旧街道へ続く。';
-    // A later chapter or already-cleared fort must not receive an old quest.
-    if(cleared||storyAtLeast(STORY_STAGES.CAPITAL))
-     return say(scouted?'マーガレット':'古い道標',guide+(cleared?'古砦の獣はすでに倒した。':''));
+    // A cleared fort has its own natural line, not a new early route choice.
+    if(cleared)return say(scouted?'マーガレット':'古い道標',scouted
+     ?'「狼はもういない。古砦の獣もすでに倒したわ。東の石門からも北へ抜けられるけど、王都へ急ぐなら街道北端よ」'
+     :'「王都　北」「旧砦　東」。狼の気配は消えた。古砦の獣はすでに倒した。東の石門からも北へ抜けられる。');
+    if(storyAtLeast(STORY_STAGES.CAPITAL))
+     return say(scouted?'マーガレット':'古い道標',guide);
     return say(scouted?'マーガレット':'古い道標',guide,[
      {label:'東の石門から古砦を調べる',fn:()=>{
       state.events.choices['early.roadForkIntent']='fort';
