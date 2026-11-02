@@ -183,7 +183,7 @@ test('Escape still closes an open modal when its close button has keyboard focus
 
 test('pending import preserves native control keys while suppressing world input and F2',()=>{
  const game=read('js/game.js');
- const handler=game.match(/^function handleKeydown\\(e\\)\\{.*$/m);
+ const handler=game.match(/^function handleKeydown\(e\)\{.*$/m);
  assert.ok(handler,'real keyboard handler exists');
  const flags={pending:true},calls={move:0,action:0,dev:0};
  const focus={id:'btnSound',matches:()=>true};
