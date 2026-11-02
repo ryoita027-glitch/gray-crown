@@ -29,7 +29,7 @@ function isBlocked(x,y){
  if(OpeningWorldLife.blocks(state.map,x,y))return true;
  const t=tileAt(state.map,x,y);if(['T','H','S','W','R','K','Z'].includes(t))return true;
  const m=maps[state.map];if(m.npcs.some(n=>npcVisible(n)&&n.x===x&&n.y===y))return true;
- for(const o of m.objects){if(o.x===x&&o.y===y){if(['gate','exit','northExit','southExit','roadSign','milestone','banner','rations'].includes(o.id))continue;if(objectCleared(o.id))continue;return true}}
+ for(const o of m.objects){if(o.x===x&&o.y===y){if(['gate','exit','northExit','southExit','roadSign','wolfTracks','milestone','banner','rations'].includes(o.id))continue;if(objectCleared(o.id))continue;return true}}
  return false
 }
 
@@ -622,6 +622,19 @@ function drawObject(o){if(RyuneOutskirts.drawObject(ctx,state.map,o,!!state.worl
  if(o.id==='borderCampfire'){ctx.fillStyle='#3a2f29';ctx.beginPath();ctx.arc(px+16,py+22,12,0,Math.PI*2);ctx.fill();ctx.fillStyle='#8e5a32';ctx.fillRect(px+9,py+20,17,4);ctx.fillStyle='#e2943f';ctx.beginPath();ctx.moveTo(px+16,py+20);ctx.lineTo(px+10,py+12);ctx.lineTo(px+16,py+5);ctx.lineTo(px+23,py+13);ctx.closePath();ctx.fill()}
  if(['fortGate','fortGateRight'].includes(o.id)&&!getWorldSwitch('fortGateOpen')){ctx.fillStyle='#4e4640';ctx.fillRect(px-10,py+4,52,26);ctx.fillStyle='#866c50';for(let i=0;i<6;i++)ctx.fillRect(px-6+i*9,py+4,4,26);ctx.fillStyle='#c0a16d';ctx.fillRect(px-10,py+4,52,4)}
  if(o.id==='ravineLookout'||o.id==='bridgeMarker'){ctx.fillStyle='#70685d';ctx.fillRect(px+7,py+20,20,7);ctx.fillStyle='#c7b990';ctx.fillRect(px+10,py+8,14,12)}
+ // A small readable footprint cluster on the existing side path, before the wolf.
+ // This is ground evidence, not a new obstacle or an enemy symbol.
+ if(o.id==='wolfTracks'){
+  ctx.fillStyle='#bba47d';ctx.fillRect(px+2,py+6,28,22);
+  ctx.fillStyle='#887354';ctx.fillRect(px+4,py+8,24,18);
+  ctx.fillStyle='#4a4034';
+  for(const [dx,dy] of [[6,8],[18,16]]){
+   ctx.fillRect(px+dx,py+dy+4,7,4);
+   ctx.fillRect(px+dx,py+dy,2,3);
+   ctx.fillRect(px+dx+4,py+dy-1,2,3);
+   ctx.fillRect(px+dx+8,py+dy,2,3);
+  }
+ }
  if(o.id==='roadSign'){ctx.fillStyle='#73583b';ctx.fillRect(px+14,py+7,4,22);ctx.fillStyle='#b09262';ctx.fillRect(px+3,py+4,26,12);ctx.fillStyle='#403329';ctx.font='bold 8px system-ui';ctx.textAlign='center';ctx.fillText('古砦→',px+16,py+13);ctx.textAlign='start'}
  if(o.id==='civilianWaymark'){
   ctx.save();

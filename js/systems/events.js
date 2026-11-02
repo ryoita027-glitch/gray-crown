@@ -664,7 +664,7 @@ function earlyMerchantVisit(){
  return saySequence([
   {speaker:'行商人',text:'「やれやれ、荷車の軸が曲がった。食料を王都へ届けるはずが、このままじゃ狼の餌だ」'},
   {speaker:'トリトン',text:'「固定具ならその場で直せる。少し時間はかかるけどな」'},
-  {speaker:'行商人',text:'「東の古砦跡に抜け道があるとも聞くが、獣の声がする。どれも楽な道じゃない」'},
+  {speaker:'行商人',text:'「この荷車の東の踏み跡に、新しい獣の足跡がある。北東の古砦へ行くなら先に見ておくといい」'},
   ...(state.events.choices['early.ryuneGranaryWitness']==='counted'
    ?[{speaker:'マーガレット',text:'「リュネ村の食料庫も半分以上空いてた。この荷を待ってる人が、王都にも村にもいるのね」'}]
    :[])
@@ -1908,6 +1908,30 @@ function visitRyuneGranary(){
  ]))
 }
 
+// The original wolf-scout bonus lived at a sign north of the forced wolf fight.
+ // These tracks are on the existing wagon spur SOUTH of the wolf, so a player
+ // can earn the actual first-round tactical advantage before the encounter.
+ // Reuse the sign's Save v23 key; inspecting either location cannot double-award.
+function visitRoadWolfTracks(){
+ const key='early.wolfScout';
+ if(isDefeated('wolf'))return say('獣の足跡','泥に残った足跡は北へ続いている。狼の気配はもうない。');
+ if(state.events.choices[key]==='read')return say('マーガレット','「足跡の向きは覚えたわ。狼が後衛へ回ったら、カレンの庇うで守ろう」');
+ return say('獣の足跡','荷車の東の湿った土に、新しい足跡が重なっている。群れは北の道へ向かったようだ。',[
+  {label:'四人で足跡を調べ、襲撃に備える',fn:()=>{
+   if(state.events.choices[key]==='read')return visitRoadWolfTracks();
+   if(isDefeated('wolf'))return visitRoadWolfTracks();
+   state.events.choices[key]='read';
+   addJournal('街道の荷車の東で狼の足跡を調べた。群れが後衛に回る可能性を考え、カレンの庇うを備えた。');
+   renderHud();
+   return saySequence([
+    {speaker:'マーガレット',text:'「足跡が外側へ広がってる。後ろに回り込むかも。ソフィ、カレンの近くにいて」'},
+    {speaker:'カレン',text:'「分かった。先に気づけたなら、私が守る」'}
+   ]);
+  }},
+  {label:'今は調べず北へ進む',fn:()=>say('トリトン','「急ぐなら仕方ない。道の先は警戒しよう」')}
+ ]);
+}
+
 function inlineObjectEvent(id){
  if(['campEvacuationSlips','campPrisonerLedger'].includes(id))return finalCampWitnessEvent(id);
  if(TREASURE_DEFS[id])return openTreasure(id);
@@ -2001,6 +2025,7 @@ function inlineObjectEvent(id){
   if(id==='civilHistory')return say('地方史の棚','戦争ではなく、洪水、疫病、収穫祭、橋の建設。人々の歴史の大半は戦争以外でできている。')
  }
  if(state.map==='road'){
+  if(id==='wolfTracks')return visitRoadWolfTracks();
   if(id==='wolf'&&!structuredCondition('roadWolf'))return startSymbolEncounter('wolf','wolves');
   if(id==='bandit'&&!structuredCondition('roadBandit'))return say('街道のならず者','「荷物と金を置いていけ。こっちも腹が減ってるんだ」',[{label:'戦う',fn:()=>startSymbolEncounter('bandit','roadBandit')},{label:'離れる',fn:()=>say('マーガレット','「本道は通れる。無理に相手をする必要はないわ」')}]);
   if(id==='cave')return enterCave();
