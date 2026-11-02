@@ -82,7 +82,7 @@ test('all four final demands remain optional and retain their established reacti
   const {h,s}=setup(route,demand,{recorded:true});
   fountain(h);choose(h,0);
   citizen(h);choose(h,0);
-  h.evaluate('finishDialogueTyping();advanceDialogue()');
+  h.GC.Dialogue.finishDialogueTyping();h.GC.App.primaryAction();h.flushRaf();h.GC.Dialogue.finishDialogueTyping();
   assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),expected);
   assert.equal(s.events.choices['capital.citizenHeardDemand'],route+':'+demand);
  }
