@@ -72,7 +72,7 @@ def main():
  OUT.mkdir(parents=True,exist_ok=True)
  for name,sha in LOCKS.items():
   data=(ROOT/name).read_bytes()
-  actual=hashlib.sha1(b'blob '+str(len(data)).encode()+b'\\0'+data).hexdigest()
+  actual=hashlib.sha1(b'blob '+str(len(data)).encode()+bytes([0])+data).hexdigest()
   assert actual==sha,(name,actual)
  baseline.SOURCES=SOURCES
  records=[]
