@@ -85,6 +85,9 @@ function makeRoadTilesV15(){
  for(let y=0;y<ROWS;y++){const c=centers[y];for(let x=c-1;x<=c+1;x++)if(g[y]&&x>0&&x<COLS-1)g[y][x]='P'}
  // side clearings and worn detours: travel is not a ruler-straight corridor.
  paintH(g,7,12,8,'P');paintV(g,5,8,7,'P');paintH(g,10,15,3,'P');
+ // The worn spur connects the existing fork sign and the old-fort gate.
+ // Both exits and the original collision geometry remain unchanged.
+ g[2][13]='P';
  paintRect(g,3,4,2,3,'T');paintRect(g,5,7,2,2,'T');paintRect(g,18,7,2,3,'T');paintRect(g,3,10,3,2,'T');paintRect(g,19,2,2,2,'T');
  return finishTiles(g)
 }

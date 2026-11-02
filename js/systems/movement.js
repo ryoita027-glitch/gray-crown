@@ -68,7 +68,25 @@ function returnVillage(){
   ?'北門をくぐってリュネ村へ戻った。孤児院の窓に明かりが見える。薬草を残した日の判断について、ソフィは今も考えている。'
   :'北門をくぐり、リュネ村へ戻った。村の人々は旅立つ前と同じように、それぞれの生活を続けている。')
 }
-function enterCave(){const firstVisit=!state.world.visited?.cave;useMapTransition('roadToCave');state.objective=isDefeated('boss')?'古砦跡の北出口を目指す':'古砦跡を探索し、北側の抜け道を探す';state.chapter='第一章 — 古砦跡';renderHud();if(firstVisit)say('マーガレット','「地図ではこの先に旧街道があるはず。……戦争で使われなくなってから、獣の巣になってるみたいね」')}
+function enterCave(){
+ const firstVisit=!state.world.visited?.cave;
+ const followedSign=state.events.choices['early.roadForkIntent']==='fort';
+ useMapTransition('roadToCave');
+ state.objective=isDefeated('boss')?'古砦跡の北出口を目指す':'古砦跡を探索し、北側の抜け道を探す';
+ state.chapter='第一章 — 古砦跡';renderHud();
+ if(!firstVisit)return;
+ // The clue is available on either route. The chosen detour changes only
+ // the companion's reaction, never the optional supplies or story gate.
+ state.events.choices['early.fortSupplyMark']='seen';
+ addJournal('古砦の石門で、東の旧兵舎へ続く補給印を見つけた。物資が残っているかもしれない。');
+ return saySequence([
+  {speaker:'ナレーション',text:'崩れた石門の内側に、東の旧兵舎を指す古い補給印が残っている。'},
+  followedSign
+   ?{speaker:'ソフィ',text:'「戦う人も、ここで食べて休んでいたんですね」'}
+   :{speaker:'カレン',text:'「王都への道だけじゃない。ここにも誰かがいた跡があるんだね」'},
+  {speaker:'マーガレット',text:'「東の兵舎に物資が残っているかも。調べるかどうかは、私たちで決めましょう」'}
+ ]);
+}
 function leaveCave(){useMapTransition('caveToRoad');if(!storyAtLeast(STORY_STAGES.CAPITAL))state.objective=roadReturnObjective();renderHud()}
 function enterNorthRoad(source='cave'){markVisited('northroad',true);setWorldSwitch('northRoadFromRoad',source==='road');if(source==='road')useMapTransition('roadToNorthRoad');else setMap('northroad',11,13,'up',[[12,13],[13,13],[14,13]]);state.chapter='第一章 — 白い旗';// Both paths physically enter northroad. Previously cave route stayed at
  // 03_first_battle until Save/Load silently migrated it to stage 04.
