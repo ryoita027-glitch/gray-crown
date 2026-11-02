@@ -13,8 +13,12 @@ function setMap(map,x,y,dir,trail){const from=state.map;state.map=map;state.x=x;
 function enterInterior(mapId,doorX,doorY){const firstVisit=!state.world.visited?.[mapId];state.interiorReturn={map:state.map,x:doorX,y:Math.min(ROWS-2,doorY+1),dir:'up'};setMap(mapId,11,11,'up',[[12,11],[13,11],[14,11]]);if(mapId==='capitalinn'&&isEventComplete('alpha.capital.ceremony')&&!isEventComplete('alpha.capital.whiteStagNight'))advanceStory(STORY_STAGES.WHITE_STAG,null,'白鹿亭で四人の夜を過ごす');if(firstVisit)say('ナレーション',`${maps[mapId].name}に入った。`)}
 function leaveInterior(){const r=state.interiorReturn||{map:'village',x:12,y:12,dir:'up'};state.interiorReturn=null;setMap(r.map,r.x,r.y,r.dir,[[r.x+1,r.y],[r.x+2,r.y],[r.x+3,r.y]])}
 function leaveVillage(){
+ // A return trip must not replay the original emotional farewell as if the
+ // party were leaving home for the very first time.
+ const firstDeparture=!hasVisited('road');
  advanceStory(STORY_STAGES.ROAD,null,'街道を北へ進み、道を塞ぐ灰牙狼を越える');
  useMapTransition('villageToRoad');renderHud();
+ if(!firstDeparture)return say('ナレーション','北門を抜け、四人は再び街道へ出た。北には王都、南にはリュネ村がある。');
  const choice=state.events.choices['early.orphanMedicine'];
  const middle=choice==='donate'
   ?{speaker:'ソフィ',text:'「孤児院へ薬草を渡せました。でも手元の薬は減っています。怪我には気をつけて」'}
@@ -24,6 +28,11 @@ function leaveVillage(){
  saySequence([
   {speaker:'ナレーション',text:'村人たちは「世界を救ってくれ」とは言わなかった。|ただ「帰ってこい」と言った。||北門を抜けると、リュネ村の屋根は少しずつ小さくなっていく。'},
   middle,
+  // The optional granary observation pays off while moving forward, without
+  // asking the player to backtrack for another conversation.
+  ...(state.events.choices['early.ryuneGranaryWitness']==='counted'
+   ?[{speaker:'マーガレット',text:'「食料庫の数字は覚えてる。米はまだ届いていない。約束を聞いただけで安心しないでおこう」'}]
+   :[]),
   {speaker:'トリトン',text:'「不安なら言ってよ。四人でいるんだから、一人で何でも背負わなくていい」'},
   {speaker:'カレン',text:'「うん。四人で帰ろう。まだ、出発したばかりなんだから」'}
  ])

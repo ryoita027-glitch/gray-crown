@@ -1,3 +1,15 @@
+## 2026-11-02 14:43 JST — village north-gate first departure versus repeat departure
+
+**Repository fact (checked against Draft #284 HEAD `a32e54d0`):** `leaveVillage()` always replayed the same four-line emotional farewell, including “we have only just departed,” even after a player returned from the road and left again. The newly introduced voluntary granary count changed the messenger cinematic and baker, but gave no acknowledgement during the actual forward transition. `hasVisited('road')` already persists in Save v23.
+
+**Player signal checked 2026-11-02:** [Chained Echoes Steam reviews](https://steamcommunity.com/app/1229240/reviews/) currently surface an October 29 criticism of repeated wandering to find an obscure doorway and an October 28 criticism that protagonists lack agency; an October 28 positive review praises small details and the journey. These are individual reviews; their posting year and representativeness are **unverified**. Hypothesis: don't force a player to repeat an emotional scene on a routine return trip; let an optional discovery be acknowledged on the normal exit route, without a new fetch quest.
+
+**Implemented:** On the first village-to-road transition only, an investigated granary earns one concise Margaret observation after Sophie's existing orphanage beat. Players who skip it retain the original four beats. Any later north-gate departure gives one short, geographically accurate line instead of replaying the original farewell. No new NPC, inventory, karma, map tile, objective, schema field or gating; the existing `world.visited.road` flag controls repetition.
+
+**Verification:** Source-anchor checks and isolated syntax inspection only; Node harness test authored but not executed. Browser movement, actual dialogue advancement, Save/Load, and human playtest remain unverified. Keep Draft; no main merge.
+
+**Next:** Run `node --test tests/ryune_departure_replay.test.js`, full regression, then browser-play first departure with/without the granary count and a village return/redeparture. Verify the second crossing never replays “出発したばかり” and the Margaret beat is not intrusive.
+
 ## 2026-11-02 13:43 JST — first-five-minute granary discovery with immediate appointment payoff
 
 **Repository facts checked:** main HEAD `d689aabb`; current map-story Draft #282 HEAD `f9ca376c`, with the other art/mobile Drafts left untouched. The existing village has a food store at (16,9), the messenger at (12,6), and a baker at (8,6). Before this change, the store showed a one-line shortage fact, with no player decision or reaction in the 22-line appointment scene; the opening appointment is performed by `GC.RyuneActing.sceneFor`, not the generic event dialogue runner. The store is an optional side visit and must not gate the north exit.
