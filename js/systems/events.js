@@ -2092,7 +2092,7 @@ function inlineObjectEvent(id){
    setStructuredCondition('rations',true);
    state.inventory['携帯食']=(state.inventory['携帯食']||0)+1;
    addJournal('古砦の保存食箱から封の残った携帯食を1個見つけた。');
-   renderHud();sfx('discovery');
+   renderHud();sfx('discovery');draw();
    return say('トリトン',state.events.choices['early.fortSupplyMark']==='seen'
     ?'「入口の補給印が指してたのはこれか！　箱はほぼ空だけど、携帯食が1個残ってたぞ」'
     :'「箱はほぼ空だ。でも奥に一食分だけある。携帯食を1個手に入れた！」');
