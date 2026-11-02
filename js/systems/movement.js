@@ -2,7 +2,11 @@
 function encounterRange(map){if(map==='cave')return[12,19];if(['northroad','ashroad','borderland','yukiroad','returnroad'].includes(map))return[18,28];if(map==='road')return[14,22];return[999,999]}
 function encounterSafeZone(map=state.map,x=state.x,y=state.y){
  if(INTERIOR_MAPS.includes(map)||['village','capital','frontier','watchfort','empirevillage','imperialcity','elsia','finalfield','imperialcamp','royalcamp'].includes(map))return true;
- if(map==='cave'&&Math.abs(x-5)+Math.abs(y-12)<=2)return true;
+ if(map==='cave'){
+  // A short, visibly paved supply trail is a low-risk detour, not a new dungeon skip.
+  if((y===13&&x>=12&&x<=20)||(x===20&&y===12))return true;
+  if(Math.abs(x-5)+Math.abs(y-12)<=2)return true;
+ }
  if(map==='borderland'&&y<=7)return true; // 宿場・焚き火周辺
  const m=maps[map];if(m){const hostile=new Set(['klein','zester','zenith','vanguardCaptain','imperialGuard']);for(const n of m.npcs){if(!npcVisible(n)||hostile.has(n.id))continue;if(Math.abs(x-n.x)+Math.abs(y-n.y)<=4)return true}}
  return false
@@ -84,7 +88,7 @@ function enterCave(){
   followedSign
    ?{speaker:'ソフィ',text:'「戦う人も、ここで食べて休んでいたんですね」'}
    :{speaker:'カレン',text:'「王都への道だけじゃない。ここにも誰かがいた跡があるんだね」'},
-  {speaker:'マーガレット',text:'「東の兵舎に物資が残っているかも。調べるかどうかは、私たちで決めましょう」'}
+  {speaker:'マーガレット',text:'「石敷きは足場が安定しているわ。東の兵舎に物資があるかも。調べるかは私たちで決めましょう」'}
  ]);
 }
 function leaveCave(){useMapTransition('caveToRoad');if(!storyAtLeast(STORY_STAGES.CAPITAL))state.objective=roadReturnObjective();renderHud()}

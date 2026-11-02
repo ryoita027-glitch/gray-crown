@@ -1,3 +1,15 @@
+## 2026-11-02 23:44 JST — optional old-fort supply loop is now low-risk
+
+**Verified repo facts:** main HEAD `d689aabb`; previous stacked Draft #301 HEAD `7a828bdf`, with earlier #300/#297 changes and other open art/UX PRs inspected. Cave random encounters begin after 12–19 eligible steps. The paved ration detour is eight steps out and eight back: the return could trigger a random battle for one optional ration. The west rest area was safe, but this eastern stone trail was not. The ration event also updated state without an immediate redraw.
+
+**Player evidence checked 2026-11-02:** [Chained Echoes Steam reviews](https://steamcommunity.com/app/1229240/reviews/) show an October 29 complaint about low-value battles and repeated map wandering and an October 28 positive review praising small discoveries. [Sea of Stars Steam reviews](https://steamcommunity.com/app/1244090/reviews/) show an October 5 complaint about repeated walks after fights and an October 3 positive review praising corner exploration. Review dates were displayed without independently verified years. Individual reviews only; not a market-wide or Graygrow player test. **Hypothesis:** keeping a short, clearly paved supply spur free of random battles makes its one-ration reward more worthwhile, while the rest of the fort remains dangerous.
+
+**Implemented:** The southern paved corridor (x12–20,y13 and x20,y12) uses the existing encounter-safe-zone check; off-trail cave tiles, symbol enemies, levers and boss keep their original rules. Margaret points out the stable footing but leaves exploration optional. The ration pickup now redraws the existing open/empty crate immediately. No new items, story flags, map area, or Save v23 schema changes.
+
+**Verification:** Source anchors checked; three Node harness regressions added for full round trip, off-path danger, immediate redraw and v23 one-time reward. Native Node, npm check, Chromium 44px walk and human testing **not executed** in connector environment. Keep Draft and do not merge main.
+
+**Next:** Run `node --test tests/cave_supply_safe_loop.test.js tests/cave_supply_paving_payoff.test.js` and `npm run check`. Walk the cave at native size, verifying no encounter on paving and normal encounter pressure off paving.
+
 ## 2026-11-02 22:47 JST — the old-fort clue now leads to a visible reward
 
 **Repository facts:** main HEAD `d689aabb`; Draft #300 HEAD `b5ac15b3`, itself stacked on Draft #297. The first-entry scene already mentions an east-barracks supply mark, and a one-time ration crate exists at (20,12). But the walkable lower-east corridor was visually uniform cave floor, and the crate continued to look unopened after its ration had been taken. The existing cave entry spawns at (12,13), and the original east corridor (row 13) reaches the box without any wall change.
