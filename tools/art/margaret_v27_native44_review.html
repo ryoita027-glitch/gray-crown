@@ -1,0 +1,26 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Margaret V27 native44 cast comparison — ART HOLD</title>
+<style>body{background:#1d2b27;color:#e5eadf;font:14px system-ui;margin:24px}canvas{image-rendering:pixelated;max-width:100%}label{margin-right:20px}p{max-width:850px}</style>
+<h1>Margaret V27 — native44 cast A/B (NOT a game screenshot)</h1>
+<p>Real sprite PNGs, 48→44 nearest-neighbor, same grass background and sampled visible-foot baseline. V5 mayor and messenger are reference only. Production sprites are unchanged.</p>
+<label>Idle frame <input id="frame" type="range" min="0" max="3" value="0"><output id="frameLabel">0</output></label>
+<label>Backdrop <select id="bg"><option value="grass">Grass</option><option value="stone">Stone</option></select></label>
+<canvas id="board" width="760" height="348"></canvas>
+<p>Read at native screen scale: head/neck/shoulder, adult silhouette, book hand, left/right profiles and contact. A visual PASS requires an actual Ryune village screenshot and animation continuity; this board alone cannot approve V27.</p>
+<script>
+const names=["Karen","Triton","Sophie","Margaret","V22","V27","Mayor V5","Messenger V5"];
+const paths=["../../assets/characters/karen/karen_idle.png","../../assets/characters/triton/triton_idle.png","../../assets/characters/sophie/sophie_idle.png","../../assets/characters/margaret/margaret_idle.png","../../assets/character_trials/margaret_idle_adult_mage_v22_structural_trial.png","../../assets/character_trials/margaret_idle_v27_tailored_keypose_indexed.png","../../assets/npc/featured_residents_charm_v5.png","../../assets/npc/featured_residents_charm_v5.png"];
+const images=paths.map(p=>{let i=new Image();i.src=p;return i});
+const c=document.getElementById("board"),ctx=c.getContext("2d"),frame=document.getElementById("frame"),bg=document.getElementById("bg");
+ctx.imageSmoothingEnabled=false;
+function draw(){const f=+frame.value;document.getElementById("frameLabel").value=f;ctx.fillStyle="#1d2b27";ctx.fillRect(0,0,c.width,c.height);ctx.font="12px system-ui";ctx.textBaseline="top";
+names.forEach((n,i)=>{ctx.fillStyle="#d9e6db";ctx.fillText(n,80+i*83,5)});
+["Down","Left","Right","Up"].forEach((n,d)=>{const y=38+d*77;ctx.fillStyle="#f0e5d4";ctx.fillText(n,10,y+24);
+names.forEach((name,i)=>{const x=80+i*83;ctx.fillStyle=bg.value==="grass"?"#40594b":"#535459";ctx.fillRect(x,y,60,60);ctx.fillStyle="#9db3a3";ctx.fillRect(x,y+51,60,1);
+const im=images[i];if(!im.complete||!im.naturalWidth)return;
+const crop=document.createElement("canvas");crop.width=44;crop.height=44;const g=crop.getContext("2d",{willReadFrequently:true});g.imageSmoothingEnabled=false;
+g.drawImage(im,i>=6?(i===6?3:4)*48:f*48,d*48,48,48,0,0,44,44);
+const px=g.getImageData(0,0,44,44).data;let bottom=-1;for(let yy=0;yy<44;yy++)for(let xx=0;xx<44;xx++)if(px[(yy*44+xx)*4+3])bottom=yy;
+if(bottom>=0)ctx.drawImage(crop,x+8,y+52-bottom-1);
+});});}
+images.forEach(i=>{i.onload=draw;i.onerror=draw});frame.oninput=draw;bg.onchange=draw;draw();
+</script></html>
