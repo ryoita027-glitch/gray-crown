@@ -178,7 +178,9 @@ async function importPortableSaveFromMenu(file){
   toolbarButtons.forEach((button,index)=>{button.disabled=toolbarWasDisabled[index]});
   // A story event may start a battle while the file read is pending.
   // Never put the retry menu over that active battle on import failure.
-  if(!imported&&!state.battle&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
+  // Do not cover a level-up, battle result, or scripted lock that appeared
+  // while file bytes were pending. Match the Save layer's live load gate.
+  if(!imported&&GC.Save.canPersistNow?.('load')!==false&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
    modal.classList.remove('hidden')
   }
  }
