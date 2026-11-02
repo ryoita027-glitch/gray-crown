@@ -56,7 +56,7 @@ test('touch-only players have a visible menu control inside the mobile D-pad',()
  assert.equal((controls[1].match(/<button\b/g)||[]).length,6);
  const css=read('css/game.css');
  assert.match(css,/\.mobile-pad button:nth-child\(6\)\{grid-column:3;grid-row:3\}/);
- assert.match(css,/@media\(max-width:850px\)[^{]*\{[^}]*\.mobile-pad\{display:grid\}/);
+ assert.match(css,/@media\(max-width:850px\)\{[^\n]*\.mobile-pad\{display:grid\}/);
 });
 
 test('touch menu opens during normal exploration and again after import completes',()=>{
