@@ -9,7 +9,7 @@ test('V27 reversible 4-direction 4-frame key pose keeps contact and distinct tai
  const a=read('assets/character_trials/margaret_idle_adult_mage_v22_structural_trial.png');
  const b=read('assets/character_trials/margaret_idle_v27_tailored_keypose_indexed.png');
  assert.equal(gitBlob(a),'d7d0aa4eaa7286b85c3cf0181b36c550962b688d');
- assert.equal(gitBlob(b),'c24ec1b7e00ce7dc169380272e57b81234865fd0');
+ assert.equal(gitBlob(b),'38549e6c56006c1cfe5c4e337c5c90b2b9df0e4c');
  const src=PNG.decode(a),trial=PNG.decode(b);
  assert.equal(src.width,192);assert.equal(src.height,192);
  assert.equal(trial.width,192);assert.equal(trial.height,192);
