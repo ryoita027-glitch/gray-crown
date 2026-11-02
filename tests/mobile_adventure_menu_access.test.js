@@ -221,8 +221,8 @@ test('pending import preserves native control keys while suppressing world input
 
 test('touch and M-key menu opening focus the close button; dismissals restore game focus',()=>{
  const game=read('js/game.js');
- const handler=game.match(/^function handleKeydown\\(e\\)\\{.*$/m);
- const bind=game.match(/^function bindAppControls\\(\\)\\{.*$/m);
+ const handler=game.match(/^function handleKeydown\(e\)\{.*$/m);
+ const bind=game.match(/^function bindAppControls\(\)\{.*$/m);
  assert.ok(handler&&bind,'use actual committed keyboard and button handlers');
  const hidden=new Set(['modal','dialogueBox','levelUpPanel','battleResult']);
  const nodes=new Map();
@@ -254,7 +254,7 @@ test('touch and M-key menu opening focus the close button; dismissals restore ga
   toggleSound:()=>{},startNewGameSafely:()=>{},continueAlphaFromTitle:()=>{},
   saveFromToolbar:()=>{},loadFromToolbar:()=>{},restartFromToolbar:()=>{}
  });
- vm.runInContext(handler[0]+'\\n'+bind[0],context,{filename:'js/game.js controls'});
+ vm.runInContext(handler[0]+'\n'+bind[0],context,{filename:'js/game.js controls'});
  vm.runInContext('bindAppControls()',context);
  const modal=$('modal'),close=$('modalClose');
  $('mobileMenu').click();
