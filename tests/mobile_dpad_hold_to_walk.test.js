@@ -162,3 +162,26 @@ test('backgrounding or losing focus stops held movement and permits a fresh tap'
  h.click(1);
  assert.deepEqual(h.calls.moves,['up','up'],'a fresh foreground tap still moves exactly once');
 });
+
+test('interrupted short presses never deliver a delayed ghost click',()=>{
+ const h=padHarness();
+ const interruptions=[
+  ['window blur',11,()=>h.window.listeners.blur()],
+  ['background',12,()=>{h.document.hidden=true;h.document.listeners.visibilitychange();h.document.hidden=false}],
+  ['pointer cancel',13,()=>h.emit('pointercancel',h.pointer(13))],
+  ['lost pointer capture',14,()=>h.emit('lostpointercapture',h.pointer(14))]
+ ];
+ for(const [name,id,interrupt] of interruptions){
+  h.emit('pointerdown',h.pointer(id));
+  assert.equal(h.timeouts.size,1,name+' begins a pending tap');
+  interrupt();
+  h.emit('pointerup',h.pointer(id));
+  h.click(1);
+  assert.equal(h.calls.moves.length,0,name+' must not move on a late click');
+  assert.equal(h.timeouts.size,0,name+' clears the pending hold timer');
+ }
+ h.emit('pointerdown',h.pointer(15));
+ h.emit('pointerup',h.pointer(15));
+ h.click(1);
+ assert.deepEqual(h.calls.moves,['up'],'a new deliberate tap still moves exactly once');
+});
