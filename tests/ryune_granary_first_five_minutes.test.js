@@ -19,6 +19,7 @@ test('granary is voluntary and its first visit does not advance the story',()=>{
  const h=createHarness(),stage=h.evaluate('state.story.stage');
  h.evaluate("state.map='village';objectEvent('store')");
  assert.equal(h.evaluate('state.story.stage'),stage);
+ assert.equal(h.evaluate("structuredCondition('store')"),true);
  assert.equal(h.evaluate("state.events.choices['early.ryuneGranaryWitness']"),undefined);
  assert.match(narration(h),/共同食料庫の軽い扉/);
 });
