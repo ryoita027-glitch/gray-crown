@@ -235,3 +235,38 @@ test('dragging a held direction outside its hit area stops walking and suppresse
  h.click(1);
  assert.deepEqual(h.calls.moves,['up','up'],'fresh intentional tap still moves one tile');
 });
+
+test('temporary overlay during a pending tap cannot create a ghost step after it closes',()=>{
+ const h=padHarness();
+ h.emit('pointerdown',h.pointer(41));
+ assert.equal(h.timeouts.size,1);
+ h.visible.add('modal');
+ h.fireTimeout();
+ assert.equal(h.timeouts.size,0,'blocked timeout must clear the hold');
+ assert.equal(h.intervals.size,0,'blocked timeout must not repeat');
+ h.visible.delete('modal');
+ h.emit('pointerup',h.pointer(41));
+ h.click(1);
+ assert.deepEqual(h.calls.moves,[],'late click from interrupted tap must be discarded');
+ h.emit('pointerdown',h.pointer(42));
+ h.emit('pointerup',h.pointer(42));
+ h.click(1);
+ assert.deepEqual(h.calls.moves,['up'],'fresh tap after the modal closes still moves once');
+});
+
+test('a press begun while an overlay is visible cannot move after the overlay closes',()=>{
+ const h=padHarness();
+ h.visible.add('modal');
+ h.emit('pointerdown',h.pointer(51));
+ assert.equal(h.timeouts.size,0,'blocked pointerdown never arms the hold');
+ h.visible.delete('modal');
+ h.emit('pointerup',h.pointer(51));
+ h.click(1);
+ assert.deepEqual(h.calls.moves,[],'late click from blocked pointerdown must be discarded');
+ h.click(0);
+ assert.deepEqual(h.calls.moves,['up'],'keyboard activation remains available');
+ h.emit('pointerdown',h.pointer(52));
+ h.emit('pointerup',h.pointer(52));
+ h.click(1);
+ assert.deepEqual(h.calls.moves,['up','up'],'new touch press remains available');
+});
