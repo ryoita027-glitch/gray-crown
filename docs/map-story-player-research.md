@@ -1,3 +1,15 @@
+## 2026-11-03 05 JST — make the old fort's real mechanism paths readable
+
+**Repository checked:** main HEAD `d689aabb`; stacked Draft #311 HEAD `965e2656` (based on #309). Other open mobile-menu and character-art PRs remain separate. Source cave map 24×15 has west lever (3,8), east gear (21,6), central gate (12,4). Existing state plaques are visible at the gate but do not guide the return trip through turning corridors. This is a **map-analysis hypothesis**, not human-test feedback.
+
+**External signals checked 2026-11-03:** [Huang et al., *Way to Go!* (2017)](https://arxiv.org/abs/1706.08891) studies wayfinding design in virtual environments; [*Chained Echoes* editorial review (2026-03-09)](https://bullethaven.com/review/chained-echoes) praises handcrafted JRPG design while noting a slow opening. A [2026-10-19 JRPG player discussion](https://www.reddit.com/r/JRPG/comments/1x9lvsa/havent_played_a_jrpg_in_awhile_but_am_feeling_the/) reflects differing preferences for linear vs open exploration. These sources do **not** prove that Graygrow players get lost. **Hypothesis:** diegetic navigation cues can reduce pointless searching while preserving the dungeon's own exploration choices.
+
+**Implemented:** Two low-profile inlaid maintenance conduits follow the actual existing walkable west/east corridors from the gate's south junction to cells adjacent to the corresponding mechanisms, including real turns around solid walls and the east crawler. They independently shift from muted stone to brass when the existing saved switch activates. Inspecting the closed gate now explicitly connects the floor conduits to the two mechanisms, and tells the player which direction remains after one is operated. No new map area, quest, reward, sprite, collision, boss rule or save field. No borrowed map or puzzle layout.
+
+**Verification:** Exact updated renderer parsed and executed with a canvas rectangle mock; 4/4 lever combinations passed. Both routes checked against the source 24×15 tile map for orthogonal continuity and solid-wall avoidance (2/2). Event module parsed. New Node regression test added but **not executed**. Native44 browser walking, actual save/load, CI and human feedback remain **unverified**. Keep Draft unmerged.
+
+**Next risk:** Walk both conduit routes at native44 and check whether the 2px floor traces are legible without implying a shortcut through the crawler. Test the gate-to-boss-to-north-exit progression and save restoration in the full game.
+
 ## 2026-11-03 04 JST — make the old-fort chokepoint readable without an intrusive quest arrow
 
 **Repository checked:** main HEAD `d689aabb`; stacked Draft #309 HEAD `57167b27` (based on #308, #306, #304, #302, #301). Open mobile-menu and character-art Drafts remain separate. The new y=4 solid curtain wall is mechanically correct in source, but the art module paints every solid `S` tile with similar blocks; a first-time player may see a flat stripe rather than a gate controlled by two wings. This is a design hypothesis, **not** a browser or human playtest finding.
