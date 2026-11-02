@@ -13,6 +13,11 @@ Rows: front, left, right, back. Real source atlas frame 0; nearest-neighbor 48â†
 
 Rebuild with `node tools/art/margaret_v19_source_native44_ab.js`; verify with `node --test tests/margaret_v19_source_native44_ab.test.js`. Four original source PNGs have Git blob SHA locks.
 
+### Full cast comparison (same-source nominal 44px)
+
+- `docs/art/evidence/four_heroes_v19_V5_SOURCE_native44.png` (308Ã—240). Columns: Karen / Triton / Sophie / Margaret original / Margaret V19 / V5 mayor / V5 messenger; same 4 direction rows and exact nominal pixel scale.
+- The three other heroes also have conspicuously larger, more rounded hair/head masses and denser luminous detailing than the V5 adult NPCs. The mismatch is **cast-wide**, not only a Margaret issue. Fixing Margaret alone will not unify the world. This board is a source-sprite comparison, not a real-game screenshot or art approval.
+
 ## Visual verdict
 
 Compared directly at 44px, V19 is narrower but looks more like a slim lavender column. Face, neck and hand/book readability are not improved; silhouette and garment structure remain unlike the V5 mayor/messenger. A smaller head contour alone is not adult anatomy. **Reject V19 as a replacement.** The original is not yet commercially satisfactory either: hair volume and dark compressed neck/torso remain. Do not auto-promote earlier trials.

@@ -6,9 +6,12 @@ const SOURCES=[
  ['assets/characters/margaret/margaret_idle.png','910458eabfcfaef7442f885f319d0e2a09c88a66',192],
  ['assets/characters/margaret/margaret_walk.png','1923f1315c377418cea0f2f94ab6431c987f2dd7',288],
  ['assets/character_trials/margaret_idle_silhouette_sculpt_v19.png','db3fd3301dfbe5f60cb5195a31eb5d6c8e36bd3e',192],
- ['assets/npc/featured_residents_charm_v5.png','b169b58a846e1812dc42f566ca1843a6088e901f',432]
+ ['assets/npc/featured_residents_charm_v5.png','b169b58a846e1812dc42f566ca1843a6088e901f',432],
+ ['assets/characters/karen/karen_idle.png','782785fd504a4baba92be4ff099a827dd1ecac81',192],
+ ['assets/characters/triton/triton_idle.png','e6ca25a935e773cf17dd35e2355c28d647ffd7ef',192],
+ ['assets/characters/sophie/sophie_idle.png','b9e037e40298bc0153bf1b081ff589b1822b70f8',192]
 ];
-const OUTPUTS={same:'docs/art/evidence/margaret_v19_SOURCE_native44_same_pose.png',continuity:'docs/art/evidence/margaret_v19_SOURCE_native44_walk_diagnostic.png'};
+const OUTPUTS={same:'docs/art/evidence/margaret_v19_SOURCE_native44_same_pose.png',continuity:'docs/art/evidence/margaret_v19_SOURCE_native44_walk_diagnostic.png',cast:'docs/art/evidence/four_heroes_v19_V5_SOURCE_native44.png'};
 function load([name,expected,width]){
  const bytes=fs.readFileSync(path.join(ROOT,name));
  const sha=crypto.createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');
@@ -31,9 +34,10 @@ function render(cols){
  }
  return {width:W,height:H,pixels:p};
 }
-function build(){const [original,walk,v19,npc]=SOURCES.map(load);return {
+function build(){const [original,walk,v19,npc,karen,triton,sophie]=SOURCES.map(load);return {
  same:render([[original,0],[v19,0],[npc,3],[npc,4]]),
- continuity:render([[original,0],[walk,0],[v19,0],[npc,3],[npc,4]])
+ continuity:render([[original,0],[walk,0],[v19,0],[npc,3],[npc,4]]),
+ cast:render([[karen,0],[triton,0],[sophie,0],[original,0],[v19,0],[npc,3],[npc,4]])
 };}
 function write(){const boards=build();for(const [key,name] of Object.entries(OUTPUTS)){
  const im=boards[key],dest=path.join(ROOT,name);fs.mkdirSync(path.dirname(dest),{recursive:true});

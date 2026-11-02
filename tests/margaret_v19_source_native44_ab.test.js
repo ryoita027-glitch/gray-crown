@@ -5,6 +5,7 @@ const mod=require('../tools/art/margaret_v19_source_native44_ab');
 test('source PNGs reproduce exact native44 boards',()=>{
  const boards=mod.build();assert.deepEqual([boards.same.width,boards.same.height],[176,240]);
  assert.deepEqual([boards.continuity.width,boards.continuity.height],[220,240]);
+ assert.deepEqual([boards.cast.width,boards.cast.height],[308,240]);
  for(const [key,name] of Object.entries(mod.OUTPUTS)){
   const actual=fs.readFileSync(path.resolve(__dirname,'..',name)),im=boards[key];
   assert.deepEqual(Buffer.from(P.encode(im.width,im.height,im.pixels)),actual);
