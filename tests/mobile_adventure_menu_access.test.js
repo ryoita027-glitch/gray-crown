@@ -325,3 +325,49 @@ test('Tab and Shift+Tab stay inside the adventure menu without trapping hidden c
  assert.equal(document.activeElement,outside,'closed menu leaves native focus alone');
  assert.equal(audio,0,'Tab navigation must not trigger game audio');
 });
+
+
+test('pointer D-pad movement and Confirm restore game focus, keyboard activation stays on its button',()=>{
+ const game=read('js/game.js');
+ const handler=game.match(/^function handleKeydown\(e\)\{.*$/m);
+ const bind=game.match(/^function bindAppControls\(\)\{.*$/m);
+ assert.ok(handler&&bind,'actual committed controls exist');
+ const nodes=new Map(),calls={move:0,action:0};
+ const document={activeElement:null,addEventListener(){},querySelectorAll:selector=>selector==='[data-move]'?[up]:[]};
+ const make=id=>{
+  const node={id,dataset:{},listeners:{},matches:()=>id!=='game',
+   classList:{contains:()=>true},
+   addEventListener(type,fn){this.listeners[type]=fn},
+   focus(){document.activeElement=this}
+  };
+  nodes.set(id,node);return node
+ };
+ const up=make('mobileUp'),act=make('mobileAct'),canvas=make('game');
+ up.dataset.move='up';
+ for(const id of ['modal','levelUpPanel','dialogueBox'])make(id);
+ const context=vm.createContext({
+  $,document,canvas,ALPHA_SESSION:{started:true},state:{battle:null},
+  GC:{Menu:{isPortableImportPending:()=>false}},
+  isInputLocked:()=>false,openMenu:()=>{},ensureAudio:()=>{},
+  move:()=>{calls.move++},primaryAction:()=>{calls.action++},
+  toggleSound:()=>{},startNewGameSafely:()=>{},continueAlphaFromTitle:()=>{},
+  saveFromToolbar:()=>{},loadFromToolbar:()=>{},restartFromToolbar:()=>{}
+ });
+ function $(id){return nodes.get(id)||null}
+ vm.runInContext(handler[0]+'\n'+bind[0],context,{filename:'js/game.js controls'});
+ vm.runInContext('bindAppControls()',context);
+ const keydown=vm.runInContext('handleKeydown',context);
+ up.focus();up.listeners.click({detail:1});
+ assert.equal(document.activeElement,canvas,'pointer movement returns keyboard focus to game');
+ keydown({key:'ArrowUp',repeat:false,preventDefault(){}});
+ assert.equal(calls.move,2,'keyboard movement works immediately after touch movement');
+ up.focus();up.listeners.click({detail:0});
+ assert.equal(document.activeElement,up,'keyboard activation preserves native button focus');
+ keydown({key:'ArrowUp',repeat:false,preventDefault(){}});
+ assert.equal(calls.move,3,'focused button does not leak world movement');
+ act.focus();act.listeners.click({detail:1});
+ assert.equal(document.activeElement,canvas,'pointer Confirm returns keyboard focus');
+ act.focus();act.listeners.click({detail:0});
+ assert.equal(document.activeElement,act,'keyboard Confirm keeps native focus');
+ assert.equal(calls.action,2);
+});
