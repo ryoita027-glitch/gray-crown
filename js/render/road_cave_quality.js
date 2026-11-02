@@ -140,8 +140,24 @@ const RoadCaveQuality=(()=>{
  // The inner curtain wall is impassable at y=4 except for the real gate.
  // Keep rubble on SOLID tiles: a broken silhouette must never promise
  // a walkable opening. The paired wall plaques reflect the saved levers.
+ // The fort's inlaid maintenance channels follow real walkable corridors.
+ // Both ends are adjacent to their mechanism; no false shortcut is painted.
+ function drawFortConduit(c,cells,on){
+  const color=on?'#d3b97d':'#777064';
+  for(let i=1;i<cells.length;i++){
+   const [tx,ty]=cells[i],[px,py]=cells[i-1],x=tx*32,y=ty*32;
+   fill(c,color,x+15,y+15,3,3);
+   if(px!==tx)fill(c,color,Math.min(px,tx)*32+16,y+15,32,2);
+   else fill(c,color,x+15,Math.min(py,ty)*32+16,2,32);
+  }
+ }
  function drawFortGateLandmark(c){
   const wy=4*32;
+  const west=[[12,6],[11,6],[10,6],[9,6],[8,6],[7,6],[6,6],[5,6],[4,6],[3,6],[2,6],[2,7],[2,8],[2,9],[3,9]];
+  const east=[[12,6],[13,6],[14,6],[15,6],[16,6],[17,6],[18,6],[19,6],[19,5],[20,5],[21,5],[22,5],[22,6],[22,7],[21,7]];
+  drawFortConduit(c,west,typeof getWorldSwitch==='function'&&getWorldSwitch('leverWest'));
+  drawFortConduit(c,east,typeof getWorldSwitch==='function'&&getWorldSwitch('leverEast'));
+  fill(c,'#b1a28a',12*32+14,6*32+14,5,5);
   for(const tx of [2,5,8,16,19,22]){
    const x=tx*32;
    fill(c,'#6e6b65',x+4,wy+3,20,4);
