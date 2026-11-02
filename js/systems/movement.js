@@ -16,6 +16,11 @@ function leaveInterior(){const r=state.interiorReturn||{map:'village',x:12,y:12,
 function roadReturnObjective(){
  if(!isDefeated('wolf'))return '街道を北へ進み、道を塞ぐ灰牙狼を越える';
  if(isDefeated('boss'))return '古砦跡の北出口、または街道北端から王都への旧街道へ進む';
+ // The player's voluntary fork preference changes the next visible goal,
+ // never the available exits or any main-story progression gate.
+ const intent=state.events.choices['early.roadForkIntent'];
+ if(intent==='fort')return '街道北東の石門から古砦跡を調べる（任意）';
+ if(intent==='north')return '街道北端から王都への旧街道へ進む';
  return '街道北東の石門から古砦跡を調べる／街道北端から王都へ進む'
 }
 function leaveVillage(){
@@ -71,7 +76,20 @@ function enterNorthRoad(source='cave'){markVisited('northroad',true);setWorldSwi
  advanceStory(STORY_STAGES.CAPITAL_APPROACH,null,source==='road'
   ?'高台の道を北へ進み、王都へ入る'
   :'王国軍の斥候に話を聞く');say('ナレーション',source==='road'?'森の街道を抜けると、王都へ続く高台の道へ出た。|遠くに白い城壁が見える。':'古砦跡を抜けると、王都へ続く旧街道に出た。遠くに王国軍の旗が見える。')}
-function returnCaveNorth(){if(getWorldSwitch('northRoadFromRoad')){useMapTransition('northRoadToRoad');state.objective='街道を探索する／北へ進む';renderHud();say('ナレーション','王都手前の高台から街道へ戻った。');return}setMap('cave',11,1,'down',[[12,1],[13,1],[14,1]]);state.objective='古砦跡を自由に探索できる';renderHud();say('ナレーション','古砦跡の北側へ戻った。')}
+function returnCaveNorth(){
+ if(getWorldSwitch('northRoadFromRoad')){
+  useMapTransition('northRoadToRoad');
+  if(!storyAtLeast(STORY_STAGES.CAPITAL))state.objective=roadReturnObjective();
+  renderHud();
+  say('ナレーション',isDefeated('boss')
+   ?'王都手前の高台から街道へ戻った。古砦の北門も、街道北端も通れる。'
+   :'王都手前の高台から街道へ戻った。東の石門から古砦を調べることもできる。');
+  return
+ }
+ setMap('cave',11,1,'down',[[12,1],[13,1],[14,1]]);
+ if(!storyAtLeast(STORY_STAGES.CAPITAL))state.objective='古砦跡を自由に探索できる';
+ renderHud();say('ナレーション','古砦跡の北側へ戻った。')
+}
 
 function showChapterCard(chapter,objective,done){const box=$('chapterCard');if(!box){if(done)done();return}state.locked=true;$('chapterCardTitle').textContent=chapter;$('chapterCardObjective').textContent=objective;box.classList.remove('hidden');requestAnimationFrame(()=>box.classList.add('show'));setTimeout(()=>{box.classList.remove('show');setTimeout(()=>{box.classList.add('hidden');state.locked=false;if(done)done()},180)},1250)}
 function travelScene(map,x,y,dir,chapter,objective,text,done=null){const chapterChanged=state.chapter!==chapter;setMap(map,x,y,dir,[[x+1,y],[x+2,y],[x+3,y]]);state.chapter=chapter;state.objective=objective;renderHud();const finish=()=>done?.();const after=()=>{if(text)say('ナレーション',text,[],finish);else finish()};if(chapterChanged)showChapterCard(chapter,objective,after);else after()}
