@@ -371,3 +371,66 @@ test('pointer D-pad movement and Confirm restore game focus, keyboard activation
  assert.equal(document.activeElement,act,'keyboard Confirm keeps native focus');
  assert.equal(calls.action,2);
 });
+
+
+test('mobile Confirm never activates while the game is inactive or the page is hidden',()=>{
+ const game=read('js/game.js');
+ const bind=game.match(/^function bindAppControls\(\)\{.*$/m);
+ assert.ok(bind,'actual mobile controls are bound');
+ const nodes=new Map(),visible=new Set();
+ const flags={started:false,pending:false,locked:false};
+ const state={battle:null},calls={audio:0,action:0,focus:0};
+ const document={hidden:false,addEventListener(){},querySelectorAll:()=>[]};
+ const canvas={addEventListener(){},focus(){calls.focus++}};
+ const $=id=>{
+  if(!nodes.has(id)){
+   const node={id,listeners:{},
+    classList:{contains:name=>name==='hidden'&&!visible.has(id)},
+    addEventListener(type,fn){this.listeners[type]=fn}
+   };
+   nodes.set(id,node);
+  }
+  return nodes.get(id);
+ };
+ const context=vm.createContext({
+  $,document,canvas,ALPHA_SESSION:flags,state,
+  GC:{Menu:{isPortableImportPending:()=>flags.pending}},
+  isInputLocked:()=>flags.locked,
+  ensureAudio:()=>{calls.audio++},
+  primaryAction:()=>{calls.action++},
+  handleKeydown:()=>{},move:()=>{},openMenu:()=>{},
+  toggleSound:()=>{},startNewGameSafely:()=>{},continueAlphaFromTitle:()=>{},
+  saveFromToolbar:()=>{},loadFromToolbar:()=>{},restartFromToolbar:()=>{}
+ });
+ vm.runInContext(bind[0],context,{filename:'js/game.js bindAppControls'});
+ vm.runInContext('bindAppControls()',context);
+ const confirm=()=>$('mobileAct').listeners.click({detail:1});
+ confirm();
+ assert.deepEqual(calls,{audio:0,action:0,focus:0},'title screen must not start audio or interact');
+ flags.started=true;
+ document.hidden=true;
+ confirm();
+ assert.deepEqual(calls,{audio:0,action:0,focus:0},'background page must ignore delayed Confirm');
+ document.hidden=false;
+ flags.pending=true;
+ confirm();
+ flags.pending=false;
+ visible.add('modal');
+ confirm();
+ visible.delete('modal');
+ state.battle={id:'wolf'};
+ confirm();
+ state.battle=null;
+ flags.locked=true;
+ confirm();
+ assert.equal(calls.action,0,'existing import, overlay, battle and scripted locks remain intact');
+ visible.add('dialogueBox');
+ confirm();
+ assert.equal(calls.action,1,'Confirm must still advance dialogue while scripted movement is locked');
+ assert.equal(calls.audio,1,'only an accepted Confirm should start audio');
+ assert.equal(calls.focus,1,'accepted pointer Confirm returns focus to the game');
+ visible.delete('dialogueBox');
+ flags.locked=false;
+ confirm();
+ assert.equal(calls.action,2,'normal exploration Confirm still works');
+});
