@@ -35,7 +35,7 @@ function harness({importer}={}){
  assert.ok(match,'the real menu must expose its file-picker handler');
  const onChange=vm.runInContext('(function(){'+match[1]+'})',context);
  const picker={files:[{size:100}],value:'C:\\fakepath\\save.json'};
- return {$,live,files,picker,toolbarLoads,menuActions,pending:()=>context.GC.Menu.isPortableImportPending(),
+ return {$,live,files,picker,toolbarLoads,menuActions,gameState:context.state,pending:()=>context.GC.Menu.isPortableImportPending(),
   toolbarLoad:()=>vm.runInContext('loadFromToolbar()',context),
   menuLoad:()=>vm.runInContext('loadFromMenu()',context),
   menuSave:()=>vm.runInContext('saveFromMenu()',context),
@@ -396,5 +396,28 @@ test('cancelled and rejected portable imports clear progress and unlock retry',a
   await settle();
   assert.equal(status.classList.contains('hidden'),true,'failure left stale progress');
   assert.equal(h.pending(),false);
+ }
+});
+
+
+// A scripted encounter may start during the asynchronous file read. The Save
+// layer refuses the import when gameplay becomes busy; the menu must not then
+// reopen on top of the active battle and obscure its controls.
+test('failed or rejected pending import never restores menu over an active battle',async()=>{
+ for(const rejected of [false,true]){
+  let finish,rejectRead;
+  const h=harness({importer:()=>new Promise((resolve,reject)=>{finish=resolve;rejectRead=reject})});
+  h.select();await settle();
+  assert.equal(h.hidden(),true);
+  h.gameState.battle={id:'wolf'};
+  if(rejected)rejectRead(Error('read interrupted'));else finish(false);
+  await settle();
+  assert.equal(h.pending(),false,'file-import lock must release');
+  assert.equal(h.hidden(),true,'retry menu must not obscure a battle');
+  assert.equal(h.$('portableImportStatus').classList.contains('hidden'),true);
+  assert.equal(h.$('btnLoad').disabled,false,'toolbar disabled state must be restored');
+  h.gameState.battle=null;
+  h.reopen();
+  assert.equal(h.hidden(),false,'adventure menu must work again after battle');
  }
 });
