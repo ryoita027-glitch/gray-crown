@@ -695,11 +695,37 @@ function commitCapitalRationGift(){
 function capitalRationMotherVisit(){
  const wagonGuided=state.events.choices['early.capitalWagonGuide']==='guided';
  // The later war-aftermath conversation takes priority, unchanged.
- if(structuredCondition('returnedKingdom'))return saySequence([
-  {speaker:'配給待ちの母親',text:'「勇者様。息子は前線から戻りました。片腕を失ったけど、生きてます。……それでも私は、勝ってよかったって言うべきなんでしょうか」'},
-  {speaker:'ソフィ',text:'「生きて帰ったことを喜んでいいと思います。それと戦争を喜ぶことは、同じじゃありません」'},
-  {speaker:'配給待ちの母親',text:'「……そうね。そう言ってもらえると、少し楽です」'}
- ]);
+ if(structuredCondition('returnedKingdom')){
+  const choices=state.events.choices,key='capital.rationHomecomingHeard';
+  const gifted=choices['early.capitalRationGift']==='donate';
+  const guided=choices['early.capitalWagonGuide']==='guided';
+  // The same mother remembers a small, voluntary act. Neither food nor a
+  // returned soldier is proof that the war was just or the city was saved.
+  if(choices[key]==='heard')return say('配給待ちの母親',gifted
+   ?'「あの携帯食のこと、今も覚えています。息子は家にいます。これからの暮らしは、少しずつ考えます」'
+   :guided
+   ?'「南門から野菜が届いた日のこと、覚えています。息子とまた食卓を囲めるようになりました」'
+   :'「息子は家にいます。生きて帰ったことを喜ぶのと、戦争を喜ぶのは別なんですね」');
+  const answer=gifted&&guided
+   ?'「……そうね。あの携帯食も、南門から届いた野菜も覚えてる。息子の傷が治るわけじゃないけど、あの日の食卓は助かったわ」'
+   :gifted
+   ?'「……そうね。あの携帯食は大切に食べました。息子の傷とは別だけど、あの日の助けは忘れません」'
+   :guided
+   ?'「……そうね。南門から野菜が届いた日のことも覚えています。あの日の食事と、息子の傷は別の話なのね」'
+   :'「……そうね。そう言ってもらえると、少し楽です」';
+  return saySequence([
+   {speaker:'配給待ちの母親',text:'「勇者様。息子は前線から戻りました。片腕を失ったけど、生きてます。……それでも私は、勝ってよかったって言うべきなんでしょうか」'},
+   {speaker:'ソフィ',text:'「生きて帰ったことを喜んでいいと思います。それと戦争を喜ぶことは、同じじゃありません」'},
+   {speaker:'配給待ちの母親',text:answer}
+  ],()=>{
+   if(choices[key]==='heard')return;
+   choices[key]='heard';
+   addJournal(gifted||guided
+    ?'王都の配給列で、前線から片腕を失って帰った息子を迎えた母親の話を聞いた。出発前の食料の手助けは覚えられていたが、戦争の傷は消えない。'
+    :'王都の配給列で、前線から片腕を失って帰った息子を迎えた母親の話を聞いた。生還を喜ぶことと戦争を喜ぶことは別だと確かめた。');
+   renderHud();
+  });
+ }
  if(state.events.choices['early.capitalRationGift']==='donate')return saySequence([
   {speaker:'配給待ちの母親',text:(state.events.choices['early.capitalRecruitHelp']==='water'
    ?'「あの携帯食、大切に使います。新兵さんが水も運んでくれました。……ありがとう」'
@@ -1005,13 +1031,15 @@ function capitalFountainVisit(){
   const valid=['kingdom','empire'].includes(route)&&FINAL_ACT_APPROACHES[route]?.choices.some(c=>c.id===demand);
   if(!valid)return say('王都の大噴水',inscription);
   const record=route+':'+demand,choices=state.events.choices,key='capital.fountainReturnMemory';
+  const rationHint=(choices['early.capitalRationGift']==='donate'||choices['early.capitalWagonGuide']==='guided')&&choices['capital.rationHomecomingHeard']!=='heard'
+   ?' 東の配給列にも、出発前の手助けを覚えている人がいるかもしれない。':'';
   if(choices[key]===record){
    const shared=choices['capital.citizenHeardDemand']===record;
    return say('王都の大噴水',inscription+(shared
     ?' 噴水の西の市民に伝えた要求も、まだ結果が届いていない。水音だけは出発前と同じだ。'
-    :' 噴水の西、市民は今日も市場を行き来している。話すかどうかは四人が決められる。'));
+    :' 噴水の西、市民は今日も市場を行き来している。話すかどうかは四人が決められる。')+rationHint);
   }
-  return say('王都の大噴水',inscription+' 同じ石碑を前にしても、四人が見てきたものは出発前とは違う。西の市場通りには、以前の王都市民がいる。',[
+  return say('王都の大噴水',inscription+' 同じ石碑を前にしても、四人が見てきたものは出発前とは違う。西の市場通りには、以前の王都市民がいる。'+rationHint,[
    {label:'出発前に見た王都の暮らしを思い返す',fn:()=>{
     if(choices[key]===record)return capitalFountainVisit();
     choices[key]=record;
