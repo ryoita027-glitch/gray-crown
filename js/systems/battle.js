@@ -6,7 +6,7 @@ function startBattle(id,fromSymbol=false){if(!$('dialogueBox').classList.contain
  metrics:{startedAt:Date.now(),actions:{},rounds:0,enemyAttacks:0,damageTaken:0,guardedAllies:0,
   openingHp:activeRouteParty().reduce((sum,p)=>sum+p.hp,0),
   openingMp:activeRouteParty().reduce((sum,p)=>sum+p.mp,0)}};
- setMusic(id==='boss'?'boss':'battle');$('battleLog').innerHTML='';$('battleTitle').textContent=bdef.name;$('battlePanel').classList.remove('hidden');if(bdef.boss)showBossCinematic(bdef,false);else if(!bdef.random)showBattleIntro(bdef.name);battleLog(`―― ${bdef.name}との戦闘！`);if(id==='boss'&&state.events.choices['early.fortShield']==='studied')battleLog('古砦の傷だらけの盾を思い出す。角の踏み込みにはトリトンの「崩し」が使えそうだ。');renderBattle();const openingBattle=state.battle;setTimeout(()=>{if(state.battle!==openingBattle)return;state.locked=false;renderBattle()},bdef.boss?1480:bdef.random?180:680)}
+ setMusic(id==='boss'?'boss':'battle');$('battleLog').innerHTML='';$('battleTitle').textContent=bdef.name;$('battlePanel').classList.remove('hidden');if(bdef.boss)showBossCinematic(bdef,false);else if(!bdef.random)showBattleIntro(bdef.name);battleLog(`―― ${bdef.name}との戦闘！`);if(id==='wolves'&&state.events.choices['early.wolfScout']==='read')battleLog('マーガレット「足跡の通り、後衛へ回る。カレン、ソフィをお願い」');if(id==='boss'&&state.events.choices['early.fortShield']==='studied')battleLog('古砦の傷だらけの盾を思い出す。角の踏み込みにはトリトンの「崩し」が使えそうだ。');renderBattle();const openingBattle=state.battle;setTimeout(()=>{if(state.battle!==openingBattle)return;state.locked=false;renderBattle()},bdef.boss?1480:bdef.random?180:680)}
 function livingEnemies(){return state.battle.enemies.filter(e=>e.hp>0)}
 function currentActor(){return activeRouteParty()[state.battle.actor]}
 function enemyMood(e){if(e.staggered>0)return'体勢崩れ・次の行動不能';if(e.morale==null)return'野生';const r=e.morale/e.maxMorale;if(r<=.2)return'崩れかけ';if(r<=.5)return'動揺';return'戦意あり'}
@@ -142,13 +142,19 @@ function enemyTurn(){const b=state.battle,bd=battles[b.id],foes=livingEnemies().
  if(e.staggered>0){e.staggered--;battleLog(e.name+'は体勢を崩して行動できない！');renderBattle();setTimeout(step,220);return}
  if(bd.boss&&e.phase===1&&e.hp<e.maxHp*.65){e.phase=2;e.atk+=2;battleLog(`<strong class="boss-phase">PHASE II — ${bd.phase2||'攻勢が変化した'}</strong>`)}else if(bd.boss&&e.phase===2&&e.hp<e.maxHp*.3){e.phase=3;e.atk+=3;e.def+=1;battleLog(`<strong class="boss-phase">FINAL PHASE — ${bd.phase3||'全力を解放した'}</strong>`)}const alive=activeRouteParty().filter(p=>p.hp>0);if(!alive.length)return battleLose();// Telegraph tactical danger while preserving original fair target-selection rules.
  if(bd.boss&&e.phase>=2)battleLog('警戒：'+e.name+'が攻勢を強めている。防御と回復を確認しよう。');
- const focus=checkpointEnemyIntent(b);const originallyTargeted=focus?.target||selectEnemyTarget(alive,b);const t=GC.CommercialTactics?.protect?.(activeRouteParty(),originallyTargeted)||originallyTargeted;let d=damageFormula(e.atk+(focus?.bonus||0),t.def);if(focus?.scouted)d=Math.max(1,d-2);if(t.guard)d=Math.max(1,Math.floor(d/2));if(GC.Dev?.settings?.invincible)d=0;t.hp=Math.max(0,t.hp-d);if(b.metrics){b.metrics.enemyAttacks++;b.metrics.damageTaken+=d;if(t!==originallyTargeted&&t.guard)b.metrics.guardedAllies++}
+ const focus=checkpointEnemyIntent(b);const originallyTargeted=focus?.target||selectEnemyTarget(alive,b);const t=GC.CommercialTactics?.protect?.(activeRouteParty(),originallyTargeted)||originallyTargeted;const rawDamage=damageFormula(e.atk+(focus?.bonus||0),t.def);let d=rawDamage;if(focus?.scouted)d=Math.max(1,d-2);if(t.guard)d=Math.max(1,Math.floor(d/2));if(GC.Dev?.settings?.invincible)d=0;
+  // Compare with an identical unscouted hit after guarding; never overstate HP saved.
+  const unscoutedDamage=t.guard?Math.max(1,Math.floor(rawDamage/2)):rawDamage;
+  const scoutSaved=focus?.scouted&&!GC.Dev?.settings?.invincible?Math.max(0,unscoutedDamage-d):0;
+  t.hp=Math.max(0,t.hp-d);if(b.metrics){b.metrics.enemyAttacks++;b.metrics.damageTaken+=d;if(t!==originallyTargeted&&t.guard)b.metrics.guardedAllies++}
  if(t!==originallyTargeted)battleLog(`${t.name}が${originallyTargeted.name}を庇った！ ${e.name}の攻撃を引き受け、${d}ダメージ。`);
  if(b.id==='wolves'&&b.turn===1&&t!==originallyTargeted&&t.guard&&state.events.choices['early.renPractice']==='guard')battleLog('レンとの稽古を思い出した！　カレンの一歩が、本当にソフィを守った。');if(t!==originallyTargeted&&t.guard&&focus){
   b.counterWindow={enemy:e,turn:b.turn+1};
   battleLog('守りの連携！ 敵に隙が生まれた。次の味方ターンの攻撃で反撃できる。');
  }
- if(t!==originallyTargeted)sfx('guard');else battleLog(`${e.name}の攻撃。${t.name}に${d}ダメージ。`);const ev=$('enemyVisual');if(ev){ev.classList.remove('shake');void ev.offsetWidth;ev.classList.add('shake')}battlePop('-'+d,'ally');sfx('hit');renderBattle();setTimeout(step,360)};step()}
+ if(t!==originallyTargeted)sfx('guard');else battleLog(`${e.name}の攻撃。${t.name}に${d}ダメージ。`);
+  if(scoutSaved>0&&b.id==='wolves'&&b.turn===1&&!b.scoutFeedbackShown){b.scoutFeedbackShown=true;battleLog(`足跡の予測が的中。偵察で${scoutSaved}ダメージ軽減。`)}
+  const ev=$('enemyVisual');if(ev){ev.classList.remove('shake');void ev.offsetWidth;ev.classList.add('shake')}battlePop('-'+d,'ally');sfx('hit');renderBattle();setTimeout(step,360)};step()}
 // Replace ONE existing closing line of the eight-line first-wolf scene,
 // only after a real guarded interception or a genuine footprint inspection.
 // Do not lengthen the mandatory scene or pretend guarding worked when it did not.

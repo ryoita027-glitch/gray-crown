@@ -658,8 +658,11 @@ function earlyMerchantVisit(){
  const prior=state.events.choices['early.merchantCart'];
  // Optional local hint, never repeated once the existing cache is collected.
  const westHint=state.world.treasures.roadCache?'':'西の踏み跡に旅人の小箱があった。必要なら見ていきな。';
- if(prior==='repair')return say('行商人',`「車軸は持ち直した。王都への荷は何とか運べそうだ。あんたらも獣には気をつけな。${westHint}」`);
- if(prior==='return')return say('行商人',`「荷車を南に向けて、一度荷を整理しているところだ。危険を教えてくれて助かったよ。${westHint}」`);
+ // Keep the optional footprint clue available on a short merchant revisit.
+ const wolfHint=!isDefeated('wolf')&&state.events.choices['early.wolfScout']!=='read'
+  ?'東の踏み跡の狼の足跡も見ておきな。':'';
+ if(prior==='repair')return say('行商人',`「車軸は持ち直した。王都への荷は何とか運べそうだ。あんたらも獣には気をつけな。${westHint}${wolfHint}」`);
+ if(prior==='return')return say('行商人',`「荷車を南に向けて、一度荷を整理しているところだ。危険を教えてくれて助かったよ。${westHint}${wolfHint}」`);
  if(isEventComplete('early.merchantIntro'))return offerEarlyMerchantChoice();
  return saySequence([
   {speaker:'行商人',text:'「やれやれ、荷車の軸が曲がった。食料を王都へ届けるはずが、このままじゃ狼の餌だ」'},
