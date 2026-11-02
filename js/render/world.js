@@ -3,7 +3,7 @@ const COLORS={grass:'#6f8059',grass2:'#62724f',path:'#b49a6c',tree:'#496345',tru
 const HERO_SPRITES={image:null,ready:false,frameW:32,frameH:32,columns:3,directions:{down:0,left:1,right:2,up:3},characters:{karen:0,triton:1,sophie:2,margaret:3}};
 const HERO_RUNTIME={frameW:48,frameH:48,display:44,anchor:[24,44],directions:{down:0,left:1,right:2,up:3},images:{},idleImages:{},
  // Opt-in art review only. Default gameplay keeps the approved walk atlas at rest.
-  idleTrialEnabled:typeof window!=='undefined'&&(/(?:^|[?&])heroIdleArt=(?:1|2|3)(?:&|$)/.test(window.location.search||'')||/(?:^|[?&])heroIdleArt=4(?:&|$)/.test(window.location.search||'')||/(?:^|[?&])heroIdleArt=5(?:&|$)/.test(window.location.search||'')||/(?:^|[?&])heroIdleArt=6(?:&|$)/.test(window.location.search||'')||/(?:^|[?&])heroIdleArt=7(?:&|$)/.test(window.location.search||'')||/(?:^|[?&])heroIdleArt=8(?:&|$)/.test(window.location.search||'')),
+  idleTrialEnabled:typeof window!=='undefined'&&(/(?:^|[?&])heroIdleArt=(?:1|2|3)(?:&|$)/.test(window.location.search||'')||/(?:^|[?&])heroIdleArt=4(?:&|$)/.test(window.location.search||'')||/(?:^|[?&])heroIdleArt=5(?:&|$)/.test(window.location.search||'')||/(?:^|[?&])heroIdleArt=6(?:&|$)/.test(window.location.search||'')||/(?:^|[?&])heroIdleArt=7(?:&|$)/.test(window.location.search||'')||/(?:^|[?&])heroIdleArt=(?:8|9|10)(?:&|$)/.test(window.location.search||'')),
  // A separate, reversible trial of all four authored idle frames.
  idleMotionEnabled:typeof window!=='undefined'&&/(?:^|[?&])heroIdleArt=(?:2|3)(?:&|$)/.test(window.location.search||''),
   // Mode 3 isolates a real contact-locked Margaret atlas. Other heroes stay still.
@@ -14,6 +14,9 @@ const HERO_RUNTIME={frameW:48,frameH:48,display:44,anchor:[24,44],directions:{do
   idleShoulderTrialEnabled:typeof window!=='undefined'&&/(?:^|[?&])heroIdleArt=6(?:&|$)/.test(window.location.search||''),
   idleSilhouetteTrialEnabled:typeof window!=='undefined'&&/(?:^|[?&])heroIdleArt=7(?:&|$)/.test(window.location.search||''),
   idleHeadheightTrialEnabled:typeof window!=='undefined'&&/(?:^|[?&])heroIdleArt=8(?:&|$)/.test(window.location.search||''),
+  // 9 = V14A anatomy study; 10 = V15 hair/robe study. Both static and opt-in.
+  idleNeckTorsoV14TrialEnabled:typeof window!=='undefined'&&/(?:^|[?&])heroIdleArt=9(?:&|$)/.test(window.location.search||''),
+  idleHairRobeV15TrialEnabled:typeof window!=='undefined'&&/(?:^|[?&])heroIdleArt=10(?:&|$)/.test(window.location.search||''),
  idleFrameDuration:420,
  // Browser art evidence may step idle frames without changing NPC/world time.
  idleFrameTimeOverride:null};
@@ -31,7 +34,11 @@ if(typeof Image!=='undefined'){
   if(HERO_RUNTIME.idleTrialEnabled){const idle={image:new Image(),ready:false,error:false};
    idle.image.onload=()=>{idle.ready=idle.image.naturalWidth===192&&idle.image.naturalHeight===192;idle.error=!idle.ready};
    idle.image.onerror=()=>{idle.ready=false;idle.error=true};
-   idle.image.src=HERO_RUNTIME.idleHeadheightTrialEnabled&&id==='margaret'
+   idle.image.src=HERO_RUNTIME.idleHairRobeV15TrialEnabled&&id==='margaret'
+     ?'assets/character_trials/margaret_idle_hair_robe_contact_v15.png'
+     :HERO_RUNTIME.idleNeckTorsoV14TrialEnabled&&id==='margaret'
+     ?'assets/character_trials/margaret_idle_neck_torso_v14A.png'
+     :HERO_RUNTIME.idleHeadheightTrialEnabled&&id==='margaret'
      ?'assets/character_trials/margaret_idle_headheight_v12.png'
      :HERO_RUNTIME.idleSilhouetteTrialEnabled&&id==='margaret'
      ?'assets/character_trials/margaret_idle_silhouette_v11.png'
