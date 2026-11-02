@@ -2081,9 +2081,36 @@ function inlineObjectEvent(id){
   if(id==='chest2'&&!structuredCondition('chest2')){setStructuredCondition('chest2',true);state.inventory['魔力草']=(state.inventory['魔力草']||0)+2;say('宝箱','魔力草を2個手に入れた。');draw();return}
   if(id==='bats'&&!structuredCondition('caveBats'))return startBattle('bats');
   if(id==='crawler'&&!structuredCondition('caveCrawler'))return startBattle('crawler');
-  if(id==='leverWest'){if(!structuredCondition('caveBats'))return say('カレン','「機構の周りにコウモリが群がってる。先に追い払おう」');if(structuredCondition('leverWest'))return say('西側の開閉機構','重いレバーはすでに下がっている。');setStructuredCondition('leverWest',true);sfx('lever');state.objective=structuredCondition('leverEast')?'中央の鉄格子へ戻る':'東側の開閉機構も探す';renderHud();draw();return say('西側の開閉機構','四人で力を合わせて錆びたレバーを下ろした。<br><br>砦の奥から「ガコン」と大きな音が響く。')}
-  if(id==='leverEast'){if(!structuredCondition('caveCrawler'))return say('マーガレット','「あの石殻ムカデが機構の前に居座ってる。動かすなら先に何とかしないと」');if(structuredCondition('leverEast'))return say('東側の開閉機構','歯車はゆっくり回り続けている。');setStructuredCondition('leverEast',true);sfx('lever');state.objective=structuredCondition('leverWest')?'中央の鉄格子へ戻る':'西側の開閉機構も探す';renderHud();draw();return say('東側の開閉機構','錆びた歯車が軋みながら回り始めた。<br><br>マーガレット「これで中央の鉄格子が開くはず」')}
-  if(id==='innerGate'){if(structuredCondition('leverWest')&&structuredCondition('leverEast'))return say('ナレーション','二つの機構が作動し、中央の鉄格子は開いている。');return say('マーガレット','「左右に二つの錠前機構がつながってる。西側と東側、両方を動かさないと開かないみたい」')}
+  if(id==='leverWest'){
+   if(!structuredCondition('caveBats'))return say('カレン','「機構の周りにコウモリが群がってる。先に追い払おう」');
+   if(structuredCondition('leverWest'))return say('西側の開閉機構','重いレバーはすでに下がっている。');
+   setStructuredCondition('leverWest',true);
+   const opened=structuredCondition('leverEast');
+   if(!storyAtLeast(STORY_STAGES.CAPITAL))state.objective=caveProgressObjective();
+   addJournal(opened?'古砦の西側のレバーを下ろした。東西の機構がそろい、中央の鉄格子が開いた。':'古砦の西側のレバーを下ろした。中央の鉄格子はまだ閉じており、東側の歯車を動かす必要がある。');
+   sfx('lever');renderHud();draw();
+   return say('トリトン',opened
+    ?'「よし、両方動いた！　中央で鉄格子が上がる音がしたぞ。戻って確かめよう！」'
+    :'「レバーは下がった。でも中央の格子はまだ閉じてる。次は東の歯車だな！」');
+  }
+  if(id==='leverEast'){
+   if(!structuredCondition('caveCrawler'))return say('マーガレット','「あの石殻ムカデが機構の前に居座ってる。動かすなら先に何とかしないと」');
+   if(structuredCondition('leverEast'))return say('東側の開閉機構','歯車はゆっくり回り続けている。');
+   setStructuredCondition('leverEast',true);
+   const opened=structuredCondition('leverWest');
+   if(!storyAtLeast(STORY_STAGES.CAPITAL))state.objective=caveProgressObjective();
+   addJournal(opened?'古砦の東側の歯車を動かした。東西の機構がそろい、中央の鉄格子が開いた。':'古砦の東側の歯車を動かした。中央の鉄格子はまだ閉じており、西側のレバーを下ろす必要がある。');
+   sfx('lever');renderHud();draw();
+   return say('マーガレット',opened
+    ?'「西のレバーも動いてる。今の音は中央の鉄格子ね。開いたはずよ、戻りましょう」'
+    :'「東の歯車は回った。でも格子は動いていない。西のレバーも必要ね」');
+  }
+  if(id==='innerGate'){
+   if(structuredCondition('leverWest')&&structuredCondition('leverEast'))return say('ナレーション','二つの機構が作動し、中央の鉄格子は開いている。奥の通路へ進める。');
+   if(structuredCondition('leverWest'))return say('マーガレット','「西のレバーは下がっている。残るのは東側の歯車よ」');
+   if(structuredCondition('leverEast'))return say('マーガレット','「東の歯車は動いている。残るのは西側のレバーよ」');
+   return say('マーガレット','「左右に二つの錠前機構がつながってる。西側と東側、両方を動かさないと開かないみたい」');
+  }
   if(id==='banner')return earlyCaveBannerVisit()
   if(id==='fortShield')return visitFortShield()
   if(id==='rations'){
