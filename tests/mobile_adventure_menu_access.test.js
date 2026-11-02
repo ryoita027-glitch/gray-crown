@@ -179,3 +179,40 @@ test('Escape still closes an open modal when its close button has keyboard focus
  vm.runInContext('handleKeydown',context)({key:'Escape',repeat:false,preventDefault:()=>{}});
  assert.equal(modalOpen,false,'focused modal close button must not trap Escape');
 });
+
+
+test('pending import preserves native control keys while suppressing world input and F2',()=>{
+ const game=read('js/game.js');
+ const handler=game.match(/^function handleKeydown\\(e\\)\\{.*$/m);
+ assert.ok(handler,'real keyboard handler exists');
+ const flags={pending:true},calls={move:0,action:0,dev:0};
+ const focus={id:'btnSound',matches:()=>true};
+ const context=vm.createContext({
+  document:{activeElement:focus},
+  GC:{Menu:{isPortableImportPending:()=>flags.pending},Dev:{toggle:()=>{calls.dev++}}},
+  ALPHA_SESSION:{started:true},state:{battle:null},
+  $:()=>({classList:{contains:()=>true}}),
+  ensureAudio:()=>{},isInputLocked:()=>false,
+  primaryAction:()=>{calls.action++},move:()=>{calls.move++},openMenu:()=>{}
+ });
+ vm.runInContext(handler[0],context,{filename:'js/game.js handleKeydown'});
+ const keydown=vm.runInContext('handleKeydown',context);
+ const press=key=>{
+  let prevented=false;
+  keydown({key,repeat:false,preventDefault:()=>{prevented=true}});
+  return prevented;
+ };
+ for(const id of ['btnSound','devSnapshotName','mobileMenu']){
+  focus.id=id;
+  for(const key of [' ','ArrowLeft','ArrowDown','Enter'])
+   assert.equal(press(key),false,id+' '+JSON.stringify(key)+' must retain native handling');
+  assert.equal(press('F2'),true,'F2 remains suppressed during import');
+ }
+ focus.id='game';focus.matches=()=>false;
+ for(const key of [' ','ArrowUp','ArrowLeft','F2'])
+  assert.equal(press(key),true,'game input '+JSON.stringify(key)+' stays blocked during import');
+ assert.deepEqual(calls,{move:0,action:0,dev:0},'no world or developer action during import');
+ flags.pending=false;
+ assert.equal(press('ArrowUp'),true,'world arrow key resumes after import');
+ assert.equal(calls.move,1,'movement resumes once the import settles');
+});
