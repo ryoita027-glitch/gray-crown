@@ -35,8 +35,9 @@ function padHarness(){
  up.dataset.move='up';
  up.setPointerCapture=()=>{calls.captured++};
  const canvas={addEventListener(){},focus(){calls.focused++}};
- const document={hidden:false,listeners:{},addEventListener(type,fn){this.listeners[type]=fn},querySelectorAll:selector=>selector==='[data-move]'?[up]:[]};
- const window={listeners:{},addEventListener(type,fn){this.listeners[type]=fn}};
+ const register=(listeners,type,fn)=>{const previous=listeners[type];listeners[type]=previous?(...args)=>{previous(...args);fn(...args)}:fn};
+ const document={hidden:false,listeners:{},addEventListener(type,fn){register(this.listeners,type,fn)},querySelectorAll:selector=>selector==='[data-move]'?[up]:[]};
+ const window={listeners:{},addEventListener(type,fn){register(this.listeners,type,fn)}};
  const context=vm.createContext({
   $,canvas,document,window,ALPHA_SESSION:flags,state,
   GC:{Menu:{isPortableImportPending:()=>flags.pending}},
