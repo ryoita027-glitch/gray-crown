@@ -701,11 +701,17 @@ function capitalRationMotherVisit(){
   const guided=choices['early.capitalWagonGuide']==='guided';
   // The same mother remembers a small, voluntary act. Neither food nor a
   // returned soldier is proof that the war was just or the city was saved.
-  if(choices[key]==='heard')return say('配給待ちの母親',gifted
-   ?'「あの携帯食のこと、今も覚えています。息子は家にいます。これからの暮らしは、少しずつ考えます」'
-   :guided
-   ?'「南門から野菜が届いた日のこと、覚えています。息子とまた食卓を囲めるようになりました」'
-   :'「息子は家にいます。生きて帰ったことを喜ぶのと、戦争を喜ぶのは別なんですね」');
+  if(choices[key]==='heard'){
+   const route=state.finalChoice,demand=choices['route.final.'+route];
+   const stillWaiting=choices['early.capitalRecruitHelp']==='water'&&choices['capital.recruitRationEcho']!=='heard'&&
+    ['kingdom','empire'].includes(route)&&FINAL_ACT_APPROACHES[route]?.choices.some(c=>c.id===demand);
+   if(stillWaiting)return say('配給待ちの母親','「あの日、水桶を運んでくれた東の新兵さんにも、お礼を伝えてくれる？　この通りのすぐ先にいるわ」');
+   return say('配給待ちの母親',gifted
+    ?'「あの携帯食のこと、今も覚えています。息子は家にいます。これからの暮らしは、少しずつ考えます」'
+    :guided
+    ?'「南門から野菜が届いた日のこと、覚えています。息子とまた食卓を囲めるようになりました」'
+    :'「息子は家にいます。生きて帰ったことを喜ぶのと、戦争を喜ぶのは別なんですね」');
+  }
   const answer=gifted&&guided
    ?'「……そうね。あの携帯食も、南門から届いた野菜も覚えてる。息子の傷が治るわけじゃないけど、あの日の食卓は助かったわ」'
    :gifted
@@ -912,13 +918,37 @@ function capitalWagonQueueVisit(){
 // A north-gate inscription is not proof of a ruler's approval.
 // Optional two-tile follow-through: a recruit who carried water before the war
 // can hear the ration mother's thanks, without learning her son's private details.
+// The recruit's earlier erased-heroes witness must remain available after
+// the ration mother's thank-you becomes active. These are independent memories.
+function capitalRecruitLedgerAvailable(){
+ const choices=state.events.choices;
+ return choices['capital.recruitWitness']!=='told'&&
+  choices['capital.ledgerCopy']==='kept'&&structuredCondition('heroRecordsFound');
+}
+function capitalRecruitLedgerShare(){
+ const choices=state.events.choices,key='capital.recruitWitness';
+ if(choices[key]==='told')return inlineNpcEvent('capitalRecruit');
+ if(!capitalRecruitLedgerAvailable())return say('マーガレット','「写しがない。まずは記録を確かめ直しましょう」');
+ choices[key]='told';
+ addJournal('王都の新兵に、歴代勇者台帳の写しの一部を見せた。新兵は同じ隊の仲間の名を覚えておくと約束した。');
+ renderHud();
+ return saySequence([
+  {speaker:'マーガレット',text:'「これは公表されなかった勇者たちの名前。紙は渡せないけれど、見たことは覚えていて」'},
+  {speaker:'新兵',text:'「……俺たちと同じくらいの歳だ。名前があるのに、いなかったことにされるなんて」'},
+  {speaker:'ソフィ',text:'「危険なことを頼んでごめんなさい。あなた自身も、どうか帰ってください」'},
+  {speaker:'新兵',text:'「まずは同じ隊の名前を全部覚えます。それなら、今からでもできます」'}
+ ]);
+}
 function capitalRecruitRationVisit(){
  const choices=state.events.choices,key='capital.recruitRationEcho';
  const rememberedNames=choices['capital.recruitWitness']==='told';
- if(choices[key]==='heard')return say('新兵',rememberedNames
+ const thanked=choices[key]==='heard';
+ const ledgerReady=capitalRecruitLedgerAvailable();
+ if(thanked&&!ledgerReady)return say('新兵',rememberedNames
   ?'「あの人のお礼も、記録から消された勇者たちの名前も覚えています。今日も配給所を手伝います」'
   :'「あの人のお礼は覚えています。水桶を運ぶことなら、今日もできます」');
- return say('新兵','「出発前に水を運んだ配給列ですね。……あの時のこと、少しは役に立ったんでしょうか」',[
+ const options=[];
+ if(!thanked)options.push(
   {label:'母親から預かったお礼を伝える',fn:()=>{
    if(choices[key]==='heard')return capitalRecruitRationVisit();
    choices[key]='heard';
@@ -931,7 +961,12 @@ function capitalRecruitRationVisit(){
    ]);
   }},
   {label:'今は伝えずにおく',fn:()=>say('カレン','「今すぐ話さなくてもいい。またここに来られるから」')}
- ]);
+ );
+ if(ledgerReady)options.push({label:'台帳の写しを見せ、勇者たちの名を伝える',fn:()=>capitalRecruitLedgerShare()});
+ if(thanked)options.push({label:'今は写しを見せない',fn:()=>say('マーガレット','「ここは人目が多い。話す相手と場所は、慎重に選びましょう」')});
+ return say('新兵',thanked
+  ?'「あの人のお礼は覚えています。……前の勇者たちの名前も、ここに残せるんでしょうか」'
+  :'「出発前に水を運んだ配給列ですね。……あの時のこと、少しは役に立ったんでしょうか」',options);
 }
 function capitalCitizenReturnVisit(){
  const route=state.finalChoice,demand=state.events?.choices?.['route.final.'+route];
@@ -1300,19 +1335,7 @@ function inlineNpcEvent(id){
     if(!structuredCondition('heroRecordsFound'))return say('新兵','「次の総攻撃、俺たちも出るそうです。勇者様……勝てば、本当に終わるんでしょうか」');
     if(state.events.choices['capital.ledgerCopy']!=='kept')return say('新兵','「前の勇者たちの記録が軍務街にあると聞きました。……俺たちも、帰らなければ忘れられるんでしょうか」');
     return say('新兵','「前の勇者たちの記録を見たんですか。俺たちにも、名前が残るんでしょうか」',[
-     {label:'台帳の写しを一部見せ、名前を忘れないよう頼む',fn:()=>{
-      if(state.events.choices[key]==='told')return inlineNpcEvent('capitalRecruit');
-      if(state.events.choices['capital.ledgerCopy']!=='kept')return say('マーガレット','「写しがない。まずは記録を確かめ直しましょう」');
-      state.events.choices[key]='told';
-      addJournal('王都の新兵に、歴代勇者台帳の写しの一部を見せた。新兵は同じ隊の仲間の名を覚えておくと約束した。');
-      renderHud();
-      return saySequence([
-       {speaker:'マーガレット',text:'「これは公表されなかった勇者たちの名前。紙は渡せないけれど、見たことは覚えていて」'},
-       {speaker:'新兵',text:'「……俺たちと同じくらいの歳だ。名前があるのに、いなかったことにされるなんて」'},
-       {speaker:'ソフィ',text:'「危険なことを頼んでごめんなさい。あなた自身も、どうか帰ってください」'},
-       {speaker:'新兵',text:'「まずは同じ隊の名前を全部覚えます。それなら、今からでもできます」'}
-      ]);
-     }},
+     {label:'台帳の写しを一部見せ、名前を忘れないよう頼む',fn:()=>capitalRecruitLedgerShare()},
      {label:'写しを守り、今は話さない',fn:()=>say('マーガレット','「ここは人目が多い。話す相手と場所は、慎重に選びましょう」')}
     ]);
    }
