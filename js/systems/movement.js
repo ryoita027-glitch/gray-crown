@@ -72,12 +72,28 @@ function returnVillage(){
   ?'北門をくぐってリュネ村へ戻った。孤児院の窓に明かりが見える。薬草を残した日の判断について、ソフィは今も考えている。'
   :'北門をくぐり、リュネ村へ戻った。村の人々は旅立つ前と同じように、それぞれの生活を続けている。')
 }
+// A ration-box maintenance mark gives an optional early route clue. Re-entry
+// follows real lever/boss progress instead of forgetting what the party learned.
+function caveProgressObjective(){
+ if(isDefeated('boss'))return '古砦跡の北出口から王都への旧街道へ進む';
+ const west=structuredCondition('leverWest'),east=structuredCondition('leverEast');
+ if(west&&east)return '中央の鉄格子へ戻り、古砦の奥を調べる';
+ if(west)return '東側の開閉機構を探す';
+ if(east)return '西側の開閉機構を探す';
+ if(state.events.choices['early.caveSupplies']==='taken')
+  return '西側と東側の開閉機構を探し、中央の鉄格子を開く';
+ return '古砦跡を探索し、北側の抜け道を探す';
+}
 function enterCave(){
  const firstVisit=!state.world.visited?.cave;
  const followedSign=state.events.choices['early.roadForkIntent']==='fort';
  useMapTransition('roadToCave');
- state.objective=isDefeated('boss')?'古砦跡の北出口を目指す':'古砦跡を探索し、北側の抜け道を探す';
- state.chapter='第一章 — 古砦跡';renderHud();
+ // A late voluntary fort visit must not reset the current chapter or mission.
+ if(!storyAtLeast(STORY_STAGES.CAPITAL)){
+  state.objective=caveProgressObjective();
+  state.chapter='第一章 — 古砦跡';
+ }
+ renderHud();
  if(!firstVisit)return;
  // The clue is available on either route. The chosen detour changes only
  // the companion's reaction, never the optional supplies or story gate.
