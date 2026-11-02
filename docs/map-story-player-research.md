@@ -1,3 +1,15 @@
+## 2026-11-03 00:43 JST — the optional ration cache teaches the fort's next real step
+
+**Repository facts:** Checked main HEAD `d689aabb`, Draft #302 HEAD `8f6c698c`, and open art/mobile/story branches. The fort's existing two levers (west x3,y8; east x21,y6) control the central gate; the eastern supply crate (20,12) was a one-ration dead end. Re-entering the fort reset the HUD to a generic search objective, even when a lever had already been activated. No new map area, item, or NPC is required.
+
+**Player signal checked 2026-11-03:** [Sea of Stars Steam reviews](https://steamcommunity.com/app/1244090/reviews/) include an October 4 criticism of puzzle rewards that do not change the player's decisions and an October 5 criticism of unclear room paths. [Chained Echoes Steam reviews](https://steamcommunity.com/app/1229240/reviews/) include an October 29 complaint about repeated map searching. The posting years and representativeness are not independently confirmed; these are individual opinions, **not** a market-wide finding or Graygrow playtest. **Hypothesis:** an optional cache that reveals the existing gate's two mechanisms gives the small detour lasting value beyond a consumable.
+
+**Implemented:** The original ration pickup still gives exactly one ration once, but the crate lid now reveals an old maintenance mark, `中央格子・東西二機構`. This clue is conveyed through Triton's short discovery line and the existing journal, and updates the first-chapter HUD to the actual two-lever task. A single progress helper keeps the correct remaining lever or central gate goal on fort re-entry; a cleared boss retains the north-exit goal. The route stays optional and reversible. No new flags, schema change, hidden karma, spoilers, combat balance, collision, or art changes. The crate still visibly empties.
+
+**Verification:** Added three native Node harness tests for clue + one-time reward + v23, both partial lever states and return entry, and post-boss pickup. Source anchor checks completed; native Node tests, full npm check, real Chromium walk, Save/Load UI and human testing remain **NOT RUN** in this connector-only environment (local GitHub DNS unavailable). Keep Draft / no main merge.
+
+**Next:** Run `node --test tests/cave_supply_gate_clue.test.js tests/cave_supply_safe_loop.test.js tests/cave_supply_paving_payoff.test.js`, then `npm run check`. In Chromium at native44, walk from entry to the cache, read the lid clue, activate west or east first, exit and re-enter, and verify HUD clarity and that the side trip feels worthwhile.
+
 ## 2026-11-02 23:44 JST — optional old-fort supply loop is now low-risk
 
 **Verified repo facts:** main HEAD `d689aabb`; previous stacked Draft #301 HEAD `7a828bdf`, with earlier #300/#297 changes and other open art/UX PRs inspected. Cave random encounters begin after 12–19 eligible steps. The paved ration detour is eight steps out and eight back: the return could trigger a random battle for one optional ration. The west rest area was safe, but this eastern stone trail was not. The ration event also updated state without an immediate redraw.

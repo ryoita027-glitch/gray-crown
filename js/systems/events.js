@@ -2091,11 +2091,14 @@ function inlineObjectEvent(id){
    state.events.choices['early.caveSupplies']='taken';
    setStructuredCondition('rations',true);
    state.inventory['携帯食']=(state.inventory['携帯食']||0)+1;
-   addJournal('古砦の保存食箱から封の残った携帯食を1個見つけた。');
+   // The lid's faded maintenance mark points to the actual two-lever gate.
+   // This is a clue, not a shortcut or a second ration reward.
+   addJournal('古砦の保存食箱で携帯食を1個確保。箱の蓋裏には「中央格子・東西二機構」の古い整備印があり、二つの開閉機構がつながるらしい。');
+   if(!storyAtLeast(STORY_STAGES.CAPITAL)&&!isDefeated('boss'))state.objective=caveProgressObjective();
    renderHud();sfx('discovery');draw();
    return say('トリトン',state.events.choices['early.fortSupplyMark']==='seen'
-    ?'「入口の補給印が指してたのはこれか！　箱はほぼ空だけど、携帯食が1個残ってたぞ」'
-    :'「箱はほぼ空だ。でも奥に一食分だけある。携帯食を1個手に入れた！」');
+    ?'「補給印の先にあったぞ！　携帯食が1個。それと蓋の裏に『中央格子・東西二機構』って整備印がある！」'
+    :'「携帯食が1個残ってた！　蓋の裏には『中央格子・東西二機構』って古い整備印もあるぞ！」');
   }
   if(id==='boss'&&!structuredCondition('bossDead')){if(!(structuredCondition('leverWest')&&structuredCondition('leverEast')))return say('マーガレット','「中央の鉄格子が閉じてる。左右の開閉機構を両方動かさないと奥へ行けないわ」');return say('カレン','「こいつが北の通路を塞いでる……！」',[{label:'戦う',fn:()=>startBattle('boss')},{label:'いったん下がる',fn:()=>say('マーガレット','「先に宝箱や脇道を調べてもいいわ」')}]);}
  }
