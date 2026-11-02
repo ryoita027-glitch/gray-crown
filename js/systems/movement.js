@@ -12,13 +12,27 @@ function resetEncounterCounter(map=state.map){state.encounterSteps=0;state.nextE
 function setMap(map,x,y,dir,trail){const from=state.map;state.map=map;state.x=x;state.y=y;state.dir=dir;state.trail=trail;state.worldStepsOnMap=0;markVisited(map,true);resetEncounterCounter(map);if(!state.battle)setMusic(mapMusicTheme(map));GC.Log?.info('Map Transition',{from,to:map,x,y,dir});renderHud();draw();GC.Dev?.refresh?.()}
 function enterInterior(mapId,doorX,doorY){const firstVisit=!state.world.visited?.[mapId];state.interiorReturn={map:state.map,x:doorX,y:Math.min(ROWS-2,doorY+1),dir:'up'};setMap(mapId,11,11,'up',[[12,11],[13,11],[14,11]]);if(mapId==='capitalinn'&&isEventComplete('alpha.capital.ceremony')&&!isEventComplete('alpha.capital.whiteStagNight'))advanceStory(STORY_STAGES.WHITE_STAG,null,'白鹿亭で四人の夜を過ごす');if(firstVisit)say('ナレーション',`${maps[mapId].name}に入った。`)}
 function leaveInterior(){const r=state.interiorReturn||{map:'village',x:12,y:12,dir:'up'};state.interiorReturn=null;setMap(r.map,r.x,r.y,r.dir,[[r.x+1,r.y],[r.x+2,r.y],[r.x+3,r.y]])}
+// A return trip should describe remaining paths, not a defeated enemy.
+function roadReturnObjective(){
+ if(!isDefeated('wolf'))return '街道を北へ進み、道を塞ぐ灰牙狼を越える';
+ if(isDefeated('boss'))return '古砦跡の北出口、または街道北端から王都への旧街道へ進む';
+ return '街道北東の石門から古砦跡を調べる／街道北端から王都へ進む'
+}
 function leaveVillage(){
  // A return trip must not replay the original emotional farewell as if the
  // party were leaving home for the very first time.
  const firstDeparture=!hasVisited('road');
- advanceStory(STORY_STAGES.ROAD,null,'街道を北へ進み、道を塞ぐ灰牙狼を越える');
+ // Never reset an advanced chapter to the early road objective.
+ if(!storyAtLeast(STORY_STAGES.FIRST_BATTLE))
+  advanceStory(STORY_STAGES.ROAD,null,roadReturnObjective());
+ else if(!storyAtLeast(STORY_STAGES.CAPITAL))
+  state.objective=roadReturnObjective();
  useMapTransition('villageToRoad');renderHud();
- if(!firstDeparture)return say('ナレーション','北門を抜け、四人は再び街道へ出た。北には王都、南にはリュネ村がある。');
+ if(!firstDeparture)return say('ナレーション',isDefeated('boss')
+  ?'北門を抜け、四人は再び街道へ出た。古砦跡の獣はもういない。北へ進めば王都への旧街道に出られる。'
+  :isDefeated('wolf')
+  ?'北門を抜け、四人は再び街道へ出た。狼の気配はない。北東の石門から古砦跡へ寄るか、街道を北へ進める。'
+  :'北門を抜け、四人は再び街道へ出た。北には王都、南にはリュネ村がある。');
  const choice=state.events.choices['early.orphanMedicine'];
  const middle=choice==='donate'
   ?{speaker:'ソフィ',text:'「孤児院へ薬草を渡せました。でも手元の薬は減っています。怪我には気をつけて」'}
@@ -38,7 +52,10 @@ function leaveVillage(){
  ])
 }
 function returnVillage(){
- useMapTransition('roadToVillage');state.objective='村で準備する／北門から旅を再開する';renderHud();
+ useMapTransition('roadToVillage');
+ // A voluntary home visit must not erase a later chapter's active mission.
+ if(!storyAtLeast(STORY_STAGES.CAPITAL))state.objective='村で準備する／北門から旅を再開する';
+ renderHud();
  const known=state.events.choices['early.orphanMedicine'];
  say('ナレーション',known==='donate'
   ?'北門をくぐってリュネ村へ戻った。孤児院の窓に明かりが見える。薬を渡しても、何もかもが急に変わるわけではない。'
@@ -47,7 +64,7 @@ function returnVillage(){
   :'北門をくぐり、リュネ村へ戻った。村の人々は旅立つ前と同じように、それぞれの生活を続けている。')
 }
 function enterCave(){const firstVisit=!state.world.visited?.cave;useMapTransition('roadToCave');state.objective=isDefeated('boss')?'古砦跡の北出口を目指す':'古砦跡を探索し、北側の抜け道を探す';state.chapter='第一章 — 古砦跡';renderHud();if(firstVisit)say('マーガレット','「地図ではこの先に旧街道があるはず。……戦争で使われなくなってから、獣の巣になってるみたいね」')}
-function leaveCave(){useMapTransition('caveToRoad');state.objective='街道を進む／必要なら村へ戻る';renderHud()}
+function leaveCave(){useMapTransition('caveToRoad');if(!storyAtLeast(STORY_STAGES.CAPITAL))state.objective=roadReturnObjective();renderHud()}
 function enterNorthRoad(source='cave'){markVisited('northroad',true);setWorldSwitch('northRoadFromRoad',source==='road');if(source==='road')useMapTransition('roadToNorthRoad');else setMap('northroad',11,13,'up',[[12,13],[13,13],[14,13]]);state.chapter='第一章 — 白い旗';// Both paths physically enter northroad. Previously cave route stayed at
  // 03_first_battle until Save/Load silently migrated it to stage 04.
  // Advance now while preserving the cave route's scout objective.

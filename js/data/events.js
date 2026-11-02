@@ -123,7 +123,7 @@ const EVENT_DEFS=Object.freeze([
   id:'alpha.road.wolfVictory',priority:100,trigger:{type:'battleWin',target:'wolves'},when:[{eventIncomplete:'alpha.road.wolfVictory'}],
   effects:[
    {type:'completeEvent',id:'alpha.road.wolfVictory'},{type:'defeatSymbol',id:'wolf'},
-   {type:'advanceStory',stage:STORY_STAGES.FIRST_BATTLE,objective:'街道を北へ進み、王都へ向かう'},
+   {type:'advanceStory',stage:STORY_STAGES.FIRST_BATTLE,objective:'街道北東の石門から古砦跡を調べる／街道北端から王都へ進む'},
    {type:'journal',text:'街道で灰牙狼との初戦に勝利した。'}
   ],
   lines:[
