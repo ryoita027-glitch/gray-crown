@@ -26,15 +26,16 @@ test('from the real entrance the player can follow paving to the one-time ration
  for(let i=0;i<8;i++)h.evaluate("VISUAL.nextMoveAt=0;move('right')");
  assert.equal(h.evaluate('state.x'),20);
  assert.equal(h.evaluate('state.y'),13);
- h.evaluate("VISUAL.nextMoveAt=0;move('up')");
- assert.equal(h.evaluate('state.y'),12);
- h.evaluate("objectEvent('rations')");
+ // The box is picked up with the actual facing-and-interact control,
+ // from the paved tile just south of the original box.
+ h.evaluate("state.dir='up';interact()");
+ assert.equal(h.evaluate('state.y'),13);
  assert.equal(h.evaluate("state.inventory['携帯食']"),1);
  assert.equal(h.evaluate("state.events.choices['early.caveSupplies']"),'taken');
  const save=h.GC.Save.migrateLoaded(h.GC.Save.serializeSave());
  assert.equal(save.schema,23);
  assert.equal(save.events.choices['early.caveSupplies'],'taken');
- h.evaluate("finishDialogueTyping();closeDialogue(false);objectEvent('rations')");
+ h.evaluate("finishDialogueTyping();closeDialogue(false);interact()");
  assert.equal(h.evaluate("state.inventory['携帯食']"),1);
 });
 
