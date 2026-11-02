@@ -88,8 +88,12 @@ function enterCave(){
  const firstVisit=!state.world.visited?.cave;
  const followedSign=state.events.choices['early.roadForkIntent']==='fort';
  useMapTransition('roadToCave');
- state.objective=caveProgressObjective();
- state.chapter='第一章 — 古砦跡';renderHud();
+ // A late voluntary fort visit must not reset the current chapter or mission.
+ if(!storyAtLeast(STORY_STAGES.CAPITAL)){
+  state.objective=caveProgressObjective();
+  state.chapter='第一章 — 古砦跡';
+ }
+ renderHud();
  if(!firstVisit)return;
  // The clue is available on either route. The chosen detour changes only
  // the companion's reaction, never the optional supplies or story gate.

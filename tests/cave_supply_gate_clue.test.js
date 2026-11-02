@@ -38,6 +38,16 @@ test('cave re-entry remembers the actual lever status',()=>{
    ?'西側と東側の開閉機構を探し、中央の鉄格子を開く':expected);
  }
 });
+test('late-chapter return to the optional fort preserves the active mission',()=>{
+ const h=createHarness();
+ h.evaluate("ALPHA_SESSION.started=true;state.map='road';state.world.visited.cave=true;state.story.stage=STORY_STAGES.CAPITAL;state.objective='王都での現在の任務';state.chapter='第二章 — 現在の旅'");
+ h.evaluate('enterCave()');
+ assert.equal(h.evaluate('state.objective'),'王都での現在の任務');
+ assert.equal(h.evaluate('state.chapter'),'第二章 — 現在の旅');
+ h.evaluate("state.x=20;state.y=13;state.dir='up';objectEvent('rations')");
+ assert.equal(h.evaluate('state.objective'),'王都での現在の任務');
+ assert.equal(h.evaluate("state.inventory['携帯食']"),1);
+});
 test('a cleared boss keeps the north-exit objective when finding rations late',()=>{
  const h=createHarness();atCrate(h);
  h.evaluate("markDefeated('boss',true);state.objective='古砦跡の北出口から王都への旧街道へ進む';interact()");
