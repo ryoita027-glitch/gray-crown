@@ -24,6 +24,7 @@ function padHarness(){
    const node={id,listeners:{},dataset:{},
     classList:{contains:name=>name==='hidden'&&!visible.has(id)},
     addEventListener(type,fn){this.listeners[type]=fn},
+    getBoundingClientRect(){return {left:0,top:0,right:50,bottom:50}},
     focus(){calls.focused++}
    };
    nodes.set(id,node);
@@ -207,4 +208,30 @@ test('dialogue blocks touch direction even when the scripted input lock is clear
  h.emit('pointerup',h.pointer(23));
  h.click(1);
  assert.equal(h.calls.moves.length,2,'dialogue transition cannot add a release step');
+});
+
+
+test('dragging a held direction outside its hit area stops walking and suppresses the late click',()=>{
+ const h=padHarness();
+ h.emit('pointerdown',h.pointer(31));
+ h.emit('pointermove',{pointerId:99,clientX:100,clientY:25});
+ assert.equal(h.timeouts.size,1,'unrelated pointer must not cancel the hold');
+ h.emit('pointermove',{pointerId:31,clientX:55,clientY:25});
+ assert.equal(h.timeouts.size,1,'minor finger drift keeps the hold active');
+ h.fireTimeout();
+ assert.deepEqual(h.calls.moves,['up']);
+ h.emit('pointermove',{pointerId:31,clientX:90,clientY:25});
+ assert.equal(h.intervals.size,0,'leaving the D-pad button stops continuous walking');
+ h.emit('pointerup',h.pointer(31));
+ h.click(1);
+ assert.deepEqual(h.calls.moves,['up'],'release after a drag must not add a tile');
+ h.emit('pointerdown',h.pointer(32));
+ h.emit('pointermove',{pointerId:32,clientX:90,clientY:25});
+ assert.equal(h.timeouts.size,0,'dragging out before hold threshold cancels pending walking');
+ h.click(1);
+ assert.deepEqual(h.calls.moves,['up'],'a canceled short press cannot generate a ghost step');
+ h.emit('pointerdown',h.pointer(33));
+ h.emit('pointerup',h.pointer(33));
+ h.click(1);
+ assert.deepEqual(h.calls.moves,['up','up'],'fresh intentional tap still moves one tile');
 });
