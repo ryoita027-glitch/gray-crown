@@ -1205,7 +1205,17 @@ function fortScoutWitnessChoices(){
 function northRoadScoutVisit(){
  const fromFort=!getWorldSwitch('northRoadFromRoad')&&isDefeated('boss');
  const markerCleared=state.events.choices['early.northroadWaystone']==='cleared';
- if(!fromFort)return say('王国軍の斥候','「森の本道から来たのか。古砦を通らなくても王都へ行ける。北へ進めば城門、南へ戻れば森の街道だ。'+(markerCleared?'道標を磨いてくれたのか。これなら後から来る旅人も迷わないな。':'')+'」');
+ if(!fromFort){
+  const directGreeting='「森の本道から来たのか。古砦を通らなくても王都へ行ける。北へ進めば城門、南へ戻れば森の街道だ。'+(markerCleared?'道標を磨いてくれたのか。これなら後から来る旅人も迷わないな。':'');
+  // The route switch describes this arrival, not whether the scout remembers
+  // a previous fort conversation. A deferred voluntary disclosure must survive
+  // leaving via the forest road; a first-time road visitor gets no fort credit.
+  if(state.events.choices['early.fortScoutAid']!=='received')
+   return say('王国軍の斥候',directGreeting+'」');
+  const witness=state.events.choices['early.fortScoutWitness'];
+  const remembered=witness==='names'?'古砦の兵の名前は巡回帳に書いた。':witness==='raise'?'結び直した古い旗のことは巡回隊にも伝えた。':'';
+  return say('王国軍の斥候',directGreeting+'前に古砦を抜けた話も聞いた。'+remembered+'」',fortScoutWitnessChoices());
+ }
  if(state.events.choices['early.fortScoutAid']==='received'){
   const witness=state.events.choices['early.fortScoutWitness'];
   const followup=witness==='names'?'古砦の兵の名前は巡回帳に書いた。':witness==='raise'?'結び直した古い旗のことは巡回隊にも伝えた。':'';
