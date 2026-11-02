@@ -2107,9 +2107,9 @@ function inlineObjectEvent(id){
   }
   if(id==='innerGate'){
    if(structuredCondition('leverWest')&&structuredCondition('leverEast'))return say('ナレーション','二つの機構が作動し、中央の鉄格子は開いている。奥の通路へ進める。');
-   if(structuredCondition('leverWest'))return say('マーガレット','「西のレバーは下がっている。残るのは東側の歯車よ」');
-   if(structuredCondition('leverEast'))return say('マーガレット','「東の歯車は動いている。残るのは西側のレバーよ」');
-   return say('マーガレット','「左右に二つの錠前機構がつながってる。西側と東側、両方を動かさないと開かないみたい」');
+   if(structuredCondition('leverWest'))return say('マーガレット','「西側の床の導管が灯ってる。残る東の歯車へは、右回廊の導管をたどればいいわ」');
+   if(structuredCondition('leverEast'))return say('マーガレット','「東側の床の導管が灯ってる。残る西のレバーへは、左回廊の導管をたどりましょう」');
+   return say('マーガレット','「床の古い導管が左右の回廊へ延びてる。西のレバーと東の歯車、両方を動かせばこの格子が開くはずよ」');
   }
   if(id==='banner')return earlyCaveBannerVisit()
   if(id==='fortShield')return visitFortShield()
