@@ -1,0 +1,32 @@
+<!doctype html><html lang="ja"><meta charset="utf-8"><title>Margaret V23/V24 native44 art review</title>
+<style>body{background:#1c2626;color:#eee;font:14px system-ui;padding:16px}canvas{image-rendering:pixelated;max-width:100%;height:auto}button{padding:8px}p{max-width:920px}</style>
+<h1>マーガレット歩行 V23 / V24 / V5 NPC — 44px同条件</h1>
+<p>V23（HOLD）・V24（試作HOLD）と村長・王国使者V5の実PNGを、同一背景、同一方向、同一接地線、最近傍44pxで比較。これは静的アセット検証であり実ゲームCanvasではありません。本番画像は変更しません。</p>
+<button id="play">再生 / 停止</button> <span id="status">読込中</span><canvas id="board" width="875" height="412"></canvas>
+<script>
+const paths=['../../assets/character_trials/margaret_walk_adult_mage_v23_stride_trial.png','../../assets/character_trials/margaret_walk_v24_leg_silhouette_trial.png','../../assets/npc/featured_residents_charm_v5.png'];
+const imgs=paths.map(p=>{const im=new Image();im.src=p;return im});
+const board=document.getElementById('board'),ctx=board.getContext('2d');let frame=0,playing=false,timer;
+function draw(){
+ ctx.fillStyle='#1c2626';ctx.fillRect(0,0,875,412);ctx.fillStyle='#f4f0e4';ctx.font='12px system-ui';ctx.textBaseline='top';
+ ['V23 HOLD','V24 HOLD','村長V5','王国使者V5'].forEach((s,i)=>ctx.fillText(s,[30,365,708,785][i],6));
+ for(let d=0;d<4;d++){
+  for(let group=0;group<2;group++)for(let f=0;f<6;f++){
+   const x=30+group*335+f*54,y=26+d*94;
+   ctx.fillStyle=f===frame?'#92a887':'#687d68';ctx.fillRect(x,y,50,55);
+   ctx.fillStyle='#455b48';ctx.fillRect(x,y+52,50,1);
+   if(imgs[group].complete&&imgs[group].naturalWidth===288&&imgs[group].naturalHeight===192){ctx.imageSmoothingEnabled=false;ctx.drawImage(imgs[group],f*48,d*48,48,48,x+3,y+5,44,44)}
+   ctx.fillStyle='#eee';ctx.fillText(String(f+1),x+20,y+56);
+  }
+  for(let n=0;n<2;n++){
+   const x=708+n*76,y=26+d*94;ctx.fillStyle='#687d68';ctx.fillRect(x,y,50,55);ctx.fillStyle='#455b48';ctx.fillRect(x,y+52,50,1);
+   if(imgs[2].complete&&imgs[2].naturalWidth===432&&imgs[2].naturalHeight===192){ctx.imageSmoothingEnabled=false;ctx.drawImage(imgs[2],(n+3)*48,d*48,48,48,x+3,y+5,44,44)}
+  }
+  ctx.fillStyle='#eee';ctx.fillText(['前','左','右','後'][d],5,50+d*94);
+ }
+ const ok=imgs.every((im,i)=>im.complete&&im.naturalWidth===(i===2?432:288)&&im.naturalHeight===192);
+ document.getElementById('status').textContent=ok?'3つの実PNG読込済み':'読込中 / 画像不正';
+}
+imgs.forEach(im=>{im.onload=draw;im.onerror=draw});draw();
+document.getElementById('play').onclick=()=>{playing=!playing;clearInterval(timer);if(playing)timer=setInterval(()=>{frame=(frame+1)%6;draw()},145);draw()};
+</script></html>
