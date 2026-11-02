@@ -6,7 +6,7 @@
 
 **Implemented:** After either merchant wagon decision, short revisit text still points to the eastern tracks until the wolf is defeated or scouting is read. The scouted wolf battle opens with one tactical reminder. On the first real strike, a single battle-log line reports HP actually saved compared with an identical unscouted hit *after* guarding (normally 2 unguarded, 1 guarded); zero savings are not falsely claimed. Map, rewards, encounter AI, Save v23 and other battles are unchanged.
 
-**Verification:** Source-anchor checks and V8 parse of edited files and new test; Node harness tests added for merchant repair/return, scouted/defeated suppression, unguarded and guarded first-strike feedback. **Not run:** native Node suite, full npm check, browser movement/dialogue/battle, actual Save/Load and human evaluation (local private checkout DNS failure). Keep Draft; no main merge.
+**Verification:** Source-anchor checks and V8 parse of edited files and new test passed. Isolated execution of the actual committed battle and merchant functions passed **10/10** cases (4 first-strike guard/scout combinations, 6 merchant repair/return × unread/scouted/defeated). Node harness tests added for merchant repair/return, scouted/defeated suppression, unguarded and guarded first-strike feedback. **Not run:** native Node suite, full npm check, browser movement/dialogue/battle, actual Save/Load and human evaluation (local private checkout DNS failure). Keep Draft; no main merge.
 
 **Next:** Run `node --test tests/road_wolf_scout_feedback.test.js tests/road_wolf_prebattle_footprints.test.js tests/road_merchant_deferred_revisit.test.js`, then `npm run check`. Browser-play merchant → tracks → wolf, compare guard/no guard, and confirm log readability on keyboard/touch.
 
