@@ -33,8 +33,8 @@ for(const [first,second,firstGoal,firstHint] of [
   assert.equal(h.evaluate('state.journal.length'),before);
   const saved=h.GC.Save.migrateLoaded(h.GC.Save.serializeSave());
   assert.equal(saved.schema,23);
-  assert.equal(saved.conditions.leverWest,true);
-  assert.equal(saved.conditions.leverEast,true);
+  assert.equal(saved.world.switches.leverWest,true);
+  assert.equal(saved.world.switches.leverEast,true);
  });
 }
 test('late chapter lever activation does not replace active mission',()=>{
