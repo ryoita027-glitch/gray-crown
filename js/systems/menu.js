@@ -6,6 +6,8 @@ function escapeMenuText(value){
  })[ch])
 }
 function restartFromMenu(){
+ // The portable import owns checkpoint transitions until it settles.
+ if(portableMenuImportInProgress)return false;
  const modal=$('modal');
  modal.classList.add('hidden');
  let started=false;
@@ -21,6 +23,8 @@ function restartFromMenu(){
  }
 }
 function saveFromMenu(){
+ // The portable import owns checkpoint transitions until it settles.
+ if(portableMenuImportInProgress)return false;
  const modal=$('modal');
  modal.classList.add('hidden');
  let saved=false;
@@ -54,9 +58,14 @@ function exportFromMenu(download){
  }
 }
 function exportPortableSaveFromMenu(){
+ // Portable export saves a checkpoint; it must not race with an in-flight import.
+ if(portableMenuImportInProgress)return false;
  return exportFromMenu(()=>GC.Save.downloadPortableSave())
 }
 function exportQuarantinedSavesFromMenu(){
+ // A stale menu action must not reopen the modal over an in-flight import.
+ // This export is read-only, but its failure path restores the menu.
+ if(portableMenuImportInProgress)return false;
  return exportFromMenu(()=>GC.Save.downloadQuarantinedSaves())
 }
 // Both in-game Load entry points must protect unsaved progress.
@@ -67,7 +76,18 @@ function confirmActiveAdventureLoad(){
  if(GC.Save.hasUsableStoredAdventure?.()===false)return true;
  return confirm('最後に保存した冒険をロードしますか？\n現在の未保存の進行は失われます。')
 }
+function saveFromToolbar(){
+ if(portableMenuImportInProgress)return false;
+ return save(false)
+}
+function restartFromToolbar(){
+ if(portableMenuImportInProgress)return false;
+ return restart()
+}
 function loadFromToolbar(){
+ // A portable import is already choosing a checkpoint. Do not let the
+ // persistent toolbar start a competing Load while its file read is pending.
+ if(portableMenuImportInProgress)return false;
  if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started)return load(false);
  // An active battle or scripted event cannot be loaded over.
  // Let the save system explain the lock without asking a misleading warning.
@@ -76,6 +96,8 @@ function loadFromToolbar(){
  return load(false)
 }
 function loadFromMenu(){
+ // The portable import owns checkpoint transitions until it settles.
+ if(portableMenuImportInProgress)return false;
  // A blocked load must not ask a false discard confirmation. Still close
  // the menu while the save system presents its own error dialogue.
  const blocked=GC.Save.canPersistNow?.('load')===false;
@@ -97,6 +119,8 @@ function loadFromMenu(){
  }
 }
 function restoreArchivedAdventureFromMenu(){
+ // The portable import owns checkpoint transitions until it settles.
+ if(portableMenuImportInProgress)return false;
  const modal=$('modal');
  modal.classList.add('hidden');
  let restored=false;
@@ -119,7 +143,20 @@ let portableMenuImportInProgress=false;
 async function importPortableSaveFromMenu(file){
  if(portableMenuImportInProgress)return false;
  portableMenuImportInProgress=true;
+ // A previous unexpected read error may have replaced the menu heading.
+ // A new attempt must clear that stale warning before its own outcome is known.
+ $('modalTitle').textContent='冒険メニュー';
  const modal=$('modal');
+ // The menu is hidden during file reads. Show non-blocking visible feedback.
+ const importStatus=$('portableImportStatus');
+ importStatus?.classList.remove('hidden');
+ // Keep the competing top-bar Load visibly unavailable while file bytes are
+ // pending. Preserve any disabled state that another UI gate already set.
+ // The three persistent checkpoint controls must not race with file import.
+ const toolbarButtons=['btnLoad','btnSave','btnRestart']
+  .map(id=>$(id)).filter(Boolean);
+ const toolbarWasDisabled=toolbarButtons.map(button=>button.disabled);
+ for(const button of toolbarButtons)button.disabled=true;
  modal.classList.add('hidden');
  let imported=false;
  try{
@@ -136,8 +173,14 @@ async function importPortableSaveFromMenu(file){
   }
   return false
  }finally{
+  importStatus?.classList.add('hidden');
   portableMenuImportInProgress=false;
-  if(!imported&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
+  toolbarButtons.forEach((button,index)=>{button.disabled=toolbarWasDisabled[index]});
+  // A story event may start a battle while the file read is pending.
+  // Never put the retry menu over that active battle on import failure.
+  // Do not cover a level-up, battle result, or scripted lock that appeared
+  // while file bytes were pending. Match the Save layer's live load gate.
+  if(!imported&&GC.Save.canPersistNow?.('load')!==false&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
    modal.classList.remove('hidden')
   }
  }
@@ -169,4 +212,4 @@ function openMenu(){
  </div>`;
  $('modal').classList.remove('hidden')
 }
-GC.Menu={openMenu};
+GC.Menu={openMenu,isPortableImportPending:()=>portableMenuImportInProgress};

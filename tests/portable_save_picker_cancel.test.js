@@ -62,7 +62,7 @@ test('cancelled portable-save picker does not close the menu or report an invali
  assert.equal(h.imports.length, 0);
 });
 
-test('selected portable-save file is passed once, menu closes, and same-file retry stays possible', () => {
+test('selected portable-save file is passed once, remains exclusive until settled, and allows same-file retry', async () => {
  const h = createMenuHarness();
  const file = {size: 123, text: async () => '{}'};
  const picker = {files: [file], value: 'C:\\fakepath\\save.json'};
@@ -70,10 +70,25 @@ test('selected portable-save file is passed once, menu closes, and same-file ret
  assert.equal(h.element('modal').classList.contains('hidden'), true);
  assert.equal(picker.value, '', 'reset the input to allow selecting the same file again');
  assert.deepEqual(h.imports, [file]);
+ // A pending file read must not reopen the old menu or start another import.
+ h.openMenu();
+ assert.equal(h.element('modal').classList.contains('hidden'), true,
+  'a pending import must keep the menu closed');
+ picker.value = 'C:\\fakepath\\save.json';
+ h.onChange.call(picker);
+ assert.deepEqual(h.imports, [file], 'overlapping selection must be ignored');
+ assert.equal(picker.value, '', 'blocked selection still clears the picker');
+ // The failed import must settle before a same-file retry is allowed.
+ await Promise.resolve();
+ await Promise.resolve();
+ await Promise.resolve();
+ assert.equal(h.element('modal').classList.contains('hidden'), false,
+  'failed import must restore the retry menu');
  h.openMenu();
  picker.value = 'C:\\fakepath\\save.json';
  h.onChange.call(picker);
  assert.equal(h.element('modal').classList.contains('hidden'), true);
  assert.equal(picker.value, '');
- assert.deepEqual(h.imports, [file, file]);
+ assert.deepEqual(h.imports, [file, file],
+  'the same file can be retried after the previous import settles');
 });
