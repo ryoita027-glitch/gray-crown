@@ -277,3 +277,51 @@ test('touch and M-key menu opening focus the close button; dismissals restore ga
  modal.listeners.click({target:$('modalContent')});
  assert.equal(hidden.has('modal'),false,'clicking inside modal does not dismiss it');
 });
+
+test('Tab and Shift+Tab stay inside the adventure menu without trapping hidden controls',()=>{
+ const game=read('js/game.js');
+ const handler=game.match(/^function handleKeydown\\(e\\)\\{.*$/m);
+ assert.ok(handler,'actual keyboard handler exists');
+ let audio=0,modalOpen=true;
+ const document={activeElement:null};
+ const makeControl=(id,visible=true)=>({
+  id,matches:()=>true,disabled:false,
+  getClientRects:()=>visible?[{}]:[],
+  focus(){document.activeElement=this}
+ });
+ const first=makeControl('menuSave'),hidden=makeControl('hiddenMenuInput',false),last=makeControl('modalClose');
+ const outside=makeControl('btnSound');
+ const modal={
+  classList:{contains:name=>name==='hidden'&&!modalOpen},
+  querySelectorAll:()=>[first,hidden,last]
+ };
+ const context=vm.createContext({
+  document,GC:{Menu:{isPortableImportPending:()=>false}},
+  ALPHA_SESSION:{started:true},state:{battle:null},
+  $:id=>id==='modal'?modal:{classList:{contains:()=>true}},
+  ensureAudio:()=>{audio++}
+ });
+ vm.runInContext(handler[0],context,{filename:'js/game.js handleKeydown'});
+ const keydown=vm.runInContext('handleKeydown',context);
+ const tab=shiftKey=>{
+  let prevented=false;
+  keydown({key:'Tab',shiftKey,repeat:false,preventDefault:()=>{prevented=true}});
+  return prevented;
+ };
+ last.focus();
+ assert.equal(tab(false),true,'Tab at final control wraps');
+ assert.equal(document.activeElement,first,'wraps to first visible control');
+ assert.equal(tab(true),true,'Shift+Tab at first control wraps');
+ assert.equal(document.activeElement,last,'wraps to final visible control');
+ first.focus();
+ assert.equal(tab(false),false,'browser handles ordinary forward tab');
+ assert.equal(document.activeElement,first,'do not override native interior navigation');
+ outside.focus();
+ assert.equal(tab(false),true,'focus outside open dialog is recovered');
+ assert.equal(document.activeElement,first,'focus returns inside dialog');
+ modalOpen=false;
+ outside.focus();
+ assert.equal(tab(false),false,'Tab is not trapped when menu is closed');
+ assert.equal(document.activeElement,outside,'closed menu leaves native focus alone');
+ assert.equal(audio,0,'Tab navigation must not trigger game audio');
+});
