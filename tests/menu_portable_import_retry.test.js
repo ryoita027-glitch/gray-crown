@@ -310,7 +310,7 @@ function inputControlHarness(isImportPending){
  const touchMove={dataset:{move:'left'},listeners:{},
   addEventListener(type,fn){this.listeners[type]=fn}};
  const context=vm.createContext({
-  GC:{Menu:{isPortableImportPending},Dev:{toggle:()=>{calls.dev++}}},ALPHA_SESSION:{started:true},
+  GC:{Menu:{isPortableImportPending:isImportPending},Dev:{toggle:()=>{calls.dev++}}},ALPHA_SESSION:{started:true},
   state:{battle:null},$,document:{activeElement:null,
    addEventListener:()=>{},querySelectorAll:()=>[touchMove]},
   canvas:{addEventListener:()=>{}},dialogueChoices:[],
