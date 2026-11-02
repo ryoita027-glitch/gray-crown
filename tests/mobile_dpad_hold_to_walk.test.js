@@ -300,3 +300,30 @@ test('keyboard activation cannot clear cancellation ghost-click protection',()=>
  h.click(1);
  assert.deepEqual(h.calls.moves,['up','up'],'new touch press remains available');
 });
+
+
+test('releasing a pending touch while gameplay is blocked cannot move after recovery',()=>{
+ const scenarios=[
+  ['menu',h=>h.visible.add('modal'),h=>h.visible.delete('modal')],
+  ['dialogue',h=>h.visible.add('dialogueBox'),h=>h.visible.delete('dialogueBox')],
+  ['battle',h=>{h.state.battle={id:'wolf'}},h=>{h.state.battle=null}],
+  ['scripted lock',h=>{h.flags.locked=true},h=>{h.flags.locked=false}],
+  ['pending import',h=>{h.flags.pending=true},h=>{h.flags.pending=false}],
+  ['background',h=>{h.document.hidden=true},h=>{h.document.hidden=false}]
+ ];
+ for(const [name,block,unblock] of scenarios){
+  const h=padHarness();
+  h.emit('pointerdown',h.pointer(81));
+  assert.equal(h.timeouts.size,1,name+' begins an ordinary short press');
+  block(h);
+  h.emit('pointerup',h.pointer(81));
+  assert.equal(h.timeouts.size,0,name+' clears the hold timer on release');
+  unblock(h);
+  h.click(1);
+  assert.deepEqual(h.calls.moves,[],name+' cannot move from a delayed release click');
+  h.emit('pointerdown',h.pointer(82));
+  h.emit('pointerup',h.pointer(82));
+  h.click(1);
+  assert.deepEqual(h.calls.moves,['up'],name+' permits a fresh deliberate tap');
+ }
+});
