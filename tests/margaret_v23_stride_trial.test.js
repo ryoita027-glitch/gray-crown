@@ -4,7 +4,7 @@ const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypt
 const PNG=require('../tools/art/png_rgba_portable');
 const root=path.resolve(__dirname,'..');
 const read=p=>fs.readFileSync(path.join(root,p));
-const sha=b=>crypto.createHash('sha1').update('blob '+b.length+'\\0').update(b).digest('hex');
+const sha=b=>crypto.createHash('sha1').update('blob '+b.length+'\0').update(b).digest('hex');
 test('V23 experimental walk is source-pinned, 4 directions x 6 frames, no face/shoulder edits',()=>{
  const src=read('assets/character_trials/margaret_idle_adult_mage_v22_structural_trial.png');
  const bytes=read('assets/character_trials/margaret_walk_adult_mage_v23_stride_trial.png');
