@@ -1,0 +1,26 @@
+# Margaret V16 — native44 proportion/neck diagnostic (2026-11-02 JST)
+
+**ART HOLD / NOT APPROVED / DO NOT MERGE.** Based on Draft PR #280 HEAD `8933fade23ca7df3ac9595e12d733bed54859331`. Frozen PR #98, `main`, approved character atlases, story, save v23, game balance and buildings are unchanged.
+
+## Visual problem and source
+
+Actual V15 Margaret source-pixel front pose spans y9–46 (38 rows), whereas the V5 mayor/messenger span y3–47 (45 rows). At 44px Margaret appears squat and head-heavy beside the adult V5 NPCs. Repeating 1px hair trims from V8–V15 has not resolved the visible mismatch.
+
+- Source V15: `assets/character_trials/margaret_idle_hair_robe_contact_v15.png`, Git blob `c77fce6ac6630d750112af07f51ed381b612ebd8`.
+- Source V5 NPCs: `assets/npc/featured_residents_charm_v5.png`, Git blob `b169b58a846e1812dc42f566ca1843a6088e901f`.
+- `assets/character_trials/margaret_idle_proportion_v16A.png`: 192×192, four directions × four idle frames; crown raised into y4, head/torso height redistributed, feet y46 unchanged.
+- `assets/character_trials/margaret_idle_proportion_v16B.png`: the same height trial plus tapered waist and explicitly drawn short front neck/collar. This is NOT a complete hand-authored anatomical redesign.
+- `docs/art/evidence/margaret_v15_v16_native44_npc_AB.png`: 5 columns × 4 directions at true 44px nearest-neighbor on identical grass/checker, with contact-normalized footline. Columns: V15, V16A, V16B, mayor V5, messenger V5. Static actual-source-pixel comparison, NOT a live game screenshot.
+- `tools/art/build_margaret_proportion_v16.js` is the deterministic SHA-locked offline generator. `tests/margaret_proportion_v16.test.js` checks all 16 frames, footline preservation and binary reproducibility.
+
+## Visual verdict
+
+At native44 the two V16 candidates have a more adult vertical silhouette than V15 and are closer to V5 standing height. B has a slightly narrower waist and a short collar. The oversized silver hair, head-to-neck transition and material/face treatment still do not match the V5 NPC visual language. Vertical row redistribution can duplicate pixels in the robe, so it is a geometry diagnostic rather than polished pixel art. **Both remain ART HOLD.**
+
+## Verification / next action
+
+Executed in the isolated JS art environment: decoded real source PNGs; created and visually inspected a four-direction native44 A/B; encoded 192×192 RGBA candidate atlases and 220×240 comparison PNG; roundtrip decoded both candidates; verified all 16 frames keep bottom y46 and source shoe rows y44–47. These are geometry and pixel-integrity checks, not aesthetic approval.
+
+**Not executed:** native Node test runner, real Ryune village Chromium canvas capture, full game suite, walking/talking/battle continuity, complete human aesthetic review. Local private GitHub checkout remains blocked by DNS, so no live screenshot is claimed.
+
+Next: run the PR #280 real-canvas gate in a complete checkout and compare these candidates with V15 and V5 NPCs in the village at the same viewport, camera, pose and footline. Reject either trial if it reads worse. The ultimate requirement is a genuinely hand-authored head/neck/shoulder/torso redraw across all directions and animations. Do not proceed to architecture until the cast has been visually unified.
