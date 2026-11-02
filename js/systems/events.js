@@ -1843,6 +1843,8 @@ function commitRyuneGranaryWitness(){
  return true
 }
 function visitRyuneGranary(){
+ // Preserve the pre-existing 'store visited' world flag even when counting is deferred.
+ if(!structuredCondition('store'))setStructuredCondition('store',true);
  const key='early.ryuneGranaryWitness';
  if(state.events.choices[key]==='counted')return say('共同食料庫','空いた棚と帳簿の数字は変わらない。王国の米が届いたという記録は、まだない。');
  if(isEventComplete('alpha.village.appointment'))return say('共同食料庫','半分以上空いた棚。使者は米を約束したが、まだ届いてはいない。北門へ進むか、村を見て回るかは四人で決められる。');
