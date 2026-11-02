@@ -3,7 +3,17 @@ function encounterRange(map){if(map==='cave')return[12,19];if(['northroad','ashr
 function encounterSafeZone(map=state.map,x=state.x,y=state.y){
  if(INTERIOR_MAPS.includes(map)||['village','capital','frontier','watchfort','empirevillage','imperialcity','elsia','finalfield','imperialcamp','royalcamp'].includes(map))return true;
  if(map==='cave'){
-  // A short, visibly paved supply trail is a low-risk detour, not a new dungeon skip.
+  // Each activated mechanism makes its visible maintenance conduit a calm
+  // return path. The vibration deters wandering vermin only; the fixed
+  // bats, crawler and boss are still handled by handleStep().
+  if(getWorldSwitch('leverWest')&&(
+   (y===6&&x>=2&&x<=12)||(x===2&&y>=6&&y<=9)||(x===3&&y===9)
+  ))return true;
+  if(getWorldSwitch('leverEast')&&(
+   (y===6&&x>=12&&x<=19)||(y===5&&x>=19&&x<=22)||
+   (x===22&&y>=5&&y<=7)||(x===21&&y===7)
+  ))return true;
+  // The existing ration spur and recovery alcove remain safe as before.
   if((y===13&&x>=12&&x<=20)||(x===20&&y===12))return true;
   if(Math.abs(x-5)+Math.abs(y-12)<=2)return true;
  }
