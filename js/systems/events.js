@@ -1176,12 +1176,42 @@ function capitalFountainVisit(){
  ]);
 }
 
+// A chosen fort-flag action has a voluntary, immediate social consequence
+// at the existing north-road scout. The player can keep the discovery private.
+// The existing v23 choices bag persists disclosure; no new quest or item.
+function fortScoutWitnessChoices(){
+ const banner=state.events.choices['early.caveBanner'];
+ if(!['names','raise'].includes(banner)||state.events.choices['early.fortScoutWitness'])return [];
+ return [
+  {label:banner==='names'?'写した兵の名前を伝える':'結び直した古い軍旗のことを伝える',fn:()=>{
+   state.events.choices['early.fortScoutWitness']=banner;
+   addJournal(banner==='names'
+    ?'古砦の軍旗に残る兵の名前を王国軍の斥候に伝えた。斥候は巡回帳に記すと答えた。'
+    :'古砦で結び直した古い軍旗のことを王国軍の斥候に伝えた。斥候は巡回隊へ知らせると答えた。');
+   renderHud();
+   return saySequence(banner==='names'?[
+    {speaker:'マーガレット',text:'「古い旗の裏に、兵士たちの名前が縫われていたの。手帳に写してある」'},
+    {speaker:'王国軍の斥候',text:'「名前か。巡回帳にも記しておく。誰のものか分からなくても、消していい理由にはならない」'},
+    {speaker:'ソフィ',text:'「名前を覚えてくれる人が、一人増えましたね」'}
+   ]:[
+    {speaker:'カレン',text:'「古砦の倒れた旗を結び直したんです。あそこにいた人たちの跡だから」'},
+    {speaker:'王国軍の斥候',text:'「分かった。巡回の仲間には、見つけてもむやみに外さないよう伝えるよ」'},
+    {speaker:'トリトン',text:'「誰かが気づいてくれるといいな」'}
+   ]);
+  }},
+  {label:'今は伝えず先へ進む',fn:()=>say('カレン','「うん。私たちが見たことは、ちゃんと覚えておこう」')}
+ ];
+}
 function northRoadScoutVisit(){
  const fromFort=!getWorldSwitch('northRoadFromRoad')&&isDefeated('boss');
  const markerCleared=state.events.choices['early.northroadWaystone']==='cleared';
  if(!fromFort)return say('王国軍の斥候','「森の本道から来たのか。古砦を通らなくても王都へ行ける。北へ進めば城門、南へ戻れば森の街道だ。'+(markerCleared?'道標を磨いてくれたのか。これなら後から来る旅人も迷わないな。':'')+'」');
- if(state.events.choices['early.fortScoutAid']==='received')
-  return say('王国軍の斥候','「古砦の北門が通れるようになったのは助かる。王都へは北だ。渡せる薬草はもうないが、無事に着いてくれよ。'+(markerCleared?'道標も読めるようになって、助かるよ。':'')+'」');
+ if(state.events.choices['early.fortScoutAid']==='received'){
+  const witness=state.events.choices['early.fortScoutWitness'];
+  const followup=witness==='names'?'古砦の兵の名前は巡回帳に書いた。':witness==='raise'?'結び直した古い旗のことは巡回隊にも伝えた。':'';
+  const choices=fortScoutWitnessChoices();
+  return say('王国軍の斥候','「古砦の北門が通れるようになったのは助かる。王都へは北だ。渡せる薬草はもうないが、無事に着いてくれよ。'+followup+(markerCleared?'道標も読めるようになって、助かるよ。':'')+'」',choices);
+ }
  state.events.choices['early.fortScoutAid']='received';
  state.inventory['薬草']=(state.inventory['薬草']||0)+1;
  addJournal('古砦跡の北門を抜けたことを王国軍の斥候に伝え、旅の備えとして薬草を1個受け取った。');
@@ -1191,7 +1221,7 @@ function northRoadScoutVisit(){
   {speaker:'カレン',text:'「四人で何とか。道を探していたら、ここへ出たんです」'},
   {speaker:'王国軍の斥候',text:'「巡回の仲間にも伝えるよ。これは旅の備えだ。王都へはこの道を北に進め」'},
   {speaker:'ナレーション',text:'薬草を1個受け取った。'}
- ])
+ ],()=>{const choices=fortScoutWitnessChoices();if(choices.length)return say('王国軍の斥候','「古砦で、ほかに気になったことはあったか？」',choices)});
 }
 
 // Lock an allegiance only after both army orders have been examined.
