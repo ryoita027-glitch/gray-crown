@@ -137,6 +137,41 @@ const RoadCaveQuality=(()=>{
    fill(c,'#c6ad85',x+10,y+23,5,2);
   }
  }
+ // The inner curtain wall is impassable at y=4 except for the real gate.
+ // Keep rubble on SOLID tiles: a broken silhouette must never promise
+ // a walkable opening. The paired wall plaques reflect the saved levers.
+ function drawFortGateLandmark(c){
+  const wy=4*32;
+  for(const tx of [2,5,8,16,19,22]){
+   const x=tx*32;
+   fill(c,'#6e6b65',x+4,wy+3,20,4);
+   fill(c,'#9c9181',x+7,wy+3,11,2);
+   fill(c,'#35383c',x+4,wy+20,23,3);
+   if(tx===5||tx===19){
+    fill(c,'#504e4d',x+9,wy+11,15,7);
+    fill(c,'#878078',x+13,wy+10,9,2);
+   }else{
+    fill(c,'#45484b',x+10,wy+10,3,9);
+    fill(c,'#716f6b',x+13,wy+11,5,3);
+   }
+  }
+  // Two stationary relief plates flank the actual gate tile.
+  // West is left, east is right. No HUD marker or new switch.
+  for(const [tx,id] of [[11,'leverWest'],[13,'leverEast']]){
+   const x=tx*32,active=typeof getWorldSwitch==='function'&&getWorldSwitch(id);
+   fill(c,'#252a30',x+7,wy+6,18,19);
+   fill(c,'#857d6c',x+9,wy+8,14,15);
+   fill(c,active?'#d6b978':'#575958',x+12,wy+11,8,8);
+   fill(c,active?'#f1d59b':'#8a8274',x+14,wy+12,4,2);
+   fill(c,'#383a3c',x+10,wy+22,12,2);
+  }
+  // Worn inset stones point to a genuinely walkable central approach.
+  for(const ty of [6,5]){
+   const x=12*32,y=ty*32;
+   fill(c,'#847b70',x+8,y+25,16,2);
+   fill(c,'#b3a48b',x+12,y+24,8,1);
+  }
+ }
  function drawAccents(c,map){
   if(!obj.enabled||!active.has(map))return;
   if(map==='road'){
@@ -211,6 +246,7 @@ const RoadCaveQuality=(()=>{
     const x=tx*32,y=ty*32;fill(c,'#323b40',x+2,y+26,27,4);
     fill(c,'#9b916e',x+7,y+25,18,2)
    }
+   drawFortGateLandmark(c);
    // An existing central gate physically reads as shut until both switches.
    const open=typeof structuredCondition==='function'&&structuredCondition('leverWest')&&structuredCondition('leverEast');
    gate(c,12*32-5,4*32+5,!!open);
