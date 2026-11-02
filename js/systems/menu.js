@@ -176,7 +176,9 @@ async function importPortableSaveFromMenu(file){
   importStatus?.classList.add('hidden');
   portableMenuImportInProgress=false;
   toolbarButtons.forEach((button,index)=>{button.disabled=toolbarWasDisabled[index]});
-  if(!imported&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
+  // A story event may start a battle while the file read is pending.
+  // Never put the retry menu over that active battle on import failure.
+  if(!imported&&!state.battle&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
    modal.classList.remove('hidden')
   }
  }
