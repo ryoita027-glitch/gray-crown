@@ -885,8 +885,12 @@ function capitalCitizenReturnVisit(){
  const route=state.finalChoice,demand=state.events?.choices?.['route.final.'+route];
  const record=route+':'+demand,choices=state.events.choices;
  const valid=['kingdom','empire'].includes(route)&&FINAL_ACT_APPROACHES[route]?.choices.some(c=>c.id===demand);
+ const recalled=valid&&choices['capital.fountainReturnMemory']===record;
+ const asked=choices['early.capitalFountainPerspective']==='asked';
  if(!valid||choices['capital.northGateReturnRecord']!==record)
-  return say('王都市民','「勇者様……前よりずっと疲れた顔をしてる。戦争は、まだ終わらないんですか？」');
+  return say('王都市民',recalled
+   ?(asked?'「噴水で話したこと、覚えてくれていたんですね。明日のパンも、帰る人も、まだ心配です」':'「噴水で立ち止まっていましたね。戦争がどうなるか、まだ分からないんでしょう？」')
+   :'「勇者様……前よりずっと疲れた顔をしてる。戦争は、まだ終わらないんですか？」');
  const heardKey='capital.citizenHeardDemand';
  if(choices[heardKey]===record)
   return say('王都市民','「前線で何を求めたか、覚えています。まだ結果は分からない。でも、聞かなかったことにはしません」');
@@ -902,14 +906,18 @@ function capitalCitizenReturnVisit(){
  };
  const response=reactions[route]?.[demand];
  if(!response)return say('王都市民','「勇者様……戦争は、まだ終わらないんですか？」');
- return say('王都市民','「前よりずっと疲れた顔をしてる。戦争は、まだ終わらないんですか？」',[
+ return say('王都市民',recalled
+  ?(asked?'「噴水で話したこと、覚えていてくれたんですね。……前線で、何か分かりましたか？」':'「噴水の前で立ち止まっていましたね。……前線で、何か分かりましたか？」')
+  :'「前よりずっと疲れた顔をしてる。戦争は、まだ終わらないんですか？」',[
   {label:'北門の名簿に記した要求を伝える',fn:()=>{
    if(choices[heardKey]===record)return capitalCitizenReturnVisit();
    choices[heardKey]=record;
    addJournal('王都の市民に、北門の名簿へ記した前線での要求を伝えた。実現したかはまだ不明。');
    renderHud();
    return saySequence([
-    {speaker:'カレン',text:'「前線で、私たちが求めたことは名簿に残した。でも、実現したとはまだ言えない」'},
+    recalled&&asked
+     ?{speaker:'カレン',text:'「あの日、あなたが言った明日のパンと帰ってくる人のこと、覚えています。私たちの要求は名簿に残した。でも、実現したとはまだ言えない」'}
+     :{speaker:'カレン',text:'「前線で、私たちが求めたことは名簿に残した。でも、実現したとはまだ言えない」'},
     {speaker:'王都市民',text:response}
    ]);
   }},
@@ -992,7 +1000,38 @@ function capitalGateGuideVisit(){
 function capitalFountainVisit(){
  const key='early.capitalFountainPerspective';
  const inscription='聖地エルシアの泉を模したという噴水。観光客向けの説明板には「奪われた故郷を忘れるな」と刻まれている。';
- if(structuredCondition('returnedKingdom'))return say('王都の大噴水',inscription);
+ if(structuredCondition('returnedKingdom')){
+  const route=state.finalChoice,demand=state.events?.choices?.['route.final.'+route];
+  const valid=['kingdom','empire'].includes(route)&&FINAL_ACT_APPROACHES[route]?.choices.some(c=>c.id===demand);
+  if(!valid)return say('王都の大噴水',inscription);
+  const record=route+':'+demand,choices=state.events.choices,key='capital.fountainReturnMemory';
+  if(choices[key]===record){
+   const shared=choices['capital.citizenHeardDemand']===record;
+   return say('王都の大噴水',inscription+(shared
+    ?' 噴水の西の市民に伝えた要求も、まだ結果が届いていない。水音だけは出発前と同じだ。'
+    :' 噴水の西、市民は今日も市場を行き来している。話すかどうかは四人が決められる。'));
+  }
+  return say('王都の大噴水',inscription+' 同じ石碑を前にしても、四人が見てきたものは出発前とは違う。西の市場通りには、以前の王都市民がいる。',[
+   {label:'出発前に見た王都の暮らしを思い返す',fn:()=>{
+    if(choices[key]===record)return capitalFountainVisit();
+    choices[key]=record;
+    addJournal('王都の噴水へ帰り、戦勝の標語と出発前に見た人々の暮らしを思い返した。前線で示した要求が実現したかはまだ不明。');
+    renderHud();
+    const early=choices['early.capitalFountainPerspective'];
+    return saySequence(early==='asked'?[
+     {speaker:'カレン',text:'「あの日、あの人は勝利も明日のパンも必要だって言った。前線で答えを見つけたつもりにはなれない」'},
+     {speaker:'ソフィ',text:'「でも、聞いた言葉を忘れずに帰ってこられました。あの人は噴水の西にいます」'}
+    ]:early==='observed'?[
+     {speaker:'マーガレット',text:'「出発前は、勝利のポスターと配給の列を見比べた。どちらも、まだ同じ街にある」'},
+     {speaker:'トリトン',text:'「じゃあ、前線で何を頼んだかも、なかったことにするなよ」'}
+    ]:[
+     {speaker:'カレン',text:'「出発前は、この説明板をちゃんと見なかった。聖地の話だけじゃ、今日の暮らしは分からないね」'},
+     {speaker:'ソフィ',text:'「噴水の西には街の人がいます。話すかどうかは、私たちで決めましょう」'}
+    ]);
+   }},
+   {label:'今は立ち止まらず歩く',fn:()=>say('トリトン','「急がなくてもいい。ここは、また来られる」')}
+  ]);
+ }
  const chosen=state.events.choices[key];
  if(chosen==='asked')return say('王都の大噴水','水音の向こうで、さっき話を聞いた市民が配給の列へ歩いていく。カレンは、その言葉を覚えている。');
  if(chosen==='observed')return say('王都の大噴水','水面に王城の旗が映る。マーガレットは、ポスターと配給列を見比べたことを忘れていない。');
