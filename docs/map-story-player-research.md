@@ -1,3 +1,15 @@
+## 2026-11-02 19:40 JST — road revisits remember what is cleared
+
+**Repository facts (checked at Draft #294 HEAD `6e3260e6`, main `d689aabb`):** The first-wolf victory objective only said to go north. `leaveVillage()` unconditionally called `advanceStory(ROAD)`, which replaces a later chapter's custom objective with its generic stage objective. `returnVillage()` also replaced objectives even during later chapters. The wolf-defeated road has two actual onward routes: the existing old-fort stone gate at (13,1) and the northern boundary. No new map area is required.
+
+**Player evidence sampled 2026-11-02:** [Chained Echoes Steam reviews](https://steamcommunity.com/app/1229240/reviews/) include an October 29 complaint about searching the same map for a poorly visible doorway, an October 28 appreciation of small discoveries, and an October 24 complaint about exposition. Posting years and sample representativeness are unverified; these are individual reviews, not population trends. **Hypothesis:** clearer route-specific objective text after a battle and on re-entry can prevent redundant searching without forcing a detour. Graygrow's actual old-fort choice and companion context are original; no copied content.
+
+**Implemented:** Wolf victory points to the northeast stone gate and the north exit as alternatives. A village re-departure now gives one brief, milestone-aware line (wolf alive / wolf cleared / fort boss cleared), and restores a road objective that never tells players to defeat an already cleared wolf. Leaving the fort for the road uses the same milestone-sensitive objective. Later-chapter objectives survive voluntary village visits. First farewell, combat, optional scouting, existing routes, collisions and Save v23 are unchanged.
+
+**Verification:** Exact-source anchor checks and V8 parse of edited JS and new test passed; isolated helper scenarios for wolf alive / wolf cleared / fort cleared passed. Five Node harness regressions added. **Not run:** native Node tests, `npm run check`, browser traversal, actual Save/Load UI and human playtest. Keep Draft; do not merge main.
+
+**Next:** Run `node --test tests/road_return_objective_progress.test.js tests/ryune_departure_replay.test.js tests/road_wolf_scout_feedback.test.js`, then `npm run check`. Browser-walk wolf → village → road, fort → road, and a later-chapter village return. Check HUD and stone-gate visibility.
+
 ## 2026-11-02 18:40 JST — make the optional wolf scouting payoff visible
 
 **Verified source (Draft #292 HEAD `e5ff9dc9`):** The merchant's first dialogue points to tracks at (10,8), and the first wolf's turn-one damage is reduced by 2 *before* guarding when `early.wolfScout=read`. However, the merchant's post-choice revisit text drops the footprint clue, and the wolf strike never identifies the saved damage in the battle log. Players could miss both the discovery and its consequence.
