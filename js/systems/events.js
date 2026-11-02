@@ -1230,7 +1230,9 @@ function inlineNpcEvent(id){
    ?isEventComplete('alpha.village.appointment')
     ?'「食料庫の数字を確かめたんだって？　使者の約束は聞いたよ。でも米が届くまで、今ある粉で焼くしかないね」'
     :'「食料庫の数字を見たのかい。なら使者にも聞いておくれ。いつ米が届くか、私らには分からないんだ」'
-   :'「今朝は小麦が足りなくてね。いつもの半分しか焼けなかったよ。子どもらには黙って大きい方を渡したけどさ」')
+   :isEventComplete('alpha.village.appointment')
+    ?'「使者は米を約束したね。でも届くのはこれからだ。井戸の東の共同食料庫に帳簿があるよ。今ある分だけでも確かめておくれ」'
+    :'「今朝は小麦が足りなくて、いつもの半分しか焼けなかったよ。井戸の東の共同食料庫に帳簿がある。使者の話を聞く前に確かめるのもいいね」')
   if(id==='farmer')return say('農夫のボル',
    isEventComplete('ryune.outskirts.reward')
     ?'「教えてもらった場所から順に水路を確かめるよ。すぐに畑が戻るわけじゃないが、何も分からなかった昨日よりは前に進めそうだ」'
@@ -1835,10 +1837,12 @@ function finalCampAfterBattlePrompt(route){
 // voluntary check gives the first appointment an immediate, factual payoff.
 function commitRyuneGranaryWitness(){
  const key='early.ryuneGranaryWitness';
- if(state.events.choices[key]||state.map!=='village'||isEventComplete('alpha.village.appointment'))return false;
+ if(state.events.choices[key]||state.map!=='village')return false;
  state.events.choices[key]='counted';
  setStructuredCondition('store',true);
- addJournal('出発前、リュネ村の共同食料庫で帳簿と棚を照合した。備蓄は前年同期の半分以下で、王国の食料支援はまだ届いていない。');
+ addJournal(hasVisited('road')
+  ?'村へ戻り、リュネ村の共同食料庫で棚と帳簿を照合した。備蓄は前年同期の半分以下で、王国の食料支援はまだ届いていない。'
+  :'リュネ村の共同食料庫で棚と帳簿を照合した。備蓄は前年同期の半分以下で、王国の食料支援はまだ届いていない。');
  renderHud();
  return true
 }
@@ -1847,7 +1851,16 @@ function visitRyuneGranary(){
  if(!structuredCondition('store'))setStructuredCondition('store',true);
  const key='early.ryuneGranaryWitness';
  if(state.events.choices[key]==='counted')return say('共同食料庫','空いた棚と帳簿の数字は変わらない。王国の米が届いたという記録は、まだない。');
- if(isEventComplete('alpha.village.appointment'))return say('共同食料庫','半分以上空いた棚。使者は米を約束したが、まだ届いてはいない。北門へ進むか、村を見て回るかは四人で決められる。');
+ if(isEventComplete('alpha.village.appointment'))return say('共同食料庫','棚は半分以上空いたまま。使者は米を約束したが、受け取りの記録はまだない。',[
+  {label:'今の備蓄を数え、帳簿に印を付ける',fn:()=>{
+   if(!commitRyuneGranaryWitness())return visitRyuneGranary();
+   return saySequence([
+    {speaker:'マーガレット',text:'「使者の約束はもう聞いた。でも棚の数は変わってない。これから届く米と、今ある食料は分けて考えよう」'},
+    {speaker:'カレン',text:'「うん。村の人たちにも、届いたことにしないで話そう」'}
+   ])
+  }},
+  {label:'今は調べず北門へ向かう',fn:()=>say('カレン','「先へ進もう。必要なら戻って確かめられる」')}
+ ]);
  return saySequence([
   {speaker:'共同食料庫',text:'棚の半分以上が空いている。帳簿の去年の欄には、今よりずっと多い袋数が書かれている。'},
   {speaker:'マーガレット',text:'「使者の話を聞く前に、今ある食料を確かめておきたい。約束と現物は違うから」'}
