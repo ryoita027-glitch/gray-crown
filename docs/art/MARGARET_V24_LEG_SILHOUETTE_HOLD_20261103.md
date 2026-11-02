@@ -14,3 +14,7 @@
 
 ## Next
 Obtain real Ryune same-state game capture with Margaret next to mayor/messenger; redesign adult shoulder/arm/robe/leg anatomy together rather than iterating only boots; compare idle→walk→talk/turn at 44px before any promotion. Only after character cast visual approval, work on buildings/environment.
+
+## Additional local browser evidence
+- Chromium headless with Playwright successfully rendered a **standalone** V23/V24 44px Canvas board from inline data-URI PNGs (`page.set_content`, viewport 1020×510); a screenshot was captured and inspected. This is actual Chromium rendering of source pixels, **not** execution of the repository HTML reviewer, and **not** a real Ryune game scene. The direct `file://` attempt failed with `ERR_BLOCKED_BY_ADMINISTRATOR`, so data-URI rendering was used for this isolated visual check.
+- The Chromium board still shows V24's boot separation more distinctly, but hem blocks and upper-body rigidity remain. No art adoption.
