@@ -570,7 +570,22 @@ function drawObject(o){if(RyuneOutskirts.drawObject(ctx,state.map,o,!!state.worl
   }
  }
  if(o.id==='banner'){ctx.fillStyle='#80634d';ctx.fillRect(px+6,py+3,3,26);ctx.fillStyle='#7d3840';ctx.fillRect(px+9,py+5,17,15);ctx.fillStyle='#d0b26d';ctx.fillRect(px+15,py+8,4,8)}
- if(o.id==='rations'){ctx.fillStyle='#65513b';ctx.fillRect(px+4,py+12,24,14);ctx.strokeStyle='#92744f';ctx.strokeRect(px+5,py+13,22,12);ctx.fillStyle='#3c342b';ctx.fillRect(px+9,py+7,14,6)}
+ if(o.id==='rations'){
+  // The supply crate must visibly remember the pickup, not look full forever.
+  // Reuse the existing v23 choice/condition; no new asset or object is needed.
+  const emptied=state.events?.choices?.['early.caveSupplies']==='taken'||structuredCondition('rations');
+  ctx.fillStyle='#65513b';ctx.fillRect(px+4,py+12,24,14);
+  ctx.strokeStyle='#92744f';ctx.strokeRect(px+5,py+13,22,12);
+  if(emptied){
+   ctx.fillStyle='#30291f';ctx.fillRect(px+7,py+13,18,9);
+   ctx.fillStyle='#a08b6a';ctx.fillRect(px+5,py+7,22,4);
+   ctx.fillStyle='#544637';ctx.fillRect(px+6,py+5,20,2);
+  }else{
+   ctx.fillStyle='#3c342b';ctx.fillRect(px+9,py+7,14,6);
+   ctx.fillStyle='#cbb47f';ctx.fillRect(px+23,py+9,3,7);
+   ctx.fillStyle='#f0d7a0';ctx.fillRect(px+23,py+8,3,2);
+  }
+ }
  if(o.id==='burnedCart'){ctx.fillStyle='#4b3729';ctx.fillRect(px+4,py+15,23,8);ctx.strokeStyle='#2e2823';ctx.lineWidth=3;ctx.beginPath();ctx.arc(px+8,py+26,5,0,Math.PI*2);ctx.arc(px+24,py+26,5,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#2c2723';ctx.fillRect(px+10,py+8,4,10)}
  if(o.id==='victoryPoster'){ctx.fillStyle='#e5dcc5';ctx.fillRect(px+4,py+5,24,23);ctx.strokeStyle='#8d3d46';ctx.lineWidth=2;ctx.strokeRect(px+4,py+5,24,23);ctx.fillStyle='#8d3d46';ctx.fillRect(px+8,py+9,16,4);ctx.fillStyle='#6d6255';ctx.fillRect(px+8,py+16,16,2);ctx.fillRect(px+8,py+21,12,2)}
  if(o.id==='heroLedger'){ctx.fillStyle='#514335';ctx.fillRect(px+5,py+7,22,20);ctx.fillStyle='#d7c8a4';ctx.fillRect(px+8,py+10,16,14);ctx.fillStyle='#7f3d43';ctx.fillRect(px+10,py+12,12,3);ctx.fillStyle='#645a4b';ctx.fillRect(px+10,py+18,10,2)}
