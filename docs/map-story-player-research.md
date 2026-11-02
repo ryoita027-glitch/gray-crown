@@ -1,3 +1,15 @@
+## 2026-11-02 22:47 JST — the old-fort clue now leads to a visible reward
+
+**Repository facts:** main HEAD `d689aabb`; Draft #300 HEAD `b5ac15b3`, itself stacked on Draft #297. The first-entry scene already mentions an east-barracks supply mark, and a one-time ration crate exists at (20,12). But the walkable lower-east corridor was visually uniform cave floor, and the crate continued to look unopened after its ration had been taken. The existing cave entry spawns at (12,13), and the original east corridor (row 13) reaches the box without any wall change.
+
+**Player signal checked 2026-11-02:** [Steam Sea of Stars reviews](https://steamcommunity.com/app/1244090/reviews/) include an October 5 negative review complaining that obscured routes required a walkthrough and an October 4 negative review criticizing low-value optional treasure; an October 3 positive review praises curiosity about what lies around corners. The review page displays month/day without a reliable year in this sample. These are individual opinions, not a representative market study or Graygrow playtest. **Hypothesis:** an in-world floor trail and a crate that visibly empties give a short optional route readable direction and persistent feedback without objective arrows or another mandatory quest.
+
+**Implemented:** Existing cave floor cells (x13–20,y13 and x20,y12) become stone paving `P`, leading from the actual entrance (12,13) to the original ration box (20,12). Cave geometry, map size, walls, encounters and exit rules are unchanged. The original entry dialogue now refers to the visible paving. The existing ration object renders a sealed cloth-tagged crate before pickup and an open, empty crate afterward, using the existing Save v23 event/condition. Reward remains exactly one ration, with no repeat. No new NPC, item, sprite asset, canonical reveal or forced detour.
+
+**Verification scope:** source anchors, 24×15 map dimensions, and JavaScript syntax are checked before committing; a new Node harness regression test covers the path, interaction, one-time reward, v23 persistence and changed crate drawing. Native Node, npm check, Chromium visual walk and human testing were not run in this connector environment; keep Draft, do not merge main.
+
+**Next:** Run `node --test tests/cave_supply_paving_payoff.test.js tests/road_fort_supply_spur.test.js` and `npm run check`; in Chromium walk from the cave entry east to the box and back, compare before/after crate at 44px, and test both optional route-choice orders.
+
 ## 2026-11-02 21:45 JST — a discoverable fort supply trail
 
 **Verified repository:** main HEAD `d689aabb`, Draft #297 HEAD `0f7f04d7`, other open art and UX PRs. The existing road sign at (10,2) directs players to the optional old fort at (13,1); tile (13,2) was walkable grass rather than a visible path. The fort already has a one-time ration box at (20,12), but the first-entry scene offered no environmental hint to that eastern corner. No extra map or combat is needed.
