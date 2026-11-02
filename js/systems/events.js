@@ -713,10 +713,13 @@ function capitalRationMotherVisit(){
    :guided
    ?'「……そうね。南門から野菜が届いた日のことも覚えています。あの日の食事と、息子の傷は別の話なのね」'
    :'「……そうね。そう言ってもらえると、少し楽です」';
+  const withThanks=choices['early.capitalRecruitHelp']==='water'&&choices['capital.recruitRationEcho']!=='heard'
+   ?answer.replace(/」$/,' ……それから、東の新兵さんにも、あの日の水のお礼を伝えてくれる？」')
+   :answer;
   return saySequence([
    {speaker:'配給待ちの母親',text:'「勇者様。息子は前線から戻りました。片腕を失ったけど、生きてます。……それでも私は、勝ってよかったって言うべきなんでしょうか」'},
    {speaker:'ソフィ',text:'「生きて帰ったことを喜んでいいと思います。それと戦争を喜ぶことは、同じじゃありません」'},
-   {speaker:'配給待ちの母親',text:answer}
+   {speaker:'配給待ちの母親',text:withThanks}
   ],()=>{
    if(choices[key]==='heard')return;
    choices[key]='heard';
@@ -907,6 +910,29 @@ function capitalWagonQueueVisit(){
 // into one small action. It is never a prerequisite for the final route.
 // The resident only learns the demand if the player tells them.
 // A north-gate inscription is not proof of a ruler's approval.
+// Optional two-tile follow-through: a recruit who carried water before the war
+// can hear the ration mother's thanks, without learning her son's private details.
+function capitalRecruitRationVisit(){
+ const choices=state.events.choices,key='capital.recruitRationEcho';
+ const rememberedNames=choices['capital.recruitWitness']==='told';
+ if(choices[key]==='heard')return say('新兵',rememberedNames
+  ?'「あの人のお礼も、記録から消された勇者たちの名前も覚えています。今日も配給所を手伝います」'
+  :'「あの人のお礼は覚えています。水桶を運ぶことなら、今日もできます」');
+ return say('新兵','「出発前に水を運んだ配給列ですね。……あの時のこと、少しは役に立ったんでしょうか」',[
+  {label:'母親から預かったお礼を伝える',fn:()=>{
+   if(choices[key]==='heard')return capitalRecruitRationVisit();
+   choices[key]='heard';
+   addJournal('王都の配給列で、以前水を運んだ新兵へ母親のお礼を伝えた。戦争の傷が消えたとは伝えず、目の前の手助けが覚えられていたことだけを共有した。');
+   renderHud();
+   return saySequence([
+    {speaker:'カレン',text:'「あの人、あの日の水桶を覚えてたよ。ありがとうって伝えてほしいって」'},
+    {speaker:'新兵',text:'「……俺は勝てばみんな笑うと思ってました。そうじゃなくても、あの列の水なら運べます」'},
+    {speaker:'マーガレット',text:'「全部を変えられなくても、誰かの今日を支えた事実は消えないわ」'}
+   ]);
+  }},
+  {label:'今は伝えずにおく',fn:()=>say('カレン','「今すぐ話さなくてもいい。またここに来られるから」')}
+ ]);
+}
 function capitalCitizenReturnVisit(){
  const route=state.finalChoice,demand=state.events?.choices?.['route.final.'+route];
  const record=route+':'+demand,choices=state.events.choices;
@@ -1262,6 +1288,11 @@ function inlineNpcEvent(id){
   if(id==='capitalFlowerGirl')return say('花売りの少女',structuredCondition('returnedKingdom')?'「前は勇者様の花飾りが一番売れたの。今は、お墓に供える白い花ばっかり」':'「勇者様！ 任命式の日は赤と白の花が飛ぶんだよ。王城の前、すっごくきれい！」')
   if(id==='capitalRecruit'){
    if(structuredCondition('returnedKingdom')){
+    const route=state.finalChoice,demand=state.events?.choices?.['route.final.'+route];
+    const choices=state.events.choices;
+    if(choices['capital.rationHomecomingHeard']==='heard'&&choices['early.capitalRecruitHelp']==='water'&&
+       ['kingdom','empire'].includes(route)&&FINAL_ACT_APPROACHES[route]?.choices.some(c=>c.id===demand))
+     return capitalRecruitRationVisit();
     const key='capital.recruitWitness';
     if(state.events.choices[key]==='told')return say('新兵',structuredCondition('heroTruth')
      ?'「総攻撃に出る前に、同じ隊の名前を全部覚えます。誰かが帰らなくても、いなかったことにはしません」'
