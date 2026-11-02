@@ -1,3 +1,17 @@
+## 2026-11-03 06 JST — activated fort conduits make the return journey quieter
+
+**Checked:** main HEAD `d689aabb`; Draft #312 HEAD `351fcc14`, stacked on #311. Other open mobile UX and character-art work is separate. The exact cave grid and `encounterSafeZone`/ `maybeRandomEncounter` code show that the new west/east floor conduits currently guide the player back after each mechanism, but random cave battles may still interrupt the same return trip every 12–19 counted steps. This is a code-derived risk, **not a confirmed player complaint about Graygrow**.
+
+**External evidence checked 2026-11-03:** [Adam Cohen, *Watch Your Step* (Game Developer, 2020-01-23)](https://www.gamedeveloper.com/design/watch-your-step-fixing-random-encounters-with-area-tracking) discusses how unpredictable encounters can undermine player agency. [Sea of Stars demo feedback thread (Steam, 2023-02-11 onward)](https://steamcommunity.com/app/1244090/discussions/0/3763356482614170773/) includes both complaints about confusing environmental interactions and a contrary view that observing the environment is rewarding; it is a **small, mixed discussion**, not representative current market data. **Hypothesis:** once a player clears a lever's fixed guardian and activates that mechanism, the already-visible conduit can double as a reliable return lane, rewarding progress and cutting repetitive combat without removing first-visit danger.
+
+**Playable change:** The activated west or east switch now suppresses **random** encounters only on its own exact existing conduit tiles (including turns), in both walking directions. Before activation, the corridor remains risky; off-conduit cells remain risky; the original safe ration spur and rest alcove remain unchanged. The existing lever dialogue now explains the low mechanical vibration keeping small creatures away and points to the remaining objective. No new item, geometry, enemy, sprite, quest, stage, or save field; the fixed bats, crawler and boss still trigger as before. No borrowed content.
+
+**Verification:** Exact modified `js/systems/movement.js` compiled and its real `encounterSafeZone` executed in an isolated V8 mock for both 15-cell routes, before and after each activation, plus off-route and legacy-safe cells. Full events source syntax parsed. Node harness regression added, **not executed in native Node**. Chromium walking, full game runtime, actual save/load UI, CI and human playtest remain **unverified**. Keep Draft unmerged.
+
+**Next specific risk:** Verify in the real browser that the conduit colors and width read at native44, the activated path is visually easy to follow, no fixed guardian is skipped, and both lever orders lead through the gate, boss and north exit. Compare first visit versus return battle counts in an actual 5–10 minute run.
+
+---
+
 ## 2026-11-03 05 JST — make the old fort's real mechanism paths readable
 
 **Repository checked:** main HEAD `d689aabb`; stacked Draft #311 HEAD `965e2656` (based on #309). Other open mobile-menu and character-art PRs remain separate. Source cave map 24×15 has west lever (3,8), east gear (21,6), central gate (12,4). Existing state plaques are visible at the gate but do not guide the return trip through turning corridors. This is a **map-analysis hypothesis**, not human-test feedback.
