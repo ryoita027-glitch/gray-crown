@@ -270,3 +270,33 @@ test('a press begun while an overlay is visible cannot move after the overlay cl
  h.click(1);
  assert.deepEqual(h.calls.moves,['up','up'],'new touch press remains available');
 });
+
+test('keyboard activation cannot clear a pending held-touch release click',()=>{
+ const h=padHarness();
+ h.emit('pointerdown',h.pointer(61));
+ h.fireTimeout();
+ assert.deepEqual(h.calls.moves,['up'],'touch hold moves once');
+ h.emit('pointerup',h.pointer(61));
+ h.click(0);
+ assert.deepEqual(h.calls.moves,['up','up'],'keyboard activation still moves once');
+ h.click(1);
+ assert.deepEqual(h.calls.moves,['up','up'],'delayed pointer click must not move a third time');
+ h.emit('pointerdown',h.pointer(62));
+ h.emit('pointerup',h.pointer(62));
+ h.click(1);
+ assert.deepEqual(h.calls.moves,['up','up','up'],'fresh deliberate touch tap still works');
+});
+
+test('keyboard activation cannot clear cancellation ghost-click protection',()=>{
+ const h=padHarness();
+ h.emit('pointerdown',h.pointer(71));
+ h.emit('pointercancel',h.pointer(71));
+ h.click(0);
+ assert.deepEqual(h.calls.moves,['up'],'keyboard activation remains available');
+ h.click(1);
+ assert.deepEqual(h.calls.moves,['up'],'late canceled touch click must stay suppressed');
+ h.emit('pointerdown',h.pointer(72));
+ h.emit('pointerup',h.pointer(72));
+ h.click(1);
+ assert.deepEqual(h.calls.moves,['up','up'],'new touch press remains available');
+});
