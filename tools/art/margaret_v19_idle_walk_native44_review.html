@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gray Crown — Margaret V19 vs original idle / live walk / V5 NPC</title>
+<style>
+:root{color-scheme:dark}body{margin:18px auto;max-width:1050px;padding:0 14px;background:#20262b;color:#e4e9e9;font:14px/1.5 system-ui,sans-serif}
+h1{font-size:19px;margin:0 0 8px}p{max-width:96ch}.hold{color:#ffcfb6}label{display:inline-flex;gap:6px;align-items:center;margin:4px 14px 8px 0}
+select,button,input{accent-color:#b7c9d5}select,button{background:#34434b;color:#fff;border:1px solid #7d9098;border-radius:4px;padding:5px}
+#scroller{overflow-x:auto}#board{display:block;image-rendering:pixelated;image-rendering:crisp-edges;max-width:none}
+#board.zoom{width:1540px}#status{white-space:pre-wrap;font-size:12px;color:#d4dce1}
+small{color:#c8d0d2}
+</style></head><body>
+<h1>マーガレット V19 — 原画・歩行・V5 NPCとの44px視覚比較</h1>
+<p class="hold"><strong>ART HOLD / NOT A GAME SCREENSHOT.</strong> 実PNGをブラウザで44pxに最近傍縮小。停止時の原画とV19は同一方向・同一フレームで比較可能。歩行とV19は異なるポーズなのでA/B採用判定に使わず、切替時の違和感を確認する。</p>
+<label>表示 <select id="motion"><option value="idle">停止：原画 vs V19（同一ポーズ）</option><option value="walk">歩行：原画walk vs V19 idle（連続性診断）</option></select></label>
+<label>背景 <select id="background"><option value="grass">草地</option><option value="stone">石畳</option><option value="gray">無彩色</option></select></label>
+<label>足元 <select id="anchor"><option value="contact">各フレームの最下端を接地</option><option value="nominal">名目アンカー（足元の差を残す）</option></select></label>
+<label>停止コマ <input id="idleFrame" type="range" min="0" max="3" value="0"><output id="idleValue">1/4</output></label>
+<label>歩行コマ <input id="walkFrame" type="range" min="0" max="5" value="0"><output id="walkValue">1/6</output></label>
+<label>検討用拡大 <input id="zoom" type="checkbox">2倍</label>
+<button id="export" type="button">比較PNGを書き出す</button>
+<div id="scroller"><canvas id="board" width="770" height="376" aria-label="4方向、原画・V19・主人公・NPCの44px比較"></canvas></div>
+<p id="status">実PNGを読み込み中…</p>
+<small>列：Margaret原画（idle/walk）、Margaret V19（idle）、Karen、Triton、Sophie、V5村長、V5王国使者。行：正面、左、右、背面。すべて44px描画。2倍拡大は画素確認専用。ゲーム内のカメラ、会話、影、マップ縮尺の再現ではない。</small>
+<script>
+'use strict';
+const specs=[
+ {name:'Margaret 原画',idle:'../../assets/characters/margaret/margaret_idle.png',walk:'../../assets/characters/margaret/margaret_walk.png',kind:'hero'},
+ {name:'Margaret V19',idle:'../../assets/character_trials/margaret_idle_silhouette_sculpt_v19.png',kind:'trial'},
+ {name:'Karen',idle:'../../assets/characters/karen/karen_idle.png',walk:'../../assets/characters/karen/karen_walk.png',kind:'hero'},
+ {name:'Triton',idle:'../../assets/characters/triton/triton_idle.png',walk:'../../assets/characters/triton/triton_walk.png',kind:'hero'},
+ {name:'Sophie',idle:'../../assets/characters/sophie/sophie_idle.png',walk:'../../assets/characters/sophie/sophie_walk.png',kind:'hero'},
+ {name:'村長 V5',idle:'../../assets/npc/featured_residents_charm_v5.png',kind:'npc',cell:3},
+ {name:'王国使者 V5',idle:'../../assets/npc/featured_residents_charm_v5.png',kind:'npc',cell:4}
+];
+const dirs=['正面','左','右','背面'],assets=new Map();
+const canvas=document.getElementById('board'),ctx=canvas.getContext('2d',{willReadFrequently:true});
+const probe=document.createElement('canvas');probe.width=44;probe.height=44;
+const pc=probe.getContext('2d',{willReadFrequently:true});
+const $=id=>document.getElementById(id);
+for(const spec of specs)for(const key of ['idle','walk'])if(spec[key]&&!assets.has(spec[key])){
+ const im=new Image();assets.set(spec[key],im);im.onload=render;im.onerror=render;im.src=spec[key];
+}
+function foot(im,col,row){
+ pc.clearRect(0,0,44,44);pc.imageSmoothingEnabled=false;
+ pc.drawImage(im,col*48,row*48,48,48,0,0,44,44);
+ const data=pc.getImageData(0,0,44,44).data;
+ for(let y=43;y>=0;y--)for(let x=0;x<44;x++)if(data[(y*44+x)*4+3]>0)return y;
+ return -1;
+}
+function ground(x,y){
+ const type=$('background').value;
+ for(let yy=0;yy<60;yy+=4)for(let xx=0;xx<44;xx+=4){
+  const alt=(Math.floor(xx/4)+Math.floor(yy/4))%2;
+  ctx.fillStyle=type==='grass'?(alt?'#738574':'#809080'):type==='stone'?(alt?'#77766e':'#89877e'):(alt?'#777777':'#898989');
+  ctx.fillRect(x+xx,y+yy,4,4);
+ }
+ ctx.fillStyle='#424d43';ctx.fillRect(x,y+49,44,1);
+}
+function render(){
+ const mode=$('motion').value,fi=Number($('idleFrame').value),fw=Number($('walkFrame').value);
+ $('idleValue').textContent=(fi+1)+'/4';$('walkValue').textContent=(fw+1)+'/6';
+ ctx.fillStyle='#20262b';ctx.fillRect(0,0,canvas.width,canvas.height);
+ ctx.textBaseline='top';ctx.font='11px system-ui,sans-serif';
+ const missing=new Set(),invalid=new Set();
+ for(let row=0;row<4;row++)for(let col=0;col<specs.length;col++){
+  const spec=specs[col],url=mode==='walk'&&spec.walk?spec.walk:spec.idle;
+  const img=assets.get(url),x=col*110+33,y=row*94+26;
+  ctx.fillStyle='#e5e9ea';ctx.fillText(spec.name,col*110+5,row*94+4);
+  ground(x,y);
+  if(!img?.complete||!img.naturalWidth){missing.add(url);continue;}
+  const cols=spec.kind==='npc'?9:(mode==='walk'&&spec.walk?6:4);
+  if(img.naturalWidth!==cols*48||img.naturalHeight!==192){invalid.add(url);continue;}
+  const frame=spec.kind==='npc'?(spec.cell||0):mode==='walk'&&spec.walk?fw:fi;
+  const bottom=foot(img,frame,row);
+  if(bottom<0){invalid.add(url+' (empty frame)');continue;}
+  const offset=$('anchor').value==='contact'?49-bottom:49-Math.round((spec.kind==='npc'?44:46)*44/48);
+  ctx.imageSmoothingEnabled=false;
+  ctx.drawImage(img,frame*48,row*48,48,48,x,y+offset,44,44);
+ }
+ $('status').textContent=invalid.size?'アトラス寸法・内容に問題: '+[...invalid].join(' / '):
+  missing.size?'画像の読み込み待ち・失敗: '+[...missing].join(' / ')+'。リポジトリルートのHTTPサーバーから開いてください。':
+  mode==='walk'?'全PNG読み込み済み。歩行とV19待機は異なるポーズ。採用判定不可。':'全PNG読み込み済み。原画とV19は同一フレーム。美術採用はHOLD。';
+}
+for(const id of ['motion','background','anchor','idleFrame','walkFrame'])$(id).addEventListener('input',render);
+$('zoom').addEventListener('change',()=>canvas.classList.toggle('zoom',$('zoom').checked));
+$('export').addEventListener('click',()=>{
+ const a=document.createElement('a');a.download='margaret_v19_'+$('motion').value+'_native44_review.png';
+ a.href=canvas.toDataURL('image/png');a.click();
+});
+render();
+</script></body></html>
