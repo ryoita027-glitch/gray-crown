@@ -6,7 +6,7 @@ ROOT=Path(__file__).resolve().parents[2]
 SRC=ROOT/'assets/character_trials/margaret_idle_adult_mage_v22_structural_trial.png'
 OUT=ROOT/'assets/character_trials/margaret_walk_adult_mage_v23_stride_trial.png'
 def git_sha(p):
- b=p.read_bytes();return hashlib.sha1(b'blob '+str(len(b)).encode()+b'\\0'+b).hexdigest()
+ b=p.read_bytes();return hashlib.sha1(b'blob '+str(len(b)).encode()+b'\0'+b).hexdigest()
 assert git_sha(SRC)=='d7d0aa4eaa7286b85c3cf0181b36c550962b688d'
 src=Image.open(SRC).convert('RGBA');assert src.size==(192,192)
 steps=[(-4,3,0),(-2,2,1),(0,0,2),(4,-3,3),(2,-2,4),(0,0,5)]
@@ -39,5 +39,5 @@ for d in range(4):
   assert cell.getbbox()[3]==45
   assert cell.crop((0,0,48,36)).tobytes()==base.crop((0,0,48,36)).tobytes()
 OUT.parent.mkdir(parents=True,exist_ok=True)
-out.quantize(colors=96,method=Image.Quantize.FASTOCTREE,dither=Image.Dither.NONE).save(OUT,optimize=True)
+out.quantize(colors=24,method=Image.Quantize.FASTOCTREE,dither=Image.Dither.NONE).save(OUT,optimize=True)
 print(OUT,git_sha(OUT))
