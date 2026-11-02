@@ -82,7 +82,7 @@ canvas{width:100%;height:auto;display:block;background:#000;border-radius:10px;i
 .journal-item{font-size:.86rem;color:var(--muted);line-height:1.55;margin-bottom:6px}
 .controls-panel p{margin:.35rem 0;color:var(--muted);font-size:.86rem}
 .mobile-pad{display:none;grid-template-columns:50px 50px 50px;grid-template-rows:46px 46px 46px;gap:5px;justify-content:center;margin-top:10px}
-.mobile-pad button:nth-child(1){grid-column:2}.mobile-pad button:nth-child(2){grid-column:1;grid-row:2}.mobile-pad button:nth-child(3){grid-column:2;grid-row:2}.mobile-pad button:nth-child(4){grid-column:3;grid-row:2}.mobile-pad button:nth-child(5){grid-column:2;grid-row:3}
+.mobile-pad button:nth-child(1){grid-column:2}.mobile-pad button:nth-child(2){grid-column:1;grid-row:2}.mobile-pad button:nth-child(3){grid-column:2;grid-row:2}.mobile-pad button:nth-child(4){grid-column:3;grid-row:2}.mobile-pad button:nth-child(5){grid-column:2;grid-row:3}.mobile-pad button:nth-child(6){grid-column:3;grid-row:3}
 .hidden{display:none!important}
 /* Non-modal progress notice for the hidden adventure menu during file reads.
  * Do not open a story dialogue here: it would block save validation. */
