@@ -1,0 +1,12 @@
+'use strict';
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const {createHarness}=require('./harness');
+const WEST=[[12,6],[11,6],[10,6],[9,6],[8,6],[7,6],[6,6],[5,6],[4,6],[3,6],[2,6],[2,7],[2,8],[2,9],[3,9]];
+const EAST=[[12,6],[13,6],[14,6],[15,6],[16,6],[17,6],[18,6],[19,6],[19,5],[20,5],[21,5],[22,5],[22,6],[22,7],[21,7]];
+function setup(){const h=createHarness();h.evaluate("ALPHA_SESSION.started=true;state.map='cave';state.x=12;state.y=5");return h}
+function accents(h){return JSON.parse(h.evaluate(`JSON.stringify((()=>{const rects=[];const c={color:null,set fillStyle(v){this.color=v},get fillStyle(){return this.color},fillRect(x,y,w,h){rects.push({x,y,w,h,color:this.color})}};RoadCaveQuality.drawAccents(c,'cave');return rects})())`))}
+function segment(rs,x){return rs.find(r=>r.x===x&&r.y===6*32+15&&r.w===32&&r.h===2)?.color}
+test('floor channels trace only real traversable orthogonal corridors',()=>{const h=setup();for(const route of [WEST,EAST])for(let i=0;i<route.length;i++){const [x,y]=route[i];assert.equal(h.evaluate(`isBlocked(${x},${y})`),false,`blocked conduit at ${x},${y}`);if(i)assert.equal(Math.abs(x-route[i-1][0])+Math.abs(y-route[i-1][1]),1)}});
+test('conduit colors match both actual lever switches and v23 save',()=>{const h=setup();const check=(w,e)=>{const rs=accents(h);assert.equal(segment(rs,11*32+16),w?'#d3b97d':'#777064');assert.equal(segment(rs,12*32+16),e?'#d3b97d':'#777064')};check(false,false);h.evaluate("setWorldSwitch('leverWest',true)");check(true,false);h.evaluate("setWorldSwitch('leverWest',false);setWorldSwitch('leverEast',true)");check(false,true);h.evaluate("setWorldSwitch('leverWest',true)");check(true,true);const s=h.GC.Save.migrateLoaded(h.GC.Save.serializeSave());assert.equal(s.schema,23);assert.equal(s.world.switches.leverWest,true);assert.equal(s.world.switches.leverEast,true)});
+test('gate hints respond to lever order without changing objective',()=>{const h=setup(),before=h.evaluate('state.objective');const hint=()=>h.evaluate(`(()=>{const old=say;let text='';say=(speaker,line)=>{text=line;return line};try{objectEvent('innerGate')}finally{say=old}return text})()`);assert.match(hint(),/導管/);h.evaluate("setWorldSwitch('leverWest',true)");assert.match(hint(),/東/);h.evaluate("setWorldSwitch('leverWest',false);setWorldSwitch('leverEast',true)");assert.match(hint(),/西/);assert.equal(h.evaluate('state.objective'),before)});
