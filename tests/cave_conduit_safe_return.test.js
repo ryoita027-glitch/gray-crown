@@ -33,3 +33,10 @@ test('switches remain in v23 saves and reverse lever order is supported',()=>{
  assert.equal(h.evaluate("maps.cave.objects.some(o=>o.id==='crawler')"),true);
  assert.equal(h.evaluate("maps.cave.objects.some(o=>o.id==='boss')"),true);
 });
+test('powered return corridor still triggers its fixed guardian',()=>{
+ const h=setup();
+ h.evaluate("setWorldSwitch('leverEast',true);state.x=19;state.y=6");
+ assert.equal(safe(h,19,6),true);
+ const enemy=h.evaluate("(()=>{const old=startBattle;let called=null;startBattle=id=>{called=id};try{handleStep()}finally{startBattle=old}return called})()");
+ assert.equal(enemy,'crawler');
+});
