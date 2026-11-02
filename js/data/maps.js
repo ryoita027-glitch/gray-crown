@@ -282,7 +282,7 @@ const maps={
   {id:'bookSeller',x:8,y:6,name:'古書店主'},
   {id:'studentReader',x:15,y:8,name:'帝国の学生'}
  ],objects:[{id:'oldMaps',x:17,y:5},{id:'civilHistory',x:6,y:5},{id:'indoorExit',x:11,y:12}]},
- road:{name:'王都への街道',tag:'森を抜ける交易路',tiles:makeRoadTilesV15(),npcs:[{id:'merchant',x:8,y:8,name:'行商人'}],objects:[{id:'wolf',x:11,y:5},{id:'bandit',x:14,y:3},{id:'cave',x:13,y:1},{id:'roadSign',x:10,y:2},{id:'roadCache',x:7,y:6}]},
+ road:{name:'王都への街道',tag:'森を抜ける交易路',tiles:makeRoadTilesV15(),npcs:[{id:'merchant',x:8,y:8,name:'行商人'}],objects:[{id:'wolf',x:11,y:5},{id:'bandit',x:14,y:3},{id:'cave',x:13,y:1},{id:'roadSign',x:10,y:2},{id:'wolfTracks',x:10,y:8},{id:'roadCache',x:7,y:6}]},
  cave:{name:'古砦跡',tag:'放棄された石造砦',tiles:[
  'SSSSSSSSSSSPPSSSSSSSSSSS',
  'SCCCCCCCCCCCCCCCCCCCCCCS',
