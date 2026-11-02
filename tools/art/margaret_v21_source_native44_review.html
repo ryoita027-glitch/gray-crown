@@ -1,23 +1,24 @@
 <!doctype html>
 <html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Margaret V21 — source-backed 44px visual review</title>
+<title>Margaret V21/V22 — source-backed 44px visual review</title>
 <style>body{margin:20px auto;max-width:1100px;padding:0 14px;background:#20272a;color:#e8e9e5;font:14px/1.55 system-ui}h1{font-size:20px}label{display:inline-flex;gap:8px;margin:4px 14px 12px 0;align-items:center}button,select{background:#33464c;color:white;border:1px solid #82969a;border-radius:4px;padding:6px}#scroll{overflow-x:auto}canvas{display:block;image-rendering:pixelated}#status{white-space:pre-wrap;color:#f2cfba}</style></head><body>
-<h1>Margaret V21 — 44px原画・V20・V21・V5 NPC比較</h1>
-<p><strong>ART HOLD / NOT A GAME SCREENSHOT.</strong> 元PNGを直接読み込む静的比較。正面・左・右・背面、同一44px・背景・フレームで表示。V21は試作であり正式歩行・会話には反映されていません。足元の自動補正は接地診断用であり、ゲームの描画位置を保証しません。</p>
+<h1>Margaret V21/V22 — 44px原画・V20・V21・V22・V5 NPC比較</h1>
+<p><strong>ART HOLD / NOT A GAME SCREENSHOT.</strong> 元PNGを直接読み込む静的比較。正面・左・右・背面、同一44px・背景・フレームで表示。V21・V22は試作であり正式歩行・会話には反映されていません。足元の自動補正は接地診断用であり、ゲームの描画位置を保証しません。</p>
 <label>フレーム <input id="frame" type="range" min="0" max="3" value="0"><output id="frameValue">1/4</output></label>
 <label>背景 <select id="bg"><option value="grass">草地</option><option value="stone">石畳</option><option value="neutral">無彩色</option></select></label>
 <label>接地 <select id="anchor"><option value="nominal">元セル座標を保持</option><option value="contact">最下端で揃える</option></select></label>
 <label>拡大 <input id="zoom" type="checkbox"></label>
 <button id="export" type="button">現在の比較をPNG保存</button>
-<div id="scroll"><canvas id="board" width="880" height="420"></canvas></div>
+<div id="scroll"><canvas id="board" width="990" height="420"></canvas></div>
 <p id="status">Loading source PNGs...</p>
-<p>列：正式Margaret / V20 / V21 / Karen / Triton / Sophie / 村長V5 / 王国使者V5。行：正面・左・右・背面。比較は同ポーズの待機のみ。V21は歩行6コマと他アクションが未制作のため採用不可。</p>
+<p>列：正式Margaret / V20 / V21 / V22 / Karen / Triton / Sophie / 村長V5 / 王国使者V5。行：正面・左・右・背面。比較は同ポーズの待機のみ。V22は歩行6コマと他アクションが未制作のため採用不可。</p>
 <script>
 'use strict';
 const specs=[
  ['Margaret正式','../../assets/characters/margaret/margaret_idle.png',4,0],
  ['V20試作','../../assets/character_trials/margaret_idle_adult_mage_v20.png',4,0],
  ['V21試作','../../assets/character_trials/margaret_idle_adult_mage_v21_expressive_trial.png',4,0],
+ ['V22試作','../../assets/character_trials/margaret_idle_adult_mage_v22_structural_trial.png',4,0],
  ['Karen','../../assets/characters/karen/karen_idle.png',4,0],
  ['Triton','../../assets/characters/triton/triton_idle.png',4,0],
  ['Sophie','../../assets/characters/sophie/sophie_idle.png',4,0],
@@ -30,7 +31,7 @@ const sample=document.createElement('canvas');sample.width=44;sample.height=44;c
 function bottom(im,x,y){sc.clearRect(0,0,44,44);sc.imageSmoothingEnabled=false;sc.drawImage(im,x,y,48,48,0,0,44,44);const p=sc.getImageData(0,0,44,44).data;for(let yy=43;yy>=0;yy--)for(let xx=0;xx<44;xx++)if(p[(yy*44+xx)*4+3])return yy;return -1}
 function draw(){
  const frame=+document.querySelector('#frame').value,bg=document.querySelector('#bg').value,anchor=document.querySelector('#anchor').value;
- document.querySelector('#frameValue').textContent=(frame+1)+'/4';ctx.fillStyle='#20272a';ctx.fillRect(0,0,880,420);
+ document.querySelector('#frameValue').textContent=(frame+1)+'/4';ctx.fillStyle='#20272a';ctx.fillRect(0,0,990,420);
  ctx.font='12px system-ui';ctx.textBaseline='top';let missing=[],bad=[];
  for(let d=0;d<4;d++)for(let i=0;i<specs.length;i++){
   const [name,url,cols,npc]=specs[i],im=imgs[i],x=12+i*110,y=24+d*100;
@@ -50,7 +51,7 @@ function draw(){
  document.querySelector('#status').textContent=bad.length?'Invalid atlas: '+[...new Set(bad)].join(', '):missing.length?'Missing/Loading: '+[...new Set(missing)].join(', '):'All real source PNGs loaded. Art approval: HOLD.';
 }
 for(const id of ['frame','bg','anchor'])document.getElementById(id).addEventListener('input',draw);
-document.querySelector('#zoom').addEventListener('change',e=>cv.style.width=e.target.checked?'1760px':'880px');
-document.querySelector('#export').addEventListener('click',()=>{const a=document.createElement('a');a.download='margaret_v21_native44_source_review.png';a.href=cv.toDataURL('image/png');a.click()});
+document.querySelector('#zoom').addEventListener('change',e=>cv.style.width=e.target.checked?'1980px':'990px');
+document.querySelector('#export').addEventListener('click',()=>{const a=document.createElement('a');a.download='margaret_v21_v22_native44_source_review.png';a.href=cv.toDataURL('image/png');a.click()});
 draw();
 </script></body></html>
