@@ -34,9 +34,10 @@ function padHarness(){
  up.dataset.move='up';
  up.setPointerCapture=()=>{calls.captured++};
  const canvas={addEventListener(){},focus(){calls.focused++}};
- const document={addEventListener(){},querySelectorAll:selector=>selector==='[data-move]'?[up]:[]};
+ const document={hidden:false,listeners:{},addEventListener(type,fn){this.listeners[type]=fn},querySelectorAll:selector=>selector==='[data-move]'?[up]:[]};
+ const window={listeners:{},addEventListener(type,fn){this.listeners[type]=fn}};
  const context=vm.createContext({
-  $,canvas,document,ALPHA_SESSION:flags,state,
+  $,canvas,document,window,ALPHA_SESSION:flags,state,
   GC:{Menu:{isPortableImportPending:()=>flags.pending}},
   isInputLocked:()=>flags.locked,
   move:dir=>calls.moves.push(dir),
@@ -62,7 +63,7 @@ function padHarness(){
   intervals.values().next().value()
  };
  const emit=(type,event)=>up.listeners[type](event);
- return {flags,state,visible,calls,timeouts,intervals,pointer,emit,fireTimeout,fireInterval,
+ return {flags,state,visible,calls,timeouts,intervals,document,window,pointer,emit,fireTimeout,fireInterval,
   click:detail=>emit('click',{detail})};
 }
 
@@ -137,4 +138,27 @@ test('pointer cancellation and foreign pointer release stop only the active hold
  assert.equal(h.calls.moves.length,0);
  const css=read('css/game.css');
  assert.match(css,/\.mobile-pad \[data-move\]\{touch-action:none\}/);
+});
+
+
+test('backgrounding or losing focus stops held movement and permits a fresh tap',()=>{
+ const h=padHarness();
+ h.emit('pointerdown',h.pointer(7));
+ h.fireTimeout();
+ assert.equal(h.calls.moves.length,1);
+ assert.equal(h.intervals.size,1);
+ h.document.hidden=true;
+ h.document.listeners.visibilitychange();
+ assert.equal(h.intervals.size,0,'backgrounding stops the repeat timer immediately');
+ h.emit('pointerdown',h.pointer(8));
+ assert.equal(h.timeouts.size,0,'hidden pages must not start new movement');
+ h.document.hidden=false;
+ h.emit('pointerdown',h.pointer(9));
+ assert.equal(h.timeouts.size,1);
+ h.window.listeners.blur();
+ assert.equal(h.timeouts.size,0,'window blur cancels a pending hold');
+ h.emit('pointerdown',h.pointer(10));
+ h.emit('pointerup',h.pointer(10));
+ h.click(1);
+ assert.deepEqual(h.calls.moves,['up','up'],'a fresh foreground tap still moves exactly once');
 });
