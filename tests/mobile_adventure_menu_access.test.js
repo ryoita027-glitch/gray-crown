@@ -125,7 +125,7 @@ test('keyboard Enter/Space activates the focused touch menu instead of interacti
 
 test('focused native controls retain keyboard input without moving the party',()=>{
  const game=read('js/game.js');
- const handler=game.match(/^function handleKeydown\\(e\\)\\{.*$/m);
+ const handler=game.match(/^function handleKeydown\(e\)\{.*$/m);
  assert.ok(handler,'real keyboard handler exists');
  const calls={action:0,move:0,menu:0,dev:0};
  const focus={id:'btnSound',matches:()=>true};
