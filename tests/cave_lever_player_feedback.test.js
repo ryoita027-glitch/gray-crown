@@ -10,9 +10,9 @@ function fort(h,late=false){
 function act(h,id){h.evaluate("objectEvent('"+id+"')")}
 function close(h){h.evaluate('finishDialogueTyping();closeDialogue(false)')}
 
-for(const [first,second,firstGoal,firstHint] of [
- ['leverWest','leverEast','東側の開閉機構を探す','東の歯車'],
- ['leverEast','leverWest','西側の開閉機構を探す','西のレバー']
+for(const [first,second,firstGoal,firstHint,gateHint] of [
+ ['leverWest','leverEast','東側の開閉機構を探す','東の歯車','東側の歯車'],
+ ['leverEast','leverWest','西側の開閉機構を探す','西のレバー','西側のレバー']
 ]){
  test('fort mechanisms explain real progress: '+first+' then '+second,()=>{
   const h=createHarness();fort(h);
@@ -22,7 +22,7 @@ for(const [first,second,firstGoal,firstHint] of [
   assert.match(h.evaluate('state.journal.at(-1)'),/中央の鉄格子はまだ閉じて/);
   close(h);
   act(h,'innerGate');
-  assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),new RegExp(firstHint));
+  assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),new RegExp(gateHint));
   close(h);
   act(h,second);
   assert.equal(h.evaluate('state.objective'),'中央の鉄格子へ戻り、古砦の奥を調べる');
