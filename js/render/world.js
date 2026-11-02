@@ -541,7 +541,32 @@ function drawObject(o){if(RyuneOutskirts.drawObject(ctx,state.map,o,!!state.worl
  }
  if(o.id==='boss'&&!isDefeated('boss')){drawBeast(px,py,'boss')}
  if(o.id==='leverWest'||o.id==='leverEast'){ctx.fillStyle='#5d6066';ctx.fillRect(px+8,py+8,16,18);ctx.fillStyle='#2d3035';ctx.fillRect(px+11,py+11,10,12);ctx.strokeStyle=(o.id==='leverWest'?getWorldSwitch('leverWest'):getWorldSwitch('leverEast'))?'#d2b96b':'#9a7657';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(px+16,py+17);ctx.lineTo(px+((o.id==='leverWest'?getWorldSwitch('leverWest'):getWorldSwitch('leverEast'))?22:10),py+7);ctx.stroke();ctx.fillStyle='#d4c178';ctx.beginPath();ctx.arc(px+16,py+17,3,0,Math.PI*2);ctx.fill()}
- if(o.id==='innerGate'&&!(getWorldSwitch('leverWest')&&getWorldSwitch('leverEast'))){ctx.fillStyle='rgba(26,28,31,.7)';ctx.fillRect(px+1,py+2,30,28);ctx.fillStyle='#81745d';for(let i=0;i<5;i++)ctx.fillRect(px+4+i*6,py+3,3,27);ctx.fillRect(px+2,py+5,28,3);ctx.fillRect(px+2,py+24,28,3)}
+ if(o.id==='innerGate'){
+  // Two visible mechanical catches mirror the real west/east lever switches.
+  // Closed bars stay low until BOTH catches release; an opened gate retains
+  // its raised grille so the world does not simply erase the player's work.
+  const west=getWorldSwitch('leverWest'),east=getWorldSwitch('leverEast');
+  const open=west&&east;
+  ctx.fillStyle='#4a4848';ctx.fillRect(px+1,py+1,4,30);ctx.fillRect(px+27,py+1,4,30);
+  ctx.fillStyle='#a18e72';ctx.fillRect(px+2,py+1,28,4);
+  if(!open){
+   ctx.fillStyle='rgba(26,28,31,.7)';ctx.fillRect(px+5,py+5,22,26);
+   ctx.fillStyle='#81745d';
+   for(let i=0;i<5;i++)ctx.fillRect(px+4+i*6,py+5,3,25);
+   ctx.fillRect(px+2,py+12,28,3);ctx.fillRect(px+2,py+26,28,3);
+  }else{
+   // The passage is clear; only the raised iron ends remain overhead.
+   ctx.fillStyle='#81745d';
+   for(let i=0;i<5;i++)ctx.fillRect(px+4+i*6,py+5,3,4);
+   ctx.fillRect(px+2,py+8,28,3);
+  }
+  // Two 6x5 latches remain legible at 32px and are never quest HUD arrows.
+  for(const [x,active] of [[8,west],[18,east]]){
+   ctx.fillStyle='#2d2926';ctx.fillRect(px+x-1,py+1,8,7);
+   ctx.fillStyle=active?'#d9c17c':'#776758';
+   ctx.fillRect(px+x,py+2,6,5);
+  }
+ }
  // One authored in-world clue, not a blinking HUD icon. Once investigated,
  // the shield has been turned over to expose the stitched old owner's mark.
  if(o.id==='fortShield'){
