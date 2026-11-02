@@ -17,13 +17,14 @@ function harness({importer}={}){
   return nodes.get(id);
  };
  const live={stage:'unsaved',gold:72};
+ const gameState={battle:null,locked:false,inventory:{},gold:live.gold,map:'village',objective:'旅立ち',party:[]};
  const context=vm.createContext({$,document:{getElementById:$},
-  state:{battle:null,inventory:{},gold:live.gold,map:'village',objective:'旅立ち',party:[]},
+  state:gameState,
   maps:{village:{name:'リュネ村'}},MAX_LEVEL:99,expThreshold:()=>100,
   confirm:()=>true,load:()=>{toolbarLoads.push('load');return true},
   save:()=>{menuActions.save++;return true},
   restart:()=>{menuActions.restart++;return true},
-  GC:{Save:{canPersistNow:()=>true,hasUsableStoredAdventure:()=>true,hasArchivedAdventure:()=>false,hasQuarantinedSaves:()=>false,
+  GC:{Save:{canPersistNow:()=>!gameState.battle&&!gameState.locked&&['dialogueBox','levelUpPanel','battleResult'].every(id=>$(id).classList.contains('hidden')),hasUsableStoredAdventure:()=>true,hasArchivedAdventure:()=>false,hasQuarantinedSaves:()=>false,
    readPortableSaveFile:file=>{files.push(file);return importer?.(file,$,live)??false},
    restoreArchivedAdventure:()=>{menuActions.restore++;return true}},
    Log:{error:()=>{}}}
@@ -419,5 +420,45 @@ test('failed or rejected pending import never restores menu over an active battl
   h.gameState.battle=null;
   h.reopen();
   assert.equal(h.hidden(),false,'adventure menu must work again after battle');
+ }
+});
+
+
+// A scripted transition can finish while the OS file picker is still reading.
+// A failed import must not put the retry menu over a level-up, battle result,
+// or temporary scripted lock; the player can reopen it once gameplay is idle.
+test('failed import keeps the retry menu behind transient gameplay panels',async()=>{
+ for(const active of ['levelUpPanel','battleResult','locked']){
+  let finish;
+  const h=harness({importer:()=>new Promise(resolve=>{finish=resolve})});
+  h.select();await settle();
+  assert.equal(h.pending(),true);
+  if(active==='locked')h.gameState.locked=true;
+  else h.$(active).classList.remove('hidden');
+  finish(false);await settle();
+  assert.equal(h.hidden(),true,active+' must remain unobstructed');
+  assert.equal(h.pending(),false,'the import lock must be released');
+  assert.equal(h.$('portableImportStatus').classList.contains('hidden'),true);
+  if(active==='locked')h.gameState.locked=false;
+  else h.$(active).classList.add('hidden');
+  h.reopen();
+  assert.equal(h.hidden(),false,'retry menu must reopen after '+active+' ends');
+ }
+});
+
+test('rejected import cannot cover transient gameplay panels',async()=>{
+ for(const active of ['levelUpPanel','battleResult','locked']){
+  let rejectRead;
+  const h=harness({importer:()=>new Promise((_,reject)=>{rejectRead=reject})});
+  h.select();await settle();
+  if(active==='locked')h.gameState.locked=true;
+  else h.$(active).classList.remove('hidden');
+  rejectRead(new Error('file access failed'));await settle();
+  assert.equal(h.hidden(),true,active+' must remain unobstructed after rejection');
+  assert.equal(h.pending(),false);
+  if(active==='locked')h.gameState.locked=false;
+  else h.$(active).classList.add('hidden');
+  h.reopen();
+  assert.equal(h.hidden(),false,'menu must recover after '+active+' ends');
  }
 });
