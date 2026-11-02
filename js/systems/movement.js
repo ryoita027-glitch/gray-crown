@@ -100,7 +100,7 @@ function enterCave(){
  state.events.choices['early.fortSupplyMark']='seen';
  addJournal('古砦の石門で、東の旧兵舎へ続く補給印を見つけた。物資が残っているかもしれない。');
  return saySequence([
-  {speaker:'ナレーション',text:'崩れた石門の内側に、東の旧兵舎を指す古い補給印が残っている。足元の磨り減った石敷きは右奥へ続いている。'},
+  {speaker:'ナレーション',text:'崩れた石門の内側に、東の旧兵舎を指す古い補給印が残っている。足元の磨り減った石敷きは右奥へ続いている。北側の崩れた内壁は、中央の鉄格子だけが通路になっている。'},
   followedSign
    ?{speaker:'ソフィ',text:'「戦う人も、ここで食べて休んでいたんですね」'}
    :{speaker:'カレン',text:'「王都への道だけじゃない。ここにも誰かがいた跡があるんだね」'},

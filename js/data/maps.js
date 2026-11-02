@@ -291,8 +291,8 @@ const maps={
  'SCCCCCCCCCCCCCCCCCCCCCCS',
  'SCCCCCCSSSSCCCCSSSSCCCCS',
  'SCCCCCCSCCCCCCCCCCSCCCCS',
- 'SCCCCCCSCCCCCCCCCCSCCCCS',
- 'SCCCCCCSCCSSSSSSCCSCCCCS',
+ 'SSSSSSSSSSSSCSSSSSSSSSSS',
+ 'SCCCCCCSCCSSCSSSCCSCCCCS',
  'SCCCCCCCCCCCCCCCCCCCCCCS',
  'SCCSSSSCCCCSSCCCCSSSSCCS',
  'SCCCCCCCCCCCCCCCCCCCCCCS',
@@ -303,7 +303,7 @@ const maps={
  'SCCCCCCCCCCCCPPPPPPPPCCS',
  'SSSSSSSSSSSSPPSSSSSSSSSS',
  ],npcs:[],objects:[
-   {id:'chest1',x:4,y:3},{id:'chest2',x:19,y:10},{id:'bats',x:4,y:8},{id:'crawler',x:20,y:6},
+   {id:'chest1',x:4,y:5},{id:'chest2',x:19,y:10},{id:'bats',x:4,y:8},{id:'crawler',x:20,y:6},
    {id:'leverWest',x:3,y:8},{id:'leverEast',x:21,y:6},{id:'banner',x:3,y:6},{id:'fortShield',x:16,y:8},{id:'caveRest',x:5,y:12},{id:'rations',x:20,y:12},{id:'innerGate',x:12,y:4},{id:'boss',x:12,y:3},{id:'exit',x:12,y:14},{id:'northExit',x:11,y:0}
  ]},
  northroad:{name:'王都への旧街道',tag:'城壁へ続く古道',tiles:makeNorthRoadTiles(),npcs:[{id:'scout',x:12,y:3,name:'王国軍の斥候'}],objects:[{id:'southExit',x:11,y:14},{id:'milestone',x:9,y:6},{id:'northroadVista',x:13,y:5}]},
