@@ -44,7 +44,7 @@ function draw(){
   const sx=(cols===9?npc:frame)*48,sy=d*48,foot=bottom(im,sx,sy);
   if(foot<0){bad.push(url+' empty');continue}
   ctx.imageSmoothingEnabled=false;
-  const dy=anchor==='contact'?58-foot:0;
+  const dy=anchor==='contact'?58-foot:58-Math.round(44*44/48);
   ctx.drawImage(im,sx,sy,48,48,x+30,y+dy,44,44);
  }
  document.querySelector('#status').textContent=bad.length?'Invalid atlas: '+[...new Set(bad)].join(', '):missing.length?'Missing/Loading: '+[...new Set(missing)].join(', '):'All real source PNGs loaded. Art approval: HOLD.';
