@@ -159,3 +159,23 @@ test('focused native controls retain keyboard input without moving the party',()
  keydown({key:'m',repeat:false,preventDefault:()=>{}});
  assert.deepEqual(calls,{action:1,move:1,menu:1,dev:0},'unfocused gameplay hotkeys remain available');
 });
+
+test('Escape still closes an open modal when its close button has keyboard focus',()=>{
+ const game=read('js/game.js');
+ const handler=game.match(/^function handleKeydown\(e\)\{.*$/m);
+ assert.ok(handler,'real keyboard handler exists');
+ let modalOpen=true;
+ const context=vm.createContext({
+  document:{activeElement:{id:'modalClose',matches:()=>true}},
+  GC:{Menu:{isPortableImportPending:()=>false}},
+  ALPHA_SESSION:{started:true},state:{battle:null},
+  $:id=>({classList:{
+   contains:()=>id==='modal'?!modalOpen:true,
+   add:name=>{if(id==='modal'&&name==='hidden')modalOpen=false}
+  }}),
+  ensureAudio:()=>{}
+ });
+ vm.runInContext(handler[0],context,{filename:'js/game.js handleKeydown'});
+ vm.runInContext('handleKeydown',context)({key:'Escape',repeat:false,preventDefault:()=>{}});
+ assert.equal(modalOpen,false,'focused modal close button must not trap Escape');
+});
