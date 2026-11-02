@@ -635,7 +635,14 @@ function drawObject(o){if(RyuneOutskirts.drawObject(ctx,state.map,o,!!state.worl
    ctx.fillRect(px+dx+8,py+dy,2,3);
   }
  }
- if(o.id==='roadSign'){ctx.fillStyle='#73583b';ctx.fillRect(px+14,py+7,4,22);ctx.fillStyle='#b09262';ctx.fillRect(px+3,py+4,26,12);ctx.fillStyle='#403329';ctx.font='bold 8px system-ui';ctx.textAlign='center';ctx.fillText('古砦→',px+16,py+13);ctx.textAlign='start'}
+ // Both existing exits are readable in-world before the player opens the HUD.
+ if(o.id==='roadSign'){
+  ctx.fillStyle='#73583b';ctx.fillRect(px+14,py+4,4,27);
+  ctx.fillStyle='#b09262';ctx.fillRect(px+2,py+2,28,12);
+  ctx.fillStyle='#a78958';ctx.fillRect(px+5,py+16,24,11);
+  ctx.fillStyle='#403329';ctx.font='bold 7px system-ui';ctx.textAlign='center';
+  ctx.fillText('王都↑',px+16,py+11);ctx.fillText('砦→',px+17,py+24);ctx.textAlign='start'
+ }
  if(o.id==='civilianWaymark'){
   ctx.save();
   // The restored sign becomes readable, while the broken version leans toward the road.

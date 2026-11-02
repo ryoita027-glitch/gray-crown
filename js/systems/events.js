@@ -2033,12 +2033,35 @@ function inlineObjectEvent(id){
   if(id==='bandit'&&!structuredCondition('roadBandit'))return say('街道のならず者','「荷物と金を置いていけ。こっちも腹が減ってるんだ」',[{label:'戦う',fn:()=>startSymbolEncounter('bandit','roadBandit')},{label:'離れる',fn:()=>say('マーガレット','「本道は通れる。無理に相手をする必要はないわ」')}]);
   if(id==='cave')return enterCave();
   if(id==='roadSign'){
-   // After the encounter, stop warning about a wolf that is no longer here.
-   // Both scout histories now point to the visible old-fort stone entrance.
-   if(isDefeated('wolf'))return state.events.choices['early.wolfScout']==='read'
-    ?say('マーガレット','「足跡は覚えたわ。狼はもういない。古砦へ進むなら、道標の右手に見える崩れた石門よ」')
-    :say('古い道標','「王都　北」「旧砦　東」。狼の足跡は残るが、獣の気配は消えた。東の崩れた石門が古砦の入口だ。');
-   if(state.events.choices['early.wolfScout']==='read')return say('マーガレット','「足跡は覚えたわ。灰牙狼は最初に一番守りの薄い相手を狙う。カレンの庇うが使える。古砦は右手の石門よ」');
+   // After the first wolf, this is a genuine, reversible choice of route:
+   // the fort is optional, and the north boundary already reaches the capital.
+   const scouted=state.events.choices['early.wolfScout']==='read';
+   if(isDefeated('wolf')){
+    const cleared=isDefeated('boss');
+    const guide=scouted
+     ?'「足跡は覚えたわ。狼はもういない。古砦は右手の崩れた石門。北の本道も王都への旧街道に続くわ」'
+     :'「王都　北」「旧砦　東」。狼の足跡は残るが、獣の気配は消えた。東の崩れた石門が古砦の入口。北の本道は王都への旧街道へ続く。';
+    // A cleared fort has its own natural line, not a new early route choice.
+    if(cleared)return say(scouted?'マーガレット':'古い道標',scouted
+     ?'「狼はもういない。古砦の獣もすでに倒したわ。東の石門からも北へ抜けられるけど、王都へ急ぐなら街道北端よ」'
+     :'「王都　北」「旧砦　東」。狼の気配は消えた。古砦の獣はすでに倒した。東の石門からも北へ抜けられる。');
+    if(storyAtLeast(STORY_STAGES.CAPITAL))
+     return say(scouted?'マーガレット':'古い道標',guide);
+    return say(scouted?'マーガレット':'古い道標',guide,[
+     {label:'東の石門から古砦を調べる',fn:()=>{
+      state.events.choices['early.roadForkIntent']='fort';
+      state.objective=roadReturnObjective();renderHud();
+      return say('マーガレット','「石門はこの東。古砦を調べるなら、危険だと思った時に引き返せるよう道を覚えておきましょう」');
+     }},
+     {label:'北の本道から王都へ急ぐ',fn:()=>{
+      state.events.choices['early.roadForkIntent']='north';
+      state.objective=roadReturnObjective();renderHud();
+      return say('カレン','「王都へ急ごう。古砦は寄らなくても進めるんだね」');
+     }}
+    ])
+   }
+   // Keep the original pre-wolf scouting interaction and first-turn payoff.
+   if(scouted)return say('マーガレット','「足跡は覚えたわ。灰牙狼は最初に一番守りの薄い相手を狙う。カレンの庇うが使える。古砦は右手の石門よ」');
    return say('古い道標','「王都　北」「旧砦　東」。足元には新しい狼の足跡が続いている。東の崩れた石門が古砦の入口だ。',[
     {label:'足跡を調べて備える',fn:()=>{
       if(state.events.choices['early.wolfScout'])return;
