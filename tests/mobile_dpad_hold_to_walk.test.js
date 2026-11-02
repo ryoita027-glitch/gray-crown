@@ -185,3 +185,26 @@ test('interrupted short presses never deliver a delayed ghost click',()=>{
  h.click(1);
  assert.deepEqual(h.calls.moves,['up'],'a new deliberate tap still moves exactly once');
 });
+
+test('dialogue blocks touch direction even when the scripted input lock is clear',()=>{
+ const h=padHarness();
+ h.visible.add('dialogueBox');
+ h.emit('pointerdown',h.pointer(21));
+ h.click(1);
+ assert.equal(h.timeouts.size,0,'dialogue must not start a movement hold');
+ assert.deepEqual(h.calls.moves,[],'direction tap must not move the party behind dialogue');
+ h.visible.delete('dialogueBox');
+ h.emit('pointerdown',h.pointer(22));
+ h.emit('pointerup',h.pointer(22));
+ h.click(1);
+ assert.deepEqual(h.calls.moves,['up'],'normal touch movement resumes after dialogue');
+ h.emit('pointerdown',h.pointer(23));
+ h.fireTimeout();
+ assert.equal(h.calls.moves.length,2,'held movement begins during exploration');
+ h.visible.add('dialogueBox');
+ h.fireInterval();
+ assert.equal(h.intervals.size,0,'dialogue opening during a hold stops repetition');
+ h.emit('pointerup',h.pointer(23));
+ h.click(1);
+ assert.equal(h.calls.moves.length,2,'dialogue transition cannot add a release step');
+});
