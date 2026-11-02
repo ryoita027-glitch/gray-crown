@@ -9,7 +9,7 @@ test('V23 experimental walk is source-pinned, 4 directions x 6 frames, no face/s
  const src=read('assets/character_trials/margaret_idle_adult_mage_v22_structural_trial.png');
  const bytes=read('assets/character_trials/margaret_walk_adult_mage_v23_stride_trial.png');
  assert.equal(sha(src),'d7d0aa4eaa7286b85c3cf0181b36c550962b688d');
- assert.equal(sha(bytes),'05d46c7b5ce1ff259bb04bb0d3adbe4f916d9bf0');
+ assert.equal(sha(bytes),'d79ad9ecd9c4b3f6b5ede4e1c4272a8f69891ea3');
  const a=PNG.decode(bytes),s=PNG.decode(src);
  assert.equal(a.width,288);assert.equal(a.height,192);
  for(let d=0;d<4;d++){

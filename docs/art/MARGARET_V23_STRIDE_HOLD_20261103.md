@@ -3,7 +3,7 @@
 
 ## Work
 - Rebuilt 4 directions × 6 walk frames at 48×48 cells, 288×192 PNG from V22 idle, keeping face, hair, book, shoulder and upper body exactly intact above y=36.
-- Alternating boot positions and contact height (planted y=44 / lifted y=42), hem split and modest cloth swing instead of V22's whole-upper-body sliding. Source: `tools/art/margaret_v23_stride_trial.py`.
+- Alternating boot positions and contact height (planted y=44 / lifted y=42), hem split and modest cloth swing instead of V22's whole-upper-body sliding. Source: `tools/art/margaret_v23_stride_trial.py`. PNG uses an exact RGBA palette (30 colors; no quantization loss), with Git blob `d79ad9ecd9c4b3f6b5ede4e1c4272a8f69891ea3`.
 - `tools/art/margaret_v22_v23_walk_native44_review.html` compares both actual PNGs at 44px nearest-neighbor, same poses and ground line; optional 145ms frame stepping. Static A/B, **not** live Ryune capture.
 
 ## Art review

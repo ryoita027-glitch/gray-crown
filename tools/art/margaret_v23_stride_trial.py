@@ -39,5 +39,10 @@ for d in range(4):
   assert cell.getbbox()[3]==45
   assert cell.crop((0,0,48,36)).tobytes()==base.crop((0,0,48,36)).tobytes()
 OUT.parent.mkdir(parents=True,exist_ok=True)
-out.quantize(colors=24,method=Image.Quantize.FASTOCTREE,dither=Image.Dither.NONE).save(OUT,optimize=True)
+colors=sorted(set(out.getdata()))
+lut={c:i for i,c in enumerate(colors)}
+indexed=Image.frombytes('P',out.size,bytes(lut[c] for c in out.getdata()))
+indexed.putpalette([v for c in colors for v in c[:3]])
+indexed.info['transparency']=bytes(c[3] for c in colors)
+indexed.save(OUT,optimize=True)
 print(OUT,git_sha(OUT))
