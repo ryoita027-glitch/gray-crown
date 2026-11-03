@@ -1219,7 +1219,8 @@ function northRoadScoutVisit(){
  // The last entry was from the city's south gate, regardless of the older
  // road/fort switch (which still selects the correct SOUTH exit).
  if(fromCapital){
-  if(fromFort&&state.events.choices['early.fortScoutAid']!=='received')return grantFortScoutAid('capital');
+  // Returning from Aldina must not silently accept the scout's reward.
+  // Even when the southern exit leads to the fort, the report is voluntary.
   const south=fromRoad?'森の街道':'古砦の北門';
   const aided=state.events.choices['early.fortScoutAid']==='received';
   const witness=state.events.choices['early.fortScoutWitness'];
