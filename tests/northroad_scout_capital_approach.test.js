@@ -37,14 +37,32 @@ test('city revisit preserves fort scout memory and offers the deferred banner wi
  assert.equal(h.evaluate("state.inventory['薬草']"),3);
 });
 
-test('a fort clear reported only after visiting Aldina still earns exactly one herb',()=>{
+test('fort-route city return offers an optional report, preserves deferral and grants aid once',()=>{
  const h=cityWalk(false,true,false,'raise');
  const before=h.evaluate("state.inventory['薬草']");
- assert.match(scout(h),/王都の南門から戻ってきた/);
+ assert.match(scout(h),/王都の南門から出てきた/);
+ assert.match(h.evaluate("dialogueChoices.map(c=>c.label).join('|')"),/古砦の北門の状況を報告する/);
+ assert.equal(h.evaluate("state.inventory['薬草']"),before);
+ h.evaluate("dialogueChoices.find(c=>c.label.includes('報告せず')).fn()");
+ assert.equal(h.evaluate("state.events.choices['early.fortScoutAid']"),undefined);
+ assert.equal(h.evaluate("state.inventory['薬草']"),before);
+ const deferred=h.GC.Save.migrateLoaded(h.GC.Save.serializeSave());
+ assert.equal(deferred.schema,23);
+ assert.equal(deferred.world.switches.northRoadFromRoad,false);
+ assert.equal(deferred.world.switches.northRoadFromCapital,true);
+ assert.equal(deferred.events.choices['early.fortScoutAid'],undefined);
+ scout(h);
+ h.evaluate("dialogueChoices.find(c=>c.label.includes('状況を報告')).fn()");
+ assert.match(h.evaluate("DIALOGUE_TYPE.fullHTML"),/王都の南門から戻ってきた/);
  assert.equal(h.evaluate("state.inventory['薬草']"),before+1);
  assert.equal(h.evaluate("state.events.choices['early.fortScoutAid']"),'received');
+ assert.equal(h.evaluate("getWorldSwitch('northRoadFromRoad')"),false);
  scout(h);
  assert.equal(h.evaluate("state.inventory['薬草']"),before+1);
+ assert.match(h.evaluate("dialogueChoices.map(c=>c.label).join('|')"),/結び直した古い軍旗のことを伝える/);
+ const received=h.GC.Save.migrateLoaded(h.GC.Save.serializeSave());
+ assert.equal(received.events.choices['early.fortScoutAid'],'received');
+ assert.equal(received.inventory['薬草'],before+1);
 });
 
 test('a first-time forest route cannot claim fort aid just by walking out of the city',()=>{
