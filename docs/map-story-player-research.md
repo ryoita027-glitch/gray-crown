@@ -728,3 +728,14 @@ Execute `node --test tests/finalfield_civilian_waymark.test.js` on the PR branch
 **Verification:** The complete modified `js/systems/events.js` parsed as JavaScript in V8. The exact extracted source functions passed **23 isolated V8 mock assertions** covering first homecoming → gift → persistent revisit, keep/reoffer, no food, earlier gift, prewar gift and recruit-thanks priority. Four native Node-harness tests were added and syntax-parsed. **Not executed:** native Node harness, actual browser walking, real Save/Continue roundtrip, CI, human playtest. This stacked PR remains **Draft/HOLD**, not approved for main.
 
 **Next:** Run `node --test tests/capital_ration_homecoming_optional_gift.test.js tests/capital_ration_homecoming.test.js tests/capital_ration_gift.test.js tests/fort_ration_cleared_return_dialogue.test.js` on the checked-out PR branch. Then browser-walk the ration crate → Aldina queue both before and after the war, including saving after the choice and reloading. Check that the optional prompt appears only after the mother's three-line account, that a late gift does not retroactively alter the earlier war narration, and that no item can be spent twice.
+
+
+## 2026-11-04 — postwar recruit errand route consistency
+
+**Confirmed from source:** `capitalRationMotherVisit()` originally appended the recruit's thank-you request on the first homecoming visit whenever the recruit had carried water, but its revisit path and `capitalRecruit` delivery path require a recognized kingdom/empire final approach. On unsupported endings the mother could therefore request an errand with no corresponding delivery option. This is a source-derived defect, not a human playtest finding.
+
+**Change:** Apply the same route/approach eligibility check to the first homecoming dialogue as on revisits. Preserve the mother's injury account, optional food gift, existing save keys and supported route dialogue. No new characters or story disclosures.
+
+**External signals:** No new Steam review verified in this run; prior individual-review notes remain context, not representative market evidence. **Unverified:** Node tests, browser traversal, real save reload, CI, human feedback. Draft/HOLD; main untouched.
+
+**Next:** Play through kingdom, empire and third-route homecomings, check the mother's first/revisit dialogue and whether the recruit actually accepts the message; run native regression tests before merge.
