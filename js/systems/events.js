@@ -2273,8 +2273,15 @@ function inlineObjectEvent(id){
    renderHud();sfx('discovery');draw();
    // After the boss, a solved lever puzzle is not the useful takeaway.
    // Acknowledge the ration and give the player a forward direction instead.
-   return say('トリトン',earlyJourney&&isDefeated('boss')
-    ?'「補給印の先にあったぞ！　携帯食が1個。これで準備はできた。北門から王都への道に戻ろう！」'
+   // Once the boss is cleared, the lever clue is obsolete even after a city visit.
+   // Connect the recovered food to the existing city choice only if it is known.
+   const queueKnown=isEventComplete('early.capitalRationIntro')&&state.events.choices['early.capitalRationGift']!=='donate';
+   const foodChoice=queueKnown?'王都の配給列へ届けるか、旅の備えにするかも選べるな。':'';
+   const clearedLine=canRetrace
+    ?'「補給印の先にあったぞ！　携帯食が1個。北門へ戻るなら、来た道を案内するよ。'+foodChoice+'」'
+    :'「補給印の先にあったぞ！　携帯食が1個。北門から王都への旧街道へ進める。'+foodChoice+'」';
+   return say('トリトン',isDefeated('boss')
+    ?clearedLine
     :state.events.choices['early.fortSupplyMark']==='seen'
     ?'「補給印の先にあったぞ！　携帯食が1個。それと蓋の裏に『中央格子・東西二機構』って整備印がある！」'
     :'「携帯食が1個残ってた！　蓋の裏には『中央格子・東西二機構』って古い整備印もあるぞ！」',retraceChoices());
