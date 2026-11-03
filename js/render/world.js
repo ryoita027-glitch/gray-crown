@@ -761,6 +761,15 @@ function drawObject(o){if(RyuneOutskirts.drawObject(ctx,state.map,o,!!state.worl
    ctx.fillStyle='#d0ba8e';ctx.fillRect(sx+8,sy+18,6,2);ctx.fillRect(sx+19,sy+20,6,2);
   }
  }
+ if(o.id==='southForkSign'&&state.map==='northroad'){
+  // An ordinary verge sign, not a glowing waypoint. It blocks only the grass
+  // at (10,13); the two central walk lanes remain fully open.
+  ctx.fillStyle='#514738';ctx.fillRect(px+14,py+9,4,21);
+  ctx.fillStyle='#b9a27d';ctx.fillRect(px+3,py+2,26,12);
+  ctx.fillStyle='#aa9575';ctx.fillRect(px+4,py+16,24,11);
+  ctx.fillStyle='#463b30';ctx.font='bold 8px system-ui';ctx.textAlign='center';
+  ctx.fillText('森',px+16,py+11);ctx.fillText(isDefeated('boss')?'砦':'北門',px+16,py+24);ctx.textAlign='start';
+ }
  if(o.id==='northroadVista'){
   // Low, worn viewing slab at the end of the existing east layby. No glowing
   // pickup treatment; the ordinary adjacent interaction diamond is enough.

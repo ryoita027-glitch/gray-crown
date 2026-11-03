@@ -124,19 +124,33 @@ function enterNorthRoad(source='cave'){const revisiting=storyAtLeast(STORY_STAGE
  advanceStory(STORY_STAGES.CAPITAL_APPROACH,null,source==='road'
   ?'高台の道を北へ進み、王都へ入る'
   :'王国軍の斥候に話を聞く');say('ナレーション',source==='road'?'森の街道を抜けると、王都へ続く高台の道へ出た。|遠くに白い城壁が見える。':'古砦跡を抜けると、王都へ続く旧街道に出た。遠くに王国軍の旗が見える。')}
-function returnCaveNorth(){
- if(getWorldSwitch('northRoadFromRoad')){
-  useMapTransition('northRoadToRoad');
-  if(!storyAtLeast(STORY_STAGES.CAPITAL))state.objective=roadReturnObjective();
-  renderHud();
-  say('ナレーション',isDefeated('boss')
-   ?'王都手前の高台から街道へ戻った。古砦の北門も、街道北端も通れる。'
-   :'王都手前の高台から街道へ戻った。東の石門から古砦を調べることもできる。');
-  return
- }
+// The cleared fort makes BOTH physical southern routes usable. The choice is
+// offered at the existing boundary (or roadside sign), not an invented warp.
+function northRoadToForest(){
+ useMapTransition('northRoadToRoad');
+ if(!storyAtLeast(STORY_STAGES.CAPITAL))state.objective=roadReturnObjective();
+ renderHud();
+ return say('ナレーション',isDefeated('boss')
+  ?'高台の南端から森の街道へ下りた。古砦の北門も通れるが、今回は森を選んだ。'
+  :'王都手前の高台から森の街道へ戻った。古砦へは東の石門から入れる。');
+}
+function northRoadToFort(){
+ if(!isDefeated('boss'))return say('マーガレット','「古砦の北門は、まだ奥の獣が塞いでいるわ。森の街道から回りましょう」');
  setMap('cave',11,1,'down',[[12,1],[13,1],[14,1]]);
  if(!storyAtLeast(STORY_STAGES.CAPITAL))state.objective='古砦跡を自由に探索できる';
- renderHud();say('ナレーション','古砦跡の北側へ戻った。')
+ renderHud();
+ return say('ナレーション','高台の南端から古砦の北門へ下りた。森の街道へは古砦の南出口からも戻れる。');
+}
+function returnCaveNorth(){
+ if(state.map!=='northroad')return false;
+ // Before the boss is defeated, arriving from the forest cannot unlock
+ // the fort's rear gate. Do not offer a dead-end or a story bypass.
+ if(!isDefeated('boss'))return northRoadToForest();
+ return say('旧街道の南端','南へ下る道が二つある。森の街道はリュネ村方面、古砦の北門は探索済みの砦へ続く。どちらへ向かう？',[
+  {label:'森の街道へ下る（リュネ村方面）',fn:()=>northRoadToForest()},
+  {label:'古砦の北門へ下る（古砦跡）',fn:()=>northRoadToFort()},
+  {label:'引き返して王都方面へ進む',fn:()=>say('カレン','「まだここで見ておきたいものがあるね」')}
+ ]);
 }
 
 function returnNorthRoadFromCapital(){
