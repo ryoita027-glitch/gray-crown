@@ -784,7 +784,9 @@ function capitalRationMotherVisit(){
      return say('配給待ちの母親','「息子は家で休んでいます。あの日、話を聞いてくれてありがとう」',[
       {label:'携帯食のことをもう一度考える',fn:()=>offerCapitalHomecomingRationGift()}
      ]);
-    return offerCapitalHomecomingRationGift();
+    return say('配給待ちの母親','「息子は家で休んでいます。あの日、話を聞いてくれてありがとう」',[
+     {label:'携帯食について相談する',fn:()=>offerCapitalHomecomingRationGift()}
+    ]);
    }
    return say('配給待ちの母親',gifted
     ?'「あの携帯食のこと、今も覚えています。息子は家にいます。これからの暮らしは、少しずつ考えます」'
