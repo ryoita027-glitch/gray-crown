@@ -439,7 +439,7 @@ test('held Enter keeps the newly opened menu visible after focus moves to Close'
  const game=read('js/game.js');
  const bind=game.match(/^function bindAppControls\(\)\{.*$/m);
  assert.ok(bind,'real game button handlers must exist');
- const hidden=new Set(['modal']);
+ const hidden=new Set(['modal','dialogueBox','levelUpPanel','battleResult']);
  const nodes=new Map();
  let focused='mobileMenu',opened=0;
  const $=id=>{
