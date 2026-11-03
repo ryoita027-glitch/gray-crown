@@ -1,3 +1,17 @@
+## 2026-11-04 00:43 JST — respect the postwar family's food decision on revisits
+
+**Repository-verified gap:** In Draft #330 (461f01a5), selecting 「今は旅のために残す」 from the mother's postwar food prompt changed neither the existing Save-v23 choices nor the subsequent interaction. Revisiting with the same ration immediately repeated the entire donation prompt. In addition, the separate recruit thank-you reminder returned early and hid the ration decision until an unrelated NPC was visited. Both are source-derived UX issues, **not observed human complaints**.
+
+**Player signals checked 2026-11-04:** [Sea of Stars community reviews](https://steamcommunity.com/app/1244090/reviews/) include a negative October 10 review criticizing low-value detours and a positive October 3 review praising discoveries; [Chained Echoes reviews](https://steamcommunity.com/app/1229240/reviews/) include an October 28 negative review criticizing characters who lack agency. Review pages do not reliably show the posting year for every entry; these are **individual, nonrepresentative opinions**. **Design hypothesis:** a voluntary choice to keep a useful resource should be remembered, not immediately nagged about, while reconsideration should stay discoverable and should not require an unrelated errand.
+
+**Playable change:** The mother's postwar keep decision now records `capital.rationHomecomingGift='keep'` in the existing choices dictionary. Subsequent visits show a short remembered line and an **opt-in** 「携帯食のことをもう一度考える」 option, not the original donation pitch; if no ration is held the impossible option is hidden. Donation overwrites `keep` with `donate`, removes one ration, and retains the existing family response. When the mother still wants her thanks delivered to the recruit, the thanks line remains first but now offers a voluntary ration discussion on the same visit; the recruit echo remains independent. No new item, NPC, location, karma, route, art, mandatory quest, or save schema. The four companions' previous reactions and the mother's account remain unchanged.
+
+**Verification:** Existing harness tests updated to check one-time keep journal, Save-v23 migration, non-nagging revisit, zero-inventory hiding, deliberate reconsideration/donation, and recruit-thanks independence. **Not yet executed:** native Node harness, browser dialogue and walking, actual Save/Continue roundtrip, CI, human playtest. Draft/HOLD; main unchanged.
+
+**Next player risk:** Run the exact Node tests, then browser-walk the mother → recruit → mother route after a postwar keep decision, including Save/Continue. Check whether the reconsider option feels natural and whether the scout/fort side quest chain has accumulated too many optional dialogue steps.
+
+---
+
 ## 2026-11-03 09 JST — Aldina south-road revisits no longer replay the first welcome
 
 **Confirmed in exact repository source:** On Draft #315 at `3d423734`, stepping south out of Aldina used `travelScene(...,'第一章 — 白い旗',...)` even after later story progress. Walking back north called `enterCapital(true)` unconditionally, replaying the cheering first-arrival narration and overwriting the current objective via `advanceStory(CAPITAL)`. Re-entering the north road from the forest/fort also reset the displayed chapter. This is a source-derived narrative and navigation defect, **not** a human playtest result. Main is still `d689aabb`; work is stacked on #315, away from unrelated mobile/art PRs.
