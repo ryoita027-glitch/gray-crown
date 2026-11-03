@@ -1,3 +1,17 @@
+## 2026-11-04 01:43 JST — preserve the ration choice while the recruit's thanks are pending
+
+**Repository-confirmed defect:** On Draft #331 (5b557b5b), the mother has a special early-return branch while her thanks to the eastern recruit remain undelivered. That branch checks only whether the ration has been donated, not whether the player previously chose to keep it. As a result, a subsequent visit again shows the generic ration solicitation rather than the explicit reconsideration action. After a late donation, the same branch also omits the family's acknowledgment until the recruit errand is completed. These are source-derived defects, **not** findings from a human playtest.
+
+**External player signals checked 2026-11-04:** The [Sea of Stars Steam community page](https://steamcommunity.com/app/1244090) displays an individual negative review dated October 31 criticizing generic protagonists, weak progression and padded exploration; the [Chained Echoes community reviews](https://steamcommunity.com/app/1229240/reviews/) display individual reviews dated October 28 praising character/world connections, and November 1 criticizing dull story. The visible month/day alone do not establish a reliable posting year. These **do not prove** the specific Graygrow defect or a market-wide consensus. **Hypothesis:** preserving a player's deliberate choice and showing the consequence immediately reduces the feeling that NPCs ignore the party, without extending the scene.
+
+**Playable fix:** During the existing undelivered recruit-thanks conversation, an earlier `keep` now exposes only an opt-in reconsideration action, never a renewed generic donation pitch; an empty inventory shows no food action. If the party donated, the mother acknowledges sharing the ration with her son even before the recruit receives her thanks. The recruit reminder and its separate completion state remain intact. No new map tiles, actors, reward, route, mandatory errand, art, karma or save schema.
+
+**Verification scope:** Two targeted Node harness regression tests were added for keep → revisit → opt-in donation → acknowledged revisit, Save v23 serialization/migration, pending recruit flag, and no-ration gating. **Not executed:** native Node harness, full syntax check, browser movement/dialogue, actual Save/Continue, CI, human playtest. Draft/HOLD; main unchanged.
+
+**Next player risk:** The mother can still repeatedly remind players of the eastern recruit when they intentionally defer that optional message. Browser-test the full mother → recruit → mother loop, then consider a non-nagging deferred reminder only if it improves comprehension without hiding the optional report.
+
+---
+
 ## 2026-11-04 00:43 JST — respect the postwar family's food decision on revisits
 
 **Repository-verified gap:** In Draft #330 (461f01a5), selecting 「今は旅のために残す」 from the mother's postwar food prompt changed neither the existing Save-v23 choices nor the subsequent interaction. Revisiting with the same ration immediately repeated the entire donation prompt. In addition, the separate recruit thank-you reminder returned early and hid the ration decision until an unrelated NPC was visited. Both are source-derived UX issues, **not observed human complaints**.
