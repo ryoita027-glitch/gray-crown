@@ -59,6 +59,7 @@ test('M repeat cannot reopen a menu closed with the close button',()=>{
  const h=harness();
  h.press('M');
  h.visible.delete('modal');
+ h.document.activeElement={id:'game',matches:()=>false}; // close button returns focus to the canvas
  h.press('M',true);
  assert.equal(h.calls.menu,1);
  assert.equal(h.visible.has('modal'),false);
