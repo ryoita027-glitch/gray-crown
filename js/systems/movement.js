@@ -139,16 +139,23 @@ function northRoadToFort(){
  setMap('cave',11,1,'down',[[12,1],[13,1],[14,1]]);
  if(!storyAtLeast(STORY_STAGES.CAPITAL))state.objective='古砦跡を自由に探索できる';
  renderHud();
- return say('ナレーション','高台の南端から古砦の北門へ下りた。森の街道へは古砦の南出口からも戻れる。');
+ const suppliesPending=state.events.choices['early.fortSupplyMark']==='seen'&&state.events.choices['early.caveSupplies']!=='taken';
+ return say('ナレーション',suppliesPending
+  ?'古砦の北門へ戻った。入口で見た東の旧兵舎への補給印を、まだ確かめられる。'
+  :'高台の南端から古砦の北門へ下りた。森の街道へは古砦の南出口からも戻れる。');
 }
 function returnCaveNorth(){
  if(state.map!=='northroad')return false;
  // Before the boss is defeated, arriving from the forest cannot unlock
  // the fort's rear gate. Do not offer a dead-end or a story bypass.
  if(!isDefeated('boss'))return northRoadToForest();
- return say('旧街道の南端','南へ下る道が二つある。森の街道はリュネ村方面、古砦の北門は探索済みの砦へ続く。どちらへ向かう？',[
-  {label:'森の街道へ下る（リュネ村方面）',fn:()=>northRoadToForest()},
-  {label:'古砦の北門へ下る（古砦跡）',fn:()=>northRoadToFort()},
+ // The existing left/right lanes suggest routes, but confirmation stays explicit.
+ const supplyClue=state.events.choices['early.fortSupplyMark']==='seen'&&state.events.choices['early.caveSupplies']!=='taken';
+ const forest={label:'森の街道へ下る（リュネ村方面）',fn:()=>northRoadToForest()};
+ const fort={label:supplyClue?'古砦の北門へ下る（補給印を再確認）':'古砦の北門へ下る（古砦跡）',fn:()=>northRoadToFort()};
+ const exits=state.x===12?[fort,forest]:[forest,fort];
+ return say('旧街道の南端','左の土の轍は森の街道へ、右の古い敷石は古砦の北門へ続く。進む道を選ぼう。',[
+  ...exits,
   {label:'引き返して王都方面へ進む',fn:()=>say('カレン','「まだここで見ておきたいものがあるね」')}
  ]);
 }
