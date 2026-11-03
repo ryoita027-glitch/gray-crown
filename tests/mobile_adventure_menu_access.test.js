@@ -435,46 +435,60 @@ test('mobile Confirm never activates while the game is inactive or the page is h
  assert.equal(calls.action,2,'normal exploration Confirm still works');
 });
 
-test('repeated Enter on focused mobile menu activates only once',()=>{
+test('held Enter keeps the newly opened menu visible after focus moves to Close',()=>{
  const game=read('js/game.js');
  const bind=game.match(/^function bindAppControls\(\)\{.*$/m);
  assert.ok(bind,'real game button handlers must exist');
+ const hidden=new Set(['modal']);
  const nodes=new Map();
+ let focused='mobileMenu',opened=0;
  const $=id=>{
   if(!nodes.has(id))nodes.set(id,{
    listeners:{},
-   classList:{contains:()=>true},
+   classList:{
+    contains:name=>name==='hidden'&&hidden.has(id),
+    add:name=>{if(name==='hidden')hidden.add(id)},
+    remove:name=>{if(name==='hidden')hidden.delete(id)}
+   },
    addEventListener(type,fn){this.listeners[type]=fn},
-   focus(){}
+   focus(){focused=id}
   });
   return nodes.get(id);
  };
- let opened=0;
  const context=vm.createContext({
   $,document:{addEventListener(){},querySelectorAll:()=>[]},
-  window:{addEventListener(){}},canvas:{addEventListener(){},focus(){}},
+  window:{addEventListener(){}},canvas:{addEventListener(){},focus(){focused='game'}},
   ALPHA_SESSION:{started:true},state:{battle:null},
   GC:{Menu:{isPortableImportPending:()=>false}},
   isInputLocked:()=>false,handleKeydown(){},ensureAudio(){},
-  move(){},primaryAction(){},openMenu(){opened++},
+  move(){},primaryAction(){},openMenu(){opened++;hidden.delete('modal')},
   toggleSound(){},startNewGameSafely(){},continueAlphaFromTitle(){},
   saveFromToolbar(){},loadFromToolbar(){},restartFromToolbar(){}
  });
  vm.runInContext(bind[0],context,{filename:'js/game.js bindAppControls'});
  vm.runInContext('bindAppControls()',context);
- const menu=$('mobileMenu');
- assert.equal(typeof menu.listeners.keydown,'function','menu has a keyboard repeat guard');
- assert.equal(typeof menu.listeners.click,'function','menu retains native click activation');
+ const menu=$('mobileMenu'),close=$('modalClose');
+ assert.equal(typeof menu.listeners.keydown,'function','menu has Enter repeat guard');
+ assert.equal(typeof close.listeners.keydown,'function','focused Close has Enter repeat guard');
  const activate=repeat=>{
+  const target=$(focused);
   let prevented=false;
-  menu.listeners.keydown({key:'Enter',repeat,preventDefault(){prevented=true}});
-  if(!prevented)menu.listeners.click({detail:0});
+  target.listeners.keydown?.({key:'Enter',repeat,preventDefault(){prevented=true}});
+  if(!prevented)target.listeners.click?.({detail:0});
   return prevented;
  };
- assert.equal(activate(false),false,'initial Enter must activate the button');
- assert.equal(activate(true),true,'first repeated Enter must be suppressed');
- assert.equal(activate(true),true,'further repeated Enter must be suppressed');
- assert.equal(opened,1,'holding Enter must not reopen the menu repeatedly');
- assert.equal(activate(false),false,'a fresh Enter press remains usable');
- assert.equal(opened,2,'a new distinct activation must still work');
+ assert.equal(activate(false),false,'first Enter activates menu');
+ assert.equal(opened,1,'menu opens once');
+ assert.equal(focused,'modalClose','focus moves to Close after opening');
+ assert.equal(hidden.has('modal'),false,'menu is visible');
+ assert.equal(activate(true),true,'repeat on focused Close is prevented');
+ assert.equal(activate(true),true,'further repeats on Close are prevented');
+ assert.equal(hidden.has('modal'),false,'held Enter must not close the new menu');
+ assert.equal(opened,1,'held Enter must not reopen the menu');
+ assert.equal(activate(false),false,'a fresh Enter can close the menu');
+ assert.equal(hidden.has('modal'),true,'new deliberate Enter closes menu');
+ assert.equal(focused,'game','closing returns focus to game');
+ menu.focus();
+ assert.equal(activate(false),false,'a fresh Enter can open menu again');
+ assert.equal(opened,2,'subsequent deliberate opening remains available');
 });
