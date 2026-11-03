@@ -378,19 +378,29 @@ function drawRegionDecor(){if(RoadCaveQuality.enabled&&RoadCaveQuality.active.ha
    ctx.fillStyle='rgba(96,79,58,.22)';ctx.fillRect(tx*TILE+5,ty*TILE+22,21,3);
    ctx.fillStyle='rgba(210,188,145,.35)';ctx.fillRect(tx*TILE+9,ty*TILE+21,11,1);
   }
-  // Arrival from the forest road leaves wheel ruts; arrival through the fort
-  // carries stone grit. Both are unobtrusive marks on existing passable tiles.
+  // The first arrival's tracks stay above the fork. At the south edge the
+  // LEFT lane has earth ruts (forest), the RIGHT lane has stone (fort).
+  // These marks never alter collision or trigger a transition by themselves.
   if(getWorldSwitch('northRoadFromRoad')){
-   ctx.fillStyle='rgba(96,76,48,.35)';
-   for(const [tx,ty] of [[11,11],[12,12],[11,13]]){
+   ctx.fillStyle='rgba(96,76,48,.32)';
+   for(const [tx,ty] of [[11,8],[12,9],[11,10]]){
     ctx.fillRect(tx*TILE+8,ty*TILE+7,2,13);
     ctx.fillRect(tx*TILE+22,ty*TILE+7,2,13);
    }
   }else{
-   for(const [tx,ty] of [[11,11],[12,12],[11,13]]){
+   for(const [tx,ty] of [[11,8],[12,9],[11,10]]){
     ctx.fillStyle='#858579';ctx.fillRect(tx*TILE+8,ty*TILE+24,7,3);
     ctx.fillStyle='#b3a995';ctx.fillRect(tx*TILE+10,ty*TILE+23,4,2);
    }
+  }
+  for(const y of [12,13,14]){
+   const yy=y*TILE;
+   ctx.fillStyle='rgba(125,92,58,.48)';
+   ctx.fillRect(11*TILE+5,yy+17,5,2);
+   ctx.fillRect(11*TILE+20,yy+23,6,2);
+   ctx.fillStyle='rgba(174,169,150,.64)';
+   ctx.fillRect(12*TILE+5,yy+18,10,3);
+   ctx.fillRect(12*TILE+18,yy+22,9,3);
   }
  }
  if(state.map==='capital'){
@@ -768,7 +778,7 @@ function drawObject(o){if(RyuneOutskirts.drawObject(ctx,state.map,o,!!state.worl
   ctx.fillStyle='#b9a27d';ctx.fillRect(px+3,py+2,26,12);
   ctx.fillStyle='#aa9575';ctx.fillRect(px+4,py+16,24,11);
   ctx.fillStyle='#463b30';ctx.font='bold 8px system-ui';ctx.textAlign='center';
-  ctx.fillText('森',px+16,py+11);ctx.fillText(isDefeated('boss')?'砦':'北門',px+16,py+24);ctx.textAlign='start';
+  ctx.fillText('←森',px+16,py+11);ctx.fillText(isDefeated('boss')?'砦→':'砦×',px+16,py+24);ctx.textAlign='start';
  }
  if(o.id==='northroadVista'){
   // Low, worn viewing slab at the end of the existing east layby. No glowing
