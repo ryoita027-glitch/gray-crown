@@ -858,7 +858,7 @@ function visitRenPractice(){
 // Optional, one-time care for a landmark already on the player's route.
 // The existing Save v23 choices object records the result; no new item or gate.
 function northRoadMilestoneVisit(){
- const route=isDefeated('boss')?'南端では森の街道と古砦の北門を選べる。':getWorldSwitch('northRoadFromRoad')?'南は森の本道へ戻る道だ。':'南へ戻れば古砦の北門だ。';
+ const route=isDefeated('boss')?'南端では森の街道と古砦の北門を選べる。':'南は森の街道へ戻る道だ。';
  if(state.events.choices['early.northroadWaystone']==='cleared')
   return say('石の道標','苔を落とした石に「アルディナ王都まで三里」と北向きの矢印がはっきり見える。'+route);
  return say('石の道標','苔の隙間に「アルディナ王都まで三里」と読める。'+route,[
@@ -1224,7 +1224,7 @@ function northRoadScoutVisit(){
  const repeat=state.events.choices[greetingKey]===arrival;
  state.events.choices[greetingKey]=arrival;
  if(repeat){
-  const south=isDefeated('boss')?'森の街道か古砦の北門':fromCapital?(fromRoad?'森の街道':'古砦の北門'):fromFort?'古砦の北門':'森の街道';
+  const south=isDefeated('boss')?'森の街道か古砦の北門':'森の街道';
   const aided=state.events.choices['early.fortScoutAid']==='received';
   const witness=state.events.choices['early.fortScoutWitness'];
   const remembered=witness==='names'?'兵たちの名前は巡回帳に残した。':witness==='raise'?'結び直した旗のことは巡回隊にも伝えた。':'';
@@ -1239,7 +1239,7 @@ function northRoadScoutVisit(){
  if(fromCapital){
   // Returning from Aldina must not silently accept the scout's reward.
   // Even when the southern exit leads to the fort, the report is voluntary.
-  const south=isDefeated('boss')?(fromRoad?'森の街道か古砦の北門':'古砦の北門か森の街道'):(fromRoad?'森の街道':'古砦の北門');
+  const south=isDefeated('boss')?(fromRoad?'森の街道か古砦の北門':'古砦の北門か森の街道'):'森の街道';
   const aided=state.events.choices['early.fortScoutAid']==='received';
   const witness=state.events.choices['early.fortScoutWitness'];
   const remembered=witness==='names'?'兵たちの名前は巡回帳に残した。':witness==='raise'?'結び直した旗のことは巡回隊にも伝えた。':'';
@@ -1284,7 +1284,7 @@ function grantFortScoutAid(source='fort'){
   {speaker:'王国軍の斥候',text:source==='capital'
    ?'「巡回の仲間にも伝えるよ。これは旅の備えだ。北は王都、南は'+south+'だ」'
    :source==='forest'
-   ?'「巡回隊に伝えるよ。これは旅の備えだ。北は王都、南は森の街道だ」'
+   ?'「巡回隊に伝えるよ。これは旅の備えだ。北は王都、南端では森の街道か古砦の北門を選べる」'
    :'「巡回の仲間にも伝えるよ。これは旅の備えだ。王都へはこの道を北に進め」'},
   {speaker:'ナレーション',text:'薬草を1個受け取った。'}
  ],()=>{const choices=fortScoutWitnessChoices();if(choices.length)return say('王国軍の斥候','「古砦で、ほかに気になったことはあったか？」',choices)});
