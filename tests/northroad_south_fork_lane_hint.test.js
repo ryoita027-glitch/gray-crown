@@ -36,6 +36,7 @@ test('known unclaimed fort supplies give a truthful optional reason to return',(
  h.evaluate("state.events.choices['early.fortSupplyMark']='seen';returnCaveNorth()");
  assert.match(h.evaluate("dialogueChoices[0].label"),/補給印/);
  h.evaluate("dialogueChoiceIndex=0;activateDialogueChoice()");
+ h.evaluate("finishDialogueTyping()");
  assert.match(h.evaluate("document.getElementById('dialogueText').innerHTML"),/補給印|旧兵舎/);
  h.evaluate("closeDialogue();state.map='northroad';state.x=12;state.events.choices['early.caveSupplies']='taken';returnCaveNorth()");
  assert.doesNotMatch(h.evaluate("dialogueChoices[0].label"),/補給印/);
