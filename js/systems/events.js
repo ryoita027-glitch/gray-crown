@@ -858,7 +858,7 @@ function visitRenPractice(){
 // Optional, one-time care for a landmark already on the player's route.
 // The existing Save v23 choices object records the result; no new item or gate.
 function northRoadMilestoneVisit(){
- const route=getWorldSwitch('northRoadFromRoad')?'南は森の本道へ戻る道だ。':'南へ戻れば古砦の北門だ。';
+ const route=isDefeated('boss')?'南端では森の街道と古砦の北門を選べる。':getWorldSwitch('northRoadFromRoad')?'南は森の本道へ戻る道だ。':'南へ戻れば古砦の北門だ。';
  if(state.events.choices['early.northroadWaystone']==='cleared')
   return say('石の道標','苔を落とした石に「アルディナ王都まで三里」と北向きの矢印がはっきり見える。'+route);
  return say('石の道標','苔の隙間に「アルディナ王都まで三里」と読める。'+route,[
@@ -1224,7 +1224,7 @@ function northRoadScoutVisit(){
  const repeat=state.events.choices[greetingKey]===arrival;
  state.events.choices[greetingKey]=arrival;
  if(repeat){
-  const south=fromCapital?(fromRoad?'森の街道':'古砦の北門'):fromFort?'古砦の北門':'森の街道';
+  const south=isDefeated('boss')?'森の街道か古砦の北門':fromCapital?(fromRoad?'森の街道':'古砦の北門'):fromFort?'古砦の北門':'森の街道';
   const aided=state.events.choices['early.fortScoutAid']==='received';
   const witness=state.events.choices['early.fortScoutWitness'];
   const remembered=witness==='names'?'兵たちの名前は巡回帳に残した。':witness==='raise'?'結び直した旗のことは巡回隊にも伝えた。':'';
@@ -1239,7 +1239,7 @@ function northRoadScoutVisit(){
  if(fromCapital){
   // Returning from Aldina must not silently accept the scout's reward.
   // Even when the southern exit leads to the fort, the report is voluntary.
-  const south=fromRoad?'森の街道':'古砦の北門';
+  const south=isDefeated('boss')?(fromRoad?'森の街道か古砦の北門':'古砦の北門か森の街道'):(fromRoad?'森の街道':'古砦の北門');
   const aided=state.events.choices['early.fortScoutAid']==='received';
   const witness=state.events.choices['early.fortScoutWitness'];
   const remembered=witness==='names'?'兵たちの名前は巡回帳に残した。':witness==='raise'?'結び直した旗のことは巡回隊にも伝えた。':'';
@@ -1248,7 +1248,7 @@ function northRoadScoutVisit(){
  }
  if(!fromFort){
   const pending=fortScoutDeferredReportChoices(false);
-  const directGreeting='「森の本道から来たのか。北へ進めば城門、南へ戻れば森の街道だ。'+(markerCleared?'道標を磨いてくれたのか。これなら後から来る旅人も迷わないな。':'');
+  const directGreeting='「森の本道から来たのか。北へ進めば城門、南へ戻れば森の街道だ。'+(isDefeated('boss')?'南端から古砦の北門にも降りられる。':'')+(markerCleared?'道標を磨いてくれたのか。これなら後から来る旅人も迷わないな。':'');
   if(state.events.choices['early.fortScoutAid']!=='received')
    return say('王国軍の斥候',directGreeting+(pending.length?'古砦の北門の様子も知っているなら、聞かせてくれ。':'')+'」',pending);
   const witness=state.events.choices['early.fortScoutWitness'];
@@ -1259,7 +1259,7 @@ function northRoadScoutVisit(){
   const witness=state.events.choices['early.fortScoutWitness'];
   const followup=witness==='names'?'古砦の兵の名前は巡回帳に書いた。':witness==='raise'?'結び直した古い旗のことは巡回隊にも伝えた。':'';
   const choices=fortScoutWitnessChoices();
-  return say('王国軍の斥候','「古砦の北門が通れるようになったのは助かる。王都へは北だ。渡せる薬草はもうないが、無事に着いてくれよ。'+followup+(markerCleared?'道標も読めるようになって、助かるよ。':'')+'」',choices);
+  return say('王国軍の斥候','「古砦の北門が通れるようになったのは助かる。王都へは北だ。南端から森の街道にも降りられる。渡せる薬草はもうないが、無事に着いてくれよ。'+followup+(markerCleared?'道標も読めるようになって、助かるよ。':'')+'」',choices);
  }
  return grantFortScoutAid('fort');
 }
@@ -1271,7 +1271,7 @@ function grantFortScoutAid(source='fort'){
  state.inventory['薬草']=(state.inventory['薬草']||0)+1;
  addJournal('古砦跡の獣を退けて北門を通れるようにしたことを王国軍の斥候に伝え、旅の備えとして薬草を1個受け取った。');
  renderHud();
- const south=getWorldSwitch('northRoadFromRoad')?'森の街道':'古砦の北門';
+ const south=getWorldSwitch('northRoadFromRoad')?'森の街道か古砦の北門':'古砦の北門か森の街道';
  return saySequence([
   {speaker:'王国軍の斥候',text:source==='capital'
    ?'「王都の南門から戻ってきたのか。古砦の北門の様子も知っているか？」'
@@ -2227,7 +2227,7 @@ function inlineObjectEvent(id){
   if(id==='boss'&&!structuredCondition('bossDead')){if(!(structuredCondition('leverWest')&&structuredCondition('leverEast')))return say('マーガレット','「中央の鉄格子が閉じてる。左右の開閉機構を両方動かさないと奥へ行けないわ」');return say('カレン','「こいつが北の通路を塞いでる……！」',[{label:'戦う',fn:()=>startBattle('boss')},{label:'いったん下がる',fn:()=>say('マーガレット','「先に宝箱や脇道を調べてもいいわ」')}]);}
  }
  if(state.map==='northroad'){
-  if(id==='southExit')return returnCaveNorth();
+  if(id==='southExit'||id==='southForkSign')return returnCaveNorth();
   if(id==='milestone')return northRoadMilestoneVisit()
   if(id==='northroadVista')return northRoadVistaVisit()
  }
