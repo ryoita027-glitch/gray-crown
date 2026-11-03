@@ -1202,27 +1202,36 @@ function fortScoutWitnessChoices(){
   {label:'今は伝えず先へ進む',fn:()=>say('カレン','「うん。私たちが見たことは、ちゃんと覚えておこう」')}
  ];
 }
+// A cleared fort can be reported even if the party later approached by the
+// forest road. The scout must never assume the party JUST came from the fort.
+function fortScoutDeferredReportChoices(fromCapital=false){
+ if(!isDefeated('boss')||state.events.choices['early.fortScoutAid']==='received')return [];
+ return [
+  {label:'古砦の北門の状況を報告する',fn:()=>grantFortScoutAid(fromCapital?'capital':'forest')},
+  {label:'今は報告せずに進む',fn:()=>say('カレン','「急がなくてもいいよ。伝えるなら、またここで話そう」')}
+ ];
+}
 function northRoadScoutVisit(){
  const fromCapital=!!getWorldSwitch('northRoadFromCapital');
- const fromFort=!getWorldSwitch('northRoadFromRoad')&&isDefeated('boss');
+ const fromRoad=!!getWorldSwitch('northRoadFromRoad');
+ const fromFort=!fromRoad&&isDefeated('boss');
  const markerCleared=state.events.choices['early.northroadWaystone']==='cleared';
  // The last entry was from the city's south gate, regardless of the older
  // road/fort switch (which still selects the correct SOUTH exit).
  if(fromCapital){
-  if(fromFort&&state.events.choices['early.fortScoutAid']!=='received')return grantFortScoutAid(true);
-  const south=getWorldSwitch('northRoadFromRoad')?'森の街道':'古砦の北門';
+  if(fromFort&&state.events.choices['early.fortScoutAid']!=='received')return grantFortScoutAid('capital');
+  const south=fromRoad?'森の街道':'古砦の北門';
   const aided=state.events.choices['early.fortScoutAid']==='received';
   const witness=state.events.choices['early.fortScoutWitness'];
   const remembered=witness==='names'?'兵たちの名前は巡回帳に残した。':witness==='raise'?'結び直した旗のことは巡回隊にも伝えた。':'';
-  return say('王国軍の斥候','「王都の南門から出てきたのか。北へ戻れば城門、南へ下れば'+south+'だ。'+(aided?'古砦の話も覚えている。':'')+remembered+(markerCleared?'道標も読めるようになって助かるよ。':'')+'」',aided?fortScoutWitnessChoices():[]);
+  const pending=fortScoutDeferredReportChoices(true);
+  return say('王国軍の斥候','「王都の南門から出てきたのか。北へ戻れば城門、南へ下れば'+south+'だ。'+(aided?'古砦の話も覚えている。':'')+remembered+(markerCleared?'道標も読めるようになって助かるよ。':'')+(pending.length?'古砦の北門も調べたなら、話を聞かせてくれ。':'')+'」',aided?fortScoutWitnessChoices():pending);
  }
  if(!fromFort){
-  const directGreeting='「森の本道から来たのか。古砦を通らなくても王都へ行ける。北へ進めば城門、南へ戻れば森の街道だ。'+(markerCleared?'道標を磨いてくれたのか。これなら後から来る旅人も迷わないな。':'');
-  // The route switch describes this arrival, not whether the scout remembers
-  // a previous fort conversation. A deferred voluntary disclosure must survive
-  // leaving via the forest road; a first-time road visitor gets no fort credit.
+  const pending=fortScoutDeferredReportChoices(false);
+  const directGreeting='「森の本道から来たのか。北へ進めば城門、南へ戻れば森の街道だ。'+(markerCleared?'道標を磨いてくれたのか。これなら後から来る旅人も迷わないな。':'');
   if(state.events.choices['early.fortScoutAid']!=='received')
-   return say('王国軍の斥候',directGreeting+'」');
+   return say('王国軍の斥候',directGreeting+(pending.length?'古砦の北門の様子も知っているなら、聞かせてくれ。':'')+'」',pending);
   const witness=state.events.choices['early.fortScoutWitness'];
   const remembered=witness==='names'?'古砦の兵の名前は巡回帳に書いた。':witness==='raise'?'結び直した古い旗のことは巡回隊にも伝えた。':'';
   return say('王国軍の斥候',directGreeting+'前に古砦を抜けた話も聞いた。'+remembered+'」',fortScoutWitnessChoices());
@@ -1233,26 +1242,30 @@ function northRoadScoutVisit(){
   const choices=fortScoutWitnessChoices();
   return say('王国軍の斥候','「古砦の北門が通れるようになったのは助かる。王都へは北だ。渡せる薬草はもうないが、無事に着いてくれよ。'+followup+(markerCleared?'道標も読めるようになって、助かるよ。':'')+'」',choices);
  }
- return grantFortScoutAid(false);
+ return grantFortScoutAid('fort');
 }
 
-function grantFortScoutAid(fromCapital=false){
- // Reward proof of the cleared fort once, including a player who spoke to the
- // scout only after visiting the capital. Never claim they JUST came from fort.
+function grantFortScoutAid(source='fort'){
  if(state.events.choices['early.fortScoutAid']==='received')return northRoadScoutVisit();
+ if(!isDefeated('boss'))return northRoadScoutVisit();
  state.events.choices['early.fortScoutAid']='received';
  state.inventory['薬草']=(state.inventory['薬草']||0)+1;
- addJournal('古砦跡の北門を抜けたことを王国軍の斥候に伝え、旅の備えとして薬草を1個受け取った。');
+ addJournal('古砦跡の獣を退けて北門を通れるようにしたことを王国軍の斥候に伝え、旅の備えとして薬草を1個受け取った。');
  renderHud();
+ const south=getWorldSwitch('northRoadFromRoad')?'森の街道':'古砦の北門';
  return saySequence([
-  {speaker:'王国軍の斥候',text:fromCapital
+  {speaker:'王国軍の斥候',text:source==='capital'
    ?'「王都の南門から戻ってきたのか。古砦の北門の様子も知っているか？」'
+   :source==='forest'
+   ?'「森の街道から来たのか。古砦の北門のことも知っているのか？」'
    :'「古砦の北門から来たのか。あそこを通れたなら、奥の獣を退けたんだな」'},
-  {speaker:'カレン',text:fromCapital
-   ?'「はい。奥の獣を四人で退けて、北門を抜けたんです」'
-   :'「四人で何とか。道を探していたら、ここへ出たんです」'},
-  {speaker:'王国軍の斥候',text:fromCapital
-   ?'「巡回の仲間にも伝えるよ。これは旅の備えだ。王都へ戻るなら北、古砦へは南だ」'
+  {speaker:'カレン',text:source==='fort'
+   ?'「四人で何とか。道を探していたら、ここへ出たんです」'
+   :'「はい。以前、奥の獣を四人で退けました。北門も通れるようになっています」'},
+  {speaker:'王国軍の斥候',text:source==='capital'
+   ?'「巡回の仲間にも伝えるよ。これは旅の備えだ。北は王都、南は'+south+'だ」'
+   :source==='forest'
+   ?'「巡回隊に伝えるよ。これは旅の備えだ。北は王都、南は森の街道だ」'
    :'「巡回の仲間にも伝えるよ。これは旅の備えだ。王都へはこの道を北に進め」'},
   {speaker:'ナレーション',text:'薬草を1個受け取った。'}
  ],()=>{const choices=fortScoutWitnessChoices();if(choices.length)return say('王国軍の斥候','「古砦で、ほかに気になったことはあったか？」',choices)});

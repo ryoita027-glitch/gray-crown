@@ -528,3 +528,15 @@ Execute `node --test tests/finalfield_civilian_waymark.test.js` on the PR branch
 **Verification:** Exact modified JS sources parsed and targeted real-function V8 mocked scenarios exercised city/forest/fort greetings, remembered witness, deferred disclosure, single herb reward, and switch reset. Six native Node harness regressions were added **but not run**. Browser walk, real Save/Continue, full npm suite, CI and human playtest remain unverified. **Draft/HOLD** until those checks.
 
 **Next:** Walk Aldina south gate → scout → optional witness → return north; then enter via both southern routes and verify the scout, actual south exit, and save restoration. Check dialogue density at native 44px display scale.
+
+## 2026-11-03 11:43 JST — optional late fort report after forest route
+
+**Repository fact:** Exact Draft #317 HEAD `04ebb8cd11339f596b9aae0f41a05cd9f76565ae` only grants the scout's one-time herb when the current south-route switch points at the fort. A party that defeated the fort beast but later entered the old road via the forest (or returned from Aldina with that switch) cannot report the same discovery, even though the boss defeat and banner memory persist.
+
+**Player signal (checked 2026-11-03, individual Steam reviews, not market-wide consensus):** [Chained Echoes reviews](https://steamcommunity.com/app/1229240/reviews/) include an Oct 29 complaint about repeatedly searching the same map for a hard-to-see progression door, and an Oct 28 complaint that player characters rarely affect the plot. [Sea of Stars reviews](https://steamcommunity.com/app/1244090/reviews/) include an Oct 5 complaint about unclear routes and an Oct 10 complaint that side routes offer too little agency. These are different issues, not evidence that players explicitly requested this feature. **Inference:** Optional discoveries should remain reportable on later routes, with truthful arrival dialogue, immediate feedback, and no mandatory backtracking.
+
+**Implemented:** When the fort boss is defeated but scout aid unclaimed, a forest-side arrival (including an Aldina return with the forest route selected) offers a voluntary report/defer choice. Reporting grants the existing one-time herb and a context-accurate dialogue; deferring leaves it available. Previously rewarded players keep the existing flag testimony choices and memory. City-side reward text now describes the actual south exit. No new map, forced errand, asset, karma, or Save v23 schema changes.
+
+**Verification status:** Native harness tests added for city/forest deferral, report, correct source, no double reward, and south-route preservation. Static source inspection only; Node suite, actual browser walk, Save/Continue, 44px text pacing, CI, and human playtest are **not verified**. Draft/HOLD, not approved for main.
+
+**Next:** On this exact PR branch, run `node --test tests/northroad_scout_capital_approach.test.js`; walk the forest and city approaches, decline then report, confirm south exit and reward after save/reload, and assess whether the scout's repeated guidance is too verbose.
