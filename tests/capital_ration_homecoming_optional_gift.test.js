@@ -98,6 +98,54 @@ test('a pending recruit thank-you does not block a voluntary food decision',()=>
  assert.equal(labels(h),'','no second ration request');
 });
 
+test('a pending recruit thank-you respects a kept ration and remembers a later gift',()=>{
+ const {h,s}=setup({heard:true,ration:1}),before=s.journal.length;
+ s.events.choices['early.capitalRecruitHelp']='water';
+ s.finalChoice='kingdom';
+ s.events.choices['route.final.kingdom']='evacuation';
+ visit(h);
+ assert.match(labels(h),/携帯食についても相談する/);
+ h.evaluate('dialogueChoiceIndex=0;activateDialogueChoice()');
+ h.evaluate('dialogueChoiceIndex=1;activateDialogueChoice()');
+ assert.equal(s.events.choices['capital.rationHomecomingGift'],'keep');
+ assert.equal(s.journal.length,before+1);
+ visit(h);
+ assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/東の新兵さんにも/);
+ assert.doesNotMatch(labels(h),/携帯食についても相談する/,'a kept ration must not be solicited again');
+ assert.match(labels(h),/携帯食のことをもう一度考える/);
+ const savedKeep=h.GC.Save.migrateLoaded(h.GC.Save.serializeSave());
+ assert.equal(savedKeep.schema,23);
+ assert.equal(savedKeep.events.choices['capital.rationHomecomingGift'],'keep');
+ h.evaluate('dialogueChoiceIndex=0;activateDialogueChoice()');
+ assert.match(labels(h),/携帯食を1個、親子に渡す/);
+ h.evaluate('dialogueChoiceIndex=0;activateDialogueChoice()');
+ assert.equal(s.events.choices['capital.rationHomecomingGift'],'donate');
+ assert.equal(s.inventory['携帯食'],0);
+ assert.equal(s.journal.length,before+2);
+ visit(h);
+ assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/携帯食は息子と分けました/,'gift acknowledged even while recruit thanks remain pending');
+ assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/東の新兵さんにも/);
+ assert.equal(labels(h),'','do not solicit a second ration');
+ assert.equal(s.events.choices['capital.recruitRationEcho'],undefined,'independent recruit thanks remain pending');
+ const savedGift=h.GC.Save.migrateLoaded(h.GC.Save.serializeSave());
+ assert.equal(savedGift.schema,23);
+ assert.equal(savedGift.events.choices['capital.rationHomecomingGift'],'donate');
+});
+
+test('a pending recruit thank-you never offers an impossible food choice',()=>{
+ const {h,s}=setup({heard:true,ration:0});
+ s.events.choices['early.capitalRecruitHelp']='water';
+ s.finalChoice='empire';
+ s.events.choices['route.final.empire']='captives';
+ s.events.choices['capital.rationHomecomingGift']='keep';
+ visit(h);
+ assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/東の新兵さんにも/);
+ assert.equal(labels(h),'');
+ s.inventory['携帯食']=1;
+ visit(h);
+ assert.match(labels(h),/携帯食のことをもう一度考える/);
+});
+
 test('an early donation never triggers a second request or retroactively changes its timing',()=>{
  const {h,s}=setup({earlyGift:true,ration:2});
  visit(h);finishHomecoming(h);
