@@ -75,3 +75,35 @@ test('capital approach context and the active mission survive v23 save migration
  assert.equal(loaded.world.switches.northRoadFromRoad,false);
  assert.equal(loaded.story.objective,'避難民の家族を探す');
 });
+
+test('a cleared fort remains voluntarily reportable after returning from Aldina via the forest route',()=>{
+ const h=cityWalk(true,true,false,'names');
+ const before=h.evaluate("state.inventory['薬草']");
+ assert.match(scout(h),/王都の南門から出てきた/);
+ assert.match(h.evaluate("dialogueChoices.map(c=>c.label).join('|')"),/古砦の北門の状況を報告する/);
+ h.evaluate("dialogueChoices.find(c=>c.label.includes('報告せず')).fn()");
+ assert.equal(h.evaluate("state.inventory['薬草']"),before);
+ assert.equal(h.evaluate("state.events.choices['early.fortScoutAid']"),undefined);
+ scout(h);
+ h.evaluate("dialogueChoices.find(c=>c.label.includes('状況を報告')).fn()");
+ assert.match(h.evaluate("DIALOGUE_TYPE.fullHTML"),/王都の南門から戻ってきた/);
+ assert.equal(h.evaluate("state.inventory['薬草']"),before+1);
+ assert.equal(h.evaluate("state.events.choices['early.fortScoutAid']"),'received');
+ assert.equal(h.evaluate("getWorldSwitch('northRoadFromRoad')"),true);
+ scout(h);
+ assert.equal(h.evaluate("state.inventory['薬草']"),before+1);
+});
+
+test('a forest-side revisit can report a previously cleared fort without a false arrival greeting',()=>{
+ const h=createHarness();
+ h.evaluate("ALPHA_SESSION.started=true;state.map='road';state.story.stage=STORY_STAGES.CAPITAL;markDefeated('boss',true);enterNorthRoad('road')");
+ const before=h.evaluate("state.inventory['薬草']");
+ assert.match(scout(h),/森の本道から来た/);
+ assert.match(h.evaluate("dialogueChoices.map(c=>c.label).join('|')"),/古砦の北門の状況を報告する/);
+ h.evaluate("dialogueChoices.find(c=>c.label.includes('状況を報告')).fn()");
+ assert.match(h.evaluate("DIALOGUE_TYPE.fullHTML"),/森の街道から来た/);
+ assert.equal(h.evaluate("state.inventory['薬草']"),before+1);
+ assert.equal(h.evaluate("state.events.choices['early.fortScoutAid']"),'received');
+ scout(h);
+ assert.equal(h.evaluate("state.inventory['薬草']"),before+1);
+});
