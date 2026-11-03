@@ -1216,6 +1216,24 @@ function northRoadScoutVisit(){
  const fromRoad=!!getWorldSwitch('northRoadFromRoad');
  const fromFort=!fromRoad&&isDefeated('boss');
  const markerCleared=state.events.choices['early.northroadWaystone']==='cleared';
+ // Repeated conversations should not replay the same introduction. Remember
+ // only the last approach, so a genuinely different entrance gets full guidance.
+ // Save v23 already persists the existing event-choice dictionary.
+ const arrival=fromCapital?'capital':fromFort?'fort':'forest';
+ const greetingKey='early.northroadScoutLastGreeting';
+ const repeat=state.events.choices[greetingKey]===arrival;
+ state.events.choices[greetingKey]=arrival;
+ if(repeat){
+  const south=fromCapital?(fromRoad?'森の街道':'古砦の北門'):fromFort?'古砦の北門':'森の街道';
+  const aided=state.events.choices['early.fortScoutAid']==='received';
+  const witness=state.events.choices['early.fortScoutWitness'];
+  const remembered=witness==='names'?'兵たちの名前は巡回帳に残した。':witness==='raise'?'結び直した旗のことは巡回隊にも伝えた。':'';
+  const pending=fortScoutDeferredReportChoices(fromCapital);
+  const choices=aided?fortScoutWitnessChoices():pending;
+  // A direct fort arrival is already rewarded on first contact. Repeats keep
+  // the report/flag options, but do not grant items or repeat the reward scene.
+  return say('王国軍の斥候','「北は王都、南は'+south+'だ。'+remembered+(markerCleared?'道標も読めるようになった。助かったよ。':'')+(pending.length?'古砦の報告は、いつでも聞くよ。':'')+'」',choices);
+ }
  // The last entry was from the city's south gate, regardless of the older
  // road/fort switch (which still selects the correct SOUTH exit).
  if(fromCapital){
