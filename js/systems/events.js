@@ -1197,7 +1197,15 @@ function fortScoutWitnessChoices(){
     {speaker:'カレン',text:'「古砦の倒れた旗を結び直したんです。あそこにいた人たちの跡だから」'},
     {speaker:'王国軍の斥候',text:'「分かった。巡回の仲間には、見つけてもむやみに外さないよう伝えるよ」'},
     {speaker:'トリトン',text:'「誰かが気づいてくれるといいな」'}
-   ]);
+   ],()=>{
+    // After a voluntary banner report, offer any unreported ration cache
+    // without requiring another interaction with the same scout.
+    const pendingSupply=fortScoutSupplyChoices();
+    if(pendingSupply.length)return say('王国軍の斥候','「旧兵舎の補給箱についても、伝えておくか？」',[
+     ...pendingSupply,
+     {label:'今は伝えず先へ進む',fn:()=>say('カレン','「必要になったら、また話そう」')}
+    ]);
+   });
   }},
   {label:'今は伝えず先へ進む',fn:()=>say('カレン','「うん。私たちが見たことは、ちゃんと覚えておこう」')}
  ];
