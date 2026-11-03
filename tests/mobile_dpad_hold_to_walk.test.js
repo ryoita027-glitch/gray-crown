@@ -328,3 +328,26 @@ test('releasing a pending touch while gameplay is blocked cannot move after reco
   assert.deepEqual(h.calls.moves,['up'],name+' permits a fresh deliberate tap');
  }
 });
+
+test('release outside a direction without pointermove does not add an unintended step',()=>{
+ const h=padHarness();
+ h.emit('pointerdown',{...h.pointer(91),clientX:25,clientY:25});
+ h.emit('pointerup',{...h.pointer(91),clientX:90,clientY:25});
+ h.click(1);
+ assert.deepEqual(h.calls.moves,[],'fast release outside must not count as a tap');
+ assert.equal(h.timeouts.size,0,'fast release must clear the pending hold timer');
+ h.emit('pointerdown',{...h.pointer(92),clientX:25,clientY:25});
+ h.emit('pointerup',{...h.pointer(92),clientX:55,clientY:25});
+ h.click(1);
+ assert.deepEqual(h.calls.moves,['up'],'release within the 10px tolerance still taps once');
+ h.emit('pointerdown',{...h.pointer(93),clientX:25,clientY:25});
+ h.fireTimeout();
+ h.emit('pointerup',{...h.pointer(93),clientX:90,clientY:25});
+ assert.equal(h.intervals.size,0,'fast release outside stops repeating');
+ h.click(1);
+ assert.deepEqual(h.calls.moves,['up','up'],'held step is not duplicated on release');
+ h.emit('pointerdown',{...h.pointer(94),clientX:25,clientY:25});
+ h.emit('pointerup',{...h.pointer(94),clientX:25,clientY:25});
+ h.click(1);
+ assert.deepEqual(h.calls.moves,['up','up','up'],'a fresh ordinary tap still works');
+});
