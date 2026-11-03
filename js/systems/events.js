@@ -804,7 +804,7 @@ function capitalRationMotherVisit(){
   const thanksAvailable=choices['early.capitalRecruitHelp']==='water'&&choices['capital.recruitRationEcho']!=='heard'&&
    ['kingdom','empire'].includes(routeForThanks)&&FINAL_ACT_APPROACHES[routeForThanks]?.choices.some(c=>c.id===approachForThanks);
   const withThanks=thanksAvailable
-   ?answer.replace(/」$/,' ……それから、東の新兵さんにも、あの日の水のお礼を伝えてくれる？」')
+   ?answer.replace(/」$/,' ……それから、あの日、水を運んでくれた新兵さんにもお礼を伝えてくれる？　ここから東へ進んだ兵舎の手前にいるわ」')
    :answer;
   return saySequence([
    {speaker:'配給待ちの母親',text:'「勇者様。息子は前線から戻りました。片腕を失ったけど、生きてます。……それでも私は、勝ってよかったって言うべきなんでしょうか」'},
