@@ -816,6 +816,7 @@ function capitalRationMotherVisit(){
    addJournal(gifted||guided
     ?'王都の配給列で、前線から片腕を失って帰った息子を迎えた母親の話を聞いた。出発前の食料の手助けは覚えられていたが、戦争の傷は消えない。'
     :'王都の配給列で、前線から片腕を失って帰った息子を迎えた母親の話を聞いた。生還を喜ぶことと戦争を喜ぶことは別だと確かめた。');
+   if(thanksAvailable)addJournal('配給待ちの母親から、以前水桶を運んだ新兵へのお礼を預かった。新兵は配給列から東へ進んだ兵舎の手前にいる。伝えるかどうかは任意。');
    renderHud();
    // After the essential homecoming dialogue, the player can choose without
    // talking to the same NPC a second time. A prior gift is never solicited again.
