@@ -6,7 +6,7 @@ const path=require('node:path');
 const vm=require('node:vm');
 
 const game=fs.readFileSync(path.resolve(__dirname,'../js/game.js'),'utf8');
-const handler=game.match(/^function handleKeydown\\(e\\)\\{.*$/m);
+const handler=game.match(/^function handleKeydown\(e\)\{.*$/m);
 assert.ok(handler,'exercise the committed game handler, not a mock implementation');
 
 function harness({locked=true,focused=false}={}){
