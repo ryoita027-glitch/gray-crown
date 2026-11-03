@@ -737,7 +737,16 @@ function offerCapitalHomecomingRationGift(){
     {speaker:'カレン',text:'「私たちもこの先の食事を考えなきゃ。でも、今はここに渡したかったんだ」'}
    ]);
   }},
-  {label:'今は旅のために残す',fn:()=>say('カレン','「今は持っていこう。また必要になったら、ここで考えよう」')}
+  {label:'今は旅のために残す',fn:()=>{
+   // Respect a deliberate 'not now': no repeated automatic donation prompt.
+   // This remains reversible on a later visit, without a new save schema.
+   if(choices['capital.rationHomecomingGift']!=='keep'){
+    choices['capital.rationHomecomingGift']='keep';
+    addJournal('王都の配給列で親子への携帯食を考え、今は旅に残すと決めた。必要なら後で考え直せる。');
+    renderHud();
+   }
+   return say('カレン','「今は持っていこう。また必要になったら、ここで考えよう」');
+  }}
  ]);
 }
 function capitalRationMotherVisit(){
@@ -753,10 +762,19 @@ function capitalRationMotherVisit(){
    const route=state.finalChoice,demand=choices['route.final.'+route];
    const stillWaiting=choices['early.capitalRecruitHelp']==='water'&&choices['capital.recruitRationEcho']!=='heard'&&
     ['kingdom','empire'].includes(route)&&FINAL_ACT_APPROACHES[route]?.choices.some(c=>c.id===demand);
-   if(stillWaiting)return say('配給待ちの母親','「あの日、水桶を運んでくれた東の新兵さんにも、お礼を伝えてくれる？　この通りのすぐ先にいるわ」');
+   if(stillWaiting)return say('配給待ちの母親','「あの日、水桶を運んでくれた東の新兵さんにも、お礼を伝えてくれる？　この通りのすぐ先にいるわ」',
+    !gifted&&choices['capital.rationHomecomingGift']!=='donate'&&(state.inventory['携帯食']||0)>0
+     ?[{label:'携帯食についても相談する',fn:()=>offerCapitalHomecomingRationGift()}]:[]);
+   // An unrelated recruit thank-you must not gate an optional food decision.
    if(choices['capital.rationHomecomingGift']==='donate')
     return say('配給待ちの母親','「帰ってきてからいただいた携帯食、息子と分けました。戦争のことはまだ整理できないけれど、あの日の食事は助かりました」');
-   if(!gifted&&(state.inventory['携帯食']||0)>0)return offerCapitalHomecomingRationGift();
+   if(!gifted&&(state.inventory['携帯食']||0)>0){
+    if(choices['capital.rationHomecomingGift']==='keep')
+     return say('配給待ちの母親','「息子は家で休んでいます。あの日、話を聞いてくれてありがとう」',[
+      {label:'携帯食のことをもう一度考える',fn:()=>offerCapitalHomecomingRationGift()}
+     ]);
+    return offerCapitalHomecomingRationGift();
+   }
    return say('配給待ちの母親',gifted
     ?'「あの携帯食のこと、今も覚えています。息子は家にいます。これからの暮らしは、少しずつ考えます」'
     :guided
