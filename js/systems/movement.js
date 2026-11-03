@@ -137,9 +137,13 @@ function northRoadToForest(){
 function northRoadToFort(){
  if(!isDefeated('boss'))return say('マーガレット','「古砦の北門は、まだ奥の獣が塞いでいるわ。森の街道から回りましょう」');
  setMap('cave',11,1,'down',[[12,1],[13,1],[14,1]]);
- if(!storyAtLeast(STORY_STAGES.CAPITAL))state.objective='古砦跡を自由に探索できる';
- renderHud();
  const suppliesPending=state.events.choices['early.fortSupplyMark']==='seen'&&state.events.choices['early.caveSupplies']!=='taken';
+ // A known, unclaimed cache makes this voluntary return a concrete errand.
+ // Once claimed, restore forward progress; later chapter missions stay intact.
+ if(!storyAtLeast(STORY_STAGES.CAPITAL))state.objective=suppliesPending
+  ?'東の旧兵舎で補給印の物資を確かめる（任意）'
+  :caveProgressObjective();
+ renderHud();
  return say('ナレーション',suppliesPending
   ?'古砦の北門へ戻った。入口で見た東の旧兵舎への補給印を、まだ確かめられる。'
   :'高台の南端から古砦の北門へ下りた。森の街道へは古砦の南出口からも戻れる。');
