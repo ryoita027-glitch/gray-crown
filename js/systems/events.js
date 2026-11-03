@@ -713,6 +713,33 @@ function commitCapitalRationGift(){
  GC.Render?.World?.draw?.();
  return true;
 }
+// A postwar food choice is available only after hearing the mother's account.
+// It is distinct from the earlier gift: the mother remembers WHEN it happened.
+function offerCapitalHomecomingRationGift(){
+ const choices=state.events.choices;
+ if(!structuredCondition('returnedKingdom')||
+    choices['early.capitalRationGift']==='donate'||
+    choices['capital.rationHomecomingGift']==='donate'||
+    (state.inventory['携帯食']||0)<1)return false;
+ return say('ソフィ','「携帯食が一つあります。親子の食卓に残すか、私たちの旅に持っていくか……どうしましょう？」',[
+  {label:'携帯食を1個、親子に渡す',fn:()=>{
+   if(choices['early.capitalRationGift']==='donate'||
+      choices['capital.rationHomecomingGift']==='donate'||
+      (state.inventory['携帯食']||0)<1)
+    return say('ソフィ','「今はもう渡せる食料がありません」');
+   choices['capital.rationHomecomingGift']='donate';
+   state.inventory['携帯食']-=1;
+   addJournal('帰還後の王都の配給列で携帯食を1個、前線から戻った息子と母親に渡した。戦争の傷を消せなくても、今日の食卓の助けにはなる。');
+   renderHud();
+   GC.Render?.World?.draw?.();
+   return saySequence([
+    {speaker:'配給待ちの母親',text:'「……息子と分けます。勝ったから食べられるんじゃなくて、分けてくれた人がいるから。ありがとうございます」'},
+    {speaker:'カレン',text:'「私たちもこの先の食事を考えなきゃ。でも、今はここに渡したかったんだ」'}
+   ]);
+  }},
+  {label:'今は旅のために残す',fn:()=>say('カレン','「今は持っていこう。また必要になったら、ここで考えよう」')}
+ ]);
+}
 function capitalRationMotherVisit(){
  const wagonGuided=state.events.choices['early.capitalWagonGuide']==='guided';
  // The later war-aftermath conversation takes priority, unchanged.
@@ -727,6 +754,9 @@ function capitalRationMotherVisit(){
    const stillWaiting=choices['early.capitalRecruitHelp']==='water'&&choices['capital.recruitRationEcho']!=='heard'&&
     ['kingdom','empire'].includes(route)&&FINAL_ACT_APPROACHES[route]?.choices.some(c=>c.id===demand);
    if(stillWaiting)return say('配給待ちの母親','「あの日、水桶を運んでくれた東の新兵さんにも、お礼を伝えてくれる？　この通りのすぐ先にいるわ」');
+   if(choices['capital.rationHomecomingGift']==='donate')
+    return say('配給待ちの母親','「帰ってきてからいただいた携帯食、息子と分けました。戦争のことはまだ整理できないけれど、あの日の食事は助かりました」');
+   if(!gifted&&(state.inventory['携帯食']||0)>0)return offerCapitalHomecomingRationGift();
    return say('配給待ちの母親',gifted
     ?'「あの携帯食のこと、今も覚えています。息子は家にいます。これからの暮らしは、少しずつ考えます」'
     :guided
@@ -754,6 +784,9 @@ function capitalRationMotherVisit(){
     ?'王都の配給列で、前線から片腕を失って帰った息子を迎えた母親の話を聞いた。出発前の食料の手助けは覚えられていたが、戦争の傷は消えない。'
     :'王都の配給列で、前線から片腕を失って帰った息子を迎えた母親の話を聞いた。生還を喜ぶことと戦争を喜ぶことは別だと確かめた。');
    renderHud();
+   // After the essential homecoming dialogue, the player can choose without
+   // talking to the same NPC a second time. A prior gift is never solicited again.
+   if(!gifted)return offerCapitalHomecomingRationGift();
   });
  }
  if(state.events.choices['early.capitalRationGift']==='donate')return saySequence([
@@ -2275,7 +2308,7 @@ function inlineObjectEvent(id){
    // Acknowledge the ration and give the player a forward direction instead.
    // Once the boss is cleared, the lever clue is obsolete even after a city visit.
    // Connect the recovered food to the existing city choice only if it is known.
-   const queueKnown=isEventComplete('early.capitalRationIntro')&&state.events.choices['early.capitalRationGift']!=='donate';
+   const queueKnown=isEventComplete('early.capitalRationIntro')&&state.events.choices['early.capitalRationGift']!=='donate'&&state.events.choices['capital.rationHomecomingGift']!=='donate';
    const foodChoice=queueKnown?'王都の配給列へ届けるか、旅の備えにするかも選べるな。':'';
    const clearedLine=canRetrace
     ?'「補給印の先にあったぞ！　携帯食が1個。北門へ戻るなら、来た道を案内するよ。'+foodChoice+'」'
