@@ -1,3 +1,17 @@
+## 2026-11-04 02:43 JST — make the recruit's optional thank-you reminder non-repetitive
+
+**Confirmed in parent Draft #332 (`44101080`):** After the mother first asks the party to pass her thanks to the eastern recruit during the postwar homecoming, every revisit repeats the same request, including after a ration donation. The recruit can still receive the thanks directly. This is a repository-source observation, **not** a human playtest result.
+
+**External signal checked 2026-11-04:** [Sea of Stars negative Steam reviews](https://steamcommunity.com/app/1244090/negativereviews/) include an individual October 15 review criticizing shallow dialogue and repetition; [Chained Echoes positive reviews](https://steamcommunity.com/app/1229240/positivereviews/) include an individual October 24 review criticizing excessive exposition despite enjoying its world. The page does not reliably expose the posting year in the excerpt. These do not establish a general market trend. **Hypothesis:** a short optional recall of a side errand, rather than repeated NPC solicitation, respects player agency and keeps the emotional scene about the mother and son.
+
+**Playable change:** The first postwar conversation still contains the mother's explicit request. On later visits while the message remains undelivered, she gives a short family update; the existing eastern recruit's directions are available through an explicit `東の新兵への伝言を確認する` choice. Existing optional ration donation/reconsideration stays available in the same conversation, and the mother's thanks for donated food is still remembered. Delivering the message to the recruit removes the recall option. No new event key, item, map, NPC, karma, chapter gate, art or Save v23 schema.
+
+**Verification:** Exact-source JS syntax compiled; targeted isolated V8 function scenarios verified separately. Added a Node-harness regression for mother → optional reminder → recruit → mother and Save v23; existing pending-recruit assertions updated. **Not run:** native Node suite, actual browser walking/dialogue, real Save/Continue, CI, human playtest. **Draft/HOLD; main unchanged.**
+
+**Next risk:** A player may still need clearer spatial guidance from the mother to the eastern recruit. Check the actual walkable city route and visual landmark in browser before adding any new map signage.
+
+---
+
 ## 2026-11-04 01:43 JST — preserve the ration choice while the recruit's thanks are pending
 
 **Repository-confirmed defect:** On Draft #331 (5b557b5b), the mother has a special early-return branch while her thanks to the eastern recruit remain undelivered. That branch checks only whether the ration has been donated, not whether the player previously chose to keep it. As a result, a subsequent visit again shows the generic ration solicitation rather than the explicit reconsideration action. After a late donation, the same branch also omits the family's acknowledgment until the recruit errand is completed. These are source-derived defects, **not** findings from a human playtest.

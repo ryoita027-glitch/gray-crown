@@ -85,7 +85,8 @@ test('a pending recruit thank-you does not block a voluntary food decision',()=>
  s.finalChoice='kingdom';
  s.events.choices['route.final.kingdom']='evacuation';
  visit(h);
- assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/東の新兵さんにも/);
+ assert.doesNotMatch(h.evaluate('DIALOGUE_TYPE.fullHTML'),/東の新兵さんにも/);
+ assert.match(labels(h),/東の新兵への伝言を確認する/);
  assert.match(labels(h),/携帯食についても相談する/);
  h.evaluate('dialogueChoiceIndex=0;activateDialogueChoice()');
  assert.match(labels(h),/携帯食を1個、親子に渡す/);
@@ -94,8 +95,9 @@ test('a pending recruit thank-you does not block a voluntary food decision',()=>
  assert.equal(s.inventory['携帯食'],0);
  assert.equal(s.events.choices['capital.recruitRationEcho'],undefined,'recruit memory stays independently pending');
  visit(h);
- assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/東の新兵さんにも/);
- assert.equal(labels(h),'','no second ration request');
+ assert.doesNotMatch(h.evaluate('DIALOGUE_TYPE.fullHTML'),/東の新兵さんにも/);
+ assert.match(labels(h),/東の新兵への伝言を確認する/);
+ assert.doesNotMatch(labels(h),/携帯食/,'no second ration request');
 });
 
 test('a pending recruit thank-you respects a kept ration and remembers a later gift',()=>{
@@ -110,7 +112,8 @@ test('a pending recruit thank-you respects a kept ration and remembers a later g
  assert.equal(s.events.choices['capital.rationHomecomingGift'],'keep');
  assert.equal(s.journal.length,before+1);
  visit(h);
- assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/東の新兵さんにも/);
+ assert.doesNotMatch(h.evaluate('DIALOGUE_TYPE.fullHTML'),/東の新兵さんにも/);
+ assert.match(labels(h),/東の新兵への伝言を確認する/);
  assert.doesNotMatch(labels(h),/携帯食についても相談する/,'a kept ration must not be solicited again');
  assert.match(labels(h),/携帯食のことをもう一度考える/);
  const savedKeep=h.GC.Save.migrateLoaded(h.GC.Save.serializeSave());
@@ -124,8 +127,9 @@ test('a pending recruit thank-you respects a kept ration and remembers a later g
  assert.equal(s.journal.length,before+2);
  visit(h);
  assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/携帯食は息子と分けました/,'gift acknowledged even while recruit thanks remain pending');
- assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/東の新兵さんにも/);
- assert.equal(labels(h),'','do not solicit a second ration');
+ assert.doesNotMatch(h.evaluate('DIALOGUE_TYPE.fullHTML'),/東の新兵さんにも/);
+ assert.match(labels(h),/東の新兵への伝言を確認する/);
+ assert.doesNotMatch(labels(h),/携帯食/,'do not solicit a second ration');
  assert.equal(s.events.choices['capital.recruitRationEcho'],undefined,'independent recruit thanks remain pending');
  const savedGift=h.GC.Save.migrateLoaded(h.GC.Save.serializeSave());
  assert.equal(savedGift.schema,23);
@@ -139,8 +143,9 @@ test('a pending recruit thank-you never offers an impossible food choice',()=>{
  s.events.choices['route.final.empire']='captives';
  s.events.choices['capital.rationHomecomingGift']='keep';
  visit(h);
- assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/東の新兵さんにも/);
- assert.equal(labels(h),'');
+ assert.doesNotMatch(h.evaluate('DIALOGUE_TYPE.fullHTML'),/東の新兵さんにも/);
+ assert.match(labels(h),/東の新兵への伝言を確認する/);
+ assert.doesNotMatch(labels(h),/携帯食/);
  s.inventory['携帯食']=1;
  visit(h);
  assert.match(labels(h),/携帯食のことをもう一度考える/);
@@ -164,4 +169,27 @@ test('before the war return, the original ration choice and save flag remain int
  assert.match(labels(h),/携帯食を1個、母親に渡す/);
  assert.doesNotMatch(labels(h),/親子に渡す/);
  assert.equal(s.events.choices['capital.rationHomecomingGift'],undefined);
+});
+
+test('a postwar recruit thank-you is recalled on request and disappears after delivery',()=>{
+ const {h,s}=setup({heard:true,ration:0});
+ s.events.choices['early.capitalRecruitHelp']='water';
+ s.finalChoice='kingdom';
+ s.events.choices['route.final.kingdom']='evacuation';
+ visit(h);
+ assert.doesNotMatch(h.evaluate('DIALOGUE_TYPE.fullHTML'),/東の新兵さんにも/,'no repeated spoken errand');
+ assert.match(labels(h),/東の新兵への伝言を確認する/);
+ h.evaluate('dialogueChoiceIndex=0;activateDialogueChoice()');
+ assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/この通りのすぐ先にいるわ/);
+ assert.equal(s.events.choices['capital.recruitRationEcho'],undefined,'asking for directions does not auto-deliver');
+ h.evaluate("closeDialogue();inlineNpcEvent('capitalRecruit')");
+ assert.match(labels(h),/母親から預かったお礼を伝える/);
+ h.evaluate('dialogueChoiceIndex=0;activateDialogueChoice()');
+ assert.equal(s.events.choices['capital.recruitRationEcho'],'heard');
+ const saved=h.GC.Save.migrateLoaded(h.GC.Save.serializeSave());
+ assert.equal(saved.schema,23);
+ assert.equal(saved.events.choices['capital.recruitRationEcho'],'heard');
+ visit(h);
+ assert.doesNotMatch(labels(h),/新兵への伝言/,'completed errand no longer offered');
+ assert.doesNotMatch(h.evaluate('DIALOGUE_TYPE.fullHTML'),/東の新兵さんにも/);
 });
