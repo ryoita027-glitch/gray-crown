@@ -95,6 +95,8 @@ function caveProgressObjective(){
  return '古砦跡を探索し、北側の抜け道を探す';
 }
 function enterCave(){
+ // A south-gate visit is not the cleared-fort north-gate supply errand.
+ state.events.choices['early.fortSupplyReturnFromNorth']='inactive';
  const firstVisit=!state.world.visited?.cave;
  const followedSign=state.events.choices['early.roadForkIntent']==='fort';
  useMapTransition('roadToCave');
@@ -117,7 +119,7 @@ function enterCave(){
   {speaker:'マーガレット',text:'「石敷きは足場が安定しているわ。東の兵舎に物資があるかも。調べるかは私たちで決めましょう」'}
  ]);
 }
-function leaveCave(){useMapTransition('caveToRoad');if(!storyAtLeast(STORY_STAGES.CAPITAL))state.objective=roadReturnObjective();renderHud()}
+function leaveCave(){state.events.choices['early.fortSupplyReturnFromNorth']='inactive';useMapTransition('caveToRoad');if(!storyAtLeast(STORY_STAGES.CAPITAL))state.objective=roadReturnObjective();renderHud()}
 function enterNorthRoad(source='cave'){const revisiting=storyAtLeast(STORY_STAGES.CAPITAL);markVisited('northroad',true);setWorldSwitch('northRoadFromRoad',source==='road');setWorldSwitch('northRoadFromCapital',false);if(source==='road')useMapTransition('roadToNorthRoad');else setMap('northroad',11,13,'up',[[12,13],[13,13],[14,13]]);if(revisiting)return say('ナレーション',source==='road'?'森の街道から王都手前の高台へ戻った。北へ進めば王都の南門だ。':'古砦の北門から王都手前の旧街道へ戻った。北へ進めば王都の南門だ。');state.chapter='第一章 — 白い旗';// Both paths physically enter northroad. Previously cave route stayed at
  // 03_first_battle until Save/Load silently migrated it to stage 04.
  // Advance now while preserving the cave route's scout objective.
@@ -137,6 +139,8 @@ function northRoadToForest(){
 function northRoadToFort(){
  if(!isDefeated('boss'))return say('マーガレット','「古砦の北門は、まだ奥の獣が塞いでいるわ。森の街道から回りましょう」');
  setMap('cave',11,1,'down',[[12,1],[13,1],[14,1]]);
+ // The player may choose to compress only this already-traversed return.
+ state.events.choices['early.fortSupplyReturnFromNorth']='active';
  const suppliesPending=state.events.choices['early.fortSupplyMark']==='seen'&&state.events.choices['early.caveSupplies']!=='taken';
  // A known, unclaimed cache makes this voluntary return a concrete errand.
  // Once claimed, restore forward progress; later chapter missions stay intact.

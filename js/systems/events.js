@@ -2211,7 +2211,22 @@ function inlineObjectEvent(id){
   if(id==='banner')return earlyCaveBannerVisit()
   if(id==='fortShield')return visitFortShield()
   if(id==='rations'){
-   if(state.events.choices['early.caveSupplies'])return say('トリトン','「残っていた携帯食はもう拾った。あとは空箱だな」');
+   // A party returning from the cleared north gate can optionally compress
+   // only the known return walk. This is not a new passage or a boss bypass.
+   const canRetrace=isDefeated('boss')&&state.events.choices['early.fortSupplyReturnFromNorth']==='active';
+   const retraceChoices=()=>canRetrace?[
+    {label:'歩いた道をたどり北門へ戻る',fn:()=>{
+     if(state.map!=='cave'||!isDefeated('boss'))return false;
+     setMap('cave',11,1,'down',[[12,1],[13,1],[14,1]]);
+     if(!storyAtLeast(STORY_STAGES.CAPITAL))state.objective=caveProgressObjective();
+     renderHud();
+     return say('ナレーション','四人は来た道を引き返し、作動中の導管を目印に北門へ戻った。北へ進めば王都への旧街道だ。');
+    }},
+    {label:'ここで探索を続ける',fn:()=>say('カレン','「もう少し見てから戻ろう」')}
+   ]:[];
+   if(state.events.choices['early.caveSupplies'])return say('トリトン',canRetrace
+    ?'「携帯食はもう回収した。来た道を戻るなら、私が北門まで案内するよ」'
+    :'「残っていた携帯食はもう拾った。あとは空箱だな」',retraceChoices());
    state.events.choices['early.caveSupplies']='taken';
    setStructuredCondition('rations',true);
    state.inventory['携帯食']=(state.inventory['携帯食']||0)+1;
@@ -2227,7 +2242,7 @@ function inlineObjectEvent(id){
     ?'「補給印の先にあったぞ！　携帯食が1個。これで準備はできた。北門から王都への道に戻ろう！」'
     :state.events.choices['early.fortSupplyMark']==='seen'
     ?'「補給印の先にあったぞ！　携帯食が1個。それと蓋の裏に『中央格子・東西二機構』って整備印がある！」'
-    :'「携帯食が1個残ってた！　蓋の裏には『中央格子・東西二機構』って古い整備印もあるぞ！」');
+    :'「携帯食が1個残ってた！　蓋の裏には『中央格子・東西二機構』って古い整備印もあるぞ！」',retraceChoices());
   }
   if(id==='boss'&&!structuredCondition('bossDead')){if(!(structuredCondition('leverWest')&&structuredCondition('leverEast')))return say('マーガレット','「中央の鉄格子が閉じてる。左右の開閉機構を両方動かさないと奥へ行けないわ」');return say('カレン','「こいつが北の通路を塞いでる……！」',[{label:'戦う',fn:()=>startBattle('boss')},{label:'いったん下がる',fn:()=>say('マーガレット','「先に宝箱や脇道を調べてもいいわ」')}]);}
  }
