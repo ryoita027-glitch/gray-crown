@@ -351,3 +351,28 @@ test('release outside a direction without pointermove does not add an unintended
  h.click(1);
  assert.deepEqual(h.calls.moves,['up','up','up'],'a fresh ordinary tap still works');
 });
+
+test('pointerleave cancels movement even when no further pointermove is delivered',()=>{
+ const h=padHarness();
+ h.emit('pointerdown',h.pointer(101));
+ h.emit('pointerleave',h.pointer(999));
+ assert.equal(h.timeouts.size,1,'another pointer must not interrupt the held direction');
+ h.emit('pointerleave',h.pointer(101));
+ assert.equal(h.timeouts.size,0,'leaving before the hold threshold cancels the timer');
+ h.click(1);
+ assert.deepEqual(h.calls.moves,[],'a delayed click cannot move after leaving');
+
+ h.emit('pointerdown',h.pointer(102));
+ h.fireTimeout();
+ assert.deepEqual(h.calls.moves,['up']);
+ assert.equal(h.intervals.size,1);
+ h.emit('pointerleave',h.pointer(102));
+ assert.equal(h.intervals.size,0,'leaving after hold starts stops repeat immediately');
+ h.click(1);
+ assert.deepEqual(h.calls.moves,['up'],'release cannot add a ghost step');
+
+ h.emit('pointerdown',h.pointer(103));
+ h.emit('pointerup',h.pointer(103));
+ h.click(1);
+ assert.deepEqual(h.calls.moves,['up','up'],'a fresh deliberate tap still moves once');
+});
