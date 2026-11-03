@@ -1227,7 +1227,14 @@ function fortScoutSupplyChoices(){
    return saySequence([
     {speaker:'マーガレット',text:'「旧兵舎の補給箱を見つけたの。携帯食は回収済みよ。次の巡回隊には空箱だと伝えて」'},
     {speaker:'王国軍の斥候',text:'「助かる。位置と空箱のことを巡回帳に記すよ。次の隊が無駄足にならずに済む」'}
-   ]);
+   ],()=>{
+    // Do not force the player to close this conversation and speak to the
+    // scout again just to report the fort gate or the remembered banner.
+    const followups=state.events.choices['early.fortScoutAid']==='received'
+     ?fortScoutWitnessChoices()
+     :fortScoutDeferredReportChoices(!!getWorldSwitch('northRoadFromCapital'));
+    if(followups.length)return say('王国軍の斥候','「古砦のことで、ほかにも伝えておきたいことはあるか？」',followups);
+   });
   }
  }];
 }
