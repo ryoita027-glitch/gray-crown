@@ -799,7 +799,11 @@ function capitalRationMotherVisit(){
    :guided
    ?'「……そうね。南門から野菜が届いた日のことも覚えています。あの日の食事と、息子の傷は別の話なのね」'
    :'「……そうね。そう言ってもらえると、少し楽です」';
-  const withThanks=choices['early.capitalRecruitHelp']==='water'&&choices['capital.recruitRationEcho']!=='heard'
+  const routeForThanks=state.finalChoice;
+  const approachForThanks=choices['route.final.'+routeForThanks];
+  const thanksAvailable=choices['early.capitalRecruitHelp']==='water'&&choices['capital.recruitRationEcho']!=='heard'&&
+   ['kingdom','empire'].includes(routeForThanks)&&FINAL_ACT_APPROACHES[routeForThanks]?.choices.some(c=>c.id===approachForThanks);
+  const withThanks=thanksAvailable
    ?answer.replace(/」$/,' ……それから、東の新兵さんにも、あの日の水のお礼を伝えてくれる？」')
    :answer;
   return saySequence([
