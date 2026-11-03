@@ -1,0 +1,77 @@
+'use strict';
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const {createHarness}=require('./harness');
+
+function cityWalk(fromRoad=true,fortCleared=false,aid=false,banner){
+ const h=createHarness();
+ h.evaluate("ALPHA_SESSION.started=true;state.map='capital';state.x=11;state.y=14;markVisited('capital',true);state.story.stage=STORY_STAGES.CAPITAL;setWorldSwitch('northRoadFromRoad',"+fromRoad+");VISUAL.nextMoveAt=0");
+ if(fortCleared)h.evaluate("markDefeated('boss',true)");
+ if(aid)h.evaluate("state.events.choices['early.fortScoutAid']='received'");
+ if(banner)h.evaluate("state.events.choices['early.caveBanner']="+JSON.stringify(banner));
+ h.evaluate("move('down')");
+ assert.equal(h.evaluate("state.map"),'northroad');
+ return h;
+}
+function scout(h){h.evaluate("closeDialogue();northRoadScoutVisit()");return h.evaluate("DIALOGUE_TYPE.fullHTML")}
+
+test('capital south exit describes the actual city approach, not a remembered forest arrival',()=>{
+ const h=cityWalk(true);
+ assert.equal(h.evaluate("getWorldSwitch('northRoadFromCapital')"),true);
+ assert.match(scout(h),/王都の南門から出てきた/);
+ assert.doesNotMatch(h.evaluate("DIALOGUE_TYPE.fullHTML"),/森の本道から来た/);
+ assert.equal(h.evaluate("state.events.choices['early.fortScoutAid']"),undefined);
+ assert.equal(h.evaluate("state.inventory['薬草']"),3);
+});
+
+test('city revisit preserves fort scout memory and offers the deferred banner witness',()=>{
+ const h=cityWalk(false,true,true,'names');
+ const text=scout(h);
+ assert.match(text,/王都の南門から出てきた/);
+ assert.match(text,/古砦の話も覚えている/);
+ assert.match(h.evaluate("dialogueChoices.map(c=>c.label).join('|')"),/写した兵の名前を伝える/);
+ h.evaluate("dialogueChoices.find(c=>c.label.includes('兵の名前')).fn()");
+ assert.equal(h.evaluate("state.events.choices['early.fortScoutWitness']"),'names');
+ assert.match(scout(h),/兵たちの名前は巡回帳に残した/);
+ assert.equal(h.evaluate("dialogueChoices.length"),0);
+ assert.equal(h.evaluate("state.inventory['薬草']"),3);
+});
+
+test('a fort clear reported only after visiting Aldina still earns exactly one herb',()=>{
+ const h=cityWalk(false,true,false,'raise');
+ const before=h.evaluate("state.inventory['薬草']");
+ assert.match(scout(h),/王都の南門から戻ってきた/);
+ assert.equal(h.evaluate("state.inventory['薬草']"),before+1);
+ assert.equal(h.evaluate("state.events.choices['early.fortScoutAid']"),'received');
+ scout(h);
+ assert.equal(h.evaluate("state.inventory['薬草']"),before+1);
+});
+
+test('a first-time forest route cannot claim fort aid just by walking out of the city',()=>{
+ const h=cityWalk(true,false,false,'names');
+ scout(h);
+ assert.equal(h.evaluate("state.events.choices['early.fortScoutAid']"),undefined);
+ assert.equal(h.evaluate("dialogueChoices.length"),0);
+});
+
+test('a new southern arrival clears city context but keeps the southern return route',()=>{
+ const h=cityWalk(true);
+ h.evaluate("closeDialogue();state.map='road';enterNorthRoad('road')");
+ assert.equal(h.evaluate("getWorldSwitch('northRoadFromCapital')"),false);
+ assert.equal(h.evaluate("getWorldSwitch('northRoadFromRoad')"),true);
+ assert.match(scout(h),/森の本道から来た/);
+ h.evaluate("closeDialogue();markDefeated('boss',true);state.map='cave';enterNorthRoad('cave')");
+ assert.equal(h.evaluate("getWorldSwitch('northRoadFromCapital')"),false);
+ assert.equal(h.evaluate("getWorldSwitch('northRoadFromRoad')"),false);
+ assert.match(scout(h),/古砦の北門から来た/);
+});
+
+test('capital approach context and the active mission survive v23 save migration',()=>{
+ const h=cityWalk(false,true,true,'raise');
+ h.evaluate("state.story.stage=STORY_STAGES.ASH_ROAD;state.objective='避難民の家族を探す'");
+ const loaded=h.GC.Save.migrateLoaded(h.GC.Save.serializeSave());
+ assert.equal(loaded.schema,23);
+ assert.equal(loaded.world.switches.northRoadFromCapital,true);
+ assert.equal(loaded.world.switches.northRoadFromRoad,false);
+ assert.equal(loaded.story.objective,'避難民の家族を探す');
+});

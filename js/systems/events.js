@@ -1203,8 +1203,19 @@ function fortScoutWitnessChoices(){
  ];
 }
 function northRoadScoutVisit(){
+ const fromCapital=!!getWorldSwitch('northRoadFromCapital');
  const fromFort=!getWorldSwitch('northRoadFromRoad')&&isDefeated('boss');
  const markerCleared=state.events.choices['early.northroadWaystone']==='cleared';
+ // The last entry was from the city's south gate, regardless of the older
+ // road/fort switch (which still selects the correct SOUTH exit).
+ if(fromCapital){
+  if(fromFort&&state.events.choices['early.fortScoutAid']!=='received')return grantFortScoutAid(true);
+  const south=getWorldSwitch('northRoadFromRoad')?'森の街道':'古砦の北門';
+  const aided=state.events.choices['early.fortScoutAid']==='received';
+  const witness=state.events.choices['early.fortScoutWitness'];
+  const remembered=witness==='names'?'兵たちの名前は巡回帳に残した。':witness==='raise'?'結び直した旗のことは巡回隊にも伝えた。':'';
+  return say('王国軍の斥候','「王都の南門から出てきたのか。北へ戻れば城門、南へ下れば'+south+'だ。'+(aided?'古砦の話も覚えている。':'')+remembered+(markerCleared?'道標も読めるようになって助かるよ。':'')+'」',aided?fortScoutWitnessChoices():[]);
+ }
  if(!fromFort){
   const directGreeting='「森の本道から来たのか。古砦を通らなくても王都へ行ける。北へ進めば城門、南へ戻れば森の街道だ。'+(markerCleared?'道標を磨いてくれたのか。これなら後から来る旅人も迷わないな。':'');
   // The route switch describes this arrival, not whether the scout remembers
@@ -1222,17 +1233,29 @@ function northRoadScoutVisit(){
   const choices=fortScoutWitnessChoices();
   return say('王国軍の斥候','「古砦の北門が通れるようになったのは助かる。王都へは北だ。渡せる薬草はもうないが、無事に着いてくれよ。'+followup+(markerCleared?'道標も読めるようになって、助かるよ。':'')+'」',choices);
  }
+ return grantFortScoutAid(false);
+}
+
+function grantFortScoutAid(fromCapital=false){
+ // Reward proof of the cleared fort once, including a player who spoke to the
+ // scout only after visiting the capital. Never claim they JUST came from fort.
+ if(state.events.choices['early.fortScoutAid']==='received')return northRoadScoutVisit();
  state.events.choices['early.fortScoutAid']='received';
  state.inventory['薬草']=(state.inventory['薬草']||0)+1;
  addJournal('古砦跡の北門を抜けたことを王国軍の斥候に伝え、旅の備えとして薬草を1個受け取った。');
  renderHud();
  return saySequence([
-  {speaker:'王国軍の斥候',text:'「古砦の北門から来たのか。あそこを通れたなら、奥の獣を退けたんだな」'},
-  {speaker:'カレン',text:'「四人で何とか。道を探していたら、ここへ出たんです」'},
+  {speaker:'王国軍の斥候',text:fromCapital
+   ?'「王都の南門から戻ってきたのか。古砦の北門も通れたんだな。あの獣を退けたのか？」'
+   :'「古砦の北門から来たのか。あそこを通れたなら、奥の獣を退けたんだな」'},
+  {speaker:'カレン',text:fromCapital
+   ?'「はい。四人で何とかして、王都までたどり着きました」'
+   :'「四人で何とか。道を探していたら、ここへ出たんです」'},
   {speaker:'王国軍の斥候',text:'「巡回の仲間にも伝えるよ。これは旅の備えだ。王都へはこの道を北に進め」'},
   {speaker:'ナレーション',text:'薬草を1個受け取った。'}
  ],()=>{const choices=fortScoutWitnessChoices();if(choices.length)return say('王国軍の斥候','「古砦で、ほかに気になったことはあったか？」',choices)});
 }
+
 
 // Lock an allegiance only after both army orders have been examined.
 // No new Save v23 field: finalChoice and the route-scoped companion choice
