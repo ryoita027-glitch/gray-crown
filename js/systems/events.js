@@ -773,7 +773,7 @@ function capitalRationMotherVisit(){
     if(!gifted&&giftState!=='donate'&&(state.inventory['携帯食']||0)>0)
      options.push({label:giftState==='keep'?'携帯食のことをもう一度考える':'携帯食についても相談する',fn:()=>offerCapitalHomecomingRationGift()});
     options.push({label:'東の新兵への伝言を確認する',fn:()=>say('配給待ちの母親',
-     '「あの日、水桶を運んでくれた東の新兵さんにも、お礼を伝えてくれる？　この通りのすぐ先にいるわ」')});
+     '「あの日、水桶を運んでくれた東の新兵さんにも、お礼を伝えてくれる？　ここから東へ進んで、兵舎の手前にいるわ」')});
     return say('配給待ちの母親',line,options);
    }
    // An unrelated recruit thank-you must not gate an optional food decision.
