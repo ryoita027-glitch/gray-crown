@@ -2218,9 +2218,14 @@ function inlineObjectEvent(id){
    // The lid's faded maintenance mark points to the actual two-lever gate.
    // This is a clue, not a shortcut or a second ration reward.
    addJournal('古砦の保存食箱で携帯食を1個確保。箱の蓋裏には「中央格子・東西二機構」の古い整備印があり、二つの開閉機構がつながるらしい。');
-   if(!storyAtLeast(STORY_STAGES.CAPITAL)&&!isDefeated('boss'))state.objective=caveProgressObjective();
+   const earlyJourney=!storyAtLeast(STORY_STAGES.CAPITAL);
+   if(earlyJourney)state.objective=caveProgressObjective();
    renderHud();sfx('discovery');draw();
-   return say('トリトン',state.events.choices['early.fortSupplyMark']==='seen'
+   // After the boss, a solved lever puzzle is not the useful takeaway.
+   // Acknowledge the ration and give the player a forward direction instead.
+   return say('トリトン',earlyJourney&&isDefeated('boss')
+    ?'「補給印の先にあったぞ！　携帯食が1個。これで準備はできた。北門から王都への道に戻ろう！」'
+    :state.events.choices['early.fortSupplyMark']==='seen'
     ?'「補給印の先にあったぞ！　携帯食が1個。それと蓋の裏に『中央格子・東西二機構』って整備印がある！」'
     :'「携帯食が1個残ってた！　蓋の裏には『中央格子・東西二機構』って古い整備印もあるぞ！」');
   }
