@@ -1246,12 +1246,14 @@ function grantFortScoutAid(fromCapital=false){
  renderHud();
  return saySequence([
   {speaker:'王国軍の斥候',text:fromCapital
-   ?'「王都の南門から戻ってきたのか。古砦の北門も通れたんだな。あの獣を退けたのか？」'
+   ?'「王都の南門から戻ってきたのか。古砦の北門の様子も知っているか？」'
    :'「古砦の北門から来たのか。あそこを通れたなら、奥の獣を退けたんだな」'},
   {speaker:'カレン',text:fromCapital
-   ?'「はい。四人で何とかして、王都までたどり着きました」'
+   ?'「はい。奥の獣を四人で退けて、北門を抜けたんです」'
    :'「四人で何とか。道を探していたら、ここへ出たんです」'},
-  {speaker:'王国軍の斥候',text:'「巡回の仲間にも伝えるよ。これは旅の備えだ。王都へはこの道を北に進め」'},
+  {speaker:'王国軍の斥候',text:fromCapital
+   ?'「巡回の仲間にも伝えるよ。これは旅の備えだ。王都へ戻るなら北、古砦へは南だ」'
+   :'「巡回の仲間にも伝えるよ。これは旅の備えだ。王都へはこの道を北に進め」'},
   {speaker:'ナレーション',text:'薬草を1個受け取った。'}
  ],()=>{const choices=fortScoutWitnessChoices();if(choices.length)return say('王国軍の斥候','「古砦で、ほかに気になったことはあったか？」',choices)});
 }
