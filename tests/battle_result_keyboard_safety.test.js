@@ -54,3 +54,22 @@ test('focused native controls keep their own keyboard activation while result is
  }
  assert.deepEqual(h.calls,{move:0,action:0,menu:0});
 });
+
+
+test('battle result blocks page-scrolling keys while preserving native controls',()=>{
+ const h=keyboardHarness();
+ h.visible.add('battleResult');
+ for(const key of ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '])
+  assert.equal(h.press(key),true,'canvas '+JSON.stringify(key)+' must not scroll the page behind results');
+ assert.equal(h.press('Enter'),false,'unused Enter is not intercepted by the result guard');
+ assert.deepEqual(h.calls,{move:0,action:0,menu:0},'no world command can leak behind results');
+ h.focus.id='battleResultContinue';
+ h.focus.matches=()=>true;
+ for(const key of ['ArrowUp','ArrowDown',' '])
+  assert.equal(h.press(key),false,'focused native control keeps '+JSON.stringify(key));
+ h.visible.delete('battleResult');
+ h.focus.id='game';
+ h.focus.matches=()=>false;
+ assert.equal(h.press('ArrowDown'),true,'normal world movement still consumes ArrowDown');
+ assert.equal(h.calls.move,1,'world movement resumes after results close');
+});
