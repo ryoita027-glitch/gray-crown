@@ -118,7 +118,7 @@ function enterCave(){
  ]);
 }
 function leaveCave(){useMapTransition('caveToRoad');if(!storyAtLeast(STORY_STAGES.CAPITAL))state.objective=roadReturnObjective();renderHud()}
-function enterNorthRoad(source='cave'){markVisited('northroad',true);setWorldSwitch('northRoadFromRoad',source==='road');if(source==='road')useMapTransition('roadToNorthRoad');else setMap('northroad',11,13,'up',[[12,13],[13,13],[14,13]]);state.chapter='第一章 — 白い旗';// Both paths physically enter northroad. Previously cave route stayed at
+function enterNorthRoad(source='cave'){const revisiting=storyAtLeast(STORY_STAGES.CAPITAL);markVisited('northroad',true);setWorldSwitch('northRoadFromRoad',source==='road');if(source==='road')useMapTransition('roadToNorthRoad');else setMap('northroad',11,13,'up',[[12,13],[13,13],[14,13]]);if(revisiting)return say('ナレーション',source==='road'?'森の街道から王都手前の高台へ戻った。北へ進めば王都の南門だ。':'古砦の北門から王都手前の旧街道へ戻った。北へ進めば王都の南門だ。');state.chapter='第一章 — 白い旗';// Both paths physically enter northroad. Previously cave route stayed at
  // 03_first_battle until Save/Load silently migrated it to stage 04.
  // Advance now while preserving the cave route's scout objective.
  advanceStory(STORY_STAGES.CAPITAL_APPROACH,null,source==='road'
@@ -139,6 +139,16 @@ function returnCaveNorth(){
  renderHud();say('ナレーション','古砦跡の北側へ戻った。')
 }
 
+function returnNorthRoadFromCapital(){
+ // A short voluntary visit south of Aldina is not a second first arrival.
+ // Keep the current chapter and later mission; only an unfinished ceremony
+ // temporarily offers a clear way back to the city.
+ setMap('northroad',11,1,'down',[[12,1],[13,1],[14,1]]);
+ if(!storyAtLeast(STORY_STAGES.CEREMONY))state.objective='王都へ戻る／周辺を確認する';
+ renderHud();
+ return say('ナレーション','王都の南門を出て旧街道へ戻った。北へ戻れば城門だ。');
+}
+
 function showChapterCard(chapter,objective,done){const box=$('chapterCard');if(!box){if(done)done();return}state.locked=true;$('chapterCardTitle').textContent=chapter;$('chapterCardObjective').textContent=objective;box.classList.remove('hidden');requestAnimationFrame(()=>box.classList.add('show'));setTimeout(()=>{box.classList.remove('show');setTimeout(()=>{box.classList.add('hidden');state.locked=false;if(done)done()},180)},1250)}
 function travelScene(map,x,y,dir,chapter,objective,text,done=null){const chapterChanged=state.chapter!==chapter;setMap(map,x,y,dir,[[x+1,y],[x+2,y],[x+3,y]]);state.chapter=chapter;state.objective=objective;renderHud();const finish=()=>done?.();const after=()=>{if(text)say('ナレーション',text,[],finish);else finish()};if(chapterChanged)showChapterCard(chapter,objective,after);else after()}
 // Returning from Elsia reaches the SOUTH gate. Keep late-game objectives
@@ -150,6 +160,14 @@ function capitalReturnObjective(){
 }
 function enterCapital(first=true){
  if(first){
+  // The city welcome belongs to the first arrival only. Returning from the
+  // optional old road must not replay the cheering crowd or reset later quests.
+  if(hasVisited('capital')&&storyAtLeast(STORY_STAGES.CAPITAL)){
+   setMap('capital',11,13,'up',[[12,13],[13,13],[14,13]]);
+   if(!storyAtLeast(STORY_STAGES.CEREMONY))state.objective='王城前で任命式に出る';
+   renderHud();
+   return say('ナレーション','アルディナの南門へ戻った。');
+  }
   markVisited('capital',true);
   travelScene('capital',11,13,'up','第一章 — 白い旗','王城前で任命式に出る','城壁をくぐると、四人の名を呼ぶ歓声が石造りの街に響いた。|リュネ村とは別世界のような熱気だ。');
   advanceStory(STORY_STAGES.CAPITAL,null,'王城前で任命式に出る');
@@ -524,7 +542,7 @@ function move(dir){if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started
  if(INTERIOR_MAPS.includes(state.map)&&ny>=13&&[11,12].includes(nx)){leaveInterior();return}
  if(state.map==='road'&&ny<0){if(!isDefeated('wolf')){say('トリトン','「先に街道を塞いでいる灰牙狼を何とかしよう」');return}enterNorthRoad('road');return}
  // 全章マップ骨組み
- if(state.map==='capital'&&ny>=15&&[11,12].includes(nx)){if(getWorldSwitch('returnedKingdom')){enterReturnRoad('capital');return}travelScene('northroad',11,1,'down','第一章 — 白い旗','王都へ戻る／周辺を確認する','王都南側の旧街道へ戻った。');return}
+ if(state.map==='capital'&&ny>=15&&[11,12].includes(nx)){if(getWorldSwitch('returnedKingdom')){enterReturnRoad('capital');return}returnNorthRoadFromCapital();return}
  if(state.map==='capital'&&ny<0&&[11,12].includes(nx)){if(getWorldSwitch('returnedKingdom')){if(!structuredCondition('heroRecordsFound')){say('マーガレット','「軍務街に“勇者候補管理”の記録がある。まずそれを確かめたい」');return}if(!structuredCondition('heroTruth')){say('総司令部','台帳の内容をグランツ本人に問い質す必要がある。');return}enterFinalField();return}if(!isEventComplete('alpha.capital.ceremony')){say('王都北門','正式な任命式を終えるまでは前線へ出られない。');return}if(!isEventComplete('alpha2.capital.granzBriefing')){say('王都北門','総司令グランツから前線任務の説明を受けてから出発しよう。');return}enterAshRoad();return}
  if(state.map==='ashroad'&&ny>=15&&[11,12].includes(nx)){travelScene('capital',11,1,'down','第二章 — 灰の街道','前線へ向かう／王都へ戻る','王都へ戻った。');return}
  if(state.map==='ashroad'&&ny<0&&[11,12].includes(nx)){if(isEventComplete('alpha2.ashroad.complete')){enterFrontier();return}if(!isEventComplete('alpha2.ashroad.patrolVictory')){say('カレン','「前方に帝国軍の斥候がいる。街道を抜けるなら、避けては通れない」');return}if(!isEventComplete('alpha2.ashroad.refugee')){say('ソフィ','「先へ行く前に、避難してきた人の話を聞いておきたいです」');return}if(!isEventComplete('alpha2.ashroad.orders')){say('マーガレット','「焼け跡に残った命令書を確認しましょう。何を狙った攻撃なのか知っておきたい」');return}runTriggeredEvent('boundary','north',{map:'ashroad'});return}
