@@ -763,15 +763,18 @@ function capitalRationMotherVisit(){
    const stillWaiting=choices['early.capitalRecruitHelp']==='water'&&choices['capital.recruitRationEcho']!=='heard'&&
     ['kingdom','empire'].includes(route)&&FINAL_ACT_APPROACHES[route]?.choices.some(c=>c.id===demand);
    if(stillWaiting){
-    // A pending recruit message must not erase the family's food memory or
-    // turn a deliberate 'keep' into a fresh unsolicited donation request.
+    // The first homecoming scene already asked for the recruit's thanks.
+    // On revisits, make directions opt-in rather than repeating the errand.
     const giftState=choices['capital.rationHomecomingGift'];
-    const reminder=giftState==='donate'
-     ?'「帰還後にいただいた携帯食は息子と分けました。ありがとう。……あの日、水桶を運んでくれた東の新兵さんにも、お礼を伝えてくれる？　この通りのすぐ先にいるわ」'
-     :'「あの日、水桶を運んでくれた東の新兵さんにも、お礼を伝えてくれる？　この通りのすぐ先にいるわ」';
-    const canOffer=!gifted&&giftState!=='donate'&&(state.inventory['携帯食']||0)>0;
-    return say('配給待ちの母親',reminder,canOffer
-     ?[{label:giftState==='keep'?'携帯食のことをもう一度考える':'携帯食についても相談する',fn:()=>offerCapitalHomecomingRationGift()}]:[]);
+    const line=giftState==='donate'
+     ?'「帰還後にいただいた携帯食は息子と分けました。ありがとう。息子は家で休んでいます」'
+     :'「息子は家で休んでいます。あの日、話を聞いてくれてありがとう」';
+    const options=[];
+    if(!gifted&&giftState!=='donate'&&(state.inventory['携帯食']||0)>0)
+     options.push({label:giftState==='keep'?'携帯食のことをもう一度考える':'携帯食についても相談する',fn:()=>offerCapitalHomecomingRationGift()});
+    options.push({label:'東の新兵への伝言を確認する',fn:()=>say('配給待ちの母親',
+     '「あの日、水桶を運んでくれた東の新兵さんにも、お礼を伝えてくれる？　この通りのすぐ先にいるわ」')});
+    return say('配給待ちの母親',line,options);
    }
    // An unrelated recruit thank-you must not gate an optional food decision.
    if(choices['capital.rationHomecomingGift']==='donate')
