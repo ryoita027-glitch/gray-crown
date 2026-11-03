@@ -180,7 +180,7 @@ test('a postwar recruit thank-you is recalled on request and disappears after de
  assert.doesNotMatch(h.evaluate('DIALOGUE_TYPE.fullHTML'),/東の新兵さんにも/,'no repeated spoken errand');
  assert.match(labels(h),/東の新兵への伝言を確認する/);
  h.evaluate('dialogueChoiceIndex=0;activateDialogueChoice()');
- assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/この通りのすぐ先にいるわ/);
+ assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/東へ進んで、兵舎の手前にいるわ/);
  assert.equal(s.events.choices['capital.recruitRationEcho'],undefined,'asking for directions does not auto-deliver');
  h.evaluate("closeDialogue();inlineNpcEvent('capitalRecruit')");
  assert.match(labels(h),/母親から預かったお礼を伝える/);
@@ -192,4 +192,22 @@ test('a postwar recruit thank-you is recalled on request and disappears after de
  visit(h);
  assert.doesNotMatch(labels(h),/新兵への伝言/,'completed errand no longer offered');
  assert.doesNotMatch(h.evaluate('DIALOGUE_TYPE.fullHTML'),/東の新兵さんにも/);
+});
+
+
+test('the first eligible postwar recruit request leaves optional directions in the journal',()=>{
+ const {h,s}=setup({heard:false,ration:0});
+ s.events.choices['early.capitalRecruitHelp']='water';
+ s.finalChoice='kingdom';
+ s.events.choices['route.final.kingdom']='evacuation';
+ const before=s.journal.length;
+ visit(h);
+ finishHomecoming(h);
+ assert.equal(s.events.choices['capital.rationHomecomingHeard'],'heard');
+ assert.equal(s.journal.length,before+2,'homecoming and one optional waypoint note');
+ assert.match(s.journal[s.journal.length-1],/東へ進んだ兵舎の手前/);
+ const saved=h.GC.Save.migrateLoaded(h.GC.Save.serializeSave());
+ assert.equal(saved.schema,23);
+ visit(h);
+ assert.equal(s.journal.length,before+2,'revisits do not duplicate the reminder');
 });
