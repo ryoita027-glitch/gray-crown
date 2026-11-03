@@ -514,3 +514,17 @@ A one-step, visually marked detour should be easier to notice than a large empty
 
 ### Next concrete check
 Execute `node --test tests/finalfield_civilian_waymark.test.js` on the PR branch; verify west/east plans and marker are reachable in-browser, that restoring does not interrupt the three endings, and that the sign is legible at native display scale.
+
+## 2026-11-03 10:43 JST — north-road scout recognizes a return from Aldina
+
+**Verified repository defect:** On exact Draft #316 HEAD `d89c5c64`, `returnNorthRoadFromCapital()` enters the old road without recording that the party has just come from the **city**. `northRoadScoutVisit()` instead treats the older `northRoadFromRoad` flag as the present arrival and can greet a returning party as if it just came through the forest/fort. That flag must remain for the SOUTH exit, so it cannot simply be overwritten.
+
+**External evidence checked 2026-11-03:** [The Level Design Book: Wayfinding](https://book.leveldesignbook.com/process/blockout/wayfinding) discusses navigation information that respects optional detours; [GDC 2025 report (4Gamer)](https://www.4gamer.net/games/512/G051218/20250319025/) describes contextual landmarks and spatial clarity. [Radež & Bohak, 2026 preprint](https://arxiv.org/abs/2604.19192) reports a preference for context-aware NPC responses in its own study, not an RPG market-wide consensus. Current Japanese Steam review pages for *Chained Echoes* and *Sea of Stars* were attempted but not accessible through the research tool this run; no new individual review is claimed.
+
+**Design hypothesis (not a human test):** The scout should recognize the actual direction of approach, point to the real north/south exits, remember any voluntary fort-banner disclosure, and still grant the one-time fort aid when the player first reports a cleared fort after visiting the city. This makes optional backtracking feel coherent without adding another errand or new map area.
+
+**Implementation:** A separate `northRoadFromCapital` flag is set on Aldina south exit and cleared on genuine forest/fort arrivals. The original `northRoadFromRoad` flag continues to determine the southern destination. Scout dialogue now distinguishes city arrivals, retains the deferred banner choices and previously delivered testimony, and uses a city-aware first-time fort report for its existing one-herb reward. Existing v23 world-switch and choices dictionaries are reused; no save schema, map geometry, art, battle or karma changes.
+
+**Verification:** Exact modified JS sources parsed and targeted real-function V8 mocked scenarios exercised city/forest/fort greetings, remembered witness, deferred disclosure, single herb reward, and switch reset. Six native Node harness regressions were added **but not run**. Browser walk, real Save/Continue, full npm suite, CI and human playtest remain unverified. **Draft/HOLD** until those checks.
+
+**Next:** Walk Aldina south gate → scout → optional witness → return north; then enter via both southern routes and verify the scout, actual south exit, and save restoration. Check dialogue density at native 44px display scale.
