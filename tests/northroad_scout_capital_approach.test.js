@@ -125,3 +125,46 @@ test('a forest-side revisit can report a previously cleared fort without a false
  scout(h);
  assert.equal(h.evaluate("state.inventory['薬草']"),before+1);
 });
+
+test('repeated city scout conversations stay brief without hiding the voluntary fort report',()=>{
+ const h=cityWalk(true,true,false,'names');
+ const first=scout(h);
+ assert.match(first,/王都の南門から出てきた/);
+ const second=scout(h);
+ assert.ok(second.length<first.length,'repeat must be shorter than the first greeting');
+ assert.match(second,/北は王都、南は森の街道/);
+ assert.doesNotMatch(second,/王都の南門から出てきた/);
+ assert.match(h.evaluate("dialogueChoices.map(c=>c.label).join('|')"),/古砦の北門の状況を報告する/);
+ h.evaluate("dialogueChoices.find(c=>c.label.includes('報告せず')).fn()");
+ const save=h.GC.Save.migrateLoaded(h.GC.Save.serializeSave());
+ assert.equal(save.schema,23);
+ assert.equal(save.events.choices['early.northroadScoutLastGreeting'],'capital');
+ assert.equal(save.events.choices['early.fortScoutAid'],undefined);
+ const third=scout(h);
+ assert.match(third,/古砦の報告は、いつでも聞くよ/);
+ h.evaluate("dialogueChoices.find(c=>c.label.includes('状況を報告')).fn()");
+ assert.equal(h.evaluate("state.events.choices['early.fortScoutAid']"),'received');
+ assert.equal(h.evaluate("state.inventory['薬草']"),4);
+ scout(h);
+ assert.equal(h.evaluate("state.inventory['薬草']"),4);
+ assert.match(h.evaluate("dialogueChoices.map(c=>c.label).join('|')"),/写した兵の名前を伝える/);
+});
+
+test('a different approach restores full orientation while same-route revisits keep witness memory',()=>{
+ const h=cityWalk(true,true,true,'raise');
+ h.evaluate("state.events.choices['early.fortScoutWitness']='raise'");
+ const first=scout(h);
+ assert.match(first,/王都の南門から出てきた/);
+ const second=scout(h);
+ assert.match(second,/結び直した旗のことは巡回隊にも伝えた/);
+ assert.ok(second.length<first.length);
+ h.evaluate("closeDialogue();state.map='road';enterNorthRoad('road')");
+ const forest=scout(h);
+ assert.match(forest,/森の本道から来た/);
+ assert.equal(h.evaluate("state.events.choices['early.northroadScoutLastGreeting']"),'forest');
+ const again=scout(h);
+ assert.match(again,/北は王都、南は森の街道/);
+ assert.doesNotMatch(again,/森の本道から来た/);
+ assert.equal(h.evaluate("state.events.choices['early.fortScoutWitness']"),'raise');
+ assert.equal(h.evaluate("state.inventory['薬草']"),3);
+});
