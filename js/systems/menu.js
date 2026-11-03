@@ -5,6 +5,13 @@ function escapeMenuText(value){
   '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
  })[ch])
 }
+// Menu actions hide their clicked button; return keyboard control to the world
+// (including a Save status dialogue), or into the restored retry menu.
+function restoreMenuActionFocus(modal){
+ if(modal.classList.contains('hidden')){
+  if(typeof canvas!=='undefined')canvas?.focus?.()
+ }else $('modalClose')?.focus?.()
+}
 function restartFromMenu(){
  // The portable import owns checkpoint transitions until it settles.
  if(portableMenuImportInProgress)return false;
@@ -20,6 +27,7 @@ function restartFromMenu(){
   if(!started&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
    modal.classList.remove('hidden')
   }
+  restoreMenuActionFocus(modal);
  }
 }
 function saveFromMenu(){
@@ -37,6 +45,7 @@ function saveFromMenu(){
   if(!saved&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
    modal.classList.remove('hidden')
   }
+  restoreMenuActionFocus(modal);
  }
 }
 // Keep export and recovery actions retryable if a browser download fails
@@ -55,6 +64,7 @@ function exportFromMenu(download){
   if(!started&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
    modal.classList.remove('hidden')
   }
+  restoreMenuActionFocus(modal);
  }
 }
 function exportPortableSaveFromMenu(){
@@ -116,6 +126,7 @@ function loadFromMenu(){
   if(!loaded&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
    modal.classList.remove('hidden')
   }
+  restoreMenuActionFocus(modal);
  }
 }
 function restoreArchivedAdventureFromMenu(){
@@ -133,6 +144,7 @@ function restoreArchivedAdventureFromMenu(){
   if(!restored&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
    modal.classList.remove('hidden')
   }
+  restoreMenuActionFocus(modal);
  }
 }
 // A second file selection must not reopen the menu while an earlier import
@@ -183,6 +195,7 @@ async function importPortableSaveFromMenu(file){
   if(!imported&&GC.Save.canPersistNow?.('load')!==false&&(!$('dialogueBox')||$('dialogueBox').classList.contains('hidden'))){
    modal.classList.remove('hidden')
   }
+  restoreMenuActionFocus(modal);
  }
 }
 function openMenu(){
