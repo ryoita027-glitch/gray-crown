@@ -23,8 +23,9 @@ function confirmHarness(){
   }
   return nodes.get(id);
  };
- const document={hidden:false,listeners:{},addEventListener(type,fn){this.listeners[type]=fn},querySelectorAll:()=>[]};
- const window={listeners:{},addEventListener(type,fn){this.listeners[type]=fn}};
+ const register=(listeners,type,fn)=>{const previous=listeners[type];listeners[type]=previous?event=>{previous(event);fn(event)}:fn};
+ const document={hidden:false,listeners:{},addEventListener(type,fn){register(this.listeners,type,fn)},querySelectorAll:()=>[]};
+ const window={listeners:{},addEventListener(type,fn){register(this.listeners,type,fn)}};
  const canvas={addEventListener(){},focus(){}};
  const context=vm.createContext({
   $,document,window,canvas,ALPHA_SESSION:flags,state,
