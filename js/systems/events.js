@@ -779,7 +779,7 @@ function capitalRationMotherVisit(){
     ];
     // The message report must not hide the independent food decision.
     if(!gifted&&choices['capital.rationHomecomingGift']!=='donate'&&(state.inventory['携帯食']||0)>0)
-     reportOptions.push({label:'携帯食について相談する',fn:()=>offerCapitalHomecomingRationGift()});
+     reportOptions.push({label:choices['capital.rationHomecomingGift']==='keep'?'携帯食のことをもう一度考える':'携帯食について相談する',fn:()=>offerCapitalHomecomingRationGift()});
     return say('配給待ちの母親','「あの新兵さん、元気にしているかしら……」',reportOptions);
    }
    const route=state.finalChoice,demand=choices['route.final.'+route];
