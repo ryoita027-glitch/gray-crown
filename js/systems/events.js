@@ -768,11 +768,20 @@ function capitalRationMotherVisit(){
      {label:'新兵にお礼を伝えたことを話す',fn:()=>{
       if(choices['capital.rationThanksReported']==='reported')return capitalRationMotherVisit();
       choices['capital.rationThanksReported']='reported';
-      addJournal('王都の母親に、東の新兵へ感謝の伝言を届けたことを報告した。親子は静かに安堵していた。');
+      // The mother, not the absent son, hears this report. A past act of
+      // help receives a specific acknowledgement without inventing a cure.
+      const foodHelped=gifted||choices['capital.rationHomecomingGift']==='donate';
+      const wagonHelped=guided;
+      addJournal('王都の母親に、東の新兵へ感謝の伝言を届けたことを報告した。母親は新兵にも親子の無事が伝わったと知り、礼を述べた。');
       renderHud();
       return saySequence([
        {speaker:'カレン',text:'「あの新兵さんに、ちゃんとお礼を伝えてきました」'},
-       {speaker:'配給待ちの母親',text:'「そう……ありがとう。あの子にも、私たちが無事だと伝わったのね」'}
+       {speaker:'配給待ちの母親',text:'「そう……ありがとう。あの子にも、私たちが無事だと伝わったのね」'},
+       {speaker:'配給待ちの母親',text:foodHelped
+        ?'「食べ物を分けてくれたことも、忘れていません。息子の傷は治らないけれど、あの日の食卓を助けてもらいました」'
+        :wagonHelped
+        ?'「南門から野菜が届いた日も覚えています。息子と食べられる日がまた来たことを、大切にしたいです」'
+        :'「息子には、今日こうして話せたことを伝えます。明日も暮らしていかなきゃね」'}
       ]);
      }},
      {label:'今は話さない',fn:()=>say('カレン','「また、落ち着いた時に話そう」')}
