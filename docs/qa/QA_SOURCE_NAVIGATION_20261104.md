@@ -30,3 +30,16 @@ At inspection on 2026-11-04, GitHub Actions' latest listed run in this repositor
 4. Keep Save schema 23, Story 00–19, and all art decisions unchanged unless separately reviewed.
 
 **Status: HOLD / NO-GO.** This note changes no gameplay, art, tests, CI triggers, or release authority.
+
+## 2026-11-04 follow-up: runner failure independently rechecked
+
+Read-only GitHub API evidence for run `39153456330`:
+
+| Job | Job ID | Runner ID | Steps | Result |
+| --- | --- | --- | --- | --- |
+| `integrated-acceptance` | `117751680775` | `0` | `[]` | failure |
+| `runner-diagnostic` | `117751680993` | `0` | `[]` | failure |
+
+Both jobs were created at `2026-10-18T18:17:08Z` and completed at `18:17:10Z`; both requested `ubuntu-latest`. The exact frozen SHA has two check runs, each reporting `annotations_count=2`. The generic repository fetch interface rejects `/check-runs/{id}/annotations` as an unsupported URL, so **annotation text remains unknown**. These observations establish a pre-runner failure, **not** its precise billing, policy, or account-level cause. Do not attribute it conclusively to exhausted minutes without the account-side billing or annotation message.
+
+Reproduction links: [jobs API](https://api.github.com/repos/ryoita027-glitch/gray-crown/actions/runs/39153456330/jobs), [check-runs API](https://api.github.com/repos/ryoita027-glitch/gray-crown/commits/075f9cb7dc0321361ad1a8674adbc0938ce3ed8c/check-runs). No rerun was initiated. Resume with an authorized check-annotations read and Actions billing status, then exact-SHA local tests. Do not change the frozen SHA or relax acceptance gates.
