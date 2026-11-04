@@ -816,6 +816,13 @@ function capitalRationMotherVisit(){
     const options=[];
     if(!gifted&&choices['capital.rationHomecomingGift']!=='donate'&&(state.inventory['携帯食']||0)>0)
      options.push({label:choices['capital.rationHomecomingGift']==='keep'?'携帯食のことをもう一度考える':'携帯食について相談する',fn:()=>offerCapitalHomecomingRationGift()});
+    // The errand has ended; let the player choose whether to hear how
+    // the injured son is managing, instead of restarting the delivery.
+    options.unshift({label:'帰ってきた息子の暮らしを尋ねる',fn:()=>saySequence([
+     {speaker:'カレン',text:'「息子さん、家ではどうしていますか？」'},
+     {speaker:'配給待ちの母親',text:'「片腕でできないことは増えたわ。でも、何を手伝ってほしいかは、あの子自身に聞くようにしてるの」'},
+     {speaker:'ソフィ',text:'「帰ってきた後の暮らしも、あの人自身のものですから」'}
+    ])});
     return say('配給待ちの母親',
      choices['capital.rationHomecomingGift']==='donate'
       ?'「新兵さんにもお礼が届いて、息子と携帯食も分けられました。明日の暮らしはまだ心配だけど、今日助けてくれた人たちを忘れません」'
