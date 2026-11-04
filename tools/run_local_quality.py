@@ -252,13 +252,33 @@ def main() -> int:
         if args.mode == "full" or args.expect_head:
             if not verify_source_integrity("after"):
                 return 2
+        # Cleanup is part of acceptance: a leaked legacy checkout must not be PASS.
+        if worktree is not None and git:
+            cleanup = subprocess.run(
+                [git, "worktree", "remove", "--force", str(worktree)],
+                cwd=ROOT, check=False, capture_output=True, text=True)
+            if cleanup.returncode:
+                report["v23_worktree_cleanup"] = {
+                    "result": "FAIL", "returncode": cleanup.returncode,
+                    "stderr": cleanup.stderr[-4000:]}
+                print("Legacy v23 worktree cleanup failed.", file=sys.stderr)
+                return 1
+            report["v23_worktree_cleanup"] = {"result": "PASS"}
+            worktree = None
         report["verdict"] = "PASS"
         print("\nAll requested local tests PASSED. This is not an artistic approval.")
         return 0
     finally:
         if worktree is not None and git:
-            subprocess.run([git, "worktree", "remove", "--force", str(worktree)],
-                           cwd=ROOT, check=False, capture_output=True)
+            cleanup = subprocess.run(
+                [git, "worktree", "remove", "--force", str(worktree)],
+                cwd=ROOT, check=False, capture_output=True, text=True)
+            if cleanup.returncode:
+                report["v23_worktree_cleanup"] = {
+                    "result": "FAIL", "returncode": cleanup.returncode,
+                    "stderr": cleanup.stderr[-4000:]}
+            else:
+                report["v23_worktree_cleanup"] = {"result": "PASS"}
         # Even when a gate exits early, record whether it modified the checkout.
         # A failed test must never leave an unchecked source tree in the QA evidence.
         if (report["head_sha"] and git and
