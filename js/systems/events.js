@@ -1133,8 +1133,8 @@ function capitalRecruitRationVisit(){
   {label:'今は伝えずにおく',fn:()=>say('カレン','「今すぐ話さなくてもいい。またここに来られるから」')}
  );
  if(thanked)options.push({label:choices['capital.rationThanksReported']==='reported'?'報告後の近況を聞く':'配給列への帰り道を確認する',fn:()=>choices['capital.rationThanksReported']==='reported'?capitalRecruitAfterReport():say('カレン',capitalRecruitReturnGuidance())});
- if(ledgerReady)options.push({label:'台帳の写しを見せ、勇者たちの名を伝える',fn:()=>capitalRecruitLedgerShare()});
- if(thanked&&ledgerReady)options.push({label:'今は写しを見せない',fn:()=>say('マーガレット','「ここは人目が多い。話す相手と場所は、慎重に選びましょう」')});
+ if(ledgerReady&&!rememberedNames)options.push({label:'台帳の写しを見せ、勇者たちの名を伝える',fn:()=>capitalRecruitLedgerShare()});
+ if(thanked&&ledgerReady&&!rememberedNames)options.push({label:'今は写しを見せない',fn:()=>say('マーガレット','「ここは人目が多い。話す相手と場所は、慎重に選びましょう」')});
  return say('新兵',thanked
   ?'「あの人のお礼は覚えています。……前の勇者たちの名前も、ここに残せるんでしょうか」'
   :messageReady?'「出発前に水を運んだ配給列ですね。……あの時のこと、少しは役に立ったんでしょうか」'
