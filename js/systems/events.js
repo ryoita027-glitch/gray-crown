@@ -777,7 +777,9 @@ function capitalRationMotherVisit(){
       return saySequence([
        {speaker:'カレン',text:'「あの新兵さんに、ちゃんとお礼を伝えてきました」'},
        {speaker:'配給待ちの母親',text:'「そう……あの子にお礼が届いたのね。伝えてくれてありがとう」'},
-       {speaker:'配給待ちの母親',text:foodHelped
+       {speaker:'配給待ちの母親',text:foodHelped&&wagonHelped
+        ?'「食べ物を分けてくれたことも、南門から野菜を届けてくれたことも忘れていません。息子の傷は治らないけれど、あの日の食卓は助かりました」'
+        :foodHelped
         ?'「食べ物を分けてくれたことも、忘れていません。息子の傷は治らないけれど、あの日の食卓を助けてもらいました」'
         :wagonHelped
         ?'「南門から野菜が届いた日も覚えています。息子と食べられる日がまた来たことを、大切にしたいです」'
