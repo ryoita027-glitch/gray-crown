@@ -819,7 +819,9 @@ function capitalRationMotherVisit(){
     // the injured son is managing, instead of restarting the delivery.
     options.unshift({label:'帰ってきた息子の暮らしを尋ねる',fn:()=>saySequence([
      {speaker:'カレン',text:'「息子さん、家ではどうしていますか？」'},
-     {speaker:'配給待ちの母親',text:'「片腕でできないことは増えたわ。でも、何を手伝ってほしいかは、あの子自身に聞くようにしてるの」'},
+     {speaker:'配給待ちの母親',text:guided
+      ?'「南門から野菜が届いた日、息子は自分で献立を決めたの。片腕でできないことは増えたけれど、何を手伝ってほしいかは本人に聞くようにしてるわ」'
+      :'「片腕でできないことは増えたわ。でも、何を手伝ってほしいかは、あの子自身に聞くようにしてるの」'},
      {speaker:'ソフィ',text:'「帰ってきた後の暮らしも、あの人自身のものですから」'}
     ])});
     // Keep each earlier act of help visible on later visits without implying
