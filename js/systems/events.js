@@ -794,8 +794,7 @@ function capitalRationMotherVisit(){
     return say('配給待ちの母親','「あの新兵さん、元気にしているかしら……」',reportOptions);
    }
    const route=state.finalChoice,demand=choices['route.final.'+route];
-   const stillWaiting=choices['early.capitalRecruitHelp']==='water'&&choices['capital.recruitRationEcho']!=='heard'&&
-    ['kingdom','empire'].includes(route)&&FINAL_ACT_APPROACHES[route]?.choices.some(c=>c.id===demand);
+   const stillWaiting=choices['early.capitalRecruitHelp']==='water'&&choices['capital.recruitRationEcho']!=='heard';
    if(stillWaiting){
     // The first homecoming scene already asked for the recruit's thanks.
     // On revisits, make directions opt-in rather than repeating the errand.
@@ -855,8 +854,7 @@ function capitalRationMotherVisit(){
    :'「……そうね。そう言ってもらえると、少し楽です」';
   const routeForThanks=state.finalChoice;
   const approachForThanks=choices['route.final.'+routeForThanks];
-  const thanksAvailable=choices['early.capitalRecruitHelp']==='water'&&choices['capital.recruitRationEcho']!=='heard'&&
-   ['kingdom','empire'].includes(routeForThanks)&&FINAL_ACT_APPROACHES[routeForThanks]?.choices.some(c=>c.id===approachForThanks);
+  const thanksAvailable=choices['early.capitalRecruitHelp']==='water'&&choices['capital.recruitRationEcho']!=='heard';
   const withThanks=thanksAvailable
    ?answer.replace(/」$/,' ……それから、あの日、水を運んでくれた新兵さんにもお礼を伝えてくれる？　ここから東へ進んだ兵舎の手前にいるわ」')
    :answer;
