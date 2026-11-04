@@ -826,7 +826,7 @@ function capitalRationMotherVisit(){
     return say('配給待ちの母親',
      choices['capital.rationHomecomingGift']==='donate'
       ?'「新兵さんにもお礼が届いて、息子と携帯食も分けられました。明日の暮らしはまだ心配だけど、今日助けてくれた人たちを忘れません」'
-      :'「新兵さんにお礼を届けてくれてありがとう。息子は家で休んでいます。明日もあの子が水を運んでくれると思うと、少し心強いわ」',options);
+      :'「新兵さんにお礼を届けてくれてありがとう。息子は家で休んでいます。明日もあの新兵さんが配給列にいてくれると思うと、少し心強いわ」',options);
    }
    // An unrelated recruit thank-you must not gate an optional food decision.
    if(choices['capital.rationHomecomingGift']==='donate')
