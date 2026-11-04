@@ -810,6 +810,17 @@ function capitalRationMotherVisit(){
      '「あの日、水桶を運んでくれた東の新兵さんにも、お礼を伝えてくれる？　ここから東へ進んで、兵舎の手前にいるわ」')});
     return say('配給待ちの母親',line,options);
    }
+   // After the player closes the errand, acknowledge it on later visits too.
+   // Keep the food choice independent, and never repeat the route instruction.
+   if(choices['capital.rationThanksReported']==='reported'){
+    const options=[];
+    if(!gifted&&choices['capital.rationHomecomingGift']!=='donate'&&(state.inventory['携帯食']||0)>0)
+     options.push({label:choices['capital.rationHomecomingGift']==='keep'?'携帯食のことをもう一度考える':'携帯食について相談する',fn:()=>offerCapitalHomecomingRationGift()});
+    return say('配給待ちの母親',
+     choices['capital.rationHomecomingGift']==='donate'
+      ?'「新兵さんにもお礼が届いて、息子と携帯食も分けられました。明日の暮らしはまだ心配だけど、今日助けてくれた人たちを忘れません」'
+      :'「新兵さんにお礼を届けてくれてありがとう。息子は家で休んでいます。明日もあの子が水を運んでくれると思うと、少し心強いわ」',options);
+   }
    // An unrelated recruit thank-you must not gate an optional food decision.
    if(choices['capital.rationHomecomingGift']==='donate')
     return say('配給待ちの母親','「帰ってきてからいただいた携帯食、息子と分けました。戦争のことはまだ整理できないけれど、あの日の食事は助かりました」');
