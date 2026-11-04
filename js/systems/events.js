@@ -1099,14 +1099,18 @@ function capitalRecruitRationVisit(){
  const rememberedNames=choices['capital.recruitWitness']==='told';
  const thanked=choices[key]==='heard';
  const ledgerReady=capitalRecruitLedgerAvailable();
+ // A message cannot be delivered before the mother actually asks for it.
+ const messageReady=choices['early.capitalRecruitHelp']==='water'&&
+  choices['capital.rationHomecomingHeard']==='heard';
  if(thanked&&!ledgerReady)return say('新兵',rememberedNames
   ?'「あの人のお礼も、記録から消された勇者たちの名前も覚えています。今日も配給所を手伝います」'
   :'「あの人のお礼は覚えています。水桶を運ぶことなら、今日もできます」',[
    {label:choices['capital.rationThanksReported']==='reported'?'報告後の近況を聞く':'配給列への帰り道を確認する',fn:()=>choices['capital.rationThanksReported']==='reported'?capitalRecruitAfterReport():say('カレン',capitalRecruitReturnGuidance())}
   ]);
  const options=[];
- if(!thanked)options.push(
+ if(!thanked&&messageReady)options.push(
   {label:'母親から預かったお礼を伝える',fn:()=>{
+   if(!messageReady)return say('カレン','「まだ預かっていない伝言は届けられないよ」');
    if(choices[key]==='heard')return capitalRecruitRationVisit();
    choices[key]='heard';
    addJournal('王都の東側にいる新兵へ、配給列の母親からのお礼を届けた。次は西の配給列へ戻り、伝言を届けたことを母親に報告する。');
@@ -1125,7 +1129,8 @@ function capitalRecruitRationVisit(){
  if(thanked)options.push({label:'今は写しを見せない',fn:()=>say('マーガレット','「ここは人目が多い。話す相手と場所は、慎重に選びましょう」')});
  return say('新兵',thanked
   ?'「あの人のお礼は覚えています。……前の勇者たちの名前も、ここに残せるんでしょうか」'
-  :'「出発前に水を運んだ配給列ですね。……あの時のこと、少しは役に立ったんでしょうか」',options);
+  :messageReady?'「出発前に水を運んだ配給列ですね。……あの時のこと、少しは役に立ったんでしょうか」'
+  :'「配給列の水桶は、今日も運んでいます。あの人たちは元気でしょうか」',options);
 }
 function capitalCitizenReturnVisit(){
  const route=state.finalChoice,demand=state.events?.choices?.['route.final.'+route];
