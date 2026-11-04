@@ -102,7 +102,10 @@ def main() -> int:
             exception = None
         except Exception as e:
             code, exception = 1, str(e)
-            logfile.write_text(exception, encoding="utf-8")
+            # Preserve subprocess output already written before a timeout or failure.
+            # Overwriting this file would erase the evidence needed to diagnose CI.
+            with logfile.open("a", encoding="utf-8", errors="replace") as stream:
+                stream.write("\n[runner exception] " + exception + "\n")
         item = {
             "label": label,
             "command": command,
