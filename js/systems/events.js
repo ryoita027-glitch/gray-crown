@@ -1093,7 +1093,7 @@ function capitalRecruitRationVisit(){
   {label:'母親から預かったお礼を伝える',fn:()=>{
    if(choices[key]==='heard')return capitalRecruitRationVisit();
    choices[key]='heard';
-   addJournal('王都の配給列で、以前水を運んだ新兵へ母親のお礼を伝えた。戦争の傷が消えたとは伝えず、目の前の手助けが覚えられていたことだけを共有した。');
+   addJournal('王都の東側にいる新兵へ、配給列の母親からのお礼を届けた。次は西の配給列へ戻り、伝言を届けたことを母親に報告する。');
    renderHud();
    return saySequence([
     {speaker:'カレン',text:'「あの人、あの日の水桶を覚えてたよ。ありがとうって伝えてほしいって」'},
