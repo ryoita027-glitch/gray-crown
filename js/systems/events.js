@@ -759,6 +759,25 @@ function capitalRationMotherVisit(){
   // The same mother remembers a small, voluntary act. Neither food nor a
   // returned soldier is proof that the war was just or the city was saved.
   if(choices[key]==='heard'){
+   // Completing the optional errand should have an observable, one-time
+   // payoff at its source, not merely disappear from the recruit's dialogue.
+   if(choices['capital.recruitRationEcho']==='heard'&&
+      choices['capital.rationThanksReported']!=='reported'&&
+      choices['early.capitalRecruitHelp']==='water'){
+    return say('配給待ちの母親','「あの新兵さん、元気にしているかしら……」',[
+     {label:'新兵にお礼を伝えたことを話す',fn:()=>{
+      if(choices['capital.rationThanksReported']==='reported')return capitalRationMotherVisit();
+      choices['capital.rationThanksReported']='reported';
+      addJournal('王都の母親に、東の新兵へ感謝の伝言を届けたことを報告した。親子は静かに安堵していた。');
+      renderHud();
+      return saySequence([
+       {speaker:'カレン',text:'「あの新兵さんに、ちゃんとお礼を伝えてきました」'},
+       {speaker:'配給待ちの母親',text:'「そう……ありがとう。あの子にも、私たちが無事だと伝わったのね」'}
+      ]);
+     }},
+     {label:'今は話さない',fn:()=>say('カレン','「また、落ち着いた時に話そう」')}
+    ]);
+   }
    const route=state.finalChoice,demand=choices['route.final.'+route];
    const stillWaiting=choices['early.capitalRecruitHelp']==='water'&&choices['capital.recruitRationEcho']!=='heard'&&
     ['kingdom','empire'].includes(route)&&FINAL_ACT_APPROACHES[route]?.choices.some(c=>c.id===demand);
