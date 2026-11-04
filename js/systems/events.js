@@ -772,11 +772,11 @@ function capitalRationMotherVisit(){
       // help receives a specific acknowledgement without inventing a cure.
       const foodHelped=gifted||choices['capital.rationHomecomingGift']==='donate';
       const wagonHelped=guided;
-      addJournal('王都の母親に、東の新兵へ感謝の伝言を届けたことを報告した。母親は新兵にも親子の無事が伝わったと知り、礼を述べた。');
+      addJournal('王都の母親に、東の新兵へ感謝の伝言を届けたことを報告した。母親は、新兵が感謝を受け取ったと聞いて礼を述べた。');
       renderHud();
       return saySequence([
        {speaker:'カレン',text:'「あの新兵さんに、ちゃんとお礼を伝えてきました」'},
-       {speaker:'配給待ちの母親',text:'「そう……ありがとう。あの子にも、私たちが無事だと伝わったのね」'},
+       {speaker:'配給待ちの母親',text:'「そう……あの子にお礼が届いたのね。伝えてくれてありがとう」'},
        {speaker:'配給待ちの母親',text:foodHelped
         ?'「食べ物を分けてくれたことも、忘れていません。息子の傷は治らないけれど、あの日の食卓を助けてもらいました」'
         :wagonHelped
