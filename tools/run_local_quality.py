@@ -59,9 +59,6 @@ def main() -> int:
     npm = shutil.which("npm.cmd" if os.name == "nt" else "npm")
     git = shutil.which("git")
     env = dict(os.environ)
-    if not os.access(ROOT / "package.json", os.R_OK):
-        print("Run from a complete local checkout of Gray Crown.", file=sys.stderr)
-        return 2
     started = time.monotonic()
     steps = []
     report = {
@@ -154,6 +151,10 @@ def main() -> int:
 
     worktree = None
     try:
+        if not os.access(ROOT / "package.json", os.R_OK):
+            print("Run from a complete local checkout of Gray Crown.", file=sys.stderr)
+            report["preflight_error"] = "Missing or unreadable package.json: incomplete repository checkout"
+            return 2
         if not npm:
             print("Node.js/npm not installed. Install current Node LTS.", file=sys.stderr)
             report["preflight_error"] = "Node.js/npm executable not found"
