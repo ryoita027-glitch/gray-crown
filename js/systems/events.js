@@ -1072,7 +1072,7 @@ function capitalRecruitLedgerShare(){
 function capitalRecruitReturnGuidance(){
  return state.events.choices['capital.rationThanksReported']==='reported'
   ?'「母親への報告も済んだね。配給列に戻るなら兵舎から西だよ。次は自分たちの旅を進めよう」'
-  :capitalRecruitReturnGuidance();
+  :'「兵舎から西へ進むと配給列だよ。母親にも、ちゃんと伝えられたって報告しよう」';
 }
 function capitalRecruitRationVisit(){
  const choices=state.events.choices,key='capital.recruitRationEcho';
