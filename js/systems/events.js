@@ -764,7 +764,7 @@ function capitalRationMotherVisit(){
    if(choices['capital.recruitRationEcho']==='heard'&&
       choices['capital.rationThanksReported']!=='reported'&&
       choices['early.capitalRecruitHelp']==='water'){
-    return say('配給待ちの母親','「あの新兵さん、元気にしているかしら……」',[
+    const reportOptions=[
      {label:'新兵にお礼を伝えたことを話す',fn:()=>{
       if(choices['capital.rationThanksReported']==='reported')return capitalRationMotherVisit();
       choices['capital.rationThanksReported']='reported';
@@ -776,7 +776,11 @@ function capitalRationMotherVisit(){
       ]);
      }},
      {label:'今は話さない',fn:()=>say('カレン','「また、落ち着いた時に話そう」')}
-    ]);
+    ];
+    // The message report must not hide the independent food decision.
+    if(!gifted&&choices['capital.rationHomecomingGift']!=='donate'&&(state.inventory['携帯食']||0)>0)
+     reportOptions.push({label:'携帯食について相談する',fn:()=>offerCapitalHomecomingRationGift()});
+    return say('配給待ちの母親','「あの新兵さん、元気にしているかしら……」',reportOptions);
    }
    const route=state.finalChoice,demand=choices['route.final.'+route];
    const stillWaiting=choices['early.capitalRecruitHelp']==='water'&&choices['capital.recruitRationEcho']!=='heard'&&
