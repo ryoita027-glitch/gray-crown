@@ -57,9 +57,6 @@ def main() -> int:
     out.mkdir(parents=True, exist_ok=True)
     python = sys.executable
     npm = shutil.which("npm.cmd" if os.name == "nt" else "npm")
-    if not npm:
-        print("Node.js/npm not installed. Install current Node LTS.", file=sys.stderr)
-        return 2
     git = shutil.which("git")
     env = dict(os.environ)
     if not os.access(ROOT / "package.json", os.R_OK):
@@ -157,6 +154,10 @@ def main() -> int:
 
     worktree = None
     try:
+        if not npm:
+            print("Node.js/npm not installed. Install current Node LTS.", file=sys.stderr)
+            report["preflight_error"] = "Node.js/npm executable not found"
+            return 2
         if git:
             p = subprocess.run([git, "rev-parse", "HEAD"], cwd=ROOT,
                                text=True, capture_output=True, check=False)
