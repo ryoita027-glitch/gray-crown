@@ -253,6 +253,12 @@ def main() -> int:
         if worktree is not None and git:
             subprocess.run([git, "worktree", "remove", "--force", str(worktree)],
                            cwd=ROOT, check=False, capture_output=True)
+        # Even when a gate exits early, record whether it modified the checkout.
+        # A failed test must never leave an unchecked source tree in the QA evidence.
+        if (report["head_sha"] and git and
+                (args.mode == "full" or args.expect_head) and
+                "source_integrity_after" not in report):
+            verify_source_integrity("after")
         if report["verdict"] != "PASS":
             report["verdict"] = "FAIL_OR_INCOMPLETE"
         report["run_completed_at"] = dt.datetime.now().isoformat()
