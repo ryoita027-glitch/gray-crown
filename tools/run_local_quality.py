@@ -183,6 +183,20 @@ def main() -> int:
         if args.mode == "full" or args.expect_head:
             if not verify_source_integrity("before"):
                 return 2
+        # Fail before expensive browser/release gates if the immutable v23 fixture is missing.
+        # The historical save test cannot be accepted without this exact commit.
+        if args.with_v23:
+            if not git:
+                report["v23_fixture"] = "BLOCKED: git is unavailable"
+                write_report()
+                return 2
+            check = subprocess.run([git, "cat-file", "-e", MAIN_V23 + "^{commit}"],
+                                   cwd=ROOT, check=False, capture_output=True)
+            if check.returncode:
+                report["v23_fixture"] = "BLOCKED: immutable production commit absent from local git database"
+                write_report()
+                print("Historical v23 commit unavailable locally. Fetch original git history separately.", file=sys.stderr)
+                return 2
         if args.install:
             if not run("pinned-python-dependencies", ["python", "-m", "pip", "install", "-r", "requirements-ci.txt"]):
                 return 1
@@ -219,17 +233,7 @@ def main() -> int:
                     if not run(label, command): return 1
 
         if args.with_v23:
-            if not git:
-                print("Historical main v23 test requires git.", file=sys.stderr)
-                return 1
-            # Use local immutable SHA, NOT a guessed new baseline or remote branch.
-            check = subprocess.run([git, "cat-file", "-e", MAIN_V23 + "^{commit}"],
-                                   cwd=ROOT, check=False, capture_output=True)
-            if check.returncode:
-                report["v23_fixture"] = "BLOCKED: immutable production commit absent from local git database"
-                write_report()
-                print("Historical v23 commit unavailable locally. Fetch original git history separately.")
-                return 1
+            # Preflight already verified the exact historical commit before test execution.
             worktree = Path(tempfile.mkdtemp(prefix="gray_crown_v23_"))
             worktree.rmdir()
             add = subprocess.run([git, "worktree", "add", "--detach", str(worktree), MAIN_V23],
