@@ -1069,6 +1069,11 @@ function capitalRecruitLedgerShare(){
   {speaker:'新兵',text:'「まずは同じ隊の名前を全部覚えます。それなら、今からでもできます」'}
  ]);
 }
+function capitalRecruitReturnGuidance(){
+ return state.events.choices['capital.rationThanksReported']==='reported'
+  ?'「母親への報告も済んだね。配給列に戻るなら兵舎から西だよ。次は自分たちの旅を進めよう」'
+  :capitalRecruitReturnGuidance();
+}
 function capitalRecruitRationVisit(){
  const choices=state.events.choices,key='capital.recruitRationEcho';
  const rememberedNames=choices['capital.recruitWitness']==='told';
@@ -1077,7 +1082,7 @@ function capitalRecruitRationVisit(){
  if(thanked&&!ledgerReady)return say('新兵',rememberedNames
   ?'「あの人のお礼も、記録から消された勇者たちの名前も覚えています。今日も配給所を手伝います」'
   :'「あの人のお礼は覚えています。水桶を運ぶことなら、今日もできます」',[
-   {label:'配給列への帰り道を確認する',fn:()=>say('カレン','「兵舎から西へ戻れば、配給列にいた母親に会えるよ。伝言を届けたことも、報告できるね」')}
+   {label:'配給列への帰り道を確認する',fn:()=>say('カレン',capitalRecruitReturnGuidance())}
   ]);
  const options=[];
  if(!thanked)options.push(
@@ -1095,7 +1100,7 @@ function capitalRecruitRationVisit(){
   }},
   {label:'今は伝えずにおく',fn:()=>say('カレン','「今すぐ話さなくてもいい。またここに来られるから」')}
  );
- if(thanked)options.push({label:'配給列への帰り道を確認する',fn:()=>say('カレン','「兵舎から西へ戻れば、配給列にいた母親に会えるよ。伝言を届けたことも、報告できるね」')});
+ if(thanked)options.push({label:'配給列への帰り道を確認する',fn:()=>say('カレン',capitalRecruitReturnGuidance())});
  if(ledgerReady)options.push({label:'台帳の写しを見せ、勇者たちの名を伝える',fn:()=>capitalRecruitLedgerShare()});
  if(thanked)options.push({label:'今は写しを見せない',fn:()=>say('マーガレット','「ここは人目が多い。話す相手と場所は、慎重に選びましょう」')});
  return say('新兵',thanked
