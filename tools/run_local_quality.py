@@ -274,9 +274,18 @@ def main() -> int:
                 [git, "worktree", "remove", "--force", str(worktree)],
                 cwd=ROOT, check=False, capture_output=True, text=True)
             if cleanup.returncode:
-                report["v23_worktree_cleanup"] = {
-                    "result": "FAIL", "returncode": cleanup.returncode,
-                    "stderr": cleanup.stderr[-4000:]}
+                # Preserve the first cleanup failure even if a retry later succeeds.
+                # A successful retry is useful recovery evidence, not a QA PASS.
+                if report.get("v23_worktree_cleanup", {}).get("result") == "FAIL":
+                    report["v23_worktree_cleanup_retry"] = {
+                        "result": "FAIL", "returncode": cleanup.returncode,
+                        "stderr": cleanup.stderr[-4000:]}
+                else:
+                    report["v23_worktree_cleanup"] = {
+                        "result": "FAIL", "returncode": cleanup.returncode,
+                        "stderr": cleanup.stderr[-4000:]}
+            elif report.get("v23_worktree_cleanup", {}).get("result") == "FAIL":
+                report["v23_worktree_cleanup_retry"] = {"result": "PASS"}
             else:
                 report["v23_worktree_cleanup"] = {"result": "PASS"}
         # Even when a gate exits early, record whether it modified the checkout.
