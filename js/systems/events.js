@@ -90,8 +90,20 @@ function inlineNpcEvent(id){
   if(id==='clerk')return say('村役場の書記','「減税の書類はもう届いています。王都は仕事が早い……こういう時だけは、ですが」')
  }
  if(state.map==='cottage'){
-  if(id==='soldierMother')return say('兵士の母','「うちの息子も前線よ。帝国兵を憎めって皆は言うけど……私はただ、息子が帰ってきてほしいだけなの」')
-  if(id==='soldierSister')return say('兵士の妹・ユナ','「兄さんからの手紙、三か月来てないの。でも母さんの前では心配してないふりしてる」')
+  if(id==='soldierSister'){
+   if(structuredCondition('yunaMotherSpoke'))return say('兵士の妹・ユナ','「母さん、兄さんの話をしてくれたの。二人とも心配してたんだね……ありがとう」');
+   if(structuredCondition('yunaWorryHeard'))return say('兵士の妹・ユナ','「母さんには、まだ心配してるって言えない。でも……聞いてくれてありがとう」');
+   setStructuredCondition('yunaWorryHeard',true);
+   return saySequence([{speaker:'兵士の妹・ユナ',text:'「兄さんからの手紙、三か月来てないの。でも母さんの前では心配してないふりしてる」'},{speaker:'ソフィ',text:'「心配しているって、言ってもいいんですよ」'},{speaker:'ユナ',text:'「母さんまで泣いたらどうしようって……」'}])
+  }
+  if(id==='soldierMother'){
+   if(structuredCondition('yunaMotherSpoke'))return say('兵士の母','「ユナと話せたよ。息子の無事はまだ分からない。でも、あの子まで一人で抱えなくていいんだね」');
+   if(!structuredCondition('yunaWorryHeard'))return say('兵士の母','「うちの息子も前線よ。帝国兵を憎めって皆は言うけど……私はただ、息子が帰ってきてほしいだけなの」');
+   return say('兵士の母','「ユナは平気な顔をしてるけど……本当はどう思ってるのかしら」',[
+    {label:'ユナもお兄さんを心配しています',fn:()=>{setStructuredCondition('yunaMotherSpoke',true);addJournal('ユナと母親は、前線の家族を案じる気持ちを互いに隠していた。二人が話すきっかけを作った。');saySequence([{speaker:'兵士の母',text:'「……そう。あの子も、ずっと我慢してたのね」'},{speaker:'ソフィ',text:'「無理に元気でいる必要はないと思います」'},{speaker:'兵士の母',text:'「ありがとう。今夜、あの子と話してみるよ」'}])}},
+    {label:'今はそっとしておく',fn:()=>say('カレン','「……話す時が来るまで、待とう」')}
+   ])
+  }
  }
  if(state.map==='capitalinn'){
   if(id==='capitalInnHost')return structuredCondition('capitalFirstNight')?say('白鹿亭の女将','「二度目からは普通のお客だよ。休むなら帳場で24G。勇者だからって宿の薪が無料になるわけじゃないからね」'):saySequence([{speaker:'白鹿亭の女将',text:'「勇者様でも宿代は取るよ。……と言いたいところだけど、今夜だけは軍持ちだそうだ」'},{speaker:'トリトン',text:'「勇者って初めて得したかも」'},{speaker:'白鹿亭の女将',text:'「前線から戻れたら、その時は自分の金で泊まりな。帰ってきた客から取る金が一番うれしいんだ」'}])
