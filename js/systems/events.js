@@ -109,7 +109,14 @@ function inlineNpcEvent(id){
   if(id==='bookSeller')return saySequence([{speaker:'古書店主',text:'「千年前の地図？ 王国式も帝国式もあるよ。ただし、どっちも“自分たちに都合のいい境界線”を引いてる」'},{speaker:'マーガレット',text:'「……地図そのものが主張なんですね」'},{speaker:'古書店主',text:'「地図は嘘をつかない、なんてのが一番危ない嘘さ」'}])
   if(id==='studentReader')return say('帝国の学生','「戦争が終わったら王国の大学にも行ってみたいんです。……今それ言うと、先生にすごく嫌な顔されるけど」')
  }
- if(state.map==='road'&&id==='merchant'){addJournal('王都への近道として古砦跡の抜け道を教わった。');return say('行商人','「王都へ行くならこのまま北だ。東の古砦跡は今は使われてないが、旅人が残した物資があるって噂もある。余裕があれば寄ってみるといい。<br><br>ただし獣の声がする。寄り道するかは自分で決めな」')}
+ if(state.map==='road'&&id==='merchant'){
+   if(!structuredCondition('roadMerchantFortHint')){
+    setStructuredCondition('roadMerchantFortHint',true);
+    addJournal('街道の行商人から、東の古砦跡に旅人の物資が残るという噂を聞いた。獣の声もするため寄り道は任意。');
+    return saySequence([{speaker:'行商人',text:'「王都へはこのまま北だ。東の古砦跡には旅人の物資が残ってるって噂もある。ただ、獣の声がするんだ」'},{speaker:'マーガレット',text:'「物資は気になるけど、危険もあるのね。先に進むか、寄るかは私たちで決めましょう」'}]);
+   }
+   return say('行商人','「王都は北、古砦跡は東だ。物資の噂はあるが、獣には気をつけな」');
+  }
  if(state.map==='northroad'&&id==='scout'){return say('王国軍の斥候','「勇者一行か。古砦を抜けてきたのか？ 王都まではもう遠くない。北へ進めば城門だ」')}
  if(state.map==='capital'){
   if(id==='capitalOfficial'){
