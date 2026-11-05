@@ -70,9 +70,22 @@ function inlineNpcEvent(id){
   if(id==='ren')return saySequence([{speaker:'レン',text:'「トリトン姉ちゃんがいなくなったら、剣の稽古は誰が見てくれるの？」'},{speaker:'トリトン',text:'「父ちゃんに頼め。私より百倍怖いぞ」'}])
   if(id==='lulu')return saySequence([{speaker:'ルル',text:'「ソフィお姉ちゃん、ちゃんと帰ってくる？」'},{speaker:'ソフィ',text:'「もちろん。約束します」'}])
   if(id==='baker')return say('パン屋のエダ','「今朝は小麦が足りなくてね。いつもの半分しか焼けなかったよ。子どもらには黙って大きい方を渡したけどさ」')
-  if(id==='farmer')return say('農夫のボル','「畑はある。働く手もある。なのに荷車も肥料も軍に持っていかれちまう。戦場だけが戦争じゃねえんだな」')
+  if(id==='farmer'){
+   if(structuredCondition('villageCartAdvice'))return say('農夫のボル','「ガルドの話を聞いてくれたんだな。軍へ文句を言う前に、まず村の荷車を直しておくよ。ありがとう」');
+   if(structuredCondition('villageCartConcern'))return say('農夫のボル','「帰還兵のガルドなら、軍に荷車を持っていかれた村がどうなったか知ってるかもしれん」');
+   setStructuredCondition('villageCartConcern',true);
+   return saySequence([{speaker:'農夫のボル',text:'「畑はある。働く手もある。なのに荷車も肥料も軍に持っていかれちまう」'},{speaker:'カレン',text:'「食べ物が足りないのに、運ぶ車もないんだ……」'},{speaker:'農夫のボル',text:'「帰還兵のガルドなら、軍の輸送路に詳しい。聞いてみてくれないか」'}]);
+  }
   if(id==='oldwoman')return say('老婆ナナ','「勇者さま、なんて呼ばれたって腹は減るし、怪我もする。偉い名前より、帰ってくる方が大事だよ」')
-  if(id==='veteran')return say('帰還兵ガルド','「前線は英雄譚みたいな場所じゃない。音がうるさくて、泥だらけで、誰が勝ったかなんてその場じゃ分からん。……覚えておけ」')
+  if(id==='veteran'){
+   if(structuredCondition('villageCartConcern')){
+    if(structuredCondition('villageCartAdvice'))return say('帰還兵ガルド','「軍の荷車を取り返す話じゃない。村で使えるものを残す。それが先だ」');
+    setStructuredCondition('villageCartAdvice',true);
+    addJournal('ボルに頼まれてガルドに輸送事情を聞いた。軍の荷車を追うより、村に残った車を修理して使うべきだという。ボルへ伝えよう。');
+    return saySequence([{speaker:'帰還兵ガルド',text:'「軍の荷車を取り返しに行くな。前線は英雄譚みたいな場所じゃない」'},{speaker:'トリトン',text:'「じゃあ、ボルの畑の作物はどう運ぶ？」'},{speaker:'帰還兵ガルド',text:'「壊れた村の車輪を直せ。軍の道より、村の道を生かすんだ」'},{speaker:'マーガレット',text:'「……持っていかれたものを数えるより、残ったものを使う。ボルに伝えましょう」'}]);
+   }
+   return say('帰還兵ガルド','「前線は英雄譚みたいな場所じゃない。音がうるさくて、泥だらけで、誰が勝ったかなんてその場じゃ分からん。……覚えておけ」');
+  }
  }
  if(state.map==='karenhome'){
   if(id==='karenMother')return say('カレンの母','「勇者なんて立派な名前をもらっても、あなたは私の娘よ。ご飯を抜かない。怪我を隠さない。それだけは守りなさい」')
