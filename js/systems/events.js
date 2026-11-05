@@ -278,7 +278,10 @@ function inlineObjectEvent(id){
   if(id==='imperialInnRest')return offerPaidRest('水鳥亭の主人','水鳥亭',28)
   if(id==='familyTable')return say('ナレーション','四人家族で使っている食卓。今は皿が四枚ではなく、少し小さな器が並ぶ日も増えた。')
   if(id==='orphanPantry')return say('世話役マルタ','「見ての通り、棚はだいぶ軽いよ。でも子どもたちの前では“まだ大丈夫”って顔をしてる」')
-  if(id==='toyChest')return say('ナレーション','木片で作った兵士と勇者の人形が入っている。帝国兵役の人形だけ、真っ黒に塗られていた。')
+  if(id==='toyChest'){
+   if(structuredCondition('orphanToyRepainted'))return saySequence([{speaker:'ナレーション',text:'木箱には、色の違う兵士と勇者の人形が並んでいる。前に塗り直した人形も、ほかと一緒に遊ばれた跡がある。'},{speaker:'ソフィ',text:'「あの子たち、自分たちで続きを考えて遊んでいるんですね」'}]);
+   return say('ナレーション','木片で作った兵士と勇者の人形が入っている。帝国兵役の人形だけ、真っ黒に塗られていた。',[{label:'人形を並べ直してみる',fn:()=>saySequence([{speaker:'カレン',text:'「黒い人形だけ、いつも倒される役なのかな」'},{speaker:'マーガレット',text:'「遊び方を決めたのは誰かしら。人形の色だけじゃ分からないわ」'},{speaker:'ソフィ',text:'「みんなが戻ってきたら、一緒に別のお話も作ってみましょう」'},{speaker:'ナレーション',text:'四人は倒れた人形を起こし、木箱の縁に並べた。誰が味方かは決めずに。'}],()=>{setStructuredCondition('orphanToyRepainted',true);addJournal('孤児院の人形を並べ直した。戦争ごっこの役割を決めつけず、子どもたちが続きを考えられるようにした。')})},{label:'そのままにしておく',fn:()=>say('ソフィ','「今は、子どもたちの遊びをそのままにしておきましょう」')}])
+  }
   if(id==='mayorBooks')return say('マーガレット','「村の記録、租税台帳、古い地図……子どもの頃はここが私の図書館だったの」')
   if(id==='warMap')return say('マーガレット','「補給路に赤い印が増えてる。前線が近づいたんじゃなくて、戦争が生活の方へ伸びてきてるんだ」')
   if(id==='soldierLetter')return say('兵士の妹・ユナ','「最後の手紙には“次は雪が降る前に帰れるかも”って。……もう春になったけど」')
