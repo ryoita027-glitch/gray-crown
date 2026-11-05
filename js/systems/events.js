@@ -1102,7 +1102,7 @@ function capitalRecruitRationVisit(){
  );
  if(thanked)options.push({label:'配給列への帰り道を確認する',fn:()=>say('カレン',capitalRecruitReturnGuidance())});
  if(ledgerReady)options.push({label:'台帳の写しを見せ、勇者たちの名を伝える',fn:()=>capitalRecruitLedgerShare()});
- if(thanked)options.push({label:'今は写しを見せない',fn:()=>say('マーガレット','「ここは人目が多い。話す相手と場所は、慎重に選びましょう」')});
+ if(ledgerReady)options.push({label:'今は写しを見せない',fn:()=>say('マーガレット','「ここは人目が多い。話す相手と場所は、慎重に選びましょう」')});
  return say('新兵',thanked
   ?'「あの人のお礼は覚えています。……前の勇者たちの名前も、ここに残せるんでしょうか」'
   :'「出発前に水を運んだ配給列ですね。……あの時のこと、少しは役に立ったんでしょうか」',options);
