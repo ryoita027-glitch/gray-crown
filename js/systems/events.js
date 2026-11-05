@@ -37,7 +37,12 @@ function runTriggeredEvent(type,target,context={}){const def=findTriggeredEvent(
 function inlineNpcEvent(id){
  if(state.map==='village'){
   if(id==='father'){setStructuredCondition('father',true);addJournal('トリトンの父は「勝つより帰ってこい」と教えてきた。');return say('トリトンの父','「剣を持つなら、勝つことより帰ってくることを覚えろ。トリトンにも昔からそう教えてきた。……カレン、お前もだぞ」')}
-  if(id==='orphan'){setStructuredCondition('orphan',true);addJournal('孤児院では食料が不足している。');return saySequence([{speaker:'孤児院の子',text:'「ソフィお姉ちゃん、今日のご飯も薄いスープ？」'},{speaker:'ソフィ',text:'「……今日は私が何か探してきますね」'}])}
+  if(id==='orphan'){
+   if(structuredCondition('ryuneBreadPromised'))return saySequence([{speaker:'孤児院の子',text:'「エダさんがパンを届けてくれるって、本当？」'},{speaker:'ソフィ',text:'「ええ。焼ける分だけですけど、明日のスープに添えられますよ」'}]);
+   if(structuredCondition('orphan'))return say('孤児院の子','「今日は薄いスープだけど、明日は何かあるかな……」');
+   setStructuredCondition('orphan',true);addJournal('孤児院では食料が不足している。');
+   return saySequence([{speaker:'孤児院の子',text:'「ソフィお姉ちゃん、今日のご飯も薄いスープ？」'},{speaker:'ソフィ',text:'「……今日は私が何か探してきますね」'}])
+  }
   if(id==='mayor'){setStructuredCondition('mayor',true);addJournal('王都から来る食料輸送は以前の半分ほど。');return say('村長','「このまま戦争が続けば冬が厳しい。マーガレット、お前たち若い者まで巻き込まれなければいいが……」')}
   if(id==='messenger'){
    if(structuredCondition('appointed'))return say('王国使者','「支度が済んだら北門から王都へ向かってくれ。……無理に笑う必要はない。任命式では嫌でも笑わされるだろうからな」');
@@ -69,7 +74,15 @@ function inlineNpcEvent(id){
   if(id==='mika')return saySequence([{speaker:'ミカ',text:'「カレン姉ちゃん、勇者って王都のお菓子食べ放題なの？」'},{speaker:'カレン',text:'「たぶん、そういう仕事じゃないかな……」'}])
   if(id==='ren')return saySequence([{speaker:'レン',text:'「トリトン姉ちゃんがいなくなったら、剣の稽古は誰が見てくれるの？」'},{speaker:'トリトン',text:'「父ちゃんに頼め。私より百倍怖いぞ」'}])
   if(id==='lulu')return structuredCondition('ryuneWellFarewellSeen')?saySequence([{speaker:'ルル',text:'「井戸の赤い布、見つけてくれた？　あれ、私たちで結んだの」'},{speaker:'ソフィ',text:'「見つけました。水もありがとう。帰ったら一緒に桶を運びましょうね」'},{speaker:'ルル',text:'「うん！　四人分の当番、ちゃんと空けておくね」'}]):saySequence([{speaker:'ルル',text:'「ソフィお姉ちゃん、ちゃんと帰ってくる？」'},{speaker:'ソフィ',text:'「もちろん。約束します」'}])
-  if(id==='baker')return say('パン屋のエダ','「今朝は小麦が足りなくてね。いつもの半分しか焼けなかったよ。子どもらには黙って大きい方を渡したけどさ」')
+  if(id==='baker'){
+   if(structuredCondition('ryuneBreadPromised'))return say('パン屋のエダ','「孤児院に回す分は取ってあるよ。あんたたちも腹を空かせたまま出発するんじゃないよ」');
+   if(structuredCondition('orphan')){
+    setStructuredCondition('ryuneBreadPromised',true);
+    addJournal('孤児院の食事を気にかけてパン屋のエダに相談した。エダは翌朝焼ける分から孤児院へパンを届けると約束した。');
+    return saySequence([{speaker:'ソフィ',text:'「エダさん、孤児院の子たちに少しだけでもパンを分けてもらえませんか」'},{speaker:'パン屋のエダ',text:'「今日の分はもうない。でも明日の朝、焼けた分から先に取っておくよ」'},{speaker:'ソフィ',text:'「ありがとうございます。子どもたちにも伝えます」'}])
+   }
+   return say('パン屋のエダ','「今朝は小麦が足りなくてね。いつもの半分しか焼けなかったよ。子どもらには黙って大きい方を渡したけどさ」')
+  }
   if(id==='farmer')return say('農夫のボル','「畑はある。働く手もある。なのに荷車も肥料も軍に持っていかれちまう。戦場だけが戦争じゃねえんだな」')
   if(id==='oldwoman')return say('老婆ナナ','「勇者さま、なんて呼ばれたって腹は減るし、怪我もする。偉い名前より、帰ってくる方が大事だよ」')
   if(id==='veteran')return say('帰還兵ガルド','「前線は英雄譚みたいな場所じゃない。音がうるさくて、泥だらけで、誰が勝ったかなんてその場じゃ分からん。……覚えておけ」')
