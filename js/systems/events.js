@@ -1108,6 +1108,15 @@ function capitalRecruitRationVisit(){
    {label:choices['capital.rationThanksReported']==='reported'?'報告後の近況を聞く':'配給列への帰り道を確認する',fn:()=>choices['capital.rationThanksReported']==='reported'?capitalRecruitAfterReport():say('カレン',capitalRecruitReturnGuidance())}
   ]);
  const options=[];
+ // The ration queue is discoverable even before the mother entrusts a message.
+ // This is navigation only: it neither accepts nor completes the errand.
+ if(!thanked)options.push({
+  label:'配給列の場所を尋ねる',
+  fn:()=>saySequence([
+   {speaker:'新兵',text:'「西の配給列なら、噴水を目印に進んでください。水桶を運んでいる人がいるはずです」'},
+   {speaker:'ソフィ',text:'「まずは行ってみましょう。困っている人がいるかもしれません」'}
+  ])
+ });
  if(!thanked&&messageReady)options.push(
   {label:'母親から預かったお礼を伝える',fn:()=>{
    if(!messageReady)return say('カレン','「まだ預かっていない伝言は届けられないよ」');
