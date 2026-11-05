@@ -110,7 +110,12 @@ function inlineNpcEvent(id){
   if(id==='studentReader')return say('帝国の学生','「戦争が終わったら王国の大学にも行ってみたいんです。……今それ言うと、先生にすごく嫌な顔されるけど」')
  }
  if(state.map==='road'&&id==='merchant'){addJournal('王都への近道として古砦跡の抜け道を教わった。');return say('行商人','「王都へ行くならこのまま北だ。東の古砦跡は今は使われてないが、旅人が残した物資があるって噂もある。余裕があれば寄ってみるといい。<br><br>ただし獣の声がする。寄り道するかは自分で決めな」')}
- if(state.map==='northroad'&&id==='scout'){return say('王国軍の斥候','「勇者一行か。古砦を抜けてきたのか？ 王都まではもう遠くない。北へ進めば城門だ」')}
+ if(state.map==='northroad'&&id==='scout'){
+  if(structuredCondition('northRoadScoutDirections'))return say('王国軍の斥候','「王都の城門は北だ。ここからは道を外れるなよ」');
+  setStructuredCondition('northRoadScoutDirections',true);
+  addJournal('北街道の斥候から、王都の城門は道なりに北へ進めば着くと教わった。');
+  return saySequence([{speaker:'王国軍の斥候',text:'「勇者一行か。王都の城門はこの道を北だ。古砦を通ってきたなら、まずは無事でよかった」'},{speaker:'トリトン',text:'「やっと街か。砦の石壁ばっかり見てたからな」'},{speaker:'マーガレット',text:'「まず城門へ。ここで道を外す理由はないわ」'}])
+ }
  if(state.map==='capital'){
   if(id==='capitalOfficial'){
    if(structuredCondition('returnedKingdom'))return say('王都係官','「……勇者殿。今は総司令部へ。任命式の頃とは、街の空気も変わりました」');
