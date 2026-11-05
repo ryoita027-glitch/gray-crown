@@ -296,7 +296,11 @@ function inlineObjectEvent(id){
   if(id==='wolf'&&!structuredCondition('roadWolf'))return startSymbolEncounter('wolf','wolves');
   if(id==='bandit'&&!structuredCondition('roadBandit'))return say('街道のならず者','「荷物と金を置いていけ。こっちも腹が減ってるんだ」',[{label:'戦う',fn:()=>startSymbolEncounter('bandit','roadBandit')},{label:'離れる',fn:()=>say('マーガレット','「本道は通れる。無理に相手をする必要はないわ」')}]);
   if(id==='cave')return enterCave();
-  if(id==='roadSign')return say('古い道標','「王都　北」「旧砦　東」<br><br>東を示す矢印だけが、新しく塗り直されている。')
+  if(id==='roadSign'){
+   if(structuredCondition('bossDead'))return say('古い道標','「王都　北」「旧砦　東」<br><br>砦から戻ってきた四人には、北の道が次の目的地だと分かる。');
+   if(hasVisited('cave'))return saySequence([{speaker:'古い道標',text:'「王都　北」「旧砦　東」<br><br>東の矢印には新しい塗料が残っている。'},{speaker:'マーガレット',text:'「砦の中でまだ調べていない場所がある。戻るなら東よ。先へ進むなら北だけど、準備はしておきましょう」'}]);
+   return say('古い道標','「王都　北」「旧砦　東」<br><br>東を示す矢印だけが、新しく塗り直されている。',[{label:'塗り直された矢印を調べる',fn:()=>saySequence([{speaker:'ナレーション',text:'古い木の上に新しい赤い塗料が重ねられている。誰かが最近、この道を使ったらしい。'},{speaker:'マーガレット',text:'「旧砦は東ね。誰が道を直したのかは分からないけど、手がかりはありそう」'},{speaker:'カレン',text:'「じゃあ、寄り道するなら東。王都へ急ぐなら北だね」'}])},{label:'そのまま進む',fn:()=>say('ナレーション','四人は道標を後にした。')}])
+  }
  }
  if(state.map==='cave'){
   if(id==='caveRest')return limitedRecovery('caveRest','古砦の兵舎跡','使えそうな毛布と薬包が一組だけ残っている。','field','兵舎跡で短く休んだ。HPが全回復し、MPも少し戻った。')
