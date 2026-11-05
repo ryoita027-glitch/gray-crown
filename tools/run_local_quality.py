@@ -241,6 +241,9 @@ def main() -> int:
             add = subprocess.run([git, "worktree", "add", "--detach", str(worktree), MAIN_V23],
                                  cwd=ROOT, text=True, capture_output=True, check=False)
             if add.returncode:
+                # No worktree was successfully registered: do not attempt a second
+                # removal in finally, which would misreport a cleanup failure.
+                worktree = None
                 report["v23_fixture"] = "BLOCKED: " + add.stderr
                 write_report()
                 return 1
