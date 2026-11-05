@@ -1,0 +1,49 @@
+name: Gray Crown Commercial Polish CI
+on:
+  push:
+    branches: [commercial-polish-v1, integration/commercial-reconcile-20261010]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: gray-crown-commercial-polish-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  commercial-polish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-ci.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: python -m pip install --disable-pip-version-check -r requirements-ci.txt
+      - name: Full project regression
+        run: npm run check
+      - name: Verify historical source locks and active appeal regeneration
+        run: |
+          python tools/verify_sophie_direction_lock.py
+          python tools/verify_margaret_direction_lock.py
+      - name: Verify four protagonist runtime
+        run: |
+          python tools/verify_clean_runtime_sprite_assets.py
+          python tools/verify_four_protagonist_appeal_runtime.py
+      - name: Install Chromium
+        run: python -m playwright install --with-deps chromium
+      - name: Four protagonist Medium44 E2E
+        run: python tests/browser_four_protagonist_appeal_e2e_test.py
+      - name: Commercial presentation E2E
+        run: python tests/browser_commercial_polish_e2e_test.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gray-crown-commercial-polish-evidence
+          path: |
+            prototype_artifacts/four_protagonist_appeal_v1/
+            prototype_artifacts/commercial_polish_v1/
+          if-no-files-found: error
+          retention-days: 14

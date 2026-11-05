@@ -1,3 +1,4 @@
+from browser_launch import launch_chromium
 from pathlib import Path
 import re, sys, base64
 try:
@@ -77,7 +78,7 @@ def local_storage_dump(page):
     return page.evaluate('Object.fromEntries(Array.from({length:localStorage.length},(_,i)=>localStorage.key(i)).map(k=>[k,localStorage.getItem(k)]))')
 
 with sync_playwright() as p:
-    browser=p.chromium.launch(headless=True,executable_path='/usr/bin/chromium',args=['--no-sandbox'])
+    browser=launch_chromium(p)
     page=browser.new_page(viewport={'width':1365,'height':900});errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
     load_runtime(page)
     assert page.locator('#titleScreen').is_visible();assert page.locator('#titleNewGame').is_enabled()
@@ -97,7 +98,7 @@ with sync_playwright() as p:
     if page.locator('#dialogueBox').is_visible(): dismiss_dialogue(page)
     assert page.evaluate('GC.State.get().story.stage')=='03_first_battle';assert page.evaluate('GC.State.get().world.defeatedSymbols.wolf') is True
     # stable-world Save and full page recreation
-    page.locator('#btnSave').click();page.wait_for_timeout(20);dismiss_dialogue(page);saved=local_storage_dump(page);before=page.evaluate('GC.State.get()')
+    page.keyboard.press('m');assert page.locator('#modal').is_visible(), 'adventure menu must open after battle';page.locator('#modalContent button').filter(has_text='セーブ').first.click();page.wait_for_timeout(20);dismiss_dialogue(page);saved=local_storage_dump(page);before=page.evaluate('GC.State.get()');assert saved.get('gray-crown-vslice-save-v1'), 'save created via actual menu UI'
     page2=browser.new_page(viewport={'width':1365,'height':900});errors2=[];page2.on('pageerror',lambda e:errors2.append(str(e)));load_runtime(page2,saved)
     assert page2.locator('#titleContinue').is_enabled();page2.locator('#titleContinue').focus();page2.keyboard.press('Enter');page2.wait_for_timeout(35);dismiss_dialogue(page2)
     loaded=page2.evaluate('GC.State.get()');assert loaded['map']==before['map'];assert (loaded['x'],loaded['y'])==(before['x'],before['y']);assert loaded['story']['stage']=='03_first_battle';assert page2.evaluate('GC.Audio.AUDIO.theme')=='road'

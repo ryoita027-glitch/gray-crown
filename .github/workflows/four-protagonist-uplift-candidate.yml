@@ -1,0 +1,44 @@
+name: Gray Crown Four Protagonist Uplift Candidate
+on:
+  push:
+    branches: [pixel-margaret-fourth-character-front-gate]
+  pull_request:
+    branches: [pixel-sophie-steady-hands-validation]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  uplift-candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-ci.txt
+      - run: python -m pip install --disable-pip-version-check -r requirements-ci.txt
+      - name: Verify immutable controls
+        run: |
+          python tools/verify_karen_visual_regression_control.py
+          python tools/verify_triton_direction_lock.py
+          python tools/verify_sophie_direction_lock.py
+      - name: Generate Margaret v5 source candidate
+        run: |
+          python tools/generate_margaret_direction_v5_candidate.py
+          python tools/verify_margaret_direction_v5_candidate.py
+      - name: Generate cast uplift candidates
+        run: python tools/generate_four_protagonist_quality_candidates.py
+      - name: Build uplift evidence
+        run: python tools/build_four_protagonist_uplift_evidence.py
+      - name: Verify uplift candidates
+        run: python tools/verify_four_protagonist_uplift_candidates.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gray-crown-four-protagonist-uplift-candidate
+          path: prototype_artifacts/four_protagonist_uplift/
+          if-no-files-found: error
+          retention-days: 14

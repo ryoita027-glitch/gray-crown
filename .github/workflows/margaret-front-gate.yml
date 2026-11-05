@@ -1,0 +1,143 @@
+name: Gray Crown Four Protagonist Runtime Harmonization CI
+on:
+  push:
+    branches: [pixel-margaret-fourth-character-front-gate]
+  pull_request:
+    branches: [pixel-sophie-steady-hands-validation]
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+concurrency:
+  group: gray-crown-four-hero-runtime-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: write
+jobs:
+  runtime-harmonization:
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-ci.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: python -m pip install --disable-pip-version-check -r requirements-ci.txt
+
+      - name: Verify pre-promotion controls
+        run: |
+          python tools/verify_project_authority.py
+          python tools/verify_karen_visual_regression_control.py
+          python tools/verify_triton_direction_lock.py
+          python tools/verify_sophie_direction_lock.py
+
+      - name: Generate Margaret v5 face source
+        run: |
+          rm -rf prototype_artifacts/margaret_face_v5
+          python tools/generate_margaret_direction_v5_candidate.py
+          python tools/verify_margaret_direction_v5_candidate.py
+
+      - name: Generate four-protagonist uplift candidates
+        run: |
+          rm -rf prototype_artifacts/four_protagonist_uplift
+          python tools/generate_four_protagonist_quality_candidates.py
+          python tools/build_four_protagonist_uplift_evidence.py
+          python tools/verify_four_protagonist_uplift_candidates.py
+
+      - name: Stage Sophie v2 cleanup and Margaret v5 runtime
+        run: |
+          cp prototype_artifacts/four_protagonist_uplift/sophie/sophie_direction_candidate_v1.png docs/pixel/reference/sophie_chibi_direction_lock_v2_48.png
+          cp prototype_artifacts/four_protagonist_uplift/sophie/sophie_*.png assets/characters/sophie/
+          cp prototype_artifacts/four_protagonist_uplift/margaret/margaret_direction_candidate_v1.png docs/pixel/reference/margaret_chibi_direction_lock_v5_48.png
+          cp prototype_artifacts/four_protagonist_uplift/margaret/margaret_*.png assets/characters/margaret/
+
+      - name: Verify promoted binary hashes
+        run: |
+          echo "f82c63f6705ffedb253a0d5b783d88b91ad0dd0b6a33c5788cd22aae86835206  docs/pixel/reference/sophie_chibi_direction_lock_v2_48.png" | sha256sum -c -
+          echo "1f9c7fb6d9502b3a1b85e85e9d9325fd2a4672b712b61414b79d29f105a93fb0  assets/characters/sophie/sophie_idle.png" | sha256sum -c -
+          echo "24465f537ea034029080ad22e82282c28a0f97a99ae71542aaee53f5afa35789  assets/characters/sophie/sophie_walk.png" | sha256sum -c -
+          echo "dca1e87b9a88fbc328aecb298859710aa37f1f8d1b319fab880b5ee80e67c9fc  assets/characters/sophie/sophie_turn.png" | sha256sum -c -
+          echo "265353cb3c73ba00527de5a96ff96eeb3e3a25eb121fad431a8a7947046962f8  assets/characters/sophie/sophie_talk.png" | sha256sum -c -
+          echo "bd46da3741728e9468e5baef580144ff49f0f37c595e1fbb1137019dea1222f7  assets/characters/sophie/sophie_surprise.png" | sha256sum -c -
+          echo "32a5248c59290b452e5c2127e6b40501a82a17ee5a7abaddf96bcbcbfe7d7f47  assets/characters/sophie/sophie_approach.png" | sha256sum -c -
+          echo "82e752efd497c76d1ee8f27a2d8550d89c456e4f3f23e3171836ead9e1f2aa41  assets/characters/sophie/sophie_laugh.png" | sha256sum -c -
+          echo "acac38c987b719300c7bc5895b63b098b5274449d062c7763e6221f44446c996  assets/characters/sophie/sophie_run.png" | sha256sum -c -
+          echo "88ee3bf7073f06d2717bab34d14a675033f4777b0bb18e2868dfe890695010b5  docs/pixel/reference/margaret_chibi_direction_lock_v5_48.png" | sha256sum -c -
+          echo "1650dcea48e0b09e91efb8c7feec75aae7d5003cb4114a2cd9f3ef862468ad83  assets/characters/margaret/margaret_idle.png" | sha256sum -c -
+          echo "8a7f40356907ebfb91da86134404e9dc7c6ce8114bc635017251e7bf1bc48f52  assets/characters/margaret/margaret_walk.png" | sha256sum -c -
+          echo "92dc87b456f732421a4ceb0ec8c937253c01cdc270aa3458f329494be9cb235d  assets/characters/margaret/margaret_turn.png" | sha256sum -c -
+          echo "7947b369cae06f2d4ae841ab4be5189b37ab149d8b2fb92734ef5f7696229b14  assets/characters/margaret/margaret_talk.png" | sha256sum -c -
+          echo "448c501d2e9b34d1669ac254cb16e1bfebedff70f77b58e1c3b346ab35c093f4  assets/characters/margaret/margaret_surprise.png" | sha256sum -c -
+          echo "1e94ab24602fe82a5c23b0f7b1852aec790d0ead4709263ac60c7933b3e1560c  assets/characters/margaret/margaret_approach.png" | sha256sum -c -
+          echo "776f9a634eead9f0fd38741d2966aea82149853622f1545d153578bd432fbe78  assets/characters/margaret/margaret_laugh.png" | sha256sum -c -
+          echo "e73eb141543296d5651ea2e1cda2a59cc4c4187425628baf99a2e3f3c27b9881  assets/characters/margaret/margaret_run.png" | sha256sum -c -
+
+      - name: Commit harmonized runtime assets to prototype branch
+        if: github.event_name == 'push'
+        run: |
+          git config user.name "gray-crown-ci"
+          git config user.email "gray-crown-ci@users.noreply.github.com"
+          git add             docs/pixel/reference/sophie_chibi_direction_lock_v2_48.png             assets/characters/sophie             docs/pixel/reference/margaret_chibi_direction_lock_v5_48.png             assets/characters/margaret
+          if git diff --cached --quiet; then
+            echo "Four-protagonist runtime assets already synchronized"
+          else
+            git commit -m "Promote Sophie cleanup and Margaret v5 runtime"
+            git push origin HEAD:pixel-margaret-fourth-character-front-gate
+          fi
+
+      - name: Verify runtime integration
+        run: |
+          rm -rf prototype_artifacts/margaret_generated
+          python tools/generate_margaret_prototype_assets.py --reference docs/pixel/reference/margaret_chibi_direction_lock_v5_48.png --out prototype_artifacts/margaret_generated
+          python tools/verify_margaret_prototype_assets.py
+          python tools/verify_sophie_direction_lock.py
+          python tools/verify_margaret_direction_lock.py
+          node tests/margaret_runtime_integration.test.js
+
+      - name: Build post-promotion quality evidence
+        run: |
+          rm -rf prototype_artifacts/four_protagonist_quality
+          python tools/build_four_protagonist_quality_evidence.py
+          python tools/verify_four_protagonist_quality_metrics.py
+
+      - name: Install Chromium
+        run: python -m playwright install --with-deps chromium
+
+      - name: Run Sophie and Margaret browser E2E
+        run: |
+          python tests/browser_sophie_pixel_validation_e2e_test.py
+          python tests/browser_margaret_runtime_e2e_test.py
+
+      - name: Run full Gray Crown regression with one flake retry
+        run: |
+          if npm run check; then
+            exit 0
+          fi
+          echo "::warning::Full regression failed once; retrying the complete gate once to distinguish browser flake from deterministic regression."
+          npm run check
+
+      - name: Re-verify Karen and Triton immutable controls
+        run: |
+          python tools/verify_karen_visual_regression_control.py
+          python tools/verify_triton_direction_lock.py
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gray-crown-four-protagonist-runtime-harmonization
+          path: |
+            docs/pixel/reference/sophie_chibi_direction_lock_v2_48.png
+            docs/pixel/reference/margaret_chibi_direction_lock_v5_48.png
+            assets/characters/sophie/
+            assets/characters/margaret/
+            prototype_artifacts/four_protagonist_uplift/
+            prototype_artifacts/four_protagonist_quality/
+            prototype_artifacts/margaret_runtime_e2e/
+          if-no-files-found: error
+          retention-days: 14

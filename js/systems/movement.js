@@ -9,14 +9,42 @@ function encounterSafeZone(map=state.map,x=state.x,y=state.y){
 }
 function rollEncounterThreshold(map=state.map){const [min,max]=encounterRange(map);return min+Math.floor(Math.random()*(max-min+1))}
 function resetEncounterCounter(map=state.map){state.encounterSteps=0;state.nextEncounterAt=rollEncounterThreshold(map)}
-function setMap(map,x,y,dir,trail){const from=state.map;state.map=map;state.x=x;state.y=y;state.dir=dir;state.trail=trail;markVisited(map,true);resetEncounterCounter(map);if(!state.battle)setMusic(mapMusicTheme(map));GC.Log?.info('Map Transition',{from,to:map,x,y,dir});renderHud();draw();GC.Dev?.refresh?.()}
-function enterInterior(mapId,doorX,doorY){state.interiorReturn={map:state.map,x:doorX,y:Math.min(ROWS-2,doorY+1),dir:'up'};setMap(mapId,11,11,'up',[[12,11],[13,11],[14,11]]);if(mapId==='capitalinn'&&isEventComplete('alpha.capital.ceremony')&&!isEventComplete('alpha.capital.whiteStagNight'))advanceStory(STORY_STAGES.WHITE_STAG,null,'白鹿亭で四人の夜を過ごす');say('ナレーション',`${maps[mapId].name}に入った。`)}
-function leaveInterior(){const r=state.interiorReturn||{map:'village',x:12,y:12,dir:'up'};state.interiorReturn=null;setMap(r.map,r.x,r.y,r.dir,[[r.x+1,r.y],[r.x+2,r.y],[r.x+3,r.y]]);say('ナレーション','外へ出た。')}
-function leaveVillage(){advanceStory(STORY_STAGES.ROAD,null,'街道を北へ進み、道を塞ぐ灰牙狼を越える');useMapTransition('villageToRoad');renderHud();say('ナレーション','村人たちは「世界を救ってくれ」とは言わなかった。|ただ「帰ってこい」と言った。<br><br>四人は故郷を後にした。')}
-function returnVillage(){useMapTransition('roadToVillage');state.objective='村で準備する／北門から旅を再開する';renderHud();say('ナレーション','北門をくぐり、リュネ村へ戻った。村の人々は旅立つ前と同じように、それぞれの生活を続けている。')}
-function enterCave(){useMapTransition('roadToCave');state.objective=isDefeated('boss')?'古砦跡の北出口を目指す':'古砦跡を探索し、北側の抜け道を探す';state.chapter='第一章 — 古砦跡';renderHud();say('マーガレット','「地図ではこの先に旧街道があるはず。……戦争で使われなくなってから、獣の巣になってるみたいね」')}
-function leaveCave(){useMapTransition('caveToRoad');state.objective='街道を進む／必要なら村へ戻る';renderHud();say('ナレーション','古砦跡の入口へ戻った。ここから南へ行けばリュネ村にも戻れる。')}
-function enterNorthRoad(source='cave'){markVisited('northroad',true);setWorldSwitch('northRoadFromRoad',source==='road');if(source==='road')useMapTransition('roadToNorthRoad');else setMap('northroad',11,13,'up',[[12,13],[13,13],[14,13]]);state.chapter='第一章 — 白い旗';if(source==='road')advanceStory(STORY_STAGES.CAPITAL_APPROACH,null,'高台の道を北へ進み、王都へ入る');else{state.objective='王国軍の斥候に話を聞く';renderHud()}say('ナレーション',source==='road'?'森の街道を抜けると、王都へ続く高台の道へ出た。|遠くに白い城壁が見える。':'古砦跡を抜けると、王都へ続く旧街道に出た。遠くに王国軍の旗が見える。')}
+function setMap(map,x,y,dir,trail){const from=state.map;state.map=map;state.x=x;state.y=y;state.dir=dir;state.trail=trail;state.worldStepsOnMap=0;markVisited(map,true);resetEncounterCounter(map);if(!state.battle)setMusic(mapMusicTheme(map));GC.Log?.info('Map Transition',{from,to:map,x,y,dir});renderHud();draw();GC.Dev?.refresh?.()}
+function enterInterior(mapId,doorX,doorY){const firstVisit=!state.world.visited?.[mapId];state.interiorReturn={map:state.map,x:doorX,y:Math.min(ROWS-2,doorY+1),dir:'up'};setMap(mapId,11,11,'up',[[12,11],[13,11],[14,11]]);if(mapId==='capitalinn'&&isEventComplete('alpha.capital.ceremony')&&!isEventComplete('alpha.capital.whiteStagNight'))advanceStory(STORY_STAGES.WHITE_STAG,null,'白鹿亭で四人の夜を過ごす');if(firstVisit)say('ナレーション',`${maps[mapId].name}に入った。`)}
+function leaveInterior(){const r=state.interiorReturn||{map:'village',x:12,y:12,dir:'up'};state.interiorReturn=null;setMap(r.map,r.x,r.y,r.dir,[[r.x+1,r.y],[r.x+2,r.y],[r.x+3,r.y]])}
+function leaveVillage(){
+ advanceStory(STORY_STAGES.ROAD,null,'街道を北へ進み、道を塞ぐ灰牙狼を越える');
+ useMapTransition('villageToRoad');renderHud();
+ const choice=state.events.choices['early.orphanMedicine'];
+ const middle=choice==='donate'
+  ?{speaker:'ソフィ',text:'「孤児院へ薬草を渡せました。でも手元の薬は減っています。怪我には気をつけて」'}
+  :choice==='reserve'
+  ?{speaker:'ソフィ',text:'「薬草を持ったまま出てきました。誰かが必要とする時に、きっと役立てます」'}
+  :{speaker:'ソフィ',text:'「孤児院のみんな、今夜はちゃんと眠れるかな……」'};
+ saySequence([
+  {speaker:'ナレーション',text:'村人たちは「世界を救ってくれ」とは言わなかった。|ただ「帰ってこい」と言った。||北門を抜けると、リュネ村の屋根は少しずつ小さくなっていく。'},
+  middle,
+  {speaker:'トリトン',text:'「不安なら言ってよ。四人でいるんだから、一人で何でも背負わなくていい」'},
+  {speaker:'カレン',text:'「うん。四人で帰ろう。まだ、出発したばかりなんだから」'}
+ ])
+}
+function returnVillage(){
+ useMapTransition('roadToVillage');state.objective='村で準備する／北門から旅を再開する';renderHud();
+ const known=state.events.choices['early.orphanMedicine'];
+ say('ナレーション',known==='donate'
+  ?'北門をくぐってリュネ村へ戻った。孤児院の窓に明かりが見える。薬を渡しても、何もかもが急に変わるわけではない。'
+  :known==='reserve'
+  ?'北門をくぐってリュネ村へ戻った。孤児院の窓に明かりが見える。薬草を残した日の判断について、ソフィは今も考えている。'
+  :'北門をくぐり、リュネ村へ戻った。村の人々は旅立つ前と同じように、それぞれの生活を続けている。')
+}
+function enterCave(){const firstVisit=!state.world.visited?.cave;useMapTransition('roadToCave');state.objective=isDefeated('boss')?'古砦跡の北出口を目指す':'古砦跡を探索し、北側の抜け道を探す';state.chapter='第一章 — 古砦跡';renderHud();if(firstVisit)say('マーガレット','「地図ではこの先に旧街道があるはず。……戦争で使われなくなってから、獣の巣になってるみたいね」')}
+function leaveCave(){useMapTransition('caveToRoad');state.objective='街道を進む／必要なら村へ戻る';renderHud()}
+function enterNorthRoad(source='cave'){markVisited('northroad',true);setWorldSwitch('northRoadFromRoad',source==='road');if(source==='road')useMapTransition('roadToNorthRoad');else setMap('northroad',11,13,'up',[[12,13],[13,13],[14,13]]);state.chapter='第一章 — 白い旗';// Both paths physically enter northroad. Previously cave route stayed at
+ // 03_first_battle until Save/Load silently migrated it to stage 04.
+ // Advance now while preserving the cave route's scout objective.
+ advanceStory(STORY_STAGES.CAPITAL_APPROACH,null,source==='road'
+  ?'高台の道を北へ進み、王都へ入る'
+  :'王国軍の斥候に話を聞く');say('ナレーション',source==='road'?'森の街道を抜けると、王都へ続く高台の道へ出た。|遠くに白い城壁が見える。':'古砦跡を抜けると、王都へ続く旧街道に出た。遠くに王国軍の旗が見える。')}
 function returnCaveNorth(){if(getWorldSwitch('northRoadFromRoad')){useMapTransition('northRoadToRoad');state.objective='街道を探索する／北へ進む';renderHud();say('ナレーション','王都手前の高台から街道へ戻った。');return}setMap('cave',11,1,'down',[[12,1],[13,1],[14,1]]);state.objective='古砦跡を自由に探索できる';renderHud();say('ナレーション','古砦跡の北側へ戻った。')}
 
 function showChapterCard(chapter,objective,done){const box=$('chapterCard');if(!box){if(done)done();return}state.locked=true;$('chapterCardTitle').textContent=chapter;$('chapterCardObjective').textContent=objective;box.classList.remove('hidden');requestAnimationFrame(()=>box.classList.add('show'));setTimeout(()=>{box.classList.remove('show');setTimeout(()=>{box.classList.add('hidden');state.locked=false;if(done)done()},180)},1250)}
@@ -36,11 +64,86 @@ function enterYukiRoad(){travelScene('yukiroad',11,13,'up','第五章 — ユウ
 function enterElsia(){markVisited('elsia',true);travelScene('elsia',11,13,'up','第六章 — 千年前の国境','聖域の住民と古い記録を調べる','エルシア聖域。王国の祈りの起源であり、千年近く帝国の人々が暮らしてきた土地へ四人は足を踏み入れた。')}
 function enterReturnRoad(){markVisited('returnroad',true);travelScene('returnroad',11,13,'up','第七章 — 勇者の値段','王国へ戻り、王都を目指す','得た資料を抱え、四人は戦線の隙間を縫う帰還路へ入った。')}
 function enterFinalField(){markVisited('finalfield',true);travelScene('finalfield',11,13,'up','最終章 — 誰のための勇者か','中央の地点で、どちら側に立つか決める','王国の総攻撃と帝国の反攻が始まる。両軍の旗が見える前線で、四人は最後の選択を迫られる。')}
-function enterFinalBranch(){if(state.finalChoice==='kingdom')travelScene('imperialcamp',11,13,'up','最終章 — 王国側','帝国本陣でシオンと向き合う','故郷と王国民を守るため、四人は帝国本陣へ向かう。');else if(state.finalChoice==='empire')travelScene('royalcamp',11,13,'up','最終章 — 帝国側','王国軍総司令部でグランツと向き合う','侵攻と勇者制度を終わらせるため、四人は自国の軍へ剣を向ける。')}
-function showWorldSkeletonEnding(route){completeEvent('worldSkeletonCleared',true);setWorldSwitch('cleared',true);state.objective='全章マップ骨組み到達（各章の本実装はこれから）';renderHud();say('ナレーション',`<div class="ending"><h2>Architecture Refactor v19</h2><p>${route==='kingdom'?'王国側に立ち、皇帝シオンへ向かうルート':'帝国側に協力し、総司令グランツへ向かうルート'}まで到達しました。</p><p>序章から最終章までの主要地域が一本につながっています。</p><p><strong>次の制作段階：</strong>各地域の建物内部・住民・サブイベントを順番に肉付けする。</p><p class="ending-note">これは物語の結末ではなく、全体構造確認用の仮ゴールです。</p></div>`)}
+function enterFinalBranch(){if(state.finalChoice==='kingdom')travelScene('imperialcamp',11,13,'up','最終章 — 王国側','帝国本陣でシオンと向き合う','故郷と王国民を守るため、四人は帝国本陣へ向かう。');else if(state.finalChoice==='ashcrown'){
+ if(!state.events?.choices?.['route.companions.ashcrown']){routeCompanionScene('ashcrown');return}
+ if(!isEventComplete('ashcrownCheckpointCleared')){
+  saySequence([{speaker:'ナレーション',text:'旗を外したカレンの前に、関所の守備兵が立ち塞がった。かつて勇者を迎えた王国の兵だ。'},
+   {speaker:'国境の守備兵',text:'「どちらの旗でもないなら、ここを通すわけにはいかない。……引き返してくれ」'},
+   {speaker:'カレン',text:'「退くことはできない。でも、あなたを殺すために来たわけじゃない」'}],()=>startBattle('ashcrownCheckpoint'));
+  return
+ }
+ runFinalActNegotiation('ashcrown');return
+}if(state.finalChoice==='empire')travelScene('royalcamp',11,13,'up','最終章 — 帝国側','王国軍総司令部でグランツと向き合う','侵攻と勇者制度を終わらせるため、四人は自国の軍へ剣を向ける。')}
+function playRouteAftermath(route){
+ if(!['kingdom','empire','ashcrown'].includes(route))return false;
+ const key='route.aftermath.'+route;
+ if(state.events.choices[key]==='seen'){showWorldSkeletonEnding(route);return true}
+ const scenes=companionAftermath(route);
+ saySequence(scenes,()=>{
+  state.events.choices[key]='seen';
+  addJournal('最終章・'+({kingdom:'王国',empire:'帝国',ashcrown:'灰冠'}[route])+'の道：仲間それぞれの決意を聞いた。');
+  showWorldSkeletonEnding(route)
+ });
+ return true
+}
+function showWorldSkeletonEnding(route){
+ const selected=state.events?.choices?.['route.companions.'+route];
+ const previews={
+  kingdom:{
+   title:'王国ルート — 白旗の行方',
+   scene:selected==='evacuate'
+    ?'城門の向こうでは、避難路を渡る家族の足音が続いていた。戦況を記す旗には載らない、小さな勝利。'
+    :'王国軍の報告書には前衛突破とだけ記された。その紙に、逃げられなかった人々の名前はまだない。',
+   karen:'「王国を守ると言った。でも、守る相手を国王に決めてもらうつもりはない」',
+   conclusion:'白い旗の下で、勇者が選んだのは命令ではなく自分たちの責任だった。'
+  },
+  empire:{
+   title:'帝国ルート — 裏切りの名前',
+   scene:selected==='protect'
+    ?'救護幕舎には、赤と青の布が並んでいた。降伏した兵士たちの名簿には国籍と同じだけ帰る場所がある。'
+    :'追撃の伝令が途絶え、前線に短い静寂が訪れる。明日また軍が動くかもしれない。それでも今日は止めた。',
+   karen:'「王国を捨てたんじゃない。王国の人を守る方法が、王国の命令と違っただけ」',
+   conclusion:'裏切り者と呼ばれても、見てきた命を無かったことにはしない。'
+  },
+  ashcrown:{
+   title:'灰冠ルート — 空の玉座',
+   scene:selected==='release'
+    ?'最後の扉の前で、トリトンが立ち止まった。幼いころから並んでいた足音が、ここで初めて別の方向を向く。'
+    :'宮殿へ続く石段には、カレン一人の足音しか響かない。命令に従う仲間は、もう誰もいない。',
+   karen:'「私が王になる。……でも、誰を守るためだった？」',
+   conclusion:'王国も帝国も、その名の下の戦いは終わった。誰も祝わない広間で、カレンは灰に覆われた冠を手に取る。'
+  }
+ };
+ const p=previews[route];if(!p)return false;
+ // Reflect what the player actually demanded without declaring that a ruler,
+ // army or civilian accepted the request. This is still a PROVISIONAL ending.
+ const approachId=state.events?.choices?.['route.final.'+route];
+ const knownApproach=FINAL_ACT_APPROACHES[route]?.choices.find(c=>c.id===approachId);
+ const approachText=knownApproach?
+  '<p class="ending-request"><strong>最後に示した条件：</strong>'+knownApproach.note+'</p>':'';
+
+ if(!isEventComplete('worldSkeletonCleared')){
+  completeEvent('worldSkeletonCleared',true);
+  addJournal('最終章・'+p.title+'へ到達（物語プレビュー・未完成）');
+ }
+ // A route preview is not a completed RPG; never award actual clear state.
+ // This preserves the existing preview marker and the six distinct scenes,
+ // without invalidating previous version-23 save fields.
+ setWorldSwitch('endingPreviewReached',true);
+ setWorldSwitch('cleared',false);
+ state.objective='最終章の仮エピローグ到達：本編結末は未実装';
+ renderHud();
+ say('ナレーション','<div class="ending"><h2>'+p.title+'</h2><p>'+p.scene+'</p>'+approachText+'<p>カレン '+p.karen+'</p><p>'+p.conclusion+'</p><p class="ending-note">ここは未完成エンディングの演出プレビューです。王国・帝国との決着や灰冠への過程は、今後の正式な物語で制作します。</p></div>');
+ return true
+}
 
 function move(dir){if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started)return;if(isInputLocked()||state.battle)return;state.dir=dir;const now=Date.now();if(now<VISUAL.nextMoveAt){draw();return}VISUAL.nextMoveAt=now+(GC.Dev?.settings?.moveDelay??88);let nx=state.x,ny=state.y;if(dir==='up')ny--;if(dir==='down')ny++;if(dir==='left')nx--;if(dir==='right')nx++;
- // 序盤の可逆マップ遷移
+ // Optional Ryune outskirts. Border exits are checked before generic wall collision.
+  if(state.map==='village'&&ny===8&&nx===0){useMapTransition('villageToFields');return}
+  if(state.map==='ryunefields'&&ny===8&&nx===23){useMapTransition('fieldsToVillage');return}
+  if(state.map==='village'&&ny===8&&nx===23){useMapTransition('villageToBrook');return}
+  if(state.map==='ryunebrook'&&ny===8&&nx===0){useMapTransition('brookToVillage');return}
+  // 序盤の可逆マップ遷移
  if(state.map==='village'&&ny===0&&[11,12].includes(nx)){if(!isEventComplete('alpha.village.appointment')){say('北門','カレンたち4人の話し合いを終えるまでは、村を離れられない。');return}leaveVillage();return}
  if(state.map==='road'&&ny>=15&&[11,12].includes(nx)){returnVillage();return}
  if(state.map==='road'&&nx===13&&ny===1){enterCave();return}
@@ -56,9 +159,9 @@ function move(dir){if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started
  if(state.map==='ashroad'&&ny>=15&&[11,12].includes(nx)){travelScene('capital',11,1,'down','第二章 — 灰の街道','前線へ向かう／王都へ戻る','王都へ戻った。');return}
  if(state.map==='ashroad'&&ny<0&&[11,12].includes(nx)){if(isEventComplete('alpha2.ashroad.complete')){enterFrontier();return}if(!isEventComplete('alpha2.ashroad.patrolVictory')){say('カレン','「前方に帝国軍の斥候がいる。街道を抜けるなら、避けては通れない」');return}if(!isEventComplete('alpha2.ashroad.refugee')){say('ソフィ','「先へ行く前に、避難してきた人の話を聞いておきたいです」');return}if(!isEventComplete('alpha2.ashroad.orders')){say('マーガレット','「焼け跡に残った命令書を確認しましょう。何を狙った攻撃なのか知っておきたい」');return}runTriggeredEvent('boundary','north',{map:'ashroad'});return}
  if(state.map==='frontier'&&ny>=15&&[11,12].includes(nx)){enterAshRoad();return}
- if(state.map==='frontier'&&ny<0&&[11,12].includes(nx)){if(!isEventComplete('alpha2.frontier.complete')){say('セラド北防壁','追撃命令は出ていない。前線将校へ報告し、この区間の任務を終えよう。');return}if(!isEventComplete('alpha2.frontier2.order')){say('カレン','「先に前線将校から、戦後の次の指示を聞こう」');return}if(!isEventComplete('alpha2.frontier2.aftermath')){say('ソフィ','「北へ出る前に、野戦病院の状況を確認しましょう」');return}if(isEventComplete('alpha2.frontier2.complete')){say('カレン','「次は北の旧関所。でも出発命令はまだだ。今はセラドで準備しよう」');return}enterFrontierField();return}
+ if(state.map==='frontier'&&ny<0&&[11,12].includes(nx)){if(!isEventComplete('alpha2.frontier.complete')){say('セラド北防壁','追撃命令は出ていない。前線将校へ報告し、この区間の任務を終えよう。');return}if(!isEventComplete('alpha2.frontier2.order')){say('カレン','「先に前線将校から、戦後の次の指示を聞こう」');return}if(!isEventComplete('alpha2.frontier2.aftermath')){say('ソフィ','「北へ出る前に、野戦病院の状況を確認しましょう」');return}if(isEventComplete('alpha2.frontier2.complete')){enterBorderland();return}enterFrontierField();return}
  if(state.map==='frontierfield'&&ny>=15&&[11,12].includes(nx)){returnFrontierFromField();return}
- if(state.map==='frontierfield'&&ny<0&&[11,12].includes(nx)){say('マーガレット',isEventComplete('alpha2.frontier2.complete')?'「北の旧関所へ進むのは次の区間。今はセラドへ戻って準備を整えましょう」':'「任務は戦闘跡の確認まで。これ以上北へ進む前に、残った痕跡を調べてセラドへ報告しましょう」');return}
+ if(state.map==='frontierfield'&&ny<0&&[11,12].includes(nx)){say('マーガレット',isEventComplete('alpha2.frontier2.complete')?'「旧関所へはセラド北防壁から行ける。ここは調査済みよ。前線の道を使いましょう」':'「任務は戦闘跡の確認まで。これ以上北へ進む前に、残った痕跡を調べてセラドへ報告しましょう」');return}
  if(state.map==='borderland'&&ny>=15&&[11,12].includes(nx)){enterFrontier();return}
  if(state.map==='borderland'&&ny<0&&[11,12].includes(nx)){if(!(isEventComplete('borderBriefed')&&isEventComplete('borderMerchantHelped')&&isEventComplete('borderRested'))){say('カレン','「まだここでやることがある。偵察兵、足止めされた商人、それから今夜の休息……全部済ませてから進もう」');return}enterWatchfort();return}
  if(state.map==='relayvillage'&&ny>=15&&[11,12].includes(nx)){enterBorderland();return}
@@ -77,10 +180,10 @@ function move(dir){if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started
  if(state.map==='elsia'&&ny<0&&[11,12].includes(nx)){if(!isEventComplete('metZenith')){say('ゼニス','「まだ見るべきものがある。住民と古い碑文、その両方を見てから来い」');return}enterReturnRoad();return}
  if(state.map==='returnroad'&&ny>=15&&[11,12].includes(nx)){enterElsia();return}
  if(state.map==='returnroad'&&ny<0&&[11,12].includes(nx)){enterCapital(false);return}
- if(state.map==='finalfield'&&ny>=15&&[11,12].includes(nx)){travelScene('capital',11,1,'down','最終章 — 誰のための勇者か','最後の選択へ向かう','王都側の前線へ戻った。');return}
+ if(state.map==='finalfield'&&ny>=15&&[11,12].includes(nx)){if(state.finalChoice==='ashcrown'&&!!state.events?.choices?.['route.companions.ashcrown']){say('カレン','「三人と別れた。戻っても、あの頃の四人には戻れない」');return}travelScene('capital',11,1,'down','最終章 — 誰のための勇者か','最後の選択へ向かう','王都側の前線へ戻った。');return}
  if(state.map==='finalfield'&&ny<0&&[11,12].includes(nx)){if(!state.finalChoice){say('決断の地点','中央にいる人物に話しかけ、どちら側に立つか決める必要がある。');return}enterFinalBranch();return}
  if(['imperialcamp','royalcamp'].includes(state.map)&&ny>=15&&[11,12].includes(nx)){travelScene('finalfield',11,1,'down','最終章 — 誰のための勇者か','最終決戦の相手へ向かう','両軍がぶつかる前線へ戻った。');return}
- if(isBlocked(nx,ny)){draw();return}state.trail.unshift([state.x,state.y]);state.trail=state.trail.slice(0,3);state.x=nx;state.y=ny;handleStep();draw()}
+ if(isBlocked(nx,ny)){draw();return}state.trail.unshift([state.x,state.y]);state.trail=state.trail.slice(0,10);state.x=nx;state.y=ny;state.worldStepsOnMap=(state.worldStepsOnMap||0)+1;handleStep();draw()}
 
 function randomEncounterPool(map){
  if(map==='road')return[];
