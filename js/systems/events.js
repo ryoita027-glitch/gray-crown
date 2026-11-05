@@ -71,7 +71,13 @@ function inlineNpcEvent(id){
   if(id==='lulu')return saySequence([{speaker:'ルル',text:'「ソフィお姉ちゃん、ちゃんと帰ってくる？」'},{speaker:'ソフィ',text:'「もちろん。約束します」'}])
   if(id==='baker')return say('パン屋のエダ','「今朝は小麦が足りなくてね。いつもの半分しか焼けなかったよ。子どもらには黙って大きい方を渡したけどさ」')
   if(id==='farmer')return say('農夫のボル','「畑はある。働く手もある。なのに荷車も肥料も軍に持っていかれちまう。戦場だけが戦争じゃねえんだな」')
-  if(id==='oldwoman')return say('老婆ナナ','「勇者さま、なんて呼ばれたって腹は減るし、怪我もする。偉い名前より、帰ってくる方が大事だよ」')
+  if(id==='oldwoman'){
+   if(!structuredCondition('appointed'))return say('老婆ナナ','「まだ勇者じゃなくても、腹は減るし、怪我もする。偉い名前より、ちゃんと食べて帰っておいで」');
+   if(structuredCondition('nanaTravelAdvice'))return say('老婆ナナ','「北門へ行く前に支度を確かめな。無理に急ぐことはないよ」');
+   setStructuredCondition('nanaTravelAdvice',true);
+   addJournal('ナナは「勇者」の肩書きより四人の無事を案じ、北門を出る前に支度を確かめるよう言った。');
+   return saySequence([{speaker:'老婆ナナ',text:'「勇者さま、なんて呼ばれたって腹は減るし、怪我もする。北門を出る前に、薬と荷物を確かめな」'},{speaker:'カレン',text:'「うん。みんなの分も確認してから行くね」'},{speaker:'マーガレット',text:'「カレン、自分の分を一番忘れそうなのはあなたよ」'},{speaker:'トリトン',text:'「そうそう。いつも先に走るからな」'},{speaker:'カレン',text:'「今日はちゃんと四人で出発するって！」'}]);
+  }
   if(id==='veteran')return say('帰還兵ガルド','「前線は英雄譚みたいな場所じゃない。音がうるさくて、泥だらけで、誰が勝ったかなんてその場じゃ分からん。……覚えておけ」')
  }
  if(state.map==='karenhome'){
