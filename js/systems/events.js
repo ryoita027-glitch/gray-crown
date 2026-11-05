@@ -225,6 +225,7 @@ function inlineObjectEvent(id){
    if(!structuredCondition('appointed'))return saySequence([{speaker:'村の井戸',text:'何人もの桶が並ぶ。いつもなら四人で水を運ぶ時間だが、今日は広場に集まる人々の声が気になる。'},{speaker:'トリトン',text:'「水汲み当番、今日も私たちだったっけ？」'},{speaker:'マーガレット',text:'「当番表なら昨日見たわ。……でも先に広場の様子を確かめましょう」'}]);
    if(structuredCondition('ryuneWellFarewellSeen'))return say('村の井戸','赤い布の結ばれた桶が井戸端にある。子どもたちが汲んでくれた水は、まだ冷たい。');
    setStructuredCondition('ryuneWellFarewellSeen',true);
+   addJournal('リュネ村の井戸で、子どもたちが四人のために水を用意してくれていた。マーガレットの言葉に、四人はここへ帰ると約束した。');
    return saySequence([{speaker:'村の井戸',text:'井戸端に並ぶ桶のうち、ひとつだけ取っ手に赤い布が結ばれている。出発する四人のために、村の子どもたちが水を汲んでおいたらしい。'},{speaker:'カレン',text:'「……いつも私たちが水汲み当番だったのに。今日は先を越されちゃったね」'},{speaker:'トリトン',text:'「帰ったら、また当番を押しつけられるぞ」'},{speaker:'ソフィ',text:'「その時は、みんなで運びましょう」'},{speaker:'マーガレット',text:'「約束ね。四人とも、ここへ戻ってくること」'}]);
   }
   if(id==='home')return enterInterior('karenhome',4,5)
