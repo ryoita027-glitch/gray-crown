@@ -132,9 +132,19 @@ function inlineNpcEvent(id){
    ])
   }
   if(id==='capitalCitizen')return say('王都市民',structuredCondition('returnedKingdom')?'「勇者様……前よりずっと疲れた顔をしてる。戦争は、まだ終わらないんですか？」':'「勇者様！ 魔王を倒して、聖地を取り戻してください！」')
-  if(id==='capitalFlowerGirl')return say('花売りの少女',structuredCondition('returnedKingdom')?'「前は勇者様の花飾りが一番売れたの。今は、お墓に供える白い花ばっかり」':'「勇者様！ 任命式の日は赤と白の花が飛ぶんだよ。王城の前、すっごくきれい！」')
+  if(id==='capitalFlowerGirl'){
+   if(structuredCondition('returnedKingdom'))return say('花売りの少女','「前は勇者様の花飾りが一番売れたの。今は、お墓に供える白い花ばっかり」');
+   if(!structuredCondition('capitalCeremony'))return say('花売りの少女','「勇者様！ 任命式の日は赤と白の花が飛ぶんだよ。王城の前、すっごくきれい！」');
+   if(structuredCondition('rationFlowerDelivered'))return say('花売りの少女','「あのお母さん、少し笑ってくれた？ ……よかった」');
+   if(structuredCondition('rationFlowerTaken'))return say('花売りの少女','「花、渡せたら教えてね。配給を待つ人たちにも、きれいなものを見てほしいの」');
+   return say('花売りの少女','「式で余った花をもらったの。でも配給の列にいる人には、渡しに行く勇気がなくて……」',[{label:'花を預かって届ける',fn:()=>{setStructuredCondition('rationFlowerTaken',true);addJournal('花売りの少女から式の余り花を預かった。配給列にいる人へ届けよう。');return say('ソフィ','「私たちが届けましょう。食べ物の代わりにはならないけれど」')}},{label:'今は受け取らない',fn:()=>say('カレン','「また寄るね。急いで決めなくていいから」')}])
+  }
   if(id==='capitalRecruit')return say('新兵',structuredCondition('returnedKingdom')?'「次の総攻撃、俺たちも出るそうです。勇者様……勝てば、本当に終わるんでしょうか」':'「勇者様と同じ前線に行けるなら光栄です。俺も聖地を取り戻してみせます！」')
   if(id==='capitalVendor')return capitalShop()
+  if(id==='rationMother'&&structuredCondition('rationFlowerTaken')&&!structuredCondition('rationFlowerDelivered')&&!structuredCondition('returnedKingdom')){
+   return saySequence([{speaker:'ソフィ',text:'「花売りの子から預かりました。式で余った花だそうです」'},{speaker:'配給待ちの母親',text:'「あんなに花を使うくらいならパンを、って思ったのに。……でも、あの子が気にかけてくれたのね」'},{speaker:'カレン',text:'「私たちも、ちゃんと覚えておきたい。花の下に、こういう暮らしがあること」'}],()=>{setStructuredCondition('rationFlowerDelivered',true);addJournal('花売りの少女の花を配給列の母親へ届けた。式の華やかさと街の暮らしの隔たりを知った。')})
+  }
+  if(id==='rationMother'&&structuredCondition('rationFlowerDelivered')&&!structuredCondition('returnedKingdom'))return say('配給待ちの母親','「花は家に持って帰るわ。あの子に、ありがとうって伝えて」');
   if(id==='rationMother')return saySequence([{speaker:'配給待ちの母親',text:structuredCondition('returnedKingdom')?'「勇者様。息子は前線から戻りました。片腕を失ったけど、生きてます。……それでも私は、勝ってよかったって言うべきなんでしょうか」':'「配給は一人パン二つまで。王都でこれなら、地方はもっとひどいんでしょうね」'},{speaker:'ソフィ',text:structuredCondition('returnedKingdom')?'「生きて帰ったことを喜んでいいと思います。それと戦争を喜ぶことは、同じじゃありません」':'「私たちの村では、小麦そのものが足りません」'},{speaker:'配給待ちの母親',text:structuredCondition('returnedKingdom')?'「……そうね。そう言ってもらえると、少し楽です」':'「なのに任命式にはあんなに花を使う。王都って、不思議なところね」'}])
   if(id==='granz'){
    if(!structuredCondition('returnedKingdom')){
