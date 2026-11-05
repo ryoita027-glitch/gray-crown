@@ -80,7 +80,14 @@ function inlineNpcEvent(id){
   if(id==='karenBrother')return saySequence([{speaker:'リオ',text:'「姉ちゃん、本当に魔王を倒しに行くの？」'},{speaker:'カレン',text:'「……まだ分かんない。でも、ちゃんと帰ってくるよ」'},{speaker:'リオ',text:'「じゃあ剣、錆びさせるなよ。帰ってきたら見せてもらうから」'}])
  }
  if(state.map==='orphanage'){
-  if(id==='caretaker')return say('世話役マルタ','「ソフィが送ってくれる米はありがたい。でもね、それを理由にあなたたちが死んでいいなんて、誰も思っていないよ」')
+  if(id==='caretaker'){
+   if(!structuredCondition('orphan'))return say('世話役マルタ','「ソフィが送ってくれる米はありがたい。でもね、それを理由にあなたたちが死んでいいなんて、誰も思っていないよ」');
+   if(structuredCondition('orphanRationTalk'))return say('世話役マルタ','「食料のことは大人たちで相談するわ。あなたたちは自分の命まで差し出さないで」');
+   return say('世話役マルタ','「子どもたちのスープが薄いのを見たのね。王都の米が届くまで、どうするか考えないと」',[
+    {label:'村の人に食料の相談をする',fn:()=>{setStructuredCondition('orphanRationTalk',true);addJournal('孤児院の食料不足についてマルタと相談した。王都の米を待つだけでなく、村の人にも声をかける。');saySequence([{speaker:'ソフィ',text:'「私も村の人に聞いてみます。食べ物を分けてもらえないか」'},{speaker:'世話役マルタ',text:'「ありがとう。でも無理に取り上げてはだめよ。みんな苦しいのだから」'},{speaker:'マーガレット',text:'「パン屋や畑の様子を見てみましょう。できることがあるかもしれない」'}])}},
+    {label:'今は話を聞くだけにする',fn:()=>say('ソフィ','「……すぐに答えは出せません。でも忘れません」')}
+   ])
+  }
   if(id==='theo')return say('テオ','「兵隊さんになるとパンを毎日もらえるって本当？」')
   if(id==='noa')return saySequence([{speaker:'ノア',text:'「勇者って、怪我しないの？」'},{speaker:'ソフィ',text:'「しますよ。だから治して、休んで、また歩くんです」'}])
   if(id==='emi')return say('エミ','「ソフィお姉ちゃんのベッド、帰ってくるまで使わないでおくね」')
