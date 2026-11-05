@@ -822,10 +822,15 @@ function capitalRationMotherVisit(){
      {speaker:'配給待ちの母親',text:'「片腕でできないことは増えたわ。でも、何を手伝ってほしいかは、あの子自身に聞くようにしてるの」'},
      {speaker:'ソフィ',text:'「帰ってきた後の暮らしも、あの人自身のものですから」'}
     ])});
-    return say('配給待ちの母親',
-     choices['capital.rationHomecomingGift']==='donate'
-      ?'「新兵さんにもお礼が届いて、息子と携帯食も分けられました。明日の暮らしはまだ心配だけど、今日助けてくれた人たちを忘れません」'
-      :'「新兵さんにお礼を届けてくれてありがとう。息子は家で休んでいます。明日もあの新兵さんが配給列にいてくれると思うと、少し心強いわ」',options);
+    const foodRemembered=gifted||choices['capital.rationHomecomingGift']==='donate';
+    const revisitLine=foodRemembered&&guided
+     ?'「新兵さんにもお礼が届きました。分けてくれた食べ物も、南門から届いた野菜も覚えています。息子の傷は残るけれど、今日の食卓を大切にしたいわ」'
+     :foodRemembered
+     ?'「新兵さんにもお礼が届きました。分けてくれた食べ物も忘れていません。息子の傷は残るけれど、今日の食卓を大切にしたいわ」'
+     :guided
+     ?'「新兵さんにもお礼が届きました。南門から届いた野菜も覚えています。息子の傷は残るけれど、今日の食卓を大切にしたいわ」'
+     :'「新兵さんにお礼を届けてくれてありがとう。息子は家で休んでいます。明日もあの新兵さんが配給列にいてくれると思うと、少し心強いわ」';
+    return say('配給待ちの母親',revisitLine,options);
    }
    // An unrelated recruit thank-you must not gate an optional food decision.
    if(choices['capital.rationHomecomingGift']==='donate')
