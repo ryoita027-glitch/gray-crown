@@ -1086,7 +1086,7 @@ function capitalRecruitLedgerShare(){
  ]);
 }
 function capitalRecruitReturnGuidance(){
- return '「母親は西の配給列にいるよ。伝言を届けたことを、戻って知らせよう」';
+ return '「母親は西の配給列にいるよ。兵舎から噴水の方へ戻って、その先の水桶が並ぶ場所を探そう。伝言を届けたことも知らせよう」';
 }
 function capitalRecruitAfterReport(){
  return saySequence([
@@ -1113,7 +1113,7 @@ function capitalRecruitRationVisit(){
  if(!thanked)options.push({
   label:'配給列の場所を尋ねる',
   fn:()=>saySequence([
-   {speaker:'新兵',text:'「西の配給列なら、噴水を目印に進んでください。水桶を運んでいる人がいるはずです」'},
+   {speaker:'新兵',text:'「西の配給列なら、ここから噴水へ戻り、その先の水桶が並ぶ場所です。水を運ぶ人たちが目印になります」'},
    {speaker:'ソフィ',text:'「まずは行ってみましょう。困っている人がいるかもしれません」'}
   ])
  });
