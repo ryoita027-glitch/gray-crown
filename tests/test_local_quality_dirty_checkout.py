@@ -23,8 +23,9 @@ class DirtyCheckoutPreflightTest(unittest.TestCase):
             (root / "tools").mkdir()
             shutil.copyfile(RUNNER, root / "tools" / "run_local_quality.py")
             (root / "package.json").write_text('{"private":true}', encoding="utf-8")
+            (root / ".gitignore").write_text("bin/\\nprototype_artifacts/\\n", encoding="utf-8")
             subprocess.run(["git", "init", "-q"], cwd=root, check=True)
-            subprocess.run(["git", "add", "tools/run_local_quality.py", "package.json"],
+            subprocess.run(["git", "add", "tools/run_local_quality.py", "package.json", ".gitignore"],
                            cwd=root, check=True)
             env = dict(os.environ)
             env.update(GIT_AUTHOR_NAME="QA", GIT_AUTHOR_EMAIL="qa@example.invalid",
