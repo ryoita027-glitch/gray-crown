@@ -68,7 +68,7 @@ function inlineNpcEvent(id){
   }
   if(id==='mika')return saySequence([{speaker:'ミカ',text:'「カレン姉ちゃん、勇者って王都のお菓子食べ放題なの？」'},{speaker:'カレン',text:'「たぶん、そういう仕事じゃないかな……」'}])
   if(id==='ren')return saySequence([{speaker:'レン',text:'「トリトン姉ちゃんがいなくなったら、剣の稽古は誰が見てくれるの？」'},{speaker:'トリトン',text:'「父ちゃんに頼め。私より百倍怖いぞ」'}])
-  if(id==='lulu')return saySequence([{speaker:'ルル',text:'「ソフィお姉ちゃん、ちゃんと帰ってくる？」'},{speaker:'ソフィ',text:'「もちろん。約束します」'}])
+  if(id==='lulu')return structuredCondition('ryuneWellFarewellSeen')?saySequence([{speaker:'ルル',text:'「井戸の赤い布、見つけてくれた？　あれ、私たちで結んだの」'},{speaker:'ソフィ',text:'「見つけました。水もありがとう。帰ったら一緒に桶を運びましょうね」'},{speaker:'ルル',text:'「うん！　四人分の当番、ちゃんと空けておくね」'}]):saySequence([{speaker:'ルル',text:'「ソフィお姉ちゃん、ちゃんと帰ってくる？」'},{speaker:'ソフィ',text:'「もちろん。約束します」'}])
   if(id==='baker')return say('パン屋のエダ','「今朝は小麦が足りなくてね。いつもの半分しか焼けなかったよ。子どもらには黙って大きい方を渡したけどさ」')
   if(id==='farmer')return say('農夫のボル','「畑はある。働く手もある。なのに荷車も肥料も軍に持っていかれちまう。戦場だけが戦争じゃねえんだな」')
   if(id==='oldwoman')return say('老婆ナナ','「勇者さま、なんて呼ばれたって腹は減るし、怪我もする。偉い名前より、帰ってくる方が大事だよ」')
