@@ -1117,10 +1117,17 @@ function capitalRecruitRationVisit(){
  // This is navigation only: it neither accepts nor completes the errand.
  if(!thanked)options.push({
   label:'配給列の場所を尋ねる',
-  fn:()=>saySequence([
+  fn:()=>{
+   if(choices['capital.rationDirectionsLearned']!=='heard'){
+    choices['capital.rationDirectionsLearned']='heard';
+    addJournal('王都の新兵から道を聞いた。西の配給列は噴水の先、水桶を運ぶ人たちが目印。');
+    renderHud();
+   }
+   return saySequence([
    {speaker:'新兵',text:'「西の配給列なら、ここから噴水へ戻り、その先の水桶が並ぶ場所です。水を運ぶ人たちが目印になります」'},
    {speaker:'ソフィ',text:'「まずは行ってみましょう。困っている人がいるかもしれません」'}
-  ])
+   ]);
+  }
  });
  if(!thanked&&messageReady)options.push(
   {label:'母親から預かったお礼を伝える',fn:()=>{
