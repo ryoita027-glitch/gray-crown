@@ -1091,6 +1091,13 @@ function capitalRecruitLedgerShare(){
  ]);
 }
 function capitalRecruitReturnGuidance(){
+ // Record the route when first requested, including on the post-message path.
+ // Returning players should not have to remember an unlogged landmark.
+ if(state.events.choices['capital.rationDirectionsNoted']!=='noted'){
+  state.events.choices['capital.rationDirectionsNoted']='noted';
+  addJournal('王都の新兵に西の配給列への道を聞いた。噴水へ戻り、水桶が並ぶ場所を探す。');
+  renderHud();
+ }
  return '「母親は西の配給列にいるよ。兵舎から噴水の方へ戻って、その先の水桶が並ぶ場所を探そう。伝言を届けたことも知らせよう」';
 }
 function capitalRecruitAfterReport(){
