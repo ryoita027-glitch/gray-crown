@@ -81,7 +81,17 @@ function inlineNpcEvent(id){
  }
  if(state.map==='orphanage'){
   if(id==='caretaker')return say('世話役マルタ','「ソフィが送ってくれる米はありがたい。でもね、それを理由にあなたたちが死んでいいなんて、誰も思っていないよ」')
-  if(id==='theo')return say('テオ','「兵隊さんになるとパンを毎日もらえるって本当？」')
+  if(id==='theo'){
+   if(structuredCondition('orphan')){
+    if(!structuredCondition('ryuneTheoPromiseSeen')){
+     setStructuredCondition('ryuneTheoPromiseSeen',true);
+     addJournal('孤児院のテオは兵隊になれば毎日パンを食べられると思っていた。ソフィは、戦場に行かずに食べられる道を探すと約束した。');
+     return saySequence([{speaker:'テオ',text:'「ぼく、兵隊になれば毎日パンが食べられると思ってた」'},{speaker:'ソフィ',text:'「食べるために戦場へ行かなくていいように、私たちが考えます」'},{speaker:'テオ',text:'「……じゃあ、明日のご飯も一緒に考えてくれる？」'},{speaker:'ソフィ',text:'「ええ。約束です」'}])
+    }
+    return say('テオ','「明日のご飯のこと、ソフィお姉ちゃんも考えてくれてるんだよね」')
+   }
+   return say('テオ','「兵隊さんになるとパンを毎日もらえるって本当？」')
+  }
   if(id==='noa')return saySequence([{speaker:'ノア',text:'「勇者って、怪我しないの？」'},{speaker:'ソフィ',text:'「しますよ。だから治して、休んで、また歩くんです」'}])
   if(id==='emi')return say('エミ','「ソフィお姉ちゃんのベッド、帰ってくるまで使わないでおくね」')
  }
