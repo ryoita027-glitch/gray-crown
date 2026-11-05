@@ -166,19 +166,23 @@ def main() -> int:
                 report["head_sha"] = p.stdout.strip()
         write_report()
         if args.mode == "full" and not args.with_v23:
+            report["preflight_error"] = "Full acceptance requires --with-v23 for real historical save compatibility"
             print("Full acceptance requires --with-v23 to check actual old-save compatibility.",
                   file=sys.stderr)
             return 2
         if args.expect_head:
             expected = args.expect_head.lower().strip()
             if len(expected) != 40 or any(c not in "0123456789abcdef" for c in expected):
+                report["preflight_error"] = "Invalid --expect-head: expected a 40-character hexadecimal SHA"
                 print("--expect-head requires a full 40-character lowercase SHA.", file=sys.stderr)
                 return 2
             if report["head_sha"] != expected:
+                report["preflight_error"] = "WRONG_HEAD: checkout SHA differs from --expect-head"
                 print("WRONG_HEAD: local checkout is " + str(report["head_sha"]) +
                       "; expected " + expected, file=sys.stderr)
                 return 2
         elif args.mode == "full":
+            report["preflight_error"] = "Full acceptance requires --expect-head to pin the candidate"
             print("Full acceptance requires --expect-head SHA (do not mix builds).",
                   file=sys.stderr)
             return 2
