@@ -235,7 +235,14 @@ function inlineObjectEvent(id){
    return say('古い関所跡','戦争前の通行札が散らばっている。人の往来があった痕跡だけが残っている。')
   }
   if(id==='brokenWagon')return say('壊れた荷車',structuredCondition('borderMerchantHelped')?'応急修理された車軸。商人は北の宿場へ荷を運んでいった。':'片側の車輪が外れ、荷袋が道脇に積まれている。持ち主はすぐ近くにいる。')
-  if(id==='relayBoard')return say('ハルム宿場の掲示板','「国境便停止」「ベルド砦への荷役募集」「帝国産塩・入荷未定」。戦争で途切れたものが、短い紙切れだけでも分かる。')
+  if(id==='relayBoard'){
+   if(!structuredCondition('borderMerchantHelped'))return say('ハルム宿場の掲示板','「国境便停止」「ベルド砦への荷役募集」「帝国産塩・入荷未定」。端に「東の荷車、修理の手を求む」と書き足されている。');
+   if(structuredCondition('borderBoardUpdated'))return say('ハルム宿場の掲示板','「東の荷車、修理済み」。小さな追記が残っている。止まった交易がすぐ戻るわけではないが、今日は一台進めた。');
+   return say('ハルム宿場の掲示板','荷車の修理依頼がまだ掲示されたままだ。宿場に知らせておこうか？',[
+    {label:'修理済みと書き添える',fn:()=>{setStructuredCondition('borderBoardUpdated',true);addJournal('ハルム宿場の掲示板に荷車の修理完了を書き添えた。止まった交易の道に小さな変化が生まれた。');saySequence([{speaker:'カレン',text:'「これで誰かが無駄に探しに行かずに済むね」'},{speaker:'マーガレット',text:'「小さなことだけど、知らせるのは大事よ」'}])}},
+    {label:'今はそのままにする',fn:()=>say('カレン','「あとで知らせてもいいよね」')}
+   ])
+  }
   if(id==='borderCampfire'){
    if(!structuredCondition('borderMerchantHelped'))return say('宿場の焚き火','まだ日が高い。東で足止めされた商人も戻っていない。');
    if(structuredCondition('borderRested'))return limitedRecovery('borderCampfire','宿場の焚き火','残った薪と保存食で、もう一度だけまともに休めそうだ。','field','焚き火のそばで短く休んだ。HPが全回復し、MPも少し戻った。');
