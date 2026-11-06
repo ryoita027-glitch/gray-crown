@@ -178,6 +178,7 @@ function inlineNpcEvent(id){
    setStructuredCondition('fortGateOpen',true);state.objective='開いた北門を抜け、ラゼル峡谷橋へ出る';addJournal('ベルド砦で国境周辺の実距離を確認。ラゼル峡谷橋の中央が明確な国境になっている。');renderHud();draw();
    return saySequence([{speaker:'監視砦長',text:'「よし。門を開ける」'},{speaker:'若い王国兵',text:'「砦長、帝国四将が橋にいるのに？」'},{speaker:'監視砦長',text:'「だからだ。ここで勇者を閉じ込めても戦況は変わらん。何を見て戻るかは、この四人に任せる」'},{speaker:'マーガレット',text:'「戻れる保証は？」'},{speaker:'監視砦長',text:'「ない。国境ってのは、門を一枚くぐれば別世界になる場所じゃない。戻れない可能性も含めて国境だ」'}])
   }
+  if(id==='tiredGuard'&&structuredCondition('fortSignalObserved'))return saySequence([{speaker:'若い王国兵',text:'「対岸の狼煙を見ましたか。意味は日によって違います。敵の合図だと決めつけて撃てば、こっちの見張りまで危険になる」'},{speaker:'マーガレット',text:'「見えたものと、分かったことは別なのね」'}]);
   if(id==='tiredGuard')return saySequence([{speaker:'若い王国兵',text:'「三週間ここにいます。でも帝国兵の顔をまともに見たのは二回だけです」'},{speaker:'トリトン',text:'「ずっと戦ってるわけじゃないんだな」'},{speaker:'若い王国兵',text:'「待つ時間の方が長いです。……待ってる間に、相手が怪物じゃなく人間だって考えちゃうのが一番怖い」'}])
   if(id==='klein'){
    if(structuredCondition('metKlein'))return say('クラインテッド','「もう言葉は交わした。橋が落ちる前に東へ行け」');
@@ -248,7 +249,10 @@ function inlineObjectEvent(id){
  }
  if(state.map==='watchfort'){
   if(id==='fortRest')return limitedRecovery('fortRest','砦の休憩所','交代兵用の寝台と少量の医薬品が残っている。','field','砦の寝台で短く休んだ。HPが全回復し、MPも少し戻った。')
-  if(id==='signalFire')return say('狼煙台','高い塔の上で油の匂いがする。対岸の帝国側にも小さな狼煙台が見える。戦闘より先に、互いの動きを知らせるための場所だ。')
+  if(id==='signalFire'){
+   if(structuredCondition('fortSignalObserved'))return say('狼煙台','対岸の狼煙台が見える。合図の意味はまだ分からないが、橋の向こうにも見張る人がいることは分かった。');
+   return say('狼煙台','高い塔の上で油の匂いがする。対岸の帝国側にも小さな狼煙台が見える。風の合間に、短い煙が一筋上がった。',[{label:'少し待って合図を観察する',fn:()=>{setStructuredCondition('fortSignalObserved',true);addJournal('ベルド砦の狼煙台から対岸にも見張りがいると確かめた。煙の意味はまだ分からない。');saySequence([{speaker:'ナレーション',text:'少し待つと、対岸からもう一筋。こちらの兵は狼煙を上げず、橋の様子を見続けている。'},{speaker:'マーガレット',text:'「何の合図かは分からない。でも向こうにも、私たちと同じように見張る人がいる」'},{speaker:'カレン',text:'「砦長の話を聞いてから橋へ行こう。知らない合図を勝手に決めつけたくない」'}])}},{label:'砦の中へ戻る',fn:()=>say('トリトン','「橋へ出る前に、砦長の話も聞こう」')}])
+  }
   if(id==='fortMap'){
    if(!structuredCondition('fortMapSeen')){setStructuredCondition('fortMapSeen',true);state.objective='砦長へ戻り、北門を開けてもらう';renderHud()}
    return saySequence([{speaker:'ベルド砦作戦図',text:'王都、灰の街道、前線、ハルム、ベルド砦。ここまで歩いてきた道が一本につながっている。橋を越えた先の帝国村までは、さらに半日以上。'},{speaker:'マーガレット',text:'「地図の縮尺で見ると近い。でも、私たちが歩いた時間を書き込むと全然違う」'},{speaker:'カレン',text:'「やっと“隣の国”って言葉の意味が分かった気がする」'}])
