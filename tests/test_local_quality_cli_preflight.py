@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import sys
 import unittest
+import uuid
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -46,6 +47,25 @@ class LocalQualityPreflightTests(unittest.TestCase):
         self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
         self.assertIn("WRONG_HEAD:", result.stderr)
         self.assertNotIn("[1]", result.stdout, "No quality gate should have started")
+
+    def test_pinned_head_rejects_untracked_source_before_tests(self) -> None:
+        # An exact HEAD alone is insufficient: an untracked local edit must block QA.
+        head = subprocess.run(
+            ["git", "rev-parse", "--verify", "HEAD"],
+            cwd=ROOT, capture_output=True, text=True, check=False,
+        )
+        if head.returncode:
+            self.skipTest("A real Git checkout is required")
+        marker = ROOT / (".qa_preflight_untracked_" + uuid.uuid4().hex)
+        try:
+            with marker.open("x", encoding="utf-8") as stream:
+                stream.write("temporary QA source-integrity sentinel\\n")
+            result = self.invoke("--mode", "quick", "--expect-head", head.stdout.strip())
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+            self.assertIn("Source integrity failed at before", result.stderr)
+            self.assertNotIn("[1]", result.stdout, "No quality gate should have started")
+        finally:
+            marker.unlink(missing_ok=True)
 
     def test_invalid_expected_head_is_rejected_before_tests(self) -> None:
         result = self.invoke("--mode", "quick", "--expect-head", "not-a-sha")
