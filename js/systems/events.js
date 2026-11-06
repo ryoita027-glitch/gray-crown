@@ -109,7 +109,13 @@ function inlineNpcEvent(id){
   if(id==='bookSeller')return saySequence([{speaker:'古書店主',text:'「千年前の地図？ 王国式も帝国式もあるよ。ただし、どっちも“自分たちに都合のいい境界線”を引いてる」'},{speaker:'マーガレット',text:'「……地図そのものが主張なんですね」'},{speaker:'古書店主',text:'「地図は嘘をつかない、なんてのが一番危ない嘘さ」'}])
   if(id==='studentReader')return say('帝国の学生','「戦争が終わったら王国の大学にも行ってみたいんです。……今それ言うと、先生にすごく嫌な顔されるけど」')
  }
- if(state.map==='road'&&id==='merchant'){addJournal('王都への近道として古砦跡の抜け道を教わった。');return say('行商人','「王都へ行くならこのまま北だ。東の古砦跡は今は使われてないが、旅人が残した物資があるって噂もある。余裕があれば寄ってみるといい。<br><br>ただし獣の声がする。寄り道するかは自分で決めな」')}
+ if(state.map==='road'&&id==='merchant'){
+   if(structuredCondition('roadMerchantDirections'))return say('行商人','「王都は北。古砦跡の入口も街道の北寄りだ。砦に寄るなら、獣の声がする場所で無理をするなよ」');
+   return say('行商人','「王都へ向かうのか？ この先は道が分かりにくい。急ぐなら北へ進め。古砦跡には旅人の置き土産があるらしいが、獣も出る」',[
+    {label:'王都への道を詳しく聞く',fn:()=>{setStructuredCondition('roadMerchantDirections',true);addJournal('行商人に道を聞いた。王都は北。古砦跡の入口は街道の北寄りにあり、寄り道には危険もある。');saySequence([{speaker:'行商人',text:'「街道の北寄りに古砦跡の入口がある。砦に入るか、そのまま王都を目指すかは自分で決めな」'},{speaker:'マーガレット',text:'「先に進路を決められるのは助かるわ。危険なら準備してから寄りましょう」'}])}},
+    {label:'今は先を急ぐ',fn:()=>say('カレン','「ありがとう。まずは北へ進んでみるね」')}
+   ])
+  }
  if(state.map==='northroad'&&id==='scout'){return say('王国軍の斥候','「勇者一行か。古砦を抜けてきたのか？ 王都まではもう遠くない。北へ進めば城門だ」')}
  if(state.map==='capital'){
   if(id==='capitalOfficial'){
