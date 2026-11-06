@@ -77,7 +77,15 @@ function inlineNpcEvent(id){
  if(state.map==='karenhome'){
   if(id==='karenMother')return say('カレンの母','「勇者なんて立派な名前をもらっても、あなたは私の娘よ。ご飯を抜かない。怪我を隠さない。それだけは守りなさい」')
   if(id==='karenFather')return say('カレンの父','「村のために行くと言うなら止めはしない。だが国の都合まで、お前が背負う必要はないからな」')
-  if(id==='karenBrother')return saySequence([{speaker:'リオ',text:'「姉ちゃん、本当に魔王を倒しに行くの？」'},{speaker:'カレン',text:'「……まだ分かんない。でも、ちゃんと帰ってくるよ」'},{speaker:'リオ',text:'「じゃあ剣、錆びさせるなよ。帰ってきたら見せてもらうから」'}])
+  if(id==='karenBrother'){
+   if(!structuredCondition('appointed'))return saySequence([{speaker:'リオ',text:'「姉ちゃん、また村の外まで走ってったの？ 母さんが探してたよ」'},{speaker:'カレン',text:'「ごめんごめん。帰ったら薪も運ぶから！」'},{speaker:'リオ',text:'「先に運んでから言ってよ」'}]);
+   if(structuredCondition('karenBrotherPromise'))return say('リオ','「剣、錆びさせんなよ。帰ってきたらちゃんと見せてくれよな」');
+   return say('リオ','「姉ちゃん、本当に行っちゃうの？ ……剣、帰ってきたら見せてよ」',[{label:'帰ってきたら一緒に手入れしよう',fn:()=>{
+    setStructuredCondition('karenBrotherPromise',true);
+    addJournal('出発前、リオと「帰ってきたら一緒に剣を手入れする」と約束した。');
+    saySequence([{speaker:'カレン',text:'「うん。帰ってきたら一緒に磨こう。リオの方が上手だったら困るな」'},{speaker:'リオ',text:'「じゃあ練習しとく。……絶対、帰ってきてよ」'}]);
+   }},{label:'今は黙ってうなずく',fn:()=>saySequence([{speaker:'カレン',text:'「……うん」'},{speaker:'リオ',text:'「約束できないなら、それでもいい。帰ってきてくれたら」'}])}])
+  }
  }
  if(state.map==='orphanage'){
   if(id==='caretaker')return say('世話役マルタ','「ソフィが送ってくれる米はありがたい。でもね、それを理由にあなたたちが死んでいいなんて、誰も思っていないよ」')
