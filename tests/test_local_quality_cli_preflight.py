@@ -39,6 +39,14 @@ class LocalQualityPreflightTests(unittest.TestCase):
         self.assertIn("Full acceptance requires --expect-head", result.stderr)
         self.assertNotIn("[1]", result.stdout, "No quality gate should have started")
 
+    def test_wrong_but_well_formed_head_is_rejected_before_tests(self) -> None:
+        # A syntactically valid SHA must not be accepted as the checkout identity.
+        # All-zero SHA cannot be the SHA of a real Git commit.
+        result = self.invoke("--mode", "quick", "--expect-head", "0" * 40)
+        self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+        self.assertIn("WRONG_HEAD:", result.stderr)
+        self.assertNotIn("[1]", result.stdout, "No quality gate should have started")
+
     def test_invalid_expected_head_is_rejected_before_tests(self) -> None:
         result = self.invoke("--mode", "quick", "--expect-head", "not-a-sha")
         self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
