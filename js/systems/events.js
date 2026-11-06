@@ -226,7 +226,23 @@ function inlineObjectEvent(id){
   if(id==='doorOrphanage')return enterInterior('orphanage',19,5)
   if(id==='doorMayor')return enterInterior('mayorhouse',4,12)
   if(id==='doorCottage')return enterInterior('cottage',19,12)
-  if(id==='gate'){if(!structuredCondition('talkedWithKaren'))return say('北門','カレンたち4人の話し合いを終えるまでは、村を離れられない。');leaveVillage();return}
+  if(id==='gate'){
+   if(!structuredCondition('talkedWithKaren'))return say('北門','カレンたち4人の話し合いを終えるまでは、村を離れられない。');
+   if(!structuredCondition('villageDepartureSeen')){
+    setStructuredCondition('villageDepartureSeen',true);
+    const sawOrphanage=structuredCondition('orphan');
+    const sawStore=structuredCondition('store');
+    const lines=[
+     {speaker:'ナレーション',text:'北門の外には、村を離れる街道が続いている。振り返ると、いつもの家並みが見えた。'},
+     ...(sawStore?[{speaker:'マーガレット',text:'「食料庫の帳簿、忘れないで。あの数字を変えるために行くんだから」'}]:[]),
+     ...(sawOrphanage?[{speaker:'ソフィ',text:'「孤児院の子たち、今夜はちゃんと食べられるでしょうか……」'}]:[]),
+     {speaker:'トリトン',text:'「帰り道も覚えとけよ。行く時だけの門じゃないんだから」'},
+     {speaker:'カレン',text:'「うん。四人で帰ってくる。……行こう！」'}
+    ];
+    return saySequence(lines,()=>leaveVillage());
+   }
+   leaveVillage();return
+  }
  }
  if(state.map==='borderland'){
   if(id==='borderGrave')return saySequence([{speaker:'名のない墓標',text:'王国語と帝国語、両方で短い祈りが刻まれている。名前は雨で読めない。'},{speaker:'ソフィ',text:'「どちらの国の人だったんでしょう」'},{speaker:'マーガレット',text:'「分からない。たぶん、ここではそれが一番正しいのかも」'}])
