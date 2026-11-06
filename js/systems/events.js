@@ -315,7 +315,14 @@ function inlineObjectEvent(id){
  }
  if(state.map==='northroad'){
   if(id==='southExit')return returnCaveNorth();
-  if(id==='milestone')return say('石の道標','苔を払うと「アルディナ王都まで三里」と刻まれている。')
+  if(id==='milestone'){
+   if(structuredCondition('northroadMilestoneRead'))return say('石の道標','苔の下に「アルディナ王都まで三里」。北の道を進めば王都へ着く。');
+   return say('石の道標','苔で覆われた文字がある。',[{label:'苔を払って読む',fn:()=>{
+    setStructuredCondition('northroadMilestoneRead',true);
+    addJournal('古砦を抜けた北街道の道標に「アルディナ王都まで三里」。北へ進む道が確かめられた。');
+    saySequence([{speaker:'石の道標',text:'「アルディナ王都まで三里」。石の北側には、古い轍が王都へ続いている。'},{speaker:'カレン',text:'「やっと王都までの距離が分かった。みんな、もう少しだよ！」'},{speaker:'マーガレット',text:'「道は北へ一本。寄り道しても、ここを目印に戻れば迷わないわ」'}]);
+   }},{label:'そのまま進む',fn:()=>say('トリトン','「道は北に続いてる。急ぐなら先へ行こう」')}])
+  }
  }
  if(state.map==='capital'){
   if(id==='royalCastle')return say('アルディナ王城','白い石壁の奥に王家の居城がそびえている。広場から見上げるだけでも、リュネ村とは規模がまるで違う。')
