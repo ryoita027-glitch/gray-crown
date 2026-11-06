@@ -221,7 +221,11 @@ function inlineObjectEvent(id){
  if(TREASURE_DEFS[id])return openTreasure(id);
  if(state.map==='village'){
   if(id==='store'){setStructuredCondition('store',true);addJournal('共同食料庫の備蓄は前年同期の半分以下。');return say('共同食料庫','棚の半分以上が空いている。帳簿では前年同期の半分以下まで備蓄が落ちていた。')}
-  if(id==='well')return say('村の井戸','何人もの桶が並んでいる。子どもたちの笑い声と、夕食の相談をする大人たちの声が聞こえる。')
+  if(id==='well'){
+   if(structuredCondition('orphanWaterDelivered'))return say('村の井戸','孤児院に水を届けた後も、井戸端にはいつもの暮らしの音がある。');
+   if(structuredCondition('orphanWaterCarried'))return say('村の井戸','孤児院へ運ぶ水桶を持っている。先に届けよう。');
+   return say('村の井戸','孤児院の方から空の水桶を抱えた子が歩いてくる。井戸にはまだ列ができている。',[{label:'孤児院の分を汲んで届ける',fn:()=>{setStructuredCondition('orphanWaterCarried',true);saySequence([{speaker:'カレン',text:'「私たちが持っていこう。あの子には重いよ」'},{speaker:'トリトン',text:'「じゃあ桶は私が。カレンは道を空けて」'},{speaker:'ソフィ',text:'「ありがとうございます。マルタさんが助かります」'}])}},{label:'今は先を急ぐ',fn:()=>say('マーガレット','「後で戻ってもいい。まず何をするか決めましょう」')}])
+  }
   if(id==='home')return enterInterior('karenhome',4,5)
   if(id==='doorOrphanage')return enterInterior('orphanage',19,5)
   if(id==='doorMayor')return enterInterior('mayorhouse',4,12)
@@ -277,7 +281,14 @@ function inlineObjectEvent(id){
   }
   if(id==='imperialInnRest')return offerPaidRest('水鳥亭の主人','水鳥亭',28)
   if(id==='familyTable')return say('ナレーション','四人家族で使っている食卓。今は皿が四枚ではなく、少し小さな器が並ぶ日も増えた。')
-  if(id==='orphanPantry')return say('世話役マルタ','「見ての通り、棚はだいぶ軽いよ。でも子どもたちの前では“まだ大丈夫”って顔をしてる」')
+  if(id==='orphanPantry'){
+   if(structuredCondition('orphanWaterDelivered'))return say('世話役マルタ','「水を運んでくれたおかげで、今日は子どもたちを待たせずに済んだよ。ありがとう」');
+   if(structuredCondition('orphanWaterCarried')){
+    setStructuredCondition('orphanWaterDelivered',true);addJournal('村の井戸から孤児院へ水を届けた。出発前にも、四人でできる小さな仕事があった。');
+    return saySequence([{speaker:'世話役マルタ',text:'「あら、水まで運んでくれたのかい。これで夕飯の支度ができるよ」'},{speaker:'ソフィ',text:'「今日はみんなを待たせずに済みますね」'},{speaker:'カレン',text:'「勇者になる前と同じだね。手が足りなかったら呼んで」'},{speaker:'世話役マルタ',text:'「勇者になっても、そう言ってくれるのが嬉しいよ」'}])
+   }
+   return say('世話役マルタ','「見ての通り、棚はだいぶ軽いよ。でも子どもたちの前では“まだ大丈夫”って顔をしてる」')
+  }
   if(id==='toyChest')return say('ナレーション','木片で作った兵士と勇者の人形が入っている。帝国兵役の人形だけ、真っ黒に塗られていた。')
   if(id==='mayorBooks')return say('マーガレット','「村の記録、租税台帳、古い地図……子どもの頃はここが私の図書館だったの」')
   if(id==='warMap')return say('マーガレット','「補給路に赤い印が増えてる。前線が近づいたんじゃなくて、戦争が生活の方へ伸びてきてるんだ」')
