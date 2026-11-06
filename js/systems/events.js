@@ -308,7 +308,13 @@ function inlineObjectEvent(id){
   if(id==='crawler'&&!structuredCondition('caveCrawler'))return startBattle('crawler');
   if(id==='leverWest'){if(!structuredCondition('caveBats'))return say('カレン','「機構の周りにコウモリが群がってる。先に追い払おう」');if(structuredCondition('leverWest'))return say('西側の開閉機構','重いレバーはすでに下がっている。');setStructuredCondition('leverWest',true);state.objective=structuredCondition('leverEast')?'中央の鉄格子へ戻る':'東側の開閉機構も探す';renderHud();draw();return say('西側の開閉機構','四人で力を合わせて錆びたレバーを下ろした。<br><br>砦の奥から「ガコン」と大きな音が響く。')}
   if(id==='leverEast'){if(!structuredCondition('caveCrawler'))return say('マーガレット','「あの石殻ムカデが機構の前に居座ってる。動かすなら先に何とかしないと」');if(structuredCondition('leverEast'))return say('東側の開閉機構','歯車はゆっくり回り続けている。');setStructuredCondition('leverEast',true);state.objective=structuredCondition('leverWest')?'中央の鉄格子へ戻る':'西側の開閉機構も探す';renderHud();draw();return say('東側の開閉機構','錆びた歯車が軋みながら回り始めた。<br><br>マーガレット「これで中央の鉄格子が開くはず」')}
-  if(id==='innerGate'){if(structuredCondition('leverWest')&&structuredCondition('leverEast'))return say('ナレーション','二つの機構が作動し、中央の鉄格子は開いている。');return say('マーガレット','「左右に二つの錠前機構がつながってる。西側と東側、両方を動かさないと開かないみたい」')}
+  if(id==='innerGate'){
+   const west=structuredCondition('leverWest'),east=structuredCondition('leverEast');
+   if(west&&east)return saySequence([{speaker:'中央の鉄格子',text:'左右の鎖が緩み、鉄格子の向こうへ進める。'},{speaker:'カレン',text:'「二人とも、準備はいい？ 奥の獣に気をつけて進もう」'}]);
+   if(west)return saySequence([{speaker:'中央の鉄格子',text:'西側の鎖は緩んでいるが、東側の鎖がまだ張っている。'},{speaker:'マーガレット',text:'「西は動いた。次は東の機構を探しましょう。あの石殻ムカデが邪魔なら、先に対処しないと」'}]);
+   if(east)return saySequence([{speaker:'中央の鉄格子',text:'東側の鎖は緩んでいるが、西側の鎖がまだ張っている。'},{speaker:'トリトン',text:'「あと西だけだ。コウモリがいた方の仕掛けを見に行こう」'}]);
+   return saySequence([{speaker:'中央の鉄格子',text:'鉄格子は閉じている。左右へ伸びる二本の鎖が、別々の機構につながっている。'},{speaker:'マーガレット',text:'「西と東の機構を一つずつ動かせば開きそう。手分けせず、四人で確かめましょう」'}]);
+  }
   if(id==='banner'){setStructuredCondition('banner',true);addJournal('古砦跡には、戦争以前の王国軍旗が残されていた。');return say('マーガレット','「これ、今の戦争で使われた物じゃない。ずっと前に放棄された砦みたい」<br><br>カレン「誰も使わなくなった道だから、獣が住み着いたんだね」')}
   if(id==='rations'){setStructuredCondition('rations',true);return say('トリトン','「空の保存食箱だ。新しい足跡はない。兵士が潜んでるって感じじゃなさそうだな」')}
   if(id==='boss'&&!structuredCondition('bossDead')){if(!(structuredCondition('leverWest')&&structuredCondition('leverEast')))return say('マーガレット','「中央の鉄格子が閉じてる。左右の開閉機構を両方動かさないと奥へ行けないわ」');return say('カレン','「こいつが北の通路を塞いでる……！」',[{label:'戦う',fn:()=>startBattle('boss')},{label:'いったん下がる',fn:()=>say('マーガレット','「先に宝箱や脇道を調べてもいいわ」')}]);}
