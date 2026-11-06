@@ -229,7 +229,10 @@ function inlineObjectEvent(id){
   if(id==='gate'){if(!structuredCondition('talkedWithKaren'))return say('北門','カレンたち4人の話し合いを終えるまでは、村を離れられない。');leaveVillage();return}
  }
  if(state.map==='borderland'){
-  if(id==='borderGrave')return saySequence([{speaker:'名のない墓標',text:'王国語と帝国語、両方で短い祈りが刻まれている。名前は雨で読めない。'},{speaker:'ソフィ',text:'「どちらの国の人だったんでしょう」'},{speaker:'マーガレット',text:'「分からない。たぶん、ここではそれが一番正しいのかも」'}])
+  if(id==='borderGrave'){
+   if(structuredCondition('borderGravePrayer'))return say('名のない墓標','二つの言葉で刻まれた祈りの前に、小さな石が四つ並んでいる。誰の墓かは今も分からない。');
+   return saySequence([{speaker:'名のない墓標',text:'王国語と帝国語、両方で短い祈りが刻まれている。名前は雨で読めない。'},{speaker:'ソフィ',text:'「どちらの国の人だったんでしょう」'},{speaker:'マーガレット',text:'「分からない。名前が読めない以上、勝手に決められないわ」'}],()=>say('ソフィ','「……せめて、ここに誰かが来たことだけでも残しませんか」',[{label:'四人で石を供える',fn:()=>{setStructuredCondition('borderGravePrayer',true);addJournal('ハルム国境の無名墓に四人で石を供えた。王国語と帝国語、両方の祈りが刻まれていた。');saySequence([{speaker:'ナレーション',text:'四人は足元の小石を一つずつ拾い、文字を隠さない場所に並べた。'},{speaker:'トリトン',text:'「どっちの兵士か、結局分かんないな」'},{speaker:'カレン',text:'「うん。でも、ここにいた人のことを忘れないようにしよう」'}])}},{label:'今は立ち去る',fn:()=>say('マーガレット','「無理に答えを出す必要はないわ。先へ進みましょう」')}]))
+  }
   if(id==='oldCheckpoint'){
    if(!structuredCondition('borderSparePin')){setStructuredCondition('borderSparePin',true);state.objective=structuredCondition('borderBriefed')?'東の商人へ鉄杭を届ける':'偵察兵に国境地帯の状況を聞く';renderHud();return saySequence([{speaker:'古い関所跡',text:'崩れた柵の根元に、まだ使えそうな太い鉄杭が一本残っている。戦争前の通行札も散らばっている。'},{speaker:'トリトン',text:'「これなら荷車の車軸を留められる」'},{speaker:'マーガレット',text:'「帝国の商人印と王国の税印が同じ板に押してある。ここ、本当に普通の国境だったのね」'}])}
    return say('古い関所跡','戦争前の通行札が散らばっている。人の往来があった痕跡だけが残っている。')
