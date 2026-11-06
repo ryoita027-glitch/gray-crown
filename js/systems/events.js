@@ -165,7 +165,15 @@ function inlineNpcEvent(id){
    if(structuredCondition('borderRested'))return say('ハルム宿場の女将','「朝飯は包んでおいた。ベルド砦までなら昼前には着くよ」');
    return say('ハルム宿場の女将','「今日はここまでにしな。峡谷へ夜に入る馬鹿はいないよ」',[{label:'日が落ちるまで休む',fn:()=>objectEvent('borderCampfire')},{label:'まだ周辺を見る',fn:()=>say('カレン','「もう少しだけ見て回ろう」')}])
   }
-  if(id==='relayChild')return saySequence([{speaker:'宿場の子ども',text:'「昔は帝国の子もここに泊まったって、おばあちゃんが言ってた」'},{speaker:'ソフィ',text:'「今は？」'},{speaker:'宿場の子ども',text:'「兵隊さんばっかり。大人は“向こう側”って言うけど、僕は橋の向こうを見たことない」'}])
+  if(id==='relayChild'){
+   if(structuredCondition('borderMerchantHelped')){
+    if(structuredCondition('halumChildTradeStory'))return say('宿場の子ども','「あの荷車、また来るかな。今度はおばあちゃんに、昔の市の話を聞いてみる」');
+    setStructuredCondition('halumChildTradeStory',true);
+    addJournal('ハルム宿場の子は、修理された荷車を見て、国境の両側の品物が行き交っていた昔の市を知りたがった。');
+    return saySequence([{speaker:'宿場の子ども',text:'「さっきの荷車、もう動くんだね。あれ、どっちの国の荷物？」'},{speaker:'カレン',text:'「昔は帝国の塩も運んでたんだって。今日は道で困ってたから手伝ったの」'},{speaker:'宿場の子ども',text:'「帝国の塩？ ここにも来てたの？」'},{speaker:'ソフィ',text:'「橋の向こうにも、食事を作る人や、待っている家族がいるんでしょうね」'},{speaker:'宿場の子ども',text:'「おばあちゃんに聞いてみる。戦争の前、この宿場で何を売ってたのか」'}])
+   }
+   return saySequence([{speaker:'宿場の子ども',text:'「昔は帝国の子もここに泊まったって、おばあちゃんが言ってた」'},{speaker:'ソフィ',text:'「今は？」'},{speaker:'宿場の子ども',text:'「兵隊さんばっかり。大人は“向こう側”って言うけど、僕は橋の向こうを見たことない」'}])
+  }
  }
  if(state.map==='relayvillage'){
   if(id==='relayHost'||id==='relayChild')return say('ナレーション','この場所はv11でハルム国境地帯へ統合された。北か南へ進むと新しいルートへ戻れる。')
