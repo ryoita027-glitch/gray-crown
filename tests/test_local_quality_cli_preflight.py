@@ -33,6 +33,12 @@ class LocalQualityPreflightTests(unittest.TestCase):
         self.assertIn("Full acceptance requires --with-v23", result.stderr)
         self.assertNotIn("[1]", result.stdout, "No quality gate should have started")
 
+    def test_full_rejects_unpinned_head_before_tests(self) -> None:
+        result = self.invoke("--mode", "full", "--with-v23")
+        self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+        self.assertIn("Full acceptance requires --expect-head", result.stderr)
+        self.assertNotIn("[1]", result.stdout, "No quality gate should have started")
+
     def test_invalid_expected_head_is_rejected_before_tests(self) -> None:
         result = self.invoke("--mode", "quick", "--expect-head", "not-a-sha")
         self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
