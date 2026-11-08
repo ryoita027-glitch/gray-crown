@@ -44,6 +44,7 @@
   if(map==='village'&&!isEventComplete('alpha.village.appointment'))return{id:'messenger',kind:'npc'};
   if(map==='road'&&!isDefeated('wolf'))return{id:'wolf',kind:'object'};
   if(map==='cave'){
+   if(isDefeated('boss'))return{id:'northExit',kind:'object'};
    if(!getWorldSwitch('leverWest'))return{id:'leverWest',kind:'object'};
    if(!getWorldSwitch('leverEast'))return{id:'leverEast',kind:'object'};
    if(!isDefeated('boss'))return{id:'boss',kind:'object'};
@@ -55,7 +56,16 @@
   }
   return null
  }
+ function fortProgress(s=state){
+  if(s.map!=='cave')return '';
+  if(s.world?.defeatedSymbols?.boss)return '北の通路が開いた — 王都へ続く旧街道へ';
+  const west=!!s.world?.switches?.leverWest,east=!!s.world?.switches?.leverEast;
+  const mechanisms='西の機構：'+(west?'作動済み':'未作動')+' ／ 東の機構：'+(east?'作動済み':'未作動');
+  return mechanisms+(west&&east?' — 鉄格子が開いた。奥の獣に備えよう':'');
+ }
  function update(){
+  const fort=typeof $==='function'?$('fortProgress'):null;
+  if(fort){const text=fortProgress();if(fort.textContent!==text)fort.textContent=text;fort.classList.toggle('hidden',!text)}
   const node=typeof $==='function'?$('discoveryHud'):null;
   if(!node)return null;
   const p=progress(state.map);
@@ -65,5 +75,5 @@
   node.setAttribute('title',p.remaining.length?'気が向いたら調べられる場所：'+p.remaining.join('／'):'このエリアの寄り道はすべて発見済み');
   return p
  }
- GC.CommercialDiscovery={extras,done,progress,questHint,update};
+ GC.CommercialDiscovery={extras,done,progress,questHint,fortProgress,update};
 })();

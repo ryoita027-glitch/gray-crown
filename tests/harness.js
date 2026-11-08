@@ -26,6 +26,10 @@ function createHarness(root=path.resolve(__dirname,'..')){
  const sandbox={console,document,localStorage:storage,window:null,globalThis:null,Image:class{set src(v){this._src=v;if(this.onload)this.onload()}},Math,JSON,Date,Map,Set,Proxy,Object,Array,String,Number,Boolean,RegExp,Infinity,NaN,parseInt,parseFloat,isNaN,
   requestAnimationFrame(fn){raf.push(fn);return++rafId},cancelAnimationFrame(){},setTimeout(fn,_ms){timers.push(fn);return++timerId},clearTimeout(){},setInterval(){return 1},clearInterval(){},confirm:()=>true
  };
+ sandbox.location={href:'http://localhost/index.html',search:'',hash:'',protocol:'http:'};
+ const windowEvents={};
+ sandbox.addEventListener=(type,fn)=>{(windowEvents[type]??=[]).push(fn)};
+ sandbox.removeEventListener=(type,fn)=>{windowEvents[type]=(windowEvents[type]||[]).filter(x=>x!==fn)};
  sandbox.window=sandbox;sandbox.globalThis=sandbox;
  const context=vm.createContext(sandbox);
  for(const rel of SCRIPT_ORDER){const file=path.join(root,rel);vm.runInContext(fs.readFileSync(file,'utf8'),context,{filename:rel})}

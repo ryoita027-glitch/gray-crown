@@ -707,6 +707,28 @@ function inlineNpcEvent(id){
 
 }
 
+function fortGateGuidance(){
+ const west=structuredCondition('leverWest'),east=structuredCondition('leverEast');
+ if(west&&east)return '二つの機構が作動し、中央の鉄格子が開いた。北の通路へ進める。';
+ if(west)return '西側の錠前は外れた。残る東側の開閉機構を探そう。';
+ if(east)return '東側の錠前は外れた。残る西側の開閉機構を探そう。';
+ return '左右の鎖が、西側と東側の開閉機構へ延びている。両方を動かせば開きそうだ。';
+}
+function discussFortBoss(){
+ const studied=state.events.choices['early.fortShield']==='studied';
+ const hurt=state.party.some(p=>p.hp<p.maxHp*.5);
+ const mage=state.party.find(p=>p.id==='margaret');
+ const lowMagic=!!mage&&mage.mp<SKILLS.ice.mp;
+ const lines=studied?[
+  {speaker:'トリトン',text:'「盾の傷を思い出せ。踏み込んできたら“崩し”だ。一度は攻撃を止められる。何度も通じると思うなよ」'},
+  {speaker:'マーガレット',text:lowMagic?'「氷槍で勢いを鈍らせたいけど、今のMPでは撃てない。魔力草か、兵舎跡での休息が必要ね」':'「私は氷槍で攻撃を鈍らせる。カレンは庇う相手を、敵の狙いを見て決めて」'}
+ ]:[
+  {speaker:'トリトン',text:'「あの角をまともに受けるのはまずい。東の回廊に、角の傷がついた盾があった。調べれば動きを読めるかもな」'},
+  {speaker:'カレン',text:'「先に調べるか、このまま挑むか。準備をしてから決めよう」'}
+ ];
+ if(hurt)lines.push({speaker:'ソフィ',text:recoveryRemaining('caveRest')>0?'「傷が深い人がいます。南西の兵舎跡なら、まだ一度休めます」':'「兵舎跡の物資はもう使いました。薬草や携帯食の残りを確かめましょう」'});
+ return saySequence(lines);
+}
 function inlineObjectEvent(id){
  if(TREASURE_DEFS[id])return openTreasure(id);
  if(state.map==='village'){
@@ -809,9 +831,9 @@ function inlineObjectEvent(id){
   if(id==='chest2'&&!structuredCondition('chest2')){setStructuredCondition('chest2',true);state.inventory['魔力草']=(state.inventory['魔力草']||0)+2;say('宝箱','魔力草を2個手に入れた。');draw();return}
   if(id==='bats'&&!structuredCondition('caveBats'))return startBattle('bats');
   if(id==='crawler'&&!structuredCondition('caveCrawler'))return startBattle('crawler');
-  if(id==='leverWest'){if(!structuredCondition('caveBats'))return say('カレン','「機構の周りにコウモリが群がってる。先に追い払おう」');if(structuredCondition('leverWest'))return say('西側の開閉機構','重いレバーはすでに下がっている。');setStructuredCondition('leverWest',true);sfx('lever');state.objective=structuredCondition('leverEast')?'中央の鉄格子へ戻る':'東側の開閉機構も探す';renderHud();draw();return say('西側の開閉機構','四人で力を合わせて錆びたレバーを下ろした。<br><br>砦の奥から「ガコン」と大きな音が響く。')}
-  if(id==='leverEast'){if(!structuredCondition('caveCrawler'))return say('マーガレット','「あの石殻ムカデが機構の前に居座ってる。動かすなら先に何とかしないと」');if(structuredCondition('leverEast'))return say('東側の開閉機構','歯車はゆっくり回り続けている。');setStructuredCondition('leverEast',true);sfx('lever');state.objective=structuredCondition('leverWest')?'中央の鉄格子へ戻る':'西側の開閉機構も探す';renderHud();draw();return say('東側の開閉機構','錆びた歯車が軋みながら回り始めた。<br><br>マーガレット「これで中央の鉄格子が開くはず」')}
-  if(id==='innerGate'){if(structuredCondition('leverWest')&&structuredCondition('leverEast'))return say('ナレーション','二つの機構が作動し、中央の鉄格子は開いている。');return say('マーガレット','「左右に二つの錠前機構がつながってる。西側と東側、両方を動かさないと開かないみたい」')}
+  if(id==='leverWest'){if(!structuredCondition('caveBats'))return say('カレン','「機構の周りにコウモリが群がってる。先に追い払おう」');if(structuredCondition('leverWest'))return say('西側の開閉機構','重いレバーはすでに下がっている。');setStructuredCondition('leverWest',true);sfx('lever');state.objective=structuredCondition('leverEast')?'中央の鉄格子へ戻る':'東側の開閉機構も探す';renderHud();draw();return say('西側の開閉機構','四人で錆びたレバーを下ろすと、奥で錠前が外れる音が響いた。<br><br>'+fortGateGuidance())}
+  if(id==='leverEast'){if(!structuredCondition('caveCrawler'))return say('マーガレット','「あの石殻ムカデが機構の前に居座ってる。動かすなら先に何とかしないと」');if(structuredCondition('leverEast'))return say('東側の開閉機構','歯車はゆっくり回り続けている。');setStructuredCondition('leverEast',true);sfx('lever');state.objective=structuredCondition('leverWest')?'中央の鉄格子へ戻る':'西側の開閉機構も探す';renderHud();draw();return say('東側の開閉機構','錆びた歯車が軋みながら回り始めた。<br><br>'+fortGateGuidance())}
+  if(id==='innerGate')return say('中央の鉄格子',fortGateGuidance())
   if(id==='banner')return earlyCaveBannerVisit()
   if(id==='fortShield')return visitFortShield()
   if(id==='rations'){
@@ -823,7 +845,7 @@ function inlineObjectEvent(id){
    renderHud();sfx('discovery');
    return say('トリトン','「箱はほぼ空だ。でも奥に一食分だけある。携帯食を1個手に入れた！」');
   }
-  if(id==='boss'&&!structuredCondition('bossDead')){if(!(structuredCondition('leverWest')&&structuredCondition('leverEast')))return say('マーガレット','「中央の鉄格子が閉じてる。左右の開閉機構を両方動かさないと奥へ行けないわ」');return say('カレン','「こいつが北の通路を塞いでる……！」',[{label:'戦う',fn:()=>startBattle('boss')},{label:'いったん下がる',fn:()=>say('マーガレット','「先に宝箱や脇道を調べてもいいわ」')}]);}
+  if(id==='boss'&&!structuredCondition('bossDead')){if(!(structuredCondition('leverWest')&&structuredCondition('leverEast')))return say('マーガレット','「中央の鉄格子が閉じてる。左右の開閉機構を両方動かさないと奥へ行けないわ」');return say('カレン','「こいつが北の通路を塞いでる……！」',[{label:'戦う',fn:()=>startBattle('boss')},{label:'仲間と作戦を相談する',fn:()=>discussFortBoss()},{label:'いったん下がる',fn:()=>say('マーガレット','「先に宝箱や脇道を調べてもいいわ」')}]);}
  }
  if(state.map==='northroad'){
   if(id==='southExit')return returnCaveNorth();
