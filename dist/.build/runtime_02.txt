@@ -1,0 +1,865 @@
+<script data-origin="js/data/animations.js">
+'use strict';
+(function(){
+ const D={down:0,left:1,right:2,up:3},A=[24,44];
+ function def(character,name,frames,fps,loop){return{id:character+'.'+name,src:'assets/characters/'+character+'/'+character+'_'+name+'.png',frameW:48,frameH:48,frames:Array.from({length:frames},(_,i)=>i),fps,loop,directions:D,anchor:A,offset:[0,0],prototypeTemporary:true}}
+ const karen={
+  idle:def('karen','idle',4,4,true),walk:def('karen','walk',6,8,true),turn:def('karen','turn',3,12,false),talk:def('karen','talk',4,7,true),
+  surprise:def('karen','surprise',4,10,false),approach:def('karen','approach',4,10,false),laugh:def('karen','laugh',6,10,false),run:def('karen','run',6,11,true)
+ };
+ const triton={
+  idle:def('triton','idle',4,4,true),walk:def('triton','walk',6,7,true),turn:def('triton','turn',3,10,false),talk:def('triton','talk',4,6,true),
+  surprise:def('triton','surprise',4,9,false),approach:def('triton','approach',4,8,false),laugh:def('triton','laugh',6,9,false),run:def('triton','run',6,10,true)
+ };
+ const sophie={
+  idle:def('sophie','idle',4,4,true),walk:def('sophie','walk',6,7,true),turn:def('sophie','turn',3,9,false),talk:def('sophie','talk',4,6,true),
+  surprise:def('sophie','surprise',4,8,false),approach:def('sophie','approach',4,7,false),laugh:def('sophie','laugh',6,8,false),run:def('sophie','run',6,9,true)
+ };
+ const margaret={
+  idle:def('margaret','idle',4,4,true),walk:def('margaret','walk',6,6,true),turn:def('margaret','turn',3,8,false),talk:def('margaret','talk',4,6,true),
+  surprise:def('margaret','surprise',4,8,false),approach:def('margaret','approach',4,7,false),laugh:def('margaret','laugh',6,8,false),run:def('margaret','run',6,9,true)
+ };
+ const visualRules=Object.freeze({
+  prototypeTemporary:true,character:'karen',sourceCell:[48,48],logicalTile:32,anchor:[24,44],dominantHand:'left',swordHip:'right',stage:'A',
+  designDirection:'karen-chibi-direction-v1',reference:'docs/pixel/reference/karen_chibi_direction_v1.png',
+  hair:'large red-hair silhouette + low partial tie + loose hair',colorMass:'warm off-white + muted red + leather brown',
+  unresolved:['exactEyeColor','surname','formalWeaponDesign','formalWeaponName','stageBFinalHeroCostume','kingdomEmblem','heroCertificationMark','religiousEmblem']
+ });
+ const tritonVisualRules=Object.freeze({
+  prototypeTemporary:true,character:'triton',sourceCell:[48,48],logicalTile:32,anchor:[24,44],dominantHand:'right',stage:'A',
+  identity:'GROUND ANCHOR',designDirection:'triton-chibi-direction-lock-v1',reference:'docs/pixel/reference/triton_chibi_direction_lock_v1.png',
+  face:'readable narrow eyes + straight stable brows + restrained friendly idle mouth; distinct from Karen face template',
+  hair:'heavy dark unbound shoulder-length mass; face remains readable; tip lag only in motion',
+  colorMass:'off-white/gray upper + broad faded-blue waist/side horizontal block + sturdy leather',
+  posture:'broad shoulders + planted feet + low center of gravity + horizontal stability',
+  unresolved:['exactEyeColor','surname','formalWeaponDesign','formalWeaponName','stageBFinalHeroCostume','kingdomEmblem','heroCertificationMark','religiousEmblem']
+ });
+ const margaretVisualRules=Object.freeze({
+  prototypeTemporary:true,character:'margaret',sourceCell:[48,48],logicalTile:32,anchor:[24,44],dominantHand:'right',stage:'A',
+  designDirection:'margaret-chibi-direction-appeal-v7',reference:'docs/pixel/reference/margaret_chibi_direction_appeal_v7_48.png',
+  face:'readable violet eyes + gentle composed smile + cute protagonist-grade calm intelligence; never severe or blank',
+  hair:'silver-lavender high ponytail + face-framing bangs + old-gold clasp; strong clean silhouette with restrained sway',
+  colorMass:'deep indigo/plum + silver-lavender hair + ivory skin breaks + restrained old-gold and amethyst accents',
+  posture:'upright composed center of gravity + runtime-balanced chibi mass; no undersized narrow silhouette',
+  acting:'measured restrained motion; smaller whole-body amplitude than Karen; ponytail secondary to body read',
+  unresolved:['exactEyeColor','finalFourthCharacterColor','surname','formalWeaponDesign','formalWeaponName','stageBFinalHeroCostume','magicVisualLanguage','kingdomEmblem','heroCertificationMark','religiousEmblem']
+ });
+ const sophieVisualRules=Object.freeze({
+  prototypeTemporary:true,character:'sophie',sourceCell:[48,48],logicalTile:32,anchor:[24,44],dominantHand:'right',stage:'A',
+  identity:'STEADY HANDS',designDirection:'sophie-chibi-direction-appeal-v3',reference:'docs/pixel/reference/sophie_chibi_direction_appeal_v3_48.png',
+  face:'crisper calm green eyes + small warm smile; gentle readable expression distinct from Karen/Triton/Margaret',
+  hair:'honey/light golden-brown layered mass + practical gathered/braided structure; restrained lower-tip lag',
+  colorMass:'warm off-white/cream dominant + brown leather + muted green concentrated near hands and treatment storage',
+  posture:'smallest spatial footprint + soft adult body + calm narrow stance + both hands readable',
+  acting:'hands carry Talk/Approach/Surprise; smaller whole-body amplitude than Karen; lighter than Triton',
+  unresolved:['exactEyeColor','surname','formalWeaponDesign','formalWeaponName','stageBFinalHeroCostume','kingdomEmblem','heroCertificationMark','religiousEmblem']
+ });
+ GC.Data=GC.Data||{};
+ GC.Data.Animations={
+  definitions:Object.freeze({karen:Object.freeze(karen),triton:Object.freeze(triton),sophie:Object.freeze(sophie),margaret:Object.freeze(margaret)}),
+  visualRules,tritonVisualRules,sophieVisualRules,margaretVisualRules
+ };
+})();
+
+</script>
+<script data-origin="js/systems/animation.js">
+'use strict';
+(function(){
+ const IMAGE_CACHE=new Map();
+ const RUNTIME_ALPHA_THRESHOLD=128;
+ function normalizeRuntimeAlpha(image){
+  if(typeof document==='undefined'||!image)return image;
+  const w=image.naturalWidth||image.width,h=image.naturalHeight||image.height;
+  if(!w||!h)return image;
+  const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+  const c=canvas.getContext('2d',{willReadFrequently:true});if(!c)return image;
+  c.clearRect(0,0,w,h);c.drawImage(image,0,0);
+  const data=c.getImageData(0,0,w,h),p=data.data;
+  for(let i=0;i<p.length;i+=4){if(p[i+3]>=RUNTIME_ALPHA_THRESHOLD)p[i+3]=255;else{p[i]=0;p[i+1]=0;p[i+2]=0;p[i+3]=0}}
+  c.putImageData(data,0,0);return canvas;
+ }
+ function defs(){return GC.Data?.Animations?.definitions||{}}
+ function characterDefs(character){return defs()[character]||{}}
+ function resolveDef(character,name){const set=characterDefs(character);return set[name]||set.idle||null}
+ function getAnimation(character,name){return resolveDef(character,name)}
+ function ensureImage(src){if(!src)return null;if(IMAGE_CACHE.has(src))return IMAGE_CACHE.get(src);const rec={src,image:null,ready:false,error:false};if(typeof Image!=='undefined'){const image=new Image();rec.image=image;image.onload=()=>{rec.image=normalizeRuntimeAlpha(image);rec.ready=true;rec.error=false};image.onerror=()=>{rec.ready=false;rec.error=true};image.src=src}IMAGE_CACHE.set(src,rec);return rec}
+ function overrideImage(src,dataUrl){const rec={src,image:null,ready:false,error:false};if(typeof Image!=='undefined'){const image=new Image();rec.image=image;image.onload=()=>{rec.ready=true;rec.error=false};image.onerror=()=>{rec.ready=false;rec.error=true};image.src=dataUrl}IMAGE_CACHE.set(src,rec);return rec}
+ function createActor(character,opts={}){return{id:opts.id||character,character,x:Number.isFinite(opts.x)?opts.x:0,y:Number.isFinite(opts.y)?opts.y:0,facing:opts.facing||'down',animation:opts.animation||'idle',startedAt:Number.isFinite(opts.startedAt)?opts.startedAt:Date.now(),renderMode:opts.renderMode||'pixel48-full',renderScale:Number.isFinite(opts.renderScale)&&opts.renderScale>0?opts.renderScale:1,visible:opts.visible!==false,layer:opts.layer||0,prototypeTemporary:opts.prototypeTemporary!==false}}
+ function setAnimation(actor,name,opts={}){if(!actor)return null;const set=characterDefs(actor.character),resolved=set[name]?name:(set.idle?'idle':Object.keys(set)[0]);if(resolved)actor.animation=resolved;if(opts.facing)actor.facing=opts.facing;if(opts.restart!==false)actor.startedAt=Number.isFinite(opts.now)?opts.now:Date.now();return resolveDef(actor.character,actor.animation)}
+ function setFacing(actor,facing){if(actor&&['down','left','right','up'].includes(facing))actor.facing=facing;return actor?.facing}
+ function frameInfo(actor,now=Date.now()){const def=resolveDef(actor?.character,actor?.animation);if(!def)return null;const frameCount=Math.max(1,Array.isArray(def.frames)?def.frames.length:Number(def.frameCount)||1),fps=Math.max(1,Number(def.fps)||1),elapsed=Math.max(0,now-(actor.startedAt||0)),raw=Math.floor(elapsed/(1000/fps)),index=def.loop===false?Math.min(frameCount-1,raw):(raw%frameCount),frame=Array.isArray(def.frames)?def.frames[index]??index:index;return{def,index,frame,finished:def.loop===false&&raw>=frameCount,durationMs:frameCount/fps*1000}}
+ function isFinished(actor,now=Date.now()){return !!frameInfo(actor,now)?.finished}
+ function renderGeometry(actor,def){const frameW=def?.frameW||48,frameH=def?.frameH||48,anchor=def?.anchor||[Math.floor(frameW/2),frameH-4],offset=def?.offset||[0,0],scale=Number.isFinite(actor?.renderScale)&&actor.renderScale>0?actor.renderScale:1,footX=actor.x*TILE+TILE/2,footY=actor.y*TILE+TILE-2,destW=Math.max(1,Math.round(frameW*scale)),destH=Math.max(1,Math.round(frameH*scale)),dx=Math.round(footX-anchor[0]*scale+offset[0]*scale),dy=Math.round(footY-anchor[1]*scale+offset[1]*scale);return{frameW,frameH,anchor,offset,scale,footX,footY,destW,destH,dx,dy}}
+ function drawActor(c,actor,now=Date.now()){if(!c||!actor||actor.visible===false)return false;const info=frameInfo(actor,now);if(!info)return false;const def=info.def,rec=ensureImage(def.src);if(!rec?.ready||!rec.image)return false;const g=renderGeometry(actor,def),directions=def.directions||{down:0,left:1,right:2,up:3},row=directions[actor.facing]??directions.down??0,shadowRx=Math.max(7,Math.round(10*g.scale)),shadowRy=Math.max(3,Math.round(4*g.scale));c.save();c.fillStyle='rgba(16,18,18,.30)';c.beginPath();c.ellipse(Math.round(g.footX),Math.round(g.footY-2),shadowRx,shadowRy,0,0,Math.PI*2);c.fill();c.imageSmoothingEnabled=false;c.drawImage(rec.image,info.frame*g.frameW,row*g.frameH,g.frameW,g.frameH,g.dx,g.dy,g.destW,g.destH);c.restore();return true}
+ function validateDefinition(def){const errors=[];if(!def||typeof def!=='object')return['definition missing'];if(!def.src)errors.push('src missing');if(def.frameW!==48||def.frameH!==48)errors.push('prototype cell must be 48x48');if(!Array.isArray(def.frames)||!def.frames.length)errors.push('frames missing');if(!(Number(def.fps)>0))errors.push('fps invalid');if(!def.directions||!['down','left','right','up'].every(k=>Number.isInteger(def.directions[k])))errors.push('directions invalid');if(!Array.isArray(def.anchor)||def.anchor.length!==2)errors.push('anchor invalid');return errors}
+ function validateAll(){const errors=[];for(const [character,set] of Object.entries(defs()))for(const [name,def] of Object.entries(set))for(const e of validateDefinition(def))errors.push(character+'.'+name+': '+e);return{ok:errors.length===0,errors}}
+ GC.Animation={IMAGE_CACHE,getAnimation,ensureImage,overrideImage,createActor,setAnimation,setFacing,frameInfo,isFinished,renderGeometry,drawActor,validateDefinition,validateAll};
+})();
+</script>
+<script data-origin="js/systems/audio.js">
+'use strict';
+const AUDIO={enabled:true,ctx:null,master:null,theme:'village',timer:null,step:0};
+function ensureAudio(){if(!AUDIO.enabled||AUDIO.ctx)return;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;try{AUDIO.ctx=new AC();AUDIO.master=AUDIO.ctx.createGain();AUDIO.master.gain.value=.11;AUDIO.master.connect(AUDIO.ctx.destination);startMusicLoop()}catch(_){AUDIO.ctx=null;AUDIO.master=null}}
+function audioTone(freq=440,dur=.08,type='square',gain=.06,delay=0){if(!AUDIO.enabled||!AUDIO.ctx)return;const t=AUDIO.ctx.currentTime+delay,o=AUDIO.ctx.createOscillator(),g=AUDIO.ctx.createGain();o.type=type;o.frequency.setValueAtTime(freq,t);g.gain.setValueAtTime(gain,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);o.connect(g);g.connect(AUDIO.master);o.start(t);o.stop(t+dur)}
+function sfx(name){ensureAudio();if(!AUDIO.ctx)return;if(name==='slash'){audioTone(180,.045,'sawtooth',.15);audioTone(90,.07,'square',.08,.03)}else if(name==='hit'){audioTone(72,.09,'square',.16);audioTone(140,.045,'sawtooth',.08)}else if(name==='magic'){audioTone(520,.11,'sine',.08);audioTone(780,.14,'sine',.05,.05)}else if(name==='heal'){audioTone(440,.12,'sine',.06);audioTone(660,.16,'sine',.05,.08)}else if(name==='select'){audioTone(520,.035,'square',.035)}else if(name==='step'){audioTone(120,.035,'triangle',.035)}else if(name==='reaction'){audioTone(460,.05,'sine',.035);audioTone(620,.06,'sine',.022,.035)}else if(name==='pickup'){audioTone(494,.085,'sine',.045);audioTone(659,.11,'sine',.03,.08)}
+ else if(name==='ceremonyBell'){audioTone(440,.25,'sine',.052);audioTone(659,.4,'sine',.03,.17)}else if(name==='lever'){audioTone(180,.13,'triangle',.055);audioTone(112,.2,'square',.02,.09)}
+ else if(name==='discovery'){audioTone(330,.10,'sine',.026);audioTone(440,.18,'sine',.022,.10)}else if(name==='guard'){audioTone(220,.10,'triangle',.055);audioTone(164,.16,'sine',.032,.035)}else if(name==='rally'){audioTone(392,.09,'triangle',.035);audioTone(523,.16,'sine',.042,.07)}else if(name==='victory'){[523,659,784].forEach((f,i)=>audioTone(f,.22,'sine',.07,i*.1))}}
+function mapMusicTheme(map){if(map==='ashroad')return 'ashroad';if(map==='frontier')return 'frontier';if(map==='frontierfield')return 'frontierfield';if(map==='capitalinn')return 'capitalInn';if(map==='capitalarmory')return 'capitalArmory';if(map==='ryunefields')return 'ryuneFields';if(map==='ryunebrook')return 'ryuneBrook';if(map==='village'||INTERIOR_MAPS.includes(map))return 'village';if(map==='capital')return 'capital';if(map==='road'||map==='northroad')return 'road';if(map==='cave')return 'cave';if(['borderland','watchfort'].includes(map))return 'border';if(['empirevillage','imperialcity'].includes(map))return 'empire';if(map==='elsia')return 'sanctuary';if(['yukiroad','returnroad'].includes(map))return 'return';if(map==='finalfield')return 'finalfield';if(map==='imperialcamp')return 'imperialcamp';if(map==='royalcamp')return 'royalcamp';return 'travel'}
+function setMusic(theme){AUDIO.theme=theme;if(AUDIO.ctx)startMusicLoop()}
+function startMusicLoop(){if(typeof clearInterval==='function'&&AUDIO.timer)clearInterval(AUDIO.timer);if(!AUDIO.enabled||!AUDIO.ctx||typeof setInterval!=='function')return;AUDIO.step=0;const seqs={ashroad:[165,147,196,147],frontier:[131,165,196,165],frontierfield:[123,147,131,110],village:[262,330,392,330],road:[220,294,330,294],capital:[262,392,440,392],capitalInn:[220,262,330,262],capitalArmory:[131,196,165,196],battle:[147,196,220,196],boss:[110,147,165,131],cave:[147,174,196,174],travel:[196,262,294,262]};AUDIO.timer=setInterval(()=>{
+ const note=GC.CommercialSoundscape?.beat?.(AUDIO.theme,AUDIO.step++);
+ if(note){
+  if(note.melody!=null)audioTone(note.melody,.29,note.voice,note.gain);
+  if(note.bass!=null)audioTone(note.bass,.38,'sine',note.gain*.62,.025);
+ }else{
+  const seq=seqs[AUDIO.theme]||seqs.travel,f=seq[(AUDIO.step-1)%seq.length];
+  audioTone(f,.33,'triangle',.018);if(AUDIO.step%2===0)audioTone(f/2,.42,'sine',.012)
+ }
+},430)}
+function toggleSound(){AUDIO.enabled=!AUDIO.enabled;const b=$('btnSound');if(b){b.setAttribute('aria-pressed',String(AUDIO.enabled));b.textContent=AUDIO.enabled?'♪ 音声 ON':'♪ 音声 OFF'}if(AUDIO.enabled){if(AUDIO.master)AUDIO.master.gain.value=.11;ensureAudio();setMusic(state.battle?(state.battle.id==='boss'?'boss':'battle'):mapMusicTheme(state.map))}else{if(AUDIO.master)AUDIO.master.gain.value=0;if(AUDIO.timer&&typeof clearInterval==='function')clearInterval(AUDIO.timer);AUDIO.timer=null}}
+GC.Audio={ensureAudio,audioTone,sfx,mapMusicTheme,setMusic,startMusicLoop,toggleSound,AUDIO};
+
+</script>
+<script data-origin="js/systems/progression.js">
+'use strict';
+function addJournal(t){if(!state.journal.includes(t))state.journal.push(t);renderHud()}
+function expThreshold(level){return EXP_TABLE[Math.max(0,Math.min(MAX_LEVEL,level))]??Infinity}
+function levelUpOne(p){const g=LEVEL_GROWTH[p.id];if(!g||p.level>=MAX_LEVEL)return null;p.level++;p.maxHp+=g.hp;p.maxMp+=g.mp;p.atk+=g.atk;p.def+=g.def;p.spd+=g.spd;return{level:p.level,hp:g.hp,mp:g.mp,atk:g.atk,def:g.def,spd:g.spd}}
+function applyLevelUps(p){const gained=[];while(p.level<MAX_LEVEL&&p.exp>=expThreshold(p.level)){const up=levelUpOne(p);if(!up)break;gained.push(up)}return gained}
+GC.Progression={addJournal,expThreshold,levelUpOne,applyLevelUps};
+
+</script>
+<script data-origin="js/data/events.js">
+'use strict';
+const EVENT_DEFS=Object.freeze([
+ {
+  id:'alpha.village.appointment',priority:100,trigger:{type:'npc',map:'village',target:'messenger'},when:[{eventIncomplete:'alpha.village.appointment'}],
+  lines:[
+   {speaker:'王国使者',text:'「国王陛下の命により、カレン、トリトン、ソフィ、マーガレット。|以上四名を、新たな[[勇者一行]]として任命する」'},
+   {speaker:'カレン',text:'「……ちょっと待ってください。私たち、応募した覚えないんですけど」'},
+   {speaker:'トリトン',text:'「人違いじゃないのか。勇者って、もっとこう……王都の騎士とかがやるもんだろ」'},
+   {speaker:'王国使者',text:'「選定は軍が行った。戦闘能力、年齢、健康状態、それから――国民が“信じやすい”人物像かどうか」'},
+   {speaker:'マーガレット',text:'「最後の条件、もう一度言って」'},
+   {speaker:'王国使者',text:'「任務中、リュネ村の租税を軽減する。さらに各家庭へ米一俵。ソフィ殿の分は孤児院へ送る」'},
+   {speaker:'ソフィ',text:'「……孤児院にも？」'},
+   {speaker:'王国使者',text:'「そうだ。今夜中に返答を。断る権利はある」'},
+   {speaker:'ナレーション',text:'使者が去ったあと、広場は妙に静かになった。誰も「行ってくれ」とは言わない。けれど、共同食料庫の軽い扉が風で鳴る音だけが、四人の耳に残った。'},
+   {speaker:'マーガレット',text:'「私は反対。何と戦うのかも、どこまで行くのかも説明されてない。米をぶら下げて、今日中に決めろなんてまともじゃない」'},
+   {speaker:'トリトン',text:'「じゃあ断ればいい。村のためって言われても、死んだら終わりだ」'},
+   {speaker:'ソフィ',text:'「……私の一俵で、孤児院の子たちはしばらくちゃんと食べられます」'},
+   {speaker:'マーガレット',text:'「ソフィ。あなたの命まで米と交換しなくていいの。……心配なのよ」'},
+   {speaker:'ソフィ',text:'「分かってます。分かってますけど……今日、テオに“兵隊になれば毎日パンが出るの”って聞かれたんです」'},
+   {speaker:'カレン',text:'「私たちが行くだけで……|みんなが少し楽になるんだよね」'},
+   {speaker:'マーガレット',text:'「カレン。あなた一人で四人分を決めないで」'},
+   {speaker:'カレン',text:'「……ごめん。私、また先に走った。マーガレットはどうしたい？　ちゃんと聞きたい」'},
+   {speaker:'トリトン',text:'「カレンが行くなら私も。マーガレット、一緒に来てくれたら心強いんだけど」'},
+   {speaker:'ソフィ',text:'「私も行きます。村のためだけじゃなくて……三人が怪我した時、治せるのは私だから」'},
+   {speaker:'マーガレット',text:'「任命にはまだ納得してない。……でも三人を一人で行かせる方が、もっと嫌。私も行く。私が間違えた時は、ちゃんと止めて」'},
+   {speaker:'カレン',text:'「……じゃあ決まり。四人で行く。四人で帰る。勇者とか魔王とか、その辺はまだよく分かんないけど」'},
+   {speaker:'トリトン',text:'「それでいい。分かんないままなら、見てから決めよう」'}
+  ],
+  effects:[
+   {type:'completeEvent',id:'alpha.village.appointment'},
+   {type:'setChapter',value:'第一章 — 白い旗'},
+   {type:'advanceStory',stage:STORY_STAGES.APPOINTED,objective:'北門から街道へ出る'},
+   {type:'journal',text:'カレンを中心に4人で話し合い、村への減税と食料支援を受けるため勇者任務を引き受けた。'}
+  ]
+ },
+ {id:'alpha.village.appointment.repeat',priority:10,trigger:{type:'npc',map:'village',target:'messenger'},when:[{eventComplete:'alpha.village.appointment'}],lines:[{speaker:'王国使者',text:'「支度が済んだら北門から王都へ向かってくれ。……無理に笑う必要はない。任命式では嫌でも笑わされるだろうからな」'}]},
+
+ // Four very short voluntary goodbyes at EXISTING NPCs after the appointment.
+ // They do not gate leaveVillage, give supplies, set objectives or change canon.
+ // On replay the original inline NPC interaction is restored unchanged.
+ {id:'ryune.farewell.karenBrother',priority:30,
+  trigger:{type:'npc',map:'karenhome',target:'karenBrother'},
+  when:[{storyIs:STORY_STAGES.APPOINTED},{eventIncomplete:'ryune.farewell.karenBrother'}],
+  lines:[
+   {speaker:'リオ',text:'「姉ちゃんがいない間、井戸の水汲みは僕がやるよ」'},
+   {speaker:'カレン',text:'「助かる。走って運ぶとこぼすから、ゆっくりね」'},
+   {speaker:'リオ',text:'「それ、昔の姉ちゃんでしょ」'}
+  ],effects:[{type:'completeEvent',id:'ryune.farewell.karenBrother'}]},
+ {id:'ryune.farewell.tritonRen',priority:30,
+  trigger:{type:'npc',map:'village',target:'ren'},
+  when:[{storyIs:STORY_STAGES.APPOINTED},{eventIncomplete:'ryune.farewell.tritonRen'}],
+  lines:[
+   {speaker:'レン',text:'「トリトン姉ちゃんが帰るまで、稽古は休み？」'},
+   {speaker:'トリトン',text:'「父ちゃんがいるだろ。怖いなら、まず足の位置から覚えな」'},
+   {speaker:'レン',text:'「……分かった。帰ったら見てよ。東の木の的、僕が毎日使ってるんだ」'}
+  ],effects:[{type:'completeEvent',id:'ryune.farewell.tritonRen'}]},
+ {id:'ryune.farewell.sophieTheo',priority:30,
+  trigger:{type:'npc',map:'orphanage',target:'theo'},
+  when:[{storyIs:STORY_STAGES.APPOINTED},{eventIncomplete:'ryune.farewell.sophieTheo'}],
+  lines:[
+   {speaker:'テオ',text:'「ソフィお姉ちゃん、薬の箱は誰が見るの？」'},
+   {speaker:'ソフィ',text:'「マルタさんと一緒に確認してください。分からない薬には触らないでね」'},
+   {speaker:'テオ',text:'「うん。僕も気をつける」'}
+  ],effects:[{type:'completeEvent',id:'ryune.farewell.sophieTheo'}]},
+ {id:'ryune.farewell.margaretMother',priority:30,
+  trigger:{type:'npc',map:'mayorhouse',target:'margaretMother'},
+  when:[{storyIs:STORY_STAGES.APPOINTED},{eventIncomplete:'ryune.farewell.margaretMother'}],
+  lines:[
+   {speaker:'マーガレットの母',text:'「あんなに本を持っていたのに、荷物はそれだけでいいの？」'},
+   {speaker:'マーガレット',text:'「地図と筆記具があれば十分。それに……一緒に考えてくれる三人がいるもの」'},
+   {speaker:'マーガレットの母',text:'「……そう。足元にも気をつけてね」'}
+  ],effects:[{type:'completeEvent',id:'ryune.farewell.margaretMother'}]},
+
+ {
+  id:'alpha.capital.ceremony',priority:100,trigger:{type:'npc',map:'capital',target:'capitalOfficial'},when:[{eventIncomplete:'alpha.capital.ceremony'},{worldSwitchFalsy:'returnedKingdom'}],
+  lines:[
+   {speaker:'王都係官',text:'「もう少し中央へ。カレン殿は剣を右に。ソフィ殿、髪飾りを。……はい、笑ってください。民衆が見ています」'},
+   {speaker:'トリトン',text:'「戦いに来たんじゃなかったっけ、私たち」'},
+   {speaker:'マーガレット',text:'「今のところ、衣装替えと立ち位置の調整しかしてないわね」'},
+   {speaker:'王都係官',text:'「国王陛下の名において――|[[魔王シオンを討つ勇者一行]]を、ここに宣する！」'},
+   {speaker:'ナレーション',text:'鐘が鳴り、赤と白の花びらが降る。四人の名前を呼ぶ声が広場を埋めた。誰かが泣きながら「これで勝てる」と叫んでいる。'},
+   {speaker:'ソフィ',text:'「……あの人、子どもを抱いてます。ずっと泣いてる」'},
+   {speaker:'カレン',text:'「期待されるって、もっと嬉しいものだと思ってた」'},
+   {speaker:'王都係官',text:'「昨年の大勝利――|[[四天王ユウキ討伐]]に続く希望が、今度はあなた方です！」'},
+   {speaker:'カレン',text:'「ユウキ……四天王の一人だった人？」'},
+   {speaker:'マーガレット',text:'「壁のポスター。“英雄たちの意思を継げ”……でも、その英雄たちの名前がどこにもない」'},
+   {speaker:'トリトン',text:'「村では誰も“英雄になれ”なんて言わなかったのにな」'},
+   {speaker:'カレン',text:'「うん。だから忘れないでいよう。私たちが来た理由」'}
+  ],
+  effects:[
+   {type:'completeEvent',id:'alpha.capital.ceremony'},
+   {type:'advanceStory',stage:STORY_STAGES.CEREMONY,objective:'王都を見て回り、白鹿亭で今夜休む'},
+   {type:'journal',text:'王都で「美しい勇者一行」として大々的に任命された。'}
+  ]
+ },
+ {id:'alpha.capital.ceremony.repeat',priority:10,trigger:{type:'npc',map:'capital',target:'capitalOfficial'},when:[{eventComplete:'alpha.capital.ceremony'},{worldSwitchFalsy:'returnedKingdom'}],lines:[{speaker:'王都係官',text:'「任命式は済んでいます。今夜は白鹿亭に部屋が用意されています。街を見たら休んでください」'}]},
+ {
+  id:'alpha.capital.whiteStagNight',priority:100,trigger:{type:'object',map:'capitalinn',target:'innRest'},
+  when:[{eventComplete:'alpha.capital.ceremony'},{eventIncomplete:'alpha.capital.whiteStagNight'},{worldSwitchFalsy:'returnedKingdom'}],
+  lines:[
+   {speaker:'ナレーション',text:'任命式の夜。窓の外ではまだ「勇者万歳」の声が遠く聞こえる。部屋に戻ると、四人とも昼間ほど喋らなくなった。'},
+   {speaker:'トリトン',text:'「……|疲れた。||戦ってないのに」'},
+   {speaker:'マーガレット',text:'「一日中、知らない人に“希望”って呼ばれてたものね」'},
+   {speaker:'ソフィ',text:'「広場で、息子さんを前線から帰してって手を握られました。私、何も約束できなかった」'},
+   {speaker:'カレン',text:'「私は少し嬉しかった。花が降って、みんな名前を呼んでくれて。……嬉しいって思った自分が、あとから嫌になった」'},
+   {speaker:'トリトン',text:'「別にいいだろ。嬉しかったのまで嘘にする必要ない」'},
+   {speaker:'マーガレット',text:'「私も花を見て少し嬉しかった。でも市場には配給の列があった。あの人たちの顔まで、忘れたくないの」'},
+   {speaker:'ソフィ',text:'「王都にも苦しい人はいる。でも、リュネ村とは苦しみ方が違うんですね」'},
+   {speaker:'カレン',text:'「明日グランツに聞こう。|私たちが何をさせられるのか。[[ちゃんと聞いて]]、それから前へ行く」'},
+   {speaker:'トリトン',text:'「四人で聞く。誰か一人が丸め込まれそうになったら、残り三人で止める」'},
+   {speaker:'マーガレット',text:'「カレンを止める役は私ね。……でも私が意地を張ったら、三人も止めて」'},{speaker:'カレン',text:'「もちろん。四人とも、お互い様だよ」'},
+   {speaker:'ナレーション',text:'笑い声は小さかった。それでも、その夜初めて四人は「勇者一行」ではなく、いつもの幼馴染として眠った。'}
+  ],
+  effects:[
+   {type:'completeEvent',id:'alpha.capital.whiteStagNight'},{type:'completeEvent',id:'alpha.complete'},
+   {type:'advanceStory',stage:STORY_STAGES.ALPHA_COMPLETE,objective:'α1.0区間完了：翌朝、グランツへ会いに行く'},
+   {type:'recoverParty',mode:'full'},
+   {type:'journal',text:'任命式の夜、白鹿亭で4人が王都の熱狂と自分たちの立場について初めて本音を交わした。'}
+  ],
+  postLines:[{speaker:'ナレーション',text:'翌朝。|四人は[[自分たちの意思でグランツに会う]]ため、白鹿亭を出る支度をした。'}]
+ },
+ {
+  id:'alpha.road.wolfVictory',priority:100,trigger:{type:'battleWin',target:'wolves'},when:[{eventIncomplete:'alpha.road.wolfVictory'}],
+  effects:[
+   {type:'completeEvent',id:'alpha.road.wolfVictory'},{type:'defeatSymbol',id:'wolf'},
+   {type:'advanceStory',stage:STORY_STAGES.FIRST_BATTLE,objective:'街道を北へ進み、王都へ向かう'},
+   {type:'journal',text:'街道で灰牙狼との初戦に勝利した。'}
+  ],
+  lines:[
+   {speaker:'ナレーション',text:'灰牙狼が動かなくなると、急に森の音が戻ってきた。四人とも剣や杖を下ろすのが一拍遅れた。'},
+   {speaker:'カレン',text:'「……|終わった？」'},{speaker:'トリトン',text:'「終わった。手、震えてるぞ」'},
+   {speaker:'カレン',text:'「トリトンも」'},{speaker:'ソフィ',text:'「怪我、見せてください。戦ってる時は平気でも、あとから痛くなることがあります」'},
+   {speaker:'マーガレット',text:'「“勇者の初戦”なのに全然格好つかなかった。……でも、三人とも無事でよかった」'},
+   {speaker:'トリトン',text:'「泥まみれで息切れして終わり。現実はこんなもんだろ」'},
+   {speaker:'カレン',text:'「……でも、次はもう少し落ち着いて動ける。たぶん」'}
+  ]
+ },
+ {
+  id:'alpha2.capital.granzBriefing',priority:120,trigger:{type:'npc',map:'capital',target:'granz'},
+  when:[{storyIs:STORY_STAGES.ALPHA_COMPLETE},{eventIncomplete:'alpha2.capital.granzBriefing'},{worldSwitchFalsy:'returnedKingdom'}],
+  lines:[
+   {speaker:'総司令グランツ',text:'「眠れたか。なら仕事だ。|前線拠点[[セラド]]へ向かえ」'},
+   {speaker:'カレン',text:'「魔王を倒しに行くんじゃないの？」'},
+   {speaker:'総司令グランツ',text:'「今の君たちに皇帝を斬れるとは思っていない。任務はまず、灰の街道を抜けて生きて前線へ着くことだ」'},
+   {speaker:'トリトン',text:'「昨日は広場中に“魔王を倒す勇者”って叫ばせてたけどな」'},
+   {speaker:'総司令グランツ',text:'「国民向けの言葉と作戦命令は違う。気に入らないだろうが、戦争では両方が要る」'},
+   {speaker:'マーガレット',text:'「灰の街道の状況は？」'},
+   {speaker:'総司令グランツ',text:'「帝国軍が補給路を断つため、橋と穀倉と荷車を焼いた。避難民も出ている。斥候が残っている可能性も高い」'},
+   {speaker:'ソフィ',text:'「避難民の治療を手伝っても？」'},
+   {speaker:'総司令グランツ',text:'「任務を失敗しない範囲なら好きにしろ。だが、見たもの一つで戦争全部を理解したつもりになるな」'},
+   {speaker:'カレン',text:'「……分かった。分からないことも含めて、自分たちで見てくる」'}
+  ],
+  effects:[
+   {type:'completeEvent',id:'alpha2.capital.granzBriefing'},
+   {type:'setChapter',value:'第二章 — 灰の街道'},
+   {type:'advanceStory',stage:STORY_STAGES.ASH_ROAD_ORDER,objective:'王都北門から灰の街道へ向かう'},
+   {type:'journal',text:'グランツから前線拠点セラドへの移動任務を受けた。灰の街道では帝国軍が補給路を破壊し、避難民が出ているという。'}
+  ]
+ },
+ {
+  id:'alpha2.capital.granzBriefing.repeat',priority:20,trigger:{type:'npc',map:'capital',target:'granz'},
+  when:[{eventComplete:'alpha2.capital.granzBriefing'},{worldSwitchFalsy:'returnedKingdom'}],
+  lines:[{speaker:'総司令グランツ',text:'「灰の街道を北へ抜けろ。戦果より生存と到着を優先しろ。セラドで次の命令を受ける」'}]
+ },
+ {
+  id:'alpha2.ashroad.refugee',priority:100,trigger:{type:'npc',map:'ashroad',target:'refugee'},
+  when:[{eventIncomplete:'alpha2.ashroad.refugee'}],
+  lines:[
+   {speaker:'避難民の母',text:'「勇者様……王都から来たんですね」'},
+   {speaker:'避難民の母',text:'「帝国軍が来た時、夫は“畑の収穫だけでも持っていく”って戻ったんです。|次に見た時は、家も畑も燃えていて……夫だけ戻りませんでした」'},
+   {speaker:'カレン',text:'「……ごめんなさい。何て言えばいいか分からない」'},
+   {speaker:'避難民の母',text:'「勇者様なら、“仇を取ります”って言うところじゃないんですか」'},
+   {speaker:'カレン',text:'「今は言えません。誰を倒せばこの人たちが元に戻るのか、私にはまだ分からないから」'},
+   {speaker:'トリトン',text:'「でも、これ以上同じ目に遭う人を増やさないために前へ行く。それは約束する」'},
+   {speaker:'避難民の母',text:'「……それでいいです。夫の代わりに怒ってほしいんじゃない。次の家が燃えないようにしてほしい」'}
+  ],
+  effects:[
+   {type:'completeEvent',id:'alpha2.ashroad.refugee'},
+   {type:'setObjective',value:'街道の焼け跡を調べ、帝国軍が何を狙ったのか確かめる'},
+   {type:'journal',text:'灰の街道の避難民から、補給路への攻撃で家と畑を失った話を聞いた。'}
+  ]
+ },
+ {id:'alpha2.ashroad.refugee.repeat',priority:10,trigger:{type:'npc',map:'ashroad',target:'refugee'},when:[{eventComplete:'alpha2.ashroad.refugee'}],lines:[{speaker:'避難民の母',text:'「北へ行くなら気をつけて。青黒い服の兵士を、今朝も見た人がいます」'}]},
+{id:'alpha2.ashroad.priest.repeat',priority:10,trigger:{type:'npc',map:'ashroad',target:'fieldPriest'},when:[{eventComplete:'alpha2.ashroad.priest'}],lines:[{speaker:'従軍僧',text:'「薬は足りない。だからこそ、誰に使うか決めるたびに自分が何を選んだか忘れないようにしている」'}]},
+ {
+  id:'alpha2.ashroad.priest',priority:40,trigger:{type:'npc',map:'ashroad',target:'fieldPriest'},when:[{eventIncomplete:'alpha2.ashroad.priest'}],
+  lines:[
+   {speaker:'従軍僧',text:'「負傷者は敵味方を選ばない。だが軍の薬は王国兵を優先しろと言われている。……難しいものだよ」'},
+   {speaker:'ソフィ',text:'「傷そのものは、軍服を見て軽くなったりしません」'},
+   {speaker:'従軍僧',text:'「そうだ。だから迷う。迷わない人間よりは、まだましだと思いたいがね」'}
+  ],effects:[{type:'completeEvent',id:'alpha2.ashroad.priest'}]
+ },
+ {
+  id:'alpha2.ashroad.burnedCart',priority:80,trigger:{type:'object',map:'ashroad',target:'burnedCart'},when:[{eventIncomplete:'alpha2.ashroad.burnedCart'}],
+  lines:[
+   {speaker:'焼けた荷車',text:'荷台には穀物袋の焼け跡が残っている。車体の側面には、薄く[[王国軍徴発済]]の焼印が見える。'},
+   {speaker:'マーガレット',text:'「もともとは農家の荷車。軍が徴発して補給に使ったから、帝国軍には軍事目標になった」'},
+   {speaker:'カレン',text:'「でも、これを失った農家から見たら“軍の荷車”じゃないよね」'}
+  ],effects:[{type:'completeEvent',id:'alpha2.ashroad.burnedCart'}]
+ },
+ {id:'alpha2.ashroad.burnedCart.repeat',priority:10,trigger:{type:'object',map:'ashroad',target:'burnedCart'},when:[{eventComplete:'alpha2.ashroad.burnedCart'}],lines:[{speaker:'焼けた荷車',text:'王国軍の徴発印と、農家の古い所有印が同じ車体に残っている。軍事目標と生活道具が、一つの荷車に重なっている。'}]},
+ {
+  id:'alpha2.ashroad.homestead',priority:50,trigger:{type:'object',map:'ashroad',target:'burnedHomestead'},when:[{eventIncomplete:'alpha2.ashroad.homestead'}],
+  lines:[{speaker:'焼けた農家',text:'崩れた柱に、子どもの身長を測った傷が何本も残っている。'},{speaker:'ソフィ',text:'「ここに住んでいた人たち、今どこにいるんでしょう」'},{speaker:'マーガレット',text:'「軍事報告なら“補給拠点一棟破壊”で終わる。でも、この傷は報告書には残らない」'}],effects:[{type:'completeEvent',id:'alpha2.ashroad.homestead'}]
+ },
+ {id:'alpha2.ashroad.homestead.repeat',priority:10,trigger:{type:'object',map:'ashroad',target:'burnedHomestead'},when:[{eventComplete:'alpha2.ashroad.homestead'}],lines:[{speaker:'焼けた農家',text:'柱に残った背丈の傷だけが、この場所に家族が暮らしていたことを伝えている。'}]},
+ {
+  id:'alpha2.ashroad.shrine',priority:45,trigger:{type:'object',map:'ashroad',target:'ruinedShrine'},when:[{eventIncomplete:'alpha2.ashroad.shrine'}],
+  lines:[{speaker:'道端の祠',text:'焼け残った札に「戦勝祈願」と「無事帰還」が並んでいる。'},{speaker:'トリトン',text:'「勝って帰れ、じゃなくて、勝つ札と帰る札が別々なんだな」'},{speaker:'カレン',text:'「勝てなくても帰ってきてほしい人がいるってことだよ」'}],effects:[{type:'completeEvent',id:'alpha2.ashroad.shrine'}]
+ },
+ {id:'alpha2.ashroad.shrine.repeat',priority:10,trigger:{type:'object',map:'ashroad',target:'ruinedShrine'},when:[{eventComplete:'alpha2.ashroad.shrine'}],lines:[{speaker:'道端の祠',text:'戦勝を願う札と、生還だけを願う札が風に揺れている。'}]},
+ {
+  id:'alpha2.ashroad.orders',priority:100,trigger:{type:'object',map:'ashroad',target:'scorchedOrders'},when:[{eventIncomplete:'alpha2.ashroad.orders'}],
+  lines:[
+   {speaker:'焦げた帝国軍命令書',text:'「王国軍の再侵攻能力を削ぐため、補給路・穀倉・橋梁を使用不能にせよ。[[民間人との不要な交戦は避けること]]」'},
+   {speaker:'カレン',text:'「避けろって書いてあるのに……家も畑も焼けてる」'},
+   {speaker:'マーガレット',text:'「命令そのものは“民間人を殺せ”じゃない。でも補給路を壊せば、その道で暮らす人も壊れる」'},
+   {speaker:'トリトン',text:'「じゃあ“民間人を狙ってない”って言われても、ここにいる人には何の慰めにもならないな」'},
+   {speaker:'ソフィ',text:'「それでも、敵が何を考えているかは知っておきたいです。知らないまま憎むよりは」'}
+  ],
+  effects:[
+   {type:'completeEvent',id:'alpha2.ashroad.orders'},
+   {type:'setObjective',value:'街道北側の帝国斥候を退け、先へ進む'},
+   {type:'journal',text:'焦げた帝国軍命令書を発見。「民間人との不要な交戦は避ける」としつつ、王国の補給路・穀倉・橋梁を破壊する命令だった。'}
+  ]
+ },
+ {id:'alpha2.ashroad.orders.repeat',priority:10,trigger:{type:'object',map:'ashroad',target:'scorchedOrders'},when:[{eventComplete:'alpha2.ashroad.orders'}],lines:[{speaker:'焦げた帝国軍命令書',text:'「補給路・穀倉・橋梁を使用不能にせよ。民間人との不要な交戦は避けること」――文字は変わらないが、焼けた家を見た後では読み方が変わる。'}]},
+ {
+  id:'alpha2.ashroad.patrol',priority:100,trigger:{type:'object',map:'ashroad',target:'imperialPatrol'},
+  when:[{eventIncomplete:'alpha2.ashroad.patrolVictory'}],
+  lines:[
+   {speaker:'帝国軍斥候',text:'「赤白の外套……王国の新しい勇者か」'},
+   {speaker:'カレン',text:'「そこを通して。私たちは前線へ行く」'},
+   {speaker:'帝国軍斥候',text:'「だから通せない。こちらも任務だ」'},
+   {speaker:'トリトン',text:'「話して退く気は？」'},
+   {speaker:'帝国軍斥候',text:'「ない。そっちも同じ顔をしてる」'}
+  ],effects:[{type:'startBattle',id:'imperialRaid'}]
+ },
+ {
+  id:'alpha2.ashroad.patrolVictory',priority:120,trigger:{type:'battleWin',target:'imperialRaid'},when:[{eventIncomplete:'alpha2.ashroad.patrolVictory'}],
+  effects:[
+   {type:'completeEvent',id:'alpha2.ashroad.patrolVictory'},{type:'defeatSymbol',id:'imperialPatrol'},
+   {type:'setObjective',value:'北へ進む前に、避難民の話と帝国軍命令書を確かめる'},
+   {type:'journal',text:'灰の街道で帝国斥候隊と交戦。負傷して取り残された斥候兵をソフィが治療した。'}
+  ],
+  lines:[
+   {speaker:'帝国斥候兵',text:'「これ以上は持たない、撤退する！」'},
+   {speaker:'ナレーション',text:'一人の斥候兵が足を負傷し、撤退する仲間に追いつけず街道脇へ倒れた。'},
+   {speaker:'ソフィ',text:'「待って。その傷、止血しないと」'},
+   {speaker:'帝国斥候兵',text:'「触るな……王国の僧侶に借りを作るくらいなら――」'},
+   {speaker:'ソフィ',text:'「借りじゃありません。出血している人がいるから治します」'},
+   {speaker:'トリトン',text:'「ソフィ。さっきまでこいつ、私たちを斬ろうとしてたぞ」'},
+   {speaker:'ソフィ',text:'「だからって、今ここで死なせていい理由にはならないです」'},
+   {speaker:'帝国斥候兵',text:'「……俺たちは補給路を切れと言われた。王国の村を皆殺しにしろなんて命令じゃない」'},
+   {speaker:'マーガレット',text:'「でも補給路を壊せば、村の食料も届かなくなる」'},
+   {speaker:'帝国斥候兵',text:'「分かってる。……分かってても、王国がまた攻められる状態を残すなって言われる」'},
+   {speaker:'カレン',text:'「同じ人間だから話せば全部分かり合える、ってほど簡単でもないんだね」'},
+   {speaker:'トリトン',text:'「それでも、“魔王軍だから”で片づけるよりはマシだ」'}
+  ]
+ },
+ {
+  id:'alpha2.ashroad.complete',priority:120,trigger:{type:'boundary',map:'ashroad',target:'north'},
+  when:[{eventComplete:'alpha2.ashroad.refugee'},{eventComplete:'alpha2.ashroad.orders'},{eventComplete:'alpha2.ashroad.patrolVictory'},{eventIncomplete:'alpha2.ashroad.complete'}],
+  lines:[
+   {speaker:'ナレーション',text:'焼けた畑の向こうに、王国前線拠点セラドの見張り塔が見える。ここまで来ると、遠くの砲声が途切れなくなった。'},
+   {speaker:'カレン',text:'「王都では“敵を倒して前線へ行く”だけだと思ってた」'},
+   {speaker:'マーガレット',text:'「実際は、敵が何を狙ったのかと、その結果誰が傷ついたのかは同じ話じゃない」'},
+   {speaker:'ソフィ',text:'「避難民の人も、さっきの帝国兵も、どちらも戦争の外にはいられないんですね」'},
+   {speaker:'トリトン',text:'「答えはまだ出ない。でも、前よりは何を見なきゃいけないか分かった」'},
+   {speaker:'カレン',text:'「うん。|次は[[セラド前線]]。そこで、もっと近くから戦争を見る」'}
+  ],
+  effects:[
+   {type:'completeEvent',id:'alpha2.ashroad.complete'},
+   {type:'advanceStory',stage:STORY_STAGES.ASH_ROAD_COMPLETE,objective:'灰の街道区間完了：次は王国前線拠点セラドへ'},
+   {type:'journal',text:'灰の街道を抜け、避難民・帝国軍命令書・帝国斥候との戦闘を通じて、軍事目標と民間被害が切り離せない現実を知った。'}
+  ],
+  postLines:[{speaker:'ナレーション',text:'――[[灰の街道 区間終了]]――<br>この先に、王国前線拠点セラドがある。'}]
+ },
+ {id:'alpha2.ashroad.complete.repeat',priority:10,trigger:{type:'boundary',map:'ashroad',target:'north'},when:[{eventComplete:'alpha2.ashroad.complete'}],lines:[{speaker:'カレン',text:'「この先がセラド前線。進む前に、装備と記録を確認しておこう」'}]}
+
+,
+ {
+  id:'alpha2.frontier.arrival',priority:150,trigger:{type:'arrival',map:'frontier',target:'frontier'},
+  when:[{storyIs:STORY_STAGES.FRONTIER_ARRIVAL},{eventIncomplete:'alpha2.frontier.arrival'}],
+  lines:[
+   {speaker:'ナレーション',text:'セラドの門をくぐった瞬間、「勇者が来た」という声が塹壕沿いに走った。だが歓声は長く続かない。北側から担架が三つ、泥を跳ね上げて野戦病院へ運び込まれていく。'},
+   {speaker:'王国兵',text:'「勇者様、本当に来た……！　これで――」'},
+   {speaker:'衛生兵',text:'「喜ぶのは後！　そこを空けて、担架を通して！」'},
+   {speaker:'カレン',text:'「王都で想像してた“前線到着”と、全然違う」'},
+   {speaker:'マーガレット',text:'「まず指揮官に会いましょう。私たちが何をすべきか確認する」'}
+  ],effects:[{type:'completeEvent',id:'alpha2.frontier.arrival'},{type:'setObjective',value:'前線将校からセラドの戦況を聞く'},{type:'journal',text:'王国前線拠点セラドへ到着。勇者到着に兵が沸く一方、負傷者の搬送は止まっていなかった。'}]
+ },
+ {id:'alpha2.frontier.arrival.repeat',priority:10,trigger:{type:'arrival',map:'frontier',target:'frontier'},when:[{eventComplete:'alpha2.frontier.arrival'}],lines:[]},
+ {
+  id:'alpha2.frontier.briefing',priority:120,trigger:{type:'npc',map:'frontier',target:'frontierOfficer'},
+  when:[{eventComplete:'alpha2.frontier.arrival'},{eventIncomplete:'alpha2.frontier.briefing'}],
+  lines:[
+   {speaker:'前線将校',text:'「勇者一行だな。到着だけでも助かった。今朝、持ち場を離れかけた兵が“勇者が来るなら”と二人戻った」'},
+   {speaker:'カレン',text:'「私たち、まだ何もしてません」'},
+   {speaker:'前線将校',text:'「だから厄介なんだ。“勇者”は実績より先に意味を持たされる」'},
+   {speaker:'マーガレット',text:'「帝国四将がここにいるという話は？」'},
+   {speaker:'前線将校',text:'「誤報だ。正面にいるのは前衛隊長ヴァルク。四将クラインテッド本人はもっと奥だ」'},
+   {speaker:'トリトン',text:'「じゃあ、ここで戦ってるのは普通の兵士同士か」'},
+   {speaker:'前線将校',text:'「そうだ。西の野戦病院を見てこい。前へ出るなら、“普通の兵士”がどうなるか先に知っておけ」'}
+  ],effects:[{type:'completeEvent',id:'alpha2.frontier.briefing'},{type:'setObjective',value:'西側の野戦病院で衛生兵に話を聞く'},{type:'journal',text:'前線将校から、セラド正面の敵は四将本人ではなく帝国前衛隊長ヴァルクだと聞いた。'}]
+ },
+ {id:'alpha2.frontier.briefing.repeat',priority:10,trigger:{type:'npc',map:'frontier',target:'frontierOfficer'},when:[{eventComplete:'alpha2.frontier.briefing'},{eventIncomplete:'alpha2.frontier.vanguardVictory'}],lines:[{speaker:'前線将校',text:'「西の野戦病院へ行け。前へ出る前に、今日の損耗を自分の目で見ておけ」'}]},
+ {
+  id:'alpha2.frontier.hospital',priority:120,trigger:{type:'npc',map:'frontier',target:'frontierMedic'},
+  when:[{eventComplete:'alpha2.frontier.briefing'},{eventIncomplete:'alpha2.frontier.hospital'}],
+  lines:[
+   {speaker:'衛生兵',text:'「壁際へ。今朝から二十七人。死者はまだ数えてない」'},
+   {speaker:'ソフィ',text:'「私も手伝えます。止血と治癒術なら――」'},
+   {speaker:'衛生兵',text:'「助かる。勇者だからじゃない。手が二本増えるから助かる」'},
+   {speaker:'ナレーション',text:'ソフィが治療を手伝う間、カレンたちは担架と水桶を運んだ。ここでは勇者への歓声より、痛みに耐える声の方が大きい。'},
+   {speaker:'負傷兵',text:'「……勇者様。勝ってくれ」'},
+   {speaker:'カレン',text:'「魔王を倒せってこと？」'},
+   {speaker:'負傷兵',text:'「違う。俺たちが今日ここで耐えたのが、無駄じゃなかったってことにしてくれ」'},
+   {speaker:'カレン',text:'「分かった、とは言えない。でも忘れない。あなたがここにいたことは忘れない」'},
+   {speaker:'ナレーション',text:'その時、北防壁の鐘が三度鳴った。兵たちの表情が一斉に変わる。'},
+   {speaker:'王国兵',text:'「帝国前衛隊、接近！　ヴァルク隊長の旗です！」'},
+   {speaker:'マーガレット',text:'「見学は終わりね。今度は、この負傷者を増やさないために動く」'}
+  ],effects:[{type:'completeEvent',id:'alpha2.frontier.hospital'},{type:'advanceStory',stage:STORY_STAGES.FRONTIER_CRISIS,objective:'北防壁で帝国前衛隊長ヴァルクを迎撃する'},{type:'journal',text:'野戦病院で前線の損耗を目撃した直後、帝国前衛隊がセラド北防壁へ接近した。'}]
+ },
+ {id:'alpha2.frontier.hospital.blocked',priority:20,trigger:{type:'npc',map:'frontier',target:'frontierMedic'},when:[{eventIncomplete:'alpha2.frontier.briefing'}],lines:[{speaker:'衛生兵',text:'「説明なら先に将校へ。こっちは手が足りない。何を頼めるか決まってから来て」'}]},
+ {id:'alpha2.frontier.hospital.repeat',priority:10,trigger:{type:'npc',map:'frontier',target:'frontierMedic'},when:[{eventComplete:'alpha2.frontier.hospital'}],lines:[{speaker:'衛生兵',text:'「北防壁へ行くなら無理はするな。勇者でも、ここへ運ばれてくる時は同じ負傷者だ」'}]},
+ {
+  id:'alpha2.frontier.vanguard',priority:130,trigger:{type:'npc',map:'frontier',target:'vanguardCaptain'},
+  when:[{eventComplete:'alpha2.frontier.hospital'},{eventIncomplete:'alpha2.frontier.vanguardVictory'}],
+  lines:[
+   {speaker:'帝国前衛隊長ヴァルク',text:'「勇者だろうが何だろうが、ここは英雄譚の舞台じゃない。前線だ」'},
+   {speaker:'カレン',text:'「あなたたちの後ろにも、病院はあるの？」'},
+   {speaker:'帝国前衛隊長ヴァルク',text:'「……ある。だから何だ」'},
+   {speaker:'カレン',text:'「何でもない。ただ、それを忘れないで戦う」'},
+   {speaker:'トリトン',text:'「こっちも同じだ。後ろに寝てる連中を、これ以上増やさない」'},
+   {speaker:'帝国前衛隊長ヴァルク',text:'「なら構えろ。俺も後ろの連中を守るためにここを退けん」'}
+  ],effects:[{type:'startBattle',id:'vanguardCaptain'}]
+ },
+ {id:'alpha2.frontier.vanguard.blocked',priority:20,trigger:{type:'npc',map:'frontier',target:'vanguardCaptain'},when:[{eventIncomplete:'alpha2.frontier.hospital'}],lines:[{speaker:'トリトン',text:'「先に野戦病院を見よう。将校がわざわざ言った意味を知ってから前へ出たい」'}]},
+ {
+  id:'alpha2.frontier.vanguardVictory',priority:150,trigger:{type:'battleWin',target:'vanguardCaptain'},when:[{eventIncomplete:'alpha2.frontier.vanguardVictory'}],
+  effects:[{type:'completeEvent',id:'alpha2.frontier.vanguardVictory'},{type:'defeatSymbol',id:'vanguardCaptain'},{type:'advanceStory',stage:STORY_STAGES.FRONTIER_BATTLE_WON,objective:'前線将校へ戦闘結果を報告する'},{type:'journal',text:'帝国前衛隊長ヴァルクを退けた。四将本人ではなく、同じように後方の兵を守る一部隊長だった。'}],
+  lines:[
+   {speaker:'帝国前衛隊長ヴァルク',text:'「……十分だ。前衛隊、後退！　負傷者を置いていくな！」'},
+   {speaker:'トリトン',text:'「四天王じゃなくても、普通に強いな」'},
+   {speaker:'マーガレット',text:'「“普通の兵士”で前線ができてるって、さっき見たばかりでしょう」'},
+   {speaker:'ソフィ',text:'「追わないんですか？」'},
+   {speaker:'カレン',text:'「追わない。今はセラドを守れた。それで十分」'}
+  ]
+ },
+ {
+  id:'alpha2.frontier.complete',priority:160,trigger:{type:'npc',map:'frontier',target:'frontierOfficer'},
+  when:[{eventComplete:'alpha2.frontier.vanguardVictory'},{eventIncomplete:'alpha2.frontier.complete'}],
+  lines:[
+   {speaker:'前線将校',text:'「北防壁は持ち直した。追撃はしない。負傷者の回収と防壁修理を優先する」'},
+   {speaker:'トリトン',text:'「勝ったのに追わないのか？」'},
+   {speaker:'前線将校',text:'「一戦勝っただけだ。ここで勢いに任せて出れば、次はこっちが担架で戻る」'},
+   {speaker:'マーガレット',text:'「王都で聞く“勝利”より、ずっと小さい」'},
+   {speaker:'前線将校',text:'「前線の勝利はだいたい小さい。今日死ぬ人数が減った。それで十分な日もある」'},
+   {speaker:'ソフィ',text:'「野戦病院の人たちに、そう伝えてきます」'},
+   {speaker:'カレン',text:'「私たちも、次の命令まではここで手伝う。勇者としてじゃなく、手が四人分あるから」'},
+   {speaker:'前線将校',text:'「……それが一番助かる。次に進む話は、セラドが落ち着いてからだ」'}
+  ],effects:[{type:'completeEvent',id:'alpha2.frontier.complete'},{type:'advanceStory',stage:STORY_STAGES.FRONTIER_COMPLETE,objective:'セラド前線・第1区間完了：前線再編と次の命令を待つ'},{type:'journal',text:'セラド北防壁を守り、追撃より負傷者回収と前線再編を優先した。勇者一行は次の命令までセラドに残る。'}],
+  postLines:[{speaker:'ナレーション',text:'――[[セラド前線・第1区間 終了]]――<br>敵主力と四将はさらに北にいる。だが四人は、まず目の前の前線を立て直すことを選んだ。'}]
+ },
+ {id:'alpha2.frontier.complete.repeat',priority:10,trigger:{type:'npc',map:'frontier',target:'frontierOfficer'},when:[{eventComplete:'alpha2.frontier.complete'}],lines:[{speaker:'前線将校',text:'「次の命令が来るまで休め。北へ出るのは、セラドの再編が済んでからだ」'}]},
+ {id:'alpha2.frontier.guard',priority:20,trigger:{type:'npc',map:'frontier',target:'kingdomGuard'},lines:[{speaker:'王国兵',text:'「勇者様が来たってだけで空気が変わりました。でも……本当に欲しいのは、今夜までこの防壁が残ることです」'}]},
+ {id:'alpha2.frontier.watchTower',priority:20,trigger:{type:'object',map:'frontier',target:'watchTower'},lines:[{speaker:'見張り台',text:'北東には帝国軍の青い旗、南西には王国の赤い旗。旗の間には、どちらの色でもない泥と担架が並んでいる。'}]},
+ {id:'alpha2.frontier.fieldHospital',priority:20,trigger:{type:'object',map:'frontier',target:'fieldHospital'},lines:[{speaker:'野戦病院',text:'天幕の外まで血と薬草の匂いが漂う。空いた寝台は少ない。'},{speaker:'ソフィ',text:'「回復する場所というより、ここ自体が戦場の一部なんですね」'}]},
+ {id:'alpha2.frontier.cache',priority:40,trigger:{type:'object',map:'frontier',target:'frontierCache'},when:[{eventIncomplete:'alpha2.frontier.cache'}],lines:[{speaker:'補給兵',text:'「勇者用じゃない。前へ出る四人分として持っていけ」'}],effects:[{type:'completeEvent',id:'alpha2.frontier.cache'},{type:'openTreasure',id:'frontierCache'}]},
+ {id:'alpha2.frontier.cache.repeat',priority:10,trigger:{type:'object',map:'frontier',target:'frontierCache'},when:[{eventComplete:'alpha2.frontier.cache'}],lines:[{speaker:'補給箱',text:'必要な分だけ受け取った。残りは前線の兵士たちの分だ。'}]},
+ {id:'alpha2.frontier.barricade',priority:20,trigger:{type:'object',map:'frontier',target:'frontierBarricade'},lines:[{speaker:'応急防壁',text:'壊れた荷車、扉、畑の柵まで積み重ねて防壁にしてある。'},{speaker:'トリトン',text:'「戦場って、専用の道具だけでできてるわけじゃないんだな」'}]},
+ {id:'alpha2.frontier.notice',priority:20,trigger:{type:'object',map:'frontier',target:'frontierNotice'},lines:[{speaker:'損耗記録板',text:'「水：残り三日」「包帯：不足」「矢：夕刻補給予定」。敵の名前より、物資の残量が大きく書かれている。'},{speaker:'マーガレット',text:'「戦況って、こういう数字でも決まるのね」'}]},
+
+ // v23 — セラド前線・第2区間。第1区間の戦闘結果から始まり、北側戦闘跡だけを正式実装する。
+ {
+  id:'alpha2.frontier2.order',priority:180,trigger:{type:'npc',map:'frontier',target:'frontierOfficer'},
+  when:[{eventComplete:'alpha2.frontier.complete'},{eventIncomplete:'alpha2.frontier2.order'}],
+  lines:[
+   {speaker:'前線将校',text:'「休めと言った直後で悪い。追撃命令じゃない。北側の戦闘跡を見てきてほしい」'},
+   {speaker:'トリトン',text:'「さっき退いたヴァルク隊の？」'},
+   {speaker:'前線将校',text:'「そうだ。こちらの斥候は“敵は散り散りに敗走した”と報告した。だが夜明けの見張りは、北へ揃って伸びる轍を見ている」'},
+   {speaker:'マーガレット',text:'「報告が食い違ってる」'},
+   {speaker:'前線将校',text:'「だから確かめる。まず野戦病院で、昨夜の損耗と捕虜の状況を聞け。その後、北防壁の外へ出ろ」'},
+   {speaker:'カレン',text:'「勝った後に何が残ったのかも、ちゃんと見てから行く」'}
+  ],effects:[{type:'completeEvent',id:'alpha2.frontier2.order'},{type:'advanceStory',stage:STORY_STAGES.FRONTIER_AFTERMATH,objective:'野戦病院で戦後の負傷者状況を確認する'},{type:'journal',text:'ヴァルク隊の撤退が「無秩序な敗走」という報告と一致しないため、セラド北側の戦闘跡を偵察することになった。'}]
+ },
+ {id:'alpha2.frontier2.order.repeat',priority:25,trigger:{type:'npc',map:'frontier',target:'frontierOfficer'},when:[{eventComplete:'alpha2.frontier2.order'},{eventIncomplete:'alpha2.frontier2.scavengerVictory'}],lines:[{speaker:'前線将校',text:'「野戦病院を確認したら北防壁の外へ。敵を追うな。痕跡だけ見て戻れ」'}]},
+ {
+  id:'alpha2.frontier2.aftermath',priority:180,trigger:{type:'npc',map:'frontier',target:'frontierMedic'},
+  when:[{eventComplete:'alpha2.frontier2.order'},{eventIncomplete:'alpha2.frontier2.aftermath'}],
+  lines:[
+   {speaker:'衛生兵',text:'「昨夜から寝台が十一増えた。包帯は半分。死者は王国兵四、帝国兵は……まだ分からない」'},
+   {speaker:'ソフィ',text:'「帝国兵もここで治療してるんですか？」'},
+   {speaker:'衛生兵',text:'「二人だけな。捕虜だから見張り付きだ。でも血が止まらなきゃ尋問も何もない」'},
+   {speaker:'王国兵',text:'「俺の隣にいた奴は、あいつらの矢で死んだ。正直、同じ包帯を使うのは腹が立つ」'},
+   {speaker:'衛生兵',text:'「分かる。だからお前は怒ってていい。治療するかどうかは俺が決める」'},
+   {speaker:'カレン',text:'「……前線って、勝った後も簡単にならないんだね」'},
+   {speaker:'衛生兵',text:'「簡単になるなら、こんなに寝台はいらない。北へ出るなら、戻ってくる人数を減らすなよ」'}
+  ],effects:[{type:'completeEvent',id:'alpha2.frontier2.aftermath'},{type:'advanceStory',stage:STORY_STAGES.FRONTIER_INVESTIGATION,objective:'北防壁からセラド北側の戦闘跡を調査する'},{type:'journal',text:'戦後の野戦病院では王国兵だけでなく捕虜の帝国兵も治療されていた。兵士たちの感情は一枚岩ではない。'}]
+ },
+ {id:'alpha2.frontier2.aftermath.blocked',priority:30,trigger:{type:'npc',map:'frontier',target:'frontierMedic'},when:[{eventComplete:'alpha2.frontier.complete'},{eventIncomplete:'alpha2.frontier2.order'}],lines:[{speaker:'衛生兵',text:'「今は戦後処理で手いっぱいだ。次の任務が出たなら、その時に状況をまとめて話す」'}]},
+ {id:'alpha2.frontier2.guardAftermath',priority:35,trigger:{type:'npc',map:'frontier',target:'kingdomGuard'},when:[{eventComplete:'alpha2.frontier.complete'}],lines:[{speaker:'王国兵',text:'「昨日まで隣で見張ってた奴が、今日は病院です。勝ったって聞けば家族は喜ぶんでしょうけど……俺はまだ、勝った感じがしません」'}]},
+ {id:'alpha2.frontier2.barricadeAftermath',priority:35,trigger:{type:'object',map:'frontier',target:'frontierBarricade'},when:[{eventComplete:'alpha2.frontier.complete'}],lines:[{speaker:'壊れた防壁',text:'ヴァルク隊との戦闘で上段が崩れ、王国兵が濡れた木材を継ぎ足している。新しい板より、外した担架の枠の方が多い。'},{speaker:'トリトン',text:'「守れた、で終わりじゃないんだな。次に来る前に直さないといけない」'}]},
+ {id:'alpha2.frontier2.noticeAftermath',priority:35,trigger:{type:'object',map:'frontier',target:'frontierNotice'},when:[{eventComplete:'alpha2.frontier.complete'}],lines:[{speaker:'損耗記録板',text:'昨日の数字の上から、「包帯：危険」「矢：補給済」「北防壁：修理中」と書き足されている。死者欄だけは空白のままだ。'}]},
+ {
+  id:'alpha2.frontier2.fieldArrival',priority:160,trigger:{type:'arrival',map:'frontierfield',target:'frontierfield'},
+  when:[{storyIs:STORY_STAGES.FRONTIER_INVESTIGATION},{eventIncomplete:'alpha2.frontier2.fieldArrival'}],
+  lines:[
+   {speaker:'ナレーション',text:'北防壁を越えると、昨日まで両軍がいた場所は不自然なほど静かだった。泥の上に、北へ向かう車輪の跡と担架を引きずった線が残っている。'},
+   {speaker:'マーガレット',text:'「散り散りに逃げた跡じゃない。少なくとも、同じ方向へ動いてる」'},
+   {speaker:'王国斥候',text:'「俺もそう見えます。けど本隊の報告は“敗走”。勇者殿、残ってる物を一緒に見てください」'}
+  ],effects:[{type:'completeEvent',id:'alpha2.frontier2.fieldArrival'},{type:'setObjective',value:'戦闘跡で帝国軍の撤退痕跡を調べる'},{type:'journal',text:'セラド北側の戦闘跡には、散開ではなく北へまとまって撤退したような轍が残っていた。'}]
+ },
+ {id:'alpha2.frontier2.fieldArrival.repeat',priority:10,trigger:{type:'arrival',map:'frontierfield',target:'frontierfield'},when:[{eventComplete:'alpha2.frontier2.fieldArrival'}],lines:[]},
+ {
+  id:'alpha2.frontier2.scout',priority:90,trigger:{type:'npc',map:'frontierfield',target:'frontierScout'},
+  when:[{eventComplete:'alpha2.frontier2.fieldArrival'},{eventIncomplete:'alpha2.frontier2.fieldBriefing'}],
+  lines:[
+   {speaker:'王国斥候',text:'「帝国兵を庇うつもりはありません。昨日、こっちの仲間も死んだ。でも“敗走した”なら、担架の跡がこんなに揃うのは変です」'},
+   {speaker:'マーガレット',text:'「感情と観察は分ける、ってことね」'},
+   {speaker:'王国斥候',text:'「そうしないと偵察にならない。西に落とし物、東に命令書らしい紙片があります」'}
+  ],effects:[{type:'completeEvent',id:'alpha2.frontier2.fieldBriefing'}]
+ },
+ {id:'alpha2.frontier2.scout.repeat',priority:10,trigger:{type:'npc',map:'frontierfield',target:'frontierScout'},when:[{eventComplete:'alpha2.frontier2.fieldBriefing'}],lines:[{speaker:'王国斥候',text:'「轍は北へ。けど結論はまだです。残った物を拾ってから判断しましょう」'}]},
+ {
+  id:'alpha2.frontier2.tracks',priority:70,trigger:{type:'object',map:'frontierfield',target:'stretcherTracks'},
+  when:[{eventIncomplete:'alpha2.frontier2.tracks'}],
+  lines:[{speaker:'担架の跡',text:'二本の細い溝が北へ続き、その横に二人分の足跡が並んでいる。途中で何度も止まり、持ち直した跡がある。'},{speaker:'ソフィ',text:'「誰かを運んでたんですね。逃げるだけなら、もっと軽いはずなのに」'}],
+  effects:[{type:'completeEvent',id:'alpha2.frontier2.tracks'}]
+ },
+ {id:'alpha2.frontier2.tracks.repeat',priority:10,trigger:{type:'object',map:'frontierfield',target:'stretcherTracks'},when:[{eventComplete:'alpha2.frontier2.tracks'}],lines:[{speaker:'担架の跡',text:'北へ向かう溝は、他の車輪跡と同じ方向へ続いている。'}]},
+ {
+  id:'alpha2.frontier2.satchel',priority:70,trigger:{type:'object',map:'frontierfield',target:'imperialSatchel'},
+  when:[{eventIncomplete:'alpha2.frontier2.satchel'}],
+  lines:[
+   {speaker:'帝国兵の雑嚢',text:'泥まみれの雑嚢。中には乾いたパン、縫い針、給与の受領票、それから書きかけの手紙が入っている。'},
+   {speaker:'手紙',text:'「ミラへ。今月の給金は半分送った。屋根の穴は春まで待ってくれ。帰ったら俺が直す。母さんには――」そこで文が途切れている。'},
+   {speaker:'カレン',text:'「……帰ったら、って書いてる」'},
+   {speaker:'トリトン',text:'「そりゃ帰るつもりで来るだろ。帝国兵だって」'},
+   {speaker:'マーガレット',text:'「分かってたはずなのに、こういう物を見るまで“兵士”って一括りにしてた」'}
+  ],effects:[{type:'completeEvent',id:'alpha2.frontier2.satchel'},{type:'journal',text:'戦闘跡で帝国兵の書きかけの家族宛て手紙を見つけた。'}]
+ },
+ {id:'alpha2.frontier2.satchel.repeat',priority:10,trigger:{type:'object',map:'frontierfield',target:'imperialSatchel'},when:[{eventComplete:'alpha2.frontier2.satchel'}],lines:[{speaker:'帝国兵の雑嚢',text:'手紙は書きかけのまま畳まれている。宛名以外に、特別な人物名はない。'}]},
+ {
+  id:'alpha2.frontier2.orders',priority:80,trigger:{type:'object',map:'frontierfield',target:'withdrawalOrders'},
+  when:[{eventIncomplete:'alpha2.frontier2.orders'}],
+  lines:[
+   {speaker:'帝国軍・撤退命令',text:'「第七線を放棄。各隊は負傷者を回収し、北方旧関所方面へ集結。南側民間道への逸脱を禁ず。歩行不能者を置き去りにするな」'},
+   {speaker:'マーガレット',text:'「“無秩序な敗走”じゃない。撤退先まで指定されてる」'},
+   {speaker:'帝国軍・撤退命令',text:'末尾に小さく追記がある。<br>「以前、退路を守って戦死した指揮官の件を忘れるな。回収を優先せよ」'},
+   {speaker:'ソフィ',text:'「誰のことなんでしょう」'},
+   {speaker:'カレン',text:'「分からない。でも……帝国にも、“置いていくな”って命令があるんだ」'}
+  ],effects:[{type:'completeEvent',id:'alpha2.frontier2.orders'},{type:'journal',text:'帝国軍の撤退命令には負傷者回収、北方旧関所への集結、南側民間道への逸脱禁止が記されていた。過去に退路を守って戦死した指揮官への短い言及もある。'}]
+ },
+ {id:'alpha2.frontier2.orders.repeat',priority:10,trigger:{type:'object',map:'frontierfield',target:'withdrawalOrders'},when:[{eventComplete:'alpha2.frontier2.orders'}],lines:[{speaker:'帝国軍・撤退命令',text:'命令は北方旧関所への集結と負傷者回収を明記している。王国側の「散開敗走」という報告とは一致しない。'}]},
+ {
+  id:'alpha2.frontier2.discovery',priority:140,trigger:{type:'npc',map:'frontierfield',target:'woundedImperial'},
+  when:[{eventComplete:'alpha2.frontier2.fieldBriefing'},{eventComplete:'alpha2.frontier2.tracks'},{eventComplete:'alpha2.frontier2.satchel'},{eventComplete:'alpha2.frontier2.orders'},{eventIncomplete:'alpha2.frontier2.discovery'}],
+  lines:[
+   {speaker:'負傷した帝国兵',text:'「……王国の、勇者……？」'},
+   {speaker:'カレン',text:'「剣は抜かない。動ける？」'},
+   {speaker:'負傷した帝国兵',text:'「無理だ。撤退の担架から落ちた。仲間は戻ろうとしたが……俺が行けと言った」'},
+   {speaker:'マーガレット',text:'「この命令書はあなたの部隊のもの？」'},
+   {speaker:'負傷した帝国兵',text:'「ヴァルク隊のだ。北の旧関所へ集まる。……それ以上は知らない。俺は命令を運ぶ側じゃない」'},
+   {speaker:'トリトン',text:'「王国の村を焼け、って命令は？」'},
+   {speaker:'負傷した帝国兵',text:'「知らない。少なくとも俺たちは南へ入るなと言われた。信じなくていい。紙を見たなら、それで判断しろ」'},
+   {speaker:'ナレーション',text:'その時、血の匂いに寄ってきた灰森狼の唸り声が、崩れた土塁の向こうから重なった。'},
+   {speaker:'ソフィ',text:'「話は後です。あの人、このままじゃ逃げられません！」'},
+   {speaker:'カレン',text:'「帝国兵だからじゃない。今ここで動けない人だから守る。行こう！」'}
+  ],effects:[{type:'completeEvent',id:'alpha2.frontier2.discovery'},{type:'advanceStory',stage:STORY_STAGES.FRONTIER_DISCOVERY,objective:'負傷した帝国兵を守り、戦場狼を追い払う'},{type:'startBattle',id:'battlefieldWolves'}]
+ },
+ {id:'alpha2.frontier2.discovery.blocked',priority:20,trigger:{type:'npc',map:'frontierfield',target:'woundedImperial'},when:[{eventIncomplete:'alpha2.frontier2.discovery'}],lines:[{speaker:'負傷した帝国兵',text:'帝国兵は警戒して口を閉ざしている。周囲に残った撤退の痕跡を先に確認した方がよさそうだ。'}]},
+ {
+  id:'alpha2.frontier2.scavengerVictory',priority:160,trigger:{type:'battleWin',target:'battlefieldWolves'},
+  when:[{eventComplete:'alpha2.frontier2.discovery'},{eventIncomplete:'alpha2.frontier2.scavengerVictory'}],
+  effects:[{type:'completeEvent',id:'alpha2.frontier2.scavengerVictory'},{type:'defeatSymbol',id:'scavengerWolves'},{type:'setObjective',value:'セラドへ戻り、帝国軍の撤退痕跡を前線将校へ報告する'},{type:'journal',text:'戦場狼を追い払い、取り残された帝国兵を救助した。帝国兵は北の旧関所へ集結する命令を受けていた。'}],
+  lines:[
+   {speaker:'負傷した帝国兵',text:'「……なぜ助けた」'},
+   {speaker:'カレン',text:'「私もまだ、うまく説明できない。ただ、動けない人を狼に食わせるのは違うと思った」'},
+   {speaker:'王国斥候',text:'「セラドへ連れて戻ります。捕虜扱いです。それでも、ここへ置くよりはましだ」'},
+   {speaker:'負傷した帝国兵',text:'「好きにしろ。……命令書も持っていけ。俺の話より、その方が信じるだろ」'},
+   {speaker:'マーガレット',text:'「王国の報告と帝国の命令。どっちか一つを信じるんじゃなく、食い違ってる理由を調べる必要がある」'}
+  ]
+ },
+ {id:'alpha2.frontier2.fieldGraves',priority:20,trigger:{type:'object',map:'frontierfield',target:'fieldGraves'},lines:[{speaker:'仮埋葬地点',text:'浅い土盛りが並び、赤い布片の杭と青い布片の杭が混じっている。名前が分からない墓には、色すら付いていない。'},{speaker:'ソフィ',text:'「ここでは、どちら側か分からない人もいるんですね」'}]},
+ {id:'alpha2.frontier2.signalPost',priority:20,trigger:{type:'object',map:'frontierfield',target:'brokenSignalPost'},lines:[{speaker:'折れた信号柱',text:'赤と青、両方の矢が刺さった信号柱。根元には「北へ」と刻まれた帝国式の方角板が落ちている。'}]},
+ {
+  id:'alpha2.frontier2.complete',priority:190,trigger:{type:'npc',map:'frontier',target:'frontierOfficer'},
+  when:[{eventComplete:'alpha2.frontier2.scavengerVictory'},{eventIncomplete:'alpha2.frontier2.complete'}],
+  lines:[
+   {speaker:'前線将校',text:'「……撤退命令は確認した。こちらの初報とは食い違う。斥候の見間違いで片付けるには、轍も文書も揃いすぎている」'},
+   {speaker:'マーガレット',text:'「“帝国軍は敗走した”だけでは説明できません」'},
+   {speaker:'前線将校',text:'「ああ。それと北の旧関所で、王国の先行偵察が一隊、予定時刻を過ぎても戻っていない」'},
+   {speaker:'トリトン',text:'「帝国軍が集まってる場所と同じ方向か」'},
+   {speaker:'前線将校',text:'「同じだ。次はそこを確かめる。ただし“帝国は善人だった”なんて早合点もするな。灰の街道が焼けた事実は消えない」'},
+   {speaker:'カレン',text:'「分かってる。だから、どっちか一つだけ見て決めたくない」'},
+   {speaker:'ソフィ',text:'「あの手紙を書いた人が帰れたのかも、命令書の指揮官が誰なのかも、まだ分かりません」'},
+   {speaker:'カレン',text:'「うん。分からないから、次は北へ行って自分たちで見る」'}
+  ],effects:[{type:'completeEvent',id:'alpha2.frontier2.complete'},{type:'advanceStory',stage:STORY_STAGES.FRONTIER_SECOND_COMPLETE,objective:'セラド前線・第2区間完了：北の旧関所方面を調べる準備をする'},{type:'journal',text:'帝国軍の撤退命令と王国側の初報に食い違いがある。さらに北の旧関所方面で王国偵察隊が未帰還となり、次に北へ進む理由が生まれた。'}],
+  postLines:[{speaker:'ナレーション',text:'――[[セラド前線・第2区間 終了]]――<br>帝国軍は北へ集結し、王国の偵察隊も同じ方向で消息を絶った。答えはまだない。四人は、食い違う情報を確かめるため次の準備に入る。'}]
+ },
+ {id:'alpha2.frontier2.complete.repeat',priority:40,trigger:{type:'npc',map:'frontier',target:'frontierOfficer'},when:[{eventComplete:'alpha2.frontier2.complete'}],lines:[{speaker:'前線将校',text:'「北の旧関所へ出る準備をしておけ。出発命令はまだだ。今は記録と装備を整理しろ」'}]},
+
+  {id:'ryune.village.westSign',priority:10,trigger:{type:'object',map:'village',target:'westFieldPath'},
+   lines:[{speaker:'西畑への小道',text:'リュネ村の西畑へ続く道。畑の作業を見たいなら、ここから西へ進める。'}]},
+  {id:'ryune.village.eastSign',priority:10,trigger:{type:'object',map:'village',target:'eastBrookPath'},
+   lines:[{speaker:'小川への道',text:'リュネ村の東の小川へ続く道。川辺には橋と細い歩道がある。'}]},
+  // Optional one-time conversation: never used as a departure or story requirement.
+  {id:'ryune.memory.well',priority:25,trigger:{type:'object',map:'village',target:'well'},
+   when:[{worldSwitchTruthy:'ryune.baseViewed.well'},{eventIncomplete:'ryune.memory.well'}],
+   lines:[{speaker:'カレン',text:'「この桶、昔は両手じゃないと持てなかったな」'},
+    {speaker:'トリトン',text:'「運ぶのはいいけど、走ってこぼすのはやめてよ」'},
+    {speaker:'カレン',text:'「もうやらないって。……たぶん」'}],
+   effects:[{type:'completeEvent',id:'ryune.memory.well'}]},
+  // Optional one-time conversation: never used as a departure or story requirement.
+  {id:'ryune.memory.familyTable',priority:25,trigger:{type:'object',map:'karenhome',target:'familyTable'},
+   when:[{worldSwitchTruthy:'ryune.baseViewed.familyTable'},{eventIncomplete:'ryune.memory.familyTable'},{storyAtLeast:STORY_STAGES.APPOINTED}],
+   lines:[{speaker:'カレン',text:'「帰ってきたら、ここでゆっくりご飯を食べたいな」'},
+    {speaker:'トリトン',text:'「そうだね。出発前にちゃんと食べときなよ」'}],
+   effects:[{type:'completeEvent',id:'ryune.memory.familyTable'}]},
+  // Optional one-time conversation: never used as a departure or story requirement.
+  {id:'ryune.memory.toyChest',priority:25,trigger:{type:'object',map:'orphanage',target:'toyChest'},
+   when:[{worldSwitchTruthy:'ryune.baseViewed.toyChest'},{eventIncomplete:'ryune.memory.toyChest'}],
+   lines:[{speaker:'ソフィ',text:'「この人形、塗料が少し剥げていますね」'},
+    {speaker:'カレン',text:'「塗り直しておこうか？」'},
+    {speaker:'ソフィ',text:'「子どもたちに聞いてからにしましょう。気に入っている色かもしれませんから」'}],
+   effects:[{type:'completeEvent',id:'ryune.memory.toyChest'}]},
+  // Optional one-time conversation: never used as a departure or story requirement.
+  {id:'ryune.memory.mayorBooks',priority:25,trigger:{type:'object',map:'mayorhouse',target:'mayorBooks'},
+   when:[{worldSwitchTruthy:'ryune.baseViewed.mayorBooks'},{eventIncomplete:'ryune.memory.mayorBooks'}],
+   lines:[{speaker:'トリトン',text:'「ここで本を借りると、返しに来た時にはまた別の本を読んでたよね」'},
+    {speaker:'マーガレット',text:'「返す前に気になることが増えるんだもの。仕方ないでしょ」'}],
+   effects:[{type:'completeEvent',id:'ryune.memory.mayorBooks'}]},
+  // Optional one-time conversation: never used as a departure or story requirement.
+  {id:'ryune.memory.soldierLetter',priority:25,trigger:{type:'object',map:'cottage',target:'soldierLetter'},
+   when:[{worldSwitchTruthy:'ryune.baseViewed.soldierLetter'},{eventIncomplete:'ryune.memory.soldierLetter'}],
+   lines:[{speaker:'トリトン',text:'「折り目が柔らかい。何度も開いたんだろうね」'},
+    {speaker:'カレン',text:'「……そっと戻しておこう」'}],
+   effects:[{type:'completeEvent',id:'ryune.memory.soldierLetter'}]},
+  // Side excursions are optional and never advance, delay or rewrite the royal appointment.
+  {id:'ryune.fields.inspect',priority:70,trigger:{type:'object',map:'ryunefields',target:'fieldFurrows'},
+   when:[{eventIncomplete:'ryune.fields.inspect'}],
+   lines:[
+    {speaker:'畑の畝',text:'乾いた土の間に、まばらな青い芽が残っている。収穫を待つ畑と、すでに空になった畝が隣り合っている。'},
+    {speaker:'トリトン',text:'「この辺り、前はもっと土が柔らかかったよな。水を引く溝を見直せば、まだ少しは育つかも」'},
+    {speaker:'マーガレット',text:'「今見たことはボルに伝えられるわ。小川の様子も分かれば、もう少し原因を絞れそうね」'}
+   ],effects:[
+    {type:'completeEvent',id:'ryune.fields.inspect'},
+    {type:'journal',text:'リュネ村の西畑では一部の畝が乾いていた。ボルへの報告は今でもできる。小川を確かめれば情報が増える。'}
+   ]},
+  {id:'ryune.fields.inspect.repeat',priority:10,trigger:{type:'object',map:'ryunefields',target:'fieldFurrows'},
+   when:[{eventComplete:'ryune.fields.inspect'}],lines:[{speaker:'畑の畝',text:'まばらな芽を傷つけないよう、踏み跡の横から畝を眺めた。'}]},
+  {id:'ryune.brook.inspect',priority:70,trigger:{type:'object',map:'ryunebrook',target:'brookWater'},
+   when:[{eventIncomplete:'ryune.brook.inspect'}],
+   lines:[
+    {speaker:'小川の水辺',text:'小川は浅い。橋の下の水路には泥と小枝がたまり、水がゆっくり流れている。'},
+    {speaker:'ソフィ',text:'「水がなくなったわけじゃないんですね。畑までちゃんと届いていないのかも」'},
+    {speaker:'カレン',text:'「戻ったらボルに伝えよう。私たちだけで勝手に掘るわけにはいかないからね」'}
+   ],effects:[
+    {type:'completeEvent',id:'ryune.brook.inspect'},
+    {type:'journal',text:'村東側の小川には水が残り、橋の下に泥と小枝がたまっていた。畑へ行かなくても農夫への報告はできる。'}
+   ]},
+  {id:'ryune.brook.inspect.repeat',priority:10,trigger:{type:'object',map:'ryunebrook',target:'brookWater'},
+   when:[{eventComplete:'ryune.brook.inspect'}],lines:[{speaker:'小川の水辺',text:'水は細く流れている。むやみに水路へ入らず、村の人に状況を伝えることにした。'}]},
+  // One observation is worth taking home. Requiring TWO large walks for a
+  // single ration felt like mandatory checklist work, despite being optional.
+  // Either safe observation may be reported first, with the SAME one-time food
+  // reward. A second visit is only for curiosity, never for extra loot.
+  {id:'ryune.outskirts.fieldReport',priority:80,trigger:{type:'npc',map:'village',target:'farmer'},
+   when:[{eventComplete:'ryune.fields.inspect'},{eventIncomplete:'ryune.brook.inspect'},
+    {eventIncomplete:'ryune.outskirts.reward'}],
+   lines:[
+    {speaker:'農夫のボル',text:'「畑の乾いた場所を見てくれたのか。助かる。畝の踏み跡を避けて、まず溝を測ってみるよ」'},
+    {speaker:'マーガレット',text:'「小川の状況はまだ分かりません。水路を掘る前に、水の入り口を確認してください」'},
+    {speaker:'農夫のボル',text:'「分かった。旅の食べ物を少し持っていきな。無理に川まで行かなくていい」'}
+   ],effects:[
+    {type:'completeEvent',id:'ryune.outskirts.reward'},
+    {type:'completeEvent',id:'ryune.outskirts.reported.fields'},
+    {type:'openTreasure',id:'outskirtsThanks'},
+    {type:'journal',text:'西畑の乾いた畝についてボルに報告した。小川は未調査なので水路の原因は断定していない。携帯食を受け取った。'}
+   ]},
+  {id:'ryune.outskirts.brookReport',priority:80,trigger:{type:'npc',map:'village',target:'farmer'},
+   when:[{eventComplete:'ryune.brook.inspect'},{eventIncomplete:'ryune.fields.inspect'},
+    {eventIncomplete:'ryune.outskirts.reward'}],
+   lines:[
+    {speaker:'農夫のボル',text:'「橋の下に泥がたまってるのか。なるほど。まず水位を測らないといけねえな」'},
+    {speaker:'ソフィ',text:'「畑の土はまだ確かめていません。水が足りない理由を一つに決めないでくださいね」'},
+    {speaker:'農夫のボル',text:'「そうする。ありがとう。これは道中の食べ物だ。畑まで見てくる必要はないよ」'}
+   ],effects:[
+    {type:'completeEvent',id:'ryune.outskirts.reward'},
+    {type:'completeEvent',id:'ryune.outskirts.reported.brook'},
+    {type:'openTreasure',id:'outskirtsThanks'},
+    {type:'journal',text:'小川の水量についてボルに報告した。畑は未調査なので原因は断定していない。携帯食を受け取った。'}
+   ]},
+  {id:'ryune.outskirts.reward',priority:90,trigger:{type:'npc',map:'village',target:'farmer'},
+   when:[{eventComplete:'ryune.fields.inspect'},{eventComplete:'ryune.brook.inspect'},{eventIncomplete:'ryune.outskirts.reward'}],
+   lines:[
+    {speaker:'農夫のボル',text:'「畑と川の両方を見てきてくれたのか。助かるよ。水を引く溝は、みんなで確かめてみる」'},
+    {speaker:'マーガレット',text:'「まだ原因は断定できません。水路を確認するときは、畑を傷めないようにしてください」'},
+    {speaker:'農夫のボル',text:'「分かってる。これはほんの礼だ。旅先で腹が減ったら食べな」'}
+   ],effects:[
+    {type:'completeEvent',id:'ryune.outskirts.reward'},
+    {type:'completeEvent',id:'ryune.outskirts.reported.fields'},
+    {type:'completeEvent',id:'ryune.outskirts.reported.brook'},
+    {type:'openTreasure',id:'outskirtsThanks'},
+    {type:'journal',text:'西畑と東の小川の様子を農夫ボルへ報告し、旅の携帯食を受け取った。'}
+   ]},
+  // If the player independently explores the other side LATER, Boru can
+  // accept a second piece of evidence WITHOUT paying a second ration or
+  // pretending the previously-unvisited site was already measured.
+  {id:'ryune.outskirts.followup.fields',priority:60,
+   trigger:{type:'npc',map:'village',target:'farmer'},
+   when:[{eventComplete:'ryune.outskirts.reward'},
+    {eventComplete:'ryune.fields.inspect'},
+    {eventIncomplete:'ryune.outskirts.reported.fields'}],
+   lines:[
+    {speaker:'農夫のボル',text:'「西の畝の話も分かった。今度は畑側の高さを測って、川の記録と合わせてみるよ」'},
+    {speaker:'トリトン',text:'「無理に掘らないでね。苗が残ってるところはまだ生きてる」'}
+   ],effects:[
+    {type:'completeEvent',id:'ryune.outskirts.reported.fields'},
+    {type:'journal',text:'後から確認した西畑の乾いた畝について、ボルへ追加で伝えた。'}
+   ]},
+  {id:'ryune.outskirts.followup.brook',priority:60,
+   trigger:{type:'npc',map:'village',target:'farmer'},
+   when:[{eventComplete:'ryune.outskirts.reward'},
+    {eventComplete:'ryune.brook.inspect'},
+    {eventIncomplete:'ryune.outskirts.reported.brook'}],
+   lines:[
+    {speaker:'農夫のボル',text:'「橋の下の水位の話も助かる。畑と照らし合わせて、少しずつ確かめていくよ」'},
+    {speaker:'ソフィ',text:'「水を動かす前に、作業する人の足場にも気をつけてくださいね」'}
+   ],effects:[
+    {type:'completeEvent',id:'ryune.outskirts.reported.brook'},
+    {type:'journal',text:'後から確認した小川の泥詰まりについて、ボルへ追加で伝えた。'}
+   ]},
+  // World follow-up is visible only after a VOLUNTARY report for that site.
+  // Residents remember information; no magical instant irrigation repair.
+  {id:'ryune.fields.worker.afterReport',priority:35,
+   trigger:{type:'npc',map:'ryunefields',target:'fieldWorker'},
+   when:[{eventComplete:'ryune.outskirts.reported.fields'}],
+   lines:[{speaker:'畑の手伝い人',text:'「ボルから聞いたよ。まず溝の高さを測るんだ。苗を踏まないよう、細い目印だけ立ててある」'}]},
+  {id:'ryune.brook.keeper.afterReport',priority:35,
+   trigger:{type:'npc',map:'ryunebrook',target:'brookKeeper'},
+   when:[{eventComplete:'ryune.outskirts.reported.brook'}],
+   lines:[{speaker:'川辺の見回り人',text:'「水位の印を付けたよ。流れが戻るかは、何日か見ないと分からないね」'}]},
+  {id:'ryune.fields.cart.afterReport',priority:35,
+   trigger:{type:'object',map:'ryunefields',target:'fieldCart'},
+   when:[{eventComplete:'ryune.outskirts.reported.fields'}],
+   lines:[{speaker:'畑の荷車',text:'縄と測り棒が荷台に置かれている。溝の深さを確かめてから直すつもりらしい。'}]},
+  {id:'ryune.brook.stones.afterReport',priority:35,
+   trigger:{type:'object',map:'ryunebrook',target:'brookStones'},
+   when:[{eventComplete:'ryune.outskirts.reported.brook'}],
+   lines:[{speaker:'川辺の石積み',text:'水の高さを確かめる目印が増えている。石積みはまだそのままだ。'}]},
+  {id:'ryune.fields.worker',priority:15,trigger:{type:'npc',map:'ryunefields',target:'fieldWorker'},
+   lines:[{speaker:'畑の手伝い人',text:'「畝の間を踏まないでおくれよ。村へ戻るなら東側の道をまっすぐだ。乾いた場所が気になったら見ていって」'}]},
+  {id:'ryune.brook.keeper',priority:15,trigger:{type:'npc',map:'ryunebrook',target:'brookKeeper'},
+   lines:[{speaker:'川辺の見回り人',text:'「橋は通れるよ。足元だけ気をつけて。川の流れを調べるなら橋の手前の岸辺からどうぞ」'}]},
+  {id:'ryune.fields.cart',priority:15,trigger:{type:'object',map:'ryunefields',target:'fieldCart'},
+   lines:[{speaker:'畑の荷車',text:'籠と道具が積まれている。収穫を運ぶための荷車だが、今は修理用の木材を積んでいる。'}]},
+  {id:'ryune.brook.stones',priority:15,trigger:{type:'object',map:'ryunebrook',target:'brookStones'},
+   lines:[{speaker:'川辺の石積み',text:'小さな石が川岸を支えている。大雨のあとに補修した跡が残る。'}]},
+]);
+GC.Data=GC.Data||{};GC.Data.Events={EVENT_DEFS};
+
+</script>
+<script data-origin="js/data/battles.js">
+'use strict';
+const battles={
+ wolves:{name:'灰牙狼',prototype:true,enemies:[{name:'灰牙狼',art:'wolf',hp:96,maxHp:96,atk:16,def:4}],reward:{gold:22,exp:22}},
+ roadBandit:{name:'街道のならず者',prototype:true,faction:'human',enemies:[{name:'街道のならず者',art:'bandit',human:true,hp:82,maxHp:82,atk:11,def:6,morale:58,maxMorale:58}],reward:{gold:28,exp:24}},
+ bats:{name:'洞窟コウモリの群れ',enemies:[{name:'洞窟コウモリA',hp:28,maxHp:28,atk:8,def:2},{name:'洞窟コウモリB',hp:28,maxHp:28,atk:8,def:2},{name:'洞窟コウモリC',hp:24,maxHp:24,atk:7,def:2}],reward:{gold:18,exp:16}},
+ crawler:{name:'石殻ムカデ',enemies:[{name:'石殻ムカデ',hp:105,maxHp:105,atk:14,def:7}],reward:{gold:42,exp:30}},
+ boss:{name:'古砦の主・灰角獣',boss:true,epithet:'古砦の主',quote:'朽ちた砦に、低い唸り声が響く。',phase2:'灰角獣が地面を蹴り、角を突き下げる！',phase3:'灰角獣は最後の力を振り絞る！',enemies:[{name:'灰角獣',hp:185,maxHp:185,atk:18,def:9,phase:1}],reward:{gold:125,exp:65}},
+ roadDogs:{name:'街道の野犬',random:true,enemies:[{name:'野犬A',hp:27,maxHp:27,atk:7,def:2},{name:'野犬B',hp:25,maxHp:25,atk:7,def:2}],reward:{gold:8,exp:10,drop:{item:'薬草',chance:.22}}},
+ roadBoar:{name:'痩せた角猪',random:true,enemies:[{name:'角猪',hp:58,maxHp:58,atk:11,def:5}],reward:{gold:12,exp:13,drop:{item:'薬草',chance:.18}}},
+ caveRats:{name:'洞窟ネズミの群れ',random:true,enemies:[{name:'洞窟ネズミA',hp:22,maxHp:22,atk:7,def:2},{name:'洞窟ネズミB',hp:22,maxHp:22,atk:7,def:2},{name:'洞窟ネズミC',hp:20,maxHp:20,atk:6,def:1}],reward:{gold:5,exp:10,drop:{item:'魔力草',chance:.15}}},
+ caveBeetles:{name:'岩甲虫',random:true,enemies:[{name:'岩甲虫A',hp:36,maxHp:36,atk:9,def:6},{name:'岩甲虫B',hp:34,maxHp:34,atk:9,def:6}],reward:{gold:7,exp:14,drop:{item:'薬草',chance:.2}}},
+ northWolves:{name:'灰森狼',random:true,enemies:[{name:'灰森狼A',hp:44,maxHp:44,atk:11,def:4},{name:'灰森狼B',hp:40,maxHp:40,atk:10,def:4}],reward:{gold:15,exp:16,drop:{item:'魔力草',chance:.18}}},
+ imperialRaid:{name:'レグノア帝国・街道斥候隊',faction:'empire',enemies:[{name:'帝国斥候兵A',faction:'empire',hp:62,maxHp:62,atk:12,def:6},{name:'帝国斥候兵B',faction:'empire',hp:58,maxHp:58,atk:11,def:6}],reward:{gold:26,exp:28}},
+ vanguardCaptain:{name:'帝国前衛隊長ヴァルク',faction:'empire',boss:true,epithet:'国境前衛隊長',quote:'「ここは英雄譚の舞台じゃない。前線だ」',phase2:'「まだだ！ 隊列を崩すな！」',phase3:'「なるほど……勇者の名は飾りだけじゃないか」',enemies:[{name:'ヴァルク',faction:'empire',hp:185,maxHp:185,atk:19,def:9,phase:1}],reward:{gold:35,exp:50}},
+ battlefieldWolves:{name:'戦場に寄った灰森狼',enemies:[{name:'灰森狼A',art:'wolf',hp:48,maxHp:48,atk:11,def:4},{name:'灰森狼B',art:'wolf',hp:44,maxHp:44,atk:10,def:4},{name:'灰森狼C',art:'wolf',hp:38,maxHp:38,atk:10,def:3}],reward:{gold:0,exp:22,drop:{item:'薬草',chance:.18}}},
+ zenithEncounter:{name:'ゼニス',faction:'empire',boss:true,epithet:'帝国四将・静謐の刃',quote:'「感情を捨てろとは言わない。だが判断まで渡すな」',phase2:'「戦い方が変わった。帝国で見たものが君たちを変えたか」',phase3:'「ここからは四将として応じる」',enemies:[{name:'ゼニス',faction:'empire',hp:255,maxHp:255,atk:24,def:11,phase:1}],reward:{gold:0,exp:80}},
+ ashcrownCheckpoint:{name:'灰冠への道を塞ぐ国境守備兵',faction:'kingdom',enemies:[{name:'国境の守備兵',art:'bandit',human:true,faction:'kingdom',hp:56,maxHp:56,atk:9,def:4,morale:40,maxMorale:40}],reward:{gold:0,exp:12}},
+ // Final-act tactical encounters: these units block passage, not the rulers.
+ // Their morale permits a non-lethal resolution on every branch.
+ kingdomEvacuation:{name:'帝国本陣・避難路封鎖班',faction:'empire',
+  enemies:[{name:'帝国の封鎖兵',human:true,faction:'empire',hp:108,maxHp:108,atk:15,def:7,morale:64,maxMorale:64}],
+  reward:{gold:0,exp:30}},
+ kingdomOrders:{name:'帝国本陣・前衛警戒隊',faction:'empire',
+  enemies:[{name:'帝国前衛指揮兵',human:true,faction:'empire',hp:142,maxHp:142,atk:18,def:9,morale:76,maxMorale:76}],
+  reward:{gold:0,exp:33}},
+ empireProtect:{name:'王国司令部・捕虜護送の警備隊',faction:'kingdom',
+  enemies:[{name:'王国の護送兵',human:true,faction:'kingdom',hp:104,maxHp:104,atk:15,def:7,morale:60,maxMorale:60}],
+  reward:{gold:0,exp:30}},
+ empireAdvance:{name:'王国司令部・追撃命令の伝令隊',faction:'kingdom',
+  enemies:[{name:'王国追撃指揮兵',human:true,faction:'kingdom',hp:138,maxHp:138,atk:18,def:9,morale:75,maxMorale:75}],
+  reward:{gold:0,exp:33}}
+};
+GC.Data=GC.Data||{};GC.Data.Battles={battles};
+
+</script>
+<script data-origin="js/systems/dialogue.js">
+'use strict';
+let dialogueChoices=[],dialogueChoiceIndex=0,dialogueContinue=null;
+const DIALOGUE_TYPE={raf:0,tokens:[],index:0,html:'',fullHTML:'',typing:false,baseDelay:19,lastTs:0,waitUntil:0,generation:0,timeouts:new Set(),intervals:new Set()};
+const INPUT_LOCKS=new Set();
+function acquireInputLock(reason){INPUT_LOCKS.add(reason);return reason}
+function releaseInputLock(reason){INPUT_LOCKS.delete(reason)}
+function isInputLocked(){return !!state.locked||INPUT_LOCKS.size>0}
+function clearDialogueAsync(){DIALOGUE_TYPE.generation++;if(DIALOGUE_TYPE.raf)cancelAnimationFrame(DIALOGUE_TYPE.raf);DIALOGUE_TYPE.raf=0;for(const id of DIALOGUE_TYPE.timeouts)clearTimeout(id);for(const id of DIALOGUE_TYPE.intervals)clearInterval(id);DIALOGUE_TYPE.timeouts.clear();DIALOGUE_TYPE.intervals.clear();DIALOGUE_TYPE.waitUntil=0}
+function dialogueMarkup(raw=''){
+ const highlighted=String(raw).replace(/\[\[([\s\S]*?)\]\]/g,'<span class="dialogue-keyword">$1</span>');
+ const parts=highlighted.match(/\|\||\||<[^>]+>|&[^;]+;|[\s\S]/g)||[];
+ const tokens=[];let full='';
+ for(const part of parts){if(part==='|'){tokens.push({pause:210});continue}if(part==='||'){tokens.push({pause:430});continue}tokens.push({html:part});full+=part}
+ return{tokens,fullHTML:full}
+}
+function dialogueDelay(token){if(!token?.html)return 0;const c=token.html;if(c.startsWith('<')||c.startsWith('&'))return 0;if(/[。！？!?]/.test(c))return 92;if(/[、，,]/.test(c))return 52;if(c==='…')return 78;return DIALOGUE_TYPE.baseDelay}
+function dialogueTyping(){return DIALOGUE_TYPE.typing}
+function dialogueRevealChoices(){const box=$('choiceBox');if(box)box.classList.remove('choices-waiting');if($('dialogueHint'))$('dialogueHint').classList.remove('typing')}
+function stopDialogueRaf(){clearDialogueAsync()}
+function finishDialogueTyping(){if(!DIALOGUE_TYPE.typing)return false;stopDialogueRaf();DIALOGUE_TYPE.typing=false;DIALOGUE_TYPE.index=DIALOGUE_TYPE.tokens.length;DIALOGUE_TYPE.html=DIALOGUE_TYPE.fullHTML;DIALOGUE_TYPE.waitUntil=0;$('dialogueText').innerHTML=DIALOGUE_TYPE.fullHTML;dialogueRevealChoices();return true}
+function startDialogueTyping(raw){clearDialogueAsync();const generation=DIALOGUE_TYPE.generation;const c=dialogueMarkup(raw);DIALOGUE_TYPE.tokens=c.tokens;DIALOGUE_TYPE.fullHTML=c.fullHTML;DIALOGUE_TYPE.index=0;DIALOGUE_TYPE.html='';DIALOGUE_TYPE.typing=true;DIALOGUE_TYPE.lastTs=0;DIALOGUE_TYPE.waitUntil=0;$('dialogueText').innerHTML='';$('choiceBox').classList.add('choices-waiting');$('dialogueHint').classList.add('typing');
+ const step=(ts)=>{if(generation!==DIALOGUE_TYPE.generation||!DIALOGUE_TYPE.typing)return;if(DIALOGUE_TYPE.waitUntil&&ts<DIALOGUE_TYPE.waitUntil){DIALOGUE_TYPE.raf=requestAnimationFrame(step);return}if(DIALOGUE_TYPE.waitUntil){DIALOGUE_TYPE.waitUntil=0;DIALOGUE_TYPE.lastTs=ts}if(DIALOGUE_TYPE.index>=DIALOGUE_TYPE.tokens.length){DIALOGUE_TYPE.typing=false;DIALOGUE_TYPE.raf=0;$('dialogueText').innerHTML=DIALOGUE_TYPE.fullHTML;dialogueRevealChoices();return}if(!DIALOGUE_TYPE.lastTs)DIALOGUE_TYPE.lastTs=ts;let safety=0;while(DIALOGUE_TYPE.index<DIALOGUE_TYPE.tokens.length&&safety++<24){const tok=DIALOGUE_TYPE.tokens[DIALOGUE_TYPE.index];if(tok.pause){DIALOGUE_TYPE.index++;DIALOGUE_TYPE.waitUntil=ts+tok.pause;break}const delay=dialogueDelay(tok);if(delay>0&&ts-DIALOGUE_TYPE.lastTs<delay)break;DIALOGUE_TYPE.index++;DIALOGUE_TYPE.html+=tok.html;$('dialogueText').innerHTML=DIALOGUE_TYPE.html;if(delay>0){DIALOGUE_TYPE.lastTs=ts;break}}
+ DIALOGUE_TYPE.raf=requestAnimationFrame(step)};DIALOGUE_TYPE.raf=requestAnimationFrame(step)}
+function refreshChoiceHighlight(){document.querySelectorAll('#choiceBox button').forEach((b,i)=>b.classList.toggle('selected',i===dialogueChoiceIndex))}
+function closeDialogue(refocus=true){GC.CommercialActing?.onClose?.();clearDialogueAsync();DIALOGUE_TYPE.typing=false;const box=$('dialogueBox');box.classList.add('hidden');box.classList.remove('no-portrait');$('speakerPortrait').classList.remove('portrait-disabled');dialogueChoices=[];dialogueChoiceIndex=0;dialogueContinue=null;releaseInputLock('dialogue');if(refocus)canvas.focus()}
+function activateDialogueChoice(){if(!dialogueChoices.length)return;const c=dialogueChoices[dialogueChoiceIndex];closeDialogue(false);c.fn();if($('dialogueBox').classList.contains('hidden'))canvas.focus()}
+function say(speaker,text,choices=[],next=null,options={}){acquireInputLock('dialogue');const isHero=['カレン','トリトン','ソフィ','マーガレット'].includes(speaker),portraitMode=options?.portraitMode==='disabled'?'disabled':'enabled',box=$('dialogueBox'),portrait=$('speakerPortrait');box.classList.toggle('hero-dialogue',isHero);box.classList.toggle('no-portrait',portraitMode==='disabled');portrait.classList.toggle('hero',isHero);portrait.classList.toggle('portrait-disabled',portraitMode==='disabled');$('speaker').textContent=speaker;portrait.innerHTML=portraitMode==='disabled'?'':portraitMarkup(speaker);$('choiceBox').innerHTML='';dialogueChoices=choices;dialogueContinue=next;dialogueChoiceIndex=0;for(const c of choices){const b=document.createElement('button');b.textContent=c.label;b.addEventListener('click',()=>{if(dialogueTyping()){finishDialogueTyping();return}dialogueChoiceIndex=Math.max(0,dialogueChoices.indexOf(c));activateDialogueChoice()});$('choiceBox').appendChild(b)}$('dialogueHint').textContent=choices.length?'← → / ↑ ↓ で選択・Enter / Spaceで決定':next?'Enter / Spaceで次へ':'Enter / Spaceで閉じる';box.classList.remove('hidden');GC.CommercialActing?.onLine?.(speaker,text);refreshChoiceHighlight();startDialogueTyping(text)}
+function saySequence(lines,after=null){const step=i=>{if(i>=lines.length){if(after)after();else canvas.focus();return}const line=lines[i];say(line.speaker,line.text,[],()=>step(i+1),line.options||{})};step(0)}
+GC.Dialogue={say,saySequence,dialogueMarkup,startDialogueTyping,finishDialogueTyping,dialogueTyping,closeDialogue,activateDialogueChoice,DIALOGUE_TYPE,acquireInputLock,releaseInputLock,isInputLocked,clearDialogueAsync,INPUT_LOCKS};
+
+</script>
