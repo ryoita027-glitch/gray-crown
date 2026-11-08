@@ -1,0 +1,524 @@
+<script data-origin="js/systems/commercial_ux.js">
+'use strict';
+/* Discovery affordance, not a fabricated quest objective or reward.
+   It reads only existing map coordinates and the original front() cell. */
+(function(){
+ const labels=Object.freeze({
+  renPracticeDummy:'レンの稽古台',messenger:'王国使者',mayor:'村長',capitalOfficial:'王都の任命担当',granz:'総司令グランツ',
+  capitalInnDoor:'白鹿亭',capitalArmoryDoor:'兵装店',innRest:'白鹿亭の寝台',
+  refugee:'避難民',fieldPriest:'従軍僧',scorchedOrders:'焼けた命令書',
+  burnedHomestead:'焼けた家屋',burnedCart:'焼けた荷車',ruinedShrine:'道端の祠',
+  imperialPatrol:'帝国軍斥候',frontierOfficer:'前線将校',frontierMedic:'衛生兵',
+  vanguardCaptain:'帝国前衛隊長ヴァルク',fieldHospital:'野戦病院',
+  watchTower:'見張り台',frontierCache:'補給箱',frontierNotice:'前線の掲示',
+  fieldFurrows:'乾いた畑の畝',brookWater:'小川の水際',
+  fieldCart:'作業用の荷車',brookStones:'川岸の石積み',
+  westFieldPath:'西畑への道',eastBrookPath:'東小川への道',
+  wolf:'街道の灰牙狼',roadSign:'狼の足跡がある道標',cave:'古砦入口',
+  bandit:'街道のならず者',bats:'コウモリの群れ',crawler:'石殻ムカデ',
+  boss:'奥に潜む灰角獣',leverWest:'西側の開閉機構',
+  leverEast:'東側の開閉機構',innerGate:'中央の鉄格子',
+  banner:'古い軍旗',fortShield:'傷だらけの盾',caveRest:'兵舎跡の休憩所',rations:'保存食の箱'
+ });
+ const action=(kind,o)=>o?
+   (kind==='npc'?'話す':
+    ['wolf','bandit','bats','crawler','boss'].includes(o.id)?'向き合う':
+    ['leverWest','leverEast'].includes(o.id)?'操作する':'調べる')+
+   '：'+(o.name||labels[o.id]||'気になるもの')+' · Enter':
+   '移動：WASD / 矢印　　調べる：Enter';
+ let previous=null;
+ function update(map,targetNpc,targetObject){
+  const el=typeof $==='function'?$('qualityHint'):null;
+  if(!el)return false;
+  const canReport=map==='village'&&targetNpc?.id==='farmer'&&
+   !state.events.completed['ryune.outskirts.reward']&&
+   (!!state.events.completed['ryune.fields.inspect']||
+    !!state.events.completed['ryune.brook.inspect']);
+  const canFollowUp=map==='village'&&targetNpc?.id==='farmer'&&
+   state.events.completed['ryune.outskirts.reward']&&(
+    (state.events.completed['ryune.fields.inspect']&&!state.events.completed['ryune.outskirts.reported.fields'])||
+    (state.events.completed['ryune.brook.inspect']&&!state.events.completed['ryune.outskirts.reported.brook']));
+  const next=canFollowUp?'伝える：農夫ボルに追加の観察を話す · Enter':
+   canReport?'伝える：農夫ボルに見てきた様子を話す · Enter':
+   targetNpc?action('npc',targetNpc):targetObject?action('object',targetObject):action(null,null);
+  if(next!==previous){el.textContent=next;previous=next}
+  return !!(targetNpc||targetObject)
+ }
+ GC.CommercialUX={labels,action,update};
+})();
+
+</script>
+<script data-origin="js/systems/commercial_discovery.js">
+'use strict';
+/* Optional discovery from existing original story flags and treasure records.
+ * This layer does not award rewards, set flags or generate new encounters. */
+(function(){
+ const extras=Object.freeze({
+  village:[{id:'early.orphanMedicine',kind:'choice',label:'孤児院の薬草相談'},
+   {id:'ryune.outskirts.reward',kind:'event',label:'畑か小川の観察をボルに伝える'}],
+  ryunefields:[{id:'ryune.fields.inspect',kind:'event',label:'畑の土を調べる'},
+   {id:'fieldCache',kind:'treasure',label:'畑の道具箱'}],
+  ryunebrook:[{id:'ryune.brook.inspect',kind:'event',label:'小川の水量を調べる'},
+   {id:'brookCache',kind:'treasure',label:'川辺の採集袋'}],
+  road:[{id:'bandit',kind:'defeated',label:'ならず者への対処'},{id:'roadCache',kind:'treasure',label:'街道の物資'},
+   {id:'early.merchantCart',kind:'choice',label:'行商人の荷車'},
+   {id:'early.wolfScout',kind:'choice',label:'狼の足跡を調べる'}],
+  cave:[{id:'early.caveBanner',kind:'choice',label:'古い軍旗の記憶'},
+   {id:'early.caveSupplies',kind:'choice',label:'古砦の備蓄食'},
+   {id:'chest1',kind:'treasure',label:'古砦の宝箱（西）'},{id:'chest2',kind:'treasure',label:'古砦の宝箱（東）'},
+   {id:'bats',kind:'defeated',label:'コウモリの群れ'},{id:'crawler',kind:'defeated',label:'石殻ムカデ'}],
+  ashroad:[{id:'alpha2.ashroad.priest',kind:'event',label:'従軍僧の話'},
+   {id:'alpha2.ashroad.burnedCart',kind:'event',label:'焼けた荷車'},
+   {id:'alpha2.ashroad.homestead',kind:'event',label:'焼けた農家'},
+   {id:'alpha2.ashroad.shrine',kind:'event',label:'道端の祠'},
+   {id:'ashCache',kind:'treasure',label:'避難路の荷袋'}],
+  frontier:[{id:'frontierCache',kind:'treasure',label:'前線補給箱'}]
+ });
+ function done(p,s){
+  if(p.kind==='event')return !!s.events?.completed?.[p.id];
+  if(p.kind==='choice')return !!s.events?.choices?.[p.id];
+  if(p.kind==='treasure')return !!s.world?.treasures?.[p.id];
+  return !!s.world?.defeatedSymbols?.[p.id]
+ }
+ function progress(map,s=state){
+  // A single authentic field or creek observation can now be shared with
+  // Boru. No "visit both maps" chore masquerading as optional exploration.
+  const visible=(extras[map]||[]).filter(p=>p.id!=='ryune.outskirts.reward'||
+   (!!s.events?.completed?.['ryune.fields.inspect']||
+    !!s.events?.completed?.['ryune.brook.inspect'])||
+    !!s.events?.completed?.['ryune.outskirts.reward']);
+  const complete=visible.filter(p=>done(p,s));
+  return {map,total:visible.length,found:complete.length,
+   remaining:visible.filter(p=>!done(p,s)).map(p=>p.label)}
+ }
+ function questHint(map){
+  if(map==='village'&&!isEventComplete('alpha.village.appointment'))return{id:'messenger',kind:'npc'};
+  if(map==='road'&&!isDefeated('wolf'))return{id:'wolf',kind:'object'};
+  if(map==='cave'){
+   if(!getWorldSwitch('leverWest'))return{id:'leverWest',kind:'object'};
+   if(!getWorldSwitch('leverEast'))return{id:'leverEast',kind:'object'};
+   if(!isDefeated('boss'))return{id:'boss',kind:'object'};
+  }
+  if(map==='ashroad'){
+   if(!isEventComplete('alpha2.ashroad.refugee'))return{id:'refugee',kind:'npc'};
+   if(!isEventComplete('alpha2.ashroad.orders'))return{id:'scorchedOrders',kind:'object'};
+   if(!isEventComplete('alpha2.ashroad.patrolVictory'))return{id:'imperialPatrol',kind:'object'};
+  }
+  return null
+ }
+ function update(){
+  const node=typeof $==='function'?$('discoveryHud'):null;
+  if(!node)return null;
+  const p=progress(state.map);
+  if(!p.total){node.textContent='';node.classList.add('hidden');return p}
+  node.classList.remove('hidden');
+  node.textContent=p.remaining.length?'寄り道（任意）・気になる場所を調べる':'寄り道の発見（任意）';
+  node.setAttribute('title',p.remaining.length?'気が向いたら調べられる場所：'+p.remaining.join('／'):'このエリアの寄り道はすべて発見済み');
+  return p
+ }
+ GC.CommercialDiscovery={extras,done,progress,questHint,update};
+})();
+
+</script>
+<script data-origin="js/systems/cinematic.js">
+'use strict';
+(function(){
+ const CINEMATIC={active:false,name:null,actors:new Map(),camera:null,commandIndex:-1,currentCommand:null,mode:null,renderMode:'pixel48-full',cancelled:false,previousLocked:false};
+ const PROTOTYPE_RENDER_SCALES=Object.freeze({'pixel48':1,'pixel48-full':1,'pixel48-medium':44/48,'pixel48-compact':41/48,'legacy32':1});
+ function renderScaleForMode(mode){return PROTOTYPE_RENDER_SCALES[mode]??1}
+ const CANCEL_WAITERS=new Set();
+ function isActive(){return CINEMATIC.active}
+ function cameraTarget(){return CINEMATIC.active?CINEMATIC.camera:null}
+ function controlledNpcIds(){return CINEMATIC.active?[...CINEMATIC.actors.values()].filter(a=>a.controlNpc).map(a=>a.id):[]}
+ function getRenderActors(){return CINEMATIC.active?[...CINEMATIC.actors.values()].filter(a=>a.visible!==false).sort((a,b)=>(a.layer||0)-(b.layer||0)):[]}
+ function actor(id){return CINEMATIC.actors.get(id)||null}
+ function addActor(spec){const renderMode=spec.renderMode||'pixel48-full',a=GC.Animation.createActor(spec.character||spec.id,{...spec,renderMode,renderScale:spec.renderScale??renderScaleForMode(renderMode)});a.controlNpc=!!spec.controlNpc;a.renderMode=renderMode;a.renderScale=spec.renderScale??renderScaleForMode(renderMode);a.styleId=spec.styleId||spec.id;CINEMATIC.actors.set(a.id,a);return a}
+ function resetTransient(){CINEMATIC.active=false;CINEMATIC.name=null;CINEMATIC.actors.clear();CINEMATIC.camera=null;CINEMATIC.commandIndex=-1;CINEMATIC.currentCommand=null;CINEMATIC.mode=null;CINEMATIC.cancelled=false;CINEMATIC.previousLocked=false;CANCEL_WAITERS.clear()}
+ function signalCancel(){for(const cancelWaiter of [...CANCEL_WAITERS])cancelWaiter();CANCEL_WAITERS.clear()}
+ function wait(ms){return new Promise(resolve=>{let settled=false;const finish=value=>{if(settled)return;settled=true;CANCEL_WAITERS.delete(onCancel);resolve(value)},timer=setTimeout(()=>finish(true),Math.max(0,Number(ms)||0)),onCancel=()=>{clearTimeout(timer);finish(false)};CANCEL_WAITERS.add(onCancel)})}
+ function dialogueWait(cmd){if(CINEMATIC.mode==='motionOnly')return wait(cmd.motionOnlyMs||850);return new Promise(resolve=>{let settled=false;const finish=value=>{if(settled)return;settled=true;CANCEL_WAITERS.delete(onCancel);resolve(value)},onCancel=()=>{GC.Dialogue?.closeDialogue?.(false);finish(false)};CANCEL_WAITERS.add(onCancel);say(cmd.speaker,cmd.text,[],()=>finish(true),{portraitMode:CINEMATIC.mode==='portraitOff'?'disabled':'enabled'})})}
+ function tweenActor(a,toX,toY,duration=400){if(!a)return Promise.resolve(false);const sx=a.x,sy=a.y,dx=toX-sx,dy=toY-sy,d=Math.max(1,Number(duration)||1);return new Promise(resolve=>{let start=null;const step=ts=>{if(!CINEMATIC.active||CINEMATIC.cancelled){resolve(false);return}if(start===null)start=ts;const t=Math.min(1,(ts-start)/d),ease=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;a.x=sx+dx*ease;a.y=sy+dy*ease;draw();if(t>=1)resolve(true);else requestAnimationFrame(step)};requestAnimationFrame(step)})}
+ function directionToward(a,b){if(!a||!b)return'down';const dx=b.x-a.x,dy=b.y-a.y;if(Math.abs(dx)>Math.abs(dy))return dx<0?'left':'right';return dy<0?'up':'down'}
+ function focusActors(ids,scale=null,offsetX=0,offsetY=0){const list=(ids||[]).map(actor).filter(Boolean);if(!list.length){CINEMATIC.camera=null;return}const x=list.reduce((s,a)=>s+a.x,0)/list.length,y=list.reduce((s,a)=>s+a.y,0)/list.length;CINEMATIC.camera={active:true,x:x+offsetX,y:y+offsetY,scale:scale||viewScale()};draw()}
+ function drawActors(c,helpers={}){for(const a of getRenderActors()){if(a.renderMode.startsWith('pixel48')&&GC.Animation.drawActor(c,a))continue;const motion=['walk','run','approach','react','laugh'].includes(a.animation)?Date.now()/82:0;if(a.controlNpc&&helpers.drawNpcCommercial){helpers.drawNpcCommercial({id:a.styleId||a.id,x:a.x,y:a.y},a.facing);continue}if(a.renderMode==='legacy32'&&helpers.drawHeroSpriteSheet){helpers.drawHeroSpriteSheet(a.x,a.y,'karen',false,a.facing,motion);continue}if(helpers.drawCharacterSprite){const style=GC.Data?.NPCs?.NPC_STYLE?.[a.styleId]||GC.Data?.NPCs?.PARTY_STYLE?.[a.styleId]||{},bob=a.animation==='react'?-.10*Math.abs(Math.sin(Date.now()/95)):0;helpers.drawCharacterSprite(a.x,a.y+bob,style,false,a.facing,motion)}}}
+ async function runCommand(cmd,scene){
+  if(!cmd)return true;
+  if(cmd.type==='wait')return await wait(cmd.ms);
+  if(cmd.type==='move'){const a=actor(cmd.actor);if(!a)return true;GC.Animation.setAnimation(a,cmd.animation||'walk',{facing:cmd.facing||a.facing});const moved=await tweenActor(a,cmd.x,cmd.y,cmd.duration);if(!moved||CINEMATIC.cancelled)return false;GC.Animation.setAnimation(a,cmd.after||'idle');return true}
+  if(cmd.type==='turn'){const a=actor(cmd.actor);if(!a)return true;let facing=cmd.facing;if(cmd.target)facing=directionToward(a,actor(cmd.target));GC.Animation.setFacing(a,facing);GC.Animation.setAnimation(a,cmd.animation||'turn');if(!(await wait(cmd.duration||220)))return false;GC.Animation.setAnimation(a,cmd.after||'idle');return true}
+  if(cmd.type==='animate'){const a=actor(cmd.actor);if(!a)return true;let def=null;if(a.renderMode==='procedural32'){a.animation=cmd.animation||'idle';a.startedAt=Date.now()}else def=GC.Animation.setAnimation(a,cmd.animation,{facing:cmd.facing||a.facing});if(cmd.hold===true)return true;const duration=cmd.duration??(def&&def.loop===false?Math.ceil((def.frames?.length||1)/(def.fps||1)*1000):350);if(!(await wait(duration)))return false;if(cmd.after!==false){if(a.renderMode==='procedural32')a.animation=cmd.after||'idle';else GC.Animation.setAnimation(a,cmd.after||'idle')}return true}
+  if(cmd.type==='camera'){if(cmd.action==='return'){CINEMATIC.camera=null;draw();return true}focusActors(cmd.actors||[cmd.actor],cmd.scale,cmd.offsetX||0,cmd.offsetY||0);return true}
+  if(cmd.type==='sound'){GC.Audio?.sfx?.(cmd.name);return true}
+  if(cmd.type==='music'){if(cmd.action==='pause')GC.Audio?.pauseMusic?.();else if(cmd.action==='resume')GC.Audio?.resumeMusic?.();else if(cmd.theme)GC.Audio?.setMusic?.(cmd.theme);return true}
+  if(cmd.type==='say'){if(scene?.id==='alpha.village.appointment.acting')GC.RyuneActing?.beforeDialogue?.(cmd);if(scene?.id==='alpha.capital.ceremony.acting')CapitalActing?.beforeDialogue?.(cmd);return await dialogueWait(cmd)}
+  return true
+ }
+ async function startScene(scene,opts={}){
+  if(CINEMATIC.active||!scene)return false;
+  CINEMATIC.actors.clear();CINEMATIC.previousLocked=!!state.locked;CINEMATIC.active=true;CINEMATIC.name=scene.id||'scene';CINEMATIC.mode=opts.mode||'portraitOn';CINEMATIC.renderMode=opts.renderMode||'pixel48-full';CINEMATIC.cancelled=false;
+  for(const spec of scene.actors||[])addActor({...spec,renderMode:spec.id==='karen'?CINEMATIC.renderMode:spec.renderMode});
+  acquireInputLock('cinematic');state.locked=true;draw();
+  try{
+   for(let i=0;i<(scene.commands||[]).length;i++){if(CINEMATIC.cancelled||!CINEMATIC.active)break;CINEMATIC.commandIndex=i;CINEMATIC.currentCommand=scene.commands[i];const ok=await runCommand(scene.commands[i],scene);if(ok===false||CINEMATIC.cancelled||!CINEMATIC.active)break}
+   return !CINEMATIC.cancelled;
+  }finally{
+   CINEMATIC.camera=null;CINEMATIC.active=false;CINEMATIC.currentCommand=null;CINEMATIC.actors.clear();state.locked=CINEMATIC.previousLocked;CINEMATIC.previousLocked=false;releaseInputLock('cinematic');draw();canvas?.focus?.()
+  }
+ }
+ function cancel(){if(!CINEMATIC.active)return false;CINEMATIC.cancelled=true;CINEMATIC.camera=null;CINEMATIC.active=false;signalCancel();CINEMATIC.currentCommand=null;CINEMATIC.actors.clear();state.locked=CINEMATIC.previousLocked;releaseInputLock('cinematic');draw();return true}
+ const KAREN_PIXEL_PROTOTYPE=Object.freeze({
+ id:'prototype.karen.pixel_acting',
+ prototypeTemporary:true,
+ actors:[
+  {id:'karen',character:'karen',x:10.3,y:7,facing:'right',animation:'idle',layer:2},
+  {id:'mika',character:'mika',styleId:'mika',x:17,y:7,facing:'left',animation:'idle',renderMode:'procedural32',controlNpc:true,layer:1}
+ ],
+ commands:[
+  {type:'camera',actors:['karen','mika'],scale:1.30,offsetX:-.25},
+  {type:'wait',ms:450},
+  {type:'sound',name:'step'},
+  {type:'move',actor:'karen',x:14.5,y:7,duration:1900,animation:'walk'},
+  {type:'wait',ms:250},
+  {type:'turn',actor:'karen',target:'mika',duration:180},
+  {type:'animate',actor:'karen',animation:'surprise',duration:420},
+  {type:'sound',name:'reaction'},
+  {type:'wait',ms:350},
+  {type:'move',actor:'karen',x:15.5,y:7,duration:600,animation:'approach'},
+  {type:'animate',actor:'karen',animation:'talk',hold:true},
+  {type:'say',speaker:'カレン',text:'「ミカ！ こんなところにいたんだ」',motionOnlyMs:850},
+  {type:'animate',actor:'karen',animation:'idle',hold:true},
+  {type:'animate',actor:'mika',animation:'react',duration:260},
+  {type:'say',speaker:'ミカ',text:'「カレン、また走ってたの？」',motionOnlyMs:850},
+  {type:'animate',actor:'karen',animation:'talk',hold:true},
+  {type:'say',speaker:'カレン',text:'「うん。ちょっとそこまで！」',motionOnlyMs:850},
+  {type:'animate',actor:'karen',animation:'idle',hold:true},
+  {type:'say',speaker:'ミカ',text:'「“ちょっと”で、その勢い？」',motionOnlyMs:850},
+  {type:'animate',actor:'karen',animation:'laugh',duration:650},
+  {type:'animate',actor:'mika',animation:'react',duration:320},
+  {type:'animate',actor:'karen',animation:'talk',hold:true},
+  {type:'say',speaker:'カレン',text:'「はは、ごめん！ またあとで！」',motionOnlyMs:850},
+  {type:'animate',actor:'karen',animation:'idle',hold:true},
+  {type:'wait',ms:350},
+  {type:'turn',actor:'karen',facing:'left',duration:180},
+  {type:'sound',name:'step'},
+  {type:'move',actor:'karen',x:4.1,y:7,duration:1800,animation:'run'},
+  {type:'wait',ms:350},
+  {type:'camera',action:'return'}
+ ]
+});
+function validateScene(scene=KAREN_PIXEL_PROTOTYPE){const errors=[],allowed=new Set(['wait','move','turn','animate','say','camera','sound','music','fade']),ids=new Set((scene?.actors||[]).map(a=>a.id));for(const [idx,cmd] of (scene?.commands||[]).entries()){if(!allowed.has(cmd.type))errors.push('command '+idx+': unknown '+cmd.type);if(cmd.actor&&!ids.has(cmd.actor))errors.push('command '+idx+': missing actor '+cmd.actor);if(cmd.target&&!ids.has(cmd.target))errors.push('command '+idx+': missing target '+cmd.target)}return{ok:errors.length===0,errors}}
+async function startKarenPrototype(opts={}){if(CINEMATIC.active)return false;const mode=opts.mode||'portraitOn',renderMode=opts.renderMode||'pixel48-full';if(!['portraitOn','portraitOff','motionOnly'].includes(mode))throw new Error('Unknown Karen prototype mode: '+mode);if(!['pixel48','pixel48-full','pixel48-medium','pixel48-compact','legacy32'].includes(renderMode))throw new Error('Unknown Karen prototype render mode: '+renderMode);const prev={map:state.map,x:state.x,y:state.y,dir:state.dir,trail:(state.trail||[]).map(p=>[p[0],p[1]])};setMap('village',12,10,'up',[[12,11],[11,11],[10,11]]);try{return await startScene(KAREN_PIXEL_PROTOTYPE,{mode,renderMode})}finally{setMap(prev.map,prev.x,prev.y,prev.dir,prev.trail);VISUAL.map=null;draw()}}
+
+GC.Cinematic={state:CINEMATIC,PROTOTYPE_RENDER_SCALES,renderScaleForMode,isActive,cameraTarget,controlledNpcIds,getRenderActors,actor,addActor,drawActors,startScene,startKarenPrototype,KAREN_PIXEL_PROTOTYPE,validateScene,cancel,wait,tweenActor,directionToward,focusActors,resetTransient};
+})();
+</script>
+<script data-origin="js/systems/ryune_acting.js">
+'use strict';
+/* Ryune acting v1. EVENT_DEFS remains the sole authority for dialogue and effects.
+   Poses/moves happen during visible dialogue, preserving continuous input rhythm. */
+(function(){
+ const EVENT_ID='alpha.village.appointment';
+ const ACTING_ID=EVENT_ID+'.acting';
+ const ACTING_V1=Object.freeze({
+  karen:{pace:270,signature:'fast approach and whole-body answer',weight:'forward'},
+  triton:{pace:430,signature:'planted protective shift',weight:'grounded'},
+  sophie:{pace:490,signature:'small careful approach and steady hands',weight:'careful'},
+  margaret:{pace:640,signature:'gaze before a measured answer',weight:'measured'}
+ });
+ const SPEAKERS={'カレン':'karen','トリトン':'triton','ソフィ':'sophie','マーガレット':'margaret','王国使者':'messenger'};
+ // Line indices in EVENT_DEFS, not replicated dialogue text. Movement changes only
+ // temporary actor render positions, never world x/y, trail, map or save data.
+ const choreography=Object.freeze({
+  0:{focus:['messenger','karen','triton','sophie','margaret'],sound:'step'},
+  1:{focus:['messenger','karen','triton'],move:[['karen',11.8,7.75,270,'approach']]},
+  2:{look:[['triton','messenger']]},
+  4:{look:[['margaret','messenger']],still:['margaret']},
+  6:{move:[['sophie',13.05,7.95,490,'approach']]},
+  8:{focus:['karen','triton','sophie','margaret'],still:['sophie','margaret']},
+  9:{look:[['margaret','karen']]},
+  11:{move:[['sophie',12.8,8.0,430,'approach']]},
+  12:{look:[['margaret','sophie']],still:['margaret']},
+  14:{move:[['karen',12.2,7.6,270,'approach']]},
+  15:{look:[['margaret','karen']],still:['margaret']},
+  16:{move:[['karen',11.65,8.0,260,'walk']],look:[['karen','margaret']]},
+  17:{move:[['triton',10.25,8.0,430,'walk']],look:[['triton','karen']]},
+  18:{look:[['sophie','karen']]},
+  19:{still:['margaret']},
+  20:{focus:['karen','triton','sophie','margaret'],look:[['karen','sophie']]},
+  21:{look:[['triton','karen']]}
+ });
+ let mode='portraitOn',running=false;
+ function setPortraitMode(next){if(!['portraitOn','portraitOff'].includes(next)||running||GC.Cinematic?.isActive?.())return false;mode=next;return true}
+ function getSnapshot(){return{running,mode,scene:GC.Cinematic?.state?.name||null,
+  actors:(GC.Cinematic?.getRenderActors?.()||[]).map(a=>({id:a.id,x:a.x,y:a.y,facing:a.facing,animation:a.animation,scale:a.renderScale})),
+  lineIndex:GC.Cinematic?.state?.currentCommand?.lineIndex??null}}
+ function sceneFor(def){
+  const messenger=maps.village.npcs.find(n=>n.id==='messenger');
+  if(!messenger)throw new Error('Ryune messenger missing from map');
+  const actors=[
+   {id:'karen',character:'karen',x:11.15,y:8.0,facing:'up',animation:'idle',renderMode:'pixel48-medium',layer:2},
+   {id:'triton',character:'triton',x:9.35,y:8.1,facing:'right',animation:'idle',renderMode:'pixel48-medium',layer:2},
+   {id:'sophie',character:'sophie',x:13.3,y:8.35,facing:'up',animation:'idle',renderMode:'pixel48-medium',layer:2},
+   {id:'margaret',character:'margaret',x:15.35,y:8.15,facing:'left',animation:'idle',renderMode:'pixel48-medium',layer:2},
+   {id:'messenger',character:'messenger',styleId:'messenger',x:messenger.x,y:messenger.y,facing:'down',animation:'idle',renderMode:'procedural32',controlNpc:true,layer:1}
+  ];
+  return{id:ACTING_ID,actors,commands:[
+   {type:'camera',actors:['messenger','karen','triton','sophie','margaret'],scale:1.12},
+   ...def.lines.map((line,lineIndex)=>({type:'say',speaker:line.speaker,text:line.text,lineIndex})),
+   {type:'camera',action:'return'}
+  ]}
+ }
+ function beforeDialogue(cmd){
+  if(!running)return;
+  const cue=choreography[cmd.lineIndex]||{},speakerId=SPEAKERS[cmd.speaker]||null;
+  for(const a of GC.Cinematic.getRenderActors()){
+   if(a.renderMode==='procedural32'){a.animation=a.id===speakerId?'talk':'idle';continue}
+   const isMeasured=a.id==='margaret'&&[4,12,19].includes(cmd.lineIndex);
+   GC.Animation.setAnimation(a,a.id===speakerId&&!isMeasured?'talk':'idle');
+  }
+  for(const [who,target] of cue.look||[]){
+   const a=GC.Cinematic.actor(who),b=GC.Cinematic.actor(target);
+   if(a&&b)GC.Animation.setFacing(a,GC.Cinematic.directionToward(a,b));
+  }
+  for(const who of cue.still||[]){
+   const a=GC.Cinematic.actor(who);
+   if(a&&who!==speakerId)GC.Animation.setAnimation(a,'idle',{restart:false});
+  }
+  for(const [who,x,y,duration,animation] of cue.move||[]){
+   const a=GC.Cinematic.actor(who);if(!a)continue;
+   GC.Animation.setAnimation(a,animation);
+   GC.Cinematic.tweenActor(a,x,y,duration).then(ok=>{
+    if(ok&&GC.Cinematic.isActive()&&a.animation===animation)GC.Animation.setAnimation(a,'idle');
+   });
+  }
+  if(cue.focus)GC.Cinematic.focusActors(cue.focus,1.12);
+  if(cue.sound)GC.Audio?.sfx?.(cue.sound);
+  GC.Render.World.draw();
+ }
+ function runAppointment(def,context){
+  if(running||GC.Cinematic?.isActive?.()||state.locked||state.battle||state.map!=='village')return true;
+  if(def?.id!==EVENT_ID||isEventComplete(EVENT_ID))return false;
+  const scene=sceneFor(def),valid=GC.Cinematic.validateScene(scene);
+  if(!valid.ok)throw new Error('Invalid Ryune acting: '+valid.errors.join(', '));
+  running=true;
+  GC.Log?.info('Story Event Start',{id:def.id,type:'npc',target:'messenger',map:'village',acting:'ryune-v1',mode});
+  GC.Dev?.noteEvent?.(def.id);
+  GC.Cinematic.startScene(scene,{mode,renderMode:'pixel48-medium'})
+   .then(ok=>{if(ok&&running&&state.map==='village'&&!isEventComplete(EVENT_ID))applyEventEffects(def,context)})
+   .catch(error=>GC.Log?.error('Ryune Acting aborted safely; no event effects',{error:String(error)}))
+   .finally(()=>{running=false;GC.Render.World.draw()});
+  return true
+ }
+ GC.RyuneActing={EVENT_ID,ACTING_ID,ACTING_V1,SPEAKERS,choreography,setPortraitMode,
+  getPortraitMode:()=>mode,getSnapshot,sceneFor,beforeDialogue,runAppointment,isRunning:()=>running};
+})();
+
+</script>
+<script data-origin="js/systems/capital_acting.js">
+'use strict';
+/* Existing 12-line royal appointment remains authoritative in EVENT_DEFS.
+ * Pixel Acting modifies transient scene actors, never player/map/save state. */
+const CapitalActing=(()=>{
+ const EVENT_ID='alpha.capital.ceremony';
+ const SCENE_ID=EVENT_ID+'.acting';
+ let running=false,mode='portraitOn';
+ const S={'カレン':'karen','トリトン':'triton','ソフィ':'sophie','マーガレット':'margaret','王都係官':'capitalOfficial'};
+ const TEMPO=Object.freeze({karen:260,triton:480,sophie:540,margaret:650});
+ const CUES=Object.freeze({
+  0:{focus:['capitalOfficial','karen','triton','sophie','margaret'],look:[['karen','capitalOfficial'],['margaret','capitalOfficial']],still:['triton']},
+  1:{look:[['triton','capitalOfficial']],still:['triton']},
+  2:{look:[['margaret','capitalOfficial']],still:['margaret']},
+  3:{look:[['karen','capitalOfficial']],move:[['karen',11.45,7.3,260,'approach']]},
+  4:{sound:'ceremonyBell',still:['triton','margaret']},
+  5:{look:[['sophie','capitalOfficial']],move:[['sophie',13.55,7.8,540,'approach']]},
+  6:{look:[['karen','sophie']],still:['triton']},
+  7:{focus:['capitalOfficial','karen','triton','sophie','margaret'],still:['margaret']},
+  8:{look:[['karen','margaret']]},
+  9:{look:[['margaret','capitalOfficial']],still:['margaret']},
+  10:{look:[['triton','karen']],still:['triton']},
+  11:{look:[['karen','triton']],move:[['karen',11.25,7.75,260,'walk']]}
+ });
+ function setPortraitMode(v){if(!['portraitOn','portraitOff'].includes(v)||running||GC.Cinematic?.isActive?.())return false;mode=v;return true}
+ function getSnapshot(){return {running,mode,actors:(GC.Cinematic?.getRenderActors?.()||[]).map(a=>({id:a.id,x:a.x,y:a.y,animation:a.animation,facing:a.facing})),lineIndex:GC.Cinematic?.state?.currentCommand?.lineIndex??null}}
+ function sceneFor(def){
+  if(def?.id!==EVENT_ID)throw Error('Wrong capital appointment event');
+  const n=maps.capital.npcs.find(n=>n.id==='capitalOfficial');if(!n)throw Error('Missing original capital official');
+  const actors=[
+   {id:'karen',character:'karen',x:11.1,y:7.65,animation:'idle',facing:'up',renderMode:'pixel48-medium',layer:2},
+   {id:'triton',character:'triton',x:9.7,y:8.3,animation:'idle',facing:'up',renderMode:'pixel48-medium',layer:2},
+   {id:'sophie',character:'sophie',x:13.8,y:8.15,animation:'idle',facing:'up',renderMode:'pixel48-medium',layer:2},
+   {id:'margaret',character:'margaret',x:15.3,y:8.25,animation:'idle',facing:'left',renderMode:'pixel48-medium',layer:2},
+   {id:'capitalOfficial',character:'capitalOfficial',styleId:'capitalOfficial',x:n.x,y:n.y,animation:'idle',facing:'down',renderMode:'procedural32',controlNpc:true,layer:1}
+  ];
+  return {id:SCENE_ID,actors,commands:[
+    {type:'camera',actors:actors.map(a=>a.id),scale:1.12},
+    ...def.lines.map((line,lineIndex)=>({type:'say',speaker:line.speaker,text:line.text,lineIndex})),
+    {type:'camera',action:'return'}
+  ]}
+ }
+ function beforeDialogue(cmd){
+  if(!running||state.map!=='capital')return;
+  const cue=CUES[cmd.lineIndex]||{},speaking=S[cmd.speaker]||null;
+  for(const a of GC.Cinematic.getRenderActors()){
+   if(a.renderMode==='procedural32'){a.animation=a.id===speaking?'talk':'idle';continue}
+   GC.Animation.setAnimation(a,a.id===speaking&&!(a.id==='margaret')?'talk':'idle');
+  }
+  for(const [who,target] of cue.look||[]){
+   const a=GC.Cinematic.actor(who),b=GC.Cinematic.actor(target);
+   if(a&&b)GC.Animation.setFacing(a,GC.Cinematic.directionToward(a,b));
+  }
+  for(const who of cue.still||[]){
+   const a=GC.Cinematic.actor(who);
+   if(a)GC.Animation.setAnimation(a,'idle',{restart:false});
+  }
+  for(const [who,x,y,duration,animation] of cue.move||[]){
+   const a=GC.Cinematic.actor(who);if(!a)continue;
+   GC.Animation.setAnimation(a,animation);
+   GC.Cinematic.tweenActor(a,x,y,duration).then(ok=>{
+    if(ok&&running&&GC.Cinematic.isActive())GC.Animation.setAnimation(a,'idle')
+   });
+  }
+  if(cue.focus)GC.Cinematic.focusActors(cue.focus,1.12);
+  if(cue.sound)GC.Audio?.sfx?.(cue.sound);
+  GC.Render.World.draw()
+ }
+ function runCeremony(def,context={}){
+  if(def?.id!==EVENT_ID||state.map!=='capital')return false;
+  if(running||GC.Cinematic?.isActive?.()||state.locked||state.battle)return true;
+  if(isEventComplete(EVENT_ID)||getWorldSwitch('returnedKingdom'))return false;
+  const scene=sceneFor(def),valid=GC.Cinematic.validateScene(scene);
+  if(!valid.ok)throw Error('Invalid capital scene: '+valid.errors.join(', '));
+  running=true;
+  GC.Log?.info('Story Event Start',{id:def.id,acting:'capital-v1',mode});
+  GC.Dev?.noteEvent?.(def.id);
+  GC.Cinematic.startScene(scene,{mode,renderMode:'pixel48-medium'})
+   .then(ok=>{if(ok&&running&&state.map==='capital'&&!isEventComplete(EVENT_ID))applyEventEffects(def,context)})
+   .catch(err=>GC.Log?.error('Capital ceremony animation aborted; event effects not applied',{error:String(err)}))
+   .finally(()=>{running=false;GC.Render.World.draw()});
+  return true
+ }
+ return {EVENT_ID,SCENE_ID,TEMPO,CUES,S,sceneFor,beforeDialogue,runCeremony,
+  isRunning:()=>running,getSnapshot,setPortraitMode,getPortraitMode:()=>mode}
+})();
+
+</script>
+<script data-origin="js/systems/commercial_tactics.js">
+'use strict';
+/* UI-only battle cursor. Never persisted in game state / v23 save. */
+(function(){
+ let current=null,selected=-1;
+ function target(b){
+  if(!b){current=null;selected=-1;return null}
+  if(current!==b){current=b;selected=b.enemies.findIndex(x=>x.hp>0)}
+  if(!b.enemies[selected]||b.enemies[selected].hp<=0)selected=b.enemies.findIndex(x=>x.hp>0);
+  return b.enemies[selected]||null
+ }
+ function choose(b,n){
+  if(!b||!Number.isInteger(n)||!b.enemies[n]||b.enemies[n].hp<=0)return false;
+  current=b;selected=n;return true
+ }
+ function index(b){target(b);return selected}
+ function options(b){target(b);return b?b.enemies.map((e,i)=>({index:i,name:e.name,hp:e.hp,maxHp:e.maxHp,alive:e.hp>0,selected:i===selected})):[]}
+ function protect(party,original){return party.find(p=>p.hp>0&&p.guard===true)||original}
+ // Suppress ineffective commands; showing a disabled button is less frustrating
+ // than spending a resource or a full turn for zero benefit.
+ function actionAvailable(id,actor,party=activeRouteParty(),inventory=state.inventory){
+  if(!actor||actor.hp<=0)return false;
+  const alive=party.filter(p=>p.hp>0);
+  if((SKILLS[id]?.mp||0)>actor.mp)return false;
+  const needsHp=alive.some(p=>p.hp<p.maxHp);
+  const needsMp=alive.some(p=>p.mp<p.maxMp);
+  if(id==='heal'||id==='prayer')return needsHp;
+  if(id==='item')return (inventory['薬草']||0)>0&&needsHp;
+  if(id==='manaItem')return (inventory['魔力草']||0)>0&&needsMp;
+  if(id==='foodItem')return (inventory['携帯食']||0)>0&&(actor.hp<actor.maxHp||actor.mp<actor.maxMp);
+  return true
+ }
+ const hints=Object.freeze({
+  karen:'庇う：次の敵ターン、仲間への攻撃を引き受けて軽減。号令：全員の攻撃補助。',
+  triton:'強撃：高威力。崩し：敵の防御と士気を削る。',
+  sophie:'治癒：最も負傷した仲間を回復。祈り：全員を回復。',
+  margaret:'火球：高威力の魔法。氷槍：敵の攻撃力も低下。'
+ });
+ function bossForecast(b){
+  const def=GC.Data?.Battles?.battles?.[b?.id];
+  if(!def?.boss)return'';
+  const enemy=b.enemies.find(e=>e.hp>0);if(!enemy)return'';
+  if(enemy.phase===1&&enemy.hp<enemy.maxHp*.65)
+   return'　注意：次の敵行動から攻勢が強まります。';
+  if(enemy.phase===2&&enemy.hp<enemy.maxHp*.3)
+   return'　注意：次の敵行動から最終段階へ移ります。';
+  if(enemy.phase===2||enemy.phase===3)
+   return'　強化された攻勢に警戒。カレンの庇う・ソフィの回復・マーガレットの氷槍で対応できます。';
+  return''
+ }
+ function hint(actor,b){
+  const target=targetForHint(b);
+  const comboReady=!!(target&&b?.comboTarget===target&&b.comboActor&&b.comboActor!==actor?.id&&actor?.hp>0);
+  const coordination=comboReady?'　連携可能：同じ敵に攻撃すると追加ダメージ。':'';
+  return(actor?.id==='karen'&&activeRouteParty().length===1?'防御：自分への攻撃を軽減。号令：自身の攻撃を補助。':hints[actor?.id]||'')+
+    (b?.enemies.filter(e=>e.hp>0).length>1?'　敵を選んでから行動できます。':'')+coordination+bossForecast(b)
+ }
+ function targetForHint(b){return b?target(b):null}
+ GC.CommercialTactics={target,choose,index,options,protect,hint,bossForecast,actionAvailable,reset(){current=null;selected=-1}};
+})();
+
+</script>
+<script data-origin="js/systems/commercial_soundscape.js">
+'use strict';
+/* Original synthesized score candidate — deterministic, royalty-free code tones.
+ * No claim of mastered music or soundtrack approval. No saved state. */
+(function(){
+ const profiles=Object.freeze({
+  village:{notes:[262,330,392,330,294,349,392,null],bass:[131,null,null,131,147,null,null,147],voice:'sine',gain:.014},
+  // Two restrained variants of the Ryune home motif. They remain recognizably
+  // the same village, not invented combat/danger music for an optional detour.
+  ryuneFields:{notes:[262,null,330,349,330,null,294,262,220,null,262,294,330,null,262,null],
+   bass:[131,null,null,131,null,null,147,null,110,null,131,null,147,null,131,null],
+   voice:'triangle',gain:.011},
+  ryuneBrook:{notes:[262,null,294,null,330,294,null,262,247,null,262,294,null,247,220,null],
+   bass:[131,null,null,null,147,null,131,null,123.5,null,null,147,null,123.5,110,null],
+   voice:'sine',gain:.010},
+  road:{notes:[220,null,294,330,262,null,247,220],bass:[110,null,147,null,131,null,110,null],voice:'triangle',gain:.015},
+  cave:{notes:[147,null,175,null,164,147,null,131],bass:[73.5,null,82,null,73.5,null,65.4,null],voice:'triangle',gain:.012},
+  capital:{notes:[262,392,440,null,392,330,294,null],bass:[131,null,196,null,174,null,147,null],voice:'sine',gain:.016},
+  capitalInn:{notes:[220,262,null,330,262,null,247,220],bass:[110,null,null,131,null,null,123.5,null],voice:'sine',gain:.014},
+  capitalArmory:{notes:[131,null,196,165,147,null,165,null],bass:[65.4,null,98,null,82.4,null,73.4,null],voice:'triangle',gain:.011},
+  ashroad:{notes:[165,null,147,196,null,175,147,null],bass:[82.4,null,null,98,null,73.4,null,null],voice:'triangle',gain:.012},
+  frontier:{notes:[131,165,null,196,175,null,147,165],bass:[65.4,null,82.4,null,87.3,null,73.4,null],voice:'triangle',gain:.014},
+  frontierfield:{notes:[123,null,null,147,131,null,110,null],bass:[61.7,null,null,null,65.4,null,null,null],voice:'sine',gain:.010},
+  battle:{notes:[147,196,220,196,174,220,246,196],bass:[73.4,null,98,null,87.3,null,123.5,null],voice:'triangle',gain:.016},
+  boss:{notes:[110,147,165,null,131,165,147,110],bass:[55,null,73.4,null,65.4,null,55,null],voice:'sawtooth',gain:.014},
+  // Area motifs are small provisional procedural cues, NOT a mastered release OST.
+  border:{notes:[196,220,null,247,220,196,175,null,196,null,220,247,null,220,196,null],
+   bass:[98,null,98,null,87.3,null,87.3,null,98,null,110,null,98,null,87.3,null],
+   voice:'triangle',gain:.012},
+  empire:{notes:[220,247,294,null,330,294,247,220,196,220,247,null,220,196,175,null],
+   bass:[110,null,123.5,null,147,null,123.5,null,98,null,110,null,98,null,87.3,null],
+   voice:'sine',gain:.012},
+  sanctuary:{notes:[262,null,294,349,null,330,294,null,247,null,262,294,null,247,220,null],
+   bass:[131,null,null,174.6,null,null,147,null,123.5,null,null,131,null,null,110,null],
+   voice:'sine',gain:.010},
+  return:{notes:[196,null,220,247,294,null,220,196,175,null,196,220,247,null,196,null],
+   bass:[98,null,null,110,null,null,98,null,87.3,null,null,98,null,null,87.3,null],
+   voice:'triangle',gain:.011},
+  finalfield:{notes:[147,null,165,175,null,165,147,null,131,null,147,165,null,147,131,null],
+   bass:[73.4,null,null,87.3,null,null,73.4,null,65.4,null,null,73.4,null,null,65.4,null],
+   voice:'sine',gain:.011},
+  imperialcamp:{notes:[220,247,262,null,247,220,196,null,220,294,262,null,220,196,175,null],
+   bass:[110,null,131,null,123.5,null,98,null,110,null,131,null,98,null,87.3,null],
+   voice:'triangle',gain:.013},
+  royalcamp:{notes:[196,262,294,null,262,220,196,null,174,220,262,null,220,196,174,null],
+   bass:[98,null,131,null,110,null,98,null,87.3,null,110,null,98,null,87.3,null],
+   voice:'triangle',gain:.013},
+  travel:{notes:[196,262,294,262,247,294,null,220],bass:[98,null,131,null,123.5,null,110,null],voice:'sine',gain:.013}
+ });
+ function beat(theme,n){
+  const score=profiles[theme]||profiles.travel;
+  const i=Math.max(0,Math.floor(n))%score.notes.length;
+  return {melody:score.notes[i],bass:score.bass[i],gain:score.gain,voice:score.voice,accent:i===0,rest:score.notes[i]==null}
+ }
+ GC.CommercialSoundscape={profiles,beat};
+})();
+
+</script>
