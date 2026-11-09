@@ -15,14 +15,14 @@ const EVENT_DEFS=Object.freeze([
    {speaker:'マーガレット',text:'「私は反対。何と戦うのかも、どこまで行くのかも説明されてない。米をぶら下げて、今日中に決めろなんてまともじゃない」'},
    {speaker:'トリトン',text:'「じゃあ断ればいい。村のためって言われても、死んだら終わりだ」'},
    {speaker:'ソフィ',text:'「……私の一俵で、孤児院の子たちはしばらくちゃんと食べられます」'},
-   {speaker:'マーガレット',text:'「ソフィ。それとあなたが死ぬことは釣り合わない」'},
+   {speaker:'マーガレット',text:'「ソフィ。あなたの命まで米と交換しなくていいの。……心配なのよ」'},
    {speaker:'ソフィ',text:'「分かってます。分かってますけど……今日、テオに“兵隊になれば毎日パンが出るの”って聞かれたんです」'},
    {speaker:'カレン',text:'「私たちが行くだけで……|みんなが少し楽になるんだよね」'},
    {speaker:'マーガレット',text:'「カレン。あなた一人で四人分を決めないで」'},
-   {speaker:'カレン',text:'「……ごめん。そうだよね。私、また先に走った」'},
-   {speaker:'トリトン',text:'「でも、カレンが行くって言うなら一人では行かせない。昔からそれで痛い目見てる」'},
+   {speaker:'カレン',text:'「……ごめん。私、また先に走った。マーガレットはどうしたい？　ちゃんと聞きたい」'},
+   {speaker:'トリトン',text:'「カレンが行くなら私も。マーガレット、一緒に来てくれたら心強いんだけど」'},
    {speaker:'ソフィ',text:'「私も行きます。村のためだけじゃなくて……三人が怪我した時、治せるのは私だから」'},
-   {speaker:'マーガレット',text:'「私は最後まで納得しないと思う。でも、納得してない人間が一人くらいいないと、あなたたち三人は本当に何も考えず突っ込むから」'},
+   {speaker:'マーガレット',text:'「任命にはまだ納得してない。……でも三人を一人で行かせる方が、もっと嫌。私も行く。私が間違えた時は、ちゃんと止めて」'},
    {speaker:'カレン',text:'「……じゃあ決まり。四人で行く。四人で帰る。勇者とか魔王とか、その辺はまだよく分かんないけど」'},
    {speaker:'トリトン',text:'「それでいい。分かんないままなら、見てから決めよう」'}
   ],
@@ -34,6 +34,43 @@ const EVENT_DEFS=Object.freeze([
   ]
  },
  {id:'alpha.village.appointment.repeat',priority:10,trigger:{type:'npc',map:'village',target:'messenger'},when:[{eventComplete:'alpha.village.appointment'}],lines:[{speaker:'王国使者',text:'「支度が済んだら北門から王都へ向かってくれ。……無理に笑う必要はない。任命式では嫌でも笑わされるだろうからな」'}]},
+
+ // Four very short voluntary goodbyes at EXISTING NPCs after the appointment.
+ // They do not gate leaveVillage, give supplies, set objectives or change canon.
+ // On replay the original inline NPC interaction is restored unchanged.
+ {id:'ryune.farewell.karenBrother',priority:30,
+  trigger:{type:'npc',map:'karenhome',target:'karenBrother'},
+  when:[{storyIs:STORY_STAGES.APPOINTED},{eventIncomplete:'ryune.farewell.karenBrother'}],
+  lines:[
+   {speaker:'リオ',text:'「姉ちゃんがいない間、井戸の水汲みは僕がやるよ」'},
+   {speaker:'カレン',text:'「助かる。走って運ぶとこぼすから、ゆっくりね」'},
+   {speaker:'リオ',text:'「それ、昔の姉ちゃんでしょ」'}
+  ],effects:[{type:'completeEvent',id:'ryune.farewell.karenBrother'}]},
+ {id:'ryune.farewell.tritonRen',priority:30,
+  trigger:{type:'npc',map:'village',target:'ren'},
+  when:[{storyIs:STORY_STAGES.APPOINTED},{eventIncomplete:'ryune.farewell.tritonRen'}],
+  lines:[
+   {speaker:'レン',text:'「トリトン姉ちゃんが帰るまで、稽古は休み？」'},
+   {speaker:'トリトン',text:'「父ちゃんがいるだろ。怖いなら、まず足の位置から覚えな」'},
+   {speaker:'レン',text:'「……分かった。帰ったら見てよ。東の木の的、僕が毎日使ってるんだ」'}
+  ],effects:[{type:'completeEvent',id:'ryune.farewell.tritonRen'}]},
+ {id:'ryune.farewell.sophieTheo',priority:30,
+  trigger:{type:'npc',map:'orphanage',target:'theo'},
+  when:[{storyIs:STORY_STAGES.APPOINTED},{eventIncomplete:'ryune.farewell.sophieTheo'}],
+  lines:[
+   {speaker:'テオ',text:'「ソフィお姉ちゃん、薬の箱は誰が見るの？」'},
+   {speaker:'ソフィ',text:'「マルタさんと一緒に確認してください。分からない薬には触らないでね」'},
+   {speaker:'テオ',text:'「うん。僕も気をつける」'}
+  ],effects:[{type:'completeEvent',id:'ryune.farewell.sophieTheo'}]},
+ {id:'ryune.farewell.margaretMother',priority:30,
+  trigger:{type:'npc',map:'mayorhouse',target:'margaretMother'},
+  when:[{storyIs:STORY_STAGES.APPOINTED},{eventIncomplete:'ryune.farewell.margaretMother'}],
+  lines:[
+   {speaker:'マーガレットの母',text:'「あんなに本を持っていたのに、荷物はそれだけでいいの？」'},
+   {speaker:'マーガレット',text:'「地図と筆記具があれば十分。それに……一緒に考えてくれる三人がいるもの」'},
+   {speaker:'マーガレットの母',text:'「……そう。足元にも気をつけてね」'}
+  ],effects:[{type:'completeEvent',id:'ryune.farewell.margaretMother'}]},
+
  {
   id:'alpha.capital.ceremony',priority:100,trigger:{type:'npc',map:'capital',target:'capitalOfficial'},when:[{eventIncomplete:'alpha.capital.ceremony'},{worldSwitchFalsy:'returnedKingdom'}],
   lines:[
@@ -67,11 +104,11 @@ const EVENT_DEFS=Object.freeze([
    {speaker:'ソフィ',text:'「広場で、息子さんを前線から帰してって手を握られました。私、何も約束できなかった」'},
    {speaker:'カレン',text:'「私は少し嬉しかった。花が降って、みんな名前を呼んでくれて。……嬉しいって思った自分が、あとから嫌になった」'},
    {speaker:'トリトン',text:'「別にいいだろ。嬉しかったのまで嘘にする必要ない」'},
-   {speaker:'マーガレット',text:'「問題は、私たちが何もしてないのに“勝てる証拠”みたいに扱われてること。市場では配給の列ができてたのに、任命式には花を山ほど使ってた」'},
+   {speaker:'マーガレット',text:'「私も花を見て少し嬉しかった。でも市場には配給の列があった。あの人たちの顔まで、忘れたくないの」'},
    {speaker:'ソフィ',text:'「王都にも苦しい人はいる。でも、リュネ村とは苦しみ方が違うんですね」'},
    {speaker:'カレン',text:'「明日グランツに聞こう。|私たちが何をさせられるのか。[[ちゃんと聞いて]]、それから前へ行く」'},
    {speaker:'トリトン',text:'「四人で聞く。誰か一人が丸め込まれそうになったら、残り三人で止める」'},
-   {speaker:'マーガレット',text:'「主にカレンをね」'},{speaker:'カレン',text:'「そこは否定できない……」'},
+   {speaker:'マーガレット',text:'「カレンを止める役は私ね。……でも私が意地を張ったら、三人も止めて」'},{speaker:'カレン',text:'「もちろん。四人とも、お互い様だよ」'},
    {speaker:'ナレーション',text:'笑い声は小さかった。それでも、その夜初めて四人は「勇者一行」ではなく、いつもの幼馴染として眠った。'}
   ],
   effects:[
@@ -93,7 +130,7 @@ const EVENT_DEFS=Object.freeze([
    {speaker:'ナレーション',text:'灰牙狼が動かなくなると、急に森の音が戻ってきた。四人とも剣や杖を下ろすのが一拍遅れた。'},
    {speaker:'カレン',text:'「……|終わった？」'},{speaker:'トリトン',text:'「終わった。手、震えてるぞ」'},
    {speaker:'カレン',text:'「トリトンも」'},{speaker:'ソフィ',text:'「怪我、見せてください。戦ってる時は平気でも、あとから痛くなることがあります」'},
-   {speaker:'マーガレット',text:'「“勇者の初戦”って、もっと格好いいものだと思ってた」'},
+   {speaker:'マーガレット',text:'「“勇者の初戦”なのに全然格好つかなかった。……でも、三人とも無事でよかった」'},
    {speaker:'トリトン',text:'「泥まみれで息切れして終わり。現実はこんなもんだろ」'},
    {speaker:'カレン',text:'「……でも、次はもう少し落ち着いて動ける。たぶん」'}
   ]
@@ -463,7 +500,164 @@ const EVENT_DEFS=Object.freeze([
   ],effects:[{type:'completeEvent',id:'alpha2.frontier2.complete'},{type:'advanceStory',stage:STORY_STAGES.FRONTIER_SECOND_COMPLETE,objective:'セラド前線・第2区間完了：北の旧関所方面を調べる準備をする'},{type:'journal',text:'帝国軍の撤退命令と王国側の初報に食い違いがある。さらに北の旧関所方面で王国偵察隊が未帰還となり、次に北へ進む理由が生まれた。'}],
   postLines:[{speaker:'ナレーション',text:'――[[セラド前線・第2区間 終了]]――<br>帝国軍は北へ集結し、王国の偵察隊も同じ方向で消息を絶った。答えはまだない。四人は、食い違う情報を確かめるため次の準備に入る。'}]
  },
- {id:'alpha2.frontier2.complete.repeat',priority:40,trigger:{type:'npc',map:'frontier',target:'frontierOfficer'},when:[{eventComplete:'alpha2.frontier2.complete'}],lines:[{speaker:'前線将校',text:'「北の旧関所へ出る準備をしておけ。出発命令はまだだ。今は記録と装備を整理しろ」'}]}
+ {id:'alpha2.frontier2.complete.repeat',priority:40,trigger:{type:'npc',map:'frontier',target:'frontierOfficer'},when:[{eventComplete:'alpha2.frontier2.complete'}],lines:[{speaker:'前線将校',text:'「北の旧関所へ出る準備をしておけ。出発命令はまだだ。今は記録と装備を整理しろ」'}]},
 
+  {id:'ryune.village.westSign',priority:10,trigger:{type:'object',map:'village',target:'westFieldPath'},
+   lines:[{speaker:'西畑への小道',text:'リュネ村の西畑へ続く道。畑の作業を見たいなら、ここから西へ進める。'}]},
+  {id:'ryune.village.eastSign',priority:10,trigger:{type:'object',map:'village',target:'eastBrookPath'},
+   lines:[{speaker:'小川への道',text:'リュネ村の東の小川へ続く道。川辺には橋と細い歩道がある。'}]},
+  // Optional one-time conversation: never used as a departure or story requirement.
+  {id:'ryune.memory.well',priority:25,trigger:{type:'object',map:'village',target:'well'},
+   when:[{worldSwitchTruthy:'ryune.baseViewed.well'},{eventIncomplete:'ryune.memory.well'}],
+   lines:[{speaker:'カレン',text:'「この桶、昔は両手じゃないと持てなかったな」'},
+    {speaker:'トリトン',text:'「運ぶのはいいけど、走ってこぼすのはやめてよ」'},
+    {speaker:'カレン',text:'「もうやらないって。……たぶん」'}],
+   effects:[{type:'completeEvent',id:'ryune.memory.well'}]},
+  // Optional one-time conversation: never used as a departure or story requirement.
+  {id:'ryune.memory.familyTable',priority:25,trigger:{type:'object',map:'karenhome',target:'familyTable'},
+   when:[{worldSwitchTruthy:'ryune.baseViewed.familyTable'},{eventIncomplete:'ryune.memory.familyTable'},{storyAtLeast:STORY_STAGES.APPOINTED}],
+   lines:[{speaker:'カレン',text:'「帰ってきたら、ここでゆっくりご飯を食べたいな」'},
+    {speaker:'トリトン',text:'「そうだね。出発前にちゃんと食べときなよ」'}],
+   effects:[{type:'completeEvent',id:'ryune.memory.familyTable'}]},
+  // Optional one-time conversation: never used as a departure or story requirement.
+  {id:'ryune.memory.toyChest',priority:25,trigger:{type:'object',map:'orphanage',target:'toyChest'},
+   when:[{worldSwitchTruthy:'ryune.baseViewed.toyChest'},{eventIncomplete:'ryune.memory.toyChest'}],
+   lines:[{speaker:'ソフィ',text:'「この人形、塗料が少し剥げていますね」'},
+    {speaker:'カレン',text:'「塗り直しておこうか？」'},
+    {speaker:'ソフィ',text:'「子どもたちに聞いてからにしましょう。気に入っている色かもしれませんから」'}],
+   effects:[{type:'completeEvent',id:'ryune.memory.toyChest'}]},
+  // Optional one-time conversation: never used as a departure or story requirement.
+  {id:'ryune.memory.mayorBooks',priority:25,trigger:{type:'object',map:'mayorhouse',target:'mayorBooks'},
+   when:[{worldSwitchTruthy:'ryune.baseViewed.mayorBooks'},{eventIncomplete:'ryune.memory.mayorBooks'}],
+   lines:[{speaker:'トリトン',text:'「ここで本を借りると、返しに来た時にはまた別の本を読んでたよね」'},
+    {speaker:'マーガレット',text:'「返す前に気になることが増えるんだもの。仕方ないでしょ」'}],
+   effects:[{type:'completeEvent',id:'ryune.memory.mayorBooks'}]},
+  // Optional one-time conversation: never used as a departure or story requirement.
+  {id:'ryune.memory.soldierLetter',priority:25,trigger:{type:'object',map:'cottage',target:'soldierLetter'},
+   when:[{worldSwitchTruthy:'ryune.baseViewed.soldierLetter'},{eventIncomplete:'ryune.memory.soldierLetter'}],
+   lines:[{speaker:'トリトン',text:'「折り目が柔らかい。何度も開いたんだろうね」'},
+    {speaker:'カレン',text:'「……そっと戻しておこう」'}],
+   effects:[{type:'completeEvent',id:'ryune.memory.soldierLetter'}]},
+  // Side excursions are optional and never advance, delay or rewrite the royal appointment.
+  {id:'ryune.fields.inspect',priority:70,trigger:{type:'object',map:'ryunefields',target:'fieldFurrows'},
+   when:[{eventIncomplete:'ryune.fields.inspect'}],
+   lines:[
+    {speaker:'畑の畝',text:'乾いた土の間に、まばらな青い芽が残っている。収穫を待つ畑と、すでに空になった畝が隣り合っている。'},
+    {speaker:'トリトン',text:'「この辺り、前はもっと土が柔らかかったよな。水を引く溝を見直せば、まだ少しは育つかも」'},
+    {speaker:'マーガレット',text:'「今見たことはボルに伝えられるわ。小川の様子も分かれば、もう少し原因を絞れそうね」'}
+   ],effects:[
+    {type:'completeEvent',id:'ryune.fields.inspect'},
+    {type:'journal',text:'リュネ村の西畑では一部の畝が乾いていた。ボルへの報告は今でもできる。小川を確かめれば情報が増える。'}
+   ]},
+  {id:'ryune.fields.inspect.repeat',priority:10,trigger:{type:'object',map:'ryunefields',target:'fieldFurrows'},
+   when:[{eventComplete:'ryune.fields.inspect'}],lines:[{speaker:'畑の畝',text:'まばらな芽を傷つけないよう、踏み跡の横から畝を眺めた。'}]},
+  {id:'ryune.brook.inspect',priority:70,trigger:{type:'object',map:'ryunebrook',target:'brookWater'},
+   when:[{eventIncomplete:'ryune.brook.inspect'}],
+   lines:[
+    {speaker:'小川の水辺',text:'小川は浅い。橋の下の水路には泥と小枝がたまり、水がゆっくり流れている。'},
+    {speaker:'ソフィ',text:'「水がなくなったわけじゃないんですね。畑までちゃんと届いていないのかも」'},
+    {speaker:'カレン',text:'「戻ったらボルに伝えよう。私たちだけで勝手に掘るわけにはいかないからね」'}
+   ],effects:[
+    {type:'completeEvent',id:'ryune.brook.inspect'},
+    {type:'journal',text:'村東側の小川には水が残り、橋の下に泥と小枝がたまっていた。畑へ行かなくても農夫への報告はできる。'}
+   ]},
+  {id:'ryune.brook.inspect.repeat',priority:10,trigger:{type:'object',map:'ryunebrook',target:'brookWater'},
+   when:[{eventComplete:'ryune.brook.inspect'}],lines:[{speaker:'小川の水辺',text:'水は細く流れている。むやみに水路へ入らず、村の人に状況を伝えることにした。'}]},
+  // One observation is worth taking home. Requiring TWO large walks for a
+  // single ration felt like mandatory checklist work, despite being optional.
+  // Either safe observation may be reported first, with the SAME one-time food
+  // reward. A second visit is only for curiosity, never for extra loot.
+  {id:'ryune.outskirts.fieldReport',priority:80,trigger:{type:'npc',map:'village',target:'farmer'},
+   when:[{eventComplete:'ryune.fields.inspect'},{eventIncomplete:'ryune.brook.inspect'},
+    {eventIncomplete:'ryune.outskirts.reward'}],
+   lines:[
+    {speaker:'農夫のボル',text:'「畑の乾いた場所を見てくれたのか。助かる。畝の踏み跡を避けて、まず溝を測ってみるよ」'},
+    {speaker:'マーガレット',text:'「小川の状況はまだ分かりません。水路を掘る前に、水の入り口を確認してください」'},
+    {speaker:'農夫のボル',text:'「分かった。旅の食べ物を少し持っていきな。無理に川まで行かなくていい」'}
+   ],effects:[
+    {type:'completeEvent',id:'ryune.outskirts.reward'},
+    {type:'completeEvent',id:'ryune.outskirts.reported.fields'},
+    {type:'openTreasure',id:'outskirtsThanks'},
+    {type:'journal',text:'西畑の乾いた畝についてボルに報告した。小川は未調査なので水路の原因は断定していない。携帯食を受け取った。'}
+   ]},
+  {id:'ryune.outskirts.brookReport',priority:80,trigger:{type:'npc',map:'village',target:'farmer'},
+   when:[{eventComplete:'ryune.brook.inspect'},{eventIncomplete:'ryune.fields.inspect'},
+    {eventIncomplete:'ryune.outskirts.reward'}],
+   lines:[
+    {speaker:'農夫のボル',text:'「橋の下に泥がたまってるのか。なるほど。まず水位を測らないといけねえな」'},
+    {speaker:'ソフィ',text:'「畑の土はまだ確かめていません。水が足りない理由を一つに決めないでくださいね」'},
+    {speaker:'農夫のボル',text:'「そうする。ありがとう。これは道中の食べ物だ。畑まで見てくる必要はないよ」'}
+   ],effects:[
+    {type:'completeEvent',id:'ryune.outskirts.reward'},
+    {type:'completeEvent',id:'ryune.outskirts.reported.brook'},
+    {type:'openTreasure',id:'outskirtsThanks'},
+    {type:'journal',text:'小川の水量についてボルに報告した。畑は未調査なので原因は断定していない。携帯食を受け取った。'}
+   ]},
+  {id:'ryune.outskirts.reward',priority:90,trigger:{type:'npc',map:'village',target:'farmer'},
+   when:[{eventComplete:'ryune.fields.inspect'},{eventComplete:'ryune.brook.inspect'},{eventIncomplete:'ryune.outskirts.reward'}],
+   lines:[
+    {speaker:'農夫のボル',text:'「畑と川の両方を見てきてくれたのか。助かるよ。水を引く溝は、みんなで確かめてみる」'},
+    {speaker:'マーガレット',text:'「まだ原因は断定できません。水路を確認するときは、畑を傷めないようにしてください」'},
+    {speaker:'農夫のボル',text:'「分かってる。これはほんの礼だ。旅先で腹が減ったら食べな」'}
+   ],effects:[
+    {type:'completeEvent',id:'ryune.outskirts.reward'},
+    {type:'completeEvent',id:'ryune.outskirts.reported.fields'},
+    {type:'completeEvent',id:'ryune.outskirts.reported.brook'},
+    {type:'openTreasure',id:'outskirtsThanks'},
+    {type:'journal',text:'西畑と東の小川の様子を農夫ボルへ報告し、旅の携帯食を受け取った。'}
+   ]},
+  // If the player independently explores the other side LATER, Boru can
+  // accept a second piece of evidence WITHOUT paying a second ration or
+  // pretending the previously-unvisited site was already measured.
+  {id:'ryune.outskirts.followup.fields',priority:60,
+   trigger:{type:'npc',map:'village',target:'farmer'},
+   when:[{eventComplete:'ryune.outskirts.reward'},
+    {eventComplete:'ryune.fields.inspect'},
+    {eventIncomplete:'ryune.outskirts.reported.fields'}],
+   lines:[
+    {speaker:'農夫のボル',text:'「西の畝の話も分かった。今度は畑側の高さを測って、川の記録と合わせてみるよ」'},
+    {speaker:'トリトン',text:'「無理に掘らないでね。苗が残ってるところはまだ生きてる」'}
+   ],effects:[
+    {type:'completeEvent',id:'ryune.outskirts.reported.fields'},
+    {type:'journal',text:'後から確認した西畑の乾いた畝について、ボルへ追加で伝えた。'}
+   ]},
+  {id:'ryune.outskirts.followup.brook',priority:60,
+   trigger:{type:'npc',map:'village',target:'farmer'},
+   when:[{eventComplete:'ryune.outskirts.reward'},
+    {eventComplete:'ryune.brook.inspect'},
+    {eventIncomplete:'ryune.outskirts.reported.brook'}],
+   lines:[
+    {speaker:'農夫のボル',text:'「橋の下の水位の話も助かる。畑と照らし合わせて、少しずつ確かめていくよ」'},
+    {speaker:'ソフィ',text:'「水を動かす前に、作業する人の足場にも気をつけてくださいね」'}
+   ],effects:[
+    {type:'completeEvent',id:'ryune.outskirts.reported.brook'},
+    {type:'journal',text:'後から確認した小川の泥詰まりについて、ボルへ追加で伝えた。'}
+   ]},
+  // World follow-up is visible only after a VOLUNTARY report for that site.
+  // Residents remember information; no magical instant irrigation repair.
+  {id:'ryune.fields.worker.afterReport',priority:35,
+   trigger:{type:'npc',map:'ryunefields',target:'fieldWorker'},
+   when:[{eventComplete:'ryune.outskirts.reported.fields'}],
+   lines:[{speaker:'畑の手伝い人',text:'「ボルから聞いたよ。まず溝の高さを測るんだ。苗を踏まないよう、細い目印だけ立ててある」'}]},
+  {id:'ryune.brook.keeper.afterReport',priority:35,
+   trigger:{type:'npc',map:'ryunebrook',target:'brookKeeper'},
+   when:[{eventComplete:'ryune.outskirts.reported.brook'}],
+   lines:[{speaker:'川辺の見回り人',text:'「水位の印を付けたよ。流れが戻るかは、何日か見ないと分からないね」'}]},
+  {id:'ryune.fields.cart.afterReport',priority:35,
+   trigger:{type:'object',map:'ryunefields',target:'fieldCart'},
+   when:[{eventComplete:'ryune.outskirts.reported.fields'}],
+   lines:[{speaker:'畑の荷車',text:'縄と測り棒が荷台に置かれている。溝の深さを確かめてから直すつもりらしい。'}]},
+  {id:'ryune.brook.stones.afterReport',priority:35,
+   trigger:{type:'object',map:'ryunebrook',target:'brookStones'},
+   when:[{eventComplete:'ryune.outskirts.reported.brook'}],
+   lines:[{speaker:'川辺の石積み',text:'水の高さを確かめる目印が増えている。石積みはまだそのままだ。'}]},
+  {id:'ryune.fields.worker',priority:15,trigger:{type:'npc',map:'ryunefields',target:'fieldWorker'},
+   lines:[{speaker:'畑の手伝い人',text:'「畝の間を踏まないでおくれよ。村へ戻るなら東側の道をまっすぐだ。乾いた場所が気になったら見ていって」'}]},
+  {id:'ryune.brook.keeper',priority:15,trigger:{type:'npc',map:'ryunebrook',target:'brookKeeper'},
+   lines:[{speaker:'川辺の見回り人',text:'「橋は通れるよ。足元だけ気をつけて。川の流れを調べるなら橋の手前の岸辺からどうぞ」'}]},
+  {id:'ryune.fields.cart',priority:15,trigger:{type:'object',map:'ryunefields',target:'fieldCart'},
+   lines:[{speaker:'畑の荷車',text:'籠と道具が積まれている。収穫を運ぶための荷車だが、今は修理用の木材を積んでいる。'}]},
+  {id:'ryune.brook.stones',priority:15,trigger:{type:'object',map:'ryunebrook',target:'brookStones'},
+   lines:[{speaker:'川辺の石積み',text:'小さな石が川岸を支えている。大雨のあとに補修した跡が残る。'}]},
 ]);
 GC.Data=GC.Data||{};GC.Data.Events={EVENT_DEFS};

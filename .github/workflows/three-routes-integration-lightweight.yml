@@ -1,0 +1,33 @@
+name: Three Routes Integration - Lightweight Gate
+# Temporarily manual-only: GitHub runner fails before any step starts.
+# Re-enable scoped push checks after billing/runner status is resolved.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: gray-crown-three-routes-lightweight-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify-runtime:
+    name: Syntax and all Node regressions
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Parse runtime scripts
+        run: node tests/check-syntax.js
+      - name: Execute complete Node test suite
+        run: npm test
+      - name: Verify app entry files exist
+        run: |
+          test -s index.html
+          test -s js/game.js
+          test -s js/systems/battle.js
+          test -s js/systems/events.js
+          test -s assets/characters/karen/karen_idle.png

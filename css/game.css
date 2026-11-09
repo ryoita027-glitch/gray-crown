@@ -237,3 +237,643 @@ html,body{background:radial-gradient(circle at 45% -10%,#29303b 0,#12161d 34%,#0
 
 /* v20 Developer Mode — hidden during normal play */
 .developer-panel{position:fixed;z-index:1000;right:10px;top:10px;bottom:10px;width:min(470px,94vw);overflow:auto;background:rgba(12,16,20,.985);border:1px solid #8f7846;box-shadow:0 18px 80px rgba(0,0,0,.7);padding:12px;color:#ddd7c7;font-size:12px}.developer-panel.hidden{display:none}.dev-head{display:flex;align-items:center;justify-content:space-between;position:sticky;top:-12px;background:#11171d;padding:12px 0 8px;z-index:2;border-bottom:1px solid rgba(201,170,97,.35)}.dev-head small{display:block;color:#ae955f;letter-spacing:.16em}.dev-head strong{font-size:16px}.dev-head button{width:34px;height:30px}.dev-tabs-note{padding:8px 0;color:#9d998e}.developer-panel section{border-top:1px solid rgba(255,255,255,.09);padding:10px 0}.developer-panel h3{margin:0 0 8px;color:#dec989;font-size:12px;letter-spacing:.08em}.developer-panel pre{white-space:pre-wrap;word-break:break-word;max-height:190px;overflow:auto;background:#090c0f;padding:8px;border:1px solid rgba(255,255,255,.07);margin:6px 0}.dev-row{display:flex;gap:6px;margin:6px 0}.dev-row>*{min-width:0;flex:1}.developer-panel select,.developer-panel input,.developer-panel button{background:#202831;color:#eee7d8;border:1px solid #4a5661;padding:6px;font:inherit}.developer-panel button{cursor:pointer}.developer-panel button:hover{border-color:#c9aa61}.developer-panel label{display:block;margin:5px 0}.developer-panel label input[type=checkbox]{margin-right:6px}.dev-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.dev-grid label input{display:block;width:100%;box-sizing:border-box;margin-top:2px}.dev-story-event{padding:6px;margin:5px 0;border-left:3px solid #665f52;background:#161c21}.dev-story-event.available{border-left-color:#69b77b}.dev-story-event.blocked{border-left-color:#a46262}.dev-story-event b{display:block}.dev-cond.pass{color:#86cb98}.dev-cond.fail{color:#da8b82}.dev-wide{width:100%;margin:8px 0}.dev-tainted{color:#e6a271;font-weight:700}
+
+/* Karen Pixel Acting Prototype — optional portrait suppression for controlled A/B testing. */
+.dialogue-overlay.no-portrait,.dialogue-overlay.hero-dialogue.no-portrait{padding-left:16px;min-height:126px}
+.dialogue-overlay.no-portrait .speaker-portrait,.speaker-portrait.portrait-disabled{display:none!important}
+@media(max-width:520px){
+ .dialogue-overlay.no-portrait,.dialogue-overlay.hero-dialogue.no-portrait{padding-left:11px;min-height:112px}
+}
+
+
+/* v24 — commercial presentation pass
+   Remove prototype chrome, reduce duplicated HUD information, and keep pixel
+   characters crisp when the canvas is scaled by the responsive shell. */
+:root{
+  --panel:#171c23;--panel2:#20262f;--line:#39424d;--accent:#d6b76f;
+  --muted:#9fa7b0;
+}
+#app{max-width:1340px;padding:12px 16px 22px}
+.topbar{
+  min-height:58px;margin-bottom:10px;padding:2px 2px 9px;
+  align-items:center;border-bottom:1px solid rgba(214,183,111,.14)
+}
+.topbar h1{margin:.05rem 0 0;font-size:clamp(1.55rem,2.6vw,2.15rem);letter-spacing:.075em}
+.eyebrow{font-size:.6rem;letter-spacing:.24em;color:#b9a36f}
+.build-note{display:none}
+.top-actions{gap:6px}
+.top-actions button{
+  padding:.48rem .68rem;min-height:34px;border-radius:4px;
+  font-size:.78rem;background:linear-gradient(#252c34,#1b2128);
+  border-color:#3d4752
+}
+.layout{grid-template-columns:minmax(0,1fr) 258px;gap:12px}
+.game-shell{padding:5px;border-radius:6px;background:#0c1015;border-color:#454c53}
+.game-stage{
+  border-radius:3px;border-color:rgba(205,178,112,.22);
+  box-shadow:0 18px 54px rgba(0,0,0,.42),inset 0 0 28px rgba(0,0,0,.22)
+}
+/* The source art is pixel-native. Browser interpolation was softening faces. */
+.game-stage canvas{
+  image-rendering:pixelated;
+  filter:saturate(.96) contrast(1.025) brightness(1.01);
+  border-radius:2px
+}
+.stage-vignette{
+  box-shadow:inset 0 0 48px 5px rgba(2,5,8,.23);
+  background:linear-gradient(180deg,rgba(255,225,165,.018),transparent 22%,transparent 80%,rgba(0,0,0,.13))
+}
+.world-hud{left:9px;top:9px;filter:drop-shadow(0 3px 5px rgba(0,0,0,.42))}
+.world-hud-chapter{
+  padding:0 9px;font-size:.62rem;letter-spacing:.055em;
+  background:linear-gradient(#753941,#54282e)
+}
+.world-hud-main{min-width:205px;padding:5px 12px 6px 17px;background:rgba(16,20,25,.88)}
+.world-hud-main span{font-size:.88rem}.world-hud-main small{font-size:.59rem}
+.story-context{
+  right:9px;top:9px;width:min(240px,32%);padding:6px 9px 7px;
+  background:rgba(13,17,22,.87);border-color:rgba(207,177,107,.34);
+  box-shadow:0 4px 12px rgba(0,0,0,.28)
+}
+.story-context span{font-size:.53rem;margin-bottom:2px}.story-context strong{font-size:.7rem}
+.statusbar{
+  grid-template-columns:auto 1fr auto;padding:6px 5px 1px;
+  min-height:25px;font-size:.7rem;background:transparent
+}
+/* The objective is already visible in the stage and quest panel. Three copies read as debug UI. */
+.statusbar #objectiveLabel{display:none}
+.statusbar #locationLabel{color:#aeb5bc}.safety-label{font-size:.64rem}
+.sidebar{gap:7px}
+.sidebar .panel{
+  padding:10px;border-radius:5px;background:linear-gradient(160deg,rgba(24,29,36,.98),rgba(16,20,26,.98));
+  border-color:rgba(83,92,104,.48);box-shadow:0 5px 17px rgba(0,0,0,.16)
+}
+.sidebar .panel h2{font-size:.68rem;margin-bottom:6px;padding-bottom:6px;letter-spacing:.16em}
+.party-row{margin:0;padding:6px 0}
+.party-head{font-size:.78rem}.party-sub{font-size:.68rem;margin-top:2px}
+.bar{height:5px;margin-top:4px}.exp-label{font-size:.6rem}
+.journal-item{font-size:.7rem;line-height:1.45}
+.controls-panel{padding-top:8px!important}
+.controls-panel p{display:inline;margin:0 .42rem 0 0;font-size:.66rem;color:#959da6}
+.controls-panel h2{margin-bottom:5px!important}
+.panel.quest-panel{border-color:rgba(195,163,91,.38)}
+.panel.journal-panel{opacity:.92}
+.dialogue-overlay{
+  left:10px;right:10px;bottom:10px;min-height:116px;
+  border-radius:3px;padding-top:11px;padding-bottom:9px
+}
+button{border-radius:5px}
+@media(max-width:980px){
+  .layout{grid-template-columns:minmax(0,1fr) 236px}
+  .story-context{width:29%}
+}
+@media(max-width:850px){
+  #app{padding:8px}.layout{grid-template-columns:1fr}
+  .sidebar{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .party-panel{grid-column:1/-1}.controls-panel{grid-column:1/-1}
+  .game-stage canvas{image-rendering:pixelated}
+}
+@media(max-width:520px){
+  .topbar{min-height:48px}.topbar h1{font-size:1.35rem}
+  .eyebrow{display:none}.top-actions button{padding:.4rem .52rem;font-size:.7rem}
+  .layout{gap:7px}.story-context{width:40%}
+}
+
+
+/* v24b — battle presentation parity with exploration */
+.party-battle-line{left:26px;width:250px;height:128px}
+.battle-hero.sprite{
+  width:64px;height:64px;bottom:2px;
+  background-size:256px 256px;
+  background-repeat:no-repeat;
+  image-rendering:pixelated;
+  background-color:transparent;
+  filter:drop-shadow(0 7px 5px rgba(0,0,0,.38))
+}
+.battle-hero.sprite::before,.battle-hero.sprite::after{display:none}
+.battle-hero.sprite.active{
+  filter:drop-shadow(0 0 9px rgba(241,210,120,.52)) drop-shadow(0 7px 5px rgba(0,0,0,.4))
+}
+
+
+/* v24c — remove desktop debug-dashboard clutter */
+.controls-panel{display:none}
+@media(max-width:850px){
+  .controls-panel{display:block}
+  .controls-panel p{display:none}
+  .mobile-pad{display:grid}
+}
+.journal-panel.hidden{display:none!important}
+
+/* v24d — layered pixel-like battle enemies.
+   These use discrete hard-edged parts rather than the previous soft CSS blob. */
+.enemy-art::before,.enemy-art::after{display:none!important}
+.enemy-art{position:relative;width:150px;height:118px;image-rendering:pixelated;filter:drop-shadow(0 8px 5px rgba(0,0,0,.42))}
+.enemy-part{position:absolute;display:block;box-sizing:border-box}
+.wolf-shadow{left:18px;bottom:4px;width:116px;height:15px;border-radius:50%;background:rgba(0,0,0,.35)}
+.wolf-body{left:38px;top:48px;width:72px;height:38px;background:#505b59;border:4px solid #293231;clip-path:polygon(7% 16%,78% 5%,100% 32%,93% 83%,73% 100%,16% 91%,0 58%)}
+.wolf-neck{left:91px;top:37px;width:31px;height:40px;background:#596463;border:4px solid #293231;transform:skew(-12deg)}
+.wolf-head{left:103px;top:25px;width:38px;height:34px;background:#626c69;border:4px solid #293231;clip-path:polygon(14% 9%,78% 0,100% 40%,86% 88%,35% 100%,0 63%)}
+.wolf-ear{top:15px;width:17px;height:25px;background:#485452;border:4px solid #293231;clip-path:polygon(50% 0,100% 100%,0 84%)}
+.wolf-ear.a{left:108px;transform:rotate(-9deg)}.wolf-ear.b{left:127px;transform:rotate(16deg)}
+.wolf-muzzle{left:126px;top:45px;width:27px;height:15px;background:#8b8f82;border:3px solid #293231;clip-path:polygon(0 6%,100% 40%,78% 100%,0 86%)}
+.wolf-eye{left:126px;top:34px;width:5px;height:5px;background:#e0c466;box-shadow:1px 1px 0 #251c13}
+.wolf-tail{left:10px;top:38px;width:43px;height:18px;background:#4e5957;border:4px solid #293231;transform:rotate(-24deg);clip-path:polygon(0 36%,90% 0,100% 66%,17% 100%)}
+.wolf-leg{top:78px;width:17px;height:32px;background:#454f4e;border:4px solid #293231}
+.wolf-leg.back{left:47px;transform:skew(7deg)}.wolf-leg.front{left:94px;transform:skew(-7deg)}
+.wolf-leg::after{content:"";position:absolute;left:-5px;bottom:-5px;width:21px;height:8px;background:#333c3b;border:3px solid #252c2c}
+
+.bandit-shadow{left:30px;bottom:4px;width:92px;height:15px;border-radius:50%;background:rgba(0,0,0,.34)}
+.bandit-body{left:59px;top:45px;width:43px;height:48px;background:#675244;border:4px solid #2e2926;clip-path:polygon(15% 0,84% 0,100% 28%,87% 100%,12% 100%,0 28%)}
+.bandit-head{left:65px;top:18px;width:31px;height:31px;background:#c99b7c;border:4px solid #332a26}
+.bandit-hair{left:60px;top:12px;width:42px;height:20px;background:#49372f;border:4px solid #2c2623;clip-path:polygon(0 30%,21% 0,100% 9%,92% 77%,65% 63%,48% 100%,26% 64%,0 83%)}
+.bandit-eye{left:88px;top:32px;width:5px;height:4px;background:#302624}
+.bandit-arm{top:51px;width:13px;height:39px;background:#755b48;border:4px solid #2e2926}
+.bandit-arm.l{left:48px;transform:rotate(12deg)}.bandit-arm.r{left:101px;transform:rotate(-18deg)}
+.bandit-leg{top:87px;width:15px;height:27px;background:#393534;border:4px solid #252322}
+.bandit-leg.l{left:62px}.bandit-leg.r{left:87px}
+.bandit-blade{left:116px;top:45px;width:7px;height:57px;background:#b9c0c3;border:2px solid #4b5051;transform:rotate(17deg);transform-origin:bottom}
+.bandit-blade::after{content:"";position:absolute;left:-7px;bottom:4px;width:17px;height:5px;background:#85633d;border:2px solid #453324}
+
+@media(max-width:650px){
+ .enemy-art{transform:scale(.82);transform-origin:50% 90%}
+}
+
+/* Empty journal should not reserve sidebar space. */
+.journal-panel:has(#journalHud:empty){display:none}
+
+
+/* v24e — distinct enemy families */
+.human-empire .bandit-body{background:#344f6c}
+.human-empire .bandit-arm{background:#3e5872}
+.human-empire .bandit-hair{background:#343941}
+.human-empire .bandit-blade{background:#c5ccd0;border-color:#59626a}
+.human-empire .bandit-body::after{content:"";position:absolute;left:8px;top:9px;width:19px;height:5px;background:#9d8761;box-shadow:0 11px 0 #263e58}
+
+.bat-shadow{left:27px;bottom:8px;width:95px;height:12px;border-radius:50%;background:rgba(0,0,0,.3)}
+.bat{width:35px;height:21px;background:#3d424b;border:3px solid #24272d;clip-path:polygon(0 43%,28% 5%,48% 35%,66% 4%,100% 43%,72% 39%,88% 100%,50% 67%,13% 100%,29% 40%);filter:drop-shadow(0 3px 1px rgba(0,0,0,.35))}
+.bat::after{content:"";position:absolute;left:15px;top:7px;width:4px;height:4px;background:#d7b75b}
+.bat.b1{left:18px;top:55px;transform:scale(.95) rotate(-7deg)}
+.bat.b2{left:59px;top:27px;transform:scale(1.16) rotate(5deg)}
+.bat.b3{left:102px;top:52px;transform:scale(.86) rotate(9deg)}
+.bat.b4{left:71px;top:76px;transform:scale(.72) rotate(-4deg)}
+
+.crawler-shadow{left:17px;bottom:8px;width:120px;height:13px;border-radius:50%;background:rgba(0,0,0,.34)}
+.crawler-seg{top:58px;width:30px;height:29px;border:4px solid #282b29;background:#665e4b;border-radius:42%}
+.crawler-seg::after{content:"";position:absolute;left:3px;right:3px;top:7px;height:4px;background:#8b805f}
+.crawler-seg.s1{left:22px;top:65px}.crawler-seg.s2{left:45px;top:58px}.crawler-seg.s3{left:69px;top:53px}.crawler-seg.s4{left:93px;top:49px}
+.crawler-head{left:115px;top:43px;width:31px;height:31px;background:#756a50;border:4px solid #282b29;clip-path:polygon(0 22%,80% 0,100% 50%,77% 100%,0 78%)}
+.crawler-head::before,.crawler-head::after{content:"";position:absolute;right:21px;top:-13px;width:3px;height:16px;background:#443d31;transform:rotate(28deg);transform-origin:bottom}
+.crawler-head::after{right:8px;transform:rotate(-22deg)}
+.crawler-eye{left:134px;top:53px;width:4px;height:4px;background:#d0a955}
+
+.beast-shadow{left:18px;bottom:5px;width:116px;height:16px;border-radius:50%;background:rgba(0,0,0,.38)}
+.beast-body{left:34px;top:49px;width:76px;height:42px;background:#665f55;border:4px solid #302d29;clip-path:polygon(7% 17%,80% 3%,100% 29%,94% 88%,66% 100%,11% 90%,0 51%)}
+.beast-head{left:99px;top:31px;width:44px;height:39px;background:#746b5d;border:4px solid #302d29;clip-path:polygon(8% 14%,76% 0,100% 39%,86% 92%,25% 100%,0 61%)}
+.beast-horn{top:11px;width:12px;height:34px;background:#d7c69d;border:3px solid #514b40;clip-path:polygon(50% 0,100% 100%,0 100%)}
+.beast-horn.a{left:104px;transform:rotate(-20deg)}.beast-horn.b{left:128px;transform:rotate(18deg)}
+.beast-eye{left:127px;top:45px;width:5px;height:5px;background:#d8a64e;box-shadow:1px 1px #2a211b}
+.beast-leg{top:82px;width:18px;height:30px;background:#514b45;border:4px solid #302d29}
+.beast-leg.l{left:48px}.beast-leg.r{left:95px}
+
+
+/* v24f — battle focus mode: do not show exploration HUD twice */
+body:has(.battle-panel:not(.hidden)) .layout{grid-template-columns:minmax(0,1fr)}
+body:has(.battle-panel:not(.hidden)) .sidebar{display:none}
+.game-shell:has(.battle-panel:not(.hidden)) .statusbar{display:none}
+body:has(.battle-panel:not(.hidden)) #app{max-width:1380px}
+body:has(.battle-panel:not(.hidden)) .battle-panel{inset:8px}
+body:has(.battle-panel:not(.hidden)) .battle-stage{height:280px}
+body:has(.battle-panel:not(.hidden)) .enemy-visual{right:13%;bottom:42px}
+body:has(.battle-panel:not(.hidden)) .enemy-stage-ui{right:18px;width:300px}
+body:has(.battle-panel:not(.hidden)) .party-battle-line{left:5%;bottom:38px}
+@media(max-width:650px){
+ body:has(.battle-panel:not(.hidden)) .battle-stage{height:220px}
+ body:has(.battle-panel:not(.hidden)) .enemy-visual{right:18px}
+}
+
+
+/* v24g — saves belong to the adventure menu, not permanent browser chrome */
+#btnSave,#btnLoad,#btnRestart{display:none}
+.menu-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:12px;padding-top:10px;border-top:1px solid rgba(214,183,111,.18)}
+.menu-actions button{border-radius:3px;padding:.62rem .7rem;background:linear-gradient(#2d3540,#20262e);border-color:#46515e;min-width:0;overflow-wrap:anywhere;white-space:normal;line-height:1.45}
+.menu-actions .menu-danger{color:#d7b1a9;border-color:rgba(164,85,76,.55);background:linear-gradient(#3a292a,#271d1e)}
+.menu-inventory{margin-top:9px;border-top:1px solid rgba(255,255,255,.06);padding-top:5px}
+@media(max-width:520px){.menu-actions{grid-template-columns:1fr}}
+
+/* Phase 0 acceptance: preserve one-line touch controls and readable battle actors.
+   Presentation-only. Source sprite bytes and encounter balance are unchanged. */
+@media (max-width:850px){
+ .mobile-pad{grid-template-columns:repeat(3,minmax(54px,62px));grid-template-rows:repeat(3,48px);gap:7px}
+ .mobile-pad button{min-width:0;padding:0 3px;white-space:nowrap;word-break:keep-all;font-size:.88rem;line-height:1.1}
+}
+@media (min-width:851px){
+ body:has(.battle-panel:not(.hidden)) .battle-stage{height:310px}
+ body:has(.battle-panel:not(.hidden)) .party-battle-line{left:10%;bottom:45px;width:360px;height:155px}
+ body:has(.battle-panel:not(.hidden)) .battle-hero.sprite{width:80px;height:80px;background-size:480px 320px}
+ body:has(.battle-panel:not(.hidden)) .battle-hero.sprite:nth-child(2){left:78px!important}
+ body:has(.battle-panel:not(.hidden)) .battle-hero.sprite:nth-child(3){left:156px!important}
+ body:has(.battle-panel:not(.hidden)) .battle-hero.sprite:nth-child(4){left:234px!important}
+ body:has(.battle-panel:not(.hidden)) .enemy-visual{right:12%;bottom:50px;transform:scale(1.16);transform-origin:50% 90%}
+}
+@media (max-width:850px){
+ body:has(.battle-panel:not(.hidden)) .battle-hero.sprite{background-size:384px 256px}
+}
+@media (max-width:520px){
+ body:has(.battle-panel:not(.hidden)) .battle-stage{height:236px}
+ body:has(.battle-panel:not(.hidden)) .party-battle-line{left:8px;bottom:30px}
+ body:has(.battle-panel:not(.hidden)) .enemy-visual{right:8px;bottom:30px}
+ body:has(.battle-panel:not(.hidden)) .enemy-stage-ui{right:7px;width:min(230px,70%)}
+}
+
+/* Road & first-fort vertical slice: game rules and locked sprite pixels unchanged. */
+.battle-stage[data-terrain="cave"]{
+ background:linear-gradient(180deg,#242b35 0 38%,#3e4145 38% 62%,#66615b 62% 100%);
+ box-shadow:inset 0 18px 0 rgba(10,13,17,.55),inset 0 -26px 0 rgba(23,26,29,.4);
+}
+.battle-stage[data-terrain="cave"] .battle-backdrop{
+ background:repeating-linear-gradient(90deg,transparent 0 50px,rgba(12,18,23,.25) 51px 54px),
+ repeating-linear-gradient(0deg,transparent 0 30px,rgba(13,17,22,.15) 31px 33px);
+}
+.battle-stage[data-terrain="road"]{
+ background:linear-gradient(180deg,#344552 0 38%,#476047 38% 60%,#667558 60% 100%);
+}
+.battle-stage[data-terrain="road"] .battle-backdrop{
+ background:repeating-linear-gradient(90deg,transparent 0 90px,rgba(17,33,26,.13) 91px 107px),
+ linear-gradient(180deg,rgba(202,220,192,.08),transparent 48%);
+}
+.battle-hero.sprite{image-rendering:pixelated;background-repeat:no-repeat}
+.battle-hero.down{filter:grayscale(.75) brightness(.65)}
+#partyCards .ally.acting{border-color:rgba(234,197,120,.85);box-shadow:inset 3px 0 #e4bb73}
+.battle-hp-meter,.battle-mp-meter{height:5px;overflow:hidden;border-radius:2px;background:#2c343a;margin-top:5px;border:1px solid rgba(255,255,255,.09)}
+.battle-hp-meter span,.battle-mp-meter span{display:block;height:100%;transition:width .18s ease}
+.battle-hp-meter span{background:#90bc80}.battle-mp-meter span{background:#7aaac9}
+.battle-hp-meter[aria-label^="HP 0"] span{background:#be685f}
+#battleActions button:focus-visible{outline:2px solid #efdb9e;outline-offset:3px}
+@media (max-width:600px){
+ .battle-stage{height:220px}
+ .party-battle-line{left:9px;bottom:24px}
+ .enemy-visual{right:14px;bottom:24px;transform:scale(.88);transform-origin:100% 100%}
+ .battle-hero{filter:none}
+}
+
+/* Phase 4 optional boss-stage hierarchy, scoped to its existing battle UI. */
+.battle-stage[data-boss="true"] .enemy-art.horned-beast{transform:scale(1.18);transform-origin:50% 90%;filter:drop-shadow(0 9px 0 rgba(20,22,26,.65))}
+.battle-stage[data-boss="true"] .enemy-stage-ui{border-color:rgba(208,164,105,.6)}
+
+
+/* Commercial pass: actual 48px approved original PNG *idle* sheet: 4 frames x 4 directions. */
+.battle-hero.sprite{width:44px;height:44px;background-size:176px 176px;background-position:0 0;background-repeat:no-repeat;image-rendering:pixelated;animation:approvedHeroIdle 1.2s steps(1,end) infinite;filter:drop-shadow(0 5px 4px rgba(0,0,0,.3))}
+.battle-hero.sprite::before,.battle-hero.sprite::after{display:none}
+.battle-hero.sprite.strike{animation:heroStrike .3s cubic-bezier(.2,.9,.28,1)}
+@keyframes approvedHeroIdle{0%,24%{background-position:0 0}25%,49%{background-position:-44px 0}50%,74%{background-position:-88px 0}75%,99%{background-position:-132px 0}100%{background-position:0 0}}
+.quality-context{flex:1 1 100%;font-size:clamp(11px,1.8vw,12px);font-weight:600;color:#f0dca9;letter-spacing:.01em;min-height:18px;text-align:left}
+
+
+/* Commercial-quality combat: accessible target choice, 44px touch targets, actionable tips. */
+.battle-target-picker{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:6px 0 9px}
+.target-picker-label{font-size:.75rem;color:#dfcda9;font-weight:700}
+.battle-target-picker button{min-height:44px;max-width:100%;padding:8px 11px;border:1px solid #68717c;border-radius:7px;background:#252b32;font-size:.82rem;text-align:left}
+.battle-target-picker button.selected,.battle-target-picker button[aria-pressed="true"]{border-color:#e7c47e;background:#403829;color:#fff1d1;box-shadow:inset 0 0 0 1px #bb9b65}
+.battle-target-picker button:focus-visible{outline:3px solid #efd28b;outline-offset:2px}
+.card.enemy.targeted{border-color:#dabb7b!important;box-shadow:inset 3px 0 #e1c17d}
+.battle-forecast{margin:8px 0 6px;padding:9px 12px;border-left:3px solid #dcac6a;background:#363027;color:#ffe7c4;font-size:.83rem;line-height:1.55;border-radius:4px;font-weight:600}
+.battle-forecast.hidden{display:none!important}
+@media(max-width:520px){.battle-forecast{font-size:.77rem;padding:8px 10px}}
+.battle-command-help{margin:5px 0 9px;color:#d0d5d9;font-size:.79rem;line-height:1.5;min-height:18px}
+@media(max-width:520px){.battle-target-picker{gap:4px}.battle-target-picker button{flex:1 1 46%;min-height:44px;font-size:.75rem;padding:6px}.battle-command-help{font-size:.73rem}}
+
+
+/* Optional routes are discoverable, but never mislabeled as mandatory. */
+.discovery-progress{margin-top:12px;padding:10px 12px;background:#282d31;border:1px solid #64583e;border-radius:7px;color:#f0d8a0;font-size:.82rem;font-weight:650;line-height:1.5}
+.discovery-progress.hidden{display:none}
+
+@media(prefers-reduced-motion:reduce){.battle-hero.sprite{animation:none!important}.battle-hero.sprite.strike{animation:none!important;transform:none}}
+
+
+/* Battle art uses real 48x48 cells from 4-direction original 4x4 idle
+   and 6x4 walk sheets. Clip EACH cell; never stretch the entire sheet. */
+.battle-hero.sprite{
+ width:48px!important;height:48px!important;
+ background-image:none!important;background-size:auto!important;
+ background-position:0 0!important;animation:none!important;
+ overflow:visible;contain:layout style;
+}
+.battle-hero.sprite .battle-sprite-frame{
+ display:block;width:48px;height:48px;overflow:hidden;
+ background-image:var(--idle-sheet);background-repeat:no-repeat;
+ background-size:192px 192px!important;background-position:0 -96px;
+ image-rendering:pixelated;animation:gcBattleIdleFrames 1.12s steps(1,end) infinite;
+}
+@keyframes gcBattleIdleFrames{
+ 0%,24.99%{background-position:0 -96px}
+ 25%,49.99%{background-position:-48px -96px}
+ 50%,74.99%{background-position:-96px -96px}
+ 75%,100%{background-position:-144px -96px}
+}
+.battle-hero.sprite.strike{
+ animation:gcBattleLunge .38s ease-in-out 1!important;
+}
+.battle-hero.sprite.strike .battle-sprite-frame{
+ background-image:var(--walk-sheet)!important;
+ background-size:288px 192px!important;
+ animation:gcBattleWalkFrames .38s steps(1,end) 1!important;
+}
+@keyframes gcBattleWalkFrames{
+ 0%,16.66%{background-position:0 -96px}
+ 16.67%,33.33%{background-position:-48px -96px}
+ 33.34%,49.99%{background-position:-96px -96px}
+ 50%,66.66%{background-position:-144px -96px}
+ 66.67%,83.33%{background-position:-192px -96px}
+ 83.34%,100%{background-position:-240px -96px}
+}
+@keyframes gcBattleLunge{
+ 0%,100%{transform:translate(0,0)}
+ 40%{transform:translate(28px,-4px)}
+ 62%{transform:translate(18px,-2px)}
+}
+@media (prefers-reduced-motion:reduce){
+ .battle-hero.sprite,.battle-hero.sprite.strike{animation:none!important;transform:none!important}
+ .battle-hero.sprite .battle-sprite-frame{animation:none!important}
+}
+
+/* Clear feedback that Break really prevented an enemy action. */
+#enemyVisual.staggered{filter:saturate(.56) brightness(.82) drop-shadow(0 0 8px rgba(247,198,112,.5))}
+#battlePanel:has(#enemyVisual.staggered) #stageEnemyState{color:#ffe4a8;font-weight:800}
+
+/* The current asset generators mostly shift a base pose by 1px for idle.
+   Keep inactive characters stable to avoid four uncanny simultaneous jitters. */
+
+
+
+/* Visible hero regression fix: clip actual <img> relative to document root.
+   Old layered stylesheet includes unsafe 44/80px backgrounds; override them. */
+#partyBattleLine .battle-hero.sprite{
+ position:absolute!important;display:block!important;
+ width:48px!important;height:48px!important;bottom:0!important;
+ background:none!important;opacity:1!important;visibility:visible!important;
+ overflow:visible!important;filter:none;transform-origin:50% 100%;
+}
+#partyBattleLine .battle-hero .battle-sprite-frame{
+ position:absolute;display:block;inset:0;width:48px;height:48px;
+ overflow:hidden;z-index:2;isolation:isolate;
+ background:none!important;animation:none!important;
+}
+#partyBattleLine .battle-hero .battle-frame-image{
+ position:absolute;display:block;left:0;top:-96px;
+ width:192px!important;height:192px!important;
+ max-width:none!important;max-height:none!important;
+ object-fit:fill!important;image-rendering:pixelated;
+ animation:none;pointer-events:none;
+}
+#partyBattleLine .battle-hero.asset-ready .battle-frame-image{
+ opacity:1;
+}
+#partyBattleLine .battle-hero:not(.asset-ready) .battle-frame-image{opacity:0}
+#partyBattleLine .battle-hero.strike .battle-frame-image{
+ width:288px!important;height:192px!important;
+ animation:gcBattleWalkImage .4s steps(1,end) 1!important;
+}
+@keyframes gcBattleWalkImage{
+ 0%,16.66%{transform:translateX(0)}
+ 16.67%,33.33%{transform:translateX(-48px)}
+ 33.34%,49.99%{transform:translateX(-96px)}
+ 50%,66.66%{transform:translateX(-144px)}
+ 66.67%,83.33%{transform:translateX(-192px)}
+ 83.34%,100%{transform:translateX(-240px)}
+}
+#partyBattleLine .battle-hero .battle-hero-fallback{
+ position:absolute;inset:3px 9px 0 9px;z-index:1;
+ display:block;opacity:1;
+ background:linear-gradient(#b86453 0 20%,#eed4b1 20% 41%,#a7aa94 41% 74%,#604f42 74% 100%);
+ box-shadow:inset 0 0 0 3px #373c40,0 2px 0 #242728;clip-path:polygon(22% 0,78% 0,96% 28%,80% 100%,20% 100%,4% 28%);
+}
+#partyBattleLine [data-hero="triton"] .battle-hero-fallback{background:linear-gradient(#363748 0 24%,#ddc7b4 24% 40%,#68799b 40% 74%,#443f48 74%)}
+#partyBattleLine [data-hero="sophie"] .battle-hero-fallback{background:linear-gradient(#b3a982 0 25%,#edd1b8 25% 40%,#d8d6ba 40% 74%,#726b5a 74%)}
+#partyBattleLine [data-hero="margaret"] .battle-hero-fallback{background:linear-gradient(#c4b7d5 0 25%,#e9d8c9 25% 40%,#655c87 40% 74%,#4b4160 74%)}
+#partyBattleLine .battle-hero.strike{animation:gcBattleLunge .4s ease-in-out 1!important}
+#partyBattleLine .battle-hero.active:not(.strike){filter:drop-shadow(0 0 6px rgba(239,216,169,.72))}
+@media(prefers-reduced-motion:reduce){
+ #partyBattleLine .battle-hero.strike,#partyBattleLine .battle-hero .battle-frame-image{animation:none!important}
+}
+
+
+/*
+ * Battle-only presentation rollback.
+ * Retain the four original 48px character idle/walk PNGs exactly as authored.
+ * Previous overlapping CSS used an 80/48px battlefield body, a 48px window,
+ * and a permanently offset source row (-96px) even though the game world uses
+ * the 44px, face-forward/down pose (row zero).
+ *
+ * This narrow end-of-file rule reverses those presentation overrides only
+ * for the fight party. Nothing in the overworld renderer changes.
+ */
+#partyBattleLine .battle-hero.sprite{
+ width:44px!important;
+ height:44px!important;
+ bottom:0!important;
+ background:none!important;
+ background-image:none!important;
+ background-size:auto!important;
+ overflow:visible!important;
+ transform-origin:50% 100%;
+ filter:drop-shadow(0 4px 3px rgba(12,14,16,.38));
+ animation:none!important;
+}
+#partyBattleLine .battle-hero .battle-sprite-frame{
+ inset:0!important;
+ width:44px!important;
+ height:44px!important;
+ overflow:hidden!important;
+ background:none!important;
+ animation:none!important;
+}
+#partyBattleLine .battle-hero .battle-frame-image{
+ position:absolute!important;
+ left:0!important;
+ top:0!important; /* face-forward row 0; never crop head with row -96 */
+ width:176px!important;
+ height:176px!important;
+ max-width:none!important;
+ max-height:none!important;
+ object-fit:fill!important;
+ image-rendering:pixelated!important;
+ transform:none;
+ animation:none!important;
+}
+#partyBattleLine .battle-hero.asset-ready .battle-hero-fallback{
+ display:none!important;
+}
+#partyBattleLine .battle-hero.strike .battle-frame-image{
+ width:264px!important;
+ height:176px!important;
+ animation:gcBattleWalkRestored .40s steps(1,end) 1!important;
+}
+@keyframes gcBattleWalkRestored{
+ 0%,16.66%{transform:translateX(0)}
+ 16.67%,33.33%{transform:translateX(-44px)}
+ 33.34%,49.99%{transform:translateX(-88px)}
+ 50%,66.66%{transform:translateX(-132px)}
+ 66.67%,83.33%{transform:translateX(-176px)}
+ 83.34%,100%{transform:translateX(-220px)}
+}
+#partyBattleLine .battle-hero.active:not(.strike){
+ filter:drop-shadow(0 0 6px rgba(240,207,128,.5))
+        drop-shadow(0 4px 3px rgba(12,14,16,.38));
+}
+@media (prefers-reduced-motion:reduce){
+ #partyBattleLine .battle-hero.strike .battle-frame-image{
+  animation:none!important;
+  transform:none!important;
+ }
+}
+
+
+/* Battle-size correction after player review.
+ * Keep the *original* hero PNGs and true 48x48 source cells. Only the
+ * combat presentation grows; exploration sprites remain completely intact.
+ * One CSS variable drives BOTH viewport dimensions and all sprite frames;
+ * changing one without the other previously produced cropped heads.
+ *
+ * Desktop: 72px (vs rejected 44px), mid-size: 64px, phones: 60px.
+ * Phones use two columns/two rows so the larger party cannot overlap foes.
+ */
+#partyBattleLine{
+ --gc-battle-frame:64px;
+}
+#partyBattleLine .battle-hero.sprite{
+ width:var(--gc-battle-frame)!important;
+ height:var(--gc-battle-frame)!important;
+}
+#partyBattleLine .battle-hero .battle-sprite-frame{
+ width:var(--gc-battle-frame)!important;
+ height:var(--gc-battle-frame)!important;
+ overflow:hidden!important;
+}
+#partyBattleLine .battle-hero .battle-frame-image{
+ top:0!important;
+ left:0!important;
+ width:calc(var(--gc-battle-frame) * 4)!important;
+ height:calc(var(--gc-battle-frame) * 4)!important;
+ object-fit:fill!important;
+ image-rendering:pixelated!important;
+}
+#partyBattleLine .battle-hero.strike .battle-frame-image{
+ width:calc(var(--gc-battle-frame) * 6)!important;
+ height:calc(var(--gc-battle-frame) * 4)!important;
+ animation:gcBattleWalkSized .4s steps(1,end) 1!important;
+}
+@keyframes gcBattleWalkSized{
+ 0%,16.66%{transform:translateX(0)}
+ 16.67%,33.33%{transform:translateX(calc(var(--gc-battle-frame) * -1))}
+ 33.34%,49.99%{transform:translateX(calc(var(--gc-battle-frame) * -2))}
+ 50%,66.66%{transform:translateX(calc(var(--gc-battle-frame) * -3))}
+ 66.67%,83.33%{transform:translateX(calc(var(--gc-battle-frame) * -4))}
+ 83.34%,100%{transform:translateX(calc(var(--gc-battle-frame) * -5))}
+}
+/* Scoped positions override legacy desktop nth-child !important positions. */
+@media (min-width:851px){
+ #partyBattleLine{--gc-battle-frame:72px}
+ #partyBattleLine .battle-hero:nth-child(1){left:0!important}
+ #partyBattleLine .battle-hero:nth-child(2){left:82px!important}
+ #partyBattleLine .battle-hero:nth-child(3){left:164px!important}
+ #partyBattleLine .battle-hero:nth-child(4){left:246px!important}
+}
+@media (min-width:601px) and (max-width:850px){
+ #partyBattleLine{--gc-battle-frame:64px}
+ #partyBattleLine .battle-hero:nth-child(1){left:0!important}
+ #partyBattleLine .battle-hero:nth-child(2){left:72px!important}
+ #partyBattleLine .battle-hero:nth-child(3){left:144px!important}
+ #partyBattleLine .battle-hero:nth-child(4){left:216px!important}
+}
+@media (max-width:600px){
+ #partyBattleLine{
+  --gc-battle-frame:60px;
+  left:8px!important;
+  bottom:20px!important;
+  width:146px!important;
+  height:126px!important;
+ }
+ #partyBattleLine .battle-hero:nth-child(1){left:0!important;bottom:63px!important}
+ #partyBattleLine .battle-hero:nth-child(2){left:68px!important;bottom:63px!important}
+ #partyBattleLine .battle-hero:nth-child(3){left:0!important;bottom:0!important}
+ #partyBattleLine .battle-hero:nth-child(4){left:68px!important;bottom:0!important}
+}
+
+/* Narrowest 320–360px screens: preserve the 60px character art. Compress
+ * only the horizontal gap, not the characters or enemy. */
+@media (max-width:360px){
+ #partyBattleLine{width:130px!important}
+ #partyBattleLine .battle-hero:nth-child(2){left:60px!important}
+ #partyBattleLine .battle-hero:nth-child(4){left:60px!important}
+}
+
+/* The 2x2 party reaches y=77 on 220px mobile stages. Preserve all enemy HP
+ * labels at their original font size while reclaiming only unused padding:
+ * the enemy status now ends above the party heads, not on top of Margaret.
+ */
+@media (max-width:600px){
+ #battleStage .enemy-stage-ui{top:7px!important;padding:4px 7px!important}
+ #battleStage .enemy-stage-name{margin-bottom:3px!important}
+ #battleStage .stage-gauge{margin:2px 0!important}
+}
+
+
+/* Field-only mobile readability — same authored 48px pixels, larger camera.
+ * The statusbar toggle always restores full-map view without any save change.
+ * Never zoom dialogue, HP HUD or battle overlay with the world canvas. */
+#btnCameraMode{display:none}
+@media(max-width:600px){
+ .game-stage{overflow:hidden}
+ .game-stage canvas#game{transform-origin:0 0;transition:none;will-change:transform;image-rendering:pixelated}
+ #btnCameraMode{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:84px;min-height:38px;padding:5px 9px;flex-shrink:0;
+  border:1px solid #83704f;border-radius:5px;
+  background:#232b34;color:#e8ddb9;font-weight:600;font-size:.82rem;
+ }
+ #btnCameraMode:focus-visible{outline:3px solid #e9c879;outline-offset:2px}
+ .statusbar{min-height:42px;align-items:center;flex-wrap:wrap;gap:6px}
+ #qualityHint{display:none}
+}
+
+/* Field preparation: the same resources found in the world are usable before combat. */
+.menu-location{margin:-8px 0 14px;color:#b9b4a6;font-size:.83rem}
+.adventure-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;border-bottom:1px solid #554b37;padding-bottom:12px}
+.adventure-tabs button{min-width:0;padding:10px 5px;min-height:44px;white-space:normal;font-size:.82rem;border-radius:4px}
+.adventure-tabs .selected,.supply-choice.selected{border-color:#d5b473;background:#3a3428;color:#fff1ce}
+.menu-intro{color:#c5c7c9;font-size:.85rem;line-height:1.65;margin:0 0 14px}
+.menu-section-label{display:flex;align-items:center;gap:10px;font-size:.94rem;margin:20px 0 10px;color:#f0d8a0}
+.menu-section-label small{font-size:.74rem;font-weight:400;color:#b1b1ad}
+.supply-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.supply-choice{min-width:0;padding:12px 9px;text-align:left;white-space:normal;border-radius:5px;background:#1b232c;border-color:#48505a}
+.supply-choice strong{display:flex;justify-content:space-between;gap:4px;font-size:.9rem}
+.supply-choice strong span{color:#e5c88b;font-variant-numeric:tabular-nums}
+.supply-choice small{display:block;margin-top:8px;color:#bfc4c9;font-size:.73rem;line-height:1.55}
+.supply-targets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.supply-target{display:block;min-width:0;text-align:left;white-space:normal;padding:12px;background:#202a32;border:1px solid #54616c;border-radius:5px}
+.supply-target:disabled{opacity:.7;cursor:default;background:#1c2229}
+.supply-target .party-head{display:flex;flex-wrap:wrap;gap:5px}
+.supply-target .party-head strong{font-size:.9rem}
+.supply-target .party-head small{font-size:.7rem;color:#b9bfc5}
+.supply-vitals{display:flex;flex-wrap:wrap;gap:5px 12px;font-size:.75rem;margin:10px 0 6px;color:#aeb8bf;font-variant-numeric:tabular-nums}
+.supply-vitals b{color:#edf0e5}
+.supply-target .bar{display:block;height:5px;margin:5px 0}
+.supply-target .bar>span{display:block;height:100%}
+.supply-gain{display:block;margin-top:10px;color:#add6b7;font-size:.78rem}
+.menu-feedback{min-height:1.5em;color:#bce4c6;font-size:.84rem;line-height:1.5;margin:10px 0}
+.notebook-objective{padding:14px;border-left:3px solid #d5b473;background:#302e29;line-height:1.65}
+.notebook-objective>small{display:block;color:#c4b492;font-size:.73rem;margin-bottom:5px}
+.notebook-objective>strong{font-size:.92rem}
+.notebook-objective p{font-size:.78rem;color:#d3c6ac;margin:8px 0 0}
+.notebook-clues{list-style:none;margin:0;padding:0}
+.notebook-clue{display:flex;gap:10px;padding:12px 0;border-bottom:1px solid #3a4149;color:#dbc28d}
+.notebook-clue strong{display:block;font-size:.85rem;color:#deded4}
+.notebook-clue small{display:block;font-size:.76rem;color:#aeb6ba;margin-top:4px;line-height:1.55}
+.notebook-clue.found{color:#9ec4a7}
+.notebook-clue.found strong{color:#aabbb0}
+.notebook-records{padding-left:22px;color:#c8c7bd;font-size:.82rem;line-height:1.8}
+.notebook-records li{padding:5px 0 10px}
+button.discovery-progress{width:100%;text-align:left;cursor:pointer;min-height:44px;white-space:normal}
+.modal button:focus-visible{outline:2px solid #ffe1a1;outline-offset:3px}
+@media(max-width:420px){.modal{padding:10px}.modal-card{padding:14px;max-height:88dvh}.supply-choices{gap:4px}.supply-choice{padding:10px 7px}.supply-choice strong{font-size:.82rem}.supply-targets{gap:7px}.supply-target{padding:10px}.adventure-tabs button{font-size:.76rem}}

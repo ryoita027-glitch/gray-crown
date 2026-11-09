@@ -1,0 +1,55 @@
+name: Gray Crown Sophie Character Validation CI
+on:
+  pull_request:
+    branches: [pixel-karen-triton-face-differentiation-fix]
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+concurrency:
+  group: gray-crown-sophie-character-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  technical-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with: { persist-credentials: false }
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-ci.txt
+      - run: python -m pip install --disable-pip-version-check -r requirements-ci.txt
+      - name: Verify authority
+        run: python tools/verify_project_authority.py
+      - name: Verify Karen
+        run: python tools/verify_karen_visual_regression_control.py
+      - name: Verify Triton
+        run: python tools/verify_triton_direction_lock.py
+      - name: Verify Sophie lock
+        run: python tools/verify_sophie_direction_lock.py
+      - name: Generate Sophie prototype
+        run: python tools/generate_sophie_prototype_assets.py --out prototype_artifacts/sophie_generated
+      - name: Verify generated dimensions
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          expected={"idle":(192,192),"walk":(288,192),"turn":(144,192),"talk":(192,192),"surprise":(192,192),"approach":(192,192),"laugh":(288,192),"run":(288,192)}
+          for n,s in expected.items():
+              p=Path("prototype_artifacts/sophie_generated")/f"sophie_{n}.png"
+              with Image.open(p) as im:
+                  assert im.size==s,(n,im.size,s)
+                  assert im.mode=="RGBA",(n,im.mode)
+          print("Sophie 8-animation generated dimensions PASS")
+          PY
+      - name: State manifest
+        run: python tools/write_ci_state_manifest.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gray-crown-sophie-generated-prototype
+          path: prototype_artifacts/
+          if-no-files-found: error
+          retention-days: 14

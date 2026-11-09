@@ -52,3 +52,111 @@ test('v22 frontier-complete save migrates to schema 23 without inventing v23 pro
  const h=createHarness();const base=h.GC.State.create();h.GC.Story.applyCanonicalAlphaStage(base,h.GC.Story.STORY_STAGES.FRONTIER_COMPLETE);base.schema=22;base.map='frontier';base.x=9;base.y=8;base.dir='up';base.gold=211;
  const migrated=h.GC.Save.migrateLoaded(JSON.stringify(base));assert.equal(migrated.schema,23);assert.equal(migrated.story.stage,'15_frontier_complete');assert.equal(migrated.map,'frontier');assert.equal(migrated.events.completed['alpha2.frontier.complete'],true);assert.equal(migrated.events.completed['alpha2.frontier2.order'],undefined);assert.equal(migrated.events.completed['alpha2.frontier2.complete'],undefined);assert.equal(migrated.gold,211)
 });
+
+test('load uses the persisted treasure flag when restoring position on a collected supply box',()=>{
+ const h=createHarness(),src=stateOf(h);
+ const box={map:'ryunefields',x:19,y:4};
+ // In a previously explored village branch the box no longer collides.
+ const visited={...src.world,treasures:{...src.world.treasures,fieldCache:true}};
+ const save=JSON.stringify({...src,...box,world:visited,schema:23});
+ const restored=h.GC.Save.migrateLoaded(save);
+ assert.equal(restored.map,'ryunefields');
+ assert.deepEqual([restored.x,restored.y],[19,4],
+  'restore EXACT world coordinates after the player collected this box');
+ assert.equal(restored.world.treasures.fieldCache,true);
+ assert.equal(restored.schema,23);
+});
+
+test('load rejects a standing position on unopened chest even when the previous session opened it',()=>{
+ const h=createHarness(),src=stateOf(h);
+ // A previously running session must not contaminate validation of another save.
+ src.world.treasures.fieldCache=true;
+ const raw=JSON.stringify({...src,map:'ryunefields',x:19,y:4,
+  world:{...src.world,treasures:{...src.world.treasures,fieldCache:false}},schema:23});
+ const loaded=h.GC.Save.migrateLoaded(raw);
+ assert.equal(loaded.map,'ryunefields');
+ assert.notDeepEqual([loaded.x,loaded.y],[19,4],'solid unopened supply crate remains a blocker');
+ assert.notEqual(loaded.world.treasures.fieldCache,true);
+});
+
+test('save nearest-safe-tile continues rejecting real water tiles and occupied NPC cells',()=>{
+ const h=createHarness();
+ for(const [map,x,y] of [['ryunebrook',12,5],['ryunefields',9,5]]){
+  const p=h.GC.Save.nearestSafeTile(map,x,y);
+  assert.notDeepEqual(Array.from(p),[x,y],map+' must reject blocked tile');
+ }
+});
+
+test('portable export/import moves a valid v23 save without changing story or the player inventory',()=>{
+ const h=createHarness();h.evaluate('ALPHA_SESSION.started=true');
+ stateOf(h).gold=301;
+ assert.equal(h.GC.Save.save(true),true);
+ const original=h.GC.Save.exportPortableSaveText();
+ assert.equal(typeof original,'string');
+ const parsed=JSON.parse(original);
+ assert.equal(parsed.schema,23);
+ assert.equal(parsed.gold,301);
+ assert.equal(parsed.story.stage,stateOf(h).story.stage);
+ stateOf(h).gold=99;
+ assert.equal(h.GC.Save.save(true),true);
+ assert.equal(h.GC.Save.importPortableSaveText(original),true);
+ assert.equal(stateOf(h).gold,301);
+ assert.equal(stateOf(h).schema,23);
+ assert.equal(stateOf(h).story.stage,parsed.story.stage);
+ assert.deepEqual(JSON.parse(JSON.stringify(stateOf(h).inventory)),parsed.inventory);
+ const backup=JSON.parse(h.storage.getItem(h.GC.Save.SAVE_BACKUP_KEY));
+ assert.equal(backup.gold,99,'the previous local save must survive import');
+});
+
+test('portable save import rejects unrelated JSON, future schema, re-ordered heroes and oversized files',()=>{
+ const h=createHarness();h.evaluate('ALPHA_SESSION.started=true');
+ assert.equal(h.GC.Save.save(true),true);
+ const original=h.storage.getItem(h.GC.Save.SAVE_KEY);
+ const data=JSON.parse(original);
+ for(const raw of [
+  '{"unrelated":"object"}',
+  JSON.stringify({...data,schema:100}),
+  JSON.stringify({...data,party:[...data.party].reverse()}),
+  JSON.stringify({...data,party:data.party.map((p,i)=>i===0?{...p,name:'<img onerror=alert(1)>'}:p)}),
+  JSON.stringify({...data,inventory:{...data.inventory,'<img src=x>':4}}),
+  JSON.stringify({...data,map:'__unknown_map'}),
+  'x'.repeat(2*1024*1024+1)
+ ]){
+  assert.equal(h.GC.Save.importPortableSaveText(raw),false);
+  assert.equal(h.storage.getItem(h.GC.Save.SAVE_KEY),original,
+   'invalid imports must not overwrite the current player save');
+ }
+});
+
+test('portable import migrates historical schema while retaining local backup',()=>{
+ const h=createHarness();h.evaluate('ALPHA_SESSION.started=true');
+ stateOf(h).gold=93;
+ h.GC.Save.save(true);
+ const older=JSON.parse(h.GC.Save.exportPortableSaveText());
+ older.schema=22;older.gold=478;
+ assert.equal(h.GC.Save.importPortableSaveText(JSON.stringify(older)),true);
+ assert.equal(stateOf(h).gold,478);
+ assert.equal(stateOf(h).schema,23);
+ assert.equal(JSON.parse(h.storage.getItem(h.GC.Save.SAVE_BACKUP_KEY)).gold,93);
+});
+
+test('portable export is unavailable during dialogue just like ordinary manual Save',()=>{
+ const h=createHarness();h.evaluate('ALPHA_SESSION.started=true');
+ h.GC.Dialogue.say('テスト','イベント中の保存はできません');
+ assert.equal(h.GC.Save.exportPortableSaveText(),null);
+ assert.equal(h.GC.Save.importPortableSaveText(JSON.stringify({schema:23})),false);
+});
+
+test('adventure menu escapes imported or corrupt save strings instead of treating them as HTML',()=>{
+ const h=createHarness(),state=stateOf(h);
+ state.objective='<img src=x onerror=alert(1)>';
+ state.party[0].name='<svg/onload=alert(1)>';
+ state.inventory['<script>alert(1)</script>']=4;
+ h.GC.App.hideTitle();h.GC.Menu.openMenu('system');
+ const html=h.getElement('modalContent').innerHTML;
+ assert.ok(html.includes('&lt;img src=x'), 'objective must render as harmless text');
+ assert.ok(html.includes('&lt;svg/'), 'party labels must render as harmless text');
+ assert.ok(html.includes('&lt;script&gt;'), 'inventory labels must render as harmless text');
+ assert.ok(!html.includes('<script>alert(1)</script>'));
+ assert.ok(!html.includes('<img src=x onerror=alert(1)>'));
+});

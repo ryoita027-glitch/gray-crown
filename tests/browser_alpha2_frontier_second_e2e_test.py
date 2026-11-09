@@ -1,3 +1,4 @@
+from browser_launch import launch_chromium
 from pathlib import Path
 import re,sys,base64
 from playwright.sync_api import sync_playwright
@@ -10,6 +11,10 @@ def load_runtime(page,preload=None):
     page.set_content(BASE,wait_until='domcontentloaded');page.add_style_tag(content=CSS);page.add_script_tag(content=SHIM)
     if preload: page.evaluate('(o)=>{for(const [k,v] of Object.entries(o))localStorage.setItem(k,v)}',preload)
     for rel in SCRIPTS: page.add_script_tag(content=(ROOT/rel).read_text(encoding='utf-8'))
+    # Story-flow E2E is not a movement-timing test. Disable the production key-repeat delay
+    # so every synthetic key press advances exactly one logical step instead of being
+    # intermittently dropped by VISUAL.nextMoveAt on slower/faster CI runners.
+    page.evaluate("()=>{if(GC.Dev&&GC.Dev.settings)GC.Dev.settings.moveDelay=0}")
     page.evaluate('(u)=>{if(typeof HERO_SPRITES!=="undefined"&&HERO_SPRITES.image)HERO_SPRITES.image.src=u}',SPRITE);page.wait_for_timeout(60)
 def dismiss(page,limit=240):
     for _ in range(limit):
@@ -19,27 +24,52 @@ def dismiss(page,limit=240):
     raise AssertionError('dialogue stuck')
 def bfs(page,tx,ty):
     return page.evaluate('''([tx,ty])=>{const s=GC.State.get(),q=[[s.x,s.y]],prev=new Map([[s.x+','+s.y,null]]),ds=[[0,-1,'ArrowUp'],[0,1,'ArrowDown'],[-1,0,'ArrowLeft'],[1,0,'ArrowRight']];while(q.length){const [x,y]=q.shift();if(x===tx&&y===ty){let out=[],k=x+','+y;while(prev.get(k)){const p=prev.get(k);out.push(p[2]);k=p[0]+','+p[1]}return out.reverse()}for(const [dx,dy,key] of ds){const nx=x+dx,ny=y+dy,k=nx+','+ny;if(nx<0||ny<0||nx>=24||ny>=15||prev.has(k))continue;const ox=s.x,oy=s.y;s.x=x;s.y=y;const b=isBlocked(nx,ny);s.x=ox;s.y=oy;if(!b){prev.set(k,[x,y,key]);q.push([nx,ny])}}}return null}''',[tx,ty])
+def wait_unlocked(page,timeout=2000):
+    if page.locator('#dialogueBox').is_visible():
+        dismiss(page)
+    page.wait_for_function('!GC.State.get().locked',timeout=timeout)
+
 def walk(page,x,y):
     for _ in range(10):
+        wait_unlocked(page)
         s=page.evaluate('GC.State.get()')
         if (s['x'],s['y'])==(x,y):return
         path=bfs(page,x,y)
         if path is None:raise AssertionError(f'no path {s["map"]} -> {(x,y)}')
         for key in path:
-            page.keyboard.press(key);page.wait_for_timeout(70)
+            wait_unlocked(page)
+            page.keyboard.press(key)
+            page.wait_for_timeout(12)
             if page.locator('#dialogueBox').is_visible():dismiss(page)
             if page.locator('#battlePanel').is_visible():return
+            wait_unlocked(page)
     raise AssertionError('walk failed')
 def target(page,kind,id):return page.evaluate('''([k,id])=>{const m=GC.Data.Maps.maps[GC.State.get().map],a=k==='npc'?m.npcs:m.objects,t=a.find(x=>x.id===id);return t?{x:t.x,y:t.y}:null}''',[kind,id])
 def interact(page,kind,id):
+    if page.locator('#dialogueBox').is_visible():
+        dismiss(page)
+    wait_unlocked(page)
     t=target(page,kind,id);assert t,f'missing {id}'
+    failures=[]
     for x,y in [(t['x'],t['y']+1),(t['x'],t['y']-1),(t['x']+1,t['y']),(t['x']-1,t['y'])]:
         try:
-            walk(page,x,y);s=page.evaluate('GC.State.get()');d=(t['x']-s['x'],t['y']-s['y']);key={(0,-1):'ArrowUp',(0,1):'ArrowDown',(-1,0):'ArrowLeft',(1,0):'ArrowRight'}.get(d)
-            if not key:continue
-            page.keyboard.press(key);page.keyboard.press('Enter');page.wait_for_timeout(15);return
-        except Exception:pass
-    raise AssertionError('cannot interact '+id)
+            walk(page,x,y)
+            wait_unlocked(page)
+            s=page.evaluate('GC.State.get()')
+            d=(t['x']-s['x'],t['y']-s['y'])
+            key={(0,-1):'ArrowUp',(0,1):'ArrowDown',(-1,0):'ArrowLeft',(1,0):'ArrowRight'}.get(d)
+            if not key:
+                failures.append(f'not adjacent from {(s["x"],s["y"])}')
+                continue
+            page.keyboard.press(key)
+            page.wait_for_timeout(12)
+            page.keyboard.press('Enter')
+            page.wait_for_timeout(60)
+            return
+        except Exception as exc:
+            failures.append(f'{(x,y)}: {exc}')
+    s=page.evaluate('GC.State.get()')
+    raise AssertionError(f'cannot interact {id}; map={s["map"]} pos={(s["x"],s["y"])} target={t} attempts={failures}')
 def fight(page):
     # Exercise the real battle action/UI, but use Developer instant-damage setting only to keep CI deterministic.
     page.evaluate('GC.Dev.settings.instantVictory=true')
@@ -52,7 +82,7 @@ def fight(page):
     raise AssertionError('battle stuck')
 def dump(page):return page.evaluate('Object.fromEntries(Array.from({length:localStorage.length},(_,i)=>localStorage.key(i)).map(k=>[k,localStorage.getItem(k)]))')
 with sync_playwright() as p:
-    browser=p.chromium.launch(headless=True,executable_path='/usr/bin/chromium',args=['--no-sandbox'])
+    browser=launch_chromium(p)
     p1=browser.new_page(viewport={'width':1365,'height':900});err1=[];p1.on('pageerror',lambda e:err1.append(str(e)));load_runtime(p1);p1.locator('#titleNewGame').click();dismiss(p1)
     p1.evaluate("()=>{const s=GC.State.get();GC.Story.applyCanonicalAlphaStage(s,GC.Story.STORY_STAGES.FRONTIER_COMPLETE);s.story.chapter='第二章 — セラド前線';GC.Movement.setMap('frontier',9,8,'up',[[10,8],[11,8],[12,8]]);renderHud();draw()}")
     assert p1.evaluate('GC.Save.save(true)');stage15=dump(p1)
