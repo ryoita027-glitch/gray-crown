@@ -34,7 +34,7 @@ test('fresh adventure can save repeatedly without erasing the prior campaign che
  assert.equal(JSON.parse(h.storage.getItem(h.GC.Save.SAVE_ARCHIVE_KEY)).gold,884);
  assert.equal(JSON.parse(h.storage.getItem(k)).gold,145);
  assert.equal(h.GC.Save.hasArchivedAdventure(),true);
- h.GC.Menu.openMenu();
+ h.GC.Dialogue.closeDialogue();h.GC.Menu.openMenu('system');
  assert.match(h.getElement('modalContent').innerHTML,/以前の冒険を復旧/);
 });
 test('player can restore a saved prior adventure from the menu and keeps current backup',()=>{
@@ -201,7 +201,7 @@ test('all-corrupted storage offers fresh start only with an extra explicit user 
  assert.equal(h.GC.App.startNewGameSafely(),true);
  assert.equal(h.GC.State.get().gold,120);
  assert.equal(s.hasQuarantinedSaves(),true);
- h.GC.Menu.openMenu();
+ h.GC.Dialogue.closeDialogue();h.GC.Menu.openMenu('system');
  assert.match(h.getElement('modalContent').innerHTML,/破損セーブの元データを書き出す/);
 });
 test('quarantine failure cannot erase invalid prior saves or start new adventure',()=>{

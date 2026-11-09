@@ -80,5 +80,5 @@ test('selected opening changes remain terse, schema compatible and syntactically
  assert.equal(h.evaluate('state.schema'),23);
  assert.equal(h.evaluate('state.party.length'),4);
  assert.equal(h.evaluate("GC.CommercialDiscovery.progress('road').total"),4);
- assert.equal(h.evaluate("GC.CommercialDiscovery.progress('cave').total"),6);
+ assert.equal(h.evaluate("GC.CommercialDiscovery.progress('cave').total"),7);
 });

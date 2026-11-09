@@ -10,6 +10,7 @@ class Element{
  remove(){this.removed=true}
  focus(){}
  querySelector(){return null}
+ querySelectorAll(){return []}
  setAttribute(k,v){this[k]=String(v)}
  click(){if(typeof this.onclick==='function')this.onclick({target:this});for(const fn of this.events.click||[])fn({target:this,preventDefault(){}})}
 }

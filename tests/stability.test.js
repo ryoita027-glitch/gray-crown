@@ -152,7 +152,7 @@ test('adventure menu escapes imported or corrupt save strings instead of treatin
  state.objective='<img src=x onerror=alert(1)>';
  state.party[0].name='<svg/onload=alert(1)>';
  state.inventory['<script>alert(1)</script>']=4;
- h.GC.Menu.openMenu();
+ h.GC.App.hideTitle();h.GC.Menu.openMenu('system');
  const html=h.getElement('modalContent').innerHTML;
  assert.ok(html.includes('&lt;img src=x'), 'objective must render as harmless text');
  assert.ok(html.includes('&lt;svg/'), 'party labels must render as harmless text');

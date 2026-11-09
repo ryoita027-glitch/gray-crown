@@ -11,9 +11,10 @@
     <header class="topbar">
       <div>
         <div class="eyebrow">2D FANTASY RPG · SERAD FRONTIER</div>
-        <h1>灰冠の勇者たち</h1><div class="build-note">PLAYTEST 10.17 · BATTLE SIZE</div>
+        <h1>灰冠の勇者たち</h1><div class="build-note">DEVELOPMENT · 冒険の準備</div>
       </div>
       <div class="top-actions">
+        <button id="btnMenu" type="button">道具・手帳</button>
         <button id="btnSound" aria-pressed="true">♪ 音声 ON</button>
         <button id="btnSave">セーブ</button>
         <button id="btnLoad">ロード</button>
@@ -130,7 +131,7 @@
           <h2>目的</h2>
           <div id="questHud"></div>
           <div id="fortProgress" class="discovery-progress hidden" aria-live="polite"></div>
-          <div id="discoveryHud" class="discovery-progress hidden" aria-live="polite"></div>
+          <button id="discoveryHud" type="button" class="discovery-progress hidden" aria-label="探索手帳を開く"></button>
         </section>
         <section class="panel journal-panel">
           <h2>記録</h2>
@@ -153,7 +154,7 @@
     </div>
   </div>
 
-  <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal-card">
       <h2 id="modalTitle">メニュー</h2>
       <div id="modalContent"></div>

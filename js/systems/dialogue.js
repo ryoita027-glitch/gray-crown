@@ -4,7 +4,7 @@ const DIALOGUE_TYPE={raf:0,tokens:[],index:0,html:'',fullHTML:'',typing:false,ba
 const INPUT_LOCKS=new Set();
 function acquireInputLock(reason){INPUT_LOCKS.add(reason);return reason}
 function releaseInputLock(reason){INPUT_LOCKS.delete(reason)}
-function isInputLocked(){return !!state.locked||INPUT_LOCKS.size>0}
+function isInputLocked(){return !!state.locked||INPUT_LOCKS.size>0||!$('modal').classList.contains('hidden')}
 function clearDialogueAsync(){DIALOGUE_TYPE.generation++;if(DIALOGUE_TYPE.raf)cancelAnimationFrame(DIALOGUE_TYPE.raf);DIALOGUE_TYPE.raf=0;for(const id of DIALOGUE_TYPE.timeouts)clearTimeout(id);for(const id of DIALOGUE_TYPE.intervals)clearInterval(id);DIALOGUE_TYPE.timeouts.clear();DIALOGUE_TYPE.intervals.clear();DIALOGUE_TYPE.waitUntil=0}
 function dialogueMarkup(raw=''){
  const highlighted=String(raw).replace(/\[\[([\s\S]*?)\]\]/g,'<span class="dialogue-keyword">$1</span>');

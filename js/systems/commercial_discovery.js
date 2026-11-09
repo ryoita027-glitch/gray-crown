@@ -12,7 +12,8 @@
   road:[{id:'bandit',kind:'defeated',label:'ならず者への対処'},{id:'roadCache',kind:'treasure',label:'街道の物資'},
    {id:'early.merchantCart',kind:'choice',label:'行商人の荷車'},
    {id:'early.wolfScout',kind:'choice',label:'狼の足跡を調べる'}],
-  cave:[{id:'early.caveBanner',kind:'choice',label:'古い軍旗の記憶'},
+  cave:[{id:'early.caveBanner',kind:'choice',label:'古い軍旗の記憶',hint:'西の回廊に残された軍旗'},
+   {id:'early.fortShield',kind:'choice',label:'傷だらけの盾と足跡',hint:'東の回廊。獣に対抗する手がかり'},
    {id:'early.caveSupplies',kind:'choice',label:'古砦の備蓄食'},
    {id:'chest1',kind:'treasure',label:'古砦の宝箱（西）'},{id:'chest2',kind:'treasure',label:'古砦の宝箱（東）'},
    {id:'bats',kind:'defeated',label:'コウモリの群れ'},{id:'crawler',kind:'defeated',label:'石殻ムカデ'}],
@@ -71,7 +72,7 @@
   const p=progress(state.map);
   if(!p.total){node.textContent='';node.classList.add('hidden');return p}
   node.classList.remove('hidden');
-  node.textContent=p.remaining.length?'寄り道（任意）・気になる場所を調べる':'寄り道の発見（任意）';
+  node.textContent=p.remaining.length?'探索手帳を開く › 寄り道の手がかり':'探索手帳を開く › 発見の記録';
   node.setAttribute('title',p.remaining.length?'気が向いたら調べられる場所：'+p.remaining.join('／'):'このエリアの寄り道はすべて発見済み');
   return p
  }

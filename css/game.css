@@ -836,3 +836,44 @@ body:has(.battle-panel:not(.hidden)) .party-battle-line{left:5%;bottom:38px}
  .statusbar{min-height:42px;align-items:center;flex-wrap:wrap;gap:6px}
  #qualityHint{display:none}
 }
+
+/* Field preparation: the same resources found in the world are usable before combat. */
+.menu-location{margin:-8px 0 14px;color:#b9b4a6;font-size:.83rem}
+.adventure-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;border-bottom:1px solid #554b37;padding-bottom:12px}
+.adventure-tabs button{min-width:0;padding:10px 5px;min-height:44px;white-space:normal;font-size:.82rem;border-radius:4px}
+.adventure-tabs .selected,.supply-choice.selected{border-color:#d5b473;background:#3a3428;color:#fff1ce}
+.menu-intro{color:#c5c7c9;font-size:.85rem;line-height:1.65;margin:0 0 14px}
+.menu-section-label{display:flex;align-items:center;gap:10px;font-size:.94rem;margin:20px 0 10px;color:#f0d8a0}
+.menu-section-label small{font-size:.74rem;font-weight:400;color:#b1b1ad}
+.supply-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.supply-choice{min-width:0;padding:12px 9px;text-align:left;white-space:normal;border-radius:5px;background:#1b232c;border-color:#48505a}
+.supply-choice strong{display:flex;justify-content:space-between;gap:4px;font-size:.9rem}
+.supply-choice strong span{color:#e5c88b;font-variant-numeric:tabular-nums}
+.supply-choice small{display:block;margin-top:8px;color:#bfc4c9;font-size:.73rem;line-height:1.55}
+.supply-targets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.supply-target{display:block;min-width:0;text-align:left;white-space:normal;padding:12px;background:#202a32;border:1px solid #54616c;border-radius:5px}
+.supply-target:disabled{opacity:.7;cursor:default;background:#1c2229}
+.supply-target .party-head{display:flex;flex-wrap:wrap;gap:5px}
+.supply-target .party-head strong{font-size:.9rem}
+.supply-target .party-head small{font-size:.7rem;color:#b9bfc5}
+.supply-vitals{display:flex;flex-wrap:wrap;gap:5px 12px;font-size:.75rem;margin:10px 0 6px;color:#aeb8bf;font-variant-numeric:tabular-nums}
+.supply-vitals b{color:#edf0e5}
+.supply-target .bar{display:block;height:5px;margin:5px 0}
+.supply-target .bar>span{display:block;height:100%}
+.supply-gain{display:block;margin-top:10px;color:#add6b7;font-size:.78rem}
+.menu-feedback{min-height:1.5em;color:#bce4c6;font-size:.84rem;line-height:1.5;margin:10px 0}
+.notebook-objective{padding:14px;border-left:3px solid #d5b473;background:#302e29;line-height:1.65}
+.notebook-objective>small{display:block;color:#c4b492;font-size:.73rem;margin-bottom:5px}
+.notebook-objective>strong{font-size:.92rem}
+.notebook-objective p{font-size:.78rem;color:#d3c6ac;margin:8px 0 0}
+.notebook-clues{list-style:none;margin:0;padding:0}
+.notebook-clue{display:flex;gap:10px;padding:12px 0;border-bottom:1px solid #3a4149;color:#dbc28d}
+.notebook-clue strong{display:block;font-size:.85rem;color:#deded4}
+.notebook-clue small{display:block;font-size:.76rem;color:#aeb6ba;margin-top:4px;line-height:1.55}
+.notebook-clue.found{color:#9ec4a7}
+.notebook-clue.found strong{color:#aabbb0}
+.notebook-records{padding-left:22px;color:#c8c7bd;font-size:.82rem;line-height:1.8}
+.notebook-records li{padding:5px 0 10px}
+button.discovery-progress{width:100%;text-align:left;cursor:pointer;min-height:44px;white-space:normal}
+.modal button:focus-visible{outline:2px solid #ffe1a1;outline-offset:3px}
+@media(max-width:420px){.modal{padding:10px}.modal-card{padding:14px;max-height:88dvh}.supply-choices{gap:4px}.supply-choice{padding:10px 7px}.supply-choice strong{font-size:.82rem}.supply-targets{gap:7px}.supply-target{padding:10px}.adventure-tabs button{font-size:.76rem}}

@@ -26,7 +26,7 @@ for(const side of ['West','East'])test('fort feedback follows actual '+side+'-fi
 });
 test('boss consultation is optional, respects discoveries, and does not grant resources or start combat',()=>{
  const h=setup();h.evaluate("setWorldSwitch('leverWest');setWorldSwitch('leverEast');objectEvent('boss')");
- assert.deepEqual(Array.from(h.evaluate('dialogueChoices.map(x=>x.label)')),['戦う','仲間と作戦を相談する','いったん下がる']);
+ assert.deepEqual(Array.from(h.evaluate('dialogueChoices.map(x=>x.label)')),['戦う','仲間と作戦を相談する','道具で準備する','いったん下がる']);
  const before=h.evaluate('JSON.stringify([state.inventory,state.party,state.events.choices,state.journal])');
  h.evaluate('dialogueChoices[1].fn()');
  assert.match(conversation(h),/盾/);
@@ -34,7 +34,7 @@ test('boss consultation is optional, respects discoveries, and does not grant re
  assert.equal(h.evaluate('!!state.battle'),false);
  h.evaluate("state.events.choices['early.fortShield']='studied';state.party[0].hp=1;state.party.find(p=>p.id==='margaret').mp=0;discussFortBoss()");
  const advice=conversation(h);
- assert.match(advice,/崩し/);assert.match(advice,/今のMPでは撃てない/);assert.match(advice,/まだ一度休めます/);
+ assert.match(advice,/崩し/);assert.match(advice,/今のMPでは.*撃てない/);assert.match(advice,/まだ一度休めます/);
  h.evaluate("spendRecovery('caveRest');discussFortBoss()");
  assert.match(conversation(h),/物資はもう使いました/);
  assert.equal(h.GC.State.get().schema,23);

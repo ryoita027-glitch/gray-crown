@@ -721,13 +721,24 @@ function discussFortBoss(){
  const lowMagic=!!mage&&mage.mp<SKILLS.ice.mp;
  const lines=studied?[
   {speaker:'トリトン',text:'「盾の傷を思い出せ。踏み込んできたら“崩し”だ。一度は攻撃を止められる。何度も通じると思うなよ」'},
-  {speaker:'マーガレット',text:lowMagic?'「氷槍で勢いを鈍らせたいけど、今のMPでは撃てない。魔力草か、兵舎跡での休息が必要ね」':'「私は氷槍で攻撃を鈍らせる。カレンは庇う相手を、敵の狙いを見て決めて」'}
+  {speaker:'マーガレット',text:lowMagic?(recoveryRemaining('caveRest')>0?'「今のMPでは氷槍を撃てない。道具メニューで魔力草を使うか、南西の兵舎跡で休みたいわ」':'「今のMPでは氷槍を撃てない。兵舎跡の物資は使ったから、道具メニューで魔力草の残りを確かめましょう」'):'「私は氷槍で攻撃を鈍らせる。カレンは庇う相手を、敵の狙いを見て決めて」'}
  ]:[
   {speaker:'トリトン',text:'「あの角をまともに受けるのはまずい。東の回廊に、角の傷がついた盾があった。調べれば動きを読めるかもな」'},
   {speaker:'カレン',text:'「先に調べるか、このまま挑むか。準備をしてから決めよう」'}
  ];
  if(hurt)lines.push({speaker:'ソフィ',text:recoveryRemaining('caveRest')>0?'「傷が深い人がいます。南西の兵舎跡なら、まだ一度休めます」':'「兵舎跡の物資はもう使いました。薬草や携帯食の残りを確かめましょう」'});
  return saySequence(lines);
+}
+function offerFortBoss(){
+ if(isDefeated('boss'))return false;
+ if(!(structuredCondition('leverWest')&&structuredCondition('leverEast')))
+  return say('マーガレット','「中央の鉄格子が閉じてる。左右の開閉機構を両方動かさないと奥へ行けないわ」');
+ return say('カレン','「こいつが北の通路を塞いでる……！ みんな、準備はいい？」',[
+  {label:'戦う',fn:()=>startBattle('boss')},
+  {label:'仲間と作戦を相談する',fn:()=>discussFortBoss()},
+  {label:'道具で準備する',fn:()=>openMenu()},
+  {label:'いったん下がる',fn:()=>say('トリトン','「急がなくていい。道具と、東の回廊の盾を確かめよう」')}
+ ]);
 }
 function inlineObjectEvent(id){
  if(TREASURE_DEFS[id])return openTreasure(id);
@@ -845,7 +856,7 @@ function inlineObjectEvent(id){
    renderHud();sfx('discovery');
    return say('トリトン','「箱はほぼ空だ。でも奥に一食分だけある。携帯食を1個手に入れた！」');
   }
-  if(id==='boss'&&!structuredCondition('bossDead')){if(!(structuredCondition('leverWest')&&structuredCondition('leverEast')))return say('マーガレット','「中央の鉄格子が閉じてる。左右の開閉機構を両方動かさないと奥へ行けないわ」');return say('カレン','「こいつが北の通路を塞いでる……！」',[{label:'戦う',fn:()=>startBattle('boss')},{label:'仲間と作戦を相談する',fn:()=>discussFortBoss()},{label:'いったん下がる',fn:()=>say('マーガレット','「先に宝箱や脇道を調べてもいいわ」')}]);}
+  if(id==='boss'&&!structuredCondition('bossDead'))return offerFortBoss();
  }
  if(state.map==='northroad'){
   if(id==='southExit')return returnCaveNorth();

@@ -204,7 +204,7 @@ function handleStep(){
  if(state.map==='cave'){
   const encounters=[['bats','bats'],['crawler','crawler']];
   for(const [oid,bid] of encounters){if(!isDefeated(bid)){const o=maps.cave.objects.find(x=>x.id===oid);if(Math.abs(state.x-o.x)+Math.abs(state.y-o.y)<=1){startBattle(bid);return}}}
-  if(!isDefeated('boss')&&getWorldSwitch('leverWest')&&getWorldSwitch('leverEast')){const b=maps.cave.objects.find(o=>o.id==='boss');if(Math.abs(state.x-b.x)+Math.abs(state.y-b.y)<=1){say('カレン','「大きい……！ こいつが北の通路を塞いでる」',[{label:'戦う',fn:()=>startBattle('boss')},{label:'いったん下がる',fn:()=>say('トリトン','「無理に今やる必要はない。宝箱や装備を確認してからでもいい」')}]);return}}
+  if(!isDefeated('boss')&&getWorldSwitch('leverWest')&&getWorldSwitch('leverEast')){const b=maps.cave.objects.find(o=>o.id==='boss');if(Math.abs(state.x-b.x)+Math.abs(state.y-b.y)<=1){offerFortBoss();return}}
  }
  maybeRandomEncounter()
 }
