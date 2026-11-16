@@ -79,7 +79,9 @@ test('Serad first battle is blocked until officer and hospital; victory/aftermat
  assert.equal(complete.effects.find(e=>e.type==='advanceStory').stage,'15_frontier_complete');
  const unit=h.evaluate("battles.vanguardCaptain");
  assert.equal(unit.boss,true);
- assert.equal(unit.enemies[0].maxHp,150);
+ // Authored balance change c0e37bcc (2026-10-17): 185 HP, 19 ATK.
+ assert.equal(unit.enemies[0].maxHp,185);
+ assert.equal(unit.enemies[0].atk,19);
 });
 
 test('Ash Road, Serad camp and aftermath have separate existing audio states without added save data',()=>{

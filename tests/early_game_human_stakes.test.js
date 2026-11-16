@@ -49,7 +49,7 @@ for(const [choice,item,phrase] of [
   assert.equal(h.evaluate('state.story.stage'),stage);
   assert.match(h.evaluate('earlyCapitalEcho().map(x=>x.text).join(" ")'),new RegExp(phrase));
   h.evaluate("state.map='road';npcEvent('merchant')");
-  assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),choice==='repair'?/車軸は持ち直した/:/荷車は南へ向けた/);
+  assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),choice==='repair'?/車軸は持ち直した/:/荷車を南に向けて/);
  });
 }
 

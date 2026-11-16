@@ -78,7 +78,7 @@ test('named village and capital NPCs use distinct form language beyond color swa
   const c=rectangles();owned.push(c);
   return{width:0,height:0,getContext(){return c}}
  }};
- const sprite=new Function('document',file+';return OpeningPixelAssets')(document);
+ const sprite=new Function('GC','document',file+';return OpeningPixelAssets')({Log:{warn(){}}},document);
  const idList=['father','orphan','mayor','messenger','baker','farmer',
   'oldwoman','caretaker','clerk','capitalRecruit','capitalVendor','capitalSmith'];
  const outlines=[];

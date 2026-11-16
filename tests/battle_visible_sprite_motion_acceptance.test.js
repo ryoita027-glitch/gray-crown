@@ -19,7 +19,7 @@ function fakeDocument(){
 }
 function pixelAssets(){
  const fake=fakeDocument();
- const module=new Function('document',read('js/render/opening_pixel_assets.js')+';return OpeningPixelAssets')(fake.document);
+ const module=new Function('GC','document',read('js/render/opening_pixel_assets.js')+';return OpeningPixelAssets')({Log:{warn(){}}},fake.document);
  return{module,...fake}
 }
 function getTrail(state){
@@ -128,12 +128,12 @@ test('all named NPCs differ by source-drawn shape, not only by swapping palette'
   if(frameSignatures.has(geometry))throw Error(id+' still shares an identical silhouette with '+frameSignatures.get(geometry));
   frameSignatures.set(geometry,id);
  }
- assert.equal(frameSignatures.size,35);
+ assert.equal(frameSignatures.size,37);
 });
 test('standing workers do not shift their feet; idle civilians do not march in place',()=>{
  const source=read('js/render/opening_pixel_assets.js');
  assert.match(source,/step=working\?0:/);
- assert.match(source,/frame=near&&working\?Math\.floor\(now\/460\)%4:0/);
+ assert.match(source,/OpeningWorldLife\.workPhase\(n\.id,now\):0/);
  const worldLife=read('js/render/opening_worldlife.js');
  assert.match(worldLife,/!OpeningPixelAssets\.designs\[n\.id\]\)clothes/);
 });
@@ -167,7 +167,7 @@ test('new renderer is layered into the running game before world render and fall
  assert.ok(html.indexOf('js/render/opening_pixel_assets.js')>0);
  assert.match(world,/OpeningPixelAssets\.drawNpc\(ctx,n,facing/);
  assert.match(ryune,/OpeningPixelAssets\.drawHouse\(c,kind,x,y\)/);
- const art=new Function('document',read('js/render/opening_pixel_assets.js')+';return OpeningPixelAssets')({createElement:()=>({})});
+ const art=new Function('GC','document',read('js/render/opening_pixel_assets.js')+';return OpeningPixelAssets')({Log:{warn(){}}},{createElement:()=>({})});
  assert.equal(art.drawNpc({}, {id:'baker',x:2,y:2}),false);
  assert.equal(art.drawHouse({},'orphanage',0,0),false);
 });

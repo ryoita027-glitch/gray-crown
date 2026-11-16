@@ -29,7 +29,7 @@ test('the two optional Ryune maps use valid tiles, a passable bridge, and real i
   const m=mapInfo(h,id);
   assert.equal(m.tiles.length,15,id);
   for(const row of m.tiles)assert.equal(row.length,24,id);
-  assert.equal(h.GC.Data.Maps.validateMapDesign(id).ok,true,id);
+  assert.equal(h.GC.Exploration.validateMapDesign(id).ok,true,id);
   assert.equal(reaches(m,start,exit),true,id+' return route');
   for(const target of [...m.npcs,...m.objects]){
    assert.equal(reaches(m,start,target),true,id+' inaccessible '+target.id);

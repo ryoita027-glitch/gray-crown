@@ -877,3 +877,18 @@ body:has(.battle-panel:not(.hidden)) .party-battle-line{left:5%;bottom:38px}
 button.discovery-progress{width:100%;text-align:left;cursor:pointer;min-height:44px;white-space:normal}
 .modal button:focus-visible{outline:2px solid #ffe1a1;outline-offset:3px}
 @media(max-width:420px){.modal{padding:10px}.modal-card{padding:14px;max-height:88dvh}.supply-choices{gap:4px}.supply-choice{padding:10px 7px}.supply-choice strong{font-size:.82rem}.supply-targets{gap:7px}.supply-target{padding:10px}.adventure-tabs button{font-size:.76rem}}
+
+/* Recovery commands reveal recipients before spending a turn. */
+.battle-support{border:1px solid #678b79;background:#182722;padding:12px;margin:10px 0;border-radius:5px}
+.support-heading{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 10px;color:#e3eddf;font-size:.95rem;font-weight:700}
+.support-heading small{font-size:.75rem;color:#b2c6b7;font-weight:400}
+.support-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:9px}
+.support-grid button{min-width:0;min-height:82px;text-align:left;white-space:normal;background:#25372f;border-color:#63806c;padding:10px}
+.support-grid button strong,.support-grid button span,.support-grid button b{display:block}
+.support-grid button strong{font-size:.9rem;color:#eff0df}
+.support-grid button span{font-size:.74rem;line-height:1.6;margin:5px 0;color:#c6d1c9;font-variant-numeric:tabular-nums}
+.support-grid button b{font-size:.8rem;color:#b6e4bf}
+.support-grid button:disabled{opacity:.55;cursor:default}
+.support-grid button:focus-visible,#cancelBattleSupport:focus-visible{outline:2px solid #f2d597;outline-offset:2px}
+#cancelBattleSupport{min-height:44px}
+@media(max-width:420px){.battle-support{padding:9px}.support-grid{gap:6px}.support-grid button{padding:8px}.support-grid button span{font-size:.71rem}}

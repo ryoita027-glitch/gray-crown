@@ -19,7 +19,7 @@ function unpack(png,w,h){
  while(ofs<png.length){
   const n=png.readUInt32BE(ofs),tag=png.toString('ascii',ofs+4,ofs+8),until=ofs+n+12;
   assert.ok(until<=png.length,'complete '+tag);
-  assert.equal(png.readUInt32BE(until-4),crc32(png.subarray(ofs+4,until)),tag+' CRC');
+  assert.equal(png.readUInt32BE(until-4),crc32(png.subarray(ofs+4,until-4)),tag+' CRC');
   const c=png.subarray(ofs+8,until-4);
   if(tag==='PLTE')palette=c;
   if(tag==='tRNS')alpha=c;

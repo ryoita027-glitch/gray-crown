@@ -32,7 +32,7 @@
  const hints=Object.freeze({
   karen:'庇う：次の敵ターン、仲間への攻撃を引き受けて軽減。号令：全員の攻撃補助。',
   triton:'強撃：高威力。崩し：敵の防御と士気を削る。',
-  sophie:'治癒：最も負傷した仲間を回復。祈り：全員を回復。',
+  sophie:'治癒：仲間を選んで回復。祈り：全員を回復。',
   margaret:'火球：高威力の魔法。氷槍：敵の攻撃力も低下。'
  });
  function bossForecast(b){

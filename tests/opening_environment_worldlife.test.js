@@ -142,7 +142,7 @@ test('opening renderer respects draw order and the 5fps idle cap',()=>{
  assert.match(world,/VISUAL\.ambientTimer=setTimeout\(\(\)=>draw\(\),Math\.max\(80,nextAmbient\)\)/);
  assert.doesNotMatch(world,/worldLifeRunning&&VISUAL\.map===state\.map/);
  assert.match(world,/OpeningWorldLife\.blocks\(state\.map,x,y\)/);
- assert.match(world,/OpeningWorldLife\.shouldBreathe\(state\.map,state\.x,state\.y,m\.npcs\)/);
+ assert.match(world,/OpeningWorldLife\.nextWorkFrameDelay\(state\.map,state\.x,state\.y,m\.npcs,at\)/);
 });
 
 test('no modified module breaks JS syntax or introduces a mandatory quest',()=>{

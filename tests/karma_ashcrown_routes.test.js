@@ -27,6 +27,9 @@ test('Ash Crown route is distinct, and all changed JS parses',()=>{
   assert.doesNotThrow(()=>new vm.Script(fs.readFileSync(path.join(root,p),'utf8'),{filename:p}));
  }
  const m=fs.readFileSync(path.join(root,'js/systems/movement.js'),'utf8');
- assert.match(m,/route==='ashcrown'/);
+ const h=createHarness();
+ h.evaluate("showWorldSkeletonEnding('ashcrown')");
+ assert.match(h.evaluate('DIALOGUE_TYPE.fullHTML'),/灰冠ルート — 空の玉座/);
+ assert.equal(h.evaluate("getWorldSwitch('cleared')"),false);
  assert.match(m,/state\.finalChoice==='ashcrown'/);
 });

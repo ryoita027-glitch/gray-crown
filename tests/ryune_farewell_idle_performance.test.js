@@ -13,10 +13,10 @@ const FAREWELLS=[
 test('four individual goodbyes are player-initiated only after canon appointment',()=>{
  const h=createHarness(),event=h.GC.Events;
  for(const [map,target,id] of FAREWELLS){
-  assert.equal(event.findTriggeredEvent('npc',target,{map})?.id,null,
+  assert.equal(event.findTriggeredEvent('npc',target,{map}),null,
    id+' cannot fire before the messenger and four-party decision');
  }
- h.evaluate("state.story.stage=STORY_STAGES.APPOINTED");
+ h.evaluate("state.story.stage=STORY_STAGES.APPOINTED;completeEvent('alpha.village.appointment',true)");
  for(const [map,target,id,hero] of FAREWELLS){
   const original=h.GC.State.get(),prior=JSON.stringify({
    inventory:original.inventory,party:original.party,story:original.story.stage,
@@ -43,7 +43,7 @@ test('four individual goodbyes are player-initiated only after canon appointment
 
 test('four independent optional goodbyes do not gate departure or corrupt an earlier save',()=>{
  const h=createHarness();
- h.evaluate("state.story.stage=STORY_STAGES.APPOINTED");
+ h.evaluate("state.story.stage=STORY_STAGES.APPOINTED;completeEvent('alpha.village.appointment',true)");
  const before=h.GC.Save.serializeSave();
  assert.equal(JSON.parse(before).events.completed['ryune.farewell.karenBrother'],undefined);
  // No goodbye is necessary before the established northern gate can open.

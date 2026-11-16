@@ -58,7 +58,7 @@ function runtime(reduced=false,failActions=false){
   naturalWidth=432;naturalHeight=192;
   set src(value){
    sources.push(value);
-   if(value.includes('actions_charm_v3')){
+   if(value.includes('featured_resident_actions_')){
     if(failActions){this.onerror?.();return}
     this.naturalHeight=96;
    }

@@ -34,7 +34,7 @@ test('important nine still use the different real PNG and no protagonist sprites
  assert.equal(h.atlas.featuredNames.length,9);
  for(const id of h.atlas.featuredNames)assert.ok(h.atlas.designs[id],'safe existing profile fallback');
  assert.match(source,/featuredSheet\.naturalWidth===432/);
- assert.match(source,/index\*48/);
+ assert.match(source,/index\*srcSize/);
 });
 
 

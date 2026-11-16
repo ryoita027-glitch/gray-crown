@@ -33,5 +33,13 @@ test('aftermath before ending has save-compatible one-time journal record',()=>{
  }
  const m=fs.readFileSync(path.join(root,'js/systems/movement.js'),'utf8');
  assert.match(m,/state\.events\.choices\[key\]='seen'/);
- assert.match(m,/playRouteAftermath\('ashcrown'\)/);
+ const h=createHarness();
+ h.evaluate("state.finalChoice='ashcrown';state.events.choices['route.companions.ashcrown']='release';state.events.choices['route.final.ashcrown']='leave';runFinalActNegotiation('ashcrown')");
+ for(let i=0;i<20&&h.evaluate('!!dialogueContinue');i++)h.evaluate('(()=>{const next=dialogueContinue;closeDialogue(false);next()})()');
+ assert.equal(h.evaluate("state.events.choices['route.aftermath.ashcrown']"),'seen');
+ const before=h.GC.State.get().journal.length;
+ h.evaluate("runFinalActNegotiation('ashcrown')");
+ assert.equal(h.GC.State.get().journal.length,before);
+ const saved=h.GC.Save.migrateLoaded(h.GC.Save.serializeSave());
+ assert.equal(saved.events.choices['route.aftermath.ashcrown'],'seen');
 });

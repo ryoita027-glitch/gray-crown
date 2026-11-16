@@ -29,7 +29,53 @@ function applyGuardOpening(b,e,damage){
  }
  return extra
 }
-function battleAction(type){if(state.locked||!state.battle)return;const b=state.battle,a=currentActor(),e=GC.CommercialTactics?.target?.(b)||livingEnemies()[0];if(!e)return;if(!GC.CommercialTactics.actionAvailable(type,a))return;const actorIndex=b.actor;let d=0,moraleLoss=0,visual='physical',acted=true;
+// Selection is transient UI state: opening/cancelling never spends a turn or resource.
+let supportSelection=null;
+const SINGLE_SUPPORT=Object.freeze({heal:'治癒',item:'薬草',manaItem:'魔力草'});
+function battleSupportOptions(type){
+ if(!Object.prototype.hasOwnProperty.call(SINGLE_SUPPORT,type))return [];
+ const hp=type==='heal'?SKILLS.heal.power:type==='item'?ITEM_DEFS['薬草'].hp:0;
+ const mp=type==='manaItem'?ITEM_DEFS['魔力草'].mp:0;
+ return activeRouteParty().map(p=>({id:p.id,name:p.name,hp:p.hp,maxHp:p.maxHp,mp:p.mp,maxMp:p.maxMp,
+  gainHp:p.hp>0?Math.max(0,Math.min(hp,p.maxHp-p.hp)):0,
+  gainMp:p.hp>0?Math.max(0,Math.min(mp,p.maxMp-p.mp)):0}));
+}
+function pendingBattleSupport(){
+ const p=supportSelection,b=state.battle;
+ if(!p)return null;
+ if(!b||state.locked||p.battle!==b||p.actor!==b.actor||p.turn!==b.turn){supportSelection=null;return null}
+ return {type:p.type,label:SINGLE_SUPPORT[p.type],options:battleSupportOptions(p.type)};
+}
+function requestBattleAction(type){
+ if(!state.battle||state.locked)return false;
+ if(!GC.CommercialTactics.actionAvailable(type,currentActor()))return false;
+ if(Object.prototype.hasOwnProperty.call(SINGLE_SUPPORT,type)){
+  supportSelection={type,battle:state.battle,actor:state.battle.actor,turn:state.battle.turn};
+  renderBattle();$('battleSupportTargets')?.querySelector('button:not([disabled])')?.focus();return true;
+ }
+ supportSelection=null;battleAction(type);return true;
+}
+function cancelBattleSupport(){
+ const pending=pendingBattleSupport();supportSelection=null;
+ if(state.battle&&!state.locked)renderBattle();
+ if(pending)$('battleActions')?.querySelector('[data-battle="'+pending.type+'"]')?.focus();
+ return !!pending;
+}
+function confirmBattleSupport(id){
+ const pending=pendingBattleSupport();if(!pending)return false;
+ const target=pending.options.find(p=>p.id===id);
+ if(!target||(!target.gainHp&&!target.gainMp)||!GC.CommercialTactics.actionAvailable(pending.type,currentActor()))return false;
+ supportSelection=null;battleAction(pending.type,id);if(state.battle)renderBattle();return true;
+}
+function battleAction(type,allyId=null){if(state.locked||!state.battle)return;const b=state.battle,a=currentActor(),e=GC.CommercialTactics?.target?.(b)||livingEnemies()[0];if(!e)return;if(!GC.CommercialTactics.actionAvailable(type,a))return;
+ let selectedAlly=null;
+ if(allyId!==null){
+  const option=battleSupportOptions(type).find(p=>p.id===allyId);
+  if(!option||(!option.gainHp&&!option.gainMp))return;
+  selectedAlly=activeRouteParty().find(p=>p.id===allyId);
+ }
+ supportSelection=null;
+ const actorIndex=b.actor;let d=0,moraleLoss=0,visual='physical',acted=true;
  if(type==='attack'){d=damageFormula(a.atk+(a.buff||0),e.def);if(GC.Dev?.settings?.instantVictory)d=e.hp;e.hp=Math.max(0,e.hp-d);moraleLoss=applyMoraleDamage(e,d*.42);battleLog(`${a.name}の剣撃！ ${e.name}に${d}ダメージ。`)}
  else if(type==='staffSophie'||type==='staffMargaret'){d=damageFormula(a.atk,e.def,SKILLS[type].power);e.hp=Math.max(0,e.hp-d);moraleLoss=applyMoraleDamage(e,d*.35);battleLog(`${a.name}の杖撃！ ${e.name}に${d}ダメージ。`)}
  else if(type==='guard'){a.guard=true;visual='heal';battleLog(activeRouteParty().length===1?`${a.name}は防御の構えを取った。`:`${a.name}は仲間を庇う構えを取った。`);sfx('guard')}
@@ -54,10 +100,10 @@ function battleAction(type){if(state.locked||!state.battle)return;const b=state.
    battleLog('マーガレット「盾の傷から読んだ通り。突進する前の足を冷やせたわ」');
   }
  }}
- else if(type==='heal'||type==='prayer'){const sk=SKILLS[type];if(a.mp<sk.mp){battleLog('MPが足りない。');return}a.mp-=sk.mp;visual='heal';if(type==='heal'){const t=[...activeRouteParty()].filter(x=>x.hp>0).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp)[0]||a;const before=t.hp;t.hp=Math.min(t.maxHp,t.hp+sk.power);const healed=t.hp-before;battleLog(`${a.name}の治癒。${t.name}のHPが${healed}回復。`);battlePop('+'+healed,'heal')}else{let total=0;activeRouteParty().forEach(p=>{if(p.hp>0){const before=p.hp;p.hp=Math.min(p.maxHp,p.hp+sk.power);total+=p.hp-before}});battleLog(`${a.name}の祈り。全体でHPが${total}回復。`);battleLog('ソフィ「まだ立てます。みんな、無理しないで！」')}}
+ else if(type==='heal'||type==='prayer'){const sk=SKILLS[type];if(a.mp<sk.mp){battleLog('MPが足りない。');return}a.mp-=sk.mp;visual='heal';if(type==='heal'){const t=selectedAlly||[...activeRouteParty()].filter(x=>x.hp>0).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp)[0]||a;const before=t.hp;t.hp=Math.min(t.maxHp,t.hp+sk.power);const healed=t.hp-before;battleLog(`${a.name}の治癒。${t.name}のHPが${healed}回復。`);battlePop('+'+healed,'heal')}else{let total=0;activeRouteParty().forEach(p=>{if(p.hp>0){const before=p.hp;p.hp=Math.min(p.maxHp,p.hp+sk.power);total+=p.hp-before}});battleLog(`${a.name}の祈り。全体でHPが${total}回復。`);battleLog('ソフィ「まだ立てます。みんな、無理しないで！」')}}
  else if(type==='persuade'){const missing=1-e.hp/e.maxHp,m=12+Math.floor(missing*22)+(a.id==='sophie'?6:a.id==='margaret'?3:0);moraleLoss=applyMoraleDamage(e,m);visual='heal';battleLog(`${a.name}は武器を下ろすよう呼びかけた。${e.name}の士気が${moraleLoss}下がった。`)}
- else if(type==='manaItem'){if((state.inventory['魔力草']||0)<=0){battleLog('魔力草がない。');return}state.inventory['魔力草']--;const t=[...activeRouteParty()].filter(x=>x.hp>0).sort((x,y)=>x.mp/x.maxMp-y.mp/y.maxMp)[0]||a;const before=t.mp;t.mp=Math.min(t.maxMp,t.mp+14);visual='heal';battleLog(`${a.name}は魔力草を使った。${t.name}のMPが${t.mp-before}回復。`)}
- else if(type==='item'){if((state.inventory['薬草']||0)<=0){battleLog('薬草がない。');return}state.inventory['薬草']--;const t=[...activeRouteParty()].filter(x=>x.hp>0).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp)[0]||a;const before=t.hp;t.hp=Math.min(t.maxHp,t.hp+22);visual='heal';battleLog(`${a.name}は薬草を使った。${t.name}のHPが${t.hp-before}回復。`)}
+ else if(type==='manaItem'){if((state.inventory['魔力草']||0)<=0){battleLog('魔力草がない。');return}state.inventory['魔力草']--;const t=selectedAlly||[...activeRouteParty()].filter(x=>x.hp>0).sort((x,y)=>x.mp/x.maxMp-y.mp/y.maxMp)[0]||a;const before=t.mp;t.mp=Math.min(t.maxMp,t.mp+14);visual='heal';battleLog(`${a.name}は魔力草を使った。${t.name}のMPが${t.mp-before}回復。`)}
+ else if(type==='item'){if((state.inventory['薬草']||0)<=0){battleLog('薬草がない。');return}state.inventory['薬草']--;const t=selectedAlly||[...activeRouteParty()].filter(x=>x.hp>0).sort((x,y)=>x.hp/x.maxHp-y.hp/y.maxHp)[0]||a;const before=t.hp;t.hp=Math.min(t.maxHp,t.hp+22);visual='heal';battleLog(`${a.name}は薬草を使った。${t.name}のHPが${t.hp-before}回復。`)}
  else if(type==='foodItem'){if((state.inventory['携帯食']||0)<=0){battleLog('携帯食がない。');return}state.inventory['携帯食']--;a.hp=Math.min(a.maxHp,a.hp+12);a.mp=Math.min(a.maxMp,a.mp+6);visual='heal';battleLog(`${a.name}は携帯食を口にした。HPとMPが少し回復。`)}else acted=false;
  if(!acted)return;
  // Short-lived local playtest counters. Never leave state.battle and never
@@ -228,4 +274,4 @@ function battleLose(){const b=state.battle;GC.Log?.warn('Battle Lose',{id:b?.id,
   heroes:activeRouteParty().map(p=>p.id)
  });battleLog(activeRouteParty().length===1?'カレンは力尽きた……。':'仲間たちは力尽きた……。');const wasMap=state.battleReturn?.map||state.map;state.battleReturn=null;state.symbolEncounter=null;activeRouteParty().forEach(p=>{p.hp=p.maxHp;p.mp=p.maxMp;p.guard=false;p.buff=0});state.battle=null;state.locked=true;setTimeout(()=>{$('battlePanel').classList.add('hidden');if(wasMap==='cave')setMap('cave',12,13,'up',[[12,14],[11,14],[10,14]]);else if(maps[wasMap]&&!INTERIOR_MAPS.includes(wasMap))setMap(wasMap,11,13,'up',[[12,13],[13,13],[14,13]]);else setMap('road',11,13,'up',[[12,13],[13,13],[14,13]]);state.locked=false;say('ナレーション',activeRouteParty().length===1?'カレンは退き、立て直した。HP・MPは回復。経験値は失わない。':'仲間たちは安全な場所へ退き、立て直した。HP・MPは回復。経験値は失わない。');renderHud()},700)}
 function showEnding(){enterCapital(true)}
-GC.Battle={selectEnemyTarget,captureBattleReturn,restoreBattleReturn,startSymbolEncounter,startBattle,livingEnemies,currentActor,enemyMood,applyMoraleDamage,battleSurrender,battleAction,nextActor,enemyTurn,battleWin,battleLose};
+GC.Battle={battleSupportOptions,pendingBattleSupport,requestBattleAction,cancelBattleSupport,confirmBattleSupport,selectEnemyTarget,captureBattleReturn,restoreBattleReturn,startSymbolEncounter,startBattle,livingEnemies,currentActor,enemyMood,applyMoraleDamage,battleSurrender,battleAction,nextActor,enemyTurn,battleWin,battleLose};

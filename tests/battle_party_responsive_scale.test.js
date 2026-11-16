@@ -58,7 +58,7 @@ test('no art or gameplay data is modified to control the battle size',()=>{
 
 
 test('small phone enemy HP/status labels clear the larger hero heads without tiny font overrides',()=>{
- const hud=newest.slice(newest.indexOf('/* The 2x2 party reaches y=77'));
+ const hud=newest.slice(newest.indexOf('/* The 2x2 party reaches y=77')).split('\n}')[0]+'\n}';
  assert.match(hud,/@media \(max-width:600px\)/);
  assert.match(hud,/#battleStage \.enemy-stage-ui\{top:7px!important;padding:4px 7px!important\}/);
  assert.match(hud,/#battleStage \.enemy-stage-name\{margin-bottom:3px!important\}/);

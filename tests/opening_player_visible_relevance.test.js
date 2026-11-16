@@ -120,7 +120,7 @@ test('wolf aftermath changes ONE existing line only after actual ally intercepti
  assert.equal(protectedScene.lines.length,base.lines.length,'no longer mandatory cinematic');
  assert.deepEqual(protectedScene.lines.slice(0,-1),base.lines.slice(0,-1));
  assert.match(protectedScene.lines.at(-1).text,/ソフィを守れた/);
- assert.match(scout.lines.at(-1).text,/足跡を調べてよかった/);
+ assert.match(scout.lines.at(-1).text,/足跡を読めても.*次も一緒に考えましょう/);
  assert.deepEqual(protectedScene.effects,base.effects,'no new rewards or stage edits');
  h.evaluate("startBattle('wolves');state.locked=false;state.party.find(p=>p.id==='karen').guard=true;enemyTurn()");
  assert.ok(h.evaluate("state.battle.metrics.guardedAllies")>=1,

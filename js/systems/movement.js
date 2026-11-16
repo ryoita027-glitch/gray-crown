@@ -120,7 +120,7 @@ function showWorldSkeletonEnding(route){
  const approachId=state.events?.choices?.['route.final.'+route];
  const knownApproach=FINAL_ACT_APPROACHES[route]?.choices.find(c=>c.id===approachId);
  const approachText=knownApproach?
-  '<p class="ending-request"><strong>最後に示した条件：</strong>'+knownApproach.note+'</p>':'';
+  '<p class="ending-request"><strong>最後に示した条件：'+knownApproach.label+'</strong><br>'+knownApproach.note+'</p>':'';
 
  if(!isEventComplete('worldSkeletonCleared')){
   completeEvent('worldSkeletonCleared',true);
