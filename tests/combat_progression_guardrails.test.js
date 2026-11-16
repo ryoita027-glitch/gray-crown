@@ -69,7 +69,8 @@ test('mid/late boss intent is visible before actual actions, never permanently s
   h.evaluate('state.battle.turn=2;renderBattle()');
   assert.equal(h.evaluate('checkpointEnemyIntent(state.battle)'),null,
    'second round must revert to the existing AI');
-  assert.equal(h.getElement('battleForecast').classList.contains('hidden'),true);
+  assert.equal(h.getElement('battleForecast').dataset.intent,'unknown');
+ assert.match(h.getElement('battleForecast').textContent,/狙いは読めない/);
  }
 });
 

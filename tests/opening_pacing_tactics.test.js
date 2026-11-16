@@ -15,7 +15,8 @@ test('first wolf encounter advertises an actionable target and later returns to 
  assert.match(h.getElement('battleForecast').textContent,/庇う/);
  h.evaluate("state.battle.turn=2;renderBattle()");
  assert.equal(h.evaluate('checkpointEnemyIntent(state.battle)'),null);
- assert.equal(h.getElement('battleForecast').classList.contains('hidden'),true);
+ assert.equal(h.getElement('battleForecast').dataset.intent,'unknown');
+ assert.match(h.getElement('battleForecast').textContent,/狙いは読めない/);
 });
 test('reading roadside tracks is optional, grants a small nonpersistent defensive edge',()=>{
  const h=createHarness();

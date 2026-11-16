@@ -892,3 +892,8 @@ button.discovery-progress{width:100%;text-align:left;cursor:pointer;min-height:4
 .support-grid button:focus-visible,#cancelBattleSupport:focus-visible{outline:2px solid #f2d597;outline-offset:2px}
 #cancelBattleSupport{min-height:44px}
 @media(max-width:420px){.battle-support{padding:9px}.support-grid{gap:6px}.support-grid button{padding:8px}.support-grid button span{font-size:.71rem}}
+
+/* Tactical status uses text as well as colour; no blinking threat indicators. */
+.defense-badge:not(:empty){display:inline-block;margin:3px 5px;padding:2px 6px;border:1px solid #d8ae72;border-radius:3px;color:#ffe3b4;font-size:.72rem;line-height:1.4}
+.battle-forecast[data-intent="guarded"],.battle-forecast[data-intent="stopped"]{border-left-color:#84c6ab;background:#233c35;color:#d8f1e7}
+.battle-forecast[data-intent="unknown"]{border-left-color:#9caebf;background:#29323b;color:#e1e7ee}

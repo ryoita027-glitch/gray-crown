@@ -47,6 +47,26 @@
    return'　強化された攻勢に警戒。カレンの庇う・ソフィの回復・マーガレットの氷槍で対応できます。';
   return''
  }
+ // Read the same intent and interception rules that enemyTurn uses; no random rolls.
+ function defensePreview(b){
+  if(!b)return null;
+  const foes=b.enemies.filter(e=>e.hp>0),party=activeRouteParty();
+  if(!foes.length)return null;
+  const ready=foes.filter(e=>!e.staggered),plan=checkpointEnemyIntent(b);
+  const guard=party.find(p=>p.hp>0&&p.guard===true);
+  if(!ready.length)return {kind:'stopped',targetId:null,guardId:null,title:'敵の次の行動を阻止',detail:'体勢崩しが効いている。回復や攻撃を立て直す好機。'};
+  const stopped=foes.length-ready.length;
+  const prefix=stopped?stopped+'体は体勢崩れ。残る敵に警戒。 ':'';
+  if(guard)return {kind:'guarded',targetId:plan?.target.id||null,guardId:guard.id,title:guard.name+'が防御中',detail:prefix+(plan&&plan.target!==guard?plan.target.name+'への予告攻撃を引き受ける。':party.filter(p=>p.hp>0).length===1?'自分への攻撃に備えている。':'仲間への攻撃を引き受ける。')+'受けるダメージを軽減（戦闘不能になるまで）。'};
+  if(plan)return {kind:'threat',targetId:plan.target.id,guardId:null,title:plan.target.name+'が狙われている',detail:prefix+plan.note};
+  return {kind:'unknown',targetId:null,guardId:null,title:'敵の狙いは読めない',detail:prefix+'傷ついた仲間の回復や、庇う・氷槍で次の攻撃に備えよう。'};
+ }
+ function defenseLabel(id,b){
+  const p=defensePreview(b);if(!p)return '';
+  if(p.guardId===id)return '防御中';
+  if(p.targetId===id)return p.guardId?'庇われる仲間':'狙われている';
+  return '';
+ }
  function hint(actor,b){
   const target=targetForHint(b);
   const comboReady=!!(target&&b?.comboTarget===target&&b.comboActor&&b.comboActor!==actor?.id&&actor?.hp>0);
@@ -55,5 +75,5 @@
     (b?.enemies.filter(e=>e.hp>0).length>1?'　敵を選んでから行動できます。':'')+coordination+bossForecast(b)
  }
  function targetForHint(b){return b?target(b):null}
- GC.CommercialTactics={target,choose,index,options,protect,hint,bossForecast,actionAvailable,reset(){current=null;selected=-1}};
+ GC.CommercialTactics={defensePreview,defenseLabel,target,choose,index,options,protect,hint,bossForecast,actionAvailable,reset(){current=null;selected=-1}};
 })();
