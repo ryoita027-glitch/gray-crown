@@ -108,4 +108,18 @@ click('#clearExplorationPin');assert.equal(d.getElementById('explorationPin').cl
 assert.equal(d.activeElement.dataset.menuTab,'journal');
 assert.deepEqual(errors,[]);
 console.log('PASS: optional clue pin, field direction, notebook re-entry, clear control and unchanged save.');
+key('Escape');s.map='capital';s.gold=100;s.locked=false;
+assert.equal(w.GC.Exploration.capitalShop(),true);
+const oldBuy=d.getElementById('confirmShopPurchase');
+click('[data-shop-item="魔力草"]');click('[data-shop-quantity="3"]');
+assert.match(d.querySelector('.shop-order').textContent,/90G/);assert.equal(s.gold,100);
+oldBuy.click();assert.equal(s.gold,100,'detached quote cannot buy an old selection');
+const stock=s.inventory['魔力草'],buy=click('#confirmShopPurchase');
+assert.equal(s.gold,10);assert.equal(s.inventory['魔力草'],stock+3);assert.match(d.getElementById('shopFeedback').textContent,/残金10G/);
+buy.click();assert.equal(s.gold,10);assert.equal(s.inventory['魔力草'],stock+3);
+assert.equal(d.getElementById('confirmShopPurchase').disabled,true);
+const shopPosition=[s.x,s.y];click('[data-move="up"]');assert.deepEqual([s.x,s.y],shopPosition);
+key('Escape');assert.equal(d.getElementById('modal').classList.contains('hidden'),true);assert.equal(d.activeElement.id,'game');
+assert.deepEqual(errors,[]);
+console.log('PASS: market selection, quantity/total, stale quote, purchase, repeat prevention, insufficient funds, movement lock and Escape.');
 w.close();

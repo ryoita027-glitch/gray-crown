@@ -920,3 +920,6 @@ button.discovery-progress{width:100%;text-align:left;cursor:pointer;min-height:4
 .exploration-pin{display:block;width:100%;text-align:left;min-height:44px;padding:10px 12px;border:1px solid #bba477;background:#31362f;color:#f5e5bd;font-size:.82rem;line-height:1.6}
 .clue-pin{margin-top:8px;min-height:40px;font-size:.78rem}.clue-pin[aria-pressed="true"]{border-color:#d1b779;background:#414132}
 .notebook-pin{padding:12px;border:1px solid #bba477;border-radius:6px;margin:12px 0;background:#303830}.notebook-pin p{font-size:.84rem;line-height:1.6}
+
+.shop-wallet{padding:10px 0;text-align:right}.shop-items{display:grid;gap:8px}.shop-items button{text-align:left;padding:12px;min-height:64px}.shop-items strong{display:flex;justify-content:space-between}.shop-items small{display:block;margin-top:8px;line-height:1.5}
+.shop-items [aria-pressed="true"],.shop-quantities [aria-pressed="true"]{border-color:#d2b571;background:#3c3d30}.shop-order{padding:12px;border:1px solid #606658;border-radius:6px;margin:16px 0}.shop-order p{line-height:1.7;font-size:.87rem}.shop-quantities{display:flex;gap:8px}.shop-quantities button{flex:1;min-height:44px}#confirmShopPurchase,#leaveShop{width:100%;min-height:44px}

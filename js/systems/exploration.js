@@ -54,9 +54,27 @@ function limitedRecovery(id,speaker,label,mode='field',after='身体を休めた
 function recoverParty(mode='full'){
  state.party.forEach(p=>{if(mode==='full'){p.hp=p.maxHp;p.mp=p.maxMp}else if(mode==='field'){p.hp=p.maxHp;p.mp=Math.min(p.maxMp,p.mp+Math.max(8,Math.floor(p.maxMp*.35)))}else{p.hp=Math.min(p.maxHp,p.hp+Math.floor(p.maxHp*.5));p.mp=Math.min(p.maxMp,p.mp+Math.floor(p.maxMp*.2))}p.guard=false;p.buff=0});renderHud();draw()
 }
-function offerPaidRest(speaker,place,cost=24){return say(speaker,`${place}で休める。HP・MPが全回復する。`,[{label:`休む（${cost}G）`,fn:()=>{if(state.gold<cost)return say(speaker,'「お金が足りないみたいだね。無理はしないで」');state.gold-=cost;recoverParty('full');say('ナレーション',`${place}でゆっくり休んだ。HPとMPが全回復した。`) }},{label:'今は休まない',fn:()=>say('カレン','「まだ大丈夫。先に用事を済ませよう」')}])}
-function buyItem(item,cost,qty=1){if(state.gold<cost)return say('店員',`「${cost}Gだよ。手持ちが足りないみたいだ」`);state.gold-=cost;state.inventory[item]=(state.inventory[item]||0)+qty;renderHud();return say('店員',`${item}を${qty}個購入した。残金 ${state.gold}G。`)}
-function capitalShop(){return say('市場商人マロ','「前線へ行くなら、金は持ってるだけじゃ役に立たないよ」',[{label:'薬草 18G',fn:()=>buyItem('薬草',18)},{label:'魔力草 30G',fn:()=>buyItem('魔力草',30)},{label:'携帯食 22G',fn:()=>buyItem('携帯食',22)},{label:'やめる',fn:()=>say('市場商人マロ','「生きて戻ったらまた買いに来な」')}])}
-function imperialShop(){return say('運河市場の商人','「旅人なら現金が一番信用できる。王国の金貨でも重さが同じなら使えるよ」',[{label:'薬草 20G',fn:()=>buyItem('薬草',20)},{label:'魔力草 27G',fn:()=>buyItem('魔力草',27)},{label:'携帯食 18G',fn:()=>buyItem('携帯食',18)},{label:'やめる',fn:()=>say('運河市場の商人','「戦争が終わったら、もっと面白い物を並べたいね」')}])}
+function offerPaidRest(speaker,place,cost=24){
+ if(!needsRecovery())return say(speaker,'「みんな十分に休めているね。今はお金を使わなくても大丈夫だよ」');
+ const party=state.party,map=state.map;let used=false;
+ return say(speaker,`${place}で休める。HP・MPが全回復する。<br>所持金 ${state.gold}G ／ 料金 ${cost}G`,[{label:`休む（${cost}G）`,fn:()=>{
+  if(used||party!==state.party||map!==state.map||state.battle)return;
+  if(!needsRecovery())return say(speaker,'「もう全員回復しているね。お金は取らないよ」');
+  if(state.gold<cost)return say(speaker,'「お金が足りないみたいだね。無理はしないで」');
+  used=true;state.gold-=cost;recoverParty('full');say('ナレーション',`${place}でゆっくり休んだ。HPとMPが全回復した。残金 ${state.gold}G。`);
+ }},{label:'今は休まない',fn:()=>say('カレン','「まだ大丈夫。先に用事を済ませよう」')}]);
+}
+const SHOP_CATALOGS=Object.freeze({
+ capital:Object.freeze({map:'capital',name:'市場商人マロ',line:'前線へ行くなら、金は持ってるだけじゃ役に立たないよ。',prices:Object.freeze({'薬草':18,'魔力草':30,'携帯食':22})}),
+ imperial:Object.freeze({map:'imperialcity',name:'運河市場の商人',line:'王国の金貨でも、重さが同じなら使えるよ。',prices:Object.freeze({'薬草':20,'魔力草':27,'携帯食':18})})
+});
+function buyItem(item,cost,qty=1){
+ if(!Object.hasOwn(ITEM_DEFS,item)||!Number.isInteger(cost)||cost<=0||!Number.isInteger(qty)||qty<1||qty>99)return false;
+ if((state.inventory[item]||0)+qty>999)return say('店員','「これ以上は持てないよ」');
+ if(state.gold<cost)return say('店員',`「${cost}Gだよ。手持ちが足りないみたいだ」`);
+ state.gold-=cost;state.inventory[item]=(state.inventory[item]||0)+qty;renderHud();return say('店員',`${item}を${qty}個購入した。残金 ${state.gold}G。`);
+}
+function capitalShop(){return GC.Menu.openShop('capital')}
+function imperialShop(){return GC.Menu.openShop('imperial')}
 function armoryService(){return say('王都の鍛冶師','「金を払うなら、出発前に実用品として手を入れてやれる」',[{label:`刃の調整 90G${getWorldSwitch('capitalWeaponTune')?'（済）':''}`,fn:()=>{if(getWorldSwitch('capitalWeaponTune'))return say('王都の鍛冶師','「刃はもう十分仕上がってる」');if(state.gold<90)return say('王都の鍛冶師','「90G必要だ」');state.gold-=90;setWorldSwitch('capitalWeaponTune',true);state.party.forEach(p=>p.atk+=1);renderHud();say('ナレーション','4人の武器を実戦向けに調整した。全員の攻撃+1。')}},{label:`防具の補修 75G${getWorldSwitch('capitalArmorTune')?'（済）':''}`,fn:()=>{if(getWorldSwitch('capitalArmorTune'))return say('王都の鍛冶師','「防具はもう直してある」');if(state.gold<75)return say('王都の鍛冶師','「75G必要だ」');state.gold-=75;setWorldSwitch('capitalArmorTune',true);state.party.forEach(p=>p.def+=1);renderHud();say('ナレーション','4人の防具を補修した。全員の防御+1。')}},{label:'今回は頼まない',fn:()=>say('王都の鍛冶師','「前線で壊してから泣きつくなよ」')}])}
 GC.Exploration={fieldSpellPreview,useFieldSpell,fieldItemPreview,useFieldItem,useMapTransition,openTreasure,setShortcutOpen,isShortcutOpen,validateMapDesign,auditBenchmarkMaps,RECOVERY_LIMITS,recoveryUsed,recoveryRemaining,spendRecovery,limitedRecovery,recoverParty,offerPaidRest,buyItem,capitalShop,imperialShop,armoryService};

@@ -6,7 +6,7 @@ function escapeMenuText(value){
  })[ch])
 }
 let menuTab='supplies',menuItem='薬草',menuRecoveryMode='items',menuSpell='heal';
-function closeMenu(){ $('modal').classList.add('hidden');canvas.focus() }
+function closeMenu(){ shopSession=null;$('modal').classList.add('hidden');canvas.focus() }
 function trapMenuFocus(e){
  const nodes=Array.from($('modal').querySelectorAll('button:not([disabled]),input:not([disabled]),[tabindex="0"]'));
  if(!nodes.length)return;
@@ -106,9 +106,44 @@ function renderAdventureMenu(message=''){
 }
 function openMenu(tab='supplies'){
  if(!ALPHA_SESSION.started||state.battle||isInputLocked())return false;
- menuTab=['supplies','journal','system'].includes(tab)?tab:'supplies';
+ shopSession=null;menuTab=['supplies','journal','system'].includes(tab)?tab:'supplies';
  renderAdventureMenu();$('modal').classList.remove('hidden');
  $('modalContent').querySelector(`[data-menu-tab="${menuTab}"]`)?.focus();
  return true;
 }
-GC.Menu={openMenu,closeMenu,trapFocus:trapMenuFocus,renderAdventureMenu,notebookMarkup};
+GC.Menu={openShop,shopQuote,purchaseQuote,openMenu,closeMenu,trapFocus:trapMenuFocus,renderAdventureMenu,notebookMarkup};
+
+// Quotes are ephemeral capabilities bound to this exact open shop and party.
+let shopSession=null,shopItem='薬草',shopQuantity=1;
+function shopQuote(item=shopItem,quantity=shopQuantity){
+ const session=shopSession,catalog=session&&SHOP_CATALOGS[session.id];
+ if(!session||!catalog||session.party!==state.party||catalog.map!==state.map||!ALPHA_SESSION.started||state.battle||state.locked||INPUT_LOCKS.size||$('modal').classList.contains('hidden'))return null;
+ if(!Object.hasOwn(catalog.prices,item)||!Number.isInteger(quantity)||quantity<1||quantity>99)return null;
+ const owned=state.inventory[item]||0,price=catalog.prices[item],total=price*quantity;
+ return {session,revision:session.revision||0,item,quantity,owned,gold:state.gold,price,total,remaining:state.gold-total,reason:owned+quantity>999?'所持上限は999個です。':total>state.gold?'所持金が足りません。':''};
+}
+function purchaseQuote(quote){
+ if(!quote||quote.used||quote.session!==shopSession)return {ok:false,message:'購入内容を選び直してください。'};
+ const now=shopQuote(quote.item,quote.quantity);
+ if(!now||now.revision!==quote.revision||now.gold!==quote.gold||now.owned!==quote.owned||now.total!==quote.total)return {ok:false,message:'所持金・所持数が変わりました。購入内容を確認してください。'};
+ if(now.reason)return {ok:false,message:now.reason};
+ quote.used=true;state.gold-=now.total;state.inventory[now.item]=now.owned+now.quantity;renderHud();sfx('pickup');
+ return {ok:true,message:now.item+'を'+now.quantity+'個購入。'+now.total+'G支払い、残金'+state.gold+'G。'};
+}
+function renderShop(message=''){
+ const catalog=shopSession&&SHOP_CATALOGS[shopSession.id];if(!catalog)return;
+ shopSession.revision=(shopSession.revision||0)+1;
+ const quote=shopQuote();if(!quote){closeMenu();return}
+ $('modalTitle').textContent=catalog.name;
+ $('modalContent').innerHTML='<p class="menu-intro">'+escapeMenuText(catalog.line)+'</p><div class="shop-wallet">所持金 <strong>'+state.gold+'G</strong></div><div class="shop-items">'+Object.entries(catalog.prices).map(([id,price])=>'<button type="button" data-shop-item="'+id+'" aria-pressed="'+(id===shopItem)+'"><strong>'+id+' <span>'+price+'G</span></strong><small>'+ITEM_DEFS[id].description+' ／ 所持 '+(state.inventory[id]||0)+'個</small></button>').join('')+'</div><section class="shop-order"><h3>'+shopItem+'をいくつ買う？</h3><div class="shop-quantities" role="group" aria-label="購入数">'+[1,3,5].map(q=>'<button type="button" data-shop-quantity="'+q+'" aria-pressed="'+(q===shopQuantity)+'">'+q+'個</button>').join('')+'</div><p>単価 '+quote.price+'G × '+quote.quantity+'個 = <strong>'+quote.total+'G</strong><br>購入後の所持数 '+(quote.owned+quote.quantity)+'個 ／ '+(quote.remaining>=0?'残金 '+quote.remaining+'G':'不足 '+(-quote.remaining)+'G')+'</p><button type="button" id="confirmShopPurchase" '+(quote.reason?'disabled':'')+'>'+quote.total+'Gで購入する</button><p class="menu-note">'+escapeMenuText(quote.reason||'購入するまで、お金と道具は変わりません。')+'</p></section><p id="shopFeedback" class="menu-feedback" role="status" aria-live="polite">'+escapeMenuText(message)+'</p><button type="button" id="leaveShop">買い物を終える</button>';
+ $('modalContent').querySelectorAll('[data-shop-item]').forEach(b=>b.addEventListener('click',()=>{shopItem=b.dataset.shopItem;renderShop();$('modalContent').querySelector('[data-shop-item="'+shopItem+'"]')?.focus()}));
+ $('modalContent').querySelectorAll('[data-shop-quantity]').forEach(b=>b.addEventListener('click',()=>{shopQuantity=Number(b.dataset.shopQuantity);renderShop();$('modalContent').querySelector('[data-shop-quantity="'+shopQuantity+'"]')?.focus()}));
+ $('confirmShopPurchase').addEventListener('click',()=>{const result=purchaseQuote(quote);renderShop(result.message);const buy=$('confirmShopPurchase');(buy&&!buy.disabled?buy:$('leaveShop'))?.focus()},{once:true});
+ $('leaveShop').addEventListener('click',closeMenu);
+}
+function openShop(id){
+ const catalog=Object.hasOwn(SHOP_CATALOGS,id)?SHOP_CATALOGS[id]:null;
+ if(!catalog||state.map!==catalog.map||!ALPHA_SESSION.started||state.battle||isInputLocked())return false;
+ shopSession={id,party:state.party};shopItem='薬草';shopQuantity=1;
+ $('modal').classList.remove('hidden');renderShop();$('modalContent').querySelector('[data-shop-item]')?.focus();return true;
+}
