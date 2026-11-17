@@ -18,7 +18,7 @@ const ids=['karen','triton','sophie','margaret'],dirs=['down','left','right','up
   original[id]={};
   for(const action of ['idle','walk']){
    const src=`assets/characters/${id}/${id}_${action}.png`,image=await loadImage(path.join(root,src));original[id][action]=image;
-   const cleaned=sandbox.GC.Animation.normalizeRuntimeAlpha(image),pixels=cleaned.getContext('2d').getImageData(0,0,cleaned.width,cleaned.height).data;
+   const cleaned=sandbox.GC.Animation.normalizeRuntimeAlpha(image,id),pixels=cleaned.getContext('2d').getImageData(0,0,cleaned.width,cleaned.height).data;
    for(let i=3;i<pixels.length;i+=4)assert.ok(pixels[i]===0||pixels[i]===255,'binary runtime alpha');
    if(action==='idle')for(let r=0;r<4;r++){
     let bottom=0;for(let y=0;y<48;y++)for(let x=0;x<48;x++)if(pixels[((r*48+y)*cleaned.width+x)*4+3])bottom=y+1;

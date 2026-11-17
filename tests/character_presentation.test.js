@@ -48,3 +48,11 @@ test('missing idle preserves loaded walk and missing walk preserves loaded idle'
  idle.ready=true;h.GC.Animation.ensureImage('assets/characters/karen/karen_walk.png').ready=false;
  h.GC.Render.World.drawHeroSpriteSheet(1,1,'karen',false,'down',0,0);assert.match(calls.at(-1)[0]._src,/_idle.png$/);
 });
+
+test('Margaret palette adjustment keeps silhouette, dark outfit and warm skin',()=>{
+ const h=createHarness(),pixels=[180,150,210,255,55,40,75,255,238,192,165,255,12,20,30,0];
+ const {data}=pixelCanvas(h,pixels);h.GC.Animation.normalizeRuntimeAlpha({width:4,height:1},'margaret');
+ assert.deepEqual([...data],[180,156,202,255,55,40,75,255,238,192,165,255,0,0,0,0]);
+ const other=pixelCanvas(h,pixels);h.GC.Animation.normalizeRuntimeAlpha({width:4,height:1},'karen');
+ assert.deepEqual([...other.data].slice(0,12),pixels.slice(0,12));
+});

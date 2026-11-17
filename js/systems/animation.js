@@ -11,7 +11,10 @@
   const row={down:0,left:1,right:2,up:3}[facing]??0;
   return SOLE_BASELINES[character]?[fallback[0],SOLE_BASELINES[character][row]]:fallback;
  }
- function normalizeRuntimeAlpha(image){
+ function normalizeRuntimeAlpha(image,character=''){
+  // Preserve the approved pixel drawing. Only soften the violet cast of
+  // Margaret's light hair/shadow colors; dark outfit, eyes and warm skin stay.
+  // This is a display palette adjustment, never a resized/redrawn silhouette.
   if(typeof document==='undefined'||!image)return image;
   const w=image.naturalWidth||image.width,h=image.naturalHeight||image.height;
   if(!w||!h)return image;
@@ -21,16 +24,23 @@
   c.clearRect(0,0,w,h);c.drawImage(image,0,0);
   const data=c.getImageData(0,0,w,h),p=data.data;
   for(let i=0;i<p.length;i+=4){if(p[i+3]>=RUNTIME_ALPHA_THRESHOLD)p[i+3]=255;else{p[i]=0;p[i+1]=0;p[i+2]=0;p[i+3]=0}}
+  if(character==='margaret')for(let i=0;i<p.length;i+=4){
+   const r=p[i],g=p[i+1],b=p[i+2];
+   if(p[i+3]&&r>=100&&g>=90&&b>r+6&&b>g+10&&b-g<90){
+    p[i+1]=g+Math.round(Math.max(0,r-g)*.2);
+    p[i+2]=b-Math.round((b-r)*.25);
+   }
+  }
   c.putImageData(data,0,0);return canvas;
   }catch(_error){return image} // A tainted/unsupported canvas must never hide a hero.
  }
  // DOM battles use the same alpha contract as canvas field/cinematics.
  // Cache each source, including the result, to avoid recursive load events.
- function normalizeImageElement(image){
+ function normalizeImageElement(image,character=''){
   if(!image?.src)return false;
   const src=image.src,cached=NORMALIZED_URLS.get(src);
   if(cached){if(cached!==src)image.src=cached;return true}
-  const canvas=normalizeRuntimeAlpha(image);
+  const canvas=normalizeRuntimeAlpha(image,character);
   if(canvas===image||typeof canvas.toDataURL!=='function')return false;
   try{const url=canvas.toDataURL('image/png');
    if(!url.startsWith('data:image/png'))return false;
@@ -41,8 +51,8 @@
  function characterDefs(character){return defs()[character]||{}}
  function resolveDef(character,name){const set=characterDefs(character);return set[name]||set.idle||null}
  function getAnimation(character,name){return resolveDef(character,name)}
- function ensureImage(src){if(!src)return null;if(IMAGE_CACHE.has(src))return IMAGE_CACHE.get(src);const rec={src,image:null,ready:false,error:false};if(typeof Image!=='undefined'){const image=new Image();rec.image=image;image.onload=()=>{rec.image=normalizeRuntimeAlpha(image);rec.ready=true;rec.error=false};image.onerror=()=>{rec.ready=false;rec.error=true};image.src=src}IMAGE_CACHE.set(src,rec);return rec}
- function overrideImage(src,dataUrl){const rec={src,image:null,ready:false,error:false};if(typeof Image!=='undefined'){const image=new Image();rec.image=image;image.onload=()=>{rec.image=normalizeRuntimeAlpha(image);rec.ready=true;rec.error=false};image.onerror=()=>{rec.ready=false;rec.error=true};image.src=dataUrl}IMAGE_CACHE.set(src,rec);return rec}
+ function ensureImage(src){if(!src)return null;if(IMAGE_CACHE.has(src))return IMAGE_CACHE.get(src);const rec={src,image:null,ready:false,error:false};if(typeof Image!=='undefined'){const image=new Image();rec.image=image;image.onload=()=>{rec.image=normalizeRuntimeAlpha(image,src.includes('/margaret/')?'margaret':'');rec.ready=true;rec.error=false};image.onerror=()=>{rec.ready=false;rec.error=true};image.src=src}IMAGE_CACHE.set(src,rec);return rec}
+ function overrideImage(src,dataUrl){const rec={src,image:null,ready:false,error:false};if(typeof Image!=='undefined'){const image=new Image();rec.image=image;image.onload=()=>{rec.image=normalizeRuntimeAlpha(image,src.includes('/margaret/')?'margaret':'');rec.ready=true;rec.error=false};image.onerror=()=>{rec.ready=false;rec.error=true};image.src=dataUrl}IMAGE_CACHE.set(src,rec);return rec}
  function createActor(character,opts={}){return{id:opts.id||character,character,x:Number.isFinite(opts.x)?opts.x:0,y:Number.isFinite(opts.y)?opts.y:0,facing:opts.facing||'down',animation:opts.animation||'idle',startedAt:Number.isFinite(opts.startedAt)?opts.startedAt:Date.now(),renderMode:opts.renderMode||'pixel48-full',renderScale:Number.isFinite(opts.renderScale)&&opts.renderScale>0?opts.renderScale:1,visible:opts.visible!==false,layer:opts.layer||0,prototypeTemporary:opts.prototypeTemporary!==false}}
  function setAnimation(actor,name,opts={}){if(!actor)return null;const set=characterDefs(actor.character),resolved=set[name]?name:(set.idle?'idle':Object.keys(set)[0]);if(resolved)actor.animation=resolved;if(opts.facing)actor.facing=opts.facing;if(opts.restart!==false)actor.startedAt=Number.isFinite(opts.now)?opts.now:Date.now();return resolveDef(actor.character,actor.animation)}
  function setFacing(actor,facing){if(actor&&['down','left','right','up'].includes(facing))actor.facing=facing;return actor?.facing}
