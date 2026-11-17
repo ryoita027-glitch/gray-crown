@@ -916,3 +916,7 @@ button.discovery-progress{width:100%;text-align:left;cursor:pointer;min-height:4
 .battle-result-note{max-width:90%;font-size:.78rem;line-height:1.6;color:#e0d7bd;text-align:center;margin:10px 0}
 .battle-result small{text-align:center;padding:0 12px;line-height:1.7}
 @media(max-width:380px){.field-spell-targets,.battle-record-growth{grid-template-columns:1fr}}
+
+.exploration-pin{display:block;width:100%;text-align:left;min-height:44px;padding:10px 12px;border:1px solid #bba477;background:#31362f;color:#f5e5bd;font-size:.82rem;line-height:1.6}
+.clue-pin{margin-top:8px;min-height:40px;font-size:.78rem}.clue-pin[aria-pressed="true"]{border-color:#d1b779;background:#414132}
+.notebook-pin{padding:12px;border:1px solid #bba477;border-radius:6px;margin:12px 0;background:#303830}.notebook-pin p{font-size:.84rem;line-height:1.6}

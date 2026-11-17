@@ -96,4 +96,16 @@ assert.match(d.querySelector('.battle-record').textContent,/一人あたり 10 E
 assert.equal(d.querySelectorAll('.battle-record .growth-meter').length,4);
 assert.deepEqual(errors,[]);
 console.log('PASS: field heal/prayer clicks, capped healing, stale button, MP shortage, focus fallback, growth meters and victory report.');
+key('Escape');s.map='cave';s.x=12;s.y=13;delete s.events.choices['early.fortShield'];
+w.GC.Menu.openMenu('journal');
+const beforePin=w.GC.Save.serializeSave();click('[data-clue-pin="early.fortShield"]');
+assert.equal(w.GC.Save.serializeSave(),beforePin,'pin never changes persistent progress');
+assert.equal(d.activeElement.dataset.cluePin,'early.fortShield');key('Escape');
+assert.equal(d.getElementById('explorationPin').classList.contains('hidden'),false);
+assert.match(d.getElementById('explorationPin').textContent,/北東/);
+click('#explorationPin');assert.match(d.querySelector('.notebook-pin').textContent,/傷だらけの盾/);
+click('#clearExplorationPin');assert.equal(d.getElementById('explorationPin').classList.contains('hidden'),true);
+assert.equal(d.activeElement.dataset.menuTab,'journal');
+assert.deepEqual(errors,[]);
+console.log('PASS: optional clue pin, field direction, notebook re-entry, clear control and unchanged save.');
 w.close();

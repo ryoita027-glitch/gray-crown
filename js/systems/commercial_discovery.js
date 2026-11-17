@@ -24,6 +24,57 @@
    {id:'ashCache',kind:'treasure',label:'避難路の荷袋'}],
   frontier:[{id:'frontierCache',kind:'treasure',label:'前線補給箱'}]
  });
+ // Authored landmarks point to existing objects/NPCs, never invent routes or rewards.
+ const landmarks=Object.freeze({
+  'early.orphanMedicine':{target:'doorOrphanage',hint:'村の東側の孤児院。中にいるマルタに話を聞こう。'},
+  'ryune.outskirts.reward':{target:'farmer',hint:'村の南西で畑仕事をしているボルに、観察したことを話そう。'},
+  'ryune.fields.inspect':{target:'fieldFurrows',hint:'畑の北西にある畝。芽のまばらな土を調べよう。'},
+  fieldCache:{target:'fieldCache',hint:'畑の北東に置かれた道具箱。'},
+  'ryune.brook.inspect':{target:'brookWater',hint:'小川の北寄りにある水辺。流れを観察しよう。'},
+  brookCache:{target:'brookCache',hint:'小川の東岸にある採集袋。'},
+  bandit:{target:'bandit',hint:'街道の北東にいるならず者。戦う以外の対処も考えられる。'},
+  roadCache:{target:'roadCache',hint:'街道の西側、木々の間に残された物資。'},
+  'early.merchantCart':{target:'merchant',hint:'街道の西側。荷車のそばにいる行商人に話そう。'},
+  'early.wolfScout':{target:'roadSign',hint:'街道の北にある古い道標。狼と戦う前に足元を調べよう。'},
+  'early.caveBanner':{target:'banner',hint:'古砦の西の回廊に残された軍旗。'},
+  'early.fortShield':{target:'fortShield',hint:'古砦の東の回廊。盾と足跡に獣への手がかりがある。'},
+  'early.caveSupplies':{target:'rations',hint:'古砦の南東。積まれた備蓄箱を調べよう。'},
+  chest1:{target:'chest1',hint:'古砦の西の回廊、北寄りにある宝箱。'},
+  chest2:{target:'chest2',hint:'古砦の東の回廊、南寄りにある宝箱。'},
+  bats:{target:'bats',hint:'古砦の西の回廊を塞ぐ群れ。'},
+  crawler:{target:'crawler',hint:'古砦の東の回廊に潜む、殻の硬い魔物。'},
+  'alpha2.ashroad.priest':{target:'fieldPriest',hint:'灰の街道の東側、荷車のそばにいる従軍僧。'},
+  'alpha2.ashroad.burnedCart':{target:'burnedCart',hint:'灰の街道の南東。焼けた荷車に残る印を調べよう。'},
+  'alpha2.ashroad.homestead':{target:'burnedHomestead',hint:'灰の街道の北西。焼けた農家の柱を調べよう。'},
+  'alpha2.ashroad.shrine':{target:'ruinedShrine',hint:'灰の街道の東端にある小さな祠。'},
+  ashCache:{target:'ashCache',hint:'灰の街道の南西、避難路に残された荷袋。'},
+  frontierCache:{target:'frontierCache',hint:'前線拠点の南東。補給箱を調べよう。'}
+ });
+ let pin=null;
+ function visibleEntries(map,s=state){return (extras[map]||[]).filter(p=>
+  (p.id!=='ryune.outskirts.reward'||s.events?.completed?.['ryune.fields.inspect']||s.events?.completed?.['ryune.brook.inspect']||done(p,s))&&
+  (p.id!=='early.wolfScout'||!s.world?.defeatedSymbols?.wolf||done(p,s)));
+ }
+ function landmark(map,id){
+  const entry=(extras[map]||[]).find(p=>p.id===id),spec=landmarks[id],m=maps[map];
+  if(!entry||!spec||!m)return null;
+  const target=[...m.objects,...m.npcs].find(o=>o.id===spec.target);
+  return target?{entry,target,hint:spec.hint}:null;
+ }
+ function track(id){
+  if(!visibleEntries(state.map).some(p=>p.id===id&&!done(p,state)))return false;
+  if(!landmark(state.map,id))return false;
+  pin={map:state.map,id,party:state.party};update();return true;
+ }
+ function untrack(){pin=null;update()}
+ function tracking(){
+  if(!pin)return null;
+  if(pin.party!==state.party||pin.map!==state.map||!visibleEntries(pin.map).some(p=>p.id===pin.id&&!done(p,state))){pin=null;return null}
+  const point=landmark(pin.map,pin.id);if(!point){pin=null;return null}
+  const dx=point.target.x-state.x,dy=point.target.y-state.y;
+  const direction=Math.abs(dx)+Math.abs(dy)<=1?'すぐそば。向きを合わせて調べる':(dy<0?'北':dy>0?'南':'')+(dx<0?'西':dx>0?'東':'')+'の方角';
+  return {id:pin.id,label:point.entry.label,direction,hint:point.hint};
+ }
  function done(p,s){
   if(p.kind==='event')return !!s.events?.completed?.[p.id];
   if(p.kind==='choice')return !!s.events?.choices?.[p.id];
@@ -33,10 +84,7 @@
  function progress(map,s=state){
   // A single authentic field or creek observation can now be shared with
   // Boru. No "visit both maps" chore masquerading as optional exploration.
-  const visible=(extras[map]||[]).filter(p=>p.id!=='ryune.outskirts.reward'||
-   (!!s.events?.completed?.['ryune.fields.inspect']||
-    !!s.events?.completed?.['ryune.brook.inspect'])||
-    !!s.events?.completed?.['ryune.outskirts.reward']);
+  const visible=visibleEntries(map,s);
   const complete=visible.filter(p=>done(p,s));
   return {map,total:visible.length,found:complete.length,
    remaining:visible.filter(p=>!done(p,s)).map(p=>p.label)}
@@ -65,6 +113,8 @@
   return mechanisms+(west&&east?' — 鉄格子が開いた。奥の獣に備えよう':'');
  }
  function update(){
+  const marker=typeof $==='function'?$('explorationPin'):null,tracked=tracking();
+  if(marker){marker.classList.toggle('hidden',!tracked);marker.textContent=tracked?'目印：'+tracked.label+' ／ '+tracked.direction:''}
   const fort=typeof $==='function'?$('fortProgress'):null;
   if(fort){const text=fortProgress();if(fort.textContent!==text)fort.textContent=text;fort.classList.toggle('hidden',!text)}
   const node=typeof $==='function'?$('discoveryHud'):null;
@@ -76,5 +126,5 @@
   node.setAttribute('title',p.remaining.length?'気が向いたら調べられる場所：'+p.remaining.join('／'):'このエリアの寄り道はすべて発見済み');
   return p
  }
- GC.CommercialDiscovery={extras,done,progress,questHint,fortProgress,update};
+ GC.CommercialDiscovery={landmark,visibleEntries,track,untrack,tracking,extras,done,progress,questHint,fortProgress,update};
 })();

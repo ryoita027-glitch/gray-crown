@@ -49,12 +49,18 @@ function recentBattleMarkup(){
 }
 function notebookMarkup(){
  const progress=GC.CommercialDiscovery.progress(state.map);
- const entries=(GC.CommercialDiscovery.extras[state.map]||[]).filter(p=>progress.remaining.includes(p.label)||GC.CommercialDiscovery.done(p,state));
+ const entries=GC.CommercialDiscovery.visibleEntries(state.map);
  const fort=GC.CommercialDiscovery.fortProgress();
- const clues=entries.map(p=>{const done=GC.CommercialDiscovery.done(p,state);return `<li class="notebook-clue ${done?'found':''}"><span aria-hidden="true">${done?'✓':'◇'}</span><div><strong>${escapeMenuText(p.label)}</strong><small>${done?'記録済み':escapeMenuText(p.hint||'気になった時に立ち寄ってみよう')}</small></div></li>`}).join('');
+ const tracked=GC.CommercialDiscovery.tracking();
+ const clues=entries.map(p=>{
+  const done=GC.CommercialDiscovery.done(p,state),point=GC.CommercialDiscovery.landmark(state.map,p.id),selected=tracked?.id===p.id;
+  return `<li class="notebook-clue ${done?'found':''}"><span aria-hidden="true">${done?'✓':'◇'}</span><div><strong>${escapeMenuText(p.label)}</strong><small>${done?'記録済み':escapeMenuText(point?.hint||p.hint||'気になった時に立ち寄ってみよう')}</small>${!done&&point?`<button type="button" class="clue-pin" data-clue-pin="${escapeMenuText(p.id)}" aria-pressed="${selected}">${selected?'目印を外す':'この手がかりを目印にする'}</button>`:''}</div></li>`;
+ }).join('');
+ const pinHelp=tracked?`<div class="notebook-pin"><strong>目印：${escapeMenuText(tracked.label)}</strong><p>${escapeMenuText(tracked.direction)}。地形に沿って進もう。</p><button type="button" id="clearExplorationPin">目印を外す</button></div>`:'';
+
  const shield=state.events.choices['early.fortShield']==='studied'&&state.map==='cave'?'<p class="menu-note">盾から分かったこと：トリトンの「崩し」で一度攻撃を阻み、マーガレットの「氷槍」で攻撃力を下げられる。氷槍はMP 8。</p>':'';
  const records=[...state.journal].reverse().map(x=>`<li>${escapeMenuText(x)}</li>`).join('');
- return `<div class="notebook-objective"><small>今の目的</small><strong>${escapeMenuText(state.objective)}</strong>${fort?`<p>${escapeMenuText(fort)}</p>`:''}</div>${clues?`<h3 class="menu-section-label">この場所の寄り道 <small>任意</small></h3><ul class="notebook-clues">${clues}</ul>`:''}${shield}${recentBattleMarkup()}<h3 class="menu-section-label">旅の記録 <small>新しい順</small></h3><ol class="notebook-records">${records||'<li>これから見つけたことが、ここに残ります。</li>'}</ol>`;
+ return `<div class="notebook-objective"><small>今の目的</small><strong>${escapeMenuText(state.objective)}</strong>${fort?`<p>${escapeMenuText(fort)}</p>`:''}</div>${pinHelp}${clues?`<p class="menu-note">目印は方角の目安です。道順は地形を見て選べます。場所を移ると解除されます。</p><h3 class="menu-section-label">この場所の寄り道 <small>任意</small></h3><ul class="notebook-clues">${clues}</ul>`:''}${shield}${recentBattleMarkup()}<h3 class="menu-section-label">旅の記録 <small>新しい順</small></h3><ol class="notebook-records">${records||'<li>これから見つけたことが、ここに残ります。</li>'}</ol>`;
 }
 function systemMenuMarkup(){
  const levels=state.party.map(p=>`<div class="menu-character"><div class="party-head"><strong>${escapeMenuText(p.name)} Lv.${p.level}</strong><span>${escapeMenuText(p.job)}</span></div><div class="menu-statline"><span>攻撃 ${p.atk}</span><span>防御 ${p.def}</span><span>素早さ ${p.spd}</span></div><div class="party-sub">EXP ${p.exp}${p.level<MAX_LEVEL?` / ${expThreshold(p.level)}`:' / MAX'}</div>${growthMarkup(p)}</div>`).join('');
@@ -82,6 +88,13 @@ function renderAdventureMenu(message=''){
  const cast=(id,target)=>{const result=useFieldSpell(id,target);renderAdventureMenu(result.message);const next=target?$('modalContent').querySelector('[data-field-heal="'+target+'"]:not([disabled])'):$('castFieldPrayer');(next&&!next.disabled?next:$('modalContent').querySelector('[data-field-spell="'+menuSpell+'"]'))?.focus()};
  $('modalContent').querySelectorAll('[data-field-heal]').forEach(b=>b.addEventListener('click',()=>cast('heal',b.dataset.fieldHeal),{once:true}));
  $('castFieldPrayer')?.addEventListener('click',()=>cast('prayer'),{once:true});
+ $('modalContent').querySelectorAll('[data-clue-pin]').forEach(b=>b.addEventListener('click',()=>{
+  const id=b.dataset.cluePin,selected=GC.CommercialDiscovery.tracking()?.id===id;
+  if(selected)GC.CommercialDiscovery.untrack();else GC.CommercialDiscovery.track(id);
+  renderAdventureMenu(selected?'目印を外しました。':'目印を付けました。手帳を閉じると画面に方角が表示されます。');
+  $('modalContent').querySelector('[data-clue-pin="'+id+'"]')?.focus();
+ }));
+ $('clearExplorationPin')?.addEventListener('click',()=>{GC.CommercialDiscovery.untrack();renderAdventureMenu('目印を外しました。');$('modalContent').querySelector('[data-menu-tab="journal"]')?.focus()});
  // Bind only authored identifiers. Save content is escaped, never executable.
  $('modalContent').querySelectorAll('[data-menu-tab]').forEach(b=>b.addEventListener('click',()=>{menuTab=b.dataset.menuTab;renderAdventureMenu();$('modalContent').querySelector(`[data-menu-tab="${menuTab}"]`)?.focus()}));
  $('modalContent').querySelectorAll('[data-supply]').forEach(b=>b.addEventListener('click',()=>{menuItem=b.dataset.supply;renderAdventureMenu();$('modalContent').querySelector(`[data-supply="${menuItem}"]`)?.focus()}));
