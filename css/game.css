@@ -897,3 +897,22 @@ button.discovery-progress{width:100%;text-align:left;cursor:pointer;min-height:4
 .defense-badge:not(:empty){display:inline-block;margin:3px 5px;padding:2px 6px;border:1px solid #d8ae72;border-radius:3px;color:#ffe3b4;font-size:.72rem;line-height:1.4}
 .battle-forecast[data-intent="guarded"],.battle-forecast[data-intent="stopped"]{border-left-color:#84c6ab;background:#233c35;color:#d8f1e7}
 .battle-forecast[data-intent="unknown"]{border-left-color:#9caebf;background:#29323b;color:#e1e7ee}
+
+/* Preparation and growth: compact, keyboard-readable, touch-sized controls. */
+.recovery-mode,.field-spell-choices{display:flex;gap:8px;margin:10px 0;flex-wrap:wrap}
+.recovery-mode button,.field-spell-choices button{flex:1;min-height:44px}
+.recovery-mode [aria-pressed="true"],.field-spell-choices [aria-pressed="true"]{border-color:#d9c28a;background:#3e3b30;color:#fff1cc}
+.field-spell-choices small{display:block;margin-top:4px;font-size:.8rem}
+.field-spell-targets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.field-spell-targets button,.spell-recipient{display:flex;flex-direction:column;gap:7px;text-align:left;padding:12px;border:1px solid #596570;border-radius:6px;background:#252f36;color:#e7eee9;min-width:0}
+.field-spell-targets b{color:#a8ddbd}.field-spell-targets span{font-size:.8rem}
+#castFieldPrayer{width:100%;margin-top:12px;min-height:48px}
+.growth-caption{font-size:.78rem;color:#d8d1b6;margin-top:8px}
+.growth-meter{height:6px;border-radius:3px;background:#151c24;overflow:hidden;margin:7px 0}
+.growth-meter>span{display:block;height:100%;background:#c7b16d}
+.battle-record{padding:14px;border:1px solid #716647;border-radius:6px;margin:16px 0;background:#292d2e}
+.battle-record h3{margin:0 0 10px}.battle-record h3 small{font-size:.7rem;color:#b6c0c4}
+.battle-record p{font-size:.84rem;line-height:1.65}.battle-record-growth{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.battle-result-note{max-width:90%;font-size:.78rem;line-height:1.6;color:#e0d7bd;text-align:center;margin:10px 0}
+.battle-result small{text-align:center;padding:0 12px;line-height:1.7}
+@media(max-width:380px){.field-spell-targets,.battle-record-growth{grid-template-columns:1fr}}

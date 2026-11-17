@@ -74,4 +74,26 @@ s.battle.enemies.forEach(e=>e.staggered=1);w.GC.Render.Battle.renderBattle();
 assert.equal(d.getElementById('battleForecast').dataset.intent,'stopped');
 assert.doesNotMatch(d.getElementById('partyCards').textContent,/狙われている/);
 console.log('PASS: threat, guarded ally, interrupted enemy and recovery picker status in shipped DOM.');
+// Exercise field magic through shipped controls, including a retained stale button.
+s.battle=null;s.locked=false;d.getElementById('battlePanel').classList.add('hidden');
+s.party[0].hp=1;s.party[1].hp=75;s.party[2].mp=36;
+click('#btnMenu');click('[data-recovery-mode="magic"]');
+assert.match(d.querySelector('[data-field-heal="triton"]').textContent,/HP \+3/);
+const healButton=click('[data-field-heal="triton"]');assert.equal(s.party[1].hp,78);assert.equal(s.party[2].mp,30);
+healButton.click();assert.equal(s.party[2].mp,30);
+assert.equal(d.activeElement.dataset.fieldSpell,'heal');
+click('[data-field-spell="prayer"]');assert.equal(s.party[2].mp,30,'selection is free');
+click('#castFieldPrayer');assert.equal(s.party[0].hp,11);assert.equal(s.party[2].mp,22);
+assert.match(d.getElementById('menuFeedback').textContent,/MP 8消費/);
+s.party[2].mp=0;w.GC.Menu.renderAdventureMenu();assert.equal(d.getElementById('castFieldPrayer').disabled,true);
+click('[data-recovery-mode="items"]');assert.ok(d.querySelector('[data-supply="魔力草"]'));
+click('[data-menu-tab="system"]');assert.equal(d.querySelectorAll('.growth-meter').length,4);
+key('Escape');
+w.GC.Battle.startBattle('caveRats');s.locked=false;w.GC.Battle.battleWin();
+// Finish only presentation locks; outcome/resources are applied by the real battleWin.
+s.locked=false;w.GC.Menu.openMenu('journal');
+assert.match(d.querySelector('.battle-record').textContent,/一人あたり 10 EXP/);
+assert.equal(d.querySelectorAll('.battle-record .growth-meter').length,4);
+assert.deepEqual(errors,[]);
+console.log('PASS: field heal/prayer clicks, capped healing, stale button, MP shortage, focus fallback, growth meters and victory report.');
 w.close();

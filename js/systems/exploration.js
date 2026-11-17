@@ -25,6 +25,26 @@ function useFieldItem(item,heroId){
  renderHud();sfx('heal');
  return {ok:true,hp:gain.hp,mp:gain.mp,message:hero.name+'に'+item+'を使った。'+[gain.hp?'HP +'+gain.hp:'',gain.mp?'MP +'+gain.mp:''].filter(Boolean).join(' ／ ')};
 }
+// Field magic shares battle costs/powers; previews never mutate resources.
+function fieldSpellPreview(id,heroId=null){
+ if(!['heal','prayer'].includes(id))return null;
+ const party=activeRouteParty(),caster=party.find(p=>p.id==='sophie'),skill=SKILLS[id];
+ const targets=id==='prayer'?party:party.filter(p=>p.id===heroId);
+ const gains=targets.map(p=>({id:p.id,name:p.name,hp:p.hp,maxHp:p.maxHp,gain:p.hp>0?Math.max(0,Math.min(skill.power,p.maxHp-p.hp)):0}));
+ const total=gains.reduce((sum,p)=>sum+p.gain,0);
+ const reason=!caster?'ソフィが同行していません。':caster.hp<=0?'ソフィは戦闘不能です。':caster.mp<skill.mp?'ソフィのMPが足りません。':!total?'回復できる仲間がいません。':'';
+ return {id,label:skill.label,cost:skill.mp,casterMp:caster?.mp||0,casterMaxMp:caster?.maxMp||0,gains,total,reason,available:!reason};
+}
+function useFieldSpell(id,heroId=null){
+ if(!ALPHA_SESSION.started||state.battle||state.locked||INPUT_LOCKS.size)return {ok:false,message:'今は魔法を使えません。'};
+ const preview=fieldSpellPreview(id,heroId);
+ if(!preview||!preview.available)return {ok:false,message:preview?.reason||'この魔法は使えません。'};
+ const party=activeRouteParty(),caster=party.find(p=>p.id==='sophie');
+ caster.mp-=preview.cost;
+ for(const gain of preview.gains){const p=party.find(p=>p.id===gain.id);p.hp+=gain.gain}
+ renderHud();sfx('heal');
+ return {ok:true,hp:preview.total,mpSpent:preview.cost,message:'ソフィの'+preview.label+'。'+preview.gains.filter(p=>p.gain>0).map(p=>p.name+' HP +'+p.gain).join(' ／ ')+'（MP '+preview.cost+'消費）'};
+}
 function needsRecovery(){return state.party.some(p=>p.hp<p.maxHp||p.mp<p.maxMp)}
 function limitedRecovery(id,speaker,label,mode='field',after='身体を休めた。'){
  const max=RECOVERY_LIMITS[id]||1,remain=recoveryRemaining(id);if(remain<=0)return say(speaker,`ここで十分に休んだ。使える物資はもう残っていない。`);
@@ -39,4 +59,4 @@ function buyItem(item,cost,qty=1){if(state.gold<cost)return say('店員',`「${c
 function capitalShop(){return say('市場商人マロ','「前線へ行くなら、金は持ってるだけじゃ役に立たないよ」',[{label:'薬草 18G',fn:()=>buyItem('薬草',18)},{label:'魔力草 30G',fn:()=>buyItem('魔力草',30)},{label:'携帯食 22G',fn:()=>buyItem('携帯食',22)},{label:'やめる',fn:()=>say('市場商人マロ','「生きて戻ったらまた買いに来な」')}])}
 function imperialShop(){return say('運河市場の商人','「旅人なら現金が一番信用できる。王国の金貨でも重さが同じなら使えるよ」',[{label:'薬草 20G',fn:()=>buyItem('薬草',20)},{label:'魔力草 27G',fn:()=>buyItem('魔力草',27)},{label:'携帯食 18G',fn:()=>buyItem('携帯食',18)},{label:'やめる',fn:()=>say('運河市場の商人','「戦争が終わったら、もっと面白い物を並べたいね」')}])}
 function armoryService(){return say('王都の鍛冶師','「金を払うなら、出発前に実用品として手を入れてやれる」',[{label:`刃の調整 90G${getWorldSwitch('capitalWeaponTune')?'（済）':''}`,fn:()=>{if(getWorldSwitch('capitalWeaponTune'))return say('王都の鍛冶師','「刃はもう十分仕上がってる」');if(state.gold<90)return say('王都の鍛冶師','「90G必要だ」');state.gold-=90;setWorldSwitch('capitalWeaponTune',true);state.party.forEach(p=>p.atk+=1);renderHud();say('ナレーション','4人の武器を実戦向けに調整した。全員の攻撃+1。')}},{label:`防具の補修 75G${getWorldSwitch('capitalArmorTune')?'（済）':''}`,fn:()=>{if(getWorldSwitch('capitalArmorTune'))return say('王都の鍛冶師','「防具はもう直してある」');if(state.gold<75)return say('王都の鍛冶師','「75G必要だ」');state.gold-=75;setWorldSwitch('capitalArmorTune',true);state.party.forEach(p=>p.def+=1);renderHud();say('ナレーション','4人の防具を補修した。全員の防御+1。')}},{label:'今回は頼まない',fn:()=>say('王都の鍛冶師','「前線で壊してから泣きつくなよ」')}])}
-GC.Exploration={fieldItemPreview,useFieldItem,useMapTransition,openTreasure,setShortcutOpen,isShortcutOpen,validateMapDesign,auditBenchmarkMaps,RECOVERY_LIMITS,recoveryUsed,recoveryRemaining,spendRecovery,limitedRecovery,recoverParty,offerPaidRest,buyItem,capitalShop,imperialShop,armoryService};
+GC.Exploration={fieldSpellPreview,useFieldSpell,fieldItemPreview,useFieldItem,useMapTransition,openTreasure,setShortcutOpen,isShortcutOpen,validateMapDesign,auditBenchmarkMaps,RECOVERY_LIMITS,recoveryUsed,recoveryRemaining,spendRecovery,limitedRecovery,recoverParty,offerPaidRest,buyItem,capitalShop,imperialShop,armoryService};
