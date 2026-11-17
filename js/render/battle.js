@@ -38,7 +38,8 @@ function renderBattleStage(){const b=state.battle;if(!b)return;const e=GC.Commer
    img.dataset.checking='1';
    img.onload=()=>{const ok=img.naturalWidth>=192&&img.naturalHeight>=192;
     node.classList.toggle('asset-ready',ok);
-    if(!ok)node.classList.add('asset-missing');
+    node.classList.toggle('asset-missing',!ok);
+    if(ok)GC.Animation.normalizeImageElement(img);
    };
    img.onerror=()=>{node.classList.remove('asset-ready');node.classList.add('asset-missing')};
    if(img.complete&&img.naturalWidth>0)img.onload();
