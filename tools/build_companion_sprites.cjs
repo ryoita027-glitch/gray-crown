@@ -6,14 +6,14 @@ const path = require('node:path');
 const {PNG} = require('pngjs');
 const cast = require('../art/companions/performance.cjs');
 const root = path.resolve(__dirname, '..');
-const size = 48;
+const atlasCell = 48;
 const frameCounts = {idle:4, walk:6, turn:3, talk:4, surprise:4, approach:4, laugh:6, run:6};
 const check = process.argv.includes('--check');
 
-function tile(sheet, column) {
+function tile(sheet, column, row, size) {
   const pixels = new Uint32Array(size * size);
   for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
-    const offset = (y * sheet.width + column * size + x) * 4;
+    const offset = ((row * size + y) * sheet.width + column * size + x) * 4;
     pixels[y * size + x] = sheet.data.readUInt32LE(offset);
   }
   return pixels;
@@ -22,37 +22,38 @@ function rgba(hex) {
   const bytes = Buffer.from(hex + 'ff', 'hex');
   return bytes.readUInt32LE();
 }
-function paint(pixels, x, y, line, inks) {
+function paint(pixels, x, y, line, inks, cell) {
   for (let i = 0; i < line.length; i++) {
-    const index = y * size + x + i;
+    const index = y * cell + x + i;
     if (line[i] !== '.' && pixels[index]) pixels[index] = inks[line[i]];
   }
 }
-function expression(base, hero, direction, look, speaking) {
-  const pixels = base.slice();
+function expression(poses, hero, direction, look, speaking) {
+  if (hero.expressions) {
+    const row = hero.expressions[look] ?? hero.expressions[speaking] ?? hero.expressions.open;
+    return poses[row];
+  }
+  const pixels = poses[0].slice();
+  const brush=(x,y,line)=>paint(pixels,x,y,line,hero.ink,hero.cell);
   for (const [x,y] of hero.eyes[direction]) {
-    if (hero.eyeCels) {
-      const lines = hero.eyeCels[look] || hero.eyeCels.open;
-      lines.forEach((line, row) => paint(pixels, x, y+row, line, hero.ink));
-    } else if (look === 'blink' || look === 'smile') {
-      paint(pixels, x, y, 'ppp', hero.ink);
-      paint(pixels, x, y+1, look === 'smile' ? 'dmd' : 'ddd', hero.ink);
-      paint(pixels, x, y+2, 'csp', hero.ink);
+    if (look === 'blink' || look === 'smile') {
+      brush(x, y, 'ppp');
+      brush(x, y+1, look === 'smile' ? 'dmd' : 'ddd');
+      brush(x, y+2, 'csp');
     } else if (look === 'glance') {
-      paint(pixels, x, y+1, direction === 1 ? 'ihp' : 'phi', hero.ink);
+      brush(x, y+1, direction === 1 ? 'ihp' : 'phi');
     } else if (look === 'brow') {
-      paint(pixels, x, y-2, 'md.', hero.ink);
+      brush(x, y-2, 'md.');
     } else if (look === 'wide') {
-      paint(pixels, x, y+1, 'hdi', hero.ink);
-      paint(pixels, x, y+2, 'pi.', hero.ink);
+      brush(x, y+1, 'hdi');
+      brush(x, y+2, 'pi.');
     }
   }
   const mouth = hero.mouth[direction];
   if (mouth && speaking) {
     const [x,y] = mouth;
-    const lines = hero.mouthCels?.[speaking] ||
-      (speaking === 'laugh' ? ['mdm','.t.'] : ['md','.t']);
-    lines.forEach((line,row) => paint(pixels,x,y+row,line,hero.ink));
+    const lines = speaking === 'laugh' ? ['mdm','.t.'] : ['md','.t'];
+    lines.forEach((line,row) => brush(x,y+row,line));
   }
   return pixels;
 }
@@ -72,25 +73,34 @@ function displacement(pins, x, y) {
   }
   return [dx,dy];
 }
-function sample(pixels, x, y) {
+function sample(pixels, x, y, size) {
   x = Math.round(x); y = Math.round(y);
   return x >= 0 && x < size && y >= 0 && y < size ? pixels[y*size+x] : 0;
 }
-function warp(pixels, pins) {
-  if (!pins.length) return pixels;
+function warp(pixels, pins, size, head) {
+  if (!pins.length && !head) return pixels;
   const out = new Uint32Array(size*size);
   for (let y=0; y<size; y++) for (let x=0; x<size; x++) {
+    // Translate the finished head as one cutout. Only the scarf/shoulder
+    // transition blends into the body rig, never the eyes or fringe.
+    const neck = head ? Math.max(0,Math.min(1,(y-head.through)/head.blend)) : 1;
+    if (neck===0) {
+      out[y*size+x]=sample(pixels,x-head.dx,y-head.dy,size);
+      continue;
+    }
     let sx=x, sy=y;
     for (let pass=0; pass<3; pass++) {
       const [dx,dy] = displacement(pins,sx,sy);
-      sx=x-dx; sy=y-dy;
+      sx=x-dx*neck-(head?.dx||0)*(1-neck);
+      sy=y-dy*neck-(head?.dy||0)*(1-neck);
     }
-    out[y*size+x] = sample(pixels,sx,sy);
+    out[y*size+x] = sample(pixels,sx,sy,size);
   }
   return out;
 }
 function rearBoot(out, base, hero, direction, swing, crossed) {
   if (!swing) return;
+  const size=hero.cell;
   const sole = hero.sole[direction];
   // In profile the far leg is occluded in the idle cel. Reveal its shaded
   // boot behind the planted one, tapering displacement to zero at the knee.
@@ -108,14 +118,18 @@ function rearBoot(out, base, hero, direction, swing, crossed) {
     }
   }
 }
-function render(base, hero, direction, action, frame) {
+function render(poses, hero, direction, action, frame) {
   const side=direction===1 || direction===2, facing=direction===1?-1:1;
   const pins=[];
   let look='', speech='', farStep=0;
   const hand=hero.hands[direction], tip=hero.tips[direction], [hx,hy]=hero.arms[direction];
   const gesture=(amount)=>pin(pins,hand,7,8,hx*amount,hy*amount);
   const hair=(dx,dy)=>pin(pins,tip,8,10,dx,dy);
-  const head=(dx,dy)=>pin(pins,[24,15],19,16,dx,dy);
+  const rigid=hero.rigidHead && {...hero.rigidHead,dx:0,dy:0};
+  const head=(dx,dy)=>{
+    if (rigid) {rigid.dx=Math.round(dx);rigid.dy=Math.round(dy);}
+    else pin(pins,[24,15],19,16,dx,dy);
+  };
   if (action==='walk' || action==='run' || action==='approach') {
     const step=(action==='approach' ? [0,.72,-.65,0] : [0,1,.52,0,-1,-.52])[frame];
     const amp=action==='run'?1.35:1;
@@ -158,46 +172,50 @@ function render(base, hero, direction, action, frame) {
   } else if(action==='turn' && frame===1) {
     head(facing*1.5,0);hair(-facing*hero.hairDrag,0);look='glance';
   }
-  const out=warp(expression(base,hero,direction,look,speech),pins);
-  if(side || hero.gaze==='glance')rearBoot(out,base,hero,direction,farStep,!side);
+  const out=warp(expression(poses,hero,direction,look,speech),pins,hero.cell,rigid);
+  if(side || hero.gaze==='glance')rearBoot(out,poses[0],hero,direction,farStep,!side);
   return out;
 }
 
-function shoulderLook(rear, profile, pose) {
+function shoulderLook(rear, profile, pose, size) {
   // Replace only the head and upper hair. The lower curls, shoulders, hem
   // and planted rear-facing boots come from the rear cel in the same frame.
   const result=rear.slice();
   for(let x=0;x<size;x++){
     const end=pose.seam[Math.floor(x/4)];
-    for(let y=0;y<end;y++)result[y*size+x]=sample(profile,x-pose.dx,y);
+    for(let y=0;y<end;y++)result[y*size+x]=sample(profile,x-pose.dx,y,size);
   }
   return result;
 }
 
 function build(id, description) {
   const source=PNG.sync.read(fs.readFileSync(path.join(root,description.master)));
-  if(source.width!==192||source.height!==48)throw Error('Expected four native cels: '+description.master);
-  const hero={...description,ink:Object.fromEntries(Object.entries(description.ink).map(([k,v])=>[k,rgba(v)])),
+  const cell=description.cell||atlasCell, rows=description.expressions?Object.keys(description.expressions).length:1;
+  if(source.width!==4*cell||source.height!==rows*cell)throw Error('Unexpected master dimensions: '+description.master);
+  const hero={...description,cell,ink:Object.fromEntries(Object.entries(description.ink||{}).map(([k,v])=>[k,rgba(v)])),
     shadowEdge:rgba(id==='margaret'?'312549':'352732'), shadowFill:rgba(id==='margaret'?'53406e':'624145')};
-  const bases=Array.from({length:4},(_,r)=>{
-    const base=tile(source,r);
-    for(const [x,y,pattern] of hero.finish[r])paint(base,x,y,pattern,hero.ink);
+  const bases=Array.from({length:4},(_,r)=>Array.from({length:rows},(_,row)=>{
+    const base=tile(source,r,row,cell);
+    for(const [x,y,pattern] of hero.finish?.[r]||[])paint(base,x,y,pattern,hero.ink,cell);
     return base;
-  });
+  }));
+  // Expand the display-grid art into the historical 48 px sheet contract.
+  // Nearest 44 -> 48 -> 44 is exact, including single-pixel eye highlights.
+  const coord=Array.from({length:atlasCell},(_,n)=>Math.floor((n+.5)*cell/atlasCell));
   const folder=path.join(root,'assets/characters',id,'acting');
   if(!check)fs.mkdirSync(folder,{recursive:true});
   for(const [action,count] of Object.entries(frameCounts)) {
-    const sheet=new PNG({width:count*size,height:4*size});
+    const sheet=new PNG({width:count*atlasCell,height:4*atlasCell});
     for(let r=0;r<4;r++)for(let frame=0;frame<count;frame++) {
       let cel=render(bases[r],hero,r,action,frame);
       if(r===3 && hero.shoulderLook && (action==='talk'||action==='laugh')){
         const view=hero.shoulderLook.profile;
         const profile=render(bases[view],hero,view,action,frame);
-        cel=shoulderLook(cel,profile,hero.shoulderLook);
+        cel=shoulderLook(cel,profile,hero.shoulderLook,cell);
       }
-      for(let y=0;y<size;y++)for(let x=0;x<size;x++) {
-        const index=(r*size+y)*sheet.width+frame*size+x;
-        sheet.data.writeUInt32LE(cel[y*size+x],index*4);
+      for(let y=0;y<atlasCell;y++)for(let x=0;x<atlasCell;x++) {
+        const index=(r*atlasCell+y)*sheet.width+frame*atlasCell+x;
+        sheet.data.writeUInt32LE(cel[coord[y]*cell+coord[x]],index*4);
       }
     }
     const target=path.join(folder,`${id}_${action}.png`);

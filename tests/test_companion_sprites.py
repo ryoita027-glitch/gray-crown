@@ -20,6 +20,38 @@ def cel(image, facing, frame):
 
 
 class CompanionSheets(unittest.TestCase):
+    def test_sophies_authored_face_survives_every_displayed_frame(self):
+        with Image.open(ROOT / "art/companions/sophie.png") as image:
+            master = image.convert("RGBA")
+        self.assertEqual(master.size, (4 * 44, 5 * 44))
+        for action, count in FRAMES.items():
+            atlas = sheet("sophie", action)
+            for direction in range(4):
+                for frame in range(count):
+                    with self.subTest(action=action, direction=direction, frame=frame):
+                        row = 0
+                        if action == "idle" and frame == 2:
+                            row = 1
+                        elif action == "talk" and frame == 2:
+                            row = 2
+                        elif action == "laugh" and frame in (2, 3):
+                            row = 3
+                        elif action == "surprise" and frame in (1, 2):
+                            row = 4
+                        view = 1 if direction == 3 and action in ("talk", "laugh") else direction
+                        x, y = view * 44, row * 44
+                        plate = master.crop((x, y, x + 44, y + 44))
+                        actual = cel(atlas, direction, frame).resize((44, 44), Image.Resampling.NEAREST)
+                        if action == "idle" and frame == 0:
+                            self.assertEqual(actual.tobytes(), plate.tobytes())
+                        # A nod or over-the-shoulder turn can translate the face.
+                        # The fringe, lashes, iris and mouth must travel together.
+                        face = plate.crop((14, 10, 30, 20)).tobytes()
+                        self.assertTrue(any(
+                            actual.crop((14 + dx, 10 + dy, 30 + dx, 20 + dy)).tobytes() == face
+                            for dy in range(-2, 2) for dx in range(-3, 3)
+                        ))
+
     def test_shipped_cels_decode_without_cut_edges_or_alpha_fringes(self):
         for hero in ("sophie", "triton", "margaret"):
             for action, frames in FRAMES.items():
