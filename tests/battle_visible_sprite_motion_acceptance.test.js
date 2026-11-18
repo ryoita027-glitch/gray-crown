@@ -30,7 +30,7 @@ function getTrail(state){
 test('battle roster uses root-resolved <img> with 48px clipping and a visible fallback',()=>{
  const markup=read('js/render/battle.js'),css=read('css/game.css');
  assert.match(markup,/class="battle-frame-image"/);
- assert.match(markup,/src="assets\/characters\//);
+ assert.match(markup,/src="\$\{idle\}"/);
  assert.match(markup,/img.onerror=/);
  assert.match(markup,/img.onload=/);
  assert.match(markup,/class="battle-hero-fallback"/);

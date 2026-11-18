@@ -8,7 +8,7 @@ const {createHarness,SCRIPT_ORDER}=require('./harness');
 test('approved four protagonist PNG identity is never synthesized or rewritten by commercial acting',()=>{
  const h=createHarness(),defs=h.evaluate("GC.Data.Animations.definitions");
  for(const id of ['karen','triton','sophie','margaret']){
-  assert.equal(h.evaluate("GC.Animation.getAnimation('"+id+"','talk').src"),'assets/characters/'+id+'/'+id+'_talk.png');
+  assert.equal(h.evaluate("GC.Animation.getAnimation('"+id+"','talk').src"),'assets/characters/'+id+'/'+(id==='karen'?'':'acting/')+id+'_talk.png');
   assert.equal(h.evaluate("GC.Animation.getAnimation('"+id+"','surprise').frameW"),48);
  }
  assert.equal(h.evaluate("GC.CommercialActing.onLine('マーガレット','「……考えます」')"),'margaret');

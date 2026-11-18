@@ -186,9 +186,11 @@ with serve_game() as url:
         battle_heroes=page.locator("#partyBattleLine .battle-hero")
         require(battle_heroes.count()==4,"battle party count is not four")
         for i,hero in enumerate(HEROES):
-            bg=battle_heroes.nth(i).evaluate("e=>getComputedStyle(e).backgroundImage")
-            require("assets/characters/"+hero+"/"+hero+"_idle.png" in bg,
-                    "battle fallback sprite for "+hero)
+            sprite=battle_heroes.nth(i).locator(".battle-frame-image")
+            sprite.evaluate("(img)=>img.decode()")
+            mounted=sprite.evaluate("(img)=>[img.dataset.idle,img.naturalWidth,img.naturalHeight]")
+            sheet=page.evaluate("(id)=>GC.Animation.getAnimation(id,'idle').src",hero)
+            require(mounted==[sheet,192,192], "battle sprite for "+hero)
 
         # No instant-win developer shortcuts. Use actual rendered battle command buttons.
         for n in range(34):

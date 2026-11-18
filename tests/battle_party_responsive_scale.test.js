@@ -48,8 +48,8 @@ test('narrow phones keep heroes full size and arrange four in two separate rows'
 });
 test('no art or gameplay data is modified to control the battle size',()=>{
  const b=source('js/render/battle.js'),w=source('js/render/world.js');
- assert.match(b,/assets\/characters\/\$\{p.id\}\/\$\{p.id\}_idle.png/);
- assert.match(b,/assets\/characters\/\$\{p.id\}\/\$\{p.id\}_walk.png/);
+ assert.match(b,/getAnimation\(p\.id,'idle'\)\.src/);
+ assert.match(b,/getAnimation\(p\.id,'walk'\)\.src/);
  assert.match(w,/function drawHeroSpriteSheet/);
  assert.match(w,/OpeningWorldLife\.workplace/);
  assert.doesNotMatch(newest,/\.world|\.dialogue|\.village|\.npc-portrait|\.hero-runtime/);

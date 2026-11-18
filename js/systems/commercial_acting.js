@@ -39,12 +39,12 @@
   if(scene&&(!id||scene.id===id)){scene=null;cue=null;actors.clear();partyLayout.clear();GC.Render?.World?.draw?.();return true}
   return false
  }
- function onLine(speaker,text){
+ function onLine(speaker,text,gesture){
   if(scene&&scene.map!==state.map)closeMoment(scene.id);
   const id=speakerHero[speaker]||null,now=Date.now();
   // A single dialogue page determines a single gesture; no punctuation-driven
   // generic surprise on every exclamation mark.
-  cue=id?{id,map:state.map,created:now,text:String(text||''),
+  cue=id?{id,map:state.map,created:now,text:String(text||''),gesture,
    momentId:scene?.map===state.map?scene.id:null}:null;
   actors.clear();
   GC.Render?.World?.draw?.();
@@ -72,6 +72,8 @@
   const trait=traits[id];if(!trait)return null;
   // Contextual gesture, never a random facial/whole-body reaction.
   if(id===contextCue.id){
+   if(id==='sophie'&&contextCue.gesture==='smile'&&elapsed>=480&&elapsed<1230)
+    return{pose:'laugh',kind:'speaker',facing:null};
    const gentleJoke=contextCue.momentId==='ryune.memory.well'&&id==='karen'&&
     contextCue.text.includes('たぶん');
    if(gentleJoke&&elapsed>=trait.delay+340&&elapsed<trait.delay+860)

@@ -16,8 +16,10 @@ ANIMS=['idle','walk','turn','talk','surprise','approach','laugh','run']
 PIXEL={}
 for char in ['karen','triton']:
     for n in ANIMS:
-        p=ROOT/f'assets/characters/{char}/{char}_{n}.png'
-        PIXEL[f'assets/characters/{char}/{char}_{n}.png']='data:image/png;base64,'+base64.b64encode(p.read_bytes()).decode()
+        folder=ROOT/'assets'/'characters'/char
+        if char!='karen': folder=folder/'acting'
+        p=folder/f'{char}_{n}.png'
+        PIXEL[p.relative_to(ROOT).as_posix()]='data:image/png;base64,'+base64.b64encode(p.read_bytes()).decode()
 LEGACY='data:image/png;base64,'+base64.b64encode((ROOT/'assets/hero_party_walk.png').read_bytes()).decode()
 CSS=CSS.replace("url('../assets/hero_party_walk.png')",f"url('{LEGACY}')")
 SHIM="""(()=>{const d=new Map();const ls={getItem:k=>d.has(String(k))?d.get(String(k)):null,setItem:(k,v)=>d.set(String(k),String(v)),removeItem:k=>d.delete(String(k)),clear:()=>d.clear(),key:i=>Array.from(d.keys())[i]??null,get length(){return d.size}};Object.defineProperty(window,'localStorage',{value:ls,configurable:true});})();"""

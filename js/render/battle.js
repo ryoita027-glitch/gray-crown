@@ -26,7 +26,11 @@ function renderBattleStage(){const b=state.battle;if(!b)return;const e=GC.Commer
  const ids=activeRouteParty().map(p=>p.id).join(',');
  if(line.dataset.party!==ids||line.children.length!==activeRouteParty().length){
   line.dataset.party=ids;
-  line.innerHTML=activeRouteParty().map((p,i)=>`<div id="battleHero${i}" data-hero="${p.id}" class="battle-hero sprite" style="left:${i*56}px"><span class="battle-hero-fallback" aria-hidden="true"><i></i></span><span class="battle-sprite-frame" aria-hidden="true"><img class="battle-frame-image" src="assets/characters/${p.id}/${p.id}_idle.png" data-idle="assets/characters/${p.id}/${p.id}_idle.png" data-walk="assets/characters/${p.id}/${p.id}_walk.png" alt="" draggable="false"></span></div>`).join('')
+  line.innerHTML=activeRouteParty().map((p,i)=>{
+   const idle=GC.Animation.getAnimation(p.id,'idle').src;
+   const walk=GC.Animation.getAnimation(p.id,'walk').src;
+   return `<div id="battleHero${i}" data-hero="${p.id}" class="battle-hero sprite" style="left:${i*56}px"><span class="battle-hero-fallback" aria-hidden="true"><i></i></span><span class="battle-sprite-frame" aria-hidden="true"><img class="battle-frame-image" src="${idle}" data-idle="${idle}" data-walk="${walk}" alt="" draggable="false"></span></div>`
+  }).join('')
  }
  // Source paths belong to the HTML root, never to css/game.css. Keep a
  // deliberately visible fallback when any atlas is missing or invalid.

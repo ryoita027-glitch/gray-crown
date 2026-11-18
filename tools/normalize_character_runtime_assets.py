@@ -29,7 +29,9 @@ def hard_alpha(im):
 def main():
     out=Image.new("RGBA",(WORLD*3,WORLD*16),(0,0,0,0))
     for ci,char in enumerate(CHARS):
-        path=ROOT/f"assets/characters/{char}/{char}_walk.png"
+        folder=ROOT/"assets"/"characters"/char
+        source=folder if char=="karen" else folder/"acting"
+        path=source/f"{char}_walk.png"
         if not path.exists(): raise SystemExit(f"missing runtime walk sheet: {path}")
         walk=Image.open(path).convert("RGBA")
         if walk.size!=(CELL*6,CELL*4):

@@ -1,7 +1,10 @@
 'use strict';
 (function(){
  const D={down:0,left:1,right:2,up:3},A=[24,44];
- function def(character,name,frames,fps,loop){return{id:character+'.'+name,src:'assets/characters/'+character+'/'+character+'_'+name+'.png',frameW:48,frameH:48,frames:Array.from({length:frames},(_,i)=>i),fps,loop,directions:D,anchor:A,offset:[0,0],prototypeTemporary:true}}
+ function def(character,name,frames,fps,loop){
+  const folder=character==='karen'?'':'acting/';
+  return{id:character+'.'+name,src:'assets/characters/'+character+'/'+folder+character+'_'+name+'.png',frameW:48,frameH:48,frames:Array.from({length:frames},(_,i)=>i),fps,loop,directions:D,anchor:A,offset:[0,0],prototypeTemporary:true}
+ }
  const karen={
   idle:def('karen','idle',4,4,true),walk:def('karen','walk',6,8,true),turn:def('karen','turn',3,12,false),talk:def('karen','talk',4,7,true),
   surprise:def('karen','surprise',4,10,false),approach:def('karen','approach',4,10,false),laugh:def('karen','laugh',6,10,false),run:def('karen','run',6,11,true)
@@ -27,7 +30,7 @@
  const tritonVisualRules=Object.freeze({
   prototypeTemporary:true,character:'triton',sourceCell:[48,48],logicalTile:32,anchor:[24,44],dominantHand:'right',stage:'A',
   identity:'GROUND ANCHOR',designDirection:'triton-chibi-direction-lock-v1',reference:'docs/pixel/reference/triton_chibi_direction_lock_v1.png',
-  face:'readable narrow eyes + straight stable brows + restrained friendly idle mouth; distinct from Karen face template',
+  nativeMaster:'art/companions/triton.png',face:'readable narrow eyes + straight stable brows + restrained friendly idle mouth; distinct from Karen face template',
   hair:'heavy dark unbound shoulder-length mass; face remains readable; tip lag only in motion',
   colorMass:'off-white/gray upper + broad faded-blue waist/side horizontal block + sturdy leather',
   posture:'broad shoulders + planted feet + low center of gravity + horizontal stability',
@@ -46,8 +49,8 @@
  const sophieVisualRules=Object.freeze({
   prototypeTemporary:true,character:'sophie',sourceCell:[48,48],logicalTile:32,anchor:[24,44],dominantHand:'right',stage:'A',
   identity:'STEADY HANDS',designDirection:'sophie-chibi-direction-appeal-v3',reference:'docs/pixel/reference/sophie_chibi_direction_appeal_v3_48.png',
-  face:'crisper calm green eyes + small warm smile; gentle readable expression distinct from Karen/Triton/Margaret',
-  hair:'honey/light golden-brown layered mass + practical gathered/braided structure; restrained lower-tip lag',
+  nativeMaster:'art/companions/sophie.png',face:'open jade eyes, warm cheek, small lifted smile; nod and hand at collar when answering',
+  hair:'long honey-copper waves frame both cheeks; sage bow and ivory buds above the ear',
   colorMass:'warm off-white/cream dominant + brown leather + muted green concentrated near hands and treatment storage',
   posture:'smallest spatial footprint + soft adult body + calm narrow stance + both hands readable',
   acting:'hands carry Talk/Approach/Surprise; smaller whole-body amplitude than Karen; lighter than Triton',

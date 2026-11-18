@@ -30,7 +30,7 @@ test('Ryune cast acting is distinct without rewriting any sprite metadata',()=>{
  for(const ch of ['karen','triton','sophie','margaret']){
   assert.equal(h.GC.Animation.getAnimation(ch,'walk').frameW,48);
   assert.equal(h.GC.Animation.getAnimation(ch,'walk').frameH,48);
-  assert.equal(h.GC.Animation.getAnimation(ch,'walk').src,'assets/characters/'+ch+'/'+ch+'_walk.png');
+  assert.equal(h.GC.Animation.getAnimation(ch,'walk').src,'assets/characters/'+ch+'/'+(ch==='karen'?'':'acting/')+ch+'_walk.png');
  }
  assert.equal(h.GC.RyuneActing.getPortraitMode(),'portraitOn');
  assert.equal(h.GC.RyuneActing.setPortraitMode('portraitOff'),true);

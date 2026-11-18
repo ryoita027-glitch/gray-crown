@@ -38,7 +38,7 @@ test('battle heroes use explicit HTML images and show fallback when loading fail
  assert.match(render,/class="battle-hero-fallback"/);
  assert.match(render,/img.onerror=/);
  assert.match(render,/img.naturalWidth>=192/);
- assert.match(render,/data-idle="assets\/characters/);
+ assert.match(render,/data-idle="\$\{idle\}"/);
  assert.match(css,/#partyBattleLine \.battle-hero \.battle-frame-image/);
  assert.match(css,/width:192px!important;height:192px!important/);
  assert.match(css,/overflow:hidden;z-index:2/);

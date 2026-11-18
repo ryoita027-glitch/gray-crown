@@ -2,7 +2,9 @@
   "name": "gray-crown-v23-frontier-second-slice",
   "private": true,
   "version": "23.0.0",
+  "devDependencies": {"pngjs": "7.0.0"},
   "scripts": {
+    "art:companions": "node tools/build_companion_sprites.cjs",
     "test": "node --test tests/*.test.js",
     "verify-authority": "python tools/verify_project_authority.py",
     "verify-hygiene": "python tools/verify_repo_hygiene.py",

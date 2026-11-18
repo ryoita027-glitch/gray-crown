@@ -5,24 +5,42 @@ const HERO_RUNTIME={frameW:48,frameH:48,display:44,anchor:[24,44],directions:{do
 if(typeof Image!=='undefined'){
  const fallback=new Image();HERO_SPRITES.image=fallback;fallback.onload=()=>{HERO_SPRITES.ready=true};fallback.onerror=()=>{HERO_SPRITES.ready=false};fallback.src='assets/hero_party_walk.png';
  for(const id of Object.keys(HERO_SPRITES.characters)){
-  const src='assets/characters/'+id+'/'+id;
-  HERO_RUNTIME.images[id]=GC.Animation.ensureImage(src+'_walk.png');
-  GC.Animation.ensureImage(src+'_idle.png');
+  HERO_RUNTIME.images[id]=GC.Animation.ensureImage(GC.Animation.getAnimation(id,'walk').src);
+  GC.Animation.ensureImage(GC.Animation.getAnimation(id,'idle').src);
  }
 }
-function heroWalkFrame(motion){if(!motion)return 0;const cycle=[0,1,2,3,4,5,4,3,2,1];return cycle[Math.floor(motion)%cycle.length]}
+function heroWalkFrame(motion,heroId){
+ if(!motion)return 0;
+ if(heroId!=='karen')return Math.floor(motion)%6;
+ const cycle=[0,1,2,3,4,5,4,3,2,1];return cycle[Math.floor(motion)%cycle.length]
+}
+// Durations of neutral, gesture, blink and recovery. Separate phases keep
+// friends standing side by side from blinking on the same beat.
+const COMPANION_IDLE={
+ triton:{phase:620,ends:[3620,4120,4260,4500]},
+ sophie:{phase:1830,ends:[4070,4540,4680,5010]},
+ margaret:{phase:370,ends:[4480,5210,5360,5580]}
+};
+function companionIdleBeat(id,now){
+ const {phase,ends}=COMPANION_IDLE[id];
+ const elapsed=(Math.max(0,now)+phase)%ends[3],frame=ends.findIndex(end=>elapsed<end);
+ return {frame,delay:ends[frame]-elapsed}
+}
+function fieldMotionReduced(){
+ return typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches
+}
 function drawHeroMarker(cx,topY){ctx.fillStyle='#f0d178';ctx.beginPath();ctx.moveTo(cx,topY-3);ctx.lineTo(cx+5,topY-9);ctx.lineTo(cx,topY-14);ctx.lineTo(cx-5,topY-9);ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(66,46,20,.86)';ctx.lineWidth=1;ctx.stroke()}
 function drawHeroSpriteSheet(x,y,heroId,leader,facing,motion,now=Date.now()){
- let frame=heroWalkFrame(motion);const row=HERO_RUNTIME.directions[facing]??0,px=Math.round(x*TILE),py=Math.round(y*TILE),footX=px+16,footY=py+30;
+ let frame=heroWalkFrame(motion,heroId);const row=HERO_RUNTIME.directions[facing]??0,px=Math.round(x*TILE),py=Math.round(y*TILE),footX=px+16,footY=py+30;
  let rec=HERO_RUNTIME.images[heroId];
  if(!motion){
   const idle=GC.Animation.getAnimation(heroId,'idle');
   const idleImage=idle&&GC.Animation.ensureImage(idle.src);
   if(idleImage?.ready){
    rec=idleImage;
-   const reduced=typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;
-   const phase=(HERO_SPRITES.characters[heroId]||0)*170;
-   frame=reduced?0:Math.floor((now+phase)*idle.fps/1000)%idle.frames.length;
+   if(fieldMotionReduced())frame=0;
+   else if(COMPANION_IDLE[heroId])frame=companionIdleBeat(heroId,now).frame;
+   else frame=Math.floor(now*idle.fps/1000)%idle.frames.length;
   }
  }
  if(rec?.ready&&rec.image){
@@ -715,7 +733,12 @@ function drawScene(){
  const at=Date.now();
  const workerWait=ambientAllowed?OpeningWorldLife.nextWorkFrameDelay(state.map,state.x,state.y,m.npcs,at):Infinity;
  const streamWait=ambientAllowed?RyuneOutskirts.nextWaterFrameDelay(state.map,state.x,state.y,at):Infinity;
- const nextAmbient=Math.min(workerWait,streamWait);
+ let nextAmbient=Math.min(workerWait,streamWait);
+ if(ambientAllowed&&!moving&&GC.App?.ALPHA_SESSION.started&&!document.hidden&&!state.battle&&!fieldMotionReduced()){
+  for(const member of activeRouteParty())if(COMPANION_IDLE[member.id]){
+   nextAmbient=Math.min(nextAmbient,companionIdleBeat(member.id,at).delay)
+  }
+ }
  if(moving||GC.CommercialActing?.active?.()){
   clearTimeout(VISUAL.ambientTimer);VISUAL.ambientTimer=null;
   cancelAnimationFrame(VISUAL.raf);VISUAL.raf=requestAnimationFrame(drawScene);

@@ -50,6 +50,14 @@ click('#modalClose');
 w.GC.Battle.startBattle('boss');s.locked=false;s.battle.actor=2;
 s.party[0].hp=1;s.party[1].hp=20;s.party[2].mp=s.party[2].maxMp;
 w.GC.Render.Battle.renderBattle();
+for(const hero of s.party){
+ const img=d.querySelector('#partyBattleLine [data-hero="'+hero.id+'"] .battle-frame-image');
+ const idle=w.GC.Animation.getAnimation(hero.id,'idle').src;
+ assert.equal(img.dataset.idle,idle);
+ assert.equal(img.dataset.walk,w.GC.Animation.getAnimation(hero.id,'walk').src);
+ assert.ok([idle,w.__GC_INLINE_ASSETS__?.[idle]].includes(img.getAttribute('src')));
+ if(w.__GC_INLINE_ASSETS__)assert.ok(w.__GC_INLINE_ASSETS__[idle]?.startsWith('data:image/png;base64,'));
+}
 const beforeMp=s.party[2].mp;
 click('[data-battle="heal"]');assert.equal(s.party[2].mp,beforeMp);
 assert.equal(d.getElementById('battleSupportTargets').classList.contains('hidden'),false);

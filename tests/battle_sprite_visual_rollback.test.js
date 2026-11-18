@@ -39,10 +39,11 @@ test('walk uses proportional six-frame row, and no artificial head stretch',()=>
   assert.ok(animation.includes('translateX(-'+x+'px)')||x===0&&animation.includes('translateX(0)'));
  assert.equal(264/6,44);
 });
-test('combat retains exact original protagonist PNG sources, load checks and lost-asset fallback',()=>{
+test('combat reads the registered protagonist PNG sources, load checks and lost-asset fallback',()=>{
+ const h=require('./harness').createHarness();
  for(const hero of ['karen','triton','sophie','margaret']){
-  const idle='assets/characters/'+hero+'/'+hero+'_idle.png';
-  const walk='assets/characters/'+hero+'/'+hero+'_walk.png';
+  const idle=h.GC.Animation.getAnimation(hero,'idle').src;
+  const walk=h.GC.Animation.getAnimation(hero,'walk').src;
   assert.ok(fs.existsSync(path.join(root,idle)));
   assert.ok(fs.existsSync(path.join(root,walk)));
   for(const [rel,w]of [[idle,192],[walk,288]]){
@@ -51,8 +52,8 @@ test('combat retains exact original protagonist PNG sources, load checks and los
    assert.equal(bytes.readUInt32BE(20),192);
   }
  }
- assert.match(combat,/src="assets\/characters\/\$\{p.id\}\/\$\{p.id\}_idle.png"/);
- assert.match(combat,/data-walk="assets\/characters\/\$\{p.id\}\/\$\{p.id\}_walk.png"/);
+ assert.match(combat,/src="\$\{idle\}" data-idle="\$\{idle\}"/);
+ assert.match(combat,/data-walk="\$\{walk\}"/);
  assert.match(combat,/img\.onerror=/);
  assert.match(combat,/img\.naturalWidth>=192/);
  assert.match(restored,/\.battle-hero\.asset-ready \.battle-hero-fallback/);

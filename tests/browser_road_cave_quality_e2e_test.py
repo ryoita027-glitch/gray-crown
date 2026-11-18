@@ -66,13 +66,13 @@ def fight(page,battle_id=None,allow_loss=False):
   page.wait_for_function("""()=>[...document.querySelectorAll("#partyBattleLine .battle-hero .battle-frame-image")].length===4 &&
     [...document.querySelectorAll("#partyBattleLine .battle-hero .battle-frame-image")].every(x=>x.complete)""",timeout=8000)
   sources=page.locator("#partyBattleLine .battle-hero").evaluate_all("""els=>els.map(e=>{
-   const img=e.querySelector(".battle-frame-image");return{id:e.dataset.hero,src:img?.getAttribute("src")||"",
+   const img=e.querySelector(".battle-frame-image");return{id:e.dataset.hero,src:img?.dataset.idle||"",
    walk:img?.dataset.walk||"",width:img?.naturalWidth||0,height:img?.naturalHeight||0}
   })""")
-  check("battle heroes preserve locked character assets",
+  check("battle heroes use decoded, registered character sheets",
         all(x["id"] in ("karen","triton","sophie","margaret") and
-            x["src"]==f'assets/characters/{x["id"]}/{x["id"]}_idle.png' and
-            x["walk"]==f'assets/characters/{x["id"]}/{x["id"]}_walk.png' and
+            x["src"]==f'assets/characters/{x["id"]}/'+("" if x["id"]=="karen" else "acting/")+x["id"]+"_idle.png" and
+            x["walk"]==f'assets/characters/{x["id"]}/'+("" if x["id"]=="karen" else "acting/")+x["id"]+"_walk.png" and
             x["width"]==192 and x["height"]==192 for x in sources),sources)
  if battle_id in ("wolves","boss"):shot(page,"battle_"+battle_id)
  check("combat save blocked",page.evaluate("GC.Save.save(true)===false"))

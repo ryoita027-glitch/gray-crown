@@ -522,9 +522,9 @@ const EVENT_DEFS=Object.freeze([
   // Optional one-time conversation: never used as a departure or story requirement.
   {id:'ryune.memory.toyChest',priority:25,trigger:{type:'object',map:'orphanage',target:'toyChest'},
    when:[{worldSwitchTruthy:'ryune.baseViewed.toyChest'},{eventIncomplete:'ryune.memory.toyChest'}],
-   lines:[{speaker:'ソフィ',text:'「この人形、塗料が少し剥げていますね」'},
-    {speaker:'カレン',text:'「塗り直しておこうか？」'},
-    {speaker:'ソフィ',text:'「子どもたちに聞いてからにしましょう。気に入っている色かもしれませんから」'}],
+   lines:[{speaker:'ソフィ',text:'「この人形、塗料が少し剥げていますね」',options:{portraitMode:'disabled'}},
+    {speaker:'カレン',text:'「塗り直しておこうか？」',options:{portraitMode:'disabled'}},
+    {speaker:'ソフィ',text:'「子どもたちに聞いてからにしましょう。気に入っている色かもしれませんから」',options:{portraitMode:'disabled',gesture:'smile'}}],
    effects:[{type:'completeEvent',id:'ryune.memory.toyChest'}]},
   // Optional one-time conversation: never used as a departure or story requirement.
   {id:'ryune.memory.mayorBooks',priority:25,trigger:{type:'object',map:'mayorhouse',target:'mayorBooks'},

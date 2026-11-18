@@ -25,7 +25,7 @@ test('all four heroes have distinct readable tempos, with finite talk and no pun
  assert.equal(acting.cuePlan('margaret',1090,m).pose,'idle');
  for(const id of ids){
   assert.equal(h.GC.Animation.getAnimation(id,'talk').src,
-    'assets/characters/'+id+'/'+id+'_talk.png');
+    'assets/characters/'+id+'/'+(id==='karen'?'':'acting/')+id+'_talk.png');
   assert.equal(h.GC.Animation.getAnimation(id,'turn').frameW,48);
  }
 });
@@ -94,6 +94,23 @@ test('live optional event dispatcher begins a moment only after original prop de
  a.onClose();
  assert.equal(a.inspect().moment,'ryune.memory.well');
  assert.equal(a.closeMoment('ryune.memory.well'),true);
+});
+
+test('the doll conversation gives Sophie one smile on her reply and releases the cue on close',()=>{
+ const h=createHarness(),acting=h.GC.CommercialActing;
+ h.GC.App.hideTitle();
+ h.evaluate("state.map='orphanage';setWorldSwitch('ryune.baseViewed.toyChest',true)");
+ assert.ok(h.GC.Events.runTriggeredEvent('object','toyChest',{map:'orphanage'}));
+ assert.equal(acting.cuePlan('sophie',700).pose,'talk','she is inspecting the doll');
+ // Drive the same primary action as the confirm key without waiting for text animation.
+ for(let i=0;i<2;i++){h.GC.Dialogue.finishDialogueTyping();h.GC.App.primaryAction()}
+ assert.equal(acting.inspect().hero,'sophie');
+ assert.ok(h.getElement('dialogueBox').classList.contains('no-portrait'));
+ assert.equal(acting.cuePlan('sophie',280).pose,'talk');
+ assert.equal(acting.cuePlan('sophie',700).pose,'laugh');
+ assert.equal(acting.cuePlan('sophie',1350).pose,'idle');
+ h.GC.Dialogue.finishDialogueTyping();h.GC.App.primaryAction();
+ assert.equal(acting.inspect().active,false);
 });
 
 test('no sprite file or canonical save-stage edits are introduced by this micro-acting integration',()=>{

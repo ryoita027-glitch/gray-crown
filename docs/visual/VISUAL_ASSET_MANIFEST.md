@@ -49,7 +49,10 @@
 | `js/render/battle.js` | `a6e06d35e81a8704ee686554ae0caeaa0bd09ade` | PROVISIONAL aesthetics | CSS enemy figures + 4 live protagonist idle sheets |
 | `js/data/npcs.js` | `2d3d7e3397bbba6f1f5ca251653cc2792ee64715` | PROVISIONAL | NPC identity/palette data; design harmonization pending |
 
-**Runtime source choice:** individual `assets/characters/<id>/<id>_walk.png` and `<id>_idle.png` take priority in field and battle; 32px combined sheet is fallback only. Eight categories are already generated, not future blank tasks. Active v3 Sophie and v7 Margaret are **not** replaced by historical v2/v5 source-lock PNGs. Their earlier lock documents are historical constraints, retained in Git.
+**Current game sheets** (2026-11-18). The field, dialogue, cinematics and battle read `GC.Data.Animations.definitions`. Karen uses the phase-1 paths above. Triton, Sophie and Margaret use `assets/characters/<id>/acting/<id>_<action>.png`. The 32px fallback is packed from those walk sheets. The hashes in the table identify the phase-1 snapshot.
+
+The four-direction native drawings for Triton and Sophie are in `art/companions/`. Sophie's honey-copper waves, sage bow and open jade eyes frame her face; her hand rests at her collar. Margaret uses the original v7 drawing for all four resting views. Facial cels and limb positions are in `art/companions/performance.cjs`. After installing the development dependency, run `npm run art:companions`, then `python tools/normalize_character_runtime_assets.py`. Use `npm run art:companions -- --check` to compare all shipped frames to their sources.
+
 
 **Edit protection:** changes to any candidate PNG above require a new isolated asset PR, exact source-to-runtime hash verification, eight-category checks and actual game-canvas comparisons at Medium44. Do not modify the locked originals to remove fringe: alpha normalization happens at runtime where applicable. Do not use AI-redrawn comparison boards.
 

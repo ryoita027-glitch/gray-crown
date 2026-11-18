@@ -75,7 +75,7 @@ test('real world actor draw path does not layer an extra sprite prop over an aut
 });
 test('character presentation changes never edit the 4 hero PNG references or the save schema',()=>{
  const world=read('js/render/world.js'),npc=read('js/data/npcs.js');
- assert.match(world,/assets\/characters\/['"]?\+id/);
+ assert.match(world,/GC\.Animation\.getAnimation\(id,'walk'\)\.src/);
  assert.match(npc,/hero-portrait-svg/);
  const state=read('js/core/state.js');
  assert.match(state,/schema:23/);
