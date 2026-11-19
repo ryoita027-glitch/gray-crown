@@ -8,6 +8,8 @@ const PARTY_STYLE={
 const NPC_STYLE={
  capitalVendor:{body:'#85623f',accent:'#d5bd78',hair:'#5d4230',hat:true},rationMother:{body:'#7b5a59',accent:'#d2b985',hair:'#59463f'},capitalInnHost:{body:'#8f6254',accent:'#dec394',hair:'#72503f'},offDutySoldier:{body:'#7f4148',accent:'#d8c69a',hair:'#4a3d36'},capitalSmith:{body:'#5e5149',accent:'#b4774f',hair:'#42352f'},armoryApprentice:{body:'#726457',accent:'#c8995d',hair:'#6d4d38'},
  imperialInnHost:{body:'#506c78',accent:'#b9a579',hair:'#4f4842'},canalBoatman:{body:'#536977',accent:'#9fb4bd',hair:'#5a4a3e',hat:true},bookSeller:{body:'#5b6370',accent:'#b9a570',hair:'#92877a'},studentReader:{body:'#607381',accent:'#b7a981',hair:'#4b3e39'},
+ fieldWorker:{body:'#73875a',accent:'#d6bd88',hair:'#796349',hat:true},
+ brookKeeper:{body:'#718a7d',accent:'#c1c6aa',hair:'#606354'},
  father:{body:'#765a45',accent:'#b79a72',hair:'#3d312a',weapon:'sword'},orphan:{body:'#a9796a',accent:'#d8c5a6',hair:'#704d37',small:true},
  mayor:{body:'#68685f',accent:'#bd9b5e',hair:'#a9a49b'},messenger:{body:'#8d3d46',accent:'#f0dfb6',hair:'#40382f',cape:true},merchant:{body:'#6d5d48',accent:'#9b7b4d',hair:'#4e3e31',hat:true},
  mika:{body:'#cc735c',accent:'#f0cf84',hair:'#5f3a28',small:true},ren:{body:'#54789b',accent:'#d9c887',hair:'#4b382d',small:true},lulu:{body:'#8d6ca0',accent:'#efe0b2',hair:'#8a603d',small:true},
@@ -108,7 +110,41 @@ function heroPortraitMarkup(speaker){
  if(speaker==='マーガレット')return commonStart('#3f3150','#202735')+`<path d="M34 55 Q32 27 50 17 Q74 6 87 31 Q93 48 85 83 L78 72 Q84 49 75 30 Q55 19 42 38 L40 81 Q31 70 34 55Z" fill="#e1e4e9"/><path d="M38 31 Q52 13 78 23 Q68 26 61 34 Q48 31 40 48Z" fill="#f3f4f6"/><path d="M79 34 Q96 51 89 91 Q85 105 75 111 L77 74 Q86 53 79 34Z" fill="#c9ced6"/>${face}<path d="M48 52 Q54 48 59 51" stroke="#b8bec8" stroke-width="2.2" fill="none"/><path d="M62 51 Q68 48 74 52" stroke="#b8bec8" stroke-width="2.2" fill="none"/><path d="M50 73 Q60 76 70 72" stroke="#94605e" stroke-width="1.5" fill="none"/><path d="M39 89 Q50 98 60 98 Q71 98 81 88 L96 112 L88 140 H31 L23 112Z" fill="#685083"/><path d="M45 92 L60 106 L76 92 L80 113 L60 126 L40 113Z" fill="#b69acb"/><path d="M53 106 L60 114 L67 106 L65 131 L55 131Z" fill="#332b3f"/><circle cx="60" cy="112" r="4" fill="#ccb86d"/><path d="M24 113 L12 132 L24 140 H42 L40 112Z" fill="#4e3a66"/><path d="M96 113 L108 132 L96 140 H78 L80 112Z" fill="#4e3a66"/>`+'</svg>';
  return '';
 }
+// Resident dialogue portraits use the SAME individually drawn 32px identity
+// as the map. The legacy generic 64px face repeated one template for nearly
+// everyone and made players think characters had not changed at all.
+// These are pixel-native 2x character portraits, not invented close-up faces.
+const FEATURED_RESIDENT_SPEAKERS=Object.freeze({
+ 'パン屋のエダ':0,'農夫のボル':1,'老婆ナナ':2,'村長':3,
+ '王国使者':4,'レン':5,'花売りの少女':6,'新兵':7,'総司令グランツ':8
+});
+function featuredResidentPortraitMarkup(speaker){
+ const i=FEATURED_RESIDENT_SPEAKERS[speaker];
+ if(i===undefined)return null;
+ const id='residentPortraitCrop'+i;
+ // The atlas has 9 columns x 4 directions, each 48x48.
+ // The new in-dialogue head-and-shoulders view magnifies the SAME 48px
+ // game sprite instead of showing a tiny full-body or fabricated plastic face.
+ // Do not stretch the torso independently or overlay a second generic face.
+ // The dark uniforms disappeared against the prior identical charcoal cards.
+ // Each subdued district-colored backing supplies silhouette contrast, not
+ // a second generic face or a status badge.
+ const backdrops=['#445246','#4d493d','#554957','#4a5b69','#51434b',
+  '#50634f','#4a6270','#546474','#77756c'];
+ const backdrop=backdrops[i];
+ const legacy=typeof window!=='undefined'&&/(?:^|[?&])npcArt=legacy(?:&|$)/.test(window.location.search||'');
+ const path=legacy?'assets/npc/featured_residents_v1.png':'assets/npc/featured_residents_charm_v5.png';
+ const source=(typeof window!=='undefined'&&window.__GC_INLINE_ASSETS__?.[path])||path;
+ // 48px per NPC. At 2x magnification, remove 16px either side to place the
+ // individual eyes, hair and cheeks in the UI's 64px aperture. The old atlas
+ // intentionally retains its older full-body view for honest side-by-side AB.
+ const x=legacy?-(i*64):-(i*96+16),y=legacy?0:-3;
+ const width=legacy?576:864,height=legacy?256:384;
+ return `<svg class="portrait-svg resident-portrait" viewBox="0 0 64 72" aria-hidden="true" shape-rendering="crispEdges"><defs><clipPath id="${id}"><rect x="0" y="0" width="64" height="64"/></clipPath></defs><rect width="64" height="72" fill="${backdrop}"/><rect y="64" width="64" height="8" fill="#252c2b"/><g clip-path="url(#${id})"><image href="${source}" x="${x}" y="${y}" width="${width}" height="${height}" style="image-rendering:pixelated"/></g></svg>`;
+}
 function portraitMarkup(speaker){
+ const featured=featuredResidentPortraitMarkup(speaker);
+ if(featured)return featured;
  if(['カレン','トリトン','ソフィ','マーガレット'].includes(speaker))return heroPortraitMarkup(speaker);
  const p=PORTRAITS[speaker];
  if(!p){

@@ -1,3 +1,4 @@
+from browser_launch import launch_chromium
 from pathlib import Path
 import re
 import sys
@@ -31,7 +32,7 @@ local_storage_shim = r"""
 """
 
 with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True, executable_path='/usr/bin/chromium', args=['--no-sandbox'])
+    browser = launch_chromium(p)
     page = browser.new_page(viewport={'width': 1365, 'height': 900})
     page_errors = []
     page.on('pageerror', lambda err: page_errors.append(str(err)))

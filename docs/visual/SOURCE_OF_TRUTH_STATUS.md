@@ -1,77 +1,26 @@
-# Gray Crown Visual Source of Truth Status
+# Gray Crown — Visual Source of Truth (Phase 1)
+**Approved scope:** Pixel-native as a **development baseline** (2026-10-10). **Not** production `main` release and **not** final artistic GO.
 
-**Repository:** ryoita027-glitch/gray-crown  
-**Canonical production branch:** main  
-**Game baseline:** v23  
-**Character Visual Patch:** rev 23.1  
-**Four Hero Visual Identity:** LOCKED  
-**Art Bible v2:** PROVISIONAL  
-**Pixel-native technical prototype:** GO FOR CONTINUED PROTOTYPING  
-**Pixel-native formal adoption:** NOT DECIDED  
-**Current visual direction:** CUTE CHIBI PIXEL RPG — KAREN FRONT IDLE GATE
+| Area | Status | Live basis |
+|---|---|---|
+| Karen — VILLAGE RUNNER | LOCKED | approved red/russet lower-tie silhouette; permanent regression source |
+| Triton — GROUND ANCHOR | LOCKED | dark shoulder-hair, planted distinct wide silhouette |
+| Sophie — STEADY HANDS | LOCKED | active v3 appeal reference and 8 runtime sheets; v2 lock historical |
+| Margaret — MEASURED LINE | LOCKED | active v7 appeal source, silver-white hair, 8 runtime sheets; v5 lock historical |
+| Medium44 / 48×48 / 32px logical tile | LOCKED | exact integrated technical convention |
+| Portrait ON/OFF final policy | UNDECIDED | preserve both, test A/B; default unchanged |
+| Ryune village / four interiors | PROVISIONAL | candidate pixel-native deterministic environment from #38 |
+| NPC design/other world assets | PROVISIONAL | density/silhouette polish pending |
+| Battle enemy art, hero spatial composition, mobile HUD | PROVISIONAL | rendered/tech-gated but artistic approval not finished |
+| Adult-like early Karen, Margaret v4 face, 42px alternate runtime | SUPERSEDED | old evidence only |
 
-## Primary current-state document
+Live sprite assets, runtime hashes, reference hierarchy, active vs fallback assets: `docs/visual/VISUAL_ASSET_MANIFEST.md`.
+Contract: `docs/visual/PIXEL_NATIVE_PRODUCTION_STANDARD_v1.md`. Next steps: `docs/audit/VERTICAL_SLICE_PRODUCTION_PLAN_v1.md`.
 
-For the complete current project status and branch policy, read:
+**Historical completed gate:** Triton Second Character Validation PASS. This is a retained proof-of-completion marker for legacy CI, **not** a pending or restarted work item.
 
-`docs/audit/CURRENT_PROJECT_STATE.md`
+**Do not reinterpret completed sprite work as undone.** FOUR PROTAGONIST RUNTIME HARMONIZATION and Four Protagonist Environment Integration are historical gates, not new tasks. Sophie Chibi Direction Lock v2 and Margaret Chibi Direction Lock v5 are historical lock sources (not active appeal v3/v7 runtime references).
 
-This file is the short visual-status pointer. Older audit / phase documents are historical context and must not override the current-state document.
+**AI-generated comparison boards remain prohibited** as validation evidence. Only exact PNGs from repository and real Chromium Canvas screenshots count. Character-specific portrait hair colors are not a final decision about eyes, weapons, clothing, religion or culture.
 
-## Production truth
-
-`main` remains v23 production truth.
-
-The current `assets/hero_party_walk.png` remains:
-
-- ACTIVE runtime
-- PROVISIONAL design
-
-Do not derive final Character Design from the current runtime sprite.
-
-## Locked protagonist Visual Identities
-
-- Karen — VILLAGE RUNNER
-- Triton — GROUND ANCHOR
-- Sophie — STEADY HANDS
-- Margaret — MEASURED LINE
-
-Margaret hair remains white / silver-white.
-
-## Karen current visual decision
-
-Earlier realistic / adult-proportion 48px Karen experiments are not the final direction.
-
-The next approved exploration is a cute Chibi Pixel RPG direction with:
-
-- larger head
-- compact body
-- readable expressive face
-- strong red-hair silhouette
-- low partial tie
-- warm off-white + muted-red Stage A color mass
-
-Karen remains a 23-year-old adult woman. Adult identity should come from design, clothing, posture and behavior rather than realistic proportions.
-
-## Next action
-
-Create a new Chibi Karen visual branch from the proven technical prototype.
-
-First gate:
-
-> Front-facing Idle only.
-
-Do not expand to additional directions, all eight animations, Scale Integration, Triton, Portrait removal, or main merge until that front Idle is visually approved.
-
-## Still unresolved / do not invent
-
-- exact eye colors for all four heroes
-- surnames
-- final weapon designs / names
-- final Stage B hero costumes
-- Kingdom / Empire emblems
-- hero certification insignia
-- religious emblem / official religious color
-- Shion crown
-- Kingdom / Empire rank insignia
-- new keepsakes, scars, or backstory additions
+Authority: production `main` still v23, Save schema 23, Story 00–19. Visual development candidate: `integration/phase1-pixel-native-baseline-20261010`; baseline merge: `2938145f0bc4302a392827236a3005b5925a1408`. Pixel-native approval **does not** imply authority to merge to main.

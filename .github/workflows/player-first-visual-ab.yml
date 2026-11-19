@@ -1,0 +1,41 @@
+name: Player-first same-camera visual A/B
+on:
+  push:
+    branches:
+      - feature/player-first-opening-integrated-20261014
+  workflow_dispatch:
+
+jobs:
+  old-vs-candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Checkout old main as independent worktree
+        run: |
+          git fetch origin main
+          git worktree add --detach "$RUNNER_TEMP/gray-old" origin/main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: |
+          python -m pip install playwright==1.63.0 pillow==12.3.0
+          python -m playwright install --with-deps chromium
+      - name: Capture same-camera real Chromium frames (no fake story completions)
+        run: |
+          python tools/capture_player_first_visual_ab.py --old "$RUNNER_TEMP/gray-old" --candidate . --out prototype_artifacts/player_first_ab
+      - name: Run focused player regression tests
+        run: |
+          node --test tests/featured_resident_player_visual.test.js tests/player_first_integration_guard.test.js tests/opening_player_visible_relevance.test.js
+      - name: Upload old/main and candidate screenshots even if test fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gray-crown-player-first-same-camera
+          path: prototype_artifacts/player_first_ab/
+          if-no-files-found: warn
+          retention-days: 14

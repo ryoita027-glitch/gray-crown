@@ -1,9 +1,9 @@
 'use strict';
 const MAX_LEVEL=30;
 const ITEM_DEFS=Object.freeze({
- 薬草:{id:'薬草',kind:'consumable',label:'薬草'},
- 魔力草:{id:'魔力草',kind:'consumable',label:'魔力草'},
- 携帯食:{id:'携帯食',kind:'consumable',label:'携帯食'}
+ 薬草:{id:'薬草',kind:'consumable',label:'薬草',hp:22,mp:0,description:'一人のHPを22回復'},
+ 魔力草:{id:'魔力草',kind:'consumable',label:'魔力草',hp:0,mp:14,description:'一人のMPを14回復'},
+ 携帯食:{id:'携帯食',kind:'consumable',label:'携帯食',hp:12,mp:6,description:'一人のHPを12・MPを6回復'}
 });
 const RPG_RULES={
  damage:{minimum:2,variance:5,defenseScale:1},

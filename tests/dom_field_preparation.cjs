@@ -1,0 +1,133 @@
+'use strict';
+// DOM integration, not a browser/layout acceptance test.
+// Runs the shipped HTML and its scripts, then clicks real DOM controls.
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const {JSDOM}=require('jsdom');
+const root=path.resolve(__dirname,'..');
+const source=fs.readFileSync(process.env.GRAYGROW_TEST_HTML||path.join(root,'index.html'),'utf8');
+const scripts=[...source.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)].map(m=>{const src=m[1].match(/src="(js\/[^"]+)"/);return {name:src?src[1]:'inline-script',code:src?fs.readFileSync(path.join(root,src[1]),'utf8'):m[2]}});
+const errors=[];
+const dom=new JSDOM(source.replace(/<script\b[^>]*src="[^"]+"[^>]*><\/script>/g,''),{
+ url:'https://graygrow.test/',runScripts:'outside-only',pretendToBeVisual:true,
+ beforeParse(w){
+  w.requestAnimationFrame=()=>1;w.cancelAnimationFrame=()=>{};
+  w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({measureText:t=>({width:String(t).length*7})},{get:(o,k)=>k in o?o[k]:()=>{}});
+  w.Image=class {set src(v){this._src=v}get src(){return this._src}};
+  w.confirm=()=>true;w.alert=m=>{throw new Error(m)};
+  w.addEventListener('error',e=>errors.push(e.message));
+ }
+});
+const w=dom.window,d=w.document;
+for(const script of scripts)require('node:vm').runInContext(script.code,dom.getInternalVMContext(),{filename:script.name});
+function click(selector){const el=d.querySelector(selector);assert.ok(el,'Missing control: '+selector);assert.equal(el.disabled,false,'Disabled control: '+selector);el.click();assert.deepEqual(errors,[]);return el}
+function key(key,extra={}){d.dispatchEvent(new w.KeyboardEvent('keydown',{key,bubbles:true,cancelable:true,...extra}));assert.deepEqual(errors,[])}
+click('#titleNewGame');key('Enter');key('Enter');
+assert.ok(d.getElementById('dialogueBox').classList.contains('hidden'));
+const s=w.GC.State.get();s.party[0].hp=30;s.party[3].mp=0;s.inventory['薬草']=2;
+click('#btnMenu');assert.equal(d.activeElement.dataset.menuTab,'supplies');
+assert.match(d.querySelector('[data-supply-target="karen"]').textContent,/HP \+22/);
+const origin=[s.x,s.y];click('[data-move="up"]');assert.deepEqual([s.x,s.y],origin);
+click('[data-supply-target="karen"]');assert.equal(s.party[0].hp,52);assert.equal(s.inventory['薬草'],1);
+assert.match(d.querySelector('#menuFeedback').textContent,/HP \+22/);
+assert.equal(d.activeElement.dataset.supplyTarget,'karen');
+click('[data-supply-target="karen"]');assert.equal(s.party[0].hp,64);assert.equal(s.inventory['薬草'],0);
+assert.equal(d.querySelector('[data-supply-target="karen"]').disabled,true);assert.equal(d.activeElement.dataset.supply,'薬草');
+click('[data-supply="魔力草"]');click('[data-supply-target="margaret"]');assert.equal(s.party[3].mp,14);
+click('[data-menu-tab="system"]');assert.match(d.querySelector('#modalContent').textContent,/セーブを書き出す/);
+click('[data-menu-tab="journal"]');assert.match(d.querySelector('#modalContent').textContent,/旅の記録/);
+d.getElementById('modalClose').focus();key('Tab');assert.equal(d.activeElement.dataset.menuTab,'supplies');
+key('Tab',{shiftKey:true});assert.equal(d.activeElement.id,'modalClose');
+key('Escape');assert.ok(d.getElementById('modal').classList.contains('hidden'));assert.equal(d.activeElement.id,'game');
+s.map='cave';s.x=12;s.y=5;s.world.switches.leverWest=true;s.world.switches.leverEast=true;
+s.world.defeatedSymbols.bats=true;s.world.defeatedSymbols.crawler=true;
+click('[data-move="up"]');w.GC.Dialogue.finishDialogueTyping();
+const preparation=[...d.querySelectorAll('#choiceBox button')].find(b=>b.textContent==='道具で準備する');assert.ok(preparation);preparation.click();
+assert.equal(d.getElementById('modal').classList.contains('hidden'),false);assert.equal(s.battle,null);
+click('#modalClose');
+s.events.choices['early.fortShield']='studied';s.journal.push('<img src=x onerror=alert(1)>');w.GC.Render.UI.renderHud();
+click('#discoveryHud');assert.match(d.querySelector('#modalContent').textContent,/盾から分かったこと/);assert.equal(d.querySelector('#modalContent img'),null);
+click('#modalClose');
+w.GC.Battle.startBattle('boss');s.locked=false;s.battle.actor=2;
+s.party[0].hp=1;s.party[1].hp=20;s.party[2].mp=s.party[2].maxMp;
+w.GC.Render.Battle.renderBattle();
+for(const hero of s.party){
+ const img=d.querySelector('#partyBattleLine [data-hero="'+hero.id+'"] .battle-frame-image');
+ const idle=w.GC.Animation.getAnimation(hero.id,'idle').src;
+ assert.equal(img.dataset.idle,idle);
+ assert.equal(img.dataset.walk,w.GC.Animation.getAnimation(hero.id,'walk').src);
+ assert.ok([idle,w.__GC_INLINE_ASSETS__?.[idle]].includes(img.getAttribute('src')));
+ if(w.__GC_INLINE_ASSETS__)assert.ok(w.__GC_INLINE_ASSETS__[idle]?.startsWith('data:image/png;base64,'));
+}
+const beforeMp=s.party[2].mp;
+click('[data-battle="heal"]');assert.equal(s.party[2].mp,beforeMp);
+assert.equal(d.getElementById('battleSupportTargets').classList.contains('hidden'),false);
+key('Escape');assert.equal(s.party[2].mp,beforeMp);assert.equal(d.activeElement.dataset.battle,'heal');
+click('[data-battle="heal"]');const target=click('[data-support-id="triton"]');
+assert.ok(s.party[1].hp>20);assert.equal(s.party[0].hp,1);assert.equal(s.party[2].mp,beforeMp-6);
+assert.equal(d.getElementById('battleSupportTargets').classList.contains('hidden'),true);
+target.click();assert.equal(s.party[2].mp,beforeMp-6);
+assert.deepEqual(errors,[]);
+console.log('PASS: battle recipient selection, Escape cancellation, chosen ally, single resource consumption, stale double click.');
+console.log('PASS: shipped HTML + '+scripts.length+' scripts; item selection/target buttons, feedback, quantity limits, three tabs, focus loop, touch movement lock, boss approach→preparation, notebook, escaped records.');
+console.log('Not verified here: browser pixels, CSS layout, audio output, full New Game→capital playthrough.');
+w.GC.Battle.startBattle('wolves');s.locked=false;s.battle.actor=2;
+s.party[0].hp=s.party[0].maxHp;s.party[0].guard=false;s.party[2].hp=10;s.party[2].mp=s.party[2].maxMp;
+w.GC.Render.Battle.renderBattle();
+assert.match(d.getElementById('battleForecast').textContent,/ソフィが狙われている/);
+click('[data-battle="heal"]');assert.match(d.querySelector('[data-support-id="sophie"]').textContent,/狙われている/);key('Escape');
+s.party[0].guard=true;w.GC.Render.Battle.renderBattle();
+assert.equal(d.getElementById('battleForecast').dataset.intent,'guarded');
+assert.match(d.getElementById('partyCards').textContent,/庇われる仲間/);
+s.battle.enemies.forEach(e=>e.staggered=1);w.GC.Render.Battle.renderBattle();
+assert.equal(d.getElementById('battleForecast').dataset.intent,'stopped');
+assert.doesNotMatch(d.getElementById('partyCards').textContent,/狙われている/);
+console.log('PASS: threat, guarded ally, interrupted enemy and recovery picker status in shipped DOM.');
+// Exercise field magic through shipped controls, including a retained stale button.
+s.battle=null;s.locked=false;d.getElementById('battlePanel').classList.add('hidden');
+s.party[0].hp=1;s.party[1].hp=75;s.party[2].mp=36;
+click('#btnMenu');click('[data-recovery-mode="magic"]');
+assert.match(d.querySelector('[data-field-heal="triton"]').textContent,/HP \+3/);
+const healButton=click('[data-field-heal="triton"]');assert.equal(s.party[1].hp,78);assert.equal(s.party[2].mp,30);
+healButton.click();assert.equal(s.party[2].mp,30);
+assert.equal(d.activeElement.dataset.fieldSpell,'heal');
+click('[data-field-spell="prayer"]');assert.equal(s.party[2].mp,30,'selection is free');
+click('#castFieldPrayer');assert.equal(s.party[0].hp,11);assert.equal(s.party[2].mp,22);
+assert.match(d.getElementById('menuFeedback').textContent,/MP 8消費/);
+s.party[2].mp=0;w.GC.Menu.renderAdventureMenu();assert.equal(d.getElementById('castFieldPrayer').disabled,true);
+click('[data-recovery-mode="items"]');assert.ok(d.querySelector('[data-supply="魔力草"]'));
+click('[data-menu-tab="system"]');assert.equal(d.querySelectorAll('.growth-meter').length,4);
+key('Escape');
+w.GC.Battle.startBattle('caveRats');s.locked=false;w.GC.Battle.battleWin();
+// Finish only presentation locks; outcome/resources are applied by the real battleWin.
+s.locked=false;w.GC.Menu.openMenu('journal');
+assert.match(d.querySelector('.battle-record').textContent,/一人あたり 10 EXP/);
+assert.equal(d.querySelectorAll('.battle-record .growth-meter').length,4);
+assert.deepEqual(errors,[]);
+console.log('PASS: field heal/prayer clicks, capped healing, stale button, MP shortage, focus fallback, growth meters and victory report.');
+key('Escape');s.map='cave';s.x=12;s.y=13;delete s.events.choices['early.fortShield'];
+w.GC.Menu.openMenu('journal');
+const beforePin=w.GC.Save.serializeSave();click('[data-clue-pin="early.fortShield"]');
+assert.equal(w.GC.Save.serializeSave(),beforePin,'pin never changes persistent progress');
+assert.equal(d.activeElement.dataset.cluePin,'early.fortShield');key('Escape');
+assert.equal(d.getElementById('explorationPin').classList.contains('hidden'),false);
+assert.match(d.getElementById('explorationPin').textContent,/北東/);
+click('#explorationPin');assert.match(d.querySelector('.notebook-pin').textContent,/傷だらけの盾/);
+click('#clearExplorationPin');assert.equal(d.getElementById('explorationPin').classList.contains('hidden'),true);
+assert.equal(d.activeElement.dataset.menuTab,'journal');
+assert.deepEqual(errors,[]);
+console.log('PASS: optional clue pin, field direction, notebook re-entry, clear control and unchanged save.');
+key('Escape');s.map='capital';s.gold=100;s.locked=false;
+assert.equal(w.GC.Exploration.capitalShop(),true);
+const oldBuy=d.getElementById('confirmShopPurchase');
+click('[data-shop-item="魔力草"]');click('[data-shop-quantity="3"]');
+assert.match(d.querySelector('.shop-order').textContent,/90G/);assert.equal(s.gold,100);
+oldBuy.click();assert.equal(s.gold,100,'detached quote cannot buy an old selection');
+const stock=s.inventory['魔力草'],buy=click('#confirmShopPurchase');
+assert.equal(s.gold,10);assert.equal(s.inventory['魔力草'],stock+3);assert.match(d.getElementById('shopFeedback').textContent,/残金10G/);
+buy.click();assert.equal(s.gold,10);assert.equal(s.inventory['魔力草'],stock+3);
+assert.equal(d.getElementById('confirmShopPurchase').disabled,true);
+const shopPosition=[s.x,s.y];click('[data-move="up"]');assert.deepEqual([s.x,s.y],shopPosition);
+key('Escape');assert.equal(d.getElementById('modal').classList.contains('hidden'),true);assert.equal(d.activeElement.id,'game');
+assert.deepEqual(errors,[]);
+console.log('PASS: market selection, quantity/total, stale quote, purchase, repeat prevention, insufficient funds, movement lock and Escape.');
+w.close();
