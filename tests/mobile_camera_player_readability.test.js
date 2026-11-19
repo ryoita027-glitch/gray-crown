@@ -59,3 +59,26 @@ test('desktop always keeps the full map even if mobile was enabled earlier',()=>
  assert.equal(h.GC.MobileCamera.update(),false);
  assert.equal(c.style.transform,'');
 });
+
+test('display density preserves map framing, mobile following and actor ground positions',()=>{
+ const h=createHarness(),c=setupMobile(h),calls=[];
+ const ctx=h.evaluate('ctx');
+ ctx.drawImage=(...args)=>calls.push(args);
+ h.evaluate('state.x=19;state.y=10');
+ h.GC.MobileCamera.update();
+ const mobile=c.style.transform,camera=JSON.stringify(h.evaluate('cameraForMap()'));
+ for(const deviceRatio of [1,2,3,1]){
+  h.context.devicePixelRatio=deviceRatio;
+  const density=h.GC.DOM.prepareFieldFrame();
+  assert.equal(c.width,768*density);assert.equal(c.height,480*density);
+  assert.equal(JSON.stringify(h.evaluate('cameraForMap()')),camera);
+  h.GC.MobileCamera.update();assert.equal(c.style.transform,mobile);
+  h.GC.Render.World.drawHeroSpriteSheet(4,5,'sophie',false,'right',1,0);
+  const field=calls.at(-1);
+  assert.deepEqual(field.slice(1,5),[192,384,192,192]);
+  assert.deepEqual(field.slice(7),[44,44]);
+  const actor=h.GC.Animation.createActor('sophie',{x:4,y:5,facing:'right',renderScale:44/48});
+  h.GC.Animation.drawActor(ctx,actor,0);
+  assert.deepEqual(calls.at(-1).slice(5),field.slice(5));
+ }
+});

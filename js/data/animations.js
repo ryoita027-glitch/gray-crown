@@ -3,7 +3,7 @@
  const D={down:0,left:1,right:2,up:3},A=[24,44];
  function def(character,name,frames,fps,loop){
   const folder=character==='karen'?'':'acting/';
-  return{id:character+'.'+name,src:'assets/characters/'+character+'/'+folder+character+'_'+name+'.png',frameW:48,frameH:48,frames:Array.from({length:frames},(_,i)=>i),fps,loop,directions:D,anchor:A,offset:[0,0],prototypeTemporary:true}
+  return{id:character+'.'+name,src:'assets/characters/'+character+'/'+folder+character+'_'+name+'.png',frameW:48,frameH:48,sourceScale:character==='sophie'?4:1,frames:Array.from({length:frames},(_,i)=>i),fps,loop,directions:D,anchor:A,offset:[0,0],prototypeTemporary:true}
  }
  const karen={
   idle:def('karen','idle',4,4,true),walk:def('karen','walk',6,8,true),turn:def('karen','turn',3,12,false),talk:def('karen','talk',4,7,true),
@@ -48,8 +48,8 @@
  });
  const sophieVisualRules=Object.freeze({
   prototypeTemporary:true,character:'sophie',sourceCell:[48,48],logicalTile:32,anchor:[24,44],dominantHand:'right',stage:'A',
-  identity:'STEADY HANDS',designDirection:'sophie-chibi-direction-appeal-v3',reference:'docs/pixel/reference/sophie_chibi_direction_appeal_v3_48.png',
-  nativeMaster:'art/companions/sophie.png',face:'open jade eyes, warm cheek, small lifted smile; nod and hand at collar when answering',
+  identity:'STEADY HANDS',designDirection:'sophie-original-turnaround',reference:'art/companions/sophie.png',
+  nativeMaster:'art/companions/sophie.png',face:'original green eyes, rounded cheeks and small smile; the reference face moves as one piece',
   hair:'long honey-copper waves frame both cheeks; sage bow and ivory buds above the ear',
   colorMass:'warm off-white/cream dominant + brown leather + muted green concentrated near hands and treatment storage',
   posture:'smallest spatial footprint + soft adult body + calm narrow stance + both hands readable',

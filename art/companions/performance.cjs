@@ -23,18 +23,22 @@ module.exports = {
   },
   sophie: {
     master: 'art/companions/sophie.png',
-    // Columns follow the approved four views. The five rows are full raster
-    // cels on the actual field pixel grid; their silhouettes share one anchor.
-    cell:44, expressions:{open:0,blink:1,talk:2,smile:3,wide:4},
-    rigidHead:{through:20,blend:5},
-    shoulderLook:{profile:1,dx:-1,seam:[30,30,30,30,28,25,23,24,27,28,28]},
-    hands:[[20,22],[23,29],[20,29],[29,30]],
-    tips:[[12,28],[31,27],[13,27],[14,29]],
-    boots:[[19,25],[22,22],[22,22],[19,25]],
-    sole:[41,41,41,41],knee:34,
-    arms:[[-1,-2],[-2,-2],[2,-2],[-1,-1]],hairDrag:1.6,
+    // The unmodified reference is a 2x2 turnaround. Keep its face and smile
+    // in every pose; acting moves her head and body without repainting features.
+    cell:48,density:4,expressions:{open:0,blink:0,talk:0,smile:0,wide:0},
+    reference:{
+      bounds:[[160,12,513,577],[721,14,1058,578],[181,636,524,1201],[696,636,1065,1203]],
+      feet:[343.7,856.5,390.3,884.5],height:41
+    },
+    rigidHead:{through:23,blend:4},
+    shoulderLook:{profile:1,dx:-1,seam:[34,34,34,34,32,29,25,26,29,30,31,31]},
+    hands:[[22,24],[26,32],[21,32],[31,32]],
+    tips:[[13,31],[33,30],[14,31],[16,32]],
+    boots:[[21,27],[24,24],[24,24],[20,27]],
+    sole:[45,45,45,45],knee:37,
+    arms:[[-2,-1],[-3,-2],[3,-2],[-1,-1]],hairDrag:2.1,
     idle:[[0,-1],[0,-1],[0,-1],[-1,0]],
-    gaze:'soft',stride:2.6
+    gaze:'soft',stride:2.8
   },
   margaret: {
     master: 'docs/pixel/reference/margaret_chibi_direction_appeal_v7_48.png',

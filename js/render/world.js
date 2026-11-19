@@ -32,12 +32,12 @@ function fieldMotionReduced(){
 function drawHeroMarker(cx,topY){ctx.fillStyle='#f0d178';ctx.beginPath();ctx.moveTo(cx,topY-3);ctx.lineTo(cx+5,topY-9);ctx.lineTo(cx,topY-14);ctx.lineTo(cx-5,topY-9);ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(66,46,20,.86)';ctx.lineWidth=1;ctx.stroke()}
 function drawHeroSpriteSheet(x,y,heroId,leader,facing,motion,now=Date.now()){
  let frame=heroWalkFrame(motion,heroId);const row=HERO_RUNTIME.directions[facing]??0,px=Math.round(x*TILE),py=Math.round(y*TILE),footX=px+16,footY=py+30;
- let rec=HERO_RUNTIME.images[heroId];
+ let rec=HERO_RUNTIME.images[heroId],definition=GC.Animation.getAnimation(heroId,'walk');
  if(!motion){
   const idle=GC.Animation.getAnimation(heroId,'idle');
   const idleImage=idle&&GC.Animation.ensureImage(idle.src);
   if(idleImage?.ready){
-   rec=idleImage;
+   rec=idleImage;definition=idle;
    if(fieldMotionReduced())frame=0;
    else if(COMPANION_IDLE[heroId])frame=companionIdleBeat(heroId,now).frame;
    else frame=Math.floor(now*idle.fps/1000)%idle.frames.length;
@@ -46,7 +46,8 @@ function drawHeroSpriteSheet(x,y,heroId,leader,facing,motion,now=Date.now()){
  if(rec?.ready&&rec.image){
   const size=HERO_RUNTIME.display,scale=size/HERO_RUNTIME.frameW,anchor=GC.Animation.groundAnchor(heroId,facing,HERO_RUNTIME.anchor),dx=Math.round(footX-anchor[0]*scale),dy=Math.round(footY-anchor[1]*scale);
   ctx.save();ctx.fillStyle='rgba(16,18,18,.28)';ctx.beginPath();ctx.ellipse(footX,footY-1,10,4,0,0,Math.PI*2);ctx.fill();ctx.imageSmoothingEnabled=false;
-  ctx.drawImage(rec.image,frame*48,row*48,48,48,dx,dy,size,size);ctx.restore();
+  const source=GC.Animation.sourceFrame(definition,frame,row);
+  ctx.drawImage(rec.image,source.x,source.y,source.width,source.height,dx,dy,size,size);ctx.restore();
   if(leader)drawHeroMarker(footX,dy);return true
  }
  const cfg=HERO_SPRITES;if(!cfg.ready||!cfg.image||cfg.characters[heroId]===undefined)return false;
@@ -681,7 +682,7 @@ function enqueueWalkGoal(queue,previous,next){
  if(queue.length>12)queue.splice(0,queue.length-12);
  return [next[0],next[1]]
 }
-function cameraForMap(){const o=GC.Cinematic?.cameraTarget?.(),scale=o?.scale||viewScale(),vw=canvas.width/scale,vh=canvas.height/scale,worldW=COLS*TILE,worldH=ROWS*TILE,fx=Number.isFinite(o?.x)?o.x:state.x,fy=Number.isFinite(o?.y)?o.y:state.y,cx=fx*TILE+TILE/2,cy=fy*TILE+TILE/2;return{scale,x:Math.max(0,Math.min(worldW-vw,cx-vw/2)),y:Math.max(0,Math.min(worldH-vh,cy-vh/2))}}
+function cameraForMap(){const o=GC.Cinematic?.cameraTarget?.(),scale=o?.scale||viewScale(),vw=GC.DOM.width/scale,vh=GC.DOM.height/scale,worldW=COLS*TILE,worldH=ROWS*TILE,fx=Number.isFinite(o?.x)?o.x:state.x,fy=Number.isFinite(o?.y)?o.y:state.y,cx=fx*TILE+TILE/2,cy=fy*TILE+TILE/2;return{scale,x:Math.max(0,Math.min(worldW-vw,cx-vw/2)),y:Math.max(0,Math.min(worldH-vh,cy-vh/2))}}
 function drawScene(){
  // Do not skip camera or actor frames to throttle villagers.
  // Dialogue's approved sheet poses need ~12fps, not an expensive full 60fps
@@ -694,7 +695,7 @@ function drawScene(){
   }
   VISUAL.lastActingFrame=t
  }
- ctx.clearRect(0,0,canvas.width,canvas.height);const m=maps[state.map],target=cameraForMap();
+ GC.DOM.prepareFieldFrame();const m=maps[state.map],target=cameraForMap();
  if(VISUAL.map!==state.map){VISUAL.map=state.map;VISUAL.camX=target.x;VISUAL.camY=target.y;VISUAL.playerX=state.x;VISUAL.playerY=state.y;VISUAL.followers=partyTrailPoints().map(p=>[p[0],p[1]]);VISUAL.followerPhases=[0,0,0];VISUAL.followerFaces=[state.dir,state.dir,state.dir];
  VISUAL.leaderQueue=[];VISUAL.leaderGoal=[state.x,state.y];
  VISUAL.followerQueues=[[],[],[]];VISUAL.followerGoals=VISUAL.followers.map(p=>[...p])}

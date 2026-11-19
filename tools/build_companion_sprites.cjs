@@ -18,6 +18,26 @@ function tile(sheet, column, row, size) {
   }
   return pixels;
 }
+function referenceTile(sheet, hero, direction) {
+  const {bounds, feet, height} = hero.reference;
+  const [left, top, right, bottom] = bounds[direction];
+  const size = hero.cell * hero.density;
+  const scale = height * hero.density / Math.max(...bounds.map(b => b[3] - b[1]));
+  const width = Math.round((right - left) * scale);
+  const tall = Math.round((bottom - top) * scale);
+  const dx = Math.round(size / 2 - (feet[direction] - left) * scale);
+  const dy = hero.sole[direction] * hero.density - tall;
+  const pixels = new Uint32Array(size * size);
+  for (let y = 0; y < tall; y++) for (let x = 0; x < width; x++) {
+    const sx = left + Math.floor((x + .5) * (right - left) / width);
+    const sy = top + Math.floor((y + .5) * (bottom - top) / tall);
+    const offset = (sy * sheet.width + sx) * 4;
+    if (sheet.data[offset + 3] >= 128) {
+      pixels[(dy + y) * size + dx + x] = (sheet.data.readUInt32LE(offset) | 0xff000000) >>> 0;
+    }
+  }
+  return pixels;
+}
 function rgba(hex) {
   const bytes = Buffer.from(hex + 'ff', 'hex');
   return bytes.readUInt32LE();
@@ -77,15 +97,17 @@ function sample(pixels, x, y, size) {
   x = Math.round(x); y = Math.round(y);
   return x >= 0 && x < size && y >= 0 && y < size ? pixels[y*size+x] : 0;
 }
-function warp(pixels, pins, size, head) {
+function warp(pixels, pins, cell, head, density) {
   if (!pins.length && !head) return pixels;
+  const size=cell*density;
   const out = new Uint32Array(size*size);
-  for (let y=0; y<size; y++) for (let x=0; x<size; x++) {
+  for (let py=0; py<size; py++) for (let px=0; px<size; px++) {
+    const x=px/density, y=py/density;
     // Translate the finished head as one cutout. Only the scarf/shoulder
     // transition blends into the body rig, never the eyes or fringe.
-    const neck = head ? Math.max(0,Math.min(1,(y-head.through)/head.blend)) : 1;
+    const neck = head ? Math.max(0,Math.min(1,(y-head.dy-head.through)/head.blend)) : 1;
     if (neck===0) {
-      out[y*size+x]=sample(pixels,x-head.dx,y-head.dy,size);
+      out[py*size+px]=sample(pixels,(x-head.dx)*density,(y-head.dy)*density,size);
       continue;
     }
     let sx=x, sy=y;
@@ -94,24 +116,25 @@ function warp(pixels, pins, size, head) {
       sx=x-dx*neck-(head?.dx||0)*(1-neck);
       sy=y-dy*neck-(head?.dy||0)*(1-neck);
     }
-    out[y*size+x] = sample(pixels,sx,sy,size);
+    out[py*size+px] = sample(pixels,sx*density,sy*density,size);
   }
   return out;
 }
 function rearBoot(out, base, hero, direction, swing, crossed) {
   if (!swing) return;
-  const size=hero.cell;
-  const sole = hero.sole[direction];
+  const density=hero.density,size=hero.cell*density;
+  const sole = hero.sole[direction]*density;
+  swing*=density;
   // In profile the far leg is occluded in the idle cel. Reveal its shaded
   // boot behind the planted one, tapering displacement to zero at the knee.
-  const start = crossed ? sole-5 : hero.knee;
+  const start = crossed ? sole-5*density : hero.knee*density;
   const facing = direction === 1 ? -1 : 1;
   for (let y=start; y<sole; y++) {
     const u = (y-start)/(sole-start-1);
     const offset = Math.round(swing*facing*u);
     for (let x=1; x<size-1; x++) {
       const src = base[y*size+x];
-      const tx = x+offset, ty = y-Math.round(u);
+      const tx = x+offset, ty = y-Math.round(u*density);
       if (!src || tx<0 || tx>=size || out[ty*size+tx]) continue;
       // Borrow an actual dark leather/robe shadow from this character.
       out[ty*size+tx] = u>.88 || !base[y*size+x-1] ? hero.shadowEdge : hero.shadowFill;
@@ -172,50 +195,51 @@ function render(poses, hero, direction, action, frame) {
   } else if(action==='turn' && frame===1) {
     head(facing*1.5,0);hair(-facing*hero.hairDrag,0);look='glance';
   }
-  const out=warp(expression(poses,hero,direction,look,speech),pins,hero.cell,rigid);
+  const out=warp(expression(poses,hero,direction,look,speech),pins,hero.cell,rigid,hero.density);
   if(side || hero.gaze==='glance')rearBoot(out,poses[0],hero,direction,farStep,!side);
   return out;
 }
 
-function shoulderLook(rear, profile, pose, size) {
+function shoulderLook(rear, profile, pose, size, density) {
   // Replace only the head and upper hair. The lower curls, shoulders, hem
   // and planted rear-facing boots come from the rear cel in the same frame.
   const result=rear.slice();
   for(let x=0;x<size;x++){
-    const end=pose.seam[Math.floor(x/4)];
-    for(let y=0;y<end;y++)result[y*size+x]=sample(profile,x-pose.dx,y,size);
+    const end=pose.seam[Math.floor(x/(4*density))]*density;
+    for(let y=0;y<end;y++)result[y*size+x]=sample(profile,x-pose.dx*density,y,size);
   }
   return result;
 }
 
 function build(id, description) {
   const source=PNG.sync.read(fs.readFileSync(path.join(root,description.master)));
-  const cell=description.cell||atlasCell, rows=description.expressions?Object.keys(description.expressions).length:1;
-  if(source.width!==4*cell||source.height!==rows*cell)throw Error('Unexpected master dimensions: '+description.master);
-  const hero={...description,cell,ink:Object.fromEntries(Object.entries(description.ink||{}).map(([k,v])=>[k,rgba(v)])),
+  const cell=description.cell||atlasCell, density=description.density||1;
+  const rows=description.expressions?Math.max(...Object.values(description.expressions))+1:1;
+  const sourceCell=cell*density, outputCell=atlasCell*density;
+  if(!description.reference && (source.width!==4*sourceCell||source.height!==rows*sourceCell))throw Error('Unexpected master dimensions: '+description.master);
+  const hero={...description,cell,density,ink:Object.fromEntries(Object.entries(description.ink||{}).map(([k,v])=>[k,rgba(v)])),
     shadowEdge:rgba(id==='margaret'?'312549':'352732'), shadowFill:rgba(id==='margaret'?'53406e':'624145')};
   const bases=Array.from({length:4},(_,r)=>Array.from({length:rows},(_,row)=>{
-    const base=tile(source,r,row,cell);
+    const base=hero.reference?referenceTile(source,hero,r):tile(source,r,row,sourceCell);
     for(const [x,y,pattern] of hero.finish?.[r]||[])paint(base,x,y,pattern,hero.ink,cell);
     return base;
   }));
-  // Expand the display-grid art into the historical 48 px sheet contract.
-  // Nearest 44 -> 48 -> 44 is exact, including single-pixel eye highlights.
-  const coord=Array.from({length:atlasCell},(_,n)=>Math.floor((n+.5)*cell/atlasCell));
+  // Physical source pixels are independent of the 48 px logical frame.
+  const coord=Array.from({length:outputCell},(_,n)=>Math.floor((n+.5)*sourceCell/outputCell));
   const folder=path.join(root,'assets/characters',id,'acting');
   if(!check)fs.mkdirSync(folder,{recursive:true});
   for(const [action,count] of Object.entries(frameCounts)) {
-    const sheet=new PNG({width:count*atlasCell,height:4*atlasCell});
+    const sheet=new PNG({width:count*outputCell,height:4*outputCell});
     for(let r=0;r<4;r++)for(let frame=0;frame<count;frame++) {
       let cel=render(bases[r],hero,r,action,frame);
       if(r===3 && hero.shoulderLook && (action==='talk'||action==='laugh')){
         const view=hero.shoulderLook.profile;
         const profile=render(bases[view],hero,view,action,frame);
-        cel=shoulderLook(cel,profile,hero.shoulderLook,cell);
+        cel=shoulderLook(cel,profile,hero.shoulderLook,sourceCell,density);
       }
-      for(let y=0;y<atlasCell;y++)for(let x=0;x<atlasCell;x++) {
-        const index=(r*atlasCell+y)*sheet.width+frame*atlasCell+x;
-        sheet.data.writeUInt32LE(cel[coord[y]*cell+coord[x]],index*4);
+      for(let y=0;y<outputCell;y++)for(let x=0;x<outputCell;x++) {
+        const index=(r*outputCell+y)*sheet.width+frame*outputCell+x;
+        sheet.data.writeUInt32LE(cel[coord[y]*sourceCell+coord[x]],index*4);
       }
     }
     const target=path.join(folder,`${id}_${action}.png`);

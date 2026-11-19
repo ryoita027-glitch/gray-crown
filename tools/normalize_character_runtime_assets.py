@@ -34,11 +34,12 @@ def main():
         path=source/f"{char}_walk.png"
         if not path.exists(): raise SystemExit(f"missing runtime walk sheet: {path}")
         walk=Image.open(path).convert("RGBA")
-        if walk.size!=(CELL*6,CELL*4):
-            raise SystemExit(f"{path}: {walk.size} != {(CELL*6,CELL*4)}")
+        source_cell=walk.height//4
+        if source_cell % CELL or walk.size!=(source_cell*6,source_cell*4):
+            raise SystemExit(f"{path}: invalid six-frame, four-direction atlas {walk.size}")
         for direction in range(4):
             for col,frame in enumerate(WALK_FRAMES):
-                cell=walk.crop((frame*CELL,direction*CELL,(frame+1)*CELL,(direction+1)*CELL))
+                cell=walk.crop((frame*source_cell,direction*source_cell,(frame+1)*source_cell,(direction+1)*source_cell))
                 cell=hard_alpha(cell)
                 # Whole-cell nearest-neighbour transform. No trim/cutout pass.
                 cell=cell.resize((WORLD,WORLD),Image.Resampling.NEAREST)

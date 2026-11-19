@@ -10,8 +10,10 @@ const root = path.resolve(__dirname,'..');
 const ids = ['karen','triton','sophie','margaret'];
 const names = ['カレン','トリトン','ソフィ','マーガレット'];
 const dirs = ['down','left','right','up'];
-const native = createCanvas(352,60);
+const density=3;
+const native = createCanvas(352*density,60*density);
 const world = native.getContext('2d');
+world.scale(density,density);
 const sandbox = {GC:{},TILE:32,ctx:world,Date,Image:undefined,
   matchMedia:()=>({matches:false}),document:{createElement:()=>createCanvas(1,1)}};
 vm.createContext(sandbox);
@@ -30,9 +32,10 @@ async function loadCast(){
     const {data}=image.getContext('2d').getImageData(0,0,image.width,image.height);
     for(let a=3;a<data.length;a+=4)assert.ok(data[a]===0||data[a]===255,'binary runtime alpha');
     if(action==='idle')for(let row=0;row<4;row++){
+      const sourceScale=animation.getAnimation(id,action).sourceScale||1,cell=48*sourceScale;
       let sole=0;
-      for(let y=0;y<48;y++)for(let x=0;x<48;x++){
-        if(data[((row*48+y)*image.width+x)*4+3])sole=y+1;
+      for(let y=0;y<cell;y++)for(let x=0;x<cell;x++){
+        if(data[((row*cell+y)*image.width+x)*4+3])sole=(y+1)/sourceScale;
       }
       assert.equal(animation.groundAnchor(id,dirs[row])[1],sole);
     }
@@ -72,7 +75,10 @@ async function main(){
   label(c,'ソフィの表情',30,78,36,ink,'left',400,true);
   const previous=process.argv[3]||path.join(root,'assets/characters/sophie/sophie_idle.png');
   const src=animation.getAnimation('sophie','idle').src,now=animation.IMAGE_CACHE.get(src);
-  const oldImage=animation.normalizeRuntimeAlpha(await loadImage(previous),'sophie');
+  const previousImage=await loadImage(previous);
+  const oldImage=createCanvas(previousImage.width*4,previousImage.height*4);
+  const oldContext=oldImage.getContext('2d');oldContext.imageSmoothingEnabled=false;
+  oldContext.drawImage(previousImage,0,0,oldImage.width,oldImage.height);
   const panels=[
     {caption:process.argv[3]?'前案':'旧版',action:'idle',old:true},
     {caption:'今回の立ち姿',action:'idle'},
@@ -87,7 +93,7 @@ async function main(){
     if(p.old)animation.IMAGE_CACHE.set(src,{...now,image:oldImage});
     assert.ok(pose('sophie',p.action,'down',25,44,p.time));
     if(p.old)animation.IMAGE_CACHE.set(src,now);
-    c.drawImage(native,0,0,50,48,x+14,117,200,192);
+    c.drawImage(native,0,0,50*density,48*density,x+14,117,200,192);
   });
   label(c,'リュネ村の４人',32,354,25,ink,'left',400,true);
   label(c,'フィールド表示 ×2',736,353,14,muted,'right');

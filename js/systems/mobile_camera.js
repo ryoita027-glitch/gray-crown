@@ -20,10 +20,11 @@ const MobileCamera=(()=>{
   const h=c.offsetHeight||Math.round(w*(c.height/c.width));
   const sw=stage.clientWidth||w,sh=stage.clientHeight||h;
   if(!w||!h||!sw||!sh)return false;
-  const centerX=Math.max(0,Math.min(c.width,state.x*TILE+TILE/2));
-  const centerY=Math.max(0,Math.min(c.height,state.y*TILE+TILE/2));
-  const left=Math.max(sw-w*SCALE,Math.min(0,sw/2-centerX/c.width*w*SCALE));
-  const top=Math.max(sh-h*SCALE,Math.min(0,sh/2-centerY/c.height*h*SCALE));
+  const logicalWidth=GC.DOM.width,logicalHeight=GC.DOM.height;
+  const centerX=Math.max(0,Math.min(logicalWidth,state.x*TILE+TILE/2));
+  const centerY=Math.max(0,Math.min(logicalHeight,state.y*TILE+TILE/2));
+  const left=Math.max(sw-w*SCALE,Math.min(0,sw/2-centerX/logicalWidth*w*SCALE));
+  const top=Math.max(sh-h*SCALE,Math.min(0,sh/2-centerY/logicalHeight*h*SCALE));
   c.style.transform='translate('+left.toFixed(1)+'px,'+top.toFixed(1)+'px) scale('+SCALE+')';
   return true
  }

@@ -57,9 +57,10 @@ test('Margaret palette adjustment keeps silhouette, dark outfit and warm skin',(
  assert.deepEqual([...other.data].slice(0,12),pixels.slice(0,12));
 });
 
-test('companion field poses hold their eyes open, blink briefly and complete a six-frame stride',()=>{
+test('companion field poses retain their authored idle timing and complete a six-frame stride',()=>{
  const h=createHarness(),calls=[];h.evaluate('ctx').drawImage=(...args)=>calls.push(args);
  for(const hero of ['triton','sophie','margaret']){
+  const cell=48*h.GC.Animation.getAnimation(hero,'idle').sourceScale;
   const draw=(motion,time)=>{
    h.GC.Render.World.drawHeroSpriteSheet(2,2,hero,false,'down',motion,time);
    return calls.at(-1);
@@ -68,7 +69,7 @@ test('companion field poses hold their eyes open, blink briefly and complete a s
   let t=0;
   for(const expected of [0,1,2,3,0]){
    const beat=h.evaluate('companionIdleBeat("'+hero+'",'+t+')');
-   assert.equal(draw(0,t)[1],expected*48);
+   assert.equal(draw(0,t)[1],expected*cell);
    assert.ok(beat.delay>0);
    if(expected===2)assert.ok(beat.delay<=160,'short blink');
    t+=beat.delay;
@@ -76,7 +77,7 @@ test('companion field poses hold their eyes open, blink briefly and complete a s
   for(let step=1;step<=12;step++){
    const call=draw(step,0);
    assert.match(call[0]._src,/\/acting\/[^/]+_walk\.png$/);
-   assert.equal(call[1],step%6*48);
+   assert.equal(call[1],step%6*cell);
   }
  }
  h.context.matchMedia=()=>({matches:true});

@@ -44,12 +44,13 @@ test('combat reads the registered protagonist PNG sources, load checks and lost-
  for(const hero of ['karen','triton','sophie','margaret']){
   const idle=h.GC.Animation.getAnimation(hero,'idle').src;
   const walk=h.GC.Animation.getAnimation(hero,'walk').src;
+  const density=h.GC.Animation.getAnimation(hero,'idle').sourceScale;
   assert.ok(fs.existsSync(path.join(root,idle)));
   assert.ok(fs.existsSync(path.join(root,walk)));
   for(const [rel,w]of [[idle,192],[walk,288]]){
    const bytes=fs.readFileSync(path.join(root,rel));
-   assert.equal(bytes.readUInt32BE(16),w);
-   assert.equal(bytes.readUInt32BE(20),192);
+   assert.equal(bytes.readUInt32BE(16),w*density);
+   assert.equal(bytes.readUInt32BE(20),192*density);
   }
  }
  assert.match(combat,/src="\$\{idle\}" data-idle="\$\{idle\}"/);
