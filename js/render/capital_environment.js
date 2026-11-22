@@ -162,156 +162,377 @@ const CapitalEnvironment=(()=>{
   }
   return false
  }
- // Distinct capital districts across the grand 42x28 Royal Capital.
+ // Distinct capital districts across the grand 42x30 Royal Capital.
  // Every facade strictly occupies blocked 'H' tiles — zero road coverage!
  const facades=Object.freeze([
-  {x:3,y:2,w:4,h:3,kind:'market'},
-  {x:35,y:2,w:4,h:3,kind:'garrison'},
-  {x:8,y:1,w:9,h:3,kind:'palace'},
-  {x:25,y:1,w:9,h:3,kind:'palace'},
-  {x:33,y:5,w:5,h:3,kind:'palace'},
-  {x:3,y:19,w:4,h:3,kind:'market'},
-  {x:9,y:19,w:5,h:3,kind:'guild'},
-  {x:28,y:19,w:4,h:3,kind:'garrison'},
-  {x:34,y:19,w:5,h:3,kind:'garrison'}
+  {x:2,y:2,w:3,h:3,kind:'garrison',tag:'gate'},
+  {x:9,y:2,w:3,h:3,kind:'garrison',tag:'gate'},
+  {x:35,y:2,w:4,h:3,kind:'garrison',tag:'tower'},
+  {x:33,y:7,w:5,h:3,kind:'palace',tag:'chapel'},
+  {x:3,y:21,w:4,h:3,kind:'market',tag:'house'},
+  {x:9,y:21,w:5,h:3,kind:'guild',tag:'inn'},
+  {x:28,y:21,w:4,h:3,kind:'garrison',tag:'armory'},
+  {x:34,y:21,w:5,h:3,kind:'garrison',tag:'barracks'}
  ]);
-  function districtFacades(c){
-  const ink='#241e20';
+
+ function drawRoyalCastle(c,wartime,wave){
+  // Monumental 16-tile-wide (512px) white-marble Aldina Royal Castle crowning x=13..28, y=1..5!
+  // Every spire, pennant, rose window, and gable fits 100% visibly inside y>=4 (zero top-edge clipping!).
+  const x=13*W,y=1*W,w=16*W,h=5*W,ink='#201c22',mid=x+Math.floor(w/2);
+  // 1. Deep multi-stage southeast diorama cast shadow anchoring the castle onto the forecourt
+  box(c,'rgba(12,16,24,.36)',x+6,y+h-2,w+8,16);
+  box(c,'rgba(12,16,24,.20)',x+12,y+h+10,w+6,10);
+  box(c,'rgba(12,16,24,.22)',x+w,y+22,12,h-12);
+  // 2. Curtain Walls & Buttressed Wings (x=13..28, y=2..5)
+  box(c,ink,x,y+32,w,h-32);
+  box(c,'#d8d2c2',x+3,y+36,w-6,h-40);
+  box(c,'#efeae0',x+4,y+36,w-8,5);
+  for(let r=y+48;r<y+h-16;r+=12)box(c,'rgba(62,58,54,.16)',x+4,r,w-8,1);
+  // Heavy stepped ashlar castle foundation plinth
+  box(c,'#7c786e',x+2,y+h-20,w-4,18);box(c,'#b8b2a4',x+4,y+h-19,w-8,4);
+  for(let sx=x+8;sx<x+w-8;sx+=18)box(c,'#4c4a46',sx,y+h-18,2,16);
+  // Crenellated curtain-wall battlements
+  for(let bx=x+6;bx<x+w-14;bx+=22){
+   box(c,ink,bx,y+24,16,12);box(c,'#eae5d8',bx+2,y+26,12,8);box(c,'#faf7ef',bx+2,y+26,12,2);
+  }
+  // Tall arched royal hall stained-glass windows along both curtain wings
+  for(const wx of [x+86,x+126,x+w-150,x+w-110]){
+   box(c,ink,wx-2,y+56,24,42);box(c,'#9c9688',wx,y+58,20,38);
+   box(c,'#4c7290',wx+2,y+60,16,34);box(c,'#f2c86a',wx+4,y+72,12,18);box(c,'#fff6c4',wx+6,y+76,6,8);
+   box(c,'#9c9688',wx+9,y+60,2,34);box(c,'#9c9688',wx+2,y+75,16,2);
+   box(c,'#e2c474',wx-2,y+54,24,3);
+  }
+  // 3. Central Soaring Royal Keep Facade (drawn IN FRONT OF curtain wall so the stained-glass Rose Window shines!)
+  const kx=mid-96,kw=192,ky=y+2;
+  box(c,ink,kx-2,ky+8,kw+4,h-10);
+  box(c,'#e6e0d2',kx,ky+10,kw,h-14);
+  box(c,'#f6f2e8',kx+3,ky+10,kw-6,6);
+  for(let r=ky+22;r<y+h-20;r+=12)box(c,'rgba(66,62,56,.13)',kx+4,r,kw-8,1);
+  // Twin vertical marble buttresses framing the central Royal Keep
+  for(const bx of [kx-4,kx+kw-10]){
+   box(c,ink,bx,ky+4,14,h-6);box(c,'#d4cec0',bx+2,ky+6,10,h-10);box(c,'#f6f2e8',bx+3,ky+6,4,h-12);
+  }
+  // Steep Pitched Crimson-and-Gold Royal Keep Roof peaking cleanly at world y=6!
+  for(let z=0;z<6;z++){
+   const ins=z*6,rw=kw+14-ins*2;
+   box(c,ink,kx-7+ins,ky+10-z*4,rw,6);
+   box(c,wartime?(z%2?'#444d5c':'#343c48'):(z%2?'#8c3444':'#682432'),kx-5+ins,ky+11-z*4,rw-4,4);
+   for(let sx=kx+4+ins;sx<kx+kw-8-ins;sx+=14)box(c,'rgba(24,14,18,.28)',sx,ky+12-z*4,2,3);
+  }
+  box(c,'#ecd078',mid-54,ky-13,108,4);box(c,'#fff6c8',mid-40,ky-13,80,1);
+  // Central Golden Royal Crown Finial & Center Banner Flag (fits cleanly at y=2..14)
+  box(c,'#e8c86c',mid-2,ky-26,4,14);
+  box(c,wartime?'#5e484c':'#b63646',mid+2,ky-25,18+wave,8);
+  box(c,'#f4d87e',mid+4,ky-23,10,2);
+  // Glowing Royal Rose Stained-Glass Window prominently centered in the upper Keep above the Main Gate!
+  const rx=mid,ry=y+42;
+  box(c,ink,rx-22,ry-22,44,44);box(c,'#d0c8b8',rx-19,ry-19,38,38);
+  box(c,'#2c4260',rx-15,ry-15,30,30);
+  box(c,'#548ab8',rx-12,ry-12,24,24);
+  box(c,'#f0c058',rx-8,ry-8,16,16);box(c,'#fff8d0',rx-4,ry-4,8,8);
+  box(c,'#d8d0c0',rx-15,ry-1,30,2);box(c,'#d8d0c0',rx-1,ry-15,2,30);
+  box(c,'#e8c86c',rx-24,ry-24,48,3);
+  // Flanking small stained-glass lancets on the Keep wings
+  for(const wx of [kx+22,kx+kw-36]){
+   box(c,ink,wx,y+32,14,28);box(c,'#4c7aa0',wx+2,y+34,10,24);box(c,'#f6d072',wx+4,y+44,6,12);
+  }
+  // 4. Twin Soaring Conical-Spired Royal Watchtowers framing the castle (100% visible finials & pennants!)
+  for(const tx of [x-4,x+w-68]){
+   const tw=72;
+   box(c,'rgba(12,16,24,.28)',tx+4,y+h-4,tw+6,14);
+   box(c,ink,tx,y+28,tw,h-28);
+   box(c,'#e4dfd0',tx+3,y+32,tw-6,h-34);
+   box(c,'#f6f2e8',tx+5,y+32,16,h-36); // sunlit curved cylindrical tower highlight!
+   box(c,'#b8b2a2',tx+tw-18,y+32,14,h-36); // shaded cylindrical right curve!
+   for(let r=y+44;r<y+h-16;r+=14)box(c,'rgba(56,54,50,.15)',tx+4,r,tw-8,1);
+   // Stone machicolations & upper watch gallery
+   box(c,ink,tx-4,y+24,tw+8,12);box(c,'#d4cec0',tx-2,y+26,tw+4,8);box(c,'#f4f0e4',tx-1,y+26,tw+2,3);
+   // Tall soaring conical crimson-and-gold turret spire (peaking cleanly inside world y>=6!)
+   for(let s=0;s<9;s++){
+    const sw=Math.max(8,tw+8-s*8),sx=tx+Math.floor((tw-sw)/2);
+    box(c,ink,sx-1,y+20-s*4,sw+2,6);
+    box(c,wartime?(s%2?'#444e5e':'#343c4a'):(s%2?'#923848':'#6e2634'),sx+1,y+21-s*4,sw-2,4);
+    if(sw>16)box(c,wartime?'#606e80':'#b85464',sx+3,y+21-s*4,Math.floor(sw/3),3);
+   }
+   // Golden finial & fluttering royal pennant atop spire (fully visible inside top viewport!)
+   const fx=tx+Math.floor(tw/2);
+   box(c,'#e8c86c',fx-2,y-24,4,13);
+   box(c,wartime?'#5e484c':'#b63646',fx+2,y-23,18+wave,7);
+   box(c,'#f0d47e',fx+4,y-21,10,2);
+   // Vertical tower lancet arrow-slit windows
+   for(const wy of [y+50,y+92]){
+    box(c,ink,fx-7,wy,14,24);box(c,'#547890',fx-5,wy+2,10,20);box(c,'#f4cf72',fx-4,wy+10,8,10);
+   }
+  }
+  // 5. Grand Vaulted Royal Castle Main Gate ('王城正門') crowning the red carpet!
+  const gx=mid-48,gw=96,gy=y+74,gh=h-74;
+  box(c,ink,gx-6,gy-6,gw+12,gh+8);
+  box(c,'#eae5d8',gx-4,gy-4,gw+8,gh+4);
+  box(c,'#faf7ef',gx-2,gy-2,gw+4,6);
+  // Carved twin stone pillars framing the main gate arch
+  for(const px of [gx-2,gx+gw-14]){
+   box(c,'#d2ccbe',px,gy+4,16,gh-4);box(c,'#f4f0e4',px+2,gy+4,6,gh-6);
+   box(c,'#e4c470',px-2,gy+2,20,5);box(c,'#948e80',px-2,y+h-8,20,8);
+  }
+  // Recessed deep vaulted archway & massive iron-studded oak palace doors
+  box(c,'#1a1820',gx+14,gy+10,gw-28,gh-10);
+  box(c,'#5c3e2a',gx+18,gy+16,gw-36,gh-16);
+  box(c,'#7c563a',gx+20,gy+18,Math.floor((gw-40)/2)-1,gh-20);
+  box(c,'#7c563a',mid+1,gy+18,Math.floor((gw-40)/2)-1,gh-20);
+  // Gilded door bands & brass knockers
+  for(const by of [gy+34,gy+54,gy+72])box(c,'#d4b264',gx+18,by,gw-36,3);
+  box(c,'#f4d878',mid-7,gy+48,5,5);box(c,'#f4d878',mid+3,gy+48,5,5);
+  // Raised iron portcullis teeth & golden royal crown crest above arch
+  for(let px=gx+20;px<gx+gw-20;px+=8)box(c,'#7a848e',px,gy+10,3,7);
+  box(c,'#e6c468',mid-14,gy-11,28,9);box(c,'#fff6c4',mid-10,gy-9,20,4);
+  // Protruding grand white-marble staircase stepping smoothly down onto the red carpet (y=6)!
+  for(let s=0;s<4;s++){
+   box(c,'#5a5854',mid-54-s*6,y+h+s*5,108+s*12,6);
+   box(c,'#e4dfd2',mid-52-s*6,y+h+s*5,104+s*12,4);
+   box(c,'#f8f5ec',mid-50-s*6,y+h+s*5,100+s*12,1);
+  }
+ }
+
+ function drawMarketBooth(c,tx,ty,color,kind,wartime){
+  // Solid 3D 64x52px sculpted timber-and-canvas market pavilion (ZERO flat paper stickers!)
+  const x=tx*W,y=ty*W-12,w=64,h=52,ink='#221a16';
+  const roofDark=wartime?'#484644':color,roofHi=wartime?'#6a6864':'#f6ecd4';
+  // 1. Wide southeast cast shadow grounding all 4 timber posts & counter onto the cobblestones
+  box(c,'rgba(14,18,22,.36)',x+6,y+h-6,w+4,12);
+  box(c,'rgba(14,18,22,.20)',x+w-2,y+18,10,h-18);
+  // 2. Back interior shade & recessed rear oak posts (true 3/4 depth!)
+  box(c,'rgba(24,18,14,.55)',x+5,y+20,w-10,18);
+  box(c,ink,x+5,y+16,5,28);box(c,'#543a26',x+6,y+17,3,26);
+  box(c,ink,x+w-10,y+16,5,28);box(c,'#543a26',x+w-9,y+17,3,26);
+  // 3. Solid 3D wooden counter base + recessed dark under-counter crates
+  box(c,ink,x+2,y+30,w-4,19);
+  box(c,'#6e4e34',x+4,y+36,w-8,11);
+  for(let px=x+12;px<x+w-8;px+=10)box(c,'#4c3422',px,y+36,2,11); // vertical plank seams
+  box(c,'#a67c52',x+3,y+31,w-6,5);box(c,'#cfa472',x+4,y+31,w-8,2); // sunlit counter tabletop!
+  // 4. Brimming 3D merchandise displays tailored by booth specialty
+  if(!wartime){
+   if(kind==='fruits'){
+    // Woven baskets overflowing with apples, oranges & emerald melons
+    for(const [bx,c1,c2] of [[x+7,'#d84844','#f47864'],[x+24,'#e88a32','#f8c456'],[x+41,'#4e8c48','#8cc66a']]){
+     box(c,'#543a24',bx,y+26,15,9);box(c,'#b8925c',bx+1,y+29,13,5);
+     box(c,c1,bx+2,y+24,11,6);box(c,c2,bx+4,y+23,6,3);
+    }
+   }else if(kind==='flowers'){
+    // Wooden flower buckets bursting with crimson roses, marigolds & lavender
+    for(const [bx,c1,c2] of [[x+8,'#e4586c','#ff9ca8'],[x+25,'#f0c448','#fff29c'],[x+42,'#8c68b8','#d0b4f0']]){
+     box(c,'#4e3826',bx+1,y+27,13,8);box(c,'#3a6e38',bx,y+23,15,6);
+     box(c,c1,bx+1,y+21,12,5);box(c,c2,bx+3,y+21,5,3);
+    }
+   }else if(kind==='cloth'){
+    // Stacked rolled azure, crimson & ivory silk cloth bolts
+    box(c,'#345c84',x+7,y+24,18,8);box(c,'#6496c2',x+9,y+24,14,3);
+    box(c,'#9c3442',x+27,y+24,16,8);box(c,'#d46874',x+29,y+24,12,3);
+    box(c,'#dfd4b4',x+44,y+23,13,9);box(c,'#fffaf0',x+46,y+23,9,3);
+   }else{
+    // Artisan loaves, honey jars & clay amphorae
+    box(c,'#c88a42',x+8,y+25,14,7);box(c,'#f0be6c',x+10,y+25,10,3);
+    box(c,'#b06844',x+26,y+23,11,9);box(c,'#e09668',x+28,y+24,5,5);
+    box(c,'#d4a64c',x+41,y+25,14,7);box(c,'#f6d884',x+43,y+25,8,3);
+   }
+  }else{
+   // Wartime scarcity: half-empty wooden counter with one small ration sack
+   box(c,'#7c7260',x+22,y+27,14,6);box(c,'#9c927e',x+24,y+27,9,2);
+  }
+  // 5. Sturdy front beveled oak corner posts standing cleanly in front of counter!
+  box(c,ink,x+1,y+14,6,36);box(c,'#7c5636',x+2,y+15,4,34);box(c,'#b08256',x+2,y+15,2,32);
+  box(c,ink,x+w-7,y+14,6,36);box(c,'#7c5636',x+w-6,y+15,4,34);box(c,'#b08256',x+w-6,y+15,2,32);
+  // 6. Sloped 3/4 Billowing Striped Fabric Awning Roof + Scalloped Overhang Valance
+  box(c,ink,x-2,y+2,w+4,20);
+  for(let s=0;s<6;s++){
+   const sx=x+s*10,sw=(s===5)?14:10,stripe=s%2===0?roofDark:roofHi;
+   // Upper sunlit roof slope
+   box(c,stripe,sx,y+3,sw,11);
+   box(c,'rgba(255,252,238,.22)',sx,y+3,sw,4);
+   // Shaded vertical scalloped front valance hanging over the eaves!
+   box(c,s%2===0?'rgba(20,14,12,.34)':'rgba(40,34,26,.18)',sx,y+14,sw,7);
+   box(c,stripe,sx+1,y+14,sw-2,6);
+   box(c,ink,sx,y+20,sw,2);
+  }
+  box(c,'#5c3e26',x-2,y,w+4,3);box(c,'#c89e68',x,y,w,1); // wooden ridge pole
+  // 7. Hanging warm brass market booth lantern
+  const lx=x+w-13,ly=y+21;
+  box(c,'#2c241e',lx,ly,5,7);box(c,'#ffd874',lx+1,ly+2,3,4);box(c,'#fffbe0',lx+2,ly+2,1,2);
+ }
+
+ function districtFacades(c){
+  const ink='#221c1e',now=typeof Date!=='undefined'?Date.now():0;
   for(const f of facades){
    const x=f.x*W,y=f.y*W,w=f.w*W,h=f.h*W;
-   const military=f.kind==='garrison',formal=f.kind==='palace',market=f.kind==='market';
-   const stone=military?'#6e7884':formal?'#e6dfd0':market?'#decba8':'#d4c2a2';
-   const stoneHi=military?'#8e98a6':formal?'#f6f1e6':market?'#eee0c4':'#e6d6ba';
-   const mortar=military?'#444d58':formal?'#9c9486':market?'#72533e':'#624a3a';
-   // Deep directional HD-2D southeast drop shadow grounding every royal capital structure
-   box(c,'rgba(14,18,26,.34)',x+4,y+h-2,w+4,9);
-   box(c,'rgba(14,18,26,.18)',x+w,y+8,6,h-4);
-   // Full grounded masonry facade + dressed ashlar plinth
-   box(c,ink,x,y-2,w,h+2);
-   box(c,stone,x+2,y+16,w-4,h-18);
-   box(c,stoneHi,x+3,y+17,w-6,3);
-   // Subtle horizontal masonry coursing lines
-   for(let sy=y+26;sy<y+h-12;sy+=8)box(c,'rgba(44,38,34,.12)',x+3,sy,w-6,1);
-   // Dressed granite base foundation
-   box(c,mortar,x+2,y+h-11,w-4,9);
-   box(c,stoneHi,x+3,y+h-11,w-6,2);
-   for(let sx=x+6;sx<x+w-8;sx+=14)box(c,ink,sx,y+h-10,1,8);
-   // Bespoke medieval European HD-2D rooflines & architectural ornamentation
-   if(formal){
-    // White-marble Royal Palace wings: stepped crimson-slate mansard roof, gold finials, fluted colonnade
-    for(let z=0;z<4;z++){
-     box(c,ink,x+z*3,y-8+z*4,w-z*6,6);
-     box(c,z%2?'#88424e':'#682e3a',x+2+z*3,y-7+z*4,w-4-z*6,4);
-     for(let sx=x+8+z*3;sx<x+w-8-z*3;sx+=12)box(c,'#4c202a',sx,y-6+z*4,2,3);
+   const military=f.kind==='garrison',chapel=f.tag==='chapel',market=f.kind==='market',inn=f.tag==='inn',armory=f.tag==='armory';
+   const wall=military?'#7c8692':chapel?'#ece6d8':market?'#e4d4b4':'#dfd0b2';
+   const wallHi=military?'#9aa4b0':chapel?'#faf6ec':market?'#f4e8ce':'#f0e2c6';
+   const mortar=military?'#444e5a':chapel?'#989284':market?'#6a4c38':'#5c4230';
+   // 1. Deep two-stage southeast diorama cast shadow anchoring every building firmly on the cobblestones!
+   box(c,'rgba(12,16,24,.38)',x+6,y+h-2,w+6,13);
+   box(c,'rgba(12,16,24,.18)',x+10,y+h+8,w+6,7);
+   box(c,'rgba(12,16,24,.24)',x+w,y+6,9,h-2);
+
+   // 2. Grounded Dressed-Stone Building Volume + Corner Quoins + Heavy 14px Stepped Plinth
+   box(c,ink,x-1,y+4,w+2,h-3);
+   box(c,wall,x+2,y+8,w-4,h-12);
+   box(c,wallHi,x+3,y+8,w-6,4);
+   // Subtle masonry ashlar lines
+   for(let sy=y+18;sy<y+h-14;sy+=9)box(c,'rgba(44,38,34,.12)',x+3,sy,w-6,1);
+   // Alternating heavy 3D stone corner quoins on left & right walls!
+   for(let qy=y+12;qy<y+h-16;qy+=10){
+    const qw=((qy/10)|0)%2?9:6;
+    box(c,mortar,x+1,qy,qw,8);box(c,wallHi,x+2,qy+1,qw-2,5);
+    box(c,mortar,x+w-qw-1,qy,qw,8);box(c,wall,x+w-qw,qy+1,qw-2,5);
+   }
+   // Heavy dressed granite plinth foundation (14px tall) with mossy stone seams
+   box(c,ink,x,y+h-15,w,15);
+   box(c,mortar,x+2,y+h-13,w-4,12);
+   box(c,wallHi,x+3,y+h-13,w-6,2);
+   for(let sx=x+8;sx<x+w-8;sx+=14)box(c,ink,sx,y+h-12,2,10);
+
+   // 3. Tall 3/4 Pitched Shingled Roof rising 24–34px ABOVE the top tile row (gives real vertical 3D weight!)
+   const roofTop=y-26;
+   if(chapel){
+    // White-Stone Royal Chapel: tall slate-blue Gothic roof + soaring bell-gable spire + stained glass!
+    for(let z=0;z<6;z++){
+     const ins=z*4;
+     box(c,ink,x-4+ins,y+12-z*6,w+8-ins*2,8);
+     box(c,z%2?'#4a647c':'#3a5066',x-2+ins,y+13-z*6,w+4-ins*2,6);
+     for(let sx=x+6+ins;sx<x+w-6-ins;sx+=11)box(c,'rgba(16,24,34,.26)',sx,y+14-z*6,2,4);
     }
-    box(c,'#e6c674',x+12,y-9,w-24,2); // gilded palace ridge trim
-    box(c,'rgba(22,18,24,.30)',x+2,y+13,w-4,4); // deep under-cornice shadow
-    box(c,'#f2ece0',x+1,y+10,w-2,4);
-    for(let i=0;i<f.w;i++){
-     box(c,ink,x+4+i*W,y-6,22,7);
-     box(c,'#f2ecdf',x+6+i*W,y-5,18,5);
-     box(c,'#d8b86a',x+8+i*W,y-5,14,1);
-     // Fluted marble pilasters with capitals
-     box(c,'#f8f3e8',x+2+i*W,y+14,6,h-24);
-     box(c,'#b8b0a2',x+7+i*W,y+14,2,h-24);
-     box(c,'#d8b86a',x+1+i*W,y+14,8,2);
+    // Soaring white-marble Gothic bell-gable spire with golden chime bell
+    const cx=x+Math.floor(w/2);
+    box(c,ink,cx-18,roofTop-20,36,40);box(c,'#f2ede0',cx-16,roofTop-18,32,36);
+    box(c,ink,cx-12,roofTop-30,24,13);box(c,'#faf7ef',cx-10,roofTop-28,20,9);
+    box(c,'#e6c670',cx-3,roofTop-38,6,10);
+    box(c,'#242830',cx-7,roofTop-9,14,17);box(c,'#ecc664',cx-4,roofTop-3,8,9);box(c,'#fff4b8',cx-2,roofTop-2,3,4);
+    // Fluted white-marble Gothic pilasters & central circular rose stained-glass window above chapel doorway!
+    for(const px of [x+10,x+50,x+w-56,x+w-16]){
+     box(c,'#c6c0b2',px,y+16,6,h-30);box(c,'#faf7ef',px+1,y+16,2,h-32);
+    }
+    box(c,ink,cx-14,y+22,28,28);box(c,'#ccc4b4',cx-12,y+24,24,24);
+    box(c,'#366488',cx-9,y+27,18,18);box(c,'#74b4d8',cx-7,y+29,14,14);
+    box(c,'#f6d470',cx-4,y+32,8,8);box(c,'#fffbe0',cx-2,y+34,4,4);
+    box(c,'#ccc4b4',cx-9,y+35,18,2);box(c,'#ccc4b4',cx-1,y+27,2,18);
+    // Tall arched chapel stained-glass lancet windows
+    for(const wx of [x+20,x+w-40]){
+     box(c,ink,wx-2,y+24,22,42);box(c,'#a6a092',wx,y+26,18,38);
+     box(c,'#4c82a8',wx+2,y+28,14,34);box(c,'#f4d070',wx+5,y+36,8,20);box(c,'#fff8cc',wx+7,y+40,4,10);
     }
    }else if(military){
-    // Eastern Garrison fortress barracks: pitched slate shingle roof, crenellations, banner & spear rack
-    for(let z=0;z<4;z++){
-     box(c,ink,x+z*2,y-6+z*4,w-z*4,6);
-     box(c,z%2?'#4c5e72':'#384656',x+2+z*2,y-5+z*4,w-4-z*4,4);
-     for(let sx=x+8;sx<x+w-8;sx+=10)box(c,'#2a3542',sx,y-4+z*4,2,3);
+    // Garrison / Armory / Gatehouse: steep dark-slate roof + stone crenellations + smoking forge chimney on armory!
+    for(let z=0;z<5;z++){
+     const ins=z*3;
+     box(c,ink,x-3+ins,y+10-z*6,w+6-ins*2,8);
+     box(c,z%2?'#4c5e72':'#384656',x-1+ins,y+11-z*6,w+2-ins*2,6);
+     for(let sx=x+7+ins;sx<x+w-7-ins;sx+=10)box(c,'rgba(14,20,28,.28)',sx,y+12-z*6,2,4);
     }
-    box(c,'rgba(16,20,28,.34)',x+2,y+13,w-4,5);
+    box(c,'#8e9aa6',x+10,y-17,w-20,3);
     for(let i=0;i<f.w;i++){
-     box(c,ink,x+3+i*W,y-8,22,7);
-     box(c,'#607080',x+5+i*W,y-7,18,5);
-     box(c,'#9aa8b6',x+6+i*W,y-7,16,2);
+     box(c,ink,x+5+i*W,y-22,20,7);box(c,'#6e7c8c',x+7+i*W,y-21,16,5);box(c,'#a8b6c4',x+8+i*W,y-21,14,2);
     }
-    // Iron-banded garrison shield & halberd rack at base
-    box(c,'#3a424c',x+5,y+h-16,w-10,8);
-    box(c,'#8e3640',x+9,y+h-15,8,6);box(c,'#d8bc78',x+12,y+h-14,2,4);
-    box(c,'#9aa4ae',x+w-16,y+h-20,2,12);box(c,'#d4dce2',x+w-17,y+h-21,4,3);
-   }else if(market){
-    // Western Market trade-houses: steep terracotta tile roofs, brick chimney, scalloped crimson/cream awnings & brimming goods
-    for(let z=0;z<4;z++){
-     box(c,ink,x+z*2,y-7+z*4,w-z*4,6);
-     box(c,z%2?'#c46d54':'#9a4a3a',x+2+z*2,y-6+z*4,w-4-z*4,4);
-     for(let sx=x+7;sx<x+w-7;sx+=9)box(c,'#743428',sx,y-5+z*4,2,3);
+    if(armory){
+     // Smoking stone forge chimney & outdoor weapon rack
+     const chX=x+w-26,chY=y-36;
+     box(c,ink,chX,chY,16,30);box(c,'#6e747c',chX+2,chY+2,12,26);box(c,'#9aa0a8',chX+3,chY+2,5,24);
+     const sp=(now/1400)%1;
+     box(c,'rgba(220,224,230,.36)',chX+4+Math.sin(sp*6)*3,chY-10-sp*14,8,5);
+     box(c,'#3a424c',x+10,y+h-26,30,14);box(c,'#8e3640',x+14,y+h-24,9,9);box(c,'#d8bc78',x+17,y+h-23,3,6);
+     for(let sx=x+26;sx<=x+36;sx+=5)box(c,'#c8d4dc',sx,y+h-30,2,16);
     }
-    // Brick chimney on west corner
-    box(c,ink,x+6,y-14,12,12);box(c,'#965a4a',x+8,y-12,8,9);box(c,'#c28470',x+8,y-12,3,8);
-    // Scalloped red-and-cream market awning with drop shadow
-    box(c,'rgba(24,18,14,.32)',x+2,y+23,w-4,4);
-    box(c,ink,x+1,y+12,w-2,12);
-    for(let i=0;i<f.w*2;i++){
-     const aw=Math.floor((w-4)/(f.w*2));
-     box(c,i%2?'#f6ebd2':'#a83e44',x+2+i*aw,y+13,aw,8);
-     box(c,i%2?'#dacaa6':'#782a30',x+2+i*aw,y+20,aw,3);
-    }
-    // Brimming market crates (oranges, apples, azure cloth bolts) along street frontage
-    box(c,ink,x+5,y+h-14,w-10,9);box(c,'#8c6642',x+6,y+h-13,w-12,7);
-    box(c,'#e88a3e',x+9,y+h-13,7,4);box(c,'#f4d060',x+19,y+h-13,7,4);box(c,'#4c7ea2',x+w-20,y+h-13,9,4);
    }else{
-    // White Stag Inn / Guild Quarter: steep chestnut pitched timber roof, half-timber framing, glowing lantern sign
-    for(let z=0;z<4;z++){
-     box(c,ink,x+z*2,y-7+z*4,w-z*4,6);
-     box(c,z%2?'#9e6e4e':'#744e38',x+2+z*2,y-6+z*4,w-4-z*4,4);
-     for(let sx=x+7;sx<x+w-7;sx+=10)box(c,'#543626',sx,y-5+z*4,2,3);
+    // White Stag Inn & Lower Town Houses: towering pitched chestnut/terracotta shingle roof + stone chimney + Tudor timber framing!
+    const rDark=market?'#8a3e30':'#68422c',rMain=market?'#b85c46':'#8e5e3e',rHi=market?'#d87e62':'#b47e56';
+    // Stone chimney with animated drifting smoke
+    const chX=inn?x+w-28:x+10,chY=y-36;
+    box(c,ink,chX,chY,14,28);box(c,'#887e74',chX+2,chY+2,10,24);box(c,'#b8b0a4',chX+3,chY+2,4,22);
+    const sp=(now/1500)%1;
+    box(c,'rgba(246,242,232,.40)',chX+3+Math.sin(sp*6)*3,chY-9-sp*14,7,5);
+    box(c,'rgba(246,242,232,.24)',chX+6+Math.sin(sp*6+2)*4,chY-19-sp*12,8,5);
+    // Steep 6-course pitched tiled roof with timber gable eaves
+    for(let z=0;z<6;z++){
+     const ins=z*4;
+     box(c,ink,x-4+ins,y+12-z*6,w+8-ins*2,8);
+     box(c,z===5?rHi:(z%2?rMain:rDark),x-2+ins,y+13-z*6,w+4-ins*2,6);
+     for(let sx=x+6+ins;sx<x+w-6-ins;sx+=10)box(c,'rgba(28,16,12,.26)',sx,y+14-z*6,2,5);
     }
-    box(c,'rgba(22,18,14,.30)',x+2,y+13,w-4,4);
-    box(c,'#d4b27c',x+4,y+10,w-8,3);
-    for(let i=0;i<f.w;i++){
-     box(c,'#563d2e',x+3+i*W,y+14,5,h-24);
-     box(c,'#7c5b44',x+4+i*W,y+14,2,h-24);
+    box(c,'#e4c884',x+18,y-20,w-36,3); // timber ridge cap
+    // Deep overhanging eave shadow cast onto upper facade wall (critical for 3D solidity!)
+    box(c,'rgba(16,12,10,.36)',x+2,y+18,w-4,7);
+    // Exposed Tudor half-timber beams & diagonal braces
+    for(let i=0;i<=f.w;i++){
+     const bx=x+4+Math.round(i*(w-12)/f.w);
+     box(c,'#4a3222',bx,y+18,5,h-32);box(c,'#78543a',bx+1,y+18,2,h-32);
     }
-    // Hanging White Stag tavern lantern sign & cozy bench
-    box(c,ink,x+w-20,y+18,12,11);box(c,'#e6c478',x+w-19,y+19,10,9);box(c,'#7a4a36',x+w-17,y+21,6,5);
-    box(c,'#6e503a',x+10,y+h-15,w-24,7);box(c,'#c8a474',x+12,y+h-14,w-28,4);
+    box(c,'#4a3222',x+2,y+44,w-4,4); // horizontal 2nd-floor timber jetty beam!
+    if(inn){
+     // Cozy burgundy-and-cream striped inn porch awning + hanging wrought-iron White Stag tavern sign + oak barrels!
+     const mx=x+Math.floor(w/2);
+     for(let a=0;a<6;a++){
+      box(c,a%2?'#f4e8ce':'#983440',mx-27+a*9,y+46,9,9);
+      box(c,a%2?'#d6c8a6':'#6c222c',mx-27+a*9,y+54,9,3);
+     }
+     box(c,ink,x+w-22,y+24,16,14);box(c,'#ecc872',x+w-20,y+26,12,10);box(c,'#6e3e28',x+w-17,y+28,6,6);
+     box(c,'#3a281c',x+6,y+h-22,12,15);box(c,'#8c623e',x+7,y+h-21,10,13);box(c,'#545c66',x+7,y+h-17,10,2);
+    }
    }
-   // Arched / mullioned windows with warm golden interior lantern light & flower boxes!
-   for(let i=0;i<f.w;i++){
-    const xx=x+10+i*W,yy=market?y+28:y+22;
-    if(yy+16<y+h-6){
-     box(c,ink,xx-2,yy-2,17,18);
-     box(c,mortar,xx-1,yy-1,15,16);
-     box(c,formal?'#7ca4b4':military?'#5a7280':'#6e969e',xx+1,yy+1,11,12);
-     box(c,formal?'#f2f8ee':'#e2f0e2',xx+2,yy+2,4,4);
-     // Warm inviting amber interior candlelight inside windows
-     box(c,military?'#b89c6a':'#f2c86a',xx+5,yy+6,6,6);
-     if(!military)box(c,'#fff2b8',xx+7,yy+8,3,3);
-     box(c,mortar,xx+6,yy+1,2,12);
-     box(c,mortar,xx+1,yy+6,11,2);
+
+   // 4. Recessed Arched Oak Entrance Doorway + Protruding Stone Steps (for enterable buildings!)
+   if(inn||armory||chapel||f.tag==='house'){
+    const dx=x+Math.floor(w/2)-13,dy=y+h-36;
+    box(c,ink,dx-2,dy-2,28,38);
+    box(c,chapel?'#b8b2a2':'#4e3826',dx,dy,24,34);
+    box(c,chapel?'#5a6e82':armory?'#4c545e':'#7c5436',dx+3,dy+3,18,31);
+    box(c,chapel?'#7890a4':armory?'#646e7a':'#9c6c48',dx+5,dy+5,14,27);
+    box(c,'#f2d06e',dx+15,dy+18,3,3);
+    // Protruding carved stone entrance steps anchoring doorway to the cobblestones!
+    box(c,'#54524c',dx-4,y+h-3,32,6);box(c,'#d8d2c2',dx-2,y+h-2,28,4);box(c,'#f2ede0',dx,y+h-2,24,1);
+    // Warm porch wall lantern beside door
+    box(c,'#f8da78',dx+27,dy+8,4,6);box(c,'#fffbe0',dx+28,dy+9,2,3);
+   }
+
+   // 5. Deep 3D Recessed Glowing Windows with Timber Shutters & Overflowing Flower Boxes
+   if(!chapel){
+    const winY=y+26;
+    for(let i=0;i<f.w;i++){
+     const xx=x+11+i*W;
+     // Skip center bay over arched doorway if narrow
+     if(f.w<=4&&(i===1||i===2)&&winY+20>y+h-38)continue;
+     box(c,ink,xx-3,winY-2,20,19);
      if(!military){
-      // Vivid flower box beneath civilian & palace windows
-      box(c,ink,xx-2,yy+13,17,4);box(c,'#467642',xx-1,yy+12,15,3);
-      box(c,'#e66c78',xx+1,yy+12,3,2);box(c,'#f2ce66',xx+8,yy+12,3,2);
+      box(c,market?'#8a4036':'#4e6e48',xx-6,winY-1,4,17);
+      box(c,market?'#8a4036':'#4e6e48',xx+16,winY-1,4,17);
+     }
+     box(c,mortar,xx-1,winY,16,15);
+     box(c,military?'#526a7a':'#f4cc6c',xx+1,winY+2,12,11);
+     box(c,military?'#8eb2c4':'#fff6c8',xx+2,winY+3,5,5);
+     box(c,mortar,xx+6,winY+2,2,11);box(c,mortar,xx+1,winY+7,12,2);
+     if(!military){
+      box(c,ink,xx-3,winY+14,20,5);box(c,'#3e723c',xx-2,winY+13,18,4);
+      box(c,'#ea6874',xx,winY+13,4,2);box(c,'#f6d464',xx+6,winY+13,4,2);box(c,'#fff2dc',xx+12,winY+13,3,2);
      }
     }
    }
   }
  }
  function districtPaving(c){
-  // Subtle paving curbs & drainage across the spacious 42x28 districts
-  for(const [x,y] of [[14,14],[15,14],[26,14],[27,14],[16,23],[25,23]]){
+  for(const [x,y] of [[14,16],[15,16],[26,16],[27,16],[16,25],[25,25]]){
    box(c,'#7c7e79',x*W+2,y*W+27,26,2);
    box(c,'#b6b3a6',x*W+5,y*W+26,19,1);
   }
-  for(const y of [12,13,14,15,16]){
+  for(const y of [14,15,16,17,18]){
    box(c,'#666e72',38*W+3,y*W+12,24,1);
    box(c,'#747267',3*W+4,y*W+29,21,2);
   }
  }
  function street(c,map){
   if(!on()||map!=='capital')return false;
-  // 3-Phase Royal Capital Atmospheric Storytelling across the Grand 42x28 City
   const ceremonyDone=typeof isEventComplete==='function'&&isEventComplete('alpha.capital.ceremony');
   const wartime=typeof getWorldSwitch==='function'&&getWorldSwitch('returnedKingdom');
   const wave=Math.round(Math.sin((typeof Date!=='undefined'?Date.now():0)/280)*1.6);
 
-  // 1. Central Royal Fountain Plaza: Carved Octagonal Marble Sun-Compass Mosaic surrounding capitalFountain (20,15)
-  const fcx=20*W+16,fcy=15*W+16;
+  // 1. Central Royal Fountain Plaza: Carved Octagonal Marble Sun-Compass Mosaic surrounding capitalFountain (20,17)
+  const fcx=20*W+16,fcy=17*W+16;
   box(c,'rgba(44,40,34,.18)',fcx-68,fcy-48,136,96);
   box(c,'rgba(44,40,34,.18)',fcx-48,fcy-68,96,136);
   box(c,'#d8d2be',fcx-64,fcy-44,128,88);
@@ -319,13 +540,12 @@ const CapitalEnvironment=(()=>{
   box(c,'#eae4d2',fcx-58,fcy-38,116,76);
   box(c,'#eae4d2',fcx-38,fcy-58,76,116);
   box(c,'#bfa264',fcx-60,fcy-1,120,2);box(c,'#bfa264',fcx-1,fcy-60,2,120);
-  // Wooden plaza benches flanking the fountain square
-  for(const [bx,by] of [[17,14],[23,14]]){
+  // Plaza benches & corner flower parterres
+  for(const [bx,by] of [[17,16],[23,16]]){
    box(c,'rgba(16,20,24,.24)',bx*W+3,by*W+23,28,5);
    box(c,'#4c3624',bx*W+2,by*W+16,28,9);box(c,'#9c764c',bx*W+4,by*W+17,24,5);box(c,'#c8a06e',bx*W+5,by*W+17,22,2);
   }
-  // Flower parterres at the 4 corners of Central Fountain Plaza (festive gold/crimson vs wartime white vigils)
-  for(const [fx,fy] of [[17,12],[24,12],[17,18],[24,18]]){
+  for(const [fx,fy] of [[17,14],[24,14],[17,20],[24,20]]){
    box(c,'#6e6c64',fx*W+4,fy*W+10,24,14);
    box(c,wartime?'#4e5d52':'#4c7246',fx*W+6,fy*W+12,20,10);
    if(wartime){
@@ -336,29 +556,32 @@ const CapitalEnvironment=(()=>{
    }
   }
 
-  // 2. North Royal Castle Forecourt: Ceremonial Steps, Crimson Carpet, Tall Royal Banners & Gilded Braziers
-  for(const y of [8,9])box(c,'#c7c1b4',18*W,y*W+28,6*W,3);
-  box(c,wartime?'#593238':'#7c2f38',20*W+10,1*W+4,44,8*W-6);
-  box(c,wartime?'#9c9278':'#d5b872',20*W+12,1*W+4,3,8*W-6);box(c,wartime?'#9c9278':'#d5b872',21*W+19,1*W+4,3,8*W-6);
+  // 2. Royal Castle Ceremonial Forecourt: Crimson Carpet leading directly UP TO THE ROYAL CASTLE GATES (y=6..11)!
+  for(const y of [10,11])box(c,'#c7c1b4',18*W,y*W+28,6*W,3);
+  box(c,wartime?'#593238':'#7c2f38',20*W+10,6*W+10,44,5*W+16);
+  box(c,wartime?'#9c9278':'#d5b872',20*W+12,6*W+10,3,5*W+16);box(c,wartime?'#9c9278':'#d5b872',21*W+19,6*W+10,3,5*W+16);
   for(const x of [17,24]){
-   box(c,'#3c383a',x*W+15,5*W,3,56);box(c,'#d8bc74',x*W+14,5*W-2,5,4);
-   box(c,wartime?'#5e4348':'#9c3642',x*W+18,5*W+5,14,wartime?24:34);
-   box(c,wartime?'#4e353a':'#782430',x*W+18+wave,5*W+23,14,wartime?8:16);
-   box(c,wartime?'#9e9684':'#e6c874',x*W+19,5*W+7,12,3);
-   box(c,wartime?'#9e9684':'#e6c874',x*W+22,5*W+14,6,8);
+   box(c,'#3c383a',x*W+15,7*W,3,56);box(c,'#d8bc74',x*W+14,7*W-2,5,4);
+   box(c,wartime?'#5e4348':'#9c3642',x*W+18,7*W+5,14,wartime?24:34);
+   box(c,wartime?'#4e353a':'#782430',x*W+18+wave,7*W+23,14,wartime?8:16);
+   box(c,wartime?'#9e9684':'#e6c874',x*W+19,7*W+7,12,3);
+   box(c,wartime?'#9e9684':'#e6c874',x*W+22,7*W+14,6,8);
   }
   for(const gx of [18,23]){
-   const bg=c.createRadialGradient?.(gx*W+16,5*W+16,3,gx*W+16,5*W+16,28);
+   const bg=c.createRadialGradient?.(gx*W+16,7*W+16,3,gx*W+16,7*W+16,28);
    if(bg&&typeof bg.addColorStop==='function'){
     bg.addColorStop(0,wartime?'rgba(220,170,110,0.22)':'rgba(255,204,104,0.34)');bg.addColorStop(1,'rgba(255,160,60,0)');
-    c.fillStyle=bg;c.beginPath();c.arc(gx*W+16,5*W+16,28,0,Math.PI*2);c.fill();
+    c.fillStyle=bg;c.beginPath();c.arc(gx*W+16,7*W+16,28,0,Math.PI*2);c.fill();
    }
-   box(c,'#463d36',gx*W+11,5*W+14,10,12);box(c,'#d4af62',gx*W+10,5*W+12,12,4);
-   box(c,'#f28838',gx*W+12,5*W+7,8,6);box(c,'#fff2b8',gx*W+14,5*W+8,4,3);
+   box(c,'#463d36',gx*W+11,7*W+14,10,12);box(c,'#d4af62',gx*W+10,7*W+12,12,4);
+   box(c,'#f28838',gx*W+12,7*W+7,8,6);box(c,'#fff2b8',gx*W+14,7*W+8,4,3);
   }
-  // Phase A (Festive Pre-Ceremony): celebratory red-and-white pennant garlands spanning the Grand Boulevard
+  // Northwest Frontline Highway Gatehouse Archway Banner at x=5..8, y=1
+  box(c,'#3a3c42',5*W,1*W,4*W,10);box(c,'#9c9aa0',5*W+2,1*W+2,4*W-4,5);
+  box(c,'#8c3440',6*W+14,1*W+6,36,8);box(c,'#e6c874',6*W+20,1*W+8,24,3);
+  // Festive red-and-white pennants spanning the Grand Boulevard
   if(!wartime&&!ceremonyDone){
-   for(const gy of [5*W+2,10*W+2,22*W+2]){
+   for(const gy of [12*W+2,24*W+2]){
     box(c,'#5c4a38',17*W+10,gy,8*W-20,2);
     for(let i=0;i<11;i++){
      const gx=17*W+16+i*21;
@@ -368,8 +591,8 @@ const CapitalEnvironment=(()=>{
    }
   }
 
-  // 3. Ornate Wrought-Iron Streetlamps with Smooth Circular Golden Light Pools across the Grand Boulevard & Districts
-  for(const [lx,ly] of [[18,12],[23,12],[18,18],[23,18],[18,24],[23,24],[12,13],[29,13]]){
+  // 3. Ornate Wrought-Iron Streetlamps with Smooth Circular Golden Light Pools
+  for(const [lx,ly] of [[18,14],[23,14],[18,20],[23,20],[18,26],[23,26],[12,15],[29,15],[4,7],[9,7]]){
    const gx=lx*W+16,gy=ly*W+8;
    const lg=c.createRadialGradient?.(gx,gy,2,gx,gy,28);
    if(lg&&typeof lg.addColorStop==='function'){
@@ -385,77 +608,73 @@ const CapitalEnvironment=(()=>{
    box(c,wartime?'#e6f0f8':'#fff8d6',px+2,py+3,3,2);
   }
 
-  // 4. Blossoming Ornamental Boulevard & Park Trees on manicured emerald lawns (ZERO overlap with roads or signs!)
+  // 4. Blossoming Ornamental Boulevard & Park Trees on manicured emerald lawns
   if(typeof HD2DAtlas!=='undefined'){
-   for(const [tx,ty] of [[17,10],[24,10],[17,20],[24,20],[14,26],[27,26],[5,7],[29,7],[38,10],[2,26],[39,26]]){
+   for(const [tx,ty] of [[17,12],[24,12],[17,22],[24,22],[14,28],[27,28],[30,4],[38,12],[2,28],[39,28],[2,9]]){
     HD2DAtlas.drawTree(c,tx,ty,'ornamental');
    }
   }
 
-  // 5. West Central Market: Spacious open-air merchant booths with striped awnings & seasonal produce
-  for(const [x,y,color] of [[3,11,'#9c4348'],[7,11,'#a87c46'],[11,11,'#4f7688'],[3,15,'#7e5676'],[11,15,'#647c4e']]){
-   box(c,'rgba(16,20,16,.28)',x*W+4,y*W+24,26,5);
-   box(c,'#574639',x*W+3,y*W+9,26,18);
-   box(c,wartime?'#5c5854':color,x*W+2,y*W+5,28,8);
-   box(c,'#f0e4c8',x*W+7,y*W+5,6,8);box(c,'#f0e4c8',x*W+19,y*W+5,6,8);
-   box(c,'#7c5942',x*W+6,y*W+19,20,6);
-   if(!wartime){
-    box(c,'#e68642',x*W+8,y*W+14,5,4);box(c,'#f4d060',x*W+15,y*W+14,5,4);box(c,'#5c9462',x*W+21,y*W+14,4,4);
-   }else{
-    box(c,'#665c52',x*W+13,y*W+15,6,3);
-   }
-  }
-  // Residential Southwest Lane (between Rowhouse & White Stag Inn): cozy laundry line
-  box(c,'#5c4836',7*W+6,19*W+12,2*W-12,2);
-  box(c,'#ece2c8',7*W+10,19*W+14,12,10);box(c,wartime?'#6a747c':'#7c98ad',7*W+26,19*W+14,12,9);box(c,wartime?'#86746e':'#c67e72',8*W+8,19*W+14,11,9);
+  // 5. True 3D Sculpted Wooden Market Pavilions (2x2 footprint with 4 posts, sloped striped awnings & brimming displays!)
+  drawMarketBooth(c,2,12,'#9e3c42','fruits',wartime);
+  drawMarketBooth(c,9,12,'#46728a','cloth',wartime);
+  drawMarketBooth(c,2,17,'#b06e3e','bakery',wartime);
+  drawMarketBooth(c,10,17,'#884e76','flowers',wartime);
+
+  // Cozy Lower-Town laundry line between Rowhouse & White Stag Inn
+  box(c,'#5c4836',7*W+6,21*W+12,2*W-12,2);
+  box(c,'#ece2c8',7*W+10,21*W+14,12,10);box(c,wartime?'#6a747c':'#7c98ad',7*W+26,21*W+14,12,9);box(c,wartime?'#86746e':'#c67e72',8*W+8,21*W+14,11,9);
 
   // 6. East Garrison Supply Stacks & Pennants
-  for(const [x,y] of [[37,13],[38,15],[27,16]]){
+  for(const [x,y] of [[37,15],[38,17],[27,18]]){
    box(c,'rgba(14,18,24,.28)',x*W+4,y*W+22,24,5);
    box(c,'#555b5e',x*W+4,y*W+14,22,11);box(c,'#a6a397',x*W+6,y*W+12,18,6);box(c,'#736c64',x*W+9,y*W+16,4,3);
   }
   if(ceremonyDone||wartime){
-   for(const [x,y] of [[36,12],[37,16]]){box(c,'#4f4438',x*W+5,y*W+16,22,11);box(c,'#8d7556',x*W+7,y*W+14,18,6);box(c,'#c6b084',x*W+10,y*W+16,12,2)}
+   for(const [x,y] of [[36,14],[37,18]]){box(c,'#4f4438',x*W+5,y*W+16,22,11);box(c,'#8d7556',x*W+7,y*W+14,18,6);box(c,'#c6b084',x*W+10,y*W+16,12,2)}
   }
 
-  // 7. Phase B celebratory petals & Phase C memorial white blossoms around the Central Fountain (20,15)
+  // 7. Phase B celebratory petals & Phase C memorial white blossoms around Central Fountain (20,17)
   if(ceremonyDone&&!wartime){
-   for(const [x,y] of [[18,14],[19,13],[22,14],[20,17],[21,16],[19,17],[22,16]]){
+   for(const [x,y] of [[18,16],[19,15],[22,16],[20,19],[21,18],[19,19],[22,18]]){
     box(c,'#b96966',x*W+5,y*W+21,4,2);box(c,'#e5dcca',x*W+21,y*W+12,3,2);
    }
   }
   if(wartime){
-   for(const [mx,my] of [[19*W+24,15*W+26],[20*W+6,15*W+28],[20*W+19,15*W+27],[21*W+2,15*W+24]]){
+   for(const [mx,my] of [[19*W+24,17*W+26],[20*W+6,17*W+28],[20*W+19,17*W+27],[21*W+2,17*W+24]]){
     box(c,'#4e6a50',mx,my,7,4);box(c,'#f5f7f2',mx+1,my-1,3,3);box(c,'#f5f7f2',mx+4,my,2,2);
    }
   }
 
+  // 8. Draw Towering Aldina Royal Castle + All 3D Grounded Capital Buildings!
+  drawRoyalCastle(c,wartime,wave);
   districtFacades(c);districtPaving(c);
 
-  // 8. Crisp District Signboards placed cleanly over open plaza entrances (ZERO overlaps!)
-  const sign=(sx,sy,label)=>{
+  // 9. Crisp District & Highway Gate Signboards
+  const sign=(sx,sy,label,sw=78)=>{
    const px=sx*W,py=sy*W+6;
-   box(c,'rgba(28,24,20,.92)',px,py,72,17);
-   box(c,'#d4b678',px+1,py+1,70,1);box(c,'#886e44',px+1,py+15,70,1);
-   c.fillStyle='#f6ecd4';c.font='bold 9px system-ui';c.textAlign='center';
-   c.fillText(label,px+36,py+12);c.textAlign='start';
+   box(c,'rgba(24,20,18,.94)',px,py,sw,17);
+   box(c,'#e0be78',px+1,py+1,sw-2,1);box(c,'#886e44',px+1,py+15,sw-2,1);
+   c.fillStyle='#faf0d8';c.font='bold 9px system-ui';c.textAlign='center';
+   c.fillText(label,px+Math.floor(sw/2),py+12);c.textAlign='start';
   };
-  sign(6,9,'中央市場');
-  sign(10,18,'白鹿亭・下町');
-  sign(31,11,'軍務街');
-  sign(34,4,'白石の礼拝堂');
-  sign(19.5,3,'王城正門');
+  sign(5.2,0.85,'↑ 北西門・灰の街道へ',112);
+  sign(6,11,'中央市場',72);
+  sign(10,20,'白鹿亭・下町',80);
+  sign(31,13,'軍務街',72);
+  sign(34.2,6.9,'白石の礼拝堂',82);
+  sign(19.6,5.05,'アルディナ王城',88);
   return true
  }
  // Ambient strolling residents across towns & final front camps (purely visual, zero collision blocking!)
  // Speeds are calm medieval strolling speeds in tiles/second (tps), with natural endpoint pauses.
  const regionWalkers=Object.freeze({
   capital:[
-   {pts:[[19,9],[19,24]],tps:1.18,pause:2100,festive:'strollerFestive',after:'strollerScholar',wartime:'strollerSomber'},
-   {pts:[[4,14],[13,14]],tps:1.05,pause:2400,festive:'strollerMerchant',after:'strollerBaker',wartime:'strollerSomber'},
-   {pts:[[6,24],[15,24]],tps:1.34,pause:1700,festive:'capitalStreetKid',after:'strollerBard',wartime:'strollerPatrol'},
-   {pts:[[28,13],[37,13]],tps:1.02,pause:2200,festive:'strollerPatrol',after:'strollerPatrol',wartime:'strollerPatrol'},
-   {pts:[[27,23],[36,23]],tps:1.08,pause:2300,festive:'strollerScholar',after:'strollerFestive',wartime:'strollerSomber'}
+   {pts:[[19,11],[19,26]],tps:1.18,pause:2100,festive:'strollerFestive',after:'strollerScholar',wartime:'strollerSomber'},
+   {pts:[[4,16],[13,16]],tps:1.05,pause:2400,festive:'strollerMerchant',after:'strollerBaker',wartime:'strollerSomber'},
+   {pts:[[6,26],[15,26]],tps:1.34,pause:1700,festive:'capitalStreetKid',after:'strollerBard',wartime:'strollerPatrol'},
+   {pts:[[28,15],[37,15]],tps:1.02,pause:2200,festive:'strollerPatrol',after:'strollerPatrol',wartime:'strollerPatrol'},
+   {pts:[[27,25],[36,25]],tps:1.08,pause:2300,festive:'strollerScholar',after:'strollerFestive',wartime:'strollerSomber'}
   ],
   village:[
    {pts:[[6,7],[16,7]],tps:1.32,pause:1900,festive:'strollerChild',after:'strollerChild',wartime:'strollerChild'},
@@ -652,10 +871,13 @@ const CapitalEnvironment=(()=>{
   }else if(o.id==='residentialWell'){
    box(c,'#464a50',x+5,y+12,22,15);box(c,'#94928a',x+7,y+14,18,11);
    box(c,'#4a7686',x+9,y+16,14,6);box(c,'#8fc2d0',x+11,y+17,6,2);
-  }else if(o.id==='marketBazaar'){
-   box(c,'#5a4230',x+3,y+13,26,14);box(c,'#9c4347',x+2,y+6,28,7);
-   box(c,'#efe3c8',x+8,y+6,6,7);box(c,'#efe3c8',x+20,y+6,6,7);
-   box(c,'#e6b85c',x+7,y+15,6,5);box(c,'#587c96',x+17,y+15,8,5);
+  }else if(o.id==='marketBazaar'||o.id==='capitalMarket'){
+   // Grounded 3D wooden produce crate & oak barrel cluster (no flat 2D mini-stalls!)
+   box(c,'rgba(14,18,22,.32)',x+3,y+23,28,6);
+   box(c,'#241a14',x+2,y+11,16,15);box(c,'#7c5838',x+4,y+13,12,11);box(c,'#b88e5c',x+4,y+13,12,3);
+   box(c,'#d84844',x+5,y+9,5,5);box(c,'#f0b848',x+10,y+10,5,4);box(c,'#649c4c',x+8,y+8,4,3);
+   box(c,'#241a14',x+18,y+13,12,14);box(c,'#885e3a',x+19,y+14,10,12);box(c,'#545c64',x+19,y+17,10,2);box(c,'#545c64',x+19,y+22,10,2);
+   box(c,'#c8a06e',x+20,y+14,8,2);
   }else if(o.id==='garrisonBoard'){
    box(c,'#3a424c',x+5,y+6,22,21);box(c,'#687482',x+7,y+8,18,14);
    box(c,'#e6dec8',x+9,y+10,6,7);box(c,'#dfd4ba',x+16,y+10,6,6);

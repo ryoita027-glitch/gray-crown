@@ -767,8 +767,8 @@ function drawObject(o){if(RyuneOutskirts.drawObject(ctx,state.map,o,!!state.worl
  if(o.id==='yukiMemorial'){ctx.fillStyle='#77746d';ctx.fillRect(px+7,py+5,18,25);ctx.fillStyle='#b9b29d';ctx.fillRect(px+11,py+10,10,3);ctx.fillRect(px+13,py+16,6,2)}
  if(o.id==='elsiaTablet'){ctx.fillStyle='#aaa38f';ctx.fillRect(px+5,py+6,22,24);ctx.fillStyle='#d0c7ab';for(let i=0;i<3;i++)ctx.fillRect(px+9,py+11+i*5,14,2)}
  if(['ashCache','frontierCache','empireCache','imperialCache','yukiCache','elsiaCache'].includes(o.id)){ctx.fillStyle='#6f5439';ctx.fillRect(px+5,py+11,22,16);ctx.fillStyle='#9b7b4d';ctx.fillRect(px+7,py+8,18,6);ctx.strokeStyle='#342a21';ctx.strokeRect(px+5,py+11,22,16)}
- if(o.id==='royalCastle'){ctx.fillStyle='#c9b66e';ctx.fillRect(px+10,py+8,12,18);ctx.fillStyle='#7d3f48';ctx.fillRect(px+13,py+11,6,8)}
- if(['capitalMarket','imperialMarket'].includes(o.id)){ctx.fillStyle='#765037';ctx.fillRect(px+4,py+19,24,7);ctx.fillStyle=o.id==='capitalMarket'?'#a44d51':'#4e6e84';ctx.fillRect(px+3,py+7,26,9)}
+ if(o.id==='royalCastle'&&!(state.map==='capital'&&typeof CapitalEnvironment!=='undefined'&&CapitalEnvironment.enabled)){ctx.fillStyle='#c9b66e';ctx.fillRect(px+10,py+8,12,18);ctx.fillStyle='#7d3f48';ctx.fillRect(px+13,py+11,6,8)}
+ if(o.id==='imperialMarket'||(o.id==='capitalMarket'&&!(state.map==='capital'&&typeof CapitalEnvironment!=='undefined'&&CapitalEnvironment.enabled))){ctx.fillStyle='#765037';ctx.fillRect(px+4,py+19,24,7);ctx.fillStyle=o.id==='capitalMarket'?'#a44d51':'#4e6e84';ctx.fillRect(px+3,py+7,26,9)}
  if(o.id==='capitalFountain'||o.id==='sacredSpring'){
   const t=Date.now()/260,sp=Math.sin(t)*1.6;
   ctx.fillStyle='rgba(14,18,26,.30)';ctx.beginPath();ctx.ellipse(px+17,py+22,15,10,0,0,Math.PI*2);ctx.fill();
@@ -930,8 +930,8 @@ function drawWorldAtmosphere(map){
    ctx.beginPath();ctx.moveTo(sx,0);ctx.lineTo(sx+82,0);ctx.lineTo(sx-48,h);ctx.lineTo(sx-130,h);ctx.closePath();ctx.fill();
   }
   if(map==='capital'){
-   for(const [lx,ly] of [[18,12],[23,12],[18,18],[23,18],[18,24],[23,24],[12,13],[29,13],[18,5],[23,5]])bloom(lx*TILE+16,ly*TILE+14,52,'rgba(255,204,112,.18)');
-   bloom(20.5*TILE+16,15*TILE+16,64,'rgba(148,224,244,.14)');
+   for(const [lx,ly] of [[18,14],[23,14],[18,20],[23,20],[18,26],[23,26],[12,15],[29,15],[18,7],[23,7]])bloom(lx*TILE+16,ly*TILE+14,52,'rgba(255,204,112,.18)');
+   bloom(20.5*TILE+16,17*TILE+16,64,'rgba(148,224,244,.14)');
   }else if(map==='village'){
    for(const [lx,ly] of [[4,4],[18,4],[4,11],[18,11]])bloom(lx*TILE+48,ly*TILE+62,48,'rgba(255,206,118,.15)');
   }

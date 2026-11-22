@@ -135,25 +135,14 @@ const OpeningWorldLife=(()=>{
   }
  }
  function capital(c){
-  // Grand 42x28 Royal Capital market wares & ration line markings aligned cleanly to spacious districts
-  for(const [tx,ty,cloth] of [[3,11,'#a76655'],[7,11,'#aa8d58'],[11,11,'#628792']]){
-   const [x,y]=at(tx,ty);
-   R(c,'#4a4136',x+1,y+10,30,17);
-   R(c,cloth,x+1,y+3,30,9);
-   for(let k=0;k<3;k++)R(c,k%2?'#e1cfac':'#c8b086',x+3+k*10,y+3,8,3);
-   R(c,'#d2b58a',x+4,y+15,24,3);
-   for(const ox of [7,14,21]){
-    R(c,'#ad7749',x+ox,y+18,6,4);
-    R(c,'#d9a875',x+ox+1,y+18,4,1)
-   }
-  }
-  for(const [tx,ty] of [[28,15],[29,15],[30,15],[28,16],[29,16]]){
+  // Subtle chalk queue lines & ceremonial stone inlays (3D market booths are now rendered by CapitalEnvironment!)
+  for(const [tx,ty] of [[28,17],[29,17],[30,17],[28,18],[29,18]]){
    const [x,y]=at(tx,ty);
    R(c,'#d1c5b3',x+6,y+25,18,2);
    R(c,'#827a71',x+8,y+28,14,1);
   }
-  basket(c,30*32+5,14*32+9,'empty');
-  for(const [tx,ty] of [[18,6],[20,6],[22,6]]){
+  basket(c,30*32+5,16*32+9,'empty');
+  for(const [tx,ty] of [[18,8],[20,8],[22,8]]){
    const [x,y]=at(tx,ty);
    R(c,'#cfc7b8',x+9,y+25,15,2);
    R(c,'#e4d7bb',x+11,y+24,11,1)

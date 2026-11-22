@@ -116,45 +116,51 @@ function makeNorthWatchTiles(){
  return finishTiles(g)
 }
 function makeCapitalTiles(){
- // Grand 42x28 Royal Capital of Aldina: spacious avenues, distinct breathing districts, zero crowding!
- const g=makeBlankRegion('G','K',42,28);
- // Grand North-South Royal Boulevard (4 tiles wide!) + open North/South Royal Gates at x=20,21
- paintRect(g,19,1,4,26,'A');
- g[0][20]=g[0][21]='A';g[27][20]=g[27][21]='A';
- // South Entrance Welcome Plaza (y=23..26) flanked by royal lawns
- paintRect(g,16,23,10,3,'A');
- // Central Royal Fountain Plaza (x=16..25, y=12..18)
- paintRect(g,16,12,10,7,'A');
- // North Royal Castle Forecourt & Ceremonial Terrace (x=11..30, y=4..9)
- paintRect(g,11,4,20,6,'A');
- paintRect(g,17,1,8,4,'A'); // Wide ceremonial approach to the Royal Castle Gate
- // West District: Central Market Promenade (y=10..16) & Lower Residential/White Stag Inn Quarter (y=18..25)
- paintRect(g,2,10,13,7,'A');
- paintRect(g,14,13,3,3,'A'); // Wide boulevard link to Market
- paintRect(g,2,18,14,8,'A');
- paintRect(g,15,22,5,3,'A'); // Wide boulevard link to White Stag Inn & Townhouses
- paintRect(g,6,16,3,3,'A'); // North-south market-to-inn alley
- // East District: Quiet White-Stone Chapel Courtyard (y=5..10), Garrison Parade Ground (y=12..17) & Armory Quarter (y=18..25)
- paintRect(g,31,5,9,6,'A');
- paintRect(g,34,10,3,3,'A'); // Peaceful stone walkway from Garrison to Chapel
- paintRect(g,27,12,13,6,'A');
- paintRect(g,25,13,3,3,'A'); // Wide boulevard link to Garrison
- paintRect(g,26,18,14,8,'A');
- paintRect(g,22,22,5,3,'A'); // Wide boulevard link to Armory & Garrison Barracks
- paintRect(g,31,17,3,2,'A'); // Garrison-to-armory link
- // Grand Architecture Blocks ('H' — every block matches CapitalEnvironment.facades!)
- paintRect(g,8,1,9,3,'H');   // West Royal Palace Wing
- paintRect(g,25,1,9,3,'H');  // East Royal Palace Wing
- paintRect(g,3,2,4,3,'H');   // West Terrace Watchtower / Trade Hall
- paintRect(g,35,2,4,3,'H');  // East Terrace Watchtower
- paintRect(g,33,5,5,3,'H');  // White-Stone Royal Chapel (quiet northeast terrace!)
- paintRect(g,3,19,4,3,'H');  // Lower Town Residential Rowhouse
- paintRect(g,9,19,5,3,'H');  // White Stag Inn
- paintRect(g,28,19,4,3,'H'); // Royal Capital Armory
- paintRect(g,34,19,5,3,'H'); // Eastern Garrison Barracks
- // Manicured floral garden parterres flanking the Grand Boulevard
- paintRect(g,17,10,2,2,'G');paintRect(g,23,10,2,2,'G');
- paintRect(g,17,19,2,3,'G');paintRect(g,23,19,2,3,'G');
+ // Grand 42x30 Royal Capital of Aldina:
+ // - Towering Royal Castle crowns the north end of the Grand Boulevard & Red Carpet (x=13..28, y=1..5)
+ // - Dedicated Northwest Highway Gate (x=6..7, y=0) leads to Ash Road & the Frontline (NOT through the castle!)
+ const g=makeBlankRegion('G','K',42,30);
+ // Close default north center exit (that's now the Royal Castle!); open South Royal Gate (20..21, 29) & NW Highway Gate (6..7, 0)!
+ g[0][20]=g[0][21]='K';
+ g[0][6]=g[0][7]='A';
+ g[29][20]=g[29][21]='A';
+ // Grand North-South Royal Boulevard (4 tiles wide, y=6..28)
+ paintRect(g,19,6,4,23,'A');
+ // South Entrance Welcome Plaza (y=25..28)
+ paintRect(g,16,25,10,3,'A');
+ // Central Royal Fountain Plaza (x=16..25, y=14..20)
+ paintRect(g,16,14,10,7,'A');
+ // North Royal Castle Forecourt & Ceremonial Terrace (x=11..30, y=6..11)
+ paintRect(g,11,6,20,6,'A');
+ // Dedicated Northwest Highway Road (x=5..8, y=1..12) linking Central Market -> NW Frontline City Gate!
+ paintRect(g,5,1,4,12,'A');
+ // West District: Central Market Promenade (y=12..18) & Lower Residential/White Stag Inn Quarter (y=20..27)
+ paintRect(g,2,12,13,7,'A');
+ paintRect(g,14,15,3,3,'A');
+ paintRect(g,2,20,14,8,'A');
+ paintRect(g,15,24,5,3,'A');
+ paintRect(g,6,18,3,3,'A');
+ // East District: Quiet White-Stone Chapel Courtyard (y=7..12), Garrison Parade Ground (y=14..19) & Armory Quarter (y=20..27)
+ paintRect(g,31,7,9,6,'A');
+ paintRect(g,34,12,3,3,'A');
+ paintRect(g,27,14,13,6,'A');
+ paintRect(g,25,15,3,3,'A');
+ paintRect(g,26,20,14,8,'A');
+ paintRect(g,22,24,5,3,'A');
+ paintRect(g,31,19,3,2,'A');
+ // Grand Architecture Blocks ('H' — every block matches CapitalEnvironment facades + Royal Castle!)
+ paintRect(g,13,1,16,5,'H');  // TOWERING ALDINA ROYAL CASTLE (crowns the red carpet!)
+ paintRect(g,2,2,3,3,'H');    // Northwest Gatehouse West Tower
+ paintRect(g,9,2,3,3,'H');    // Northwest Gatehouse East Tower
+ paintRect(g,35,2,4,3,'H');   // Northeast Terrace Watchtower
+ paintRect(g,33,7,5,3,'H');   // White-Stone Royal Chapel
+ paintRect(g,3,21,4,3,'H');   // Lower Town Residential Rowhouse
+ paintRect(g,9,21,5,3,'H');   // White Stag Inn
+ paintRect(g,28,21,4,3,'H');  // Royal Capital Armory
+ paintRect(g,34,21,5,3,'H');  // Eastern Garrison Barracks
+ // Manicured emerald garden parterres flanking the Grand Boulevard
+ paintRect(g,17,12,2,2,'G');paintRect(g,23,12,2,2,'G');
+ paintRect(g,17,21,2,3,'G');paintRect(g,23,21,2,3,'G');
  return finishTiles(g)
 }
 function makeAshRoadTiles(){
@@ -410,20 +416,20 @@ const maps={
   {id:'bellKeeper',x:17,y:5,name:'鐘楼守の老匠・アルト'}
  ],objects:[{id:'watchCamp',x:15,y:11},{id:'pilgrimDiary',x:13,y:4},{id:'brokenBell',x:5,y:4},{id:'watchAlpha',x:7,y:8},{id:'watchVault',x:4,y:8}]},
  capital:{name:'アルディナ王都',tag:'白石の王城と大通り',tiles:makeCapitalTiles(),npcs:[
-  {id:'capitalOfficial',x:21,y:7,name:'王都係官',hideWhen:'capitalCeremony'},
-  {id:'capitalCitizen',x:17,y:15,name:'王都市民'},
-  {id:'capitalFlowerGirl',x:10,y:14,name:'花売りの少女'},
-  {id:'capitalRecruit',x:33,y:14,name:'新兵'},
-  {id:'capitalVendor',x:6,y:13,name:'市場商人マロ'},
-  {id:'rationMother',x:29,y:15,name:'配給待ちの母親'},
-  {id:'capitalScholar',x:24,y:16,name:'王都の地図学者・フェリクス'},
-  {id:'capitalCrier',x:23,y:18,name:'王都の瓦版売り・テオド'},
-  {id:'capitalBakerWife',x:14,y:23,name:'下町のパン売り・マルタ'},
-  {id:'capitalShopper',x:12,y:12,name:'市場の買い物客・アンナ'},
-  {id:'capitalStreetKid',x:18,y:17,name:'大通りの少年・トマ'},
-  {id:'capitalOldGuard',x:26,y:7,name:'城壁詰所の古参兵・ガロン'},
-  {id:'granz',x:16,y:6,name:'総司令グランツ'}
- ],objects:[{id:'royalCastle',x:15,y:5},{id:'capitalMarket',x:8,y:15},{id:'marketBazaar',x:5,y:11},{id:'capitalFountain',x:20,y:15},{id:'capitalBarracks',x:34,y:15},{id:'garrisonBoard',x:32,y:20},{id:'victoryPoster',x:28,y:12},{id:'heroLedger',x:36,y:22},{id:'residentialWell',x:7,y:23},{id:'capitalHouseDoor',x:5,y:22},{id:'capitalInnDoor',x:11,y:22},{id:'capitalArmoryDoor',x:30,y:22},{id:'capitalChapelDoor',x:35,y:8}]},
+  {id:'capitalOfficial',x:21,y:9,name:'王都係官',hideWhen:'capitalCeremony'},
+  {id:'capitalCitizen',x:17,y:17,name:'王都市民'},
+  {id:'capitalFlowerGirl',x:12,y:17,name:'花売りの少女'},
+  {id:'capitalRecruit',x:33,y:16,name:'新兵'},
+  {id:'capitalVendor',x:6,y:15,name:'市場商人マロ'},
+  {id:'rationMother',x:29,y:17,name:'配給待ちの母親'},
+  {id:'capitalScholar',x:24,y:18,name:'王都の地図学者・フェリクス'},
+  {id:'capitalCrier',x:23,y:20,name:'王都の瓦版売り・テオド'},
+  {id:'capitalBakerWife',x:14,y:25,name:'下町のパン売り・マルタ'},
+  {id:'capitalShopper',x:12,y:14,name:'市場の買い物客・アンナ'},
+  {id:'capitalStreetKid',x:18,y:19,name:'大通りの少年・トマ'},
+  {id:'capitalOldGuard',x:26,y:9,name:'城壁詰所の古参兵・ガロン'},
+  {id:'granz',x:16,y:8,name:'総司令グランツ'}
+ ],objects:[{id:'royalCastle',x:20,y:6},{id:'capitalMarket',x:8,y:17},{id:'marketBazaar',x:5,y:13},{id:'capitalFountain',x:20,y:17},{id:'capitalBarracks',x:34,y:17},{id:'garrisonBoard',x:32,y:22},{id:'victoryPoster',x:28,y:14},{id:'heroLedger',x:36,y:24},{id:'residentialWell',x:7,y:25},{id:'capitalHouseDoor',x:5,y:24},{id:'capitalInnDoor',x:11,y:24},{id:'capitalArmoryDoor',x:30,y:24},{id:'capitalChapelDoor',x:35,y:10}]},
  ashroad:{name:'灰の街道',tag:'焼けた農地と避難路',tiles:makeAshRoadTiles(),npcs:[
   {id:'refugee',x:8,y:5,name:'避難民の母'},
   {id:'fieldPriest',x:18,y:9,name:'従軍僧'}
