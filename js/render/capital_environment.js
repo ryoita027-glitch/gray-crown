@@ -65,17 +65,23 @@ const CapitalEnvironment=(()=>{
    const at=(xx,yy)=>m?.tiles?.[yy]?.[xx]||'K';
    const up=at(x,y-1),down=at(x,y+1),left=at(x-1,y),right=at(x+1,y);
    if(ch==='A'){
-    const base=(x<10&&y>5)?'#b2a58e':(x>14&&y>5)?'#8e9498':'#b6b2a8';
-    const hi=(x<10&&y>5)?'#c9bca4':(x>14&&y>5)?'#a6acb0':'#d0ccc1';
-    const seam=(x<10&&y>5)?'#877c69':(x>14&&y>5)?'#6c7278':'#8b8982';
+    const marketZone=x<10&&y>5,garrisonZone=x>14&&y>5;
+    const base=marketZone?'#b4a48a':garrisonZone?'#8a9198':'#bab5aa';
+    const hi=marketZone?'#d0c1a6':garrisonZone?'#a8b0b8':'#d8d2c6';
+    const lo=marketZone?'#a29278':garrisonZone?'#7a8188':'#a8a398';
+    const seam=marketZone?'#7e725e':garrisonZone?'#60676e':'#827e76';
     box(c,base,px,py,32,32);
+    // Subtle granite cobble variation so stone avenues feel handcrafted, not flat tiles
+    if(h%3===0)box(c,lo,px+1,py+1,14,14);
+    if(h%4===1)box(c,hi,px+17,py+17,14,14);
     box(c,seam,px,py+15,32,1);box(c,seam,px,py+31,32,1);
     box(c,hi,px+1,py+1,30,1);box(c,hi,px+1,py+17,30,1);
     box(c,seam,px+(y%2?8:20),py,1,15);
     box(c,seam,px+(y%2?22:10),py+16,1,15);
-    if(h%7===0)box(c,'#e2dac8',px+5,py+5,9,2);
-    if(up==='H'||up==='K')box(c,'rgba(22,24,30,0.20)',px,py,32,5);
-    if(left==='H'||left==='K')box(c,'rgba(22,24,30,0.14)',px,py,4,32);
+    if(h%7===0)box(c,'#e8e0ce',px+5,py+5,9,2);
+    // Rich ambient occlusion drop shadow from adjacent buildings & ramparts
+    if(up==='H'||up==='K'){box(c,'rgba(16,20,28,0.28)',px,py,32,6);box(c,'rgba(16,20,28,0.12)',px,py+6,32,4)}
+    if(left==='H'||left==='K'){box(c,'rgba(16,20,28,0.20)',px,py,5,32);box(c,'rgba(16,20,28,0.08)',px+5,py,3,32)}
     return true;
    }
    if(ch==='H'||ch==='K'){
@@ -163,80 +169,119 @@ const CapitalEnvironment=(()=>{
   {x:20,y:10,w:2,h:2,kind:'garrison'}
  ]);
   function districtFacades(c){
-  const ink='#2e2829';
+  const ink='#241e20';
   for(const f of facades){
    const x=f.x*W,y=f.y*W,w=f.w*W,h=f.h*W;
    const military=f.kind==='garrison',formal=f.kind==='palace',market=f.kind==='market';
-   const stone=military?'#727b86':formal?'#ded7c8':market?'#d6c3a4':'#cbbba0';
-   const mortar=military?'#4b535e':formal?'#9e978b':market?'#755845':'#685546';
-   // Crisp cast shadow + full grounded masonry facade inside existing blocked H footprints
-   box(c,'rgba(20,22,28,.24)',x+2,y+h-2,w,6);
-   box(c,ink,x,y,w,h);
-   box(c,stone,x+2,y+12,w-4,h-14);
-   box(c,mortar,x+2,y+h-10,w-4,8);
-   // These silhouettes replace tint-only differences at 1x play scale.
+   const stone=military?'#6e7884':formal?'#e6dfd0':market?'#decba8':'#d4c2a2';
+   const stoneHi=military?'#8e98a6':formal?'#f6f1e6':market?'#eee0c4':'#e6d6ba';
+   const mortar=military?'#444d58':formal?'#9c9486':market?'#72533e':'#624a3a';
+   // Deep directional HD-2D southeast drop shadow grounding every royal capital structure
+   box(c,'rgba(14,18,26,.34)',x+4,y+h-2,w+4,9);
+   box(c,'rgba(14,18,26,.18)',x+w,y+8,6,h-4);
+   // Full grounded masonry facade + dressed ashlar plinth
+   box(c,ink,x,y-2,w,h+2);
+   box(c,stone,x+2,y+16,w-4,h-18);
+   box(c,stoneHi,x+3,y+17,w-6,3);
+   // Subtle horizontal masonry coursing lines
+   for(let sy=y+26;sy<y+h-12;sy+=8)box(c,'rgba(44,38,34,.12)',x+3,sy,w-6,1);
+   // Dressed granite base foundation
+   box(c,mortar,x+2,y+h-11,w-4,9);
+   box(c,stoneHi,x+3,y+h-11,w-6,2);
+   for(let sx=x+6;sx<x+w-8;sx+=14)box(c,ink,sx,y+h-10,1,8);
+   // Bespoke medieval European HD-2D rooflines & architectural ornamentation
    if(formal){
-    // White-marble Royal Palace wings: crenellated crown, fluted columns & crimson banners
-    box(c,'#5b3842',x+2,y+2,w-4,12);
-    box(c,'#7d4b57',x+3,y+3,w-6,7);
-    box(c,'#efe8da',x+2,y+12,w-4,5);
+    // White-marble Royal Palace wings: stepped crimson-slate mansard roof, gold finials, fluted colonnade
+    for(let z=0;z<4;z++){
+     box(c,ink,x+z*3,y-8+z*4,w-z*6,6);
+     box(c,z%2?'#88424e':'#682e3a',x+2+z*3,y-7+z*4,w-4-z*6,4);
+     for(let sx=x+8+z*3;sx<x+w-8-z*3;sx+=12)box(c,'#4c202a',sx,y-6+z*4,2,3);
+    }
+    box(c,'#e6c674',x+12,y-9,w-24,2); // gilded palace ridge trim
+    box(c,'rgba(22,18,24,.30)',x+2,y+13,w-4,4); // deep under-cornice shadow
+    box(c,'#f2ece0',x+1,y+10,w-2,4);
     for(let i=0;i<f.w;i++){
-     box(c,ink,x+4+i*W,y-4,22,8);
-     box(c,'#ebe4d6',x+6+i*W,y-3,18,6);
-     box(c,'#c8c0b2',x+6+i*W,y+1,18,2);
-     // Fluted marble pilasters
-     box(c,'#f2ecdf',x+3+i*W,y+18,5,h-26);
-     box(c,'#aba498',x+8+i*W,y+18,2,h-26);
+     box(c,ink,x+4+i*W,y-6,22,7);
+     box(c,'#f2ecdf',x+6+i*W,y-5,18,5);
+     box(c,'#d8b86a',x+8+i*W,y-5,14,1);
+     // Fluted marble pilasters with capitals
+     box(c,'#f8f3e8',x+2+i*W,y+14,6,h-24);
+     box(c,'#b8b0a2',x+7+i*W,y+14,2,h-24);
+     box(c,'#d8b86a',x+1+i*W,y+14,8,2);
     }
    }else if(military){
-    // Eastern Garrison barracks: slate-blue stone ramparts, iron battlements & supply rack
-    box(c,'#384552',x+2,y+2,w-4,14);
-    box(c,'#506172',x+4,y+4,w-8,8);
+    // Eastern Garrison fortress barracks: pitched slate shingle roof, crenellations, banner & spear rack
+    for(let z=0;z<4;z++){
+     box(c,ink,x+z*2,y-6+z*4,w-z*4,6);
+     box(c,z%2?'#4c5e72':'#384656',x+2+z*2,y-5+z*4,w-4-z*4,4);
+     for(let sx=x+8;sx<x+w-8;sx+=10)box(c,'#2a3542',sx,y-4+z*4,2,3);
+    }
+    box(c,'rgba(16,20,28,.34)',x+2,y+13,w-4,5);
     for(let i=0;i<f.w;i++){
-     box(c,ink,x+3+i*W,y-3,22,9);
-     box(c,'#5a6b7a',x+5+i*W,y-2,18,6);
-     box(c,'#93a1ad',x+7+i*W,y-1,12,2);
+     box(c,ink,x+3+i*W,y-8,22,7);
+     box(c,'#607080',x+5+i*W,y-7,18,5);
+     box(c,'#9aa8b6',x+6+i*W,y-7,16,2);
     }
+    // Iron-banded garrison shield & halberd rack at base
+    box(c,'#3a424c',x+5,y+h-16,w-10,8);
+    box(c,'#8e3640',x+9,y+h-15,8,6);box(c,'#d8bc78',x+12,y+h-14,2,4);
+    box(c,'#9aa4ae',x+w-16,y+h-20,2,12);box(c,'#d4dce2',x+w-17,y+h-21,4,3);
    }else if(market){
-    // Western Market trade-houses: terracotta shingle roof + crimson/cream striped awnings
-    box(c,'#8f4c3f',x+2,y+2,w-4,13);
-    box(c,'#b56752',x+4,y+4,w-8,6);
-    for(let sx=x+6;sx<x+w-6;sx+=10)box(c,'#6e372d',sx,y+5,2,7);
-    box(c,ink,x+2,y+15,w-4,11);
+    // Western Market trade-houses: steep terracotta tile roofs, brick chimney, scalloped crimson/cream awnings & brimming goods
+    for(let z=0;z<4;z++){
+     box(c,ink,x+z*2,y-7+z*4,w-z*4,6);
+     box(c,z%2?'#c46d54':'#9a4a3a',x+2+z*2,y-6+z*4,w-4-z*4,4);
+     for(let sx=x+7;sx<x+w-7;sx+=9)box(c,'#743428',sx,y-5+z*4,2,3);
+    }
+    // Brick chimney on west corner
+    box(c,ink,x+6,y-14,12,12);box(c,'#965a4a',x+8,y-12,8,9);box(c,'#c28470',x+8,y-12,3,8);
+    // Scalloped red-and-cream market awning with drop shadow
+    box(c,'rgba(24,18,14,.32)',x+2,y+23,w-4,4);
+    box(c,ink,x+1,y+12,w-2,12);
     for(let i=0;i<f.w*2;i++){
-     const aw=Math.floor((w-6)/(f.w*2));
-     box(c,i%2?'#efe3c8':'#9c4347',x+3+i*aw,y+16,aw,8);
-     box(c,i%2?'#cfc09f':'#732d32',x+3+i*aw,y+23,aw,2);
+     const aw=Math.floor((w-4)/(f.w*2));
+     box(c,i%2?'#f6ebd2':'#a83e44',x+2+i*aw,y+13,aw,8);
+     box(c,i%2?'#dacaa6':'#782a30',x+2+i*aw,y+20,aw,3);
     }
+    // Brimming market crates (oranges, apples, azure cloth bolts) along street frontage
+    box(c,ink,x+5,y+h-14,w-10,9);box(c,'#8c6642',x+6,y+h-13,w-12,7);
+    box(c,'#e88a3e',x+9,y+h-13,7,4);box(c,'#f4d060',x+19,y+h-13,7,4);box(c,'#4c7ea2',x+w-20,y+h-13,9,4);
    }else{
-    // Guild / White Stag Inn district: warm chestnut pitched timber roof & beams
-    box(c,'#6e4d3b',x+2,y+2,w-4,14);
-    box(c,'#966c51',x+4,y+4,w-8,6);
-    box(c,'#c9a67a',x+6,y+13,w-12,3);
-    for(let i=0;i<f.w;i++)box(c,'#5c4334',x+4+i*W,y+16,4,h-24);
-   }
-   // Arched / paned cozy windows with sunlit glass and warm interior glow
-   for(let i=0;i<f.w;i++){
-    const xx=x+11+i*W,yy=market?y+31:y+24;
-    if(yy+16<y+h-4){
-     box(c,ink,xx-2,yy-2,16,17);
-     box(c,mortar,xx-1,yy-1,14,15);
-     box(c,formal?'#789ba8':military?'#5e7682':'#7a9ea3',xx+1,yy+1,10,11);
-     box(c,formal?'#e8f0e8':'#d8e6d5',xx+2,yy+2,4,4);
-     if(!military)box(c,'#d9be82',xx+6,yy+7,4,4);
-     box(c,mortar,xx+5,yy+1,2,11);
-     box(c,mortar,xx+1,yy+6,10,2);
+    // White Stag Inn / Guild Quarter: steep chestnut pitched timber roof, half-timber framing, glowing lantern sign
+    for(let z=0;z<4;z++){
+     box(c,ink,x+z*2,y-7+z*4,w-z*4,6);
+     box(c,z%2?'#9e6e4e':'#744e38',x+2+z*2,y-6+z*4,w-4-z*4,4);
+     for(let sx=x+7;sx<x+w-7;sx+=10)box(c,'#543626',sx,y-5+z*4,2,3);
     }
+    box(c,'rgba(22,18,14,.30)',x+2,y+13,w-4,4);
+    box(c,'#d4b27c',x+4,y+10,w-8,3);
+    for(let i=0;i<f.w;i++){
+     box(c,'#563d2e',x+3+i*W,y+14,5,h-24);
+     box(c,'#7c5b44',x+4+i*W,y+14,2,h-24);
+    }
+    // Hanging White Stag tavern lantern sign & cozy bench
+    box(c,ink,x+w-20,y+18,12,11);box(c,'#e6c478',x+w-19,y+19,10,9);box(c,'#7a4a36',x+w-17,y+21,6,5);
+    box(c,'#6e503a',x+10,y+h-15,w-24,7);box(c,'#c8a474',x+12,y+h-14,w-28,4);
    }
-   if(military){
-    box(c,'#464e57',x+5,y+h-15,w-10,7);
-    box(c,'#a89d87',x+10,y+h-19,w-20,5);
-   }else if(market){
-    box(c,'#826146',x+6,y+h-13,w-12,7);
-    box(c,'#dbc393',x+9,y+h-12,w-18,4);
-   }else if(f.kind==='guild'){
-    box(c,'#6b523e',x+10,y+h-15,w-20,7);
-    box(c,'#c4a278',x+14,y+h-14,w-28,4);
+   // Arched / mullioned windows with warm golden interior lantern light & flower boxes!
+   for(let i=0;i<f.w;i++){
+    const xx=x+10+i*W,yy=market?y+28:y+22;
+    if(yy+16<y+h-6){
+     box(c,ink,xx-2,yy-2,17,18);
+     box(c,mortar,xx-1,yy-1,15,16);
+     box(c,formal?'#7ca4b4':military?'#5a7280':'#6e969e',xx+1,yy+1,11,12);
+     box(c,formal?'#f2f8ee':'#e2f0e2',xx+2,yy+2,4,4);
+     // Warm inviting amber interior candlelight inside windows
+     box(c,military?'#b89c6a':'#f2c86a',xx+5,yy+6,6,6);
+     if(!military)box(c,'#fff2b8',xx+7,yy+8,3,3);
+     box(c,mortar,xx+6,yy+1,2,12);
+     box(c,mortar,xx+1,yy+6,11,2);
+     if(!military){
+      // Vivid flower box beneath civilian & palace windows
+      box(c,ink,xx-2,yy+13,17,4);box(c,'#467642',xx-1,yy+12,15,3);
+      box(c,'#e66c78',xx+1,yy+12,3,2);box(c,'#f2ce66',xx+8,yy+12,3,2);
+     }
+    }
    }
   }
  }

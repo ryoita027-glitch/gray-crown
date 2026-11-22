@@ -987,10 +987,10 @@ const OpeningPixelAssets=(()=>{
   c.restore();return true
  }
  const roofs={
-  village:['#a85946','#e2cfa8','#6c4e3c','#c4795d'],
-  orphanage:['#5f7858','#dfd0b0','#4f614c','#8ba375'],
-  mayorhouse:['#506680','#d2c9b6','#445266','#7c93ad'],
-  cottage:['#866146','#d8c4a2','#5e4635','#ad845e']
+  village:['#a85240','#e6d4b0','#644634','#cc785a'],
+  orphanage:['#567452','#e2d4b4','#485c44','#82a26e'],
+  mayorhouse:['#48607a','#d8d0be','#3e4e62','#7690ae'],
+  cottage:['#845a3e','#decab0','#584030','#b28258']
  };
  function drawHouse(c,kind,x,y){
   const k=roofs[kind];if(!k)return false;
@@ -999,103 +999,138 @@ const OpeningPixelAssets=(()=>{
    tile=canvas(104,108);if(!tile)return false;
    const a=tile.getContext('2d');a.imageSmoothingEnabled=false;
    const [roof,wall,beam,roofHighlight]=k;
-   const ink='#322521',roofDark=tint(roof,-28),wallShade=tint(wall,-18),wallLight=tint(wall,12);
-   // 1. Stone foundation & timber-framed warm plaster walls
+   const ink='#2a1e1a',roofDark=tint(roof,-30),roofDeep=tint(roof,-48),wallShade=tint(wall,-20),wallLight=tint(wall,14),beamHi=tint(beam,22);
+   // 1. Grounded masonry stone foundation & textured warm plaster walls with deep under-eave shadow
    P(a,ink,2,36,100,68);
    P(a,wall,4,38,96,62);
-   P(a,wallShade,4,38,96,6);
-   P(a,wallLight,8,46,88,2);
-   for(let by=50;by<86;by+=10)for(let bx=10;bx<90;bx+=18){
-    P(a,wallShade,bx+((by%20)?4:0),by,6,2);
+   P(a,wallShade,4,38,96,9); // Deep ambient occlusion shadow under the eaves!
+   P(a,tint(wall,-10),4,47,96,3);
+   P(a,wallLight,8,50,88,2);
+   // Subtle plaster stonework & diagonal half-timber bracing
+   for(let by=54;by<86;by+=9)for(let bx=10;bx<90;bx+=16){
+    P(a,wallShade,bx+((by%18)?5:0),by,6,2);
+    if((bx+by)%32===0)P(a,wallLight,bx+2,by-1,4,1);
    }
-   P(a,'#6c655c',4,90,96,12);
-   P(a,'#8a8175',5,91,94,3);
-   for(let sx=6;sx<94;sx+=11){
-    P(a,'#544e47',sx,91,1,10);
-    P(a,'#9b9284',sx+2,93,6,3);
+   // Layered dressed-stone foundation with moss accents
+   P(a,'#5e584f',4,89,96,13);
+   P(a,'#8c8376',5,90,94,3);
+   for(let sx=6;sx<94;sx+=10){
+    P(a,'#46413b',sx,90,1,11);
+    P(a,'#9e9587',sx+2,92,6,4);
+    P(a,'#736b61',sx+2,96,6,3);
+    if(sx%20===6)P(a,'#5d7a4c',sx+1,98,4,2); // subtle mossy base
    }
    P(a,ink,4,100,96,2);
-   // 2. Bespoke pitched shingled roofs per village residence
+   // 2. Bespoke pitched HD-2D shingled roofs with layered ridges, fascia & chimneys per residence
    if(kind==='orphanage'){
     for(let z=0;z<7;z++){
      const pad=z*4,ry=36-z*4;
      P(a,ink,pad,ry+3,104-pad*2,6);
      P(a,z%2?roofHighlight:roof,pad+1,ry,102-pad*2,5);
-     for(let sx=pad+6;sx<100-pad;sx+=10)P(a,roofDark,sx,ry+1,2,3);
+     P(a,roofHighlight,pad+2,ry,100-pad*2,1);
+     for(let sx=pad+6;sx<100-pad;sx+=9){P(a,roofDark,sx,ry+1,2,4);P(a,roofDeep,sx+4,ry+3,2,2)}
     }
-    P(a,roofHighlight,24,10,56,3);
-    P(a,ink,8,45,88,10);
+    P(a,ink,22,8,60,4);P(a,'#b4c494',24,9,56,2);
+    // Striped emerald-and-cream orphanage veranda awning with scalloped drop shadow
+    P(a,'rgba(24,20,16,.28)',8,54,88,4);
+    P(a,ink,7,44,90,11);
     for(let i=0;i<8;i++){
-     P(a,i%2?'#efe4c8':'#6f8d65',10+i*10,46,10,7);
-     P(a,i%2?'#d5c5a2':'#526c4b',10+i*10,52,10,2);
+     P(a,i%2?'#f4ead2':'#62885a',9+i*11,45,11,8);
+     P(a,i%2?'#d6c6a4':'#476642',9+i*11,51,11,3);
     }
    }else if(kind==='mayorhouse'){
     for(let z=0;z<6;z++){
      const pad=z*4,ry=38-z*4;
      P(a,ink,pad,ry+3,104-pad*2,6);
      P(a,z%2?roofHighlight:roof,pad+1,ry,102-pad*2,5);
-     for(let sx=pad+8;sx<98-pad;sx+=12)P(a,roofDark,sx,ry+1,2,3);
+     P(a,roofHighlight,pad+2,ry,100-pad*2,1);
+     for(let sx=pad+7;sx<98-pad;sx+=10){P(a,roofDark,sx,ry+1,2,4);P(a,roofDeep,sx+5,ry+3,2,2)}
     }
-    P(a,ink,29,12,46,34);P(a,wall,31,14,42,30);
+    // Formal stone-trimmed central gable dormer with sunlit clerestory window
+    P(a,ink,28,11,48,35);P(a,wall,30,13,44,31);P(a,wallLight,31,14,42,3);
     for(let z=0;z<6;z++){
      const pad=z*3,ry=16-z*3;
-     P(a,ink,28+pad,ry+2,48-pad*2,5);
-     P(a,z%2?roof:roofHighlight,29+pad,ry,46-pad*2,4);
+     P(a,ink,27+pad,ry+2,50-pad*2,5);
+     P(a,z%2?roof:roofHighlight,28+pad,ry,48-pad*2,4);
     }
-    P(a,beam,42,20,20,18);P(a,'#93b4b8',45,22,14,14);P(a,'#dce8df',46,23,5,5);
-    P(a,beam,51,22,2,14);P(a,beam,45,28,14,2);
+    P(a,ink,40,19,24,20);P(a,beam,41,20,22,18);
+    P(a,'#7ea8b4',44,22,16,14);P(a,'#eef4e6',45,23,6,5);P(a,'#f0cd7e',51,29,8,6);
+    P(a,beam,51,22,2,14);P(a,beam,44,28,16,2);
    }else if(kind==='cottage'){
     for(let z=0;z<8;z++){
      const left=z*3,right=z*7,ry=37-z*4;
      P(a,ink,left,ry+3,104-left-right,6);
      P(a,z%2?roof:roofHighlight,left+1,ry,102-left-right,5);
-     for(let sx=left+7;sx<100-right;sx+=11)P(a,roofDark,sx,ry+1,2,3);
+     P(a,roofHighlight,left+2,ry,100-left-right,1);
+     for(let sx=left+6;sx<100-right;sx+=10){P(a,roofDark,sx,ry+1,2,4);P(a,roofDeep,sx+4,ry+3,2,2)}
     }
-    P(a,ink,74,1,16,33);P(a,'#968a7c',76,3,12,29);P(a,'#b4a796',77,5,4,24);
-    P(a,ink,72,0,20,5);P(a,'#6e655c',74,1,16,3);
-    P(a,'#664d39',10,88,24,3);
-    for(let j=0;j<4;j++){P(a,'#597a52',12+j*5,91,3,6);P(a,'#8ca86e',13+j*5,91,2,3)}
+    // Stone hearth chimney with brick cap & hanging herb drying rack
+    P(a,ink,74,1,16,33);P(a,'#968a7c',76,3,12,29);P(a,'#bab0a0',77,4,4,25);P(a,'#72685e',84,4,4,25);
+    P(a,ink,72,0,20,5);P(a,'#6c6258',74,1,16,3);
+    P(a,'#664d39',10,87,24,3);
+    for(let j=0;j<4;j++){P(a,'#4c7446',12+j*5,90,3,7);P(a,'#8eb26e',13+j*5,90,2,4)}
    }else{
     for(let z=0;z<8;z++){
      const pad=z*5,ry=37-z*4;
      P(a,ink,pad,ry+3,104-pad*2,6);
      P(a,z%2?roof:roofHighlight,pad+1,ry,102-pad*2,5);
-     for(let sx=pad+6;sx<100-pad;sx+=9)P(a,roofDark,sx,ry+1,2,3);
+     P(a,roofHighlight,pad+2,ry,100-pad*2,1);
+     for(let sx=pad+6;sx<100-pad;sx+=9){P(a,roofDark,sx,ry+1,2,4);P(a,roofDeep,sx+4,ry+3,2,2)}
     }
-    P(a,roofHighlight,34,7,36,3);
-    P(a,ink,12,10,14,25);P(a,'#9c6b58',14,12,10,21);P(a,'#bd8a73',15,14,4,17);
-    for(let j=0;j<4;j++){P(a,ink,72+j*6,89,6,8);P(a,'#9e734e',73+j*6,90,4,6);P(a,'#cfa476',74+j*6,91,2,2)}
+    P(a,ink,32,6,40,4);P(a,'#e6b692',34,7,36,2);
+    // Warm brick chimney + neatly stacked firewood pile by the cottage wall
+    P(a,ink,12,9,14,26);P(a,'#9c6452',14,11,10,22);P(a,'#c68a72',15,12,4,19);
+    for(let j=0;j<4;j++){P(a,ink,72+j*6,89,6,8);P(a,'#9e704a',73+j*6,90,4,6);P(a,'#d8aa76',74+j*6,91,2,2)}
    }
-   // 3. Half-timber beams & cozy shuttered windows with flower boxes
-   P(a,beam,5,40,4,52);P(a,beam,95,40,4,52);P(a,beam,5,40,94,3);
+   // 3. Rich timber framing (corner posts + lintel + climbing ivy) & cozy warm-lit windows with flower boxes
+   P(a,beam,5,40,5,51);P(a,beamHi,6,41,2,49);
+   P(a,beam,94,40,5,51);P(a,beamHi,95,41,2,49);
+   P(a,beam,5,40,94,4);P(a,beamHi,6,40,92,1);
+   // Climbing garden ivy on left or right wall corner
+   const ivyX=kind==='cottage'||kind==='mayorhouse'?89:9;
+   for(let iy=56;iy<90;iy+=5){
+    P(a,'#365c34',ivyX+(iy%2),iy,5,4);P(a,'#5e9052',ivyX+1,iy,3,2);
+   }
    const windows=kind==='orphanage'?[14,76]:kind==='cottage'?[15,75]:kind==='mayorhouse'?[14,74]:[15,74];
    for(const wx of windows){
-    P(a,ink,wx-2,56,19,21);P(a,beam,wx-1,57,17,19);
-    P(a,'#7fa3a8',wx+1,59,13,14);
-    P(a,'#d8e6d5',wx+2,60,5,5);
-    P(a,'#c9b27a',wx+8,66,5,6);
-    P(a,beam,wx+7,59,2,14);P(a,beam,wx+1,65,13,2);
-    P(a,ink,wx-2,75,19,5);P(a,'#7d5a3f',wx-1,76,17,3);
-    P(a,'#4e7a48',wx,73,15,3);P(a,'#e8c66b',wx+2,73,3,2);P(a,'#d97e82',wx+9,73,3,2);
+    // Wooden shutters flanking window + warm amber interior lantern glow inside glass!
+    P(a,ink,wx-5,56,4,19);P(a,roofDark,wx-4,57,3,17);
+    P(a,ink,wx+16,56,4,19);P(a,roofDark,wx+16,57,3,17);
+    P(a,ink,wx-2,55,19,22);P(a,beam,wx-1,56,17,20);
+    P(a,'#6c949c',wx+1,58,13,15);
+    P(a,'#dbece2',wx+2,59,5,5); // crisp sky reflection
+    P(a,'#f0c46c',wx+6,64,7,8); // warm amber indoor lantern glow!
+    P(a,'#fff0b4',wx+8,66,4,4);
+    P(a,beam,wx+7,58,2,15);P(a,beam,wx+1,65,13,2);
+    // Overflowing flower box with red geraniums & golden marigolds
+    P(a,ink,wx-3,75,21,6);P(a,'#7d583c',wx-2,76,19,4);P(a,'#a47852',wx-1,76,17,1);
+    P(a,'#3f6e3c',wx-1,72,17,4);P(a,'#629452',wx,72,15,2);
+    P(a,'#f2cc64',wx+1,72,3,2);P(a,'#e26874',wx+7,71,3,3);P(a,'#f2cc64',wx+12,72,3,2);
    }
-   // 4. Tall, properly scaled oak doorway (~37px tall) matching 44px characters
-   P(a,ink,37,63,30,39);
-   P(a,'#6d655b',38,64,28,37);
-   P(a,ink,40,66,24,35);
-   P(a,'#7c573c',42,68,20,32);
-   P(a,'#966c4c',43,69,5,30);
-   P(a,'#63432d',49,68,2,32);P(a,'#63432d',55,68,2,32);
-   P(a,'#45342d',42,74,20,2);P(a,'#45342d',42,91,20,2);
-   P(a,'#e6c57a',57,82,3,3);
-   P(a,ink,33,100,38,6);P(a,'#b5ac9a',35,101,34,4);P(a,'#d4cbb8',37,101,30,2);
-   if(kind==='mayorhouse'){P(a,ink,29,102,46,6);P(a,'#c7bfb0',31,103,42,4)}
-   if(kind==='orphanage'){P(a,ink,69,92,24,7);P(a,'#a48155',70,93,22,4);P(a,'#694e35',72,97,3,4);P(a,'#694e35',87,97,3,4)}
+   // 4. Grand oak arched doorway (~37px tall) with wrought-iron strap hinges & warm porch lantern
+   P(a,ink,37,62,30,40);
+   P(a,'#6e665c',38,63,28,38);P(a,'#968e82',39,64,26,2);
+   P(a,ink,40,65,24,36);
+   P(a,'#7c5438',42,67,20,33);
+   P(a,'#9c6e4a',43,68,5,31);
+   P(a,'#5c3c28',49,67,2,33);P(a,'#5c3c28',55,67,2,33);
+   P(a,'#3c2c26',42,74,20,2);P(a,'#3c2c26',42,91,20,2);
+   P(a,'#f0cc76',57,82,3,3); // brass door handle
+   // Porch brass sconce lantern beside door
+   P(a,ink,65,68,6,8);P(a,'#f8d46e',66,69,4,5);P(a,'#fff8d6',67,70,2,3);
+   // Dressed stone porch step
+   P(a,ink,33,100,38,6);P(a,'#b5ac9a',35,101,34,4);P(a,'#dfd6c4',37,101,30,2);
+   if(kind==='mayorhouse'){P(a,ink,29,102,46,6);P(a,'#c9c1b2',31,103,42,4)}
+   if(kind==='orphanage'){P(a,ink,69,92,24,7);P(a,'#a68052',70,93,22,4);P(a,'#694e35',72,97,3,4);P(a,'#694e35',87,97,3,4)}
    houseCache.set(kind,tile)
   }
   c.save();c.imageSmoothingEnabled=false;
   if(c.fillRect){
-   c.fillStyle='rgba(20,28,22,.24)';
-   c.fillRect(x-2,y+92,108,14);
+   // Rich southeast directional drop shadow grounding the cottage into the meadow
+   c.fillStyle='rgba(18,24,18,.32)';
+   c.fillRect(x-1,y+91,111,16);
+   c.fillStyle='rgba(18,24,18,.18)';
+   c.fillRect(x+100,y+30,10,74);
   }
   c.drawImage(tile,0,0,104,108,x-4,y-10,112,116);
   c.restore();return true

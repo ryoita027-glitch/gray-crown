@@ -71,86 +71,123 @@ const RyuneEnvironment=(()=>{
    if(ch==='H')return true;
    if(ch==='T'){
     // Towering 45px storybook fantasy oak/forest tree scaled above 44px characters.
-    const sway=(h%3)-1,ty=py-14;
-    rect(c,'#4b6640',px+4,py+24,24,7);rect(c,'#3c5434',px+7,py+26,18,4);
-    rect(c,'#2d2018',px+11,py+12,10,17);
-    rect(c,'#5e432f',px+12,py+13,8,14);
-    rect(c,'#7d5a3f',px+13,py+14,3,12);
-    rect(c,'#463122',px+17,py+15,3,12);
-    rect(c,'#2d2018',px+9,py+25,14,4);rect(c,'#6a4c35',px+11,py+26,10,2);
-    rect(c,'#22362a',px+2+sway,ty+16,28,18);
-    rect(c,'#22362a',px+5+sway,ty+7,22,13);
-    rect(c,'#22362a',px+9+sway,ty+2,14,8);
-    rect(c,'#2c4a38',px+3+sway,ty+18,26,15);
-    rect(c,'#3a6142',px+4+sway,ty+14,24,14);
-    rect(c,'#4c784b',px+6+sway,ty+8,20,13);
-    rect(c,'#5c8b52',px+10+sway,ty+4,12,8);
-    rect(c,'#74a05b',px+8+sway,ty+6,10,5);
-    rect(c,'#8fb56b',px+11+sway,ty+5,6,3);
-    rect(c,'#74a05b',px+18+sway,ty+13,7,4);
-    rect(c,'#679253',px+5+sway,ty+16,6,4);
-    rect(c,'#264030',px+7+sway,ty+24,7,4);
-    rect(c,'#264030',px+19+sway,ty+23,8,4);
+    const variant=h%3,sway=(h%3)-1,ty=py-15;
+    rect(c,'rgba(22,34,20,.36)',px+2,py+23,30,9);
+    rect(c,'rgba(18,28,16,.28)',px+6,py+26,24,6);
+    rect(c,'#261b14',px+10,py+11,12,18);
+    rect(c,'#5c3f2b',px+11,py+12,10,15);
+    rect(c,'#825b3e',px+12,py+13,4,13);
+    rect(c,'#422d1e',px+17,py+14,4,13);
+    rect(c,'#261b14',px+8,py+25,16,4);rect(c,'#6e4e36',px+10,py+26,12,2);
+    rect(c,'#466c3e',px+9,py+27,5,2);rect(c,'#5c844a',px+18,py+27,4,2);
+    const darkInk=variant===1?'#1c3228':'#1f3425';
+    const shadeCol=variant===1?'#264838':variant===2?'#2c4a34':'#2b4a36';
+    const midCol=variant===1?'#386446':variant===2?'#446c44':'#3d6642';
+    const hiCol=variant===1?'#528652':variant===2?'#629252':'#54844c';
+    const brightCol=variant===1?'#78ab64':variant===2?'#88b86a':'#7ca860';
+    const sunCol=variant===1?'#9cc678':variant===2?'#a8cf82':'#98be74';
+    const wOff=variant===1?2:0;
+    rect(c,darkInk,px+1-wOff+sway,ty+15,30+wOff*2,20);
+    rect(c,darkInk,px+4+sway,ty+6,24,14);
+    rect(c,darkInk,px+8+sway,ty+1,16,9);
+    rect(c,shadeCol,px+2-wOff+sway,ty+17,28+wOff*2,17);
+    rect(c,midCol,px+3-wOff+sway,ty+13,26+wOff*2,15);
+    rect(c,hiCol,px+5+sway,ty+7,22,13);
+    rect(c,brightCol,px+8+sway,ty+3,16,8);
+    rect(c,sunCol,px+9+sway,ty+4,10,4);
+    rect(c,brightCol,px+17+sway,ty+12,9,5);
+    rect(c,hiCol,px+4+sway,ty+15,8,5);
+    rect(c,darkInk,px+6+sway,ty+26,8,4);
+    rect(c,darkInk,px+18+sway,ty+25,9,4);
+    if(variant===2){
+     rect(c,'#f6eed4',px+9+sway,ty+10,3,2);rect(c,'#f4d8d8',px+20+sway,ty+15,3,2);
+     rect(c,'#f6eed4',px+13+sway,ty+19,2,2);
+    }
     return true
    }
-   if(h%3===1){
-    const gx=px+5+((h>>>5)%18),gy=py+10+((h>>>9)%15);
-    rect(c,'#4b6f42',gx,gy,2,5);rect(c,'#5b804b',gx+2,gy+2,2,3);rect(c,'#89a568',gx,gy,1,2);
+   if(h%2===1){
+    const gx=px+4+((h>>>5)%20),gy=py+8+((h>>>9)%16);
+    rect(c,'#466a3c',gx,gy,2,5);rect(c,'#5a8248',gx+2,gy+2,2,4);rect(c,'#94b670',gx,gy,1,2);
    }
-   if(h%9===2){
-    const fx=px+8+((h>>>7)%16),fy=py+8+((h>>>11)%16);
-    rect(c,'#47693f',fx+1,fy+3,1,4);
-    rect(c,h%2?'#efe6b8':'#f4eee2',fx,fy+1,3,2);rect(c,'#d9b85c',fx+1,fy+1,1,1);
+   if(h%5===2){
+    const fx=px+6+((h>>>7)%18),fy=py+7+((h>>>11)%16);
+    rect(c,'#42663a',fx+1,fy+3,1,4);
+    const petal=h%3===0?'#f6e27c':h%3===1?'#f7f2e6':'#eba4aa';
+    rect(c,petal,fx,fy+1,3,2);rect(c,'#e0b648',fx+1,fy+1,1,1);
    }
    return true
   }
   if(ch==='P'){
-   // Seamless warm sun-baked village dirt lane (zero 32px tile-grid seams)
-   rect(c,'#c3a87d',px,py,32,32);
-   if(h%3===0)rect(c,'#ceb48a',px+((h>>>3)%14),py+4+((h>>>6)%18),11,4);
-   if(h%4===0)rect(c,'#b0956c',px+((h>>>7)%16),py+14+((h>>>10)%12),9,2);
-   if(h%5===1){rect(c,'#98815e',px+6+((h>>>5)%18),py+8+((h>>>8)%16),3,2);rect(c,'#dfd0ae',px+6+((h>>>5)%18),py+8+((h>>>8)%16),2,1)}
+   // Seamless warm sun-baked village dirt lane with packed wheel ruts, pebbles & rich mossy grass shoulders
+   rect(c,'#c6ab80',px,py,32,32);
+   if(h%2===0)rect(c,'#d4ba90',px+((h>>>3)%14),py+4+((h>>>6)%18),12,4);
+   if(h%3===0)rect(c,'#b2966c',px+((h>>>7)%16),py+14+((h>>>10)%12),10,3);
+   if(h%4===1){rect(c,'#8f7856',px+6+((h>>>5)%18),py+8+((h>>>8)%16),4,3);rect(c,'#e6d8b6',px+6+((h>>>5)%18),py+8+((h>>>8)%16),2,1)}
    const at=(xx,yy)=>definition?.tiles?.[yy]?.[xx]||'S';
    const grass=v=>v==='G'||v==='H'||v==='T';
-   if(grass(at(x-1,y))){for(let i=0;i<8;i++){const w=2+(hash(x,y,i)%3);rect(c,i%2?'#6c8658':'#7e9463',px,py+i*4,w,4);rect(c,'#9e8c67',px+w,py+i*4,1,4)}}
-   if(grass(at(x+1,y))){for(let i=0;i<8;i++){const w=2+(hash(x,y,i+9)%3);rect(c,i%2?'#6c8658':'#7e9463',px+32-w,py+i*4,w,4);rect(c,'#9e8c67',px+31-w,py+i*4,1,4)}}
-   if(grass(at(x,y-1))){for(let i=0;i<8;i++){const ht=2+(hash(x,y,i+17)%3);rect(c,i%2?'#6c8658':'#7e9463',px+i*4,py,4,ht);rect(c,'#9e8c67',px+i*4,py+ht,4,1)}}
-   if(grass(at(x,y+1))){for(let i=0;i<8;i++){const ht=2+(hash(x,y,i+25)%3);rect(c,i%2?'#6c8658':'#7e9463',px+i*4,py+32-ht,4,ht);rect(c,'#9e8c67',px+i*4,py+31-ht,4,1)}}
-   if(!grass(at(x-1,y))&&!grass(at(x,y-1))&&grass(at(x-1,y-1))){rect(c,'#6c8658',px,py,4,3);rect(c,'#9e8c67',px+4,py,1,3);rect(c,'#9e8c67',px,py+3,4,1)}
-   if(!grass(at(x+1,y))&&!grass(at(x,y-1))&&grass(at(x+1,y-1))){rect(c,'#6c8658',px+28,py,4,3);rect(c,'#9e8c67',px+27,py,1,3);rect(c,'#9e8c67',px+28,py+3,4,1)}
-   if(!grass(at(x-1,y))&&!grass(at(x,y+1))&&grass(at(x-1,y+1))){rect(c,'#6c8658',px,py+29,4,3);rect(c,'#9e8c67',px+4,py+29,1,3);rect(c,'#9e8c67',px,py+28,4,1)}
-   if(!grass(at(x+1,y))&&!grass(at(x,y+1))&&grass(at(x+1,y+1))){rect(c,'#6c8658',px+28,py+29,4,3);rect(c,'#9e8c67',px+27,py+29,1,3);rect(c,'#9e8c67',px+28,py+28,4,1)}
+   if(grass(at(x-1,y))){for(let i=0;i<8;i++){const w=3+(hash(x,y,i)%3);rect(c,i%2?'#688454':'#7c9862',px,py+i*4,w,4);rect(c,'#4f6a3e',px+w-1,py+i*4,1,4);rect(c,'#9e8864',px+w,py+i*4,2,4)}}
+   if(grass(at(x+1,y))){for(let i=0;i<8;i++){const w=3+(hash(x,y,i+9)%3);rect(c,i%2?'#688454':'#7c9862',px+32-w,py+i*4,w,4);rect(c,'#4f6a3e',px+32-w,py+i*4,1,4);rect(c,'#9e8864',px+30-w,py+i*4,2,4)}}
+   if(grass(at(x,y-1))){for(let i=0;i<8;i++){const ht=3+(hash(x,y,i+17)%3);rect(c,i%2?'#688454':'#7c9862',px+i*4,py,4,ht);rect(c,'#4f6a3e',px+i*4,py+ht-1,4,1);rect(c,'#9e8864',px+i*4,py+ht,4,2)}}
+   if(grass(at(x,y+1))){for(let i=0;i<8;i++){const ht=3+(hash(x,y,i+25)%3);rect(c,i%2?'#688454':'#7c9862',px+i*4,py+32-ht,4,ht);rect(c,'#4f6a3e',px+i*4,py+32-ht,4,1);rect(c,'#9e8864',px+i*4,py+30-ht,4,2)}}
+   if(!grass(at(x-1,y))&&!grass(at(x,y-1))&&grass(at(x-1,y-1))){rect(c,'#688454',px,py,5,4);rect(c,'#9e8864',px+5,py,1,4);rect(c,'#9e8864',px,py+4,5,1)}
+   if(!grass(at(x+1,y))&&!grass(at(x,y-1))&&grass(at(x+1,y-1))){rect(c,'#688454',px+27,py,5,4);rect(c,'#9e8864',px+26,py,1,4);rect(c,'#9e8864',px+27,py+4,5,1)}
+   if(!grass(at(x-1,y))&&!grass(at(x,y+1))&&grass(at(x-1,y+1))){rect(c,'#688454',px,py+28,5,4);rect(c,'#9e8864',px+5,py+28,1,4);rect(c,'#9e8864',px,py+27,5,1)}
+   if(!grass(at(x+1,y))&&!grass(at(x,y+1))&&grass(at(x+1,y+1))){rect(c,'#688454',px+27,py+28,5,4);rect(c,'#9e8864',px+26,py+28,1,4);rect(c,'#9e8864',px+27,py+27,5,1)}
    return true;
   }
   return false
  }
  function lowProps(c){
-  // Traced surfaces only; decorative crops are on walkable green but no collision.
+  // Rich sunlit village vegetable plots with sculpted soil furrows, cabbages, golden wheat & pumpkins
   for(let y=7;y<=12;y++)for(let x=1;x<=2;x++){
    const px=x*32,py=y*32;
-   rect(c,'#726247',px+3,py+3,26,26);
-   for(let v=0;v<3;v++){rect(c,'#967a52',px+6,py+6+v*8,20,2);rect(c,'#4b7850',px+9,py+5+v*8,4,4);rect(c,'#6c9459',px+18,py+5+v*8,4,3)}
+   rect(c,'rgba(22,30,18,.22)',px+4,py+5,27,26);
+   rect(c,'#5e4b34',px+2,py+2,28,28);
+   rect(c,'#786042',px+3,py+3,26,26);
+   for(let v=0;v<3;v++){
+    rect(c,'#584530',px+5,py+9+v*8,22,2);
+    rect(c,'#9a7c54',px+5,py+6+v*8,22,3);
+    if(y>=11){
+     rect(c,'#3e6e3e',px+7,py+5+v*8,6,4);
+     rect(c,'#d97a34',px+16,py+4+v*8,6,5);rect(c,'#f2a854',px+17,py+4+v*8,3,2);
+    }else if(y<=8){
+     rect(c,'#b89444',px+7,py+4+v*8,18,4);rect(c,'#e4c468',px+8,py+3+v*8,16,2);
+    }else{
+     rect(c,'#3a6c40',px+8,py+4+v*8,6,5);rect(c,'#74a660',px+9,py+4+v*8,4,3);
+     rect(c,'#427848',px+18,py+4+v*8,6,5);rect(c,'#86b86e',px+19,py+4+v*8,4,3);
+    }
+   }
   }
-  // Border-side fence stays on the established blocked T row, not a new wall.
-  for(let x=2;x<=8;x++){const px=x*32,py=14*32;rect(c,'#715539',px+3,py+3,4,23);rect(c,'#956e46',px+4,py+2,2,20);rect(c,'#6f5038',px+2,py+13,32,4)}
-  // Well-plaza stepping stones: fixed pixels, not opaque elliptical dirt.
+  // Border-side timber fence with grounded drop shadows on the blocked T row
+  for(let x=2;x<=8;x++){
+   const px=x*32,py=14*32;
+   rect(c,'rgba(16,22,14,.28)',px+4,py+24,30,4);
+   rect(c,'#463222',px+2,py+2,6,25);rect(c,'#7a583a',px+3,py+3,4,22);rect(c,'#a67c52',px+4,py+3,2,18);
+   rect(c,'#463222',px+1,py+12,32,6);rect(c,'#886240',px+1,py+13,32,3);rect(c,'#b0885c',px+1,py+13,32,1);
+  }
+  // Well-plaza carved cobblestones & stepping stones
   for(const [x,y] of [[10,9],[13,9],[12,8],[12,10],[10,10],[14,10]]){
-   rect(c,'#8d886c',x*32+10,y*32+18,12,5);rect(c,'#a2a085',x*32+11,y*32+18,9,2);
+   rect(c,'#6e6a54',x*32+9,y*32+18,14,6);rect(c,'#9c977c',x*32+10,y*32+17,12,5);rect(c,'#c2bc9e',x*32+11,y*32+17,9,2);
   }
-  // Clothes drying close to a residence, not on the collision tile.
-  rect(c,'#71533b',14*32,7*32+9,2,21);rect(c,'#71533b',16*32,7*32+9,2,21);
-  rect(c,'#c5b498',14*32+2,7*32+10,60,2);
-  rect(c,'#e0d7c4',14*32+8,7*32+12,15,16);
-  rect(c,'#7895a0',15*32+8,7*32+12,13,15);
+  // Clothes drying close to a residence with natural folds & ground shadow
+  rect(c,'rgba(22,30,18,.20)',14*32+4,7*32+28,58,4);
+  rect(c,'#4c3624',14*32,7*32+8,3,22);rect(c,'#4c3624',16*32,7*32+8,3,22);
+  rect(c,'#c8b698',14*32+2,7*32+10,60,2);
+  rect(c,'#efe6d4',14*32+8,7*32+12,15,16);rect(c,'#d2c6b0',14*32+18,7*32+12,4,16);
+  rect(c,'#6a8ea0',15*32+8,7*32+12,13,15);rect(c,'#4e7082',15*32+16,7*32+12,4,15);
+  // Lush flowerbeds & ornamental shrubs
   for(const [x,y] of [[13,12],[14,12],[16,5],[17,5]]){
-   rect(c,'#466c4c',x*32+14,y*32+17,2,8);
-   rect(c,'#ccbb6a',x*32+12,y*32+13,5,4)
+   rect(c,'rgba(18,26,16,.24)',x*32+8,y*32+21,16,6);
+   rect(c,'#365c36',x*32+9,y*32+14,14,10);rect(c,'#54864a',x*32+10,y*32+13,12,7);
+   rect(c,'#f2cc64',x*32+11,y*32+14,3,3);rect(c,'#e87a82',x*32+17,y*32+15,3,3);
   }
-  // Crates beside the existing stock point; no new game object.
+  // Detailed banded cargo crates beside stock point
   for(const [x,y] of [[16,10],[17,10]]){
    const px=x*32,py=y*32;
-   rect(c,'#5b4b38',px+5,py+15,25,15);rect(c,'#a27d52',px+6,py+12,23,15);
-   rect(c,'#664d35',px+17,py+13,3,12);rect(c,'#c19b68',px+8,py+15,8,2)
+   rect(c,'rgba(18,24,16,.28)',px+6,py+26,26,6);
+   rect(c,'#423022',px+4,py+11,26,18);rect(c,'#9e7648',px+6,py+13,22,14);
+   rect(c,'#60442c',px+16,py+13,2,14);rect(c,'#60442c',px+6,py+19,22,2);
+   rect(c,'#cfa46e',px+7,py+14,8,2);rect(c,'#cfa46e',px+19,py+14,8,2);
   }
  }
  function houseIdentity(c,kind,x,y){

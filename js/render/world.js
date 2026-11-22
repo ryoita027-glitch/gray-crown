@@ -738,7 +738,17 @@ function drawObject(o){if(RyuneOutskirts.drawObject(ctx,state.map,o,!!state.worl
  if(['ashCache','frontierCache','empireCache','imperialCache','yukiCache','elsiaCache'].includes(o.id)){ctx.fillStyle='#6f5439';ctx.fillRect(px+5,py+11,22,16);ctx.fillStyle='#9b7b4d';ctx.fillRect(px+7,py+8,18,6);ctx.strokeStyle='#342a21';ctx.strokeRect(px+5,py+11,22,16)}
  if(o.id==='royalCastle'){ctx.fillStyle='#c9b66e';ctx.fillRect(px+10,py+8,12,18);ctx.fillStyle='#7d3f48';ctx.fillRect(px+13,py+11,6,8)}
  if(['capitalMarket','imperialMarket'].includes(o.id)){ctx.fillStyle='#765037';ctx.fillRect(px+4,py+19,24,7);ctx.fillStyle=o.id==='capitalMarket'?'#a44d51':'#4e6e84';ctx.fillRect(px+3,py+7,26,9)}
- if(o.id==='capitalFountain'||o.id==='sacredSpring'){ctx.fillStyle='#68757b';ctx.beginPath();ctx.arc(px+16,py+18,12,0,Math.PI*2);ctx.fill();ctx.fillStyle='#9fc8cf';ctx.beginPath();ctx.arc(px+16,py+18,7,0,Math.PI*2);ctx.fill()}
+ if(o.id==='capitalFountain'||o.id==='sacredSpring'){
+  const t=Date.now()/260,sp=Math.sin(t)*1.6;
+  ctx.fillStyle='rgba(14,18,26,.30)';ctx.beginPath();ctx.ellipse(px+17,py+22,15,10,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#566068';ctx.beginPath();ctx.arc(px+16,py+17,14,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#dcd8cc';ctx.beginPath();ctx.arc(px+16,py+16,13,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#4a8aa0';ctx.beginPath();ctx.arc(px+16,py+16,10,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#84c6d8';ctx.beginPath();ctx.arc(px+16,py+16,7+Math.sin(t)*0.9,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#ebe6d8';ctx.fillRect(px+14,py+8,4,9);ctx.fillRect(px+12,py+11,8,2);
+  ctx.fillStyle='rgba(240,252,255,.88)';ctx.fillRect(px+15,py+3-Math.abs(sp),2,6);
+  ctx.fillRect(px+11,py+9+sp*0.5,2,2);ctx.fillRect(px+19,py+9-sp*0.5,2,2);ctx.fillRect(px+13,py+14,6,1);
+ }
  if(['capitalBarracks','fieldHospital','imperialArchive'].includes(o.id)){ctx.fillStyle='#74685a';ctx.fillRect(px+5,py+8,22,19);ctx.fillStyle='#d6caa7';ctx.fillRect(px+9,py+12,14,5)}
  if(o.id==='watchTower'){ctx.fillStyle='#5a4938';ctx.fillRect(px+13,py+4,6,25);ctx.fillRect(px+5,py+5,22,5);ctx.fillStyle='#8a7657';ctx.fillRect(px+8,py+1,16,5)}
  if(o.id==='waterMill'){ctx.strokeStyle='#8e7755';ctx.lineWidth=3;ctx.beginPath();ctx.arc(px+16,py+17,12,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#66503b';ctx.fillRect(px+13,py+7,6,20)}
@@ -813,53 +823,150 @@ function drawBeast(px,py,type){
   r('#ffb848',5,15,2,2);
  }
 }
+function drawHd2dEdgePolish(m){
+ // Global HD-2D Diorama grounding pass across ALL 42 maps:
+ // 1. Directional southeast ambient occlusion cast by walls/buildings/trees/cliffs onto walkable floors
+ // 2. Animated water edge stone banks & sparkles on all river/canal tiles ('R')
+ // 3. Organic grass-to-path shoulder softening for maps without bespoke ground shaders
+ const solid=new Set(['W','H','K','S','T','Z']);
+ const walk=new Set(['G','Q','P','D','A','E','B','M','F','C']);
+ const shimmer=Math.floor(Date.now()/280);
+ for(let y=0;y<ROWS;y++){
+  for(let x=0;x<COLS;x++){
+   const ch=m.tiles[y][x],px=x*TILE,py=y*TILE;
+   if(ch==='R'){
+    // Subtle bank stone border & sunlit animated water glints across all river/canal maps
+    if(y>0&&m.tiles[y-1][x]!=='R'){ctx.fillStyle='rgba(26,34,38,.36)';ctx.fillRect(px,py,TILE,3);ctx.fillStyle='rgba(196,214,218,.22)';ctx.fillRect(px,py+3,TILE,2)}
+    if(x>0&&m.tiles[y][x-1]!=='R'){ctx.fillStyle='rgba(26,34,38,.24)';ctx.fillRect(px,py,3,TILE)}
+    const gl=((x*13+y*7+shimmer)%18);
+    ctx.fillStyle='rgba(232,250,252,.36)';ctx.fillRect(px+4+gl%14,py+7+((x+y)%3)*6,5,1);
+    ctx.fillStyle='rgba(255,255,255,.45)';ctx.fillRect(px+10+((gl+5)%12),py+19,3,1);
+    continue;
+   }
+   if(!walk.has(ch))continue;
+   const up=y>0?m.tiles[y-1][x]:null,left=x>0?m.tiles[y][x-1]:null;
+   if(up&&solid.has(up)){
+    ctx.fillStyle='rgba(12,16,22,.22)';ctx.fillRect(px,py,TILE,5);
+    ctx.fillStyle='rgba(12,16,22,.09)';ctx.fillRect(px,py+5,TILE,4);
+   }
+   if(left&&solid.has(left)){
+    ctx.fillStyle='rgba(12,16,22,.14)';ctx.fillRect(px,py,4,TILE);
+    ctx.fillStyle='rgba(12,16,22,.06)';ctx.fillRect(px+4,py,3,TILE);
+   }
+   if(up&&solid.has(up)&&left&&solid.has(left)){
+    ctx.fillStyle='rgba(10,14,20,.14)';ctx.fillRect(px,py,6,6);
+   }
+   // Soften hard 32px grid edges between grass and dirt lanes on maps without custom transitions
+   if((ch==='P'||ch==='D')&&!['village','capital'].includes(state.map)){
+    const gEdge=t=>t==='G'||t==='Q';
+    if(gEdge(left)){ctx.fillStyle='rgba(88,112,72,.52)';ctx.fillRect(px,py,3,TILE);ctx.fillStyle='rgba(88,112,72,.26)';ctx.fillRect(px+3,py+2,2,TILE-4)}
+    if(x+1<COLS&&gEdge(m.tiles[y][x+1])){ctx.fillStyle='rgba(88,112,72,.52)';ctx.fillRect(px+TILE-3,py,3,TILE);ctx.fillStyle='rgba(88,112,72,.26)';ctx.fillRect(px+TILE-5,py+2,2,TILE-4)}
+    if(gEdge(up)){ctx.fillStyle='rgba(88,112,72,.52)';ctx.fillRect(px,py,TILE,3);ctx.fillStyle='rgba(88,112,72,.26)';ctx.fillRect(px+2,py+3,TILE-4,2)}
+    if(y+1<ROWS&&gEdge(m.tiles[y+1][x])){ctx.fillStyle='rgba(88,112,72,.52)';ctx.fillRect(px,py+TILE-3,TILE,3);ctx.fillStyle='rgba(88,112,72,.26)';ctx.fillRect(px+2,py+TILE-5,TILE-4,2)}
+   }
+  }
+ }
+}
 function drawWorldAtmosphere(map){
- // Subtle Square Enix HD-2D atmospheric light beams & biome mood (0 extra RAF loops)
- const w=COLS*TILE,h=ROWS*TILE;
+ // Unified Square Enix HD-2D cinematic lighting, additive light blooms, drifting motes & diorama depth vignette across ALL 42 maps
+ const w=COLS*TILE,h=ROWS*TILE,now=Date.now();
  ctx.save();
+ const bloom=(gx,gy,r,col)=>{
+  const g=ctx.createRadialGradient?.(gx,gy,2,gx,gy,r);
+  if(g&&typeof g.addColorStop==='function'){
+   ctx.save();ctx.globalCompositeOperation='lighter';
+   g.addColorStop(0,col);g.addColorStop(1,'rgba(0,0,0,0)');
+   ctx.fillStyle=g;ctx.fillRect(gx-r,gy-r,r*2,r*2);ctx.restore();
+  }
+ };
  if(map==='capital'&&getWorldSwitch('returnedKingdom')){
-  // Chapter 7 Wartime Overcast Aldina: cool slate-blue heavy sky & drifting ash / white memorial petals
-  ctx.fillStyle='rgba(28,38,54,.17)';ctx.fillRect(0,0,w,h);
-  const drift=Math.floor(Date.now()/260);
-  for(let i=0;i<18;i++){
+  // Chapter 7 Wartime Overcast Aldina: heavy slate-blue sky, dim streetlamp halos & drifting memorial petals/ash
+  ctx.fillStyle='rgba(24,34,52,.20)';ctx.fillRect(0,0,w,h);
+  for(const [lx,ly] of [[6,7],[17,7],[10,11],[14,11]])bloom(lx*TILE+16,ly*TILE+14,44,'rgba(210,180,126,.14)');
+  const drift=Math.floor(now/240);
+  for(let i=0;i<22;i++){
    const mx=((i*173+drift*3)%(w-32))+16,my=((i*119+drift*2)%(h-32))+16;
-   ctx.fillStyle=i%3===0?'rgba(242,246,248,.48)':'rgba(188,196,208,.28)';
+   ctx.fillStyle=i%3===0?'rgba(244,248,252,.56)':'rgba(186,196,210,.30)';
    ctx.fillRect(mx,my,i%3===0?3:2,2);
   }
- }else if(['village','road','roadhollow','northroad','northwaystation','northwatch','ryunefields','ryunebrook','capital'].includes(map)){
-  // Soft warm afternoon sunlight shafts sweeping diagonally across the scene
+ }else if(['village','ryunefields','ryunebrook','capital','road','roadhollow','northroad','northwaystation','northwatch','borderland','relayvillage'].includes(map)){
+  // Warm golden afternoon HD-2D sunbeams + glowing streetlamps / cottage windows
   const postCeremony=map==='capital'&&isEventComplete('alpha.capital.ceremony');
-  ctx.fillStyle=map==='capital'?(postCeremony?'rgba(248,214,162,.042)':'rgba(255,240,196,.054)'):'rgba(255,236,178,.042)';
-  for(const sx of [68,268,476,652]){
-   ctx.beginPath();ctx.moveTo(sx,0);ctx.lineTo(sx+74,0);ctx.lineTo(sx-42,h);ctx.lineTo(sx-116,h);ctx.closePath();ctx.fill();
+  const dusk=['road','northroad','borderland','relayvillage'].includes(map);
+  ctx.fillStyle=dusk?'rgba(255,198,128,.055)':map==='capital'?(postCeremony?'rgba(252,216,162,.052)':'rgba(255,240,192,.064)'):'rgba(255,238,176,.056)';
+  for(const sx of [56,248,452,640]){
+   ctx.beginPath();ctx.moveTo(sx,0);ctx.lineTo(sx+82,0);ctx.lineTo(sx-48,h);ctx.lineTo(sx-130,h);ctx.closePath();ctx.fill();
   }
-  // Delicate sunlit dust/pollen motes (or festive red & white ceremony petals in Phase A/B Capital)
-  const drift=Math.floor(Date.now()/320);
-  for(let i=0;i<14;i++){
-   const mx=((i*193+map.length*47+(map==='capital'?drift*2:0))%(w-48))+24,my=((i*131+map.length*29+(map==='capital'?drift:0))%(h-56))+28;
-   ctx.fillStyle=map==='capital'?(i%3===0?'rgba(218,98,108,.48)':i%3===1?'rgba(252,248,236,.52)':'rgba(255,242,198,.38)'):'rgba(255,248,214,.34)';
+  if(map==='capital'){
+   for(const [lx,ly] of [[6,7],[17,7],[10,11],[14,11],[10,3],[13,3]])bloom(lx*TILE+16,ly*TILE+14,52,'rgba(255,204,112,.18)');
+   bloom(12*TILE+16,8*TILE+16,56,'rgba(148,224,244,.12)');
+  }else if(map==='village'){
+   for(const [lx,ly] of [[4,4],[18,4],[4,11],[18,11]])bloom(lx*TILE+48,ly*TILE+62,48,'rgba(255,206,118,.15)');
+  }
+  const drift=Math.floor(now/280);
+  for(let i=0;i<18;i++){
+   const mx=((i*193+map.length*47+drift*2)%(w-48))+24,my=((i*131+map.length*29+drift)%(h-56))+28;
+   ctx.fillStyle=map==='capital'?(i%3===0?'rgba(224,96,108,.54)':i%3===1?'rgba(255,250,238,.58)':'rgba(255,240,190,.42)'):'rgba(255,248,210,.42)';
    ctx.fillRect(mx,my,map==='capital'&&i%3<2?3:2,2);
   }
  }else if(map==='cave'){
-  // Cool stone-fort depth tint with warm ambient torchlight aura near sconce rows
-  ctx.fillStyle='rgba(14,20,34,.14)';ctx.fillRect(0,0,w,h);
-  for(const [tx,ty] of [[9,5],[13,5],[17,5],[6,9],[18,9]]){
-   const gx=tx*TILE+16,gy=ty*TILE+12;
-   const g=ctx.createRadialGradient?.(gx,gy,4,gx,gy,64);
-   if(g&&typeof g.addColorStop==='function'){g.addColorStop(0,'rgba(255,198,108,.18)');g.addColorStop(1,'rgba(255,198,108,0)');ctx.fillStyle=g;ctx.fillRect(gx-64,gy-64,128,128)}
+  // Atmospheric blue-slate dungeon depth + flickering orange torchlight blooms
+  ctx.fillStyle='rgba(12,18,34,.18)';ctx.fillRect(0,0,w,h);
+  const pulse=0.18+Math.sin(now/180)*0.04;
+  for(const [tx,ty] of [[9,5],[13,5],[17,5],[6,9],[18,9]])bloom(tx*TILE+16,ty*TILE+12,72,`rgba(255,186,92,${pulse.toFixed(2)})`);
+ }else if(['ashroad','frontier','frontierfield','bordercanyon','watchfort','ravine','yukiroad','yukiridge','returnroad','finalfield','imperialcamp','royalcamp'].includes(map)){
+  // Dramatic twilight frontier haze + glowing embers, smoke motes & camp brazier blooms
+  ctx.fillStyle='rgba(38,24,18,.12)';ctx.fillRect(0,0,w,h);
+  const drift=Math.floor(now/220);
+  for(let i=0;i<22;i++){
+   const mx=((i*179+map.length*53+drift*2)%(w-32))+16,my=((i*113+map.length*37-drift+h*4)%(h-32))+16;
+   ctx.fillStyle=i%3===0?'rgba(255,168,78,.54)':'rgba(218,212,202,.28)';
+   ctx.fillRect(mx,my,i%3===0?3:2,2);
   }
- }else if(['ashroad','frontier','frontierfield','finalfield'].includes(map)){
-  // Atmospheric smoky dusk tint + faint glowing ash embers
-  ctx.fillStyle='rgba(36,24,18,.09)';ctx.fillRect(0,0,w,h);
-  for(let i=0;i<16;i++){
-   const mx=((i*179+map.length*53)%(w-32))+16,my=((i*113+map.length*37)%(h-32))+16;
-   ctx.fillStyle=i%3===0?'rgba(246,162,84,.36)':'rgba(218,212,202,.24)';
+  if(['imperialcamp','royalcamp','finalfield','frontier'].includes(map)){
+   for(const [lx,ly] of [[6,5],[17,5],[11,9]])bloom(lx*TILE+16,ly*TILE+16,58,'rgba(255,164,76,.16)');
+  }
+ }else if(['empirevillage','imperialcity'].includes(map)){
+  // Crisp cool cerulean canal sunlight + shimmering water reflections
+  ctx.fillStyle='rgba(208,236,255,.045)';
+  for(const sx of [92,310,540]){
+   ctx.beginPath();ctx.moveTo(sx,0);ctx.lineTo(sx+70,0);ctx.lineTo(sx-40,h);ctx.lineTo(sx-110,h);ctx.closePath();ctx.fill();
+  }
+  const drift=Math.floor(now/300);
+  for(let i=0;i<14;i++){
+   const mx=((i*167+drift)%(w-40))+20,my=((i*127+drift)%(h-40))+20;
+   ctx.fillStyle='rgba(220,244,255,.38)';ctx.fillRect(mx,my,2,2);
+  }
+ }else if(map==='elsia'){
+  // Mystical emerald-gold sanctuary sunbeams + floating golden spirit fireflies
+  ctx.fillStyle='rgba(196,246,204,.055)';
+  for(const sx of [80,280,490]){
+   ctx.beginPath();ctx.moveTo(sx,0);ctx.lineTo(sx+76,0);ctx.lineTo(sx-44,h);ctx.lineTo(sx-120,h);ctx.closePath();ctx.fill();
+  }
+  const drift=now/600;
+  for(let i=0;i<20;i++){
+   const mx=((i*151+Math.sin(drift+i)*18+w)%(w-48))+24,my=((i*97+Math.cos(drift*0.8+i)*14+h)%(h-48))+24;
+   ctx.fillStyle=i%2?'rgba(255,244,168,.62)':'rgba(176,248,204,.50)';
    ctx.fillRect(mx,my,2,2);
   }
+  bloom(12*TILE+16,6*TILE+16,88,'rgba(220,255,196,.16)');
  }else if(INTERIOR_MAPS.includes(map)){
-  // Cozy warm interior rim glow
-  const g=ctx.createRadialGradient?.(w*.5,h*.45,80,w*.5,h*.5,w*.58);
-  if(g&&typeof g.addColorStop==='function'){g.addColorStop(0,'rgba(255,226,168,.05)');g.addColorStop(1,'rgba(10,12,18,.18)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h)}
+  // Cozy hearth & lantern additive glow inside all 15 interiors
+  const g=ctx.createRadialGradient?.(w*.5,h*.45,76,w*.5,h*.5,w*.58);
+  if(g&&typeof g.addColorStop==='function'){g.addColorStop(0,'rgba(255,226,168,.07)');g.addColorStop(1,'rgba(8,10,16,.24)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h)}
+  bloom(12*TILE+16,5*TILE+12,72,'rgba(255,204,116,.16)');
+  bloom(17*TILE+16,9*TILE+16,64,'rgba(255,164,84,.15)');
+ }
+ // Universal Square Enix HD-2D top & bottom diorama depth framing vignette
+ const topV=ctx.createLinearGradient?.(0,0,0,46);
+ if(topV&&typeof topV.addColorStop==='function'){
+  topV.addColorStop(0,'rgba(10,14,22,.22)');topV.addColorStop(1,'rgba(10,14,22,0)');
+  ctx.fillStyle=topV;ctx.fillRect(0,0,w,46);
+ }
+ const botV=ctx.createLinearGradient?.(0,h-48,0,h);
+ if(botV&&typeof botV.addColorStop==='function'){
+  botV.addColorStop(0,'rgba(10,14,22,0)');botV.addColorStop(1,'rgba(10,14,22,.26)');
+  ctx.fillStyle=botV;ctx.fillRect(0,h-48,w,48);
  }
  ctx.restore();
 }
@@ -992,7 +1099,7 @@ function drawScene(){
  }
  RyuneOutskirts.setViewer(state.x,state.y);
  ctx.save();ctx.scale(target.scale,target.scale);ctx.translate(-VISUAL.camX,-VISUAL.camY);drawMapUnderlay(m);
- for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){drawTile(m.tiles[y][x],x,y);drawTileDetail(m.tiles[y][x],x,y)}drawTerrainBlend(m);drawVerticalSliceGround(m);
+ for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){drawTile(m.tiles[y][x],x,y);drawTileDetail(m.tiles[y][x],x,y)}drawTerrainBlend(m);drawVerticalSliceGround(m);drawHd2dEdgePolish(m);
  if(state.map==='village'){if(RyuneEnvironment.enabled)RyuneEnvironment.drawVillage(ctx);else{drawVillageDecor();villageHouses.forEach(drawHouse)}if(isEventComplete('alpha.capital.ceremony')){for(const [rx,ry] of [[15*TILE+16,9*TILE+16],[15*TILE+24,9*TILE+19],[16*TILE+2,9*TILE+22]]){ctx.fillStyle='#5c452e';ctx.fillRect(rx-1,ry-1,11,8);ctx.fillStyle='#dfc894';ctx.fillRect(rx,ry,9,6);ctx.fillStyle='#8c6a42';ctx.fillRect(rx+3,ry,2,6)}}}if(INTERIOR_MAPS.includes(state.map)){if(RyuneEnvironment.enabled&&RyuneEnvironment.rooms.has(state.map))RyuneEnvironment.drawInterior(ctx,state.map);else drawInteriorDecor();CapitalEnvironment.interior(ctx,state.map);if(typeof EmpireSanctuaryEnvironment!=='undefined')EmpireSanctuaryEnvironment.interior(ctx,state.map);}drawRegionDecor();AshFrontierEnvironment.accents(ctx,state.map);if(typeof BorderWatchfortEnvironment!=='undefined')BorderWatchfortEnvironment.accents(ctx,state.map);if(typeof EmpireSanctuaryEnvironment!=='undefined')EmpireSanctuaryEnvironment.accents(ctx,state.map);CapitalEnvironment.street(ctx,state.map);OpeningWorldLife.ground(ctx,state.map,state.events.choices);RyuneOutskirts.drawAccents(ctx,state.map);RyuneOutskirts.drawProgress(ctx,state.map,state.events.choices,state.events.completed);m.objects.forEach(drawObject);const cinematicActive=GC.Cinematic?.isActive?.()===true,controlledNpcs=new Set(GC.Cinematic?.controlledNpcIds?.()||[]);if(!cinematicActive&&CapitalEnvironment.drawWalkers)CapitalEnvironment.drawWalkers(ctx,state.map,Date.now());m.npcs.filter(n=>npcVisible(n)&&!controlledNpcs.has(n.id)).forEach(drawNpc);drawQuestMarker();
  if(cinematicActive){GC.Cinematic?.drawActors?.(ctx,{drawCharacterSprite,drawHeroSpriteSheet,drawNpcCommercial})}else{const leaderMoving=VISUAL.leaderQueue.length>0||Math.abs(state.x-VISUAL.playerX)>.015||Math.abs(state.y-VISUAL.playerY)>.015,phase=leaderMoving?VISUAL.travelPhase:0;drawPartyRuntime(leaderMoving,phase);drawInteractionMarker()}drawWorldAtmosphere(state.map);GC.Dev?.drawWorldOverlay?.(ctx);ctx.restore();drawAreaIdentity();$('locationLabel').textContent=m.name;if($('safetyLabel')){const safe=encounterSafeZone();$('safetyLabel').textContent=safe?'● 安全地帯':'▲ 危険地帯';$('safetyLabel').classList.toggle('danger',!safe)};
  const followerTargets=partyTrailPoints(),followerMoving=VISUAL.followers.some((p,i)=>{const t=followerTargets[i]||p;return Math.abs(t[0]-p[0])>.01||Math.abs(t[1]-p[1])>.01});const moving=cinematicActive||VISUAL.leaderQueue.length>0||VISUAL.followerQueues.some(q=>q.length>0)||Math.abs(target.x-VISUAL.camX)>.08||Math.abs(target.y-VISUAL.camY)>.08||Math.abs(state.x-VISUAL.playerX)>.01||Math.abs(state.y-VISUAL.playerY)>.01||followerMoving;
