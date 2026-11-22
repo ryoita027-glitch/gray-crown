@@ -66,19 +66,21 @@ const CapitalEnvironment=(()=>{
    const up=at(x,y-1),down=at(x,y+1),left=at(x-1,y),right=at(x+1,y);
    if(ch==='A'){
     const marketZone=x<10&&y>5,garrisonZone=x>14&&y>5;
-    const base=marketZone?'#b4a48a':garrisonZone?'#8a9198':'#bab5aa';
-    const hi=marketZone?'#d0c1a6':garrisonZone?'#a8b0b8':'#d8d2c6';
-    const lo=marketZone?'#a29278':garrisonZone?'#7a8188':'#a8a398';
-    const seam=marketZone?'#7e725e':garrisonZone?'#60676e':'#827e76';
-    box(c,base,px,py,32,32);
-    // Subtle granite cobble variation so stone avenues feel handcrafted, not flat tiles
-    if(h%3===0)box(c,lo,px+1,py+1,14,14);
-    if(h%4===1)box(c,hi,px+17,py+17,14,14);
-    box(c,seam,px,py+15,32,1);box(c,seam,px,py+31,32,1);
-    box(c,hi,px+1,py+1,30,1);box(c,hi,px+1,py+17,30,1);
-    box(c,seam,px+(y%2?8:20),py,1,15);
-    box(c,seam,px+(y%2?22:10),py+16,1,15);
-    if(h%7===0)box(c,'#e8e0ce',px+5,py+5,9,2);
+    const tone=marketZone?'market':garrisonZone?'garrison':'capital';
+    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(c,'cobble',x,y,tone)){
+     const base=marketZone?'#b4a48a':garrisonZone?'#8a9198':'#bab5aa';
+     const hi=marketZone?'#d0c1a6':garrisonZone?'#a8b0b8':'#d8d2c6';
+     const lo=marketZone?'#a29278':garrisonZone?'#7a8188':'#a8a398';
+     const seam=marketZone?'#7e725e':garrisonZone?'#60676e':'#827e76';
+     box(c,base,px,py,32,32);
+     if(h%3===0)box(c,lo,px+1,py+1,14,14);
+     if(h%4===1)box(c,hi,px+17,py+17,14,14);
+     box(c,seam,px,py+15,32,1);box(c,seam,px,py+31,32,1);
+     box(c,hi,px+1,py+1,30,1);box(c,hi,px+1,py+17,30,1);
+     box(c,seam,px+(y%2?8:20),py,1,15);
+     box(c,seam,px+(y%2?22:10),py+16,1,15);
+     if(h%7===0)box(c,'#e8e0ce',px+5,py+5,9,2);
+    }
     // Rich ambient occlusion drop shadow from adjacent buildings & ramparts
     if(up==='H'||up==='K'){box(c,'rgba(16,20,28,0.28)',px,py,32,6);box(c,'rgba(16,20,28,0.12)',px,py+6,32,4)}
     if(left==='H'||left==='K'){box(c,'rgba(16,20,28,0.20)',px,py,5,32);box(c,'rgba(16,20,28,0.08)',px+5,py,3,32)}
@@ -102,18 +104,20 @@ const CapitalEnvironment=(()=>{
     return true;
    }
    if(ch==='G'){
-    // Lush manicured royal garden parterre with carved white-stone curbs along plaza edges
-    box(c,'#678257',px,py,32,32);
-    if(h%3===0){box(c,'#739060',px+4,py+5,14,6);box(c,'#819e6b',px+6,py+6,8,3)}
-    if(h%4===1){box(c,'#5a754c',px+14,py+18,12,6)}
-    if(h%5===0){
-     box(c,'#456640',px+9,py+11,5,5);box(c,'#5d844f',px+10,py+10,4,4);
-     box(c,h%2?'#e8cc74':'#e39aa0',px+11,py+11,2,2);
+    // Lush manicured royal garden parterre with high-density grass & carved white-stone curbs
+    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(c,'grass',x,y,'lush')){
+     box(c,'#678257',px,py,32,32);
+     if(h%3===0){box(c,'#739060',px+4,py+5,14,6);box(c,'#819e6b',px+6,py+6,8,3)}
+     if(h%4===1){box(c,'#5a754c',px+14,py+18,12,6)}
     }
-    if(left==='A'){box(c,'#7b7972',px,py,3,32);box(c,'#d8d2c5',px+1,py,2,32);box(c,'#4d6b43',px+3,py,2,32)}
-    if(right==='A'){box(c,'#7b7972',px+29,py,3,32);box(c,'#d8d2c5',px+29,py,2,32);box(c,'#4d6b43',px+27,py,2,32)}
-    if(up==='A'){box(c,'#7b7972',px,py,32,3);box(c,'#d8d2c5',px,py+1,32,2);box(c,'#4d6b43',px,py+3,32,2)}
-    if(down==='A'){box(c,'#7b7972',px,py+29,32,3);box(c,'#d8d2c5',px,py+29,32,2);box(c,'#4d6b43',px,py+27,32,2)}
+    if(h%5===0){
+     box(c,'#385e36',px+9,py+11,6,5);box(c,'#5a8a4c',px+10,py+10,4,4);
+     box(c,h%2?'#f4d468':'#ee8c98',px+11,py+11,2,2);
+    }
+    if(left==='A'){box(c,'#7b7972',px,py,3,32);box(c,'#e0dad0',px+1,py,2,32);box(c,'#3f5e38',px+3,py,2,32)}
+    if(right==='A'){box(c,'#7b7972',px+29,py,3,32);box(c,'#e0dad0',px+29,py,2,32);box(c,'#3f5e38',px+27,py,2,32)}
+    if(up==='A'){box(c,'#7b7972',px,py,32,3);box(c,'#e0dad0',px,py+1,32,2);box(c,'#3f5e38',px,py+3,32,2)}
+    if(down==='A'){box(c,'#7b7972',px,py+29,32,3);box(c,'#e0dad0',px,py+29,32,2);box(c,'#3f5e38',px,py+27,32,2)}
     return true;
    }
    return false;
@@ -140,6 +144,8 @@ const CapitalEnvironment=(()=>{
      if(y>=12)box(c,inn?'#82644b':'#6c7480',px,py+2,32,3);
     }
    }else{
+    const tone=map==='capitalchapel'?'chapel':map==='capitalarmory'?'stone':'inn';
+    if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawTile(c,'floor',x,y,tone))return true;
     box(c,p.floor,px,py,32,32);
     if(inn){
      box(c,p.seam,px,py+15,32,1);box(c,p.seam,px,py+31,32,1);
@@ -317,11 +323,36 @@ const CapitalEnvironment=(()=>{
   // 3-Phase Royal Capital Atmospheric Storytelling (Pre-Ceremony Festive -> Post-Ceremony Afterglow -> Chapter 7 Wartime)
   const ceremonyDone=typeof isEventComplete==='function'&&isEventComplete('alpha.capital.ceremony');
   const wartime=typeof getWorldSwitch==='function'&&getWorldSwitch('returnedKingdom');
-  // Neutral ceremony drapery: festive crimson-gold before wartime, faded slate-crimson during wartime
+  const wave=Math.round(Math.sin((typeof Date!=='undefined'?Date.now():0)/280)*1.6);
+  // Central Plaza Radial Marble Mosaic Emblem surrounding the Fountain (12,8)
+  for(const [rx,ry,col] of [[11,7,'#e4dec8'],[13,7,'#e4dec8'],[11,9,'#e4dec8'],[13,9,'#e4dec8'],[12,7,'#d6c496'],[12,9,'#d6c496'],[11,8,'#d6c496'],[13,8,'#d6c496']]){
+   box(c,'rgba(44,42,38,.16)',rx*W+4,ry*W+4,24,24);
+   box(c,col,rx*W+6,ry*W+6,20,20);
+   box(c,'#f4efe2',rx*W+8,ry*W+8,16,3);
+  }
+  // Ornate wrought-iron streetlamps with warm amber glass lanterns along the boulevard
+  for(const [lx,ly] of [[6,7],[17,7],[10,11],[14,11]]){
+   const px=lx*W+13,py=ly*W+2;
+   box(c,'rgba(16,20,28,.28)',px-1,py+23,8,4);
+   box(c,'#2c3038',px+2,py+6,3,19);box(c,'#4c5460',px+3,py+7,1,17);
+   box(c,'#2c3038',px-1,py+1,9,7);
+   box(c,wartime?'#b8c8d8':'#ffd874',px+1,py+2,5,5);
+   box(c,wartime?'#e6f0f8':'#fff8d6',px+2,py+3,3,2);
+  }
+  // Blossoming ornamental boulevard trees in carved stone planters (framing market & plaza, zero collision impact)
+  if(typeof HD2DAtlas!=='undefined'){
+   for(const [tx,ty] of [[4,6],[19,6]]){
+    box(c,'#5c5852',tx*W+2,ty*W+18,28,12);box(c,'#cfc8b8',tx*W+4,ty*W+19,24,8);
+    HD2DAtlas.drawTree(c,tx,ty,'ornamental');
+   }
+  }
+  // Gently fluttering royal banners flanking the palace forecourt
   for(const x of [9,14]){
-   box(c,'#504b4d',x*W+15,4*W,3,52);
-   box(c,wartime?'#5e4348':'#814e54',x*W+18,4*W+5,13,wartime?24:32);
-   box(c,wartime?'#9e9684':'#cbb78e',x*W+19,4*W+7,11,3);
+   box(c,'#3c383a',x*W+15,4*W,3,52);box(c,'#d8bc74',x*W+14,4*W-2,5,4);
+   box(c,wartime?'#5e4348':'#9c3642',x*W+18,4*W+5,13,wartime?24:32);
+   box(c,wartime?'#4e353a':'#782430',x*W+18+wave,4*W+22,13,wartime?8:15);
+   box(c,wartime?'#9e9684':'#e6c874',x*W+19,4*W+7,11,3);
+   box(c,wartime?'#9e9684':'#e6c874',x*W+22,4*W+13,5,8);
   }
   // Phase A (Festive Pre-Ceremony): red-and-white celebratory pennant garlands spanning the forecourt & grand boulevard
   if(!wartime&&!ceremonyDone){

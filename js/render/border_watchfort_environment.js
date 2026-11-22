@@ -102,6 +102,7 @@ const BorderWatchfortEnvironment=(()=>{
     return true;
    }
    if(ch==='F'){
+    if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawTile(ctx,'floor',x,y,'inn'))return true;
     pix(ctx,'#765c45',a,b,32,32);
     pix(ctx,'#523e2e',a,b+15,32,1);pix(ctx,'#523e2e',a,b+31,32,1);
     pix(ctx,'rgba(248,224,180,0.08)',a,b+1,32,2);

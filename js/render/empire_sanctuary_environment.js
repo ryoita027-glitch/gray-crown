@@ -25,6 +25,7 @@ const EmpireSanctuaryEnvironment=(()=>{
  const inScope=m=>api.enabled&&targets.has(m);
 
  function drawOrchardTree(ctx,px,py,r){
+  if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawTree(ctx,px/32,py/32,'ornamental'))return;
   // Lush Imperial borderland fruit tree with warm amber/coral orchard fruit
   const sway=(r%3)-1,ty=py-12;
   pix(ctx,'#425b42',px+4,py+24,24,7);pix(ctx,'#324733',px+7,py+26,18,4);
@@ -45,15 +46,15 @@ const EmpireSanctuaryEnvironment=(()=>{
  function drawCanalTile(ctx,m,x,y,r){
   const a=x*32,b=y*32,now=Date.now(),wave=Math.floor(now/480+x+y)%3;
   const up=tileOf(m,x,y-1,'E'),down=tileOf(m,x,y+1,'E'),left=tileOf(m,x-1,y,'E'),right=tileOf(m,x+1,y,'E');
-  // Deep layered canal water
-  pix(ctx,'#254d5e',a,b,32,32);
-  pix(ctx,'#2e5d70',a+2,b+3,28,26);
-  pix(ctx,'#386d82',a+4,b+6,24,20);
-  // Animated water current highlights
-  const sx=4+((r+wave*5)%14),sy=7+((r>>>3)%14);
-  pix(ctx,'#78adc0',a+sx,b+sy,10,2);
-  pix(ctx,'#c4e6ee',a+sx+2,b+sy,5,1);
-  pix(ctx,'#6298ac',a+((sx+11)%20)+2,b+((sy+9)%18)+4,8,1);
+  if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(ctx,'water',x,y,'canal',wave)){
+   pix(ctx,'#254d5e',a,b,32,32);
+   pix(ctx,'#2e5d70',a+2,b+3,28,26);
+   pix(ctx,'#386d82',a+4,b+6,24,20);
+   const sx=4+((r+wave*5)%14),sy=7+((r>>>3)%14);
+   pix(ctx,'#78adc0',a+sx,b+sy,10,2);
+   pix(ctx,'#c4e6ee',a+sx+2,b+sy,5,1);
+   pix(ctx,'#6298ac',a+((sx+11)%20)+2,b+((sy+9)%18)+4,8,1);
+  }
   // Carved stone canal quay walls along non-water edges
   if(up!=='R'){
    pix(ctx,'#4a545c',a,b,32,6);pix(ctx,'#8c969c',a,b,32,3);

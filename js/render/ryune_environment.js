@@ -51,7 +51,8 @@ const RyuneEnvironment=(()=>{
     return true;
    }
    if(ch==='F'){
-    // Continuous warm sunlit oak floorboards with subtle grain variation
+    // High-density HD-2D tongue-and-groove sunlit oak floorboards
+    if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawTile(c,'floor',x,y,'oak'))return true;
     rect(c,pal.floor,px,py,32,32);
     rect(c,pal.shade,px,py+15,32,1);rect(c,pal.shade,px,py+31,32,1);
     rect(c,'rgba(246,225,186,.10)',px,py+1,32,2);rect(c,'rgba(246,225,186,.08)',px,py+17,32,2);
@@ -64,7 +65,12 @@ const RyuneEnvironment=(()=>{
    return false
   }
   if(ch==='G'||ch==='H'||ch==='T'){
-   // Cohesive pastoral meadow base (eliminates harsh 32px checkerboard squares)
+   // High-density hue-shifted HD-2D meadow texture + multi-cluster storybook oak/orchard trees
+   if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawTile(c,'grass',x,y,'lush')){
+    if(ch==='H')return true;
+    if(ch==='T'){HD2DAtlas.drawTree(c,x,y,'oak');return true}
+    return true;
+   }
    rect(c,'#6c8658',px,py,32,32);
    if(h%3===0){rect(c,'#748f5f',px+3+(h%12),py+5+((h>>>4)%12),11,5);rect(c,'#7d9966',px+5+(h%12),py+6+((h>>>4)%12),6,2)}
    if(h%4===1){rect(c,'#617b4f',px+14,py+17+((h>>>6)%8),10,4)}
@@ -119,20 +125,22 @@ const RyuneEnvironment=(()=>{
   }
   if(ch==='P'){
    // Seamless warm sun-baked village dirt lane with packed wheel ruts, pebbles & rich mossy grass shoulders
-   rect(c,'#c6ab80',px,py,32,32);
-   if(h%2===0)rect(c,'#d4ba90',px+((h>>>3)%14),py+4+((h>>>6)%18),12,4);
-   if(h%3===0)rect(c,'#b2966c',px+((h>>>7)%16),py+14+((h>>>10)%12),10,3);
-   if(h%4===1){rect(c,'#8f7856',px+6+((h>>>5)%18),py+8+((h>>>8)%16),4,3);rect(c,'#e6d8b6',px+6+((h>>>5)%18),py+8+((h>>>8)%16),2,1)}
+   if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(c,'path',x,y,'warm')){
+    rect(c,'#c6ab80',px,py,32,32);
+    if(h%2===0)rect(c,'#d4ba90',px+((h>>>3)%14),py+4+((h>>>6)%18),12,4);
+    if(h%3===0)rect(c,'#b2966c',px+((h>>>7)%16),py+14+((h>>>10)%12),10,3);
+    if(h%4===1){rect(c,'#8f7856',px+6+((h>>>5)%18),py+8+((h>>>8)%16),4,3);rect(c,'#e6d8b6',px+6+((h>>>5)%18),py+8+((h>>>8)%16),2,1)}
+   }
    const at=(xx,yy)=>definition?.tiles?.[yy]?.[xx]||'S';
    const grass=v=>v==='G'||v==='H'||v==='T';
-   if(grass(at(x-1,y))){for(let i=0;i<8;i++){const w=3+(hash(x,y,i)%3);rect(c,i%2?'#688454':'#7c9862',px,py+i*4,w,4);rect(c,'#4f6a3e',px+w-1,py+i*4,1,4);rect(c,'#9e8864',px+w,py+i*4,2,4)}}
-   if(grass(at(x+1,y))){for(let i=0;i<8;i++){const w=3+(hash(x,y,i+9)%3);rect(c,i%2?'#688454':'#7c9862',px+32-w,py+i*4,w,4);rect(c,'#4f6a3e',px+32-w,py+i*4,1,4);rect(c,'#9e8864',px+30-w,py+i*4,2,4)}}
-   if(grass(at(x,y-1))){for(let i=0;i<8;i++){const ht=3+(hash(x,y,i+17)%3);rect(c,i%2?'#688454':'#7c9862',px+i*4,py,4,ht);rect(c,'#4f6a3e',px+i*4,py+ht-1,4,1);rect(c,'#9e8864',px+i*4,py+ht,4,2)}}
-   if(grass(at(x,y+1))){for(let i=0;i<8;i++){const ht=3+(hash(x,y,i+25)%3);rect(c,i%2?'#688454':'#7c9862',px+i*4,py+32-ht,4,ht);rect(c,'#4f6a3e',px+i*4,py+32-ht,4,1);rect(c,'#9e8864',px+i*4,py+30-ht,4,2)}}
-   if(!grass(at(x-1,y))&&!grass(at(x,y-1))&&grass(at(x-1,y-1))){rect(c,'#688454',px,py,5,4);rect(c,'#9e8864',px+5,py,1,4);rect(c,'#9e8864',px,py+4,5,1)}
-   if(!grass(at(x+1,y))&&!grass(at(x,y-1))&&grass(at(x+1,y-1))){rect(c,'#688454',px+27,py,5,4);rect(c,'#9e8864',px+26,py,1,4);rect(c,'#9e8864',px+27,py+4,5,1)}
-   if(!grass(at(x-1,y))&&!grass(at(x,y+1))&&grass(at(x-1,y+1))){rect(c,'#688454',px,py+28,5,4);rect(c,'#9e8864',px+5,py+28,1,4);rect(c,'#9e8864',px,py+27,5,1)}
-   if(!grass(at(x+1,y))&&!grass(at(x,y+1))&&grass(at(x+1,y+1))){rect(c,'#688454',px+27,py+28,5,4);rect(c,'#9e8864',px+26,py+28,1,4);rect(c,'#9e8864',px+27,py+27,5,1)}
+   if(grass(at(x-1,y))){for(let i=0;i<8;i++){const w=3+(hash(x,y,i)%3);rect(c,i%2?'#597a46':'#719655',px,py+i*4,w,4);rect(c,'#3a5430',px+w-1,py+i*4,1,4);rect(c,'#9e8864',px+w,py+i*4,2,4)}}
+   if(grass(at(x+1,y))){for(let i=0;i<8;i++){const w=3+(hash(x,y,i+9)%3);rect(c,i%2?'#597a46':'#719655',px+32-w,py+i*4,w,4);rect(c,'#3a5430',px+32-w,py+i*4,1,4);rect(c,'#9e8864',px+30-w,py+i*4,2,4)}}
+   if(grass(at(x,y-1))){for(let i=0;i<8;i++){const ht=3+(hash(x,y,i+17)%3);rect(c,i%2?'#597a46':'#719655',px+i*4,py,4,ht);rect(c,'#3a5430',px+i*4,py+ht-1,4,1);rect(c,'#9e8864',px+i*4,py+ht,4,2)}}
+   if(grass(at(x,y+1))){for(let i=0;i<8;i++){const ht=3+(hash(x,y,i+25)%3);rect(c,i%2?'#597a46':'#719655',px+i*4,py+32-ht,4,ht);rect(c,'#3a5430',px+i*4,py+32-ht,4,1);rect(c,'#9e8864',px+i*4,py+30-ht,4,2)}}
+   if(!grass(at(x-1,y))&&!grass(at(x,y-1))&&grass(at(x-1,y-1))){rect(c,'#597a46',px,py,5,4);rect(c,'#9e8864',px+5,py,1,4);rect(c,'#9e8864',px,py+4,5,1)}
+   if(!grass(at(x+1,y))&&!grass(at(x,y-1))&&grass(at(x+1,y-1))){rect(c,'#597a46',px+27,py,5,4);rect(c,'#9e8864',px+26,py,1,4);rect(c,'#9e8864',px+27,py+4,5,1)}
+   if(!grass(at(x-1,y))&&!grass(at(x,y+1))&&grass(at(x-1,y+1))){rect(c,'#597a46',px,py+28,5,4);rect(c,'#9e8864',px+5,py+28,1,4);rect(c,'#9e8864',px,py+27,5,1)}
+   if(!grass(at(x+1,y))&&!grass(at(x,y+1))&&grass(at(x+1,y+1))){rect(c,'#597a46',px+27,py+28,5,4);rect(c,'#9e8864',px+26,py+28,1,4);rect(c,'#9e8864',px+27,py+27,5,1)}
    return true;
   }
   return false
@@ -312,11 +320,34 @@ const RyuneEnvironment=(()=>{
   rect(c,'#241a15',bx+9,by+14,14,10);
   rect(c,'#e07b32',bx+11,by+17,10,6);rect(c,'#ffd878',bx+13,by+19,6,3);
   rect(c,'rgba(255,186,88,.18)',bx+2,by+16,28,16);
+  // Living village chimney & bakery oven smoke wisps (gentle animation!)
+  const sm=(typeof Date!=='undefined'?Date.now():0)/420;
+  for(const [sx,sy] of [[bx+16,by+2],[4*32+18,2*32+2],[18*32+76,10*32-4]]){
+   for(let k=0;k<3;k++){
+    const phase=(sm+k*0.95)%3,oy=sy-phase*7,ox=sx+Math.sin(sm+k*2)*3;
+    rect(c,`rgba(246,244,238,${(0.42-phase*0.11).toFixed(2)})`,ox,oy,4+phase,3+phase*0.6);
+   }
+  }
   // Striped bakery counter & golden crusty bread loaves at (8,5)
   rect(c,'#543d2b',bx+32,by+10,30,18);
   rect(c,'#9e7852',bx+34,by+12,26,14);
   for(let i=0;i<4;i++)rect(c,i%2?'#efe2c4':'#a64d46',bx+32+i*7,by+4,7,6);
   for(const lx of [36,45,53]){rect(c,'#c88d48',bx+lx,by+13,6,4);rect(c,'#e6b66e',bx+lx+1,by+13,4,2)}
+  // Warm bread steam rising gently from Eda's counter
+  for(let k=0;k<2;k++){
+   const st=(sm*1.2+k*1.3)%2;
+   rect(c,'rgba(255,250,236,.38)',bx+40+k*12,by+10-st*4,2,3);
+  }
+  // Pecking white village chickens near the western fields
+  const peck=Math.floor(sm)%2;
+  for(const [cx,cy,dir] of [[3*32+14,12*32+12,1],[4*32+8,12*32+18,-1],[3*32+22,11*32+18,1]]){
+   rect(c,'rgba(18,24,14,.22)',cx-4,cy+5,9,3);
+   rect(c,'#f6f2e8',cx-4,cy,8,6);rect(c,'#e2d8c6',cx-3,cy+3,6,3);
+   rect(c,'#f6f2e8',cx+(dir>0?3:-5),cy-2+peck,3,3);
+   rect(c,'#d84c44',cx+(dir>0?4:-4),cy-3+peck,2,2);
+   rect(c,'#e4a83e',cx+(dir>0?6:-6),cy-1+peck,2,1);
+   rect(c,'#c89838',cx-2,cy+6,1,2);rect(c,'#c89838',cx+2,cy+6,1,2);
+  }
   // Circular cobblestone plaza ring, flower barrels & wooden benches around the central well (12,9)
   for(const [wx,wy] of [[11,8],[13,8],[11,9],[13,9],[11,10],[13,10]]){
    rect(c,'#989278',wx*32+6,wy*32+10,20,12);

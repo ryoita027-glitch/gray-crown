@@ -15,30 +15,39 @@ const RoadCaveQuality=(()=>{
   const px=x*32,py=y*32,h=mix(x,y);
   const at=(xx,yy)=>m?.tiles?.[yy]?.[xx]||'T';
   if(ch==='P'){
-   // Seamless warm woodland trade road (zero 1px seams between adjacent dirt tiles or grass)
+   // Seamless warm woodland trade road backed by high-density HD2DAtlas grain + mossy shoulders
    const padR=at(x+1,y)==='P'?1:0,padD=at(x,y+1)==='P'?1:0;
-   box(c,'#c2a77c',px,py,32+padR,32+padD);
-   if(h%3===0)box(c,'#ceb58b',px+((h>>>2)%14)+2,py+5+((h>>>5)%16),11,3);
-   if(h%4===0)box(c,'#b1976e',px+((h>>>7)%16)+2,py+16+((h>>>9)%10),9,2);
-   if(h%5===1){box(c,'#947e5e',px+6+((h>>>4)%18),py+8+((h>>>8)%15),3,2);box(c,'#e3d4b2',px+6+((h>>>4)%18),py+8+((h>>>8)%15),2,1)}
+   if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(c,'path',x,y,'warm')){
+    box(c,'#c2a77c',px,py,32+padR,32+padD);
+    if(h%3===0)box(c,'#ceb58b',px+((h>>>2)%14)+2,py+5+((h>>>5)%16),11,3);
+    if(h%4===0)box(c,'#b1976e',px+((h>>>7)%16)+2,py+16+((h>>>9)%10),9,2);
+    if(h%5===1){box(c,'#947e5e',px+6+((h>>>4)%18),py+8+((h>>>8)%15),3,2);box(c,'#e3d4b2',px+6+((h>>>4)%18),py+8+((h>>>8)%15),2,1)}
+   }
    const gL=isGrass(at(x-1,y)),gR=isGrass(at(x+1,y)),gU=isGrass(at(x,y-1)),gD=isGrass(at(x,y+1));
    for(let z=0;z<8;z++){
     const o=z*4;
-    if(gL){const w=2+mix(x,y,z)%3;box(c,z%2?'#657f55':'#768f60',px,py+o,w,4);box(c,'#a18e69',px+w,py+o,1,4)}
-    if(gR){const w=2+mix(x,y,z+9)%3;box(c,z%2?'#657f55':'#768f60',px+32-w,py+o,w,4);box(c,'#a18e69',px+31-w,py+o,1,4)}
-    if(gU){const w=2+mix(x,y,z+17)%3;box(c,z%2?'#657f55':'#768f60',px+o,py,4,w);box(c,'#a18e69',px+o,py+w,4,1)}
-    if(gD){const w=2+mix(x,y,z+25)%3;box(c,z%2?'#657f55':'#768f60',px+o,py+32-w,4,w);box(c,'#a18e69',px+o,py+31-w,4,1)}
+    if(gL){const w=2+mix(x,y,z)%3;box(c,z%2?'#597a46':'#719655',px,py+o,w,4);box(c,'#a18e69',px+w,py+o,1,4)}
+    if(gR){const w=2+mix(x,y,z+9)%3;box(c,z%2?'#597a46':'#719655',px+32-w,py+o,w,4);box(c,'#a18e69',px+31-w,py+o,1,4)}
+    if(gU){const w=2+mix(x,y,z+17)%3;box(c,z%2?'#597a46':'#719655',px+o,py,4,w);box(c,'#a18e69',px+o,py+w,4,1)}
+    if(gD){const w=2+mix(x,y,z+25)%3;box(c,z%2?'#597a46':'#719655',px+o,py+32-w,4,w);box(c,'#a18e69',px+o,py+31-w,4,1)}
    }
-   // Soften outer grass corners where the woodland road curves diagonally
-   if(!gL&&!gU&&isGrass(at(x-1,y-1))){box(c,'#657f55',px,py,4,3);box(c,'#a18e69',px+4,py,1,3);box(c,'#a18e69',px,py+3,4,1)}
-   if(!gR&&!gU&&isGrass(at(x+1,y-1))){box(c,'#657f55',px+28,py,4,3);box(c,'#a18e69',px+27,py,1,3);box(c,'#a18e69',px+28,py+3,4,1)}
-   if(!gL&&!gD&&isGrass(at(x-1,y+1))){box(c,'#657f55',px,py+29,4,3);box(c,'#a18e69',px+4,py+29,1,3);box(c,'#a18e69',px,py+28,4,1)}
-   if(!gR&&!gD&&isGrass(at(x+1,y+1))){box(c,'#657f55',px+28,py+29,4,3);box(c,'#a18e69',px+27,py+29,1,3);box(c,'#a18e69',px+28,py+28,4,1)}
+   if(!gL&&!gU&&isGrass(at(x-1,y-1))){box(c,'#597a46',px,py,4,3);box(c,'#a18e69',px+4,py,1,3);box(c,'#a18e69',px,py+3,4,1)}
+   if(!gR&&!gU&&isGrass(at(x+1,y-1))){box(c,'#597a46',px+28,py,4,3);box(c,'#a18e69',px+27,py,1,3);box(c,'#a18e69',px+28,py+3,4,1)}
+   if(!gL&&!gD&&isGrass(at(x-1,y+1))){box(c,'#597a46',px,py+29,4,3);box(c,'#a18e69',px+4,py+29,1,3);box(c,'#a18e69',px,py+28,4,1)}
+   if(!gR&&!gD&&isGrass(at(x+1,y+1))){box(c,'#597a46',px+28,py+29,4,3);box(c,'#a18e69',px+27,py+29,1,3);box(c,'#a18e69',px+28,py+28,4,1)}
    if(at(x,y-1)==='T')box(c,'rgba(22,34,22,0.16)',px,py,32,5);
    return true;
   }
   if(ch!=='G'&&ch!=='T')return false;
-  // Cohesive woodland meadow (removes jarring 32px checkerboard squares)
+  const birchZone=typeof state!=='undefined'&&['northwaystation','northroad','northwatch'].includes(state.map);
+  if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawTile(c,'grass',x,y,birchZone?'autumn':'lush')){
+   if(ch==='G'){
+    if(at(x,y-1)==='T')box(c,'rgba(18,28,18,0.22)',px,py,32,6);
+    return true;
+   }
+   HD2DAtlas.drawTree(c,x,y,birchZone?'birch':'oak');
+   return true;
+  }
   box(c,'#657f55',px,py,32,32);
   if(h%3===0){box(c,'#6e895c',px+4+(h%10),py+6+((h>>>4)%12),11,5);box(c,'#799464',px+6+(h%10),py+7+((h>>>4)%12),6,2)}
   if(h%4===1){box(c,'#5a744c',px+14,py+17+((h>>>6)%8),10,4)}
@@ -84,19 +93,21 @@ const RoadCaveQuality=(()=>{
    return true;
   }
   if(ch==='C'){
-   // Weathered ancient stone flagstones with neighbor-aware wall shadows & subtle moss
-   box(c,'#56575d',px,py,32,32);
-   box(c,'#41444b',px,py+15,32,1);box(c,'#41444b',px,py+31,32,1);
-   const s1=(y%2===0)?16:9,s2=(y%2===0)?7:23;
-   box(c,'#41444b',px+s1,py,1,15);box(c,'#41444b',px+s2,py+16,1,15);
-   box(c,'#67686f',px+1,py+1,s1-2,2);box(c,'#67686f',px+s1+2,py+1,30-s1-2,2);
-   box(c,'#63646b',px+1,py+17,s2-2,2);box(c,'#63646b',px+s2+2,py+17,30-s2-2,2);
-   if(h%5===0){box(c,'#4a4c52',px+6,py+8,8,1);box(c,'#777572',px+7,py+9,5,1)}
-   if(h%9===3){box(c,'#48604f',px+21,py+5,4,3);box(c,'#62805e',px+22,py+6,2,2)}
+   // High-density weathered ancient dungeon flagstones with deep wall AO
+   if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(c,'cobble',x,y,'cave')){
+    box(c,'#56575d',px,py,32,32);
+    box(c,'#41444b',px,py+15,32,1);box(c,'#41444b',px,py+31,32,1);
+    const s1=(y%2===0)?16:9,s2=(y%2===0)?7:23;
+    box(c,'#41444b',px+s1,py,1,15);box(c,'#41444b',px+s2,py+16,1,15);
+    box(c,'#67686f',px+1,py+1,s1-2,2);box(c,'#67686f',px+s1+2,py+1,30-s1-2,2);
+    box(c,'#63646b',px+1,py+17,s2-2,2);box(c,'#63646b',px+s2+2,py+17,30-s2-2,2);
+    if(h%5===0){box(c,'#4a4c52',px+6,py+8,8,1);box(c,'#777572',px+7,py+9,5,1)}
+    if(h%9===3){box(c,'#48604f',px+21,py+5,4,3);box(c,'#62805e',px+22,py+6,2,2)}
+   }
    // Cast 3D ambient shadow from adjacent stone walls
-   if(up==='S')box(c,'rgba(14,16,22,0.34)',px,py,32,6);
-   if(left==='S')box(c,'rgba(14,16,22,0.22)',px,py,5,32);
-   if(right==='S')box(c,'rgba(14,16,22,0.14)',px+28,py,4,32);
+   if(up==='S')box(c,'rgba(12,14,20,0.38)',px,py,32,6);
+   if(left==='S')box(c,'rgba(12,14,20,0.24)',px,py,5,32);
+   if(right==='S')box(c,'rgba(12,14,20,0.16)',px+28,py,4,32);
    return true;
   }
   if(ch==='S'){

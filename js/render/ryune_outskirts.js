@@ -19,12 +19,14 @@ const RyuneOutskirts=(()=>{
  const pixel=(c,col,x,y,w,h)=>{c.fillStyle=col;c.fillRect(x|0,y|0,w|0,h|0)};
  const hash=(x,y)=>((Math.imul(x+17,73856093)^Math.imul(y+23,19349663))>>>0);
  function drawPath(c,x,y){
+  if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawTile(c,'path',x/W,y/W,'warm'))return;
   pixel(c,'#c2a77c',x,y,W,W);
   pixel(c,'#ceb58b',x+3,y+5,14,3);
   pixel(c,'#a48c67',x+9,y+19,11,2);
   pixel(c,'#dfd0ad',x+21,y+12,4,1);
  }
  function drawGrass(c,x,y,h){
+  if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawTile(c,'grass',x/W,y/W,'lush'))return;
   pixel(c,'#6b8557',x,y,W,W);
   if(h%3===0){pixel(c,'#748f5f',x+3+(h%12),y+6+((h>>>4)%12),11,5);pixel(c,'#7e9a66',x+5+(h%12),y+7+((h>>>4)%12),6,2)}
   if(h%4===1)pixel(c,'#5f794d',x+14,y+18,10,4);
@@ -84,6 +86,7 @@ const RyuneOutskirts=(()=>{
   }
   if(ch==='T'||ch==='H'){
    drawGrass(c,x,y,h);
+   if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawTree(c,tx,ty,'oak'))return true;
    // Towering 45px storybook oak matching Ryune Village scale
    const sway=(h%3)-1,ty=y-14;
    pixel(c,'#48633e',x+4,y+24,24,7);
