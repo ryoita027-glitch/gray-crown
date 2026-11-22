@@ -237,8 +237,9 @@ const OpeningWorldLife=(()=>{
   // New native gesture sheet already has the prop, arm and face painted into
   // each pose. The historical rectangular overlay obscured their artwork.
   if(typeof OpeningPixelAssets!=='undefined'&&
-     OpeningPixelAssets.featuredNames?.includes(n.id)&&
-     OpeningPixelAssets.featuredStatus?.().ready)return true;
+     ((OpeningPixelAssets.featuredNames?.includes(n.id)&&
+       OpeningPixelAssets.featuredStatus?.().ready)||
+      (typeof HTMLCanvasElement!=='undefined'&&OpeningPixelAssets.designs?.[n.id])))return true;
   const beat=workPhase(n.id,now)===1?1:0;
   // The dedicated NPC atlas already includes distinct garments.
   // Only the old fallback renderer needs the historic costume overlay.

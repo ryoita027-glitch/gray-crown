@@ -119,7 +119,8 @@ const OpeningPixelAssets=(()=>{
   zester:['#4e423c','#7c3842','#d4aa8c','fighter','scar'],
   decisionGuide:['#6e6256','#5e687e','#dcb89c','scribe','hood'],
   banditEnemy:['#4a342c','#744c3c','#d6aa8a','fighter','scar'],
-  imperialPatrolEnemy:['#303642','#2e507c','#d4ae90','fighter','short']
+  imperialPatrolEnemy:['#303642','#2e507c','#d4ae90','fighter','short'],
+  mother:['#965644','#c97c62','#e4be9e','civil','bun']
  });
  // Explicit role + silhouette grammar, not one shared body with palette swaps.
  // Each named resident uses a physical shape and practical object relevant to
@@ -268,159 +269,171 @@ const OpeningPixelAssets=(()=>{
  });
  function signature(c,id,dir,frame,coat,skin,baseY=0){
   const type=identities[id];if(!type)return;
-  const light=tint(coat,30),dark=tint(coat,-34);
+  const light=tint(coat,26),dark=tint(coat,-32),ink='#2e1c22';
   const front=dir===0,left=dir===1,right=dir===2,side=left||right,back=dir===3;
   const pulse=(frame===1?-1:frame===3?1:0);
   const y=baseY;
-  // Direction-aware prop anchor tucked naturally beside the slender anime-chibi hand (no double-thick manual outlines; applyColoredOutline auto-strokes every prop cleanly in 1px!).
-  const px=(w=5)=>left?(17-w):right?30:30;
-  const pxWide=(w=6)=>left?(16-w):right?31:30;
-  const staffX=left?13:33;
+  // Compact prop anchor at the outward-angled chibi hand (never bloats body or fills leg gap!).
+  const px=(w=4)=>left?(18-w):right?28:30;
+  const pxWide=(w=5)=>left?(18-w):right?28:30;
+  const staffX=left?15:right?31:32;
   switch(type){
    case 'trainer': case 'veteran': case 'scout':
     if(!side){
-     P(c,dark,16,y+26,2,9);P(c,dark,30,y+26,2,9);
-     P(c,'#7c6244',19,y+31,10,2);P(c,'#e6c884',22,y+31,4,2);
+     P(c,dark,20,y+21,2,5);P(c,dark,26,y+21,2,5);
+     P(c,'#7c6244',20,y+26,8,2);P(c,'#e6c884',23,y+26,2,2);
     }else{
-     P(c,'#7c6244',19,y+31,10,2);P(c,'#e6c884',left?20:25,y+31,3,2);
+     P(c,'#7c6244',21,y+26,6,2);
     }
-    if(type==='trainer'){P(c,'#a68456',staffX,y+13,2,27);P(c,'#e4cfa4',staffX,y+13,1,16)}
+    if(type==='trainer'){P(c,'#a68456',staffX,y+12,2,26);P(c,'#e4cfa4',staffX,y+12,1,15)}
     if(type==='veteran'){
-     const sx=left?25:16;
-     P(c,'#98a2ac',sx,y+24,5,3);P(c,'#dde4ea',sx+1,y+24,3,1);
+     const sx=left?24:17;
+     P(c,'#98a2ac',sx,y+20,3,3);P(c,'#dde4ea',sx,y+20,2,1);
     }
     if(type==='scout'){
-     const sx=left?26:15;
-     P(c,'#4a6a4c',sx,y+24,4,11);P(c,'#789a70',sx+1,y+25,2,8);
+     const sx=left?25:17;
+     P(c,'#4a6a4c',sx,y+20,3,6);P(c,'#789a70',sx+1,y+21,1,4);
     }
     break;
    case 'baker':case 'innkeeper':case 'homeApron':case 'care':
     if(!back){
-     const ax=left?18:right?21:19,aw=side?9:10;
-     P(c,'#f2e8d2',ax,y+27,aw,11);P(c,'#d4c09c',ax,y+36,aw,2);P(c,'#fff8ea',ax+1,y+28,3,7);
+     if(!side){
+      // Flared A-line apron over waist & hips (never blocks lower leg gap!)
+      P(c,'#f2e8d2',21,y+23,6,3);
+      P(c,'#f2e8d2',20,y+26,8,4);
+      P(c,'#cbb696',20,y+29,8,1);
+      P(c,'#fff8ea',21,y+24,2,5);
+     }else{
+      P(c,'#f2e8d2',21,y+24,5,6);P(c,'#cbb696',21,y+29,5,1);
+     }
     }else{
-     P(c,'#f2e8d2',21,y+31,6,2);P(c,'#fff8ea',22,y+33,1,4);P(c,'#fff8ea',25,y+33,1,4);
+     P(c,'#f2e8d2',21,y+26,6,1);
     }
-    if(type==='care'&&!back){const bx=px(5);P(c,'#72986e',bx,y+30+pulse,5,5);P(c,'#f6f2e6',bx+2,y+31+pulse,1,3);P(c,'#f6f2e6',bx+1,y+32+pulse,3,1)}
-    if(type==='baker'&&!back){const bx=pxWide(6);P(c,'#946a42',bx,y+30+pulse,6,3);P(c,'#eab668',bx+1,y+28+pulse,4,3);P(c,'#f8d694',bx+2,y+28+pulse,2,1)}
-    if(type==='innkeeper'&&!back){const bx=px(5);P(c,'#cfa870',bx,y+29+pulse,5,4);P(c,'#fff2d4',bx+1,y+29+pulse,3,1)}
+    if(type==='care'&&!back){const bx=px(4);P(c,'#72986e',bx,y+25+pulse,4,3);P(c,'#f6f2e6',bx+1,y+26+pulse,2,1)}
+    if(type==='baker'&&!back){const bx=pxWide(5);P(c,'#946a42',bx,y+25+pulse,4,2);P(c,'#eab668',bx+1,y+23+pulse,3,2)}
+    if(type==='innkeeper'&&!back){const bx=px(4);P(c,'#cfa870',bx,y+24+pulse,4,3);P(c,'#fff2d4',bx+1,y+24+pulse,2,1)}
     break;
    case 'farmer':case 'waterside':
     if(!side){
-     P(c,'#605842',19,y+25,2,12);P(c,'#605842',27,y+25,2,12);
-     P(c,'#a0946a',19,y+32,10,2);
+     P(c,'#5e5640',20,y+21,2,6);P(c,'#5e5640',26,y+21,2,6);
+     P(c,'#9c9268',20,y+26,8,2);
     }else{
-     P(c,'#605842',22,y+25,3,12);P(c,'#a0946a',19,y+32,10,2);
+     P(c,'#5e5640',22,y+21,2,6);
     }
-    if(type==='farmer'){P(c,'#a27e50',staffX,y+13,2,27);P(c,'#9aa69e',staffX-2,y+12,6,2)}
-    else if(!back){const bx=px(5);P(c,'#d2c09e',bx,y+28,5,4);P(c,'#689aa6',bx+1,y+29,3,2)}
+    if(type==='farmer'){P(c,'#a27e50',staffX,y+13,2,25);P(c,'#9aa69e',staffX-1,y+12,4,2)}
+    else if(!back){const bx=px(4);P(c,'#d2c09e',bx,y+24,4,3);P(c,'#689aa6',bx+1,y+25,2,1)}
     break;
    case 'child':case 'ribbonChild':case 'practiceChild':case 'homeChild':case 'satchelChild':
-    if(!side){P(c,light,19,y+34,10,4);P(c,'#f8f0e0',21,y+26,6,2)}
-    else{P(c,light,19,y+34,10,4);P(c,'#f8f0e0',left?20:22,y+26,5,2)}
-    if(type==='practiceChild'&&!back){const bx=left?13:33;P(c,'#c29e6c',bx,y+22,2,15)}
+    if(!side){P(c,'#f8f0e0',22,y+21,4,2)}
+    if(type==='practiceChild'&&!back){const bx=left?16:30;P(c,'#c29e6c',bx,y+19,2,12)}
     if(type==='satchelChild'){
-     const sx=left?25:16;
-     P(c,'#6e543c',left?24:18,y+25,2,10);P(c,'#d4b27c',sx,y+31,5,4);
+     const sx=left?24:19;
+     P(c,'#6e543c',left?23:20,y+21,2,6);P(c,'#d4b27c',sx,y+25,4,3);
     }
-    if(type==='homeChild'&&!back){const bx=px(4);P(c,'#e0b27c',bx,y+30,4,4)}
+    if(type==='homeChild'&&!back){const bx=px(3);P(c,'#e0b27c',bx,y+25,3,3)}
     break;
    case 'elderOffice':case 'elderShawl':case 'ledger':case 'homeBooks':
-    if(!side){P(c,dark,18,y+32,12,7);P(c,'#ded4c0',19,y+24,10,3);P(c,'#f2ead8',20,y+25,8,1)}
-    else{P(c,dark,19,y+32,10,7);P(c,'#ded4c0',19,y+24,10,3)}
-    if(type==='elderShawl'){
-     if(!side){P(c,'#8c7480',17,y+23,14,7);P(c,'#b8a0ac',19,y+24,10,2)}
-     else{P(c,'#8c7480',18,y+23,12,7);P(c,'#b8a0ac',19,y+24,10,2)}
-     P(c,'#a28664',staffX,y+22,2,19);
+    if(!side){
+     // Split coat tails on left/right hips so center leg gap stays 100% open!
+     P(c,dark,19,y+27,3,5);P(c,dark,26,y+27,3,5);
+     P(c,'#ded4c0',20,y+20,8,2);
+    }else{
+     P(c,dark,21,y+27,5,5);P(c,'#ded4c0',21,y+20,5,2);
     }
-    else if(!back){const bx=pxWide(6);P(c,'#c8a26e',bx,y+28,6,5);P(c,'#f8eed4',bx+1,y+29,4,3)}
+    if(type==='elderShawl'){
+     if(!side){P(c,'#8c7480',18,y+20,12,4);P(c,'#b8a0ac',20,y+20,8,2)}
+     else{P(c,'#8c7480',20,y+20,7,4)}
+     P(c,'#a28664',staffX,y+21,2,17);
+    }
+    else if(!back){const bx=px(4);P(c,'#c8a26e',bx,y+24,4,4);P(c,'#f8eed4',bx+1,y+25,2,2)}
     break;
    case 'courier':case 'cityOfficial':case 'commander':
     if(!side){
-     P(c,dark,16,y+25,2,12);P(c,dark,30,y+25,2,12);
-     P(c,'#dec080',19,y+30,10,2);
+     P(c,dark,20,y+21,2,6);P(c,dark,26,y+21,2,6);
+     P(c,'#dec080',20,y+26,8,2);
     }else{
-     P(c,'#dec080',19,y+30,10,2);
+     P(c,'#dec080',21,y+26,6,2);
     }
     if(type==='commander'){
-     if(!side){P(c,'#e0c68c',16,y+23,5,3);P(c,'#e0c68c',27,y+23,5,3);P(c,'#f8e6b4',17,y+23,3,1);P(c,'#f8e6b4',28,y+23,3,1)}
-     else{P(c,'#e0c68c',20,y+23,7,3);P(c,'#f8e6b4',21,y+23,4,1)}
+     if(!side){P(c,'#e0c68c',17,y+20,3,2);P(c,'#e0c68c',28,y+20,3,2)}
+     else{P(c,'#e0c68c',21,y+20,5,2)}
     }
-    else if(!back){const bx=px(5);P(c,'#f2e4c4',bx,y+28+pulse,5,5);P(c,'#c84852',bx+2,y+30+pulse,1,2)}
+    else if(!back){const bx=px(4);P(c,'#f2e4c4',bx,y+24+pulse,4,4);P(c,'#c84852',bx+1,y+25+pulse,2,1)}
     break;
    case 'homeWork':case 'queueFamily':case 'offDuty':case 'cityResident':
-    if(!side){P(c,dark,18,y+31,2,7);P(c,light,28,y+31,2,7)}
-    if(type==='queueFamily'){const sx=left?25:16;P(c,'#c6baa4',sx,y+24,5,9);P(c,'#e4dac4',sx+1,y+25,3,3)}
-    if(type==='offDuty'){P(c,'#b4bcc2',19,y+30,10,2);P(c,'#e4cc94',left?20:23,y+30,3,2)}
+    if(!side){P(c,dark,19,y+27,3,3);P(c,light,26,y+27,3,3)}
+    if(type==='queueFamily'){const sx=left?24:19;P(c,'#c6baa4',sx,y+21,4,5);P(c,'#e4dac4',sx+1,y+22,2,2)}
+    if(type==='offDuty'&&!side){P(c,'#b4bcc2',20,y+26,8,2);P(c,'#e4cc94',23,y+26,2,2)}
     break;
    case 'travelMerchant':case 'cityMerchant':
-    {const bx=back?18:left?26:15;
-     P(c,'#946e46',bx,y+26+pulse,back?12:6,11);P(c,'#dcb882',bx+1,y+27+pulse,back?10:4,3);
-     if(type==='cityMerchant'&&!back){P(c,'#e2cc9e',19,y+28,10,7)}}
+    {const bx=back?20:left?25:17;
+     P(c,'#946e46',bx,y+21+pulse,back?8:3,6);P(c,'#dcb882',bx+1,y+22+pulse,back?6:1,2);
+     if(type==='cityMerchant'&&!back&&!side){P(c,'#e2cc9e',20,y+24,8,5)}}
     break;
    case 'recruit':
-    P(c,'#c6cece',19,y+25,10,4);P(c,'#e8eeec',20,y+25,6,2);P(c,dark,19,y+33,10,4);P(c,'#dec898',left?21:23,y+26,3,10);
+    if(!side){P(c,'#c6cece',20,y+20,8,4);P(c,'#e8eeec',21,y+20,4,2);P(c,'#dec898',23,y+21,2,6)}
+    else{P(c,'#c6cece',21,y+20,6,4);P(c,'#dec898',23,y+21,2,6)}
     break;
    case 'florist':
     if(!back){
-     P(c,'#da8c9c',19,y+28,10,9);
-     const bx=pxWide(6);
-     P(c,'#8c6844',bx+1,y+31+pulse,4,4);P(c,'#ea7c9c',bx,y+27+pulse,6,4);P(c,'#fae084',bx+2,y+27+pulse,2,2);
+     P(c,'#da8c9c',side?21:20,y+24,side?5:8,6);
+     const bx=pxWide(4);
+     P(c,'#8c6844',bx+1,y+26+pulse,2,2);P(c,'#ea7c9c',bx,y+23+pulse,4,3);P(c,'#fae084',bx+1,y+23+pulse,2,2);
     }
     break;
    case 'smith':case 'smithApprentice':
-    P(c,'#5a504c',19,y+26,10,12);P(c,'#c4a480',20,y+28,8,8);
-    if(!back){const bx=px(5);P(c,'#967250',bx+2,y+26+pulse,2,8);P(c,'#c6ced2',bx,y+22+pulse,5,4)}
-    if(type==='smithApprentice'&&!side){P(c,'#8ea4b8',18,y+27,3,8)}
+    P(c,'#5a504c',side?21:20,y+22,side?5:8,7);P(c,'#c4a480',side?22:21,y+23,side?3:6,5);
+    if(!back){const bx=px(4);P(c,'#967250',bx+1,y+22+pulse,2,5);P(c,'#c6ced2',bx,y+20+pulse,4,2)}
+    if(type==='smithApprentice'&&!side){P(c,'#8ea4b8',20,y+23,2,5)}
     break;
    case 'bard':
-    P(c,'#e8cc82',19,y+26,10,2);
+    P(c,'#e8cc82',side?21:20,y+21,side?5:8,2);
     if(!back){
-     const bx=pxWide(6);
-     P(c,'#ba8448',bx,y+27+pulse,6,6);P(c,'#ecc88a',bx+1,y+28+pulse,4,3);P(c,'#6e4828',bx+2,y+21+pulse,2,6);
+     const bx=pxWide(4);
+     P(c,'#ba8448',bx,y+23+pulse,4,4);P(c,'#ecc88a',bx+1,y+24+pulse,2,2);P(c,'#6e4828',bx+1,y+19+pulse,2,4);
     }
     break;
    case 'angler':
-    P(c,'#7e6c54',19,y+26,10,8);P(c,'#d4c4a4',20,y+27,8,2);
-    P(c,'#c6a86e',staffX,y+11+pulse,1,28);
+    P(c,'#7e6c54',side?21:20,y+21,side?5:8,5);P(c,'#d4c4a4',21,y+22,6,1);
+    P(c,'#c6a86e',staffX,y+11+pulse,1,25);
     break;
    case 'herbGatherer':
     if(!back){
-     P(c,'#f6ecd6',19,y+28,10,8);
-     const bx=pxWide(6);
-     P(c,'#aa7e4c',bx+1,y+30+pulse,4,4);P(c,'#54924c',bx,y+27+pulse,6,3);P(c,'#9ad07e',bx+1,y+27+pulse,3,2);
+     P(c,'#f6ecd6',side?21:20,y+24,side?5:8,6);
+     const bx=pxWide(4);
+     P(c,'#aa7e4c',bx+1,y+25+pulse,2,2);P(c,'#54924c',bx,y+23+pulse,4,2);P(c,'#9ad07e',bx+1,y+23+pulse,2,1);
     }
     break;
    case 'bellKeeper':
-    P(c,'#b8c0c6',19,y+25,10,2);
+    P(c,'#b8c0c6',side?21:20,y+21,side?5:8,2);
     if(!back){
-     const bx=px(5);
-     P(c,'#d2aa5c',bx,y+28+pulse,5,2);P(c,'#fce084',bx,y+30+pulse,5,4);P(c,'#fff8dc',bx+1,y+31+pulse,2,2);
+     const bx=px(4);
+     P(c,'#d2aa5c',bx,y+24+pulse,3,2);P(c,'#fce084',bx,y+26+pulse,3,2);P(c,'#fff8dc',bx+1,y+26+pulse,1,1);
     }
     break;
    case 'chapelPriest':
-    P(c,'#e4c26e',20,y+24,2,14);P(c,'#e4c26e',26,y+24,2,14);
+    if(!side){P(c,'#e4c26e',21,y+20,1,10);P(c,'#e4c26e',26,y+20,1,10)}
     if(!back){
-     const bx=px(4);
-     P(c,'#f8f2e4',bx+1,y+29+pulse,2,6);P(c,'#facc64',bx+1,y+26+pulse,2,3);
+     const bx=px(3);
+     P(c,'#f8f2e4',bx+1,y+24+pulse,2,4);P(c,'#facc64',bx+1,y+22+pulse,2,2);
     }
     break;
    case 'scholar':
-    P(c,'#e2c478',19,y+26,10,2);
+    P(c,'#e2c478',side?21:20,y+21,side?5:8,2);
     if(!back){
-     const bx=px(5);
-     P(c,'#f4ead0',bx+1,y+27+pulse,3,7);P(c,'#b24c52',bx+1,y+30+pulse,3,2);
+     const bx=px(4);
+     P(c,'#f4ead0',bx+1,y+23+pulse,3,4);P(c,'#b24c52',bx+1,y+25+pulse,3,1);
     }
     break;
   }
   if((type==='ribbonChild'||type==='homeBooks')&&!back){
-   const rx=left?16:28;
-   P(c,'#e6c89e',rx,y+10,4,3);
-   if(type==='ribbonChild')P(c,'#da7490',rx,y+10,3,2);
+   const rx=left?18:27;
+   P(c,'#e6c89e',rx,y+8,3,2);
+   if(type==='ribbonChild')P(c,'#da7490',rx,y+8,2,2);
   }
-  if(type==='elderShawl'&&front)P(c,'#f0dec6',21,y+24,6,2);
-  if(type==='cityOfficial'&&front)P(c,'#ead6a8',21,y+26,6,2);
-  if(type==='scout'&&side)P(c,'#9c9678',left?29:16,y+21,2,8);
+  if(type==='elderShawl'&&front)P(c,'#f0dec6',22,y+20,4,2);
+  if(type==='cityOfficial'&&front)P(c,'#ead6a8',22,y+22,4,2);
+  if(type==='scout'&&side)P(c,'#9c9678',left?25:19,y+20,2,5);
  }
 
  // Nine bespoke resident silhouettes with four separately drawn directions.
@@ -466,6 +479,7 @@ const OpeningPixelAssets=(()=>{
     actionSheet.src=useLegacyArt?'assets/npc/featured_resident_actions_v2.png':'assets/npc/featured_resident_actions_charm_v5.png';
    }catch(e){actionsFailed=true;GC?.Log?.warn?.('Resident gesture PNG blocked',{detail:String(e)})}
   }
+  if(!useLegacyArt&&typeof HTMLCanvasElement!=='undefined')return false;
   let pose=0;
   if(!useLegacyArt&&dir==='down'&&actionsReady&&!actionsFailed&&typeof OpeningWorldLife!=='undefined')
    pose=OpeningWorldLife.workPhase(n.id,now);
@@ -579,8 +593,11 @@ const OpeningPixelAssets=(()=>{
   ctx.putImageData(img,0,0);
  }
  function person(c,profile,dir,frame,id=''){
-  // Hero-matched 48x48 anime-chibi proportion & layered shading (y=2..46, matching karen_idle.png!)
-  // Uses clean sculpted silhouettes + automatic 1px material-tinted outline in makeNpc() (ZERO LEGO boxes!).
+  // Protagonist-Matched Curved 48x48 Anime-Chibi Engine (matches karen_idle.png / triton_idle.png / sophie_idle.png / margaret_idle.png row-by-row):
+  // - Rounded oval head (6 -> 10 -> 14 -> 16px crown, 12 -> 10 -> 8 -> 6px face/chin, 4px pinched neck) with zero vertical face bars
+  // - Wide-spaced 3x3 anime eyes (x=19..21 & x=26..28, 4px nose bridge x=22..25) under parted bangs
+  // - Sloped shoulders, pinched 8px waist (x=20..27), and outward-angled forearms/hands (x=15..17 & x=30..32)
+  // - True parted A-stance legs (4px pre-outline gap x=22..25 => 2px-4px transparent daylight gap after outline!) OR flared A-line bell skirt (10 -> 12 -> 14 -> 16px) with parted ankle boots
   const [hair,coat,skin,job,style]=profile;
   const left=dir===1,right=dir===2,side=left||right,back=dir===3,front=dir===0;
   const child=job==='child',old=job==='elder',armed=job==='fighter',
@@ -589,278 +606,307 @@ const OpeningPixelAssets=(()=>{
   const variation=seed%4,mood=expressions[id]||'focused',trait=charTraits[id]||{};
   const bob=(!working&&(frame===1||frame===3))?-1:0;
   const cx=24,baseY=(child?4:old?1:0)+bob;
-  // Exact Karen-matched proportions: tall delicate head (y=4..19), slender waist (10px wide, y=20..32), long graceful legs (y=32..45)
-  const headW=child?13:14,headX=cx-Math.floor(headW/2),headY=baseY+5;
-  const waistW=armed?11:child?9:10,bodyX=cx-Math.floor(waistW/2),bodyTop=baseY+21;
+  const headW=child?14:16,headX=cx-Math.floor(headW/2),headY=baseY+3;
   const step=working?0:[0,1,0,-1][frame],
    armL=frame===1?-1:frame===3?1:0,armR=frame===1?1:frame===3?-1:0;
-  const hairDeep=tint(hair,-46),hairShade=tint(hair,-24),hairLight=tint(hair,28),hairGloss=tint(hair,58);
-  const skinShadow=tint(skin,-22),skinDeep=tint(skin,-40),skinLight=tint(skin,16);
+  const ink='#321a22',seam='#44262e';
+  const hairDeep=tint(hair,-48),hairShade=tint(hair,-24),hairLight=tint(hair,26),hairGloss=tint(hair,52);
+  const skinShadow=tint(skin,-22),skinDeep=tint(skin,-42),skinLight=tint(skin,16);
   const coatLight=tint(coat,26),coatHi=tint(coat,42),coatShade=tint(coat,-24),coatDeep=tint(coat,-44);
-  const pants=tint(coat,-42),pantsShade=tint(coat,-56);
-  const skirted=child||['baker','caretaker','florist'].includes(job)||['bun','twin','long','bob'].includes(style);
-  const blouse='#f5eee0',blouseShade='#dfd4c0',bootCol='#6b4832',bootLight='#9a6b48',bootDark='#452d1f';
+  const pants=armed?'#3a3842':tint(coat,-44),pantsLight=tint(pants,18),pantsShade=tint(pants,-18);
+  const skirted=(!armed&&(['baker','caretaker','florist'].includes(job)||['bun','twin','long','bob'].includes(style)))||id==='oldwoman'||id==='karenMother'||id==='mother'||id==='margaretMother'||id==='soldierMother'||id==='soldierSister';
+  const blouse='#f5eee0',blouseShade='#d8cbb4',bootCol='#6b4832',bootLight='#9a6b48',bootDark='#3e261a';
+  const bodyTop=baseY+19,legTop=baseY+29,bootTop=child?37:36,footBot=42;
 
-  // 0. Flowing back cape / cloak drape behind torso
-  const backCapeColor=trait.cape||(armed?tint(coat,-10):null);
-  if(backCapeColor){
-   const cS=tint(backCapeColor,-26),cH=tint(backCapeColor,20);
+  // 0. Split mantle / cape only for explicit trait.cape characters (never blocks leg gap x=22..25!)
+  if(trait.cape){
+   const cCol=trait.cape,cS=tint(cCol,-26),cH=tint(cCol,20);
    if(side){
-    const bx=left?bodyX+waistW-2:bodyX-5;
-    P(c,cS,bx,bodyTop+1,6,15);P(c,backCapeColor,bx+(left?0:1),bodyTop+2,5,13);
-    P(c,cH,bx+(left?1:2),bodyTop+3,2,9);
+    const bx=left?25:19;
+    P(c,cS,bx,bodyTop+1,3,11);P(c,cCol,bx+(left?0:1),bodyTop+2,2,9);
    }else{
-    P(c,cS,bodyX-3,bodyTop+1,waistW+6,16);P(c,backCapeColor,bodyX-2,bodyTop+1,waistW+4,14);
-    P(c,cH,bodyX-1,bodyTop+2,3,11);P(c,cS,bodyX+waistW-1,bodyTop+2,3,13);
-    if(back)P(c,trait.accent||'#e2c67e',bodyX-2,bodyTop+14,waistW+4,2);
+    P(c,cS,17,bodyTop+1,3,12);P(c,cCol,18,bodyTop+2,2,10);P(c,cH,18,bodyTop+2,1,8);
+    P(c,cS,28,bodyTop+1,3,12);P(c,cCol,28,bodyTop+2,2,10);
+    if(back){P(c,cCol,20,bodyTop+1,8,10);P(c,trait.accent||'#e2c67e',19,bodyTop+10,10,1)}
    }
   }
 
-  // 1. Flowing back hair locks / ponytails / twin-tails behind shoulders
-  if(['long','twin','bob','scarf'].includes(style)){
-   const len=style==='long'?20:style==='bob'?12:15;
-   const sx=left?2:right?-2:0;
-   P(c,hairDeep,headX-2+sx,headY+5,headW+4,len);
-   P(c,hairShade,headX-1+sx,headY+5,headW+2,len-1);
-   P(c,hair,headX+sx,headY+6,headW,Math.max(4,len-4));
-   if(style==='long'){
-    // Tapered organic hair tips at bottom (just like Sophie & Margaret!)
-    P(c,hairShade,headX-3+sx,headY+10,2,len-7);P(c,hairShade,headX+headW+1+sx,headY+10,2,len-7);
-    P(c,hair,headX+1+sx,headY+len+4,3,2);P(c,hair,headX+headW-4+sx,headY+len+4,3,2);
-   }
+  // 1. Tapered outer hair locks / twin-tails (draped outside the neck pinch so y=17..18 neck notch stays crisp!)
+  if(['long','twin'].includes(style)&&!side){
+   // Left and right draped locks outside the neck/shoulders (leaving x=19..28 open at the neck!)
+   P(c,hairShade,15,headY+9,3,7);P(c,hair,16,headY+9,2,6);P(c,hairDeep,16,headY+16,2,3);
+   P(c,hairShade,30,headY+9,3,7);P(c,hair,30,headY+9,2,6);P(c,hairDeep,30,headY+16,2,3);
    if(style==='twin'){
-    if(!side){
-     P(c,hairShade,headX-5,headY+6,4,11);P(c,hair,headX-4,headY+7,3,8);P(c,hairDeep,headX-6,headY+13,3,4);
-     P(c,hairShade,headX+headW+1,headY+6,4,11);P(c,hair,headX+headW+1,headY+7,3,8);P(c,hairDeep,headX+headW+3,headY+13,3,4);
-     P(c,trait.bowColor||'#e67c8c',headX-4,headY+5,3,2);P(c,trait.bowColor||'#e67c8c',headX+headW+1,headY+5,3,2);
-    }else{
-     const tx=left?headX+headW:headX-5;
-     P(c,hairShade,tx,headY+7,5,12);P(c,hair,tx+1,headY+8,3,9);P(c,hairLight,tx+1,headY+9,2,4);
-     P(c,trait.bowColor||'#e67c8c',tx+1,headY+6,3,2);
-    }
+    P(c,trait.bowColor||'#e67c8c',16,headY+7,2,2);P(c,trait.bowColor||'#e67c8c',30,headY+7,2,2);
    }
   }else if(variation===2&&!armed&&!old){
-   // Side low ponytail accent (like Karen's!)
-   const px=left?headX+headW:headX-4;
-   P(c,hairShade,px,headY+11,4,8);P(c,hair,px+1,headY+12,2,6);P(c,'#e6c274',px+1,headY+11,2,1);
+   // Compact asymmetric ponytail tip (like Karen's!)
+   const px=left?28:16;
+   P(c,hairShade,px,headY+10,2,5);P(c,hair,px,headY+10,1,4);
   }
 
-  // 2. Long, Graceful Legs & Cuffed Leather Boots (y=33..45, 13px tall matching Karen!)
-  const legTop=bodyTop+11,bootTop=child?41:39,footBot=45;
+  // 2. Protagonist-Matched Parted A-Stance Legs (4px pre-outline gap x=22..25 => true 2px-4px transparent gap after outline!)
   if(!side){
-   const lx=cx-4+(step>0?0:0),rx=cx+1;
    const lOff=step>0?-1:0,rOff=step<0?-1:0;
-   // Left leg & cuffed boot
-   P(c,pantsShade,lx,legTop,3,bootTop-legTop+lOff);P(c,pants,lx+1,legTop,2,bootTop-legTop+lOff);
-   P(c,bootLight,lx,bootTop+lOff,3,2);P(c,bootCol,lx,bootTop+2+lOff,3,footBot-bootTop-2);
-   P(c,bootDark,lx-1,footBot-1+lOff,4,2);
-   // Right leg & cuffed boot
-   P(c,pants,rx,legTop,2,bootTop-legTop+rOff);P(c,pantsShade,rx+2,legTop,1,bootTop-legTop+rOff);
-   P(c,bootLight,rx,bootTop+rOff,3,2);P(c,bootCol,rx,bootTop+2+rOff,3,footBot-bootTop-2);
-   P(c,bootDark,rx,footBot-1+rOff,4,2);
-  }else{
-   // 3/4 side stride: separated slender legs with cuffed leather boots
-   const st=step*2,fx=cx-3+st,bx=cx+1-st;
-   P(c,pantsShade,bx,legTop,3,bootTop-legTop);P(c,bootDark,bx,bootTop,3,footBot-bootTop+1);
-   P(c,pants,fx,legTop,3,bootTop-legTop);P(c,bootLight,fx,bootTop,3,2);
-   P(c,bootCol,fx-(left?1:0),bootTop+2,4,footBot-bootTop-2);P(c,bootDark,fx-(left?1:0),footBot-1,4,2);
-  }
-
-  // 2b. Far-side swinging arm on 3/4 side view
-  const armH=child?7:9;
-  const sleeveCol=trait.vest?blouse:coat,sleeveShade=trait.vest?blouseShade:coatShade,sleeveHi=trait.vest?'#fffcf4':coatLight;
-  if(side){
-   const farX=left?bodyX-2:bodyX+waistW-1;
-   P(c,sleeveShade,farX,bodyTop+1+armR,3,armH-1);
-   P(c,skinShadow,farX,bodyTop+armH+armR,2,2);
-  }
-
-  // 3. Slender Layered Medieval Torso (y=21..33, hourglass/tapered waist + flared skirt or tunic hem!)
-  const torsoH=12;
-  // Delicate neck & collar shadow
-  P(c,skinShadow,cx-1,bodyTop-2,3,3);
-  // Sloped upper shoulders -> tapered waist -> flared hip peplum
-  P(c,coat,bodyX,bodyTop,waistW,torsoH);
-  P(c,coatLight,bodyX+1,bodyTop+1,3,torsoH-3);
-  P(c,coatShade,bodyX+waistW-3,bodyTop+1,3,torsoH-2);
-  P(c,coatDeep,bodyX,bodyTop+torsoH-2,waistW,2);
-  // Crisp ivory inner shirt / blouse V-collar (just like Karen & Triton!)
-  if(!back){
-   const vx=left?cx-3:right?cx:cx-2;
-   P(c,blouse,vx,bodyTop,4,4);P(c,blouseShade,vx,bodyTop+3,4,2);P(c,skin,vx+1,bodyTop-1,2,2);
-  }
-  // Open tailored medieval vest / bodice / armored breastplate
-  if(trait.vest){
-   const vL=tint(trait.vest,24),vD=tint(trait.vest,-24);
-   P(c,trait.vest,bodyX+1,bodyTop+1,waistW-2,8);
-   P(c,blouse,left?cx-1:right?cx:cx-1,bodyTop+1,2,6);
-   P(c,vL,bodyX+1,bodyTop+2,2,5);P(c,vD,bodyX+waistW-3,bodyTop+2,2,6);
-  }
-  if(armed){
-   // Polished steel cuirass / shoulder pauldrons
-   P(c,'#98a2ac',bodyX,bodyTop+1,waistW,5);P(c,'#dce4ea',bodyX+1,bodyTop+1,4,2);P(c,'#5e6874',bodyX,bodyTop+5,waistW,1);
-  }
-  // Cinched leather belt + gleaming gold buckle
-  P(c,'#4e3424',bodyX-1,bodyTop+8,waistW+2,2);
-  P(c,'#ecc872',left?cx-2:right?cx:cx-1,bodyTop+8,2,2);
-  // Flared pleated skirt or tunic coat-tails below belt
-  if(skirted){
-   const skH=child?6:8;
-   P(c,coat,bodyX-2,bodyTop+10,waistW+4,skH);
-   P(c,coatLight,bodyX-1,bodyTop+10,3,skH-1);
-   P(c,coatShade,bodyX+2,bodyTop+11,2,skH-1);
-   P(c,coatShade,bodyX+waistW-1,bodyTop+10,3,skH);
-   P(c,trait.accent||blouse,bodyX-2,bodyTop+10+skH-2,waistW+4,1);
-  }else{
-   // Tapered flared tunic peplum
-   P(c,coat,bodyX-1,bodyTop+10,waistW+2,4);P(c,coatShade,bodyX+waistW-2,bodyTop+10,3,4);
-   P(c,coatLight,bodyX,bodyTop+10,3,3);
-  }
-  // Job-specific tailored aprons / sashes / stoles
-  if(job==='baker'||job==='caretaker'||job==='smith'){
-   P(c,blouse,cx-3,bodyTop+5,6,10);P(c,blouseShade,cx-3,bodyTop+13,6,2);
-  }else if(job==='merchant'||job==='courier'){P(c,'#d8b068',bodyX+1,bodyTop+1,2,10)}
-  else if(job==='scribe'){P(c,'#eee2c2',bodyX+1,bodyTop+1,waistW-2,3)}
-  else if(job==='florist'){P(c,'#e898ac',bodyX+1,bodyTop+6,waistW-2,5)}
-  // Wrapped cozy scarf / kerchief
-  if(trait.scarf){
-   const sH=tint(trait.scarf,28),sD=tint(trait.scarf,-24);
-   P(c,trait.scarf,bodyX-1,bodyTop,waistW+2,3);P(c,sH,bodyX+1,bodyTop,waistW-2,1);
-   const tx=left?bodyX+waistW-2:right?bodyX:cx+1;
-   P(c,sD,tx,bodyTop+2,3,5);P(c,trait.scarf,tx,bodyTop+2,2,4);
-  }
-
-  // 4. Delicate Puffed Sleeves tapering to wrists & hands (matching Karen's puffed ivory sleeves!)
-  if(!side){
-   // Left arm
-   P(c,sleeveCol,bodyX-3,bodyTop+1+armL,3,armH-2);P(c,sleeveHi,bodyX-3,bodyTop+1+armL,2,3);
-   P(c,sleeveShade,bodyX-2,bodyTop+armH-2+armL,2,2);P(c,skin,bodyX-3,bodyTop+armH-1+armL,2,2);
-   // Right arm
-   P(c,sleeveShade,bodyX+waistW,bodyTop+1+armR,3,armH-2);P(c,sleeveCol,bodyX+waistW,bodyTop+1+armR,2,4);
-   P(c,skin,bodyX+waistW+1,bodyTop+armH-1+armR,2,2);
-  }else{
-   // 3/4 near-side curved puffed sleeve
-   const ax=left?cx-1:cx-3;
-   P(c,sleeveCol,ax,bodyTop+1+armL,4,armH-1);P(c,sleeveHi,ax+(left?0:2),bodyTop+2+armL,2,3);
-   P(c,sleeveShade,ax+(left?3:0),bodyTop+3+armL,1,armH-2);P(c,skin,ax+(left?1:1),bodyTop+armH-1+armL,2,2);
-  }
-
-  // 5. Sculpted Anime-Chibi Head & Expressive Face (y=4..19, soft tapered chin!)
-  const hx=headX,hy=headY,hw=headW;
-  // Base sculpted hair crown dome (rounded top, wider at temples, tapered locks!)
-  P(c,hair,hx+3,hy-2,hw-6,2);
-  P(c,hair,hx+1,hy-1,hw-2,3);
-  P(c,hair,hx-1,hy+1,hw+2,11);
-  P(c,hair,hx-2,hy+4,hw+4,6);
-  if(side){
-   const bH=left?hx+hw-1:hx-4;
-   P(c,hair,bH,hy+1,5,11);P(c,hairShade,bH+(left?2:0),hy+4,3,8);
-  }
-  if(back){
-   P(c,hair,hx-1,hy+2,hw+2,12);P(c,hairShade,hx,hy+11,hw,4);P(c,hairDeep,hx+1,hy+14,hw-2,2);
-   P(c,hairLight,hx+2,hy+1,hw-4,2);P(c,hairGloss,hx+4,hy+1,Math.max(3,hw-8),1);
-  }else{
-   // Soft oval anime face tapering to a delicate chin at y=hy+14!
-   P(c,skin,hx+1,hy+5,hw-2,7);
-   P(c,skinShadow,hx+1,hy+5,hw-2,2); // forehead bang shadow
-   P(c,skin,hx+2,hy+12,hw-4,2);      // tapered cheek-to-chin
-   P(c,skinShadow,hx+4,hy+14,hw-8,1);// delicate chin point!
-   P(c,skinLight,hx+3,hy+8,Math.max(4,hw-6),3);
-
-   // Expressive Karen-style anime eyes (dark upper lash, vivid iris, bright catchlight, cheek blush!)
-   const eyeInk='#2c1822';
-   const eyeIris=mood==='bright'?'#7e4e8e':mood==='gentle'?'#48788c':mood==='curious'?'#468256':'#624c68';
-   if(side){
-    const ex=left?hx+3:hx+hw-6;
-    P(c,eyeInk,ex,hy+8,3,1);P(c,eyeInk,ex,hy+9,3,2);P(c,eyeIris,ex,hy+10,3,1);
-    P(c,'#fffaf4',ex+(left?0:2),hy+9,1,1);
-    if(!old)P(c,'#ee989a',left?hx+5:hx+hw-7,hy+11,2,1);
-    P(c,['bright','gentle'].includes(mood)?'#c86878':'#9c6a66',left?hx+2:hx+hw-4,hy+12,2,1);
+   if(!skirted){
+    // Upper thighs (y=legTop..bootTop-1): Left leg x=19..21 (3px), 4px transparent gap x=22..25, Right leg x=26..28 (3px)
+    const thH=Math.max(2,bootTop-legTop);
+    P(c,pantsLight,19,legTop,1,thH+lOff);
+    P(c,pants,20,legTop,1,thH+lOff);
+    P(c,pantsShade,21,legTop,1,thH+lOff);
+    P(c,pantsLight,26,legTop,1,thH+rOff);
+    P(c,pants,27,legTop,1,thH+rOff);
+    P(c,pantsShade,28,legTop,1,thH+rOff);
+    // Lower legs & boots stepping 1px outward in Karen/Triton A-stance (Left x=18..20, Right x=27..29)!
+    const btH=Math.max(3,footBot-bootTop);
+    P(c,bootLight,18,bootTop+lOff,3,2);
+    P(c,bootLight,18,bootTop+2+lOff,1,btH-2);
+    P(c,bootCol,19,bootTop+2+lOff,1,btH-2);
+    P(c,bootDark,20,bootTop+2+lOff,1,btH-2);
+    P(c,bootLight,27,bootTop+rOff,3,2);
+    P(c,bootCol,27,bootTop+2+rOff,1,btH-2);
+    P(c,bootCol,28,bootTop+2+rOff,1,btH-2);
+    P(c,bootDark,29,bootTop+2+rOff,1,btH-2);
    }else{
-    const lE=hx+2,rE=hx+hw-5;
-    P(c,eyeInk,lE,hy+8,3,1);P(c,eyeInk,rE,hy+8,3,1);
-    P(c,eyeInk,lE,hy+9,3,2);P(c,eyeInk,rE,hy+9,3,2);
-    P(c,eyeIris,lE,hy+10,3,1);P(c,eyeIris,rE,hy+10,3,1);
-    P(c,'#fffaf4',lE,hy+9,1,1);P(c,'#fffaf4',rE,hy+9,1,1);
-    if(mood==='guarded'){P(c,hairDeep,lE,hy+7,3,1);P(c,hairDeep,rE,hy+7,3,1)}
-    if(!old&&mood!=='weary'){P(c,'#ee989a',hx+1,hy+11,2,1);P(c,'#ee989a',hx+hw-3,hy+11,2,1)}
-    P(c,['bright','gentle'].includes(mood)?'#c86a7a':'#a06e68',cx-1,hy+12,2,1);
+    // Skirted ankles & dainty boots below flared A-line bell skirt (Left x=19..21, 4px gap x=22..25, Right x=26..28)
+    const skBot=bodyTop+(child?14:16);
+    const ankH=Math.max(2,footBot-skBot);
+    P(c,skinShadow,19,skBot+lOff,1,2);P(c,skin,20,skBot+lOff,2,2);
+    P(c,bootLight,19,skBot+1+lOff,1,ankH-1);P(c,bootCol,20,skBot+1+lOff,1,ankH-1);P(c,bootDark,21,skBot+1+lOff,1,ankH-1);
+    P(c,skin,26,skBot+rOff,2,2);P(c,skinShadow,28,skBot+rOff,1,2);
+    P(c,bootLight,26,skBot+1+rOff,1,ankH-1);P(c,bootCol,27,skBot+1+rOff,1,ankH-1);P(c,bootDark,28,skBot+1+rOff,1,ankH-1);
    }
-   // Beard / mustache
-   if(trait.beard){
-    const bx=front?hx+3:(left?hx+1:hx+hw-6),bw=front?hw-6:5;
-    P(c,hairShade,bx,hy+12,bw,3);P(c,hair,bx+1,hy+12,Math.max(2,bw-2),2);
+  }else{
+   // Narrow profile legs with subtle front/back stride separation
+   const st=step;
+   const fx=left?21-st:23+st,bx=left?24+st:20-st;
+   P(c,pantsShade,bx,legTop,2,bootTop-legTop);P(c,bootDark,bx,bootTop,2,footBot-bootTop-1);
+   P(c,pantsLight,fx,legTop,1,bootTop-legTop);P(c,pants,fx+1,legTop,2,bootTop-legTop);
+   P(c,bootLight,fx,bootTop,3,2);
+   P(c,bootCol,fx,bootTop+2,3,footBot-bootTop-2);
+  }
+
+  // 3. Pinched Neck, Sloped Shoulders, Cinched 8px Waist & Outward-Angled Arms/Hands (y=bodyTop-1..bodyTop+9)
+  const sleeveCol=trait.vest||skirted?blouse:coat,sleeveShade=trait.vest||skirted?blouseShade:coatShade,sleeveHi=trait.vest||skirted?'#fffcf4':coatLight;
+  if(!side){
+   // Pinched 4px neck (x=22..25, y=bodyTop-2..bodyTop) — open air on both sides creates true anime neck notch!
+   P(c,skinShadow,22,bodyTop-2,4,1);
+   P(c,skin,22,bodyTop-1,3,2);P(c,skinShadow,25,bodyTop-1,1,2);
+   // Row y=bodyTop: Sloping upper collarbone (8px wide x=20..27)
+   P(c,coatLight,20,bodyTop,2,1);P(c,coatShade,26,bodyTop,2,1);
+   if(!back){P(c,blouse,21,bodyTop,2,2);P(c,blouseShade,25,bodyTop,2,2);P(c,skin,23,bodyTop,2,2)}
+   else{P(c,coat,22,bodyTop,4,1)}
+   // Rows y=bodyTop+1..bodyTop+6: Sculpted 8px central torso (x=20..27)
+   P(c,coat,20,bodyTop+1,8,6);
+   P(c,coatLight,20,bodyTop+1,2,5);
+   P(c,coatShade,26,bodyTop+1,2,5);
+   if(!back){
+    P(c,blouse,22,bodyTop+1,4,4);P(c,blouseShade,23,bodyTop+4,2,2);
+    P(c,seam,21,bodyTop+1,1,4);P(c,seam,26,bodyTop+1,1,4);
    }
-   // Delicate brass spectacles
-   if(trait.glasses){
-    if(front){
-     P(c,'#d8bc74',hx+2,hy+8,3,3);P(c,'#d8bc74',hx+hw-5,hy+8,3,3);
-     P(c,'#b8e0f0',hx+3,hy+9,1,1);P(c,'#b8e0f0',hx+hw-4,hy+9,1,1);
-     P(c,'#d8bc74',cx-1,hy+9,2,1);
+   if(trait.vest){
+    const vL=tint(trait.vest,22),vD=tint(trait.vest,-24);
+    P(c,trait.vest,20,bodyTop+1,2,6);P(c,trait.vest,26,bodyTop+1,2,6);
+    P(c,vL,20,bodyTop+1,1,5);P(c,vD,27,bodyTop+1,1,5);
+   }
+   if(armed){
+    P(c,'#98a4b0',20,bodyTop+1,8,5);P(c,'#dee6ec',21,bodyTop+1,3,3);
+    P(c,'#64707c',26,bodyTop+1,2,5);P(c,ink,20,bodyTop+5,8,1);
+   }
+   // Cinched 8px waist belt (y=bodyTop+7..8) + 2px gold buckle
+   P(c,'#543824',20,bodyTop+7,8,2);
+   P(c,'#ecc872',23,bodyTop+7,2,2);
+   // Lower garment below belt: Flared A-line Bell Skirt (Sophie/Margaret style) OR Split Tunic Hip Flaps (Karen/Triton style)
+   if(skirted){
+    // Graduated A-line bell flare: 10px (y+8..9) -> 12px (y+10..12) -> 14px (y+13..15, 16px with outline!) -> 12px ruffled hem
+    const skRows=child?6:8;
+    P(c,coat,19,bodyTop+8,10,2);
+    P(c,coat,18,bodyTop+10,12,3);
+    if(!child){
+     P(c,coat,17,bodyTop+13,14,2);
+     P(c,trait.accent||blouse,18,bodyTop+15,12,1);
     }else{
-     const gx=left?hx+3:hx+hw-6;
-     P(c,'#d8bc74',gx,hy+8,3,3);P(c,'#b8e0f0',gx+1,hy+9,1,1);
+     P(c,trait.accent||blouse,18,bodyTop+13,12,1);
     }
+    // Cylindrical & pleated skirt shading
+    P(c,coatLight,19,bodyTop+8,2,skRows-1);
+    P(c,coatLight,18,bodyTop+10,2,skRows-3);
+    P(c,coatShade,27,bodyTop+8,2,skRows-1);
+    P(c,coatShade,28,bodyTop+10,2,skRows-3);
+    P(c,coatDeep,21,bodyTop+9,1,skRows-2);
+    P(c,coatDeep,24,bodyTop+9,1,skRows-1);
+    P(c,coatDeep,27,bodyTop+9,1,skRows-2);
+   }else{
+    // Split left & right hip flaps (x=19..21 and x=26..28 at y=bodyTop+9..10) leaving center x=22..25 open!
+    P(c,coatLight,19,bodyTop+9,2,2);P(c,coat,21,bodyTop+9,1,2);
+    P(c,coat,26,bodyTop+9,1,2);P(c,coatShade,27,bodyTop+9,2,2);
    }
-   // 6. Feathered Pointed Anime Bangs, Glossy Hair Halo & Cheek-Framing Side Locks (just like Karen!)
-   P(c,hair,hx,hy+1,hw,4);
-   P(c,hairLight,hx+2,hy,hw-4,2);
-   P(c,hairGloss,hx+3,hy,3,1);P(c,hairGloss,hx+hw-6,hy+1,3,1);
-   // Tapered pointed bangs sweeping naturally across forehead
-   P(c,hair,hx+1,hy+5,3,2);P(c,hair,hx+1,hy+7,1,1);
-   P(c,hair,hx+hw-4,hy+5,3,2);P(c,hair,hx+hw-2,hy+7,1,1);
-   if(variation===0){P(c,hair,cx-2,hy+4,4,3);P(c,hair,cx-1,hy+7,2,1)}
-   else if(variation===1){P(c,hair,cx-3,hy+5,3,2);P(c,hairLight,cx-1,hy+4,2,2)}
-   else if(variation===2){P(c,hair,cx,hy+5,3,2);P(c,hairShade,cx-1,hy+5,1,2)}
-   else{P(c,hair,cx-1,hy+5,2,2);P(c,hair,cx-4,hy+5,2,2);P(c,hair,cx+2,hy+5,2,2)}
-   // Flowing tapered cheek-framing locks extending gracefully down past chin
-   P(c,hair,hx-2,hy+4,3,9);P(c,hairShade,hx-1,hy+11,2,4);
-   P(c,hair,hx+hw-1,hy+4,3,9);P(c,hairShade,hx+hw-1,hy+11,2,4);
-   if(side){
-    const sLock=left?hx+hw-5:hx;
-    P(c,hair,sLock,hy+4,5,10);P(c,hairShade,sLock+(left?2:0),hy+7,3,7);P(c,hairLight,sLock+(left?1:2),hy+5,2,3);
+   // Outward-Sloping Sleeves & Separated Forearms/Hands (creates clear waist pinch at x=18..19 & x=28..29!)
+   // Upper shoulder sleeve cap (y=bodyTop+1..bodyTop+3)
+   P(c,sleeveHi,17,bodyTop+1+armL,2,2);P(c,sleeveShade,18,bodyTop+2+armL,1,2);
+   P(c,sleeveCol,29,bodyTop+1+armR,2,2);P(c,sleeveShade,30,bodyTop+2+armR,1,2);
+   // Mid/lower sleeve angling 1px outward (x=15..17 and x=30..32 at y=bodyTop+3..bodyTop+5, leaving x=18..19 & x=28..29 open beside waist!)
+   P(c,sleeveHi,15,bodyTop+3+armL,1,3);P(c,sleeveCol,16,bodyTop+3+armL,1,3);P(c,sleeveShade,17,bodyTop+3+armL,1,3);
+   P(c,skinLight,15,bodyTop+6+armL,1,2);P(c,skin,16,bodyTop+6+armL,1,2);
+   P(c,sleeveCol,30,bodyTop+3+armR,1,3);P(c,sleeveShade,31,bodyTop+3+armR,2,3);
+   P(c,skin,31,bodyTop+6+armR,1,2);P(c,skinShadow,32,bodyTop+6+armR,1,2);
+  }else{
+   // Narrow curved profile torso (x=21..26) & A-line profile skirt
+   P(c,skinShadow,22,bodyTop-2,3,2);
+   P(c,coat,21,bodyTop,6,7);
+   P(c,left?coatLight:coatShade,21,bodyTop+1,2,6);
+   P(c,left?coatShade:coatLight,25,bodyTop+1,2,6);
+   if(armed){P(c,'#98a4b0',21,bodyTop+1,6,5);P(c,'#dee6ec',left?21:24,bodyTop+1,2,3)}
+   P(c,'#543824',21,bodyTop+7,6,2);P(c,'#ecc872',left?21:26,bodyTop+7,1,2);
+   if(skirted){
+    const skRows=child?6:8;
+    P(c,coat,20,bodyTop+8,8,2);
+    P(c,coat,19,bodyTop+10,10,skRows-3);
+    P(c,coatLight,left?19:27,bodyTop+9,2,skRows-2);
+    P(c,coatDeep,23,bodyTop+9,1,skRows-1);
+    P(c,coatShade,left?27:19,bodyTop+9,2,skRows-2);
+    P(c,trait.accent||blouse,19,bodyTop+7+skRows,10,1);
+   }else{
+    P(c,coat,21,bodyTop+9,6,2);
+   }
+   // Centered profile arm with 1px dark crease
+   P(c,ink,21,bodyTop+2+armL,1,5);P(c,ink,25,bodyTop+2+armL,1,5);
+   P(c,sleeveHi,22,bodyTop+2+armL,1,4);P(c,sleeveCol,23,bodyTop+2+armL,1,4);P(c,sleeveShade,24,bodyTop+2+armL,1,4);
+   P(c,skin,22,bodyTop+6+armL,2,2);
+  }
+  if(trait.scarf){
+   const sx=side?21:20,sw=side?6:8;
+   P(c,trait.scarf,sx,bodyTop-1,sw,2);P(c,tint(trait.scarf,26),sx+1,bodyTop-1,sw-2,1);
+  }
+
+  // 4. Protagonist-Matched Rounded Oval Head & Expressive Anime Face (y=headY..headY+14)
+  // Taper the cheeks into a rounded lower jaw
+  const hy=headY;
+  if(back){
+   // Rounded oval back-of-head hair dome (6 -> 10 -> 14 -> 16 -> 14 -> 10px)
+   P(c,hairShade,21,hy,6,1);
+   P(c,hair,19,hy+1,10,1);
+   P(c,hair,17,hy+2,14,2);
+   P(c,hair,16,hy+4,16,6);
+   P(c,hairShade,17,hy+10,14,2);
+   P(c,hairDeep,19,hy+12,10,2);
+   P(c,hairLight,18,hy+3,12,2);P(c,hairGloss,21,hy+3,6,1);
+   P(c,hairDeep,20,hy+6,1,6);P(c,hairDeep,24,hy+5,1,7);P(c,hairDeep,27,hy+6,1,6);
+  }else if(!side){
+   // FRONT VIEW (dir=0): Rounded anime skull & wide-spaced 3x3 eyes (NO vertical black face bars!)
+   // 4a. Rounded upper hair crown (width steps: 6 -> 10 -> 14 -> 16px)
+   P(c,hairShade,21,hy,6,1);
+   P(c,hair,19,hy+1,10,1);
+   P(c,hair,17,hy+2,14,2);
+   P(c,hair,16,hy+4,16,5);
+   // Specular hair sheen halo & center part shadow
+   P(c,hairDeep,23,hy+1,2,2);
+   P(c,hairLight,18,hy+2,5,2);P(c,hairLight,25,hy+2,5,2);
+   P(c,hairGloss,19,hy+2,3,1);P(c,hairGloss,26,hy+2,3,1);
+   // 4b. Smoothly tapered oval face skin (12px at eyes -> 10px at cheeks -> 8px at jaw -> 6px at chin!)
+   P(c,skin,19,hy+6,10,2);     // forehead under parted bangs
+   P(c,skin,18,hy+8,12,3);     // 12px eye/cheekbone span (x=18..29)
+   P(c,skin,19,hy+11,10,1);    // 10px lower cheek (x=19..28)
+   P(c,skin,20,hy+12,8,1);     // 8px upper jaw (x=20..27)
+   P(c,skinShadow,21,hy+13,6,1); // 6px rounded chin (x=21..26)
+   P(c,skinLight,22,hy+8,4,3); // soft nose-bridge light
+   // 4c. Soft Cheek-Framing Hair Side-Locks (2px wide at x=16..17 & x=30..31, tapering at y=hy+11 — NEVER vertical black face bars!)
+   P(c,hairShade,16,hy+7,2,4);P(c,hair,17,hy+7,1,3);P(c,hairDeep,17,hy+11,2,1);
+   P(c,hairShade,30,hy+7,2,4);P(c,hair,30,hy+7,1,3);P(c,hairDeep,29,hy+11,2,1);
+   // 4d. Feathered Parted Bangs (letting forehead skin peek through between locks!)
+   P(c,hair,17,hy+5,14,1);
+   P(c,hair,17,hy+6,3,2);P(c,hairShade,18,hy+8,1,1);
+   P(c,hair,28,hy+6,3,2);P(c,hairShade,29,hy+8,1,1);
+   if(variation===0){
+    P(c,hair,22,hy+5,4,2);P(c,hairShade,23,hy+7,2,1);
+   }else if(variation===1){
+    P(c,hair,21,hy+5,3,2);P(c,hairShade,22,hy+7,1,1);
+   }else if(variation===2){
+    P(c,hair,24,hy+5,3,2);P(c,hairShade,25,hy+7,1,1);
+   }else{
+    P(c,hair,20,hy+6,2,1);P(c,hair,23,hy+5,2,2);P(c,hair,26,hy+6,2,1);
+   }
+   // 4e. Protagonist-Matched 3x3 Anime Eyes at x=19..21 and x=26..28 (4px nose bridge x=22..25!)
+   const eyeIris=mood==='bright'?'#7e4884':mood==='gentle'?'#42748c':mood==='curious'?'#447c54':'#5c4868';
+   const eyeHi=tint(eyeIris,32);
+   // Upper dark eyelash arch (3px wide at y=hy+8)
+   P(c,ink,19,hy+8,3,1);P(c,ink,26,hy+8,3,1);
+   // Mid eye row (y=hy+9): 1px white catchlight + 1px dark pupil + 1px colored iris
+   P(c,'#fff8ee',19,hy+9,1,1);P(c,ink,20,hy+9,1,1);P(c,eyeIris,21,hy+9,1,1);
+   P(c,'#fff8ee',26,hy+9,1,1);P(c,ink,27,hy+9,1,1);P(c,eyeIris,28,hy+9,1,1);
+   // Lower eye row (y=hy+10): 1px soft sclera + 2px luminous lower iris gradient
+   P(c,skinLight,19,hy+10,1,1);P(c,eyeIris,20,hy+10,1,1);P(c,eyeHi,21,hy+10,1,1);
+   P(c,skinLight,26,hy+10,1,1);P(c,eyeIris,27,hy+10,1,1);P(c,eyeHi,28,hy+10,1,1);
+   // Soft rosy cheek blush & delicate 2px smile shadow
+   if(!old){P(c,'#ee9896',19,hy+11,2,1);P(c,'#ee9896',27,hy+11,2,1)}
+   P(c,skinDeep,23,hy+12,2,1);
+   if(trait.beard){
+    P(c,hairShade,20,hy+11,8,3);P(c,hair,21,hy+11,6,2);
+   }
+   if(trait.glasses){
+    P(c,'#d8bc74',19,hy+8,3,1);P(c,'#d8bc74',26,hy+8,3,1);P(c,'#d8bc74',22,hy+9,4,1);
+   }
+  }else{
+   // SIDE PROFILE VIEW (dir=1 Left, dir=2 Right): Rounded profile dome + 5px profile face + layered side hair
+   P(c,hairShade,21,hy,6,1);
+   P(c,hair,19,hy+1,10,1);
+   P(c,hair,17,hy+2,14,3);
+   P(c,hairLight,19,hy+2,10,2);P(c,hairGloss,22,hy+2,4,1);
+   const eyeIris=mood==='bright'?'#7e4884':mood==='gentle'?'#42748c':mood==='curious'?'#447c54':'#5c4868';
+   if(left){
+    P(c,skin,18,hy+7,5,4);P(c,skin,19,hy+11,4,2);P(c,skinShadow,20,hy+13,3,1);
+    P(c,ink,19,hy+8,2,1);P(c,'#fff8ee',19,hy+9,1,1);P(c,eyeIris,20,hy+9,1,2);
+    if(!old)P(c,'#ee9896',20,hy+11,2,1);
+    P(c,hair,17,hy+5,5,2);P(c,hairShade,18,hy+7,2,1);
+    P(c,hair,23,hy+4,8,7);P(c,hairShade,23,hy+10,7,3);P(c,hairDeep,24,hy+12,5,2);
+    P(c,hairDeep,25,hy+6,1,6);P(c,hairDeep,28,hy+5,1,7);
+    if(trait.beard)P(c,hairShade,18,hy+11,4,3);
+   }else{
+    P(c,skin,25,hy+7,5,4);P(c,skin,25,hy+11,4,2);P(c,skinShadow,25,hy+13,3,1);
+    P(c,ink,27,hy+8,2,1);P(c,eyeIris,27,hy+9,1,2);P(c,'#fff8ee',28,hy+9,1,1);
+    if(!old)P(c,'#ee9896',26,hy+11,2,1);
+    P(c,hair,26,hy+5,5,2);P(c,hairShade,28,hy+7,2,1);
+    P(c,hair,17,hy+4,8,7);P(c,hairShade,18,hy+10,7,3);P(c,hairDeep,19,hy+12,5,2);
+    P(c,hairDeep,19,hy+5,1,7);P(c,hairDeep,22,hy+6,1,6);
+    if(trait.beard)P(c,hairShade,26,hy+11,4,3);
    }
   }
-  // Hairstyles: messy ahoge, top bun, hood/scarf
-  if(style==='messy'){
-   P(c,hair,hx-3,hy+1,3,3);P(c,hairLight,hx+hw,hy,3,3);P(c,hairLight,cx-1,hy-4,3,3);
-  }
+  // Hairstyles: compact bun or fitted hood (never blocks neck pinch!)
   if(style==='bun'){
-   const bx=left?cx+2:right?cx-7:cx-3;
-   P(c,hairShade,bx,hy-5,6,4);P(c,hair,bx+1,hy-6,4,4);P(c,hairLight,bx+2,hy-6,2,2);
-   P(c,trait.bowColor||'#e8c474',bx+1,hy-2,4,1);
+   const bx=left?25:right?19:22;
+   P(c,hairShade,bx,hy-2,4,2);P(c,hair,bx+1,hy-2,2,1);P(c,trait.bowColor||'#e8c474',bx,hy-1,4,1);
   }
   if(style==='scarf'||style==='hood'){
-   P(c,coatShade,hx-2,hy,hw+4,12);P(c,coat,hx-1,hy+1,hw+2,10);P(c,coatLight,hx+1,hy,hw-2,2);
+   P(c,coatShade,17,hy+1,14,4);P(c,coat,18,hy+1,12,3);P(c,coatLight,20,hy+1,8,1);
+   if(back)P(c,coat,17,hy+4,14,8);
   }
 
-  // 7. Fitted Medieval Headwear (curved straw hats, mobcaps, feathered caps, berets, sallet helms, ribbons)
+  // 5. Fitted Low-Profile Headwear (sits naturally ON the crown y=hy..hy+4, never a tall block!)
   if(style==='hat'){
-   P(c,'#b89454',hx-5,hy+1,hw+10,2);P(c,'#e6c884',hx-4,hy,hw+8,2);
-   P(c,'#d4b26e',hx,hy-4,hw,5);P(c,'#f4e0a0',hx+2,hy-3,hw-4,2);
-   P(c,trait.scarf||'#9c463c',hx,hy-1,hw,1);
+   P(c,'#b89454',16,hy+3,16,1);P(c,'#e6c884',17,hy+2,14,1);
+   P(c,'#d4b26e',19,hy,10,2);P(c,'#f4e0a0',20,hy,8,1);
+   P(c,trait.scarf||'#9c463c',19,hy+2,10,1);
   }else if(trait.head==='mobcap'){
-   P(c,'#dfd2bc',hx-2,hy-3,hw+4,6);P(c,'#faf4e8',hx-1,hy-4,hw+2,5);P(c,'#ffffff',hx+2,hy-4,hw-4,2);
+   P(c,'#dfd2bc',17,hy+1,14,3);P(c,'#faf4e8',18,hy,12,3);P(c,'#ffffff',20,hy,8,2);
   }else if(trait.head==='featherCap'){
-   P(c,coatShade,hx-2,hy-3,hw+4,5);P(c,coat,hx-1,hy-4,hw+2,5);P(c,coatLight,hx+1,hy-3,hw-2,2);
-   const fx=left?hx+hw:hx-2;
-   P(c,'#f6d468',fx,hy-8,2,6);P(c,'#fff8d0',fx,hy-8,1,3);
+   P(c,coatShade,17,hy+1,14,3);P(c,coat,18,hy,12,3);P(c,coatLight,20,hy,8,2);
+   const fx=left?28:18;
+   P(c,'#f6d468',fx,hy-2,2,3);P(c,'#fff8d0',fx,hy-2,1,2);
   }else if(trait.head==='beret'){
-   P(c,tint(coat,-14),hx-2,hy-3,hw+5,4);P(c,coatLight,hx,hy-4,hw-1,2);P(c,'#ecd074',left?hx+1:hx+hw-2,hy-1,2,2);
+   P(c,tint(coat,-16),17,hy+1,14,2);P(c,coatLight,19,hy,10,2);P(c,'#ecd074',left?19:27,hy+1,2,1);
   }else if(trait.head==='helm'){
-   P(c,'#6e7884',hx-2,hy-3,hw+4,7);P(c,'#a6b0ba',hx-1,hy-4,hw+2,6);P(c,'#e0e8ee',hx+2,hy-3,hw-4,2);
+   P(c,'#5e6874',17,hy+1,14,4);P(c,'#98a4b0',18,hy,12,4);P(c,'#dce6ee',20,hy,8,2);
    const plume=trait.plume||'#c43c48';
-   P(c,plume,cx-1,hy-8,3,5);P(c,tint(plume,42),cx,hy-8,1,3);
+   P(c,plume,23,hy-2,2,2);P(c,tint(plume,42),23,hy-2,1,1);
   }else if(trait.head==='circlet'){
-   P(c,'#eac86e',hx+1,hy+1,hw-2,2);P(c,'#fff8cc',cx-1,hy,2,2);
+   P(c,'#eac86e',19,hy+4,10,1);P(c,'#fff8cc',23,hy+3,2,2);
   }else if(trait.head==='bandana'){
-   P(c,trait.scarf||'#a84842',hx-1,hy+1,hw+2,2);P(c,tint(trait.scarf||'#a84842',32),hx+2,hy+1,hw-4,1);
+   P(c,trait.scarf||'#a84842',17,hy+3,14,2);P(c,tint(trait.scarf||'#a84842',32),20,hy+3,8,1);
   }else if(trait.head==='bow'&&!back){
-   const bx=left?hx+hw-3:hx+hw-2,bc=trait.bowColor||'#e67288';
-   P(c,bc,bx-1,hy-2,5,3);P(c,tint(bc,42),bx,hy-2,2,1);
+   const bx=left?26:27,bc=trait.bowColor||'#e67288';
+   P(c,bc,bx,hy+2,3,2);P(c,tint(bc,42),bx+1,hy+2,1,1);
   }
-  if(style==='scar'&&front)P(c,'#c27870',hx+hw-5,hy+8,2,3);
-  signature(c,id,dir,frame,coat,skin,baseY-2);
+  signature(c,id,dir,frame,coat,skin,baseY);
  }
  function makeNpc(profile,id){
   const img=canvas(192,192);if(!img)return null;
