@@ -224,95 +224,132 @@ const RoadCaveQuality=(()=>{
    fill(c,'#949a9e',7*32,4,10*32,12);fill(c,'#c8cdc8',7*32+4,5,10*32-8,4);
    for(const tx of [8,11,14]){fill(c,'#787e84',tx*32+6,1,18,15);fill(c,'#d8ddd8',tx*32+8,2,14,5);fill(c,'#8d3d46',tx*32+13,0,4,4)}
    const now=Date.now();
-   // Handcrafted HD-2D White Birch Waystation alpine half-timber inn & carriage barn
+   // Handcrafted 3D HD-2D White Birch Waystation alpine half-timber inn & carriage barn (matching Royal Capital 3D volume!)
    const drawWayHouse=(tx,ty,wT,hT,roofDark,roofMain,roofHi,label,isBarn=false)=>{
-    const x=tx*32,y=ty*32,w=wT*32,h=hT*32,roofH=Math.floor(h*0.46),wallY=y+roofH,wallH=h-roofH;
-    // Deep southeast diorama cast shadow
-    fill(c,'rgba(14,20,16,0.34)',x+6,y+h-2,w+2,11);
-    fill(c,'rgba(14,20,16,0.22)',x+w-1,wallY+4,8,wallH+2);
-    // Stone masonry chimney (with animated hearth smoke on the inn!)
-    if(!isBarn){
-     const cx=x+w-28,cy=y-14;
-     fill(c,'#241d18',cx-1,cy,14,26);fill(c,'#7a7268',cx+1,cy+2,10,22);
-     fill(c,'#a8a092',cx+2,cy+2,5,20);fill(c,'#4a443e',cx-2,cy-2,16,4);
-     const p=(now/1400)%1;
-     fill(c,'rgba(242,238,228,0.42)',cx+3+Math.sin(p*6)*3,cy-8-p*14,7,5);
-     fill(c,'rgba(242,238,228,0.26)',cx+6+Math.sin(p*6+2)*4,cy-18-p*12,8,5);
+    const x=tx*32,y=ty*32,w=wT*32,h=hT*32,wallY=y+10,wallH=h-10,ink='#201916';
+    // 1. Deep two-stage southeast diorama cast shadow anchoring the building onto the ground
+    fill(c,'rgba(12,18,14,0.38)',x+6,y+h-2,w+6,13);
+    fill(c,'rgba(12,18,14,0.18)',x+10,y+h+8,w+5,7);
+    fill(c,'rgba(12,18,14,0.24)',x+w,y+8,9,h-4);
+    // 2. Full-height cream plaster & half-timber wall volume + corner stone quoins + 14px granite plinth
+    fill(c,ink,x-1,wallY-2,w+2,wallH+3);
+    const wallCol=isBarn?'#d2c4a6':'#eae0c8',wallHi=isBarn?'#e6d8bc':'#f8f2e2',mortar=isBarn?'#5a4c3e':'#684c38';
+    fill(c,wallCol,x+2,wallY,w-4,wallH-12);
+    fill(c,'rgba(16,12,10,0.36)',x+2,wallY+4,w-4,7); // deep overhanging eave shadow!
+    // Alternating 3D corner stone quoins on left & right walls
+    for(let qy=wallY+8;qy<y+h-16;qy+=10){
+     const qw=((qy/10)|0)%2?8:5;
+     fill(c,mortar,x+1,qy,qw,8);fill(c,wallHi,x+2,qy+1,qw-2,5);
+     fill(c,mortar,x+w-qw-1,qy,qw,8);fill(c,wallCol,x+w-qw,qy+1,qw-2,5);
     }
-    // Warm cream plaster walls, mossy stone plinth & exposed chestnut half-timber framing
-    fill(c,'#221b16',x,wallY,w,wallH);
-    fill(c,isBarn?'#cfc2a4':'#e6dcc4',x+3,wallY+2,w-6,wallH-10);
-    fill(c,isBarn?'#bfb092':'#d8ccb2',x+3,wallY+2,w-6,6); // under-eave shadow
-    // Mossy stone foundation plinth
-    fill(c,'#4a4640',x+2,y+h-10,w-4,9);
-    for(let sx=x+4;sx<x+w-6;sx+=14){fill(c,'#868074',sx,y+h-9,12,6);fill(c,'#aca698',sx+1,y+h-9,10,2)}
-    // Vertical & diagonal alpine timber beams
+    // Exposed Tudor half-timber beams & 2nd-floor horizontal jetty beam
     for(let i=0;i<=wT;i++){
-     const bx=x+3+Math.round(i*(w-10)/wT);
-     fill(c,'#463022',bx,wallY+2,5,wallH-11);fill(c,'#76543b',bx+1,wallY+2,2,wallH-11);
+     const bx=x+4+Math.round(i*(w-12)/wT);
+     fill(c,'#463022',bx,wallY+6,5,wallH-20);fill(c,'#76543b',bx+1,wallY+6,2,wallH-20);
     }
-    fill(c,'#463022',x+3,wallY+2,w-6,4);fill(c,'#463022',x+3,y+h-13,w-6,3);
-    // Stepped shingled gable roof with beveled eaves & warm skylight crest
+    fill(c,'#463022',x+2,wallY+32,w-4,4);
+    // Heavy 14px dressed-granite foundation plinth with mossy seams
+    fill(c,ink,x,y+h-14,w,14);
+    fill(c,'#6e685e',x+2,y+h-12,w-4,11);fill(c,'#a8a092',x+3,y+h-12,w-6,2);
+    for(let sx=x+8;sx<x+w-8;sx+=14)fill(c,'#3c3832',sx,y+h-11,2,9);
+    // 3. Towering 3/4 Pitched Shingled Roof rising 24px ABOVE top tile row + smoking stone chimney!
+    if(!isBarn){
+     const cx=x+w-28,cy=y-34;
+     fill(c,ink,cx-1,cy,14,26);fill(c,'#7a7268',cx+1,cy+2,10,22);
+     fill(c,'#b0a89a',cx+2,cy+2,4,20);fill(c,'#4a443e',cx-2,cy-2,16,4);
+     const p=(now/1400)%1;
+     fill(c,'rgba(246,242,232,0.42)',cx+3+Math.sin(p*6)*3,cy-8-p*14,7,5);
+     fill(c,'rgba(246,242,232,0.26)',cx+6+Math.sin(p*6+2)*4,cy-18-p*12,8,5);
+    }
     for(let z=0;z<6;z++){
-     const inset=Math.max(0,(5-z)*3);
-     const ry=y-4+z*7,rw=w+6-inset*2,rx=x-3+inset;
-     fill(c,'#1e1612',rx-1,ry,rw+2,8);
-     fill(c,z===0?roofHi:(z%2?roofMain:roofDark),rx+1,ry+1,rw-2,6);
-     for(let sx=rx+5;sx<rx+rw-6;sx+=10)fill(c,'rgba(24,16,12,0.28)',sx,ry+2,2,5);
+     const ins=z*4;
+     fill(c,ink,x-4+ins,y+12-z*6,w+8-ins*2,8);
+     fill(c,z===5?roofHi:(z%2?roofMain:roofDark),x-2+ins,y+13-z*6,w+4-ins*2,6);
+     for(let sx=x+6+ins;sx<x+w-6-ins;sx+=10)fill(c,'rgba(24,16,12,0.28)',sx,y+14-z*6,2,5);
     }
-    fill(c,'#d8bc82',x+12,y-5,w-24,3); // gilded ridge beam
-    // Center entrance: welcoming oak inn door with stone steps OR double carriage barn doors
+    fill(c,'#e2c686',x+16,y-20,w-32,3); // gilded ridge beam
+    // 4. Recessed Arched Entrance Doorway + Protruding Stone Steps (or double carriage barn doors)
     const mid=x+Math.floor(w/2);
     if(isBarn){
-     fill(c,'#241a14',mid-20,y+h-32,40,31);
-     fill(c,'#6e4d34',mid-18,y+h-30,17,28);fill(c,'#6e4d34',mid+1,y+h-30,17,28);
-     fill(c,'#946b48',mid-16,y+h-28,13,24);fill(c,'#946b48',mid+3,y+h-28,13,24);
-     fill(c,'#3a281c',mid-16,y+h-18,32,3);fill(c,'#d4b468',mid-4,y+h-18,3,3);fill(c,'#d4b468',mid+2,y+h-18,3,3);
+     fill(c,ink,mid-21,y+h-38,42,37);
+     fill(c,'#6e4d34',mid-19,y+h-36,18,34);fill(c,'#6e4d34',mid+1,y+h-36,18,34);
+     fill(c,'#946b48',mid-17,y+h-34,14,30);fill(c,'#946b48',mid+3,y+h-34,14,30);
+     fill(c,'#3a281c',mid-17,y+h-20,34,3);fill(c,'#d4b468',mid-4,y+h-20,3,3);fill(c,'#d4b468',mid+2,y+h-20,3,3);
+     fill(c,'#54524c',mid-22,y+h-3,44,6);fill(c,'#d4cec0',mid-20,y+h-2,40,4);
     }else{
-     fill(c,'#241a14',mid-12,y+h-32,24,31);
-     fill(c,'#785238',mid-10,y+h-30,20,28);fill(c,'#9e704e',mid-8,y+h-28,16,24);
-     fill(c,'#4c3424',mid-8,y+h-17,16,2);fill(c,'#f2d070',mid+4,y+h-14,3,3);
+     fill(c,ink,mid-14,y+h-38,28,37);
+     fill(c,'#4e3826',mid-12,y+h-36,24,34);
+     fill(c,'#7c5436',mid-9,y+h-33,18,31);fill(c,'#9e704e',mid-7,y+h-31,14,27);
+     fill(c,'#f2d070',mid+3,y+h-18,3,3);
+     // Protruding carved stone entrance steps!
+     fill(c,'#54524c',mid-16,y+h-3,32,6);fill(c,'#d8d2c2',mid-14,y+h-2,28,4);fill(c,'#f2ede0',mid-12,y+h-2,24,1);
      // Cozy red-and-cream striped inn porch awning & warm porch lantern
-     for(let a=0;a<5;a++){
-      fill(c,a%2?'#f0e4c8':'#9c3c44',mid-22+a*9,wallY+3,9,8);
-      fill(c,a%2?'#d6c8a6':'#742830',mid-22+a*9,wallY+10,9,2);
+     for(let a=0;a<6;a++){
+      fill(c,a%2?'#f4e8ce':'#9c3842',mid-27+a*9,wallY+34,9,8);
+      fill(c,a%2?'#d6c8a6':'#70242c',mid-27+a*9,wallY+41,9,3);
      }
-     fill(c,'#f8d878',mid+14,y+h-24,4,6);fill(c,'#fff8d4',mid+15,y+h-23,2,3);
+     fill(c,'#f8d878',mid+15,y+h-28,4,6);fill(c,'#fff8d4',mid+16,y+h-27,2,3);
     }
-    // Glowing mullioned cottage windows with shutters & colorful flower boxes
-    for(const wx of [x+14,x+w-32]){
-     fill(c,'#2c2018',wx-3,wallY+10,22,17);
-     fill(c,isBarn?'#4e5c48':'#7e4238',wx-6,wallY+11,4,15);
-     fill(c,isBarn?'#4e5c48':'#7e4238',wx+18,wallY+11,4,15);
-     fill(c,'#f6cf6e',wx-1,wallY+12,18,13);
-     fill(c,'#fff8ce',wx+1,wallY+13,6,5);
-     fill(c,'#4c3424',wx+7,wallY+12,2,13);fill(c,'#4c3424',wx-1,wallY+18,18,2);
-     // Flower box under window
-     fill(c,'#3a281c',wx-2,wallY+26,20,5);fill(c,'#487a42',wx-1,wallY+25,18,4);
-     fill(c,'#e86c74',wx+1,wallY+25,3,2);fill(c,'#f6d464',wx+7,wallY+25,3,2);fill(c,'#fff0d8',wx+13,wallY+25,3,2);
+    // 5. Deep 3D Recessed Glowing Windows with Timber Shutters & Overflowing Flower Boxes
+    const winY=y+24;
+    for(let i=0;i<wT;i++){
+     const wx=x+11+i*32;
+     if(wT<=4&&(i===1||i===2))continue;
+     fill(c,ink,wx-3,winY-2,20,18);
+     fill(c,isBarn?'#4e5c48':'#7e4238',wx-6,winY-1,4,16);
+     fill(c,isBarn?'#4e5c48':'#7e4238',wx+16,winY-1,4,16);
+     fill(c,mortar,wx-1,winY,16,14);
+     fill(c,'#f6cf6e',wx+1,winY+2,12,10);fill(c,'#fff8ce',wx+2,winY+3,5,4);
+     fill(c,mortar,wx+6,winY+2,2,10);fill(c,mortar,wx+1,winY+6,12,2);
+     fill(c,ink,wx-3,winY+13,20,5);fill(c,'#487a42',wx-2,winY+12,18,4);
+     fill(c,'#e86c74',wx,winY+12,4,2);fill(c,'#f6d464',wx+6,winY+12,4,2);fill(c,'#fff0d8',wx+12,winY+12,3,2);
     }
-    // Wooden barrels / firewood stacked neatly along side wall
-    fill(c,'#3c2a1c',x+4,y+h-16,12,14);fill(c,'#8c6442',x+5,y+h-15,10,12);fill(c,'#545860',x+5,y+h-12,10,2);
+    // Stacked oak barrels beside wall
+    fill(c,'#3a281c',x+6,y+h-22,12,15);fill(c,'#8c6442',x+7,y+h-21,10,13);fill(c,'#545860',x+7,y+h-17,10,2);
     // Crisp hanging wooden signboard on eaves
-    const sy=wallY-11;
-    fill(c,'rgba(32,24,18,0.94)',mid-35,sy,70,15);
-    fill(c,'#dcb874',mid-34,sy+1,68,1);fill(c,'#8a6c40',mid-34,sy+13,68,1);
+    const sy=y-3;
+    fill(c,'rgba(24,20,18,0.94)',mid-37,sy,74,16);
+    fill(c,'#e0be78',mid-36,sy+1,72,1);fill(c,'#8a6c40',mid-36,sy+14,72,1);
     c.fillStyle='#faf0d8';c.font='bold 9px system-ui';c.textAlign='center';
-    c.fillText(label,mid,sy+11);c.textAlign='start';
+    c.fillText(label,mid,sy+12);c.textAlign='start';
    };
-   drawWayHouse(4,2,5,3,'#62362e','#844c40','#a86856','旅籠・白樺亭',false);
-   drawWayHouse(15,2,4,3,'#464e3e','#606c54','#7e8e6e','荷馬車倉',true);
+   drawWayHouse(4,2,5,3,'#62362e','#884c40','#ae6c58','旅籠・白樺亭',false);
+   drawWayHouse(15,2,4,3,'#464e3e','#606c54','#809070','荷馬車倉',true);
    // Central dressed-stone highland plaza around waystationWell (11,9)
    for(let px=10;px<=13;px++)for(let py=8;py<=10;py++){
     if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(c,'cobble',px,py,'market')){
      fill(c,'#b0a48a',px*32+1,py*32+1,30,30);
     }
    }
-   // Traveler merchant canopy stall behind waystationPeddler (16,6)
-   fill(c,'rgba(16,20,16,0.28)',16*32+2,5*32+22,34,6);
-   fill(c,'#463222',16*32+3,5*32+14,28,12);fill(c,'#8e6844',16*32+5,5*32+16,24,8);
-   fill(c,'#e69044',16*32+7,5*32+15,6,4);fill(c,'#f2d266',16*32+16,5*32+15,6,4);
-   fill(c,'#943c44',16*32+1,5*32+5,32,10);fill(c,'#f2e4c4',16*32+6,5*32+5,7,10);fill(c,'#f2e4c4',16*32+20,5*32+5,7,10);
+   // True 3D Sculpted Wooden Waystation Merchant Pavilion beside waystationPeddler (16,6) (zero overlap with peddler's hat!)
+   {
+    const sx=17*32-2,sy=5*32-8,sw=44,sh=38,ink='#221a16';
+    fill(c,'rgba(14,18,16,0.36)',sx+4,sy+sh-5,sw+4,10);
+    fill(c,'rgba(22,16,12,0.52)',sx+4,sy+14,sw-8,14);
+    fill(c,ink,sx+4,sy+11,4,22);fill(c,'#543a24',sx+5,sy+12,2,20);
+    fill(c,ink,sx+sw-8,sy+11,4,22);fill(c,'#543a24',sx+sw-7,sy+12,2,20);
+    fill(c,ink,sx+2,sy+22,sw-4,15);
+    fill(c,'#6e4e34',sx+4,sy+26,sw-8,9);
+    for(let px=sx+10;px<sx+sw-6;px+=8)fill(c,'#4a3220',px,sy+26,2,9);
+    fill(c,'#a67c52',sx+3,sy+23,sw-6,4);fill(c,'#cfa472',sx+4,sy+23,sw-8,2);
+    // Travel provisions, spice jars & apples on counter
+    fill(c,'#d84844',sx+7,sy+18,8,5);fill(c,'#f48868',sx+8,sy+18,5,2);
+    fill(c,'#e8a838',sx+18,sy+17,8,6);fill(c,'#ffe28a',sx+19,sy+17,5,2);
+    fill(c,'#487854',sx+29,sy+18,8,5);fill(c,'#88c284',sx+30,sy+18,5,2);
+    // Front beveled oak corner posts
+    fill(c,ink,sx+1,sy+10,5,28);fill(c,'#7c5636',sx+2,sy+11,3,26);fill(c,'#b08256',sx+2,sy+11,1,24);
+    fill(c,ink,sx+sw-6,sy+10,5,28);fill(c,'#7c5636',sx+sw-5,sy+11,3,26);fill(c,'#b08256',sx+sw-5,sy+11,1,24);
+    // Sloped 3/4 billowing crimson-and-cream striped awning roof + valance
+    fill(c,ink,sx-2,sy+1,sw+4,15);
+    for(let i=0;i<5;i++){
+     const ax=sx+i*8,aw=(i===4)?12:8,col=i%2?'#f6ecd4':'#9c3842';
+     fill(c,col,ax,sy+2,aw,8);fill(c,'rgba(255,252,240,0.22)',ax,sy+2,aw,3);
+     fill(c,i%2?'#d6c8a8':'#72242c',ax,sy+10,aw,5);
+     fill(c,ink,ax,sy+15,aw,1);
+    }
+    fill(c,'#5c3e26',sx-2,sy,sw+4,2);
+    fill(c,'#2c241e',sx+sw-10,sy+16,4,6);fill(c,'#ffd874',sx+sw-9,sy+17,2,3);
+   }
    // Ornate wrought-iron lantern posts with smooth radial golden light pools
    for(const [lx,ly] of [[10,6],[13,6],[10,10],[13,10]]){
     const x=lx*32+14,y=ly*32+4;

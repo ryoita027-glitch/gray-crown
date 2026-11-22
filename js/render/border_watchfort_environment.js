@@ -5,7 +5,7 @@
  * Never mutates maps, saves, events, collision, story flags, or locked hero PNGs.
  */
 const BorderWatchfortEnvironment=(()=>{
- const targets=new Set(['borderland','bordercanyon','watchfort','halminn']);
+ const targets=new Set(['borderland','bordercanyon','relayvillage','watchfort','ravine','halminn']);
  const TILE_PX=32;
  const pix=(ctx,c,x,y,w,h)=>{
   ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));
@@ -112,7 +112,21 @@ const BorderWatchfortEnvironment=(()=>{
    return false;
   }
 
-  if(map==='borderland'||map==='bordercanyon'){
+  if(map==='borderland'||map==='bordercanyon'||map==='relayvillage'){
+   if(ch==='G'||ch==='T'){
+    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(ctx,'grass',x,y,'autumn')){
+     pix(ctx,'#687850',a,b,32,32);
+     if(r%3===0)pix(ctx,'#78885c',a+4+(r%10),b+6,10,4);
+    }
+    if(ch==='T'){
+     if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTree(ctx,x,y,'oak')){
+      pix(ctx,'#2a3e28',a+4,b-6,24,24);pix(ctx,'#4e7244',a+6,b-4,20,16);pix(ctx,'#543a26',a+12,b+16,8,12);
+     }
+    }else if(up==='T'||up==='H'){
+     pix(ctx,'rgba(18,22,14,0.22)',a,b,32,6);
+    }
+    return true;
+   }
    if(ch==='Z'){
     const band=['#151f2b','#1a2736','#243547'][Math.min(2,y)]||'#1a2736';
     pix(ctx,band,a,b,32,32);
@@ -191,7 +205,16 @@ const BorderWatchfortEnvironment=(()=>{
    return false;
   }
 
-  if(map==='watchfort'){
+  if(map==='watchfort'||map==='ravine'){
+   if(map==='ravine'&&ch==='B'){
+    // Deep Razel Chasm gorge below the high stone bridge
+    const band=['#151f2b','#182330','#1c2938','#223242'][Math.min(3,Math.floor(y/4))]||'#182330';
+    pix(ctx,band,a,b,32,32);
+    if(r%3===0)pix(ctx,'rgba(148,180,206,0.12)',a+(r%8),b+8+((r>>>4)%12),22,3);
+    if(left==='K')pix(ctx,'#2c3640',a,b,6,32);
+    if(right==='K')pix(ctx,'#2c3640',a+26,b,6,32);
+    return true;
+   }
    if(ch==='Z'){
     // Multi-layered Razel Chasm depth gradient with atmospheric mist & recessed cliff strata
     const band=['#151f2b','#141d28','#182330','#1c2938','#223242','#2a3b4c'][Math.min(5,y)]||'#182330';
@@ -294,124 +317,206 @@ const BorderWatchfortEnvironment=(()=>{
  }
 
  function drawWaystationInn(ctx,tx,ty,wTiles,hTiles,opts){
-  const x=tx*32,y=ty*32,w=wTiles*32,h=hTiles*32;
-  const roofH=Math.floor(h*0.52),wallY=y+roofH,wallH=h-roofH;
-  // Soft ground drop shadow cast south-east
-  pix(ctx,'rgba(18,14,10,0.34)',x+4,y+h-2,w+2,10);
-  // Stone chimney rising from roof
-  pix(ctx,'#383634',x+w-30,y-4,16,22);
-  pix(ctx,'#736e66',x+w-28,y-2,12,18);
-  pix(ctx,'#9c968a',x+w-30,y-5,16,4);
-  // Animated rising hearth smoke puffs
+  const x=tx*32,y=ty*32,w=wTiles*32,h=hTiles*32,wallY=y+8,wallH=h-8,ink='#221a16',mid=x+Math.floor(w/2);
+  // 1. Deep two-stage southeast diorama cast shadow anchoring the building onto the earth
+  pix(ctx,'rgba(14,12,10,0.38)',x+6,y+h-2,w+6,13);
+  pix(ctx,'rgba(14,12,10,0.18)',x+10,y+h+8,w+5,7);
+  pix(ctx,'rgba(14,12,10,0.24)',x+w,y+8,9,h-4);
+  // 2. Full-height cream plaster & half-timber volume + 3D stone corner quoins + 14px granite plinth
+  pix(ctx,ink,x-1,wallY-2,w+2,wallH+3);
+  pix(ctx,opts.wall,x+2,wallY,w-4,wallH-12);
+  pix(ctx,'rgba(18,12,10,0.36)',x+2,wallY+4,w-4,7); // deep overhanging eave shadow!
+  const wallHi='#f2e6ca',mortar='#5e4634';
+  for(let qy=wallY+8;qy<y+h-16;qy+=10){
+   const qw=((qy/10)|0)%2?8:5;
+   pix(ctx,mortar,x+1,qy,qw,8);pix(ctx,wallHi,x+2,qy+1,qw-2,5);
+   pix(ctx,mortar,x+w-qw-1,qy,qw,8);pix(ctx,opts.wall,x+w-qw,qy+1,qw-2,5);
+  }
+  // Vertical & horizontal Tudor half-timber framing
+  for(let i=0;i<=wTiles;i++){
+   const bx=x+4+Math.round(i*(w-12)/wTiles);
+   pix(ctx,'#463022',bx,wallY+6,5,wallH-20);
+   pix(ctx,'#76543b',bx+1,wallY+6,2,wallH-20);
+  }
+  if(hTiles>=3)pix(ctx,'#463022',x+2,wallY+30,w-4,4);
+  // Heavy 14px dressed-stone foundation plinth
+  pix(ctx,ink,x,y+h-14,w,14);
+  pix(ctx,'#67635c',x+2,y+h-12,w-4,11);pix(ctx,'#9a9488',x+3,y+h-12,w-6,2);
+  for(let sx=x+8;sx<x+w-8;sx+=14)pix(ctx,'#403d38',sx,y+h-11,2,9);
+  // 3. Towering 3/4 Pitched Shingled Roof rising above top tile row + smoking stone chimney!
+  const chX=x+w-28,chY=y-28;
+  pix(ctx,ink,chX,chY,14,24);pix(ctx,'#736e66',chX+2,chY+2,10,20);
+  pix(ctx,'#a8a296',chX+3,chY+2,4,18);pix(ctx,'#4a443e',chX-1,chY-2,16,4);
   const t=Date.now()/900;
   for(let i=0;i<3;i++){
    const p=(t+i*0.33)%1;
-   ctx.fillStyle=`rgba(232,226,214,${(0.24*(1-p)).toFixed(2)})`;
-   ctx.beginPath();ctx.arc(x+w-22+Math.sin(p*5+i)*4+p*6,y-7-p*14,3+p*4,0,Math.PI*2);ctx.fill();
+   ctx.fillStyle=`rgba(232,226,214,${(0.26*(1-p)).toFixed(2)})`;
+   ctx.beginPath();ctx.arc(chX+7+Math.sin(p*5+i)*4+p*6,chY-5-p*14,3+p*4,0,Math.PI*2);ctx.fill();
   }
-  // Timber-framed cream plaster walls & stone plinth foundation
-  pix(ctx,'#362a20',x+2,wallY,w-4,wallH);
-  pix(ctx,opts.wall,x+5,wallY+2,w-10,wallH-10);
-  // Stone foundation plinth
-  pix(ctx,'#67635c',x+4,y+h-9,w-8,8);
-  pix(ctx,'#8c877d',x+5,y+h-9,w-10,2);
-  for(let sx=12;sx<w-12;sx+=18)pix(ctx,'#494640',x+sx,y+h-8,1,7);
-  // Vertical & diagonal half-timber oak framing
-  for(let i=0;i<=wTiles;i++){
-   const bx=x+5+Math.round(i*(w-14)/wTiles);
-   pix(ctx,'#4c3828',bx,wallY+2,4,wallH-10);
-   pix(ctx,'#6b503a',bx+1,wallY+2,2,wallH-10);
+  const courses=hTiles>=3?6:4;
+  for(let z=0;z<courses;z++){
+   const ins=z*4;
+   pix(ctx,ink,x-4+ins,y+12-z*5,w+8-ins*2,7);
+   pix(ctx,z===courses-1?opts.roofHi:(z%2?opts.roofMain:opts.roofDark),x-2+ins,y+13-z*5,w+4-ins*2,5);
+   for(let sx=x+6+ins;sx<x+w-6-ins;sx+=10)pix(ctx,'rgba(24,16,12,0.28)',sx,y+14-z*5,2,4);
   }
-  pix(ctx,'#4c3828',x+5,wallY+12,w-10,3);
-  // Pitched layered shingle roof with eaves shadow
-  pix(ctx,'rgba(20,14,10,0.38)',x+3,wallY,w-6,6);
-  pix(ctx,'#2e221b',x-1,y+4,w+2,roofH-2);
-  pix(ctx,opts.roofDark,x+1,y+6,w-2,roofH-6);
-  pix(ctx,opts.roofMain,x+3,y+6,w-6,roofH-10);
-  pix(ctx,opts.roofHi,x+6,y+6,w-12,5);
-  // Shingle rows
-  for(let ry=y+13;ry<wallY-4;ry+=7){
-   pix(ctx,'rgba(24,16,12,0.26)',x+3,ry,w-6,2);
-   for(let rx=x+8+((ry/7)%2)*7;rx<x+w-10;rx+=14)pix(ctx,'rgba(255,236,204,0.10)',rx,ry+2,7,2);
+  pix(ctx,'#dfc282',x+16,y+12-courses*5,w-32,3);
+  // 4. Recessed Arched Oak Entrance Doorway + Protruding Stone Steps + Striped Porch Awning
+  const dx=mid-12,dh=hTiles>=3?34:24;
+  pix(ctx,ink,dx-2,y+h-dh-2,28,dh+3);
+  pix(ctx,'#4e3826',dx,y+h-dh,24,dh);
+  pix(ctx,'#7c5436',dx+3,y+h-dh+3,18,dh-3);pix(ctx,'#9e704e',dx+5,y+h-dh+5,14,dh-7);
+  pix(ctx,'#f2d070',dx+15,y+h-16,3,3);
+  pix(ctx,'#54524c',dx-4,y+h-3,32,6);pix(ctx,'#d8d2c2',dx-2,y+h-2,28,4);pix(ctx,'#f2ede0',dx,y+h-2,24,1);
+  if(opts.sign){
+   for(let a=0;a<6;a++){
+    pix(ctx,a%2?'#f4e8ce':'#98343e',mid-27+a*9,wallY+32,9,8);
+    pix(ctx,a%2?'#d6c8a6':'#6c222a',mid-27+a*9,wallY+39,9,3);
+   }
+   pix(ctx,ink,x+w-22,wallY+12,16,14);pix(ctx,'#ecc872',x+w-20,wallY+14,12,10);pix(ctx,'#6e3e28',x+w-17,wallY+16,6,6);
   }
-  // Gable ridge beam
-  pix(ctx,'#3a2b20',x+2,y+3,w-4,4);pix(ctx,'#8f7254',x+4,y+4,w-8,2);
-  // Arched wooden doorway + stone doorstep
-  const dx=x+Math.floor(w/2)-11;
-  pix(ctx,'#36261a',dx,y+h-28,22,27);
-  pix(ctx,'#6d4e35',dx+2,y+h-26,18,24);
-  pix(ctx,'#876345',dx+4,y+h-24,6,20);pix(ctx,'#876345',dx+12,y+h-24,6,20);
-  pix(ctx,'#d6b872',dx+15,y+h-15,3,3);
-  pix(ctx,'#9d9789',dx-2,y+h-2,26,5);
-  // Warm lit mullioned windows with timber shutters & flowerbox
-  for(const wx of [x+16,x+w-34]){
-   pix(ctx,'#3c2d21',wx-4,wallY+10,26,17);
-   pix(ctx,opts.shutter,wx-3,wallY+11,4,15);pix(ctx,opts.shutter,wx+17,wallY+11,4,15);
-   pix(ctx,'#f2c464',wx+2,wallY+11,14,14);
-   pix(ctx,'#fff0b5',wx+4,wallY+12,5,6);
-   pix(ctx,'#4a3728',wx+8,wallY+11,2,14);pix(ctx,'#4a3728',wx+2,wallY+17,14,2);
-   // Window box with green leaves & tiny blooms
-   pix(ctx,'#593f2b',wx,wallY+25,18,4);
-   pix(ctx,'#547545',wx+1,wallY+23,16,3);
-   pix(ctx,'#e2b85c',wx+4,wallY+23,2,2);pix(ctx,'#d98276',wx+11,wallY+23,2,2);
-   // Warm light spill onto ground
+  // 5. Deep 3D Recessed Glowing Windows with Timber Shutters & Flower Boxes
+  const winY=y+20;
+  for(const wx of [x+14,x+w-32]){
+   pix(ctx,ink,wx-3,winY-2,20,17);
+   pix(ctx,opts.shutter,wx-6,winY-1,4,15);pix(ctx,opts.shutter,wx+16,winY-1,4,15);
+   pix(ctx,mortar,wx-1,winY,16,13);
+   pix(ctx,'#f2c464',wx+1,winY+2,12,9);pix(ctx,'#fff0b5',wx+2,winY+3,5,4);
+   pix(ctx,mortar,wx+6,winY+2,2,9);pix(ctx,mortar,wx+1,winY+6,12,2);
+   pix(ctx,ink,wx-3,winY+12,20,5);pix(ctx,'#487a42',wx-2,winY+11,18,4);
+   pix(ctx,'#e2b85c',wx+1,winY+11,4,2);pix(ctx,'#d98276',wx+9,winY+11,4,2);
    pix(ctx,'rgba(255,198,96,0.14)',wx-4,y+h-4,26,12);
   }
-  // Hanging inn sign on the west inn
-  if(opts.sign){
-   pix(ctx,'#3c2d21',dx+24,wallY+8,14,3);
-   pix(ctx,'#5c432d',dx+27,wallY+11,11,11);
-   pix(ctx,'#d8c295',dx+28,wallY+12,9,9);
-   pix(ctx,'#784f36',dx+30,wallY+14,5,5);
+  if(opts.label){
+   const sy=y-2;
+   pix(ctx,'rgba(24,20,18,0.94)',mid-37,sy,74,16);
+   pix(ctx,'#e0be78',mid-36,sy+1,72,1);pix(ctx,'#8a6c40',mid-36,sy+14,72,1);
+   ctx.fillStyle='#faf0d8';ctx.font='bold 9px system-ui';ctx.textAlign='center';
+   ctx.fillText(opts.label,mid,sy+12);ctx.textAlign='start';
   }
  }
 
- function drawFortressWing(ctx,tx,ty,wTiles,hTiles,isEast){
-  const x=tx*32,y=ty*32,w=wTiles*32,h=hTiles*32;
-  // Ground cast shadow into courtyard
-  if(!isEast)pix(ctx,'rgba(12,15,20,0.30)',x+w,y+4,12,h-4);
-  else pix(ctx,'rgba(12,15,20,0.22)',x-8,y+4,8,h-4);
-  pix(ctx,'rgba(12,15,20,0.34)',x+2,y+h-2,w,9);
-
-  // Main fortress stone body
-  pix(ctx,'#2a2e34',x,y,w,h);
-  pix(ctx,'#5c6064',x+3,y+6,w-6,h-10);
-  // Subtle masonry ashlar lines
-  for(let ry=y+18;ry<y+h-8;ry+=16){
-   pix(ctx,'#43474c',x+4,ry,w-8,2);
-   for(let rx=x+12+((ry/16)%2)*14;rx<x+w-10;rx+=28)pix(ctx,'#43474c',rx,ry,2,16);
-  }
-  // Sloped slate barracks roof inset on the west wing
-  if(!isEast){
-   pix(ctx,'#323943',x+12,y+26,w-24,h-56);
-   pix(ctx,'#45505e',x+15,y+29,w-30,h-64);
-   for(let ry=y+36;ry<y+h-36;ry+=10)pix(ctx,'#38414d',x+16,ry,w-32,2);
-   pix(ctx,'#778391',x+18,y+30,w-36,4);
-   // Courtyard arched timber door & warm sentry slit windows
-   pix(ctx,'#25282c',x+w-14,y+64,14,24);
-   pix(ctx,'#614732',x+w-12,y+66,10,21);
-   for(const sy of [y+32,y+112,y+146]){
-    pix(ctx,'#23262b',x+w-12,sy,6,14);
-    pix(ctx,'#e6b35c',x+w-10,sy+3,2,8);
+ function drawBorderBooth(ctx,tx,ty,color,kind){
+  // Solid 3D 64x48px Sculpted Timber-and-Canvas Border Caravan Market Pavilion!
+  const x=tx*32,y=ty*32-10,w=64,h=48,ink='#221a16';
+  pix(ctx,'rgba(14,12,10,0.36)',x+5,y+h-5,w+4,11);
+  pix(ctx,'rgba(14,12,10,0.20)',x+w-2,y+16,9,h-16);
+  pix(ctx,'rgba(22,16,12,0.55)',x+5,y+18,w-10,16);
+  pix(ctx,ink,x+5,y+14,5,26);pix(ctx,'#543a26',x+6,y+15,3,24);
+  pix(ctx,ink,x+w-10,y+14,5,26);pix(ctx,'#543a26',x+w-9,y+15,3,24);
+  pix(ctx,ink,x+2,y+28,w-4,18);
+  pix(ctx,'#6e4e34',x+4,y+34,w-8,10);
+  for(let px=x+12;px<x+w-8;px+=10)pix(ctx,'#4c3422',px,y+34,2,10);
+  pix(ctx,'#a67c52',x+3,y+29,w-6,5);pix(ctx,'#cfa472',x+4,y+29,w-8,2);
+  // Brimming 3D caravan trade goods (medicinal herbs, salt amphorae & spice sacks)
+  if(kind==='herbs'){
+   for(const [bx,c1,c2] of [[x+8,'#487c44','#88c474'],[x+25,'#c88438','#f2c46c'],[x+42,'#466e88','#8ec2dc']]){
+    pix(ctx,'#4e3622',bx,y+24,14,7);pix(ctx,c1,bx+2,y+22,10,5);pix(ctx,c2,bx+3,y+22,5,2);
    }
+  }else{
+   for(const [bx,c1,c2] of [[x+8,'#b46842','#e69a6c'],[x+25,'#d4c8b0','#f6f2e8'],[x+42,'#9c4248','#d87478']]){
+    pix(ctx,'#4e3622',bx,y+24,14,7);pix(ctx,c1,bx+2,y+22,10,5);pix(ctx,c2,bx+3,y+22,5,2);
+   }
+  }
+  pix(ctx,ink,x+1,y+12,6,34);pix(ctx,'#7c5636',x+2,y+13,4,32);pix(ctx,'#b08256',x+2,y+13,2,30);
+  pix(ctx,ink,x+w-7,y+12,6,34);pix(ctx,'#7c5636',x+w-6,y+13,4,32);pix(ctx,'#b08256',x+w-6,y+13,2,30);
+  pix(ctx,ink,x-2,y+2,w+4,18);
+  for(let s=0;s<6;s++){
+   const sx=x+s*10,sw=(s===5)?14:10,stripe=s%2===0?color:'#f4e8ce';
+   pix(ctx,stripe,sx,y+3,sw,10);pix(ctx,'rgba(255,252,238,0.22)',sx,y+3,sw,3);
+   pix(ctx,s%2===0?'rgba(20,14,12,0.34)':'rgba(40,34,26,0.18)',sx,y+13,sw,6);
+   pix(ctx,stripe,sx+1,y+13,sw-2,5);
+   pix(ctx,ink,sx,y+18,sw,2);
+  }
+  pix(ctx,'#5c3e26',x-2,y,w+4,3);pix(ctx,'#c89e68',x,y,w,1);
+  pix(ctx,'#2c241e',x+w-13,y+19,5,7);pix(ctx,'#ffd874',x+w-12,y+21,3,4);
+ }
+
+ function drawFortressWing(ctx,tx,ty,wTiles,hTiles,isEast){
+  const x=tx*32,y=ty*32,w=wTiles*32,h=hTiles*32,ink='#1e2228';
+  // Deep two-stage courtyard cast shadow
+  if(!isEast)pix(ctx,'rgba(10,14,20,0.36)',x+w,y+4,14,h-2);
+  else pix(ctx,'rgba(10,14,20,0.26)',x-10,y+4,10,h-2);
+  pix(ctx,'rgba(10,14,20,0.38)',x+3,y+h-2,w+4,12);
+
+  // Main fortress dressed-granite body + heavy 14px stepped plinth + 3D stone corner quoins
+  pix(ctx,ink,x,y,w,h);
+  pix(ctx,'#626870',x+3,y+6,w-6,h-10);
+  pix(ctx,'#8c9298',x+4,y+6,w-8,4);
+  for(let ry=y+18;ry<y+h-14;ry+=14){
+   pix(ctx,'#434850',x+4,ry,w-8,2);
+   for(let rx=x+12+((ry/14)%2)*14;rx<x+w-10;rx+=28)pix(ctx,'#434850',rx,ry,2,14);
+  }
+  for(let qy=y+12;qy<y+h-16;qy+=12){
+   const qw=((qy/12)|0)%2?10:6;
+   pix(ctx,'#3e444c',x+2,qy,qw,9);pix(ctx,'#949aa0',x+3,qy+1,qw-2,6);
+   pix(ctx,'#3e444c',x+w-qw-2,qy,qw,9);pix(ctx,'#787e86',x+w-qw-1,qy+1,qw-2,6);
+  }
+  pix(ctx,ink,x+1,y+h-15,w-2,14);pix(ctx,'#484e56',x+3,y+h-13,w-6,11);pix(ctx,'#7c828a',x+4,y+h-13,w-8,2);
+
+  // Towering 3/4 Pitched Dark-Slate Garrison Barracks Hall + 2 Stories of Glowing Arched Fortress Windows on West Wing!
+  if(!isEast){
+   const rx=x+12,rw=w-28,ry=y+18;
+   for(let z=0;z<7;z++){
+    const ins=z*4;
+    pix(ctx,ink,rx-2+ins,ry+30-z*5,rw+4-ins*2,7);
+    pix(ctx,z===6?'#6e8296':(z%2?'#4c5e72':'#364656'),rx+ins,ry+31-z*5,rw-ins*2,5);
+    for(let sx=rx+6+ins;sx<rx+rw-6-ins;sx+=10)pix(ctx,'rgba(12,18,26,0.28)',sx,ry+32-z*5,2,4);
+   }
+   pix(ctx,'#c8b478',rx+26,ry-3,rw-52,3); // gilded garrison ridge crest
+   // Stone chimney with animated hearth smoke
+   pix(ctx,ink,rx+12,ry-12,14,22);pix(ctx,'#6e747c',rx+14,ry-10,10,18);pix(ctx,'#9aa0a8',rx+15,ry-10,4,16);
+   // Full 2-story ashlar masonry barracks facade below the pitched roof (ry+36..y+h-16)
+   pix(ctx,'rgba(14,18,24,0.36)',rx,ry+37,rw,6);
+   for(const wy of [ry+46,ry+96]){
+    for(let i=0;i<3;i++){
+     const wx=rx+14+i*44;
+     pix(ctx,ink,wx-2,wy-2,22,26);pix(ctx,'#3e4650',wx,wy,18,22);
+     pix(ctx,'#52748e',wx+2,wy+2,14,18);pix(ctx,'#f2c868',wx+4,wy+8,10,10);pix(ctx,'#fff6c8',wx+6,wy+10,5,5);
+     pix(ctx,'#3e4650',wx+8,wy+2,2,18);pix(ctx,'#3e4650',wx+2,wy+10,14,2);
+    }
+   }
+   // Arched Garrison Main Entrance & Weapon Rack at base of West Barracks
+   const dx=rx+Math.floor(rw/2)-14,dy=y+h-40;
+   pix(ctx,ink,dx-2,dy-2,28,38);pix(ctx,'#463424',dx,dy,24,34);
+   pix(ctx,'#6e5038',dx+3,dy+3,18,30);pix(ctx,'#967050',dx+5,dy+5,14,26);
+   pix(ctx,'#f0cc6e',dx+15,dy+18,3,3);
+   // Courtyard arched iron-bound oak garrison side door + protruding stone steps & warm lancet windows
+   pix(ctx,ink,x+w-16,y+62,16,28);
+   pix(ctx,'#6e5038',x+w-14,y+64,12,24);pix(ctx,'#967050',x+w-12,y+66,8,20);
+   pix(ctx,'#b8b4a6',x+w-4,y+64,8,24);
+   for(const sy of [y+28,y+108,y+142]){
+    pix(ctx,ink,x+w-14,sy,8,16);
+    pix(ctx,'#f2c468',x+w-12,sy+2,4,12);pix(ctx,'#fff6c8',x+w-11,sy+3,2,5);
+   }
+   // Crisp Garrison Barracks Signboard
+   pix(ctx,'rgba(20,24,30,0.94)',rx+Math.floor(rw/2)-36,ry+26,72,15);
+   pix(ctx,'#d8bc74',rx+Math.floor(rw/2)-35,ry+27,70,1);
+   ctx.fillStyle='#f4eed8';ctx.font='bold 9px system-ui';ctx.textAlign='center';
+   ctx.fillText('ベルド砦・兵舎',rx+Math.floor(rw/2),ry+37);ctx.textAlign='start';
   }
   // Crenellated stone battlements along the north edge (facing Razel Chasm)
   pix(ctx,'#8c8e88',x,y,w,10);
-  pix(ctx,'#b0b1a8',x+2,y+1,w-4,3);
+  pix(ctx,'#b8bab0',x+2,y+1,w-4,3);
   for(let cx=x+4;cx<x+w-12;cx+=22){
-   pix(ctx,'#2a2e34',cx,y-6,14,8);
-   pix(ctx,'#9c9d95',cx+1,y-5,12,6);
-   pix(ctx,'#c2c2b8',cx+2,y-5,10,2);
+   pix(ctx,ink,cx,y-7,15,9);
+   pix(ctx,'#9c9e96',cx+1,y-6,13,7);
+   pix(ctx,'#cacac0',cx+2,y-6,11,2);
   }
-  // Corner turrets on inner courtyard edge
-  const turretX=isEast?x:x+w-32;
-  pix(ctx,'#262a30',turretX-2,y-10,36,42);
-  pix(ctx,'#727574',turretX,y-8,32,38);
-  pix(ctx,'#a6a79f',turretX-2,y-10,36,8);
-  pix(ctx,'#c8c8be',turretX,y-9,32,3);
-  for(let mx=0;mx<3;mx++)pix(ctx,'#464a4f',turretX+3+mx*12,y-10,5,4);
-  // Narrow embrasure arrow slit in turret
-  pix(ctx,'#1c2026',turretX+14,y+6,4,14);
+  // Towering Cylindrical Corner Watchtower with Conical Crimson-Slate Spire on inner courtyard edge!
+  const turretX=isEast?x:x+w-36,tw=38;
+  pix(ctx,ink,turretX-2,y-10,tw+4,48);
+  pix(ctx,'#787c7e',turretX,y-8,tw,44);
+  pix(ctx,'#a8acab',turretX+2,y-8,10,42); // sunlit curved highlight
+  pix(ctx,'#52565a',turretX+tw-10,y-8,8,42); // shaded curve
+  pix(ctx,ink,turretX-4,y-12,tw+8,10);pix(ctx,'#b2b4ac',turretX-2,y-10,tw+4,6);
+  for(let s=0;s<6;s++){
+   const sw=Math.max(6,tw+4-s*6),sx=turretX+Math.floor((tw-sw)/2);
+   pix(ctx,ink,sx-1,y-14-s*4,sw+2,5);
+   pix(ctx,s%2?'#7c323c':'#5c222a',sx+1,y-13-s*4,sw-2,3);
+  }
+  pix(ctx,'#e6c670',turretX+Math.floor(tw/2)-1,y-42,3,8);
+  pix(ctx,'#1c2026',turretX+Math.floor(tw/2)-3,y+6,6,16);pix(ctx,'#f2c468',turretX+Math.floor(tw/2)-1,y+8,2,11);
  }
 
  function drawBanner(ctx,px,py,color,hi,accent){
@@ -450,18 +555,20 @@ const BorderWatchfortEnvironment=(()=>{
    ctx.fillStyle=sun;ctx.fillRect(0,0,768,480);
    return true;
   }
+  if(map==='relayvillage'){
+   // Halm Relay Settlement: 4 grounded 3D half-timbered waystation lodges + 3D caravan market pavilion
+   drawWaystationInn(ctx,3,3,5,3,{roofDark:'#583c30',roofMain:'#785040',roofHi:'#9a6c56',wall:'#d8c8a4',shutter:'#523f31',sign:true,label:'ハルム中継宿'});
+   drawWaystationInn(ctx,16,3,5,3,{roofDark:'#4b3e36',roofMain:'#66544a',roofHi:'#867062',wall:'#d2c4a0',shutter:'#47525e',sign:false,label:'交易荷倉'});
+   drawWaystationInn(ctx,3,10,4,2,{roofDark:'#524236',roofMain:'#6e5848',roofHi:'#8e7460',wall:'#cfc09c',shutter:'#4e5c48',sign:false});
+   drawWaystationInn(ctx,17,10,4,2,{roofDark:'#4e423a',roofMain:'#68584e',roofHi:'#887466',wall:'#cec09c',shutter:'#523f31',sign:false});
+   drawBorderBooth(ctx,8,5,'#8e3c42','herbs');
+   return true;
+  }
   if(map==='borderland'){
-   // Halm Waystation twin detailed half-timbered inns
-   drawWaystationInn(ctx,3,1,5,3,{roofDark:'#583c30',roofMain:'#744e3e',roofHi:'#946854',wall:'#d4c39c',shutter:'#523f31',sign:true});
-   drawWaystationInn(ctx,16,1,5,3,{roofDark:'#4b3e36',roofMain:'#66544a',roofHi:'#836e61',wall:'#cec09c',shutter:'#47525e',sign:false});
-
-   // Split-rail wooden waystation fence & supply barrels/crates along terrace
-   pix(ctx,'#5c4632',8*32+4,3*32+22,64,4);pix(ctx,'#7d6146',8*32+4,3*32+22,64,2);
-   for(const bx of [8,9]){
-    pix(ctx,'#3a2b1f',bx*32+6,3*32+10,22,12);
-    pix(ctx,'#8c6a46',bx*32+7,3*32+11,20,9);
-    pix(ctx,'#b08a5e',bx*32+8,3*32+12,18,3);
-   }
+   // Halm Waystation twin detailed 3D half-timbered inns + 3D caravan market pavilion
+   drawWaystationInn(ctx,3,1,5,3,{roofDark:'#583c30',roofMain:'#785040',roofHi:'#9a6c56',wall:'#d8c8a4',shutter:'#523f31',sign:true,label:'旅籠・風見亭'});
+   drawWaystationInn(ctx,16,1,5,3,{roofDark:'#4b3e36',roofMain:'#66544a',roofHi:'#867062',wall:'#d2c4a0',shutter:'#47525e',sign:false,label:'国境交易倉庫'});
+   drawBorderBooth(ctx,8,2,'#8e3c42','herbs');
    // Laundry fluttering on line between eastern inn & road (lived-in village charm)
    pix(ctx,'#5c4936',15*32+2,4*32+4,98,2);
    const wind=Math.round(Math.sin(now/420));
@@ -514,6 +621,21 @@ const BorderWatchfortEnvironment=(()=>{
    return true;
   }
 
+  if(map==='ravine'){
+   // High-altitude Razel Canyon Bridge: deep support arches, carved stone parapets & border banners
+   for(const by of [2,4,6,8,10]){
+    pix(ctx,'#3e464e',11*32-6,by*32+4,6,20);pix(ctx,'#616a72',11*32-5,by*32+6,4,14);
+    pix(ctx,'#3e464e',13*32,by*32+4,6,20);pix(ctx,'#616a72',13*32+1,by*32+6,4,14);
+   }
+   drawBanner(ctx,8*32+10,6*32+2,'#8d3d46','#be616b','#dfc48a');
+   drawBanner(ctx,15*32+10,6*32+2,'#2f4c70','#5e83ad','#c8d6e0');
+   const drift=Math.round(Math.sin(now/520)*4);
+   for(const [mx,my,mw] of [[2,4,5],[16,5,5],[3,9,4],[16,10,5]]){
+    pix(ctx,'rgba(164,196,222,0.14)',mx*32+drift,my*32+8,mw*32,8);
+   }
+   return true;
+  }
+
   if(map==='watchfort'){
    const gateOpen=typeof getWorldSwitch==='function'&&getWorldSwitch('fortGateOpen');
    const collapsed=typeof isEventComplete==='function'&&isEventComplete('metKlein');
@@ -543,10 +665,25 @@ const BorderWatchfortEnvironment=(()=>{
    // East Fortress Bastion (preserving the passable wooden ramp at x=18, y=6..10!)
    drawFortressWing(ctx,16,7,2,3,true);
    drawFortressWing(ctx,19,7,3,4,true);
-   // South-east bastion block (x=16..21, y=11..12)
-   pix(ctx,'#2a2e34',16*32,11*32,6*32,2*32);
-   pix(ctx,'#5c6064',16*32+3,11*32+4,6*32-6,2*32-8);
-   pix(ctx,'#8c8e88',16*32+2,11*32+2,6*32-4,6);
+   // South-east 3D Pitched-Roof Supply & Watch Bastion Hall (x=16..21, y=11..12)
+   {
+    const sx=16*32,sy=11*32,sw=6*32,sh=2*32,ink='#1e2228';
+    pix(ctx,'rgba(10,14,20,0.38)',sx+4,sy+sh-2,sw+4,11);
+    pix(ctx,ink,sx,sy+4,sw,sh-4);
+    pix(ctx,'#626870',sx+3,sy+8,sw-6,sh-16);
+    pix(ctx,'#464c54',sx+2,sy+sh-12,sw-4,10);
+    for(let z=0;z<5;z++){
+     const ins=z*4;
+     pix(ctx,ink,sx-2+ins,sy+14-z*4,sw+4-ins*2,6);
+     pix(ctx,z%2?'#4c5e72':'#364656',sx+ins,sy+15-z*4,sw-ins*2,4);
+    }
+    pix(ctx,'#9aa6b2',sx+20,sy-4,sw-40,3);
+    for(let i=0;i<4;i++){
+     const wx=sx+16+i*42;
+     pix(ctx,ink,wx-2,sy+24,20,18);pix(ctx,'#3e4650',wx,sy+26,16,14);
+     pix(ctx,'#f2c868',wx+2,sy+28,12,10);pix(ctx,'#3e4650',wx+7,sy+28,2,10);
+    }
+   }
 
    // Twin Gatehouse Turrets & Heavy Stone Archway framing x=11..12, y=6
    for(const gx of [10,13]){
@@ -671,7 +808,7 @@ const BorderWatchfortEnvironment=(()=>{
    }
   }
 
-  if(map==='watchfort'){
+  if(map==='watchfort'||map==='ravine'){
    if(o.id==='signalFire'){
     const f=Math.round(Math.sin(now/150)*2);
     const sg=ctx.createRadialGradient(x+16,y+16,3,x+16,y+16,34);

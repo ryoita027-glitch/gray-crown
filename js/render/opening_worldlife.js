@@ -41,11 +41,9 @@ const OpeningWorldLife=(()=>{
  }
  function village(c,choices={}){
   // Sense of daily life; props at authored NPC landmarks, not imaginary loot.
-  // Baker's stand: physically distinct from the mayor's house.
+  // Eda's 3D brick oven & striped bakery pavilion at (7,5)-(8,5) are rendered by RyuneEnvironment; add a woven flour sack & bread basket beside the booth!
   const [bx,by]=at(7,5);
-  R(c,'#544434',bx+1,by+21,62,8);R(c,'#b68b59',bx+2,by+15,60,8);
-  for(let k=0;k<4;k++){let x=bx+8+k*13;R(c,'#ab8050',x,by+11,10,6);R(c,'#e3ba77',x+1,by+11,7,2)}
-  R(c,'#ead5a4',bx+5,by+5,54,3);
+  basket(c,bx+42,by+20,'full');
   // Agricultural character of the village, crops rowed along the western field.
   for(let x=1;x<=3;x++)for(let y=8;y<=11;y++){
    const px=x*32+8,py=y*32+10;

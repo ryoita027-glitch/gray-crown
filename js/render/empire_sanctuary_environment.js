@@ -348,52 +348,200 @@ const EmpireSanctuaryEnvironment=(()=>{
  }
 
  function drawImperialHouse(ctx,tx,ty,wTiles,hTiles,opts){
-  const x=tx*32,y=ty*32,w=wTiles*32,h=hTiles*32;
-  const roofH=Math.floor(h*0.50),wallY=y+roofH,wallH=h-roofH;
-  pix(ctx,'rgba(14,20,28,0.32)',x+4,y+h-2,w,9);
-  // Cut-stone pale blue-beige walls & dark slate plinth
-  pix(ctx,'#242e38',x+1,wallY,w-2,wallH);
-  pix(ctx,opts.wall||'#c4c2b4',x+4,wallY+2,w-8,wallH-9);
-  pix(ctx,'#525d68',x+3,y+h-8,w-6,7);
-  // Ashlar stone pilasters
+  const x=tx*32,y=ty*32,w=wTiles*32,h=hTiles*32,wallY=y+8,wallH=h-8,ink='#1c242e',mid=x+Math.floor(w/2);
+  const tag=opts.tag||'',wall=opts.wall||'#c8c6b8',wallHi='#e4e2d6',mortar='#525e6a';
+  const roofDark=opts.roofDark||'#263c50',roofMain=opts.roofMain||'#385872',roofHi=opts.roofHi||'#587e9c';
+  // 1. Deep two-stage southeast diorama cast shadow anchoring every building firmly onto the cobblestones
+  pix(ctx,'rgba(10,16,24,0.38)',x+6,y+h-2,w+6,13);
+  pix(ctx,'rgba(10,16,24,0.18)',x+10,y+h+8,w+6,7);
+  pix(ctx,'rgba(10,16,24,0.24)',x+w,y+8,10,h-4);
+
+  // 2. Grounded Cut-Stone Wall Volume + 3D Alternating Corner Quoins + Heavy 14px Slate Canal Plinth
+  pix(ctx,ink,x-1,wallY-2,w+2,wallH+3);
+  pix(ctx,wall,x+2,wallY,w-4,wallH-12);
+  pix(ctx,'rgba(14,20,28,0.36)',x+2,wallY+4,w-4,7); // deep overhanging eave shadow!
+  for(let sy=wallY+14;sy<y+h-14;sy+=10)pix(ctx,'rgba(40,50,60,0.14)',x+3,sy,w-6,1);
+  // Alternating 3D stone corner quoins on left & right walls
+  for(let qy=wallY+8;qy<y+h-16;qy+=10){
+   const qw=((qy/10)|0)%2?9:6;
+   pix(ctx,mortar,x+1,qy,qw,8);pix(ctx,wallHi,x+2,qy+1,qw-2,5);
+   pix(ctx,mortar,x+w-qw-1,qy,qw,8);pix(ctx,wall,x+w-qw,qy+1,qw-2,5);
+  }
+  // Carved ashlar stone pilasters or half-timber beams across facade bays
   for(let i=0;i<=wTiles;i++){
    const px=x+4+Math.round(i*(w-12)/wTiles);
-   pix(ctx,'#78828a',px,wallY+2,4,wallH-9);
+   pix(ctx,tag==='inn'||tag==='books'?'#3e3228':'#687480',px,wallY+6,5,wallH-18);
+   pix(ctx,tag==='inn'||tag==='books'?'#6c5442':'#9aa6b0',px+1,wallY+6,2,wallH-18);
   }
-  // Blue-glazed Imperial tile roof with tiered eaves
-  pix(ctx,'rgba(16,22,30,0.36)',x+2,wallY,w-4,5);
-  pix(ctx,'#1e2c3a',x-1,y+3,w+2,roofH-1);
-  pix(ctx,opts.roofDark||'#2e465c',x+1,y+5,w-2,roofH-5);
-  pix(ctx,opts.roofMain||'#3d5c76',x+3,y+5,w-6,roofH-9);
-  pix(ctx,opts.roofHi||'#5c809e',x+6,y+5,w-12,5);
-  for(let ry=y+12;ry<wallY-3;ry+=7){
-   pix(ctx,'rgba(16,24,34,0.28)',x+2,ry,w-4,2);
-   for(let rx=x+6;rx<x+w-8;rx+=12)pix(ctx,'rgba(190,220,242,0.14)',rx,ry+2,6,2);
+  if(hTiles>=3)pix(ctx,tag==='inn'||tag==='books'?'#3e3228':'#5c6874',x+2,y+h-46,w-4,4);
+  // Heavy 14px dark-slate canal foundation plinth
+  pix(ctx,ink,x,y+h-14,w,14);
+  pix(ctx,'#4a5662',x+2,y+h-12,w-4,11);pix(ctx,'#8694a0',x+3,y+h-12,w-6,2);
+  for(let sx=x+8;sx<x+w-8;sx+=16)pix(ctx,ink,sx,y+h-11,2,9);
+
+  // 3. Towering 6-Course 3/4 Pitched Blue-Glazed Imperial Tile Roof rising 24px ABOVE top tile row + smoking chimney!
+  const chX=tag==='inn'||tag==='archive'?x+w-28:x+12,chY=y-34;
+  pix(ctx,ink,chX,chY,14,26);pix(ctx,'#68747e',chX+2,chY+2,10,22);pix(ctx,'#9ca8b2',chX+3,chY+2,4,20);
+  const sp=(Date.now()/1450)%1;
+  pix(ctx,'rgba(232,240,246,0.38)',chX+3+Math.sin(sp*6)*3,chY-8-sp*13,7,5);
+  pix(ctx,'rgba(232,240,246,0.22)',chX+6+Math.sin(sp*6+2)*4,chY-17-sp*11,8,5);
+  for(let z=0;z<6;z++){
+   const ins=z*4;
+   pix(ctx,ink,x-4+ins,y+12-z*6,w+8-ins*2,8);
+   pix(ctx,z===5?roofHi:(z%2?roofMain:roofDark),x-2+ins,y+13-z*6,w+4-ins*2,6);
+   for(let sx=x+6+ins;sx<x+w-6-ins;sx+=11){
+    pix(ctx,'rgba(12,20,28,0.28)',sx,y+14-z*6,2,5);
+    pix(ctx,'rgba(200,228,248,0.16)',sx+3,y+15-z*6,5,2);
+   }
   }
-  // Doorway & tall arched canal-style windows
-  const dx=x+Math.floor(w/2)-10;
-  pix(ctx,'#222c36',dx,y+h-26,20,25);
-  pix(ctx,'#495e70',dx+2,y+h-24,16,22);
-  for(const wx of [x+14,x+w-30]){
-   pix(ctx,'#26323e',wx-2,wallY+8,18,16);
-   pix(ctx,'#e6c478',wx,wallY+10,14,12);
-   pix(ctx,'#fff2bf',wx+2,wallY+11,5,5);
-   pix(ctx,'#3a4a58',wx+6,wallY+10,2,12);pix(ctx,'#3a4a58',wx,wallY+15,14,2);
+  pix(ctx,'#c8b682',x+18,y-20,w-36,3); // bronze/gold Imperial ridge crest!
+
+  // Bespoke 3D Architectural Landmarks for Legnoa Imperial City
+  if(tag==='archive'){
+   // Regional Archive ('地方公文書館'): Central rising limestone gable tower + glowing circular stained-glass Rose Window!
+   pix(ctx,ink,mid-24,y-26,48,46);pix(ctx,'#d6d4c8',mid-22,y-24,44,42);
+   pix(ctx,ink,mid-28,y-30,56,7);pix(ctx,roofHi,mid-26,y-29,52,5);
+   pix(ctx,'#d8be74',mid-2,y-38,4,8);
+   pix(ctx,ink,mid-13,y-16,26,26);pix(ctx,'#8c98a4',mid-11,y-14,22,22);
+   pix(ctx,'#2e5678',mid-9,y-12,18,18);pix(ctx,'#68a8d4',mid-7,y-10,14,14);
+   pix(ctx,'#f4d070',mid-4,y-7,8,8);pix(ctx,'#fffbe0',mid-2,y-5,4,4);
+  }else if(tag==='guild'){
+   // Canal Guild ('水運組合'): Harbor navigation bell-gable spire + azure-and-ivory striped dock canopy + cargo barrels!
+   pix(ctx,ink,mid-16,y-28,32,36);pix(ctx,'#d2d6d4',mid-14,y-26,28,32);
+   pix(ctx,'#1c242c',mid-6,y-18,12,16);pix(ctx,'#e2be68',mid-4,y-14,8,9);
+   for(let a=0;a<8;a++){
+    pix(ctx,a%2?'#f0ece0':'#2e5a7c',mid-36+a*9,y+h-44,9,8);
+    pix(ctx,a%2?'#ccc6b4':'#1e3e58',mid-36+a*9,y+h-37,9,3);
+   }
+   pix(ctx,'#32241a',x+8,y+h-24,13,15);pix(ctx,'#7e5a3c',x+9,y+h-23,11,13);pix(ctx,'#525c66',x+9,y+h-19,11,2);
+  }else if(tag==='inn'){
+   // Waterbird Inn ('水鳥亭'): Striped indigo-and-cream tavern porch awning + hanging wrought-iron Waterbird sign + ale barrels!
+   for(let a=0;a<6;a++){
+    pix(ctx,a%2?'#f2ead4':'#345c7c',mid-27+a*9,y+h-43,9,8);
+    pix(ctx,a%2?'#d4c8ac':'#223e56',mid-27+a*9,y+h-36,9,3);
+   }
+   pix(ctx,ink,x+w-22,y+22,16,14);pix(ctx,'#78a8c8',x+w-20,y+24,12,10);pix(ctx,'#f4f0e4',x+w-17,y+26,6,6);
+   pix(ctx,'#32241a',x+6,y+h-22,12,15);pix(ctx,'#88603e',x+7,y+h-21,10,13);pix(ctx,'#545c66',x+7,y+h-17,10,2);
+  }else if(tag==='books'){
+   // Canal Bookshop ('運河古書店'): Central pitched-roof timber dormer + mullioned attic window + glowing bay book-displays!
+   pix(ctx,ink,mid-18,y-22,36,28);pix(ctx,'#cfc8b6',mid-16,y-20,32,24);
+   for(let z=0;z<4;z++){
+    const ins=z*3;
+    pix(ctx,ink,mid-22+ins,y-18-z*3,44-ins*2,5);
+    pix(ctx,z%2?roofHi:roofMain,mid-20+ins,y-17-z*3,40-ins*2,3);
+   }
+   pix(ctx,ink,mid-9,y-16,18,14);pix(ctx,'#4a3828',mid-7,y-14,14,10);
+   pix(ctx,'#f4cf72',mid-5,y-12,10,6);pix(ctx,'#4a3828',mid-1,y-12,2,6);
+  }
+
+  // 4. Recessed Arched Entrance Doorway + Protruding Carved Limestone Steps & Brass Wall Lantern
+  const dx=mid-13,dy=y+h-36;
+  pix(ctx,ink,dx-2,dy-2,28,38);
+  pix(ctx,'#42505c',dx,dy,24,34);
+  pix(ctx,'#32485c',dx+3,dy+3,18,31);
+  pix(ctx,'#4c6a82',dx+5,dy+5,14,27);
+  pix(ctx,'#f2d06e',dx+15,dy+18,3,3);
+  pix(ctx,'#48525a',dx-4,y+h-3,32,6);pix(ctx,'#ccd4d8',dx-2,y+h-2,28,4);pix(ctx,'#eef4f6',dx,y+h-2,24,1);
+  pix(ctx,'#f8da78',dx+27,dy+8,4,6);pix(ctx,'#fffbe0',dx+28,dy+9,2,3);
+
+  // 5. Deep 3D Recessed Glowing Canal-Style Windows with Shutters & Window Boxes
+  const winY=hTiles>=4?y+46:y+24;
+  for(let i=0;i<wTiles;i++){
+   const wx=x+10+i*32;
+   if(Math.abs(wx+8-mid)<22&&winY+18>dy-4)continue;
+   pix(ctx,ink,wx-2,winY-2,20,19);
+   pix(ctx,'#364e62',wx-5,winY-1,3,17);pix(ctx,'#364e62',wx+18,winY-1,3,17);
+   pix(ctx,mortar,wx,winY,16,15);
+   pix(ctx,'#f0ca72',wx+2,winY+2,12,11);
+   pix(ctx,'#fff6c8',wx+3,winY+3,5,5);
+   if(tag==='books'){
+    // Colorful book spines visible inside bookshop windows!
+    pix(ctx,'#a64248',wx+3,winY+9,3,4);pix(ctx,'#386888',wx+7,winY+8,3,5);pix(ctx,'#4c7c52',wx+11,winY+9,3,4);
+   }
+   pix(ctx,mortar,wx+7,winY+2,2,11);pix(ctx,mortar,wx+2,winY+7,12,2);
+   pix(ctx,ink,wx-2,winY+14,20,5);pix(ctx,'#427054',wx-1,winY+13,18,4);
+   pix(ctx,'#88c4e8',wx+2,winY+13,4,2);pix(ctx,'#f4e898',wx+10,winY+13,4,2);
+  }
+  if(hTiles>=4){
+   // Upper 2nd-story arched windows on 4-tile-tall grand civic buildings (Archive & Canal Guild)
+   for(let i=0;i<wTiles;i++){
+    const wx=x+10+i*32;
+    if(Math.abs(wx+8-mid)<24)continue;
+    pix(ctx,ink,wx-1,y+20,18,16);pix(ctx,'#547e9e',wx+1,y+22,14,12);
+    pix(ctx,'#f4d278',wx+3,y+26,10,6);pix(ctx,mortar,wx+7,y+22,2,12);
+   }
   }
   // Optional blue mourning ribbon (青い喪章) at eaves in Empire Village
   if(opts.ribbon){
    const sway=Math.round(Math.sin(Date.now()/380+tx)*1);
-   pix(ctx,'#2f5278',dx-10,wallY+2,4,13);
-   pix(ctx,'#6892bd',dx-9+sway,wallY+4,3,9);
+   pix(ctx,'#2f5278',dx-10,wallY+12,4,14);
+   pix(ctx,'#6892bd',dx-9+sway,wallY+14,3,10);
   }
   if(opts.bannerLabel){
-   const sy=Math.max(y+10,wallY-10);
-   pix(ctx,'rgba(24,34,44,0.94)',x+Math.floor(w/2)-34,sy,68,16);
-   pix(ctx,'#9ab4c8',x+Math.floor(w/2)-33,sy+1,66,1);
-   pix(ctx,'#546878',x+Math.floor(w/2)-33,sy+14,66,1);
-   ctx.fillStyle='#eef2f4';ctx.font='bold 9px system-ui';ctx.textAlign='center';
-   ctx.fillText(opts.bannerLabel,x+Math.floor(w/2),sy+11);ctx.textAlign='start';
+   const sy=y+h-56;
+   pix(ctx,'rgba(20,28,38,0.94)',mid-38,sy,76,16);
+   pix(ctx,'#9ab8cc',mid-37,sy+1,74,1);
+   pix(ctx,'#526878',mid-37,sy+14,74,1);
+   ctx.fillStyle='#f0f4f8';ctx.font='bold 9px system-ui';ctx.textAlign='center';
+   ctx.fillText(opts.bannerLabel,mid,sy+12);ctx.textAlign='start';
   }
+ }
+
+ function drawImperialBooth(ctx,tx,ty,color,kind){
+  // Solid 3D 64x50px Sculpted Timber-and-Canvas Imperial Canal Market Pavilion (zero flat 2D boxes!)
+  const x=tx*32,y=ty*32-12,w=64,h=50,ink='#1c222a';
+  // 1. Wide southeast cast shadow grounding all 4 timber posts & counter onto the canal quay
+  pix(ctx,'rgba(12,18,24,0.36)',x+5,y+h-6,w+5,12);
+  pix(ctx,'rgba(12,18,24,0.20)',x+w-2,y+16,10,h-16);
+  // 2. Back interior shade & recessed rear dark-oak posts
+  pix(ctx,'rgba(18,22,28,0.56)',x+5,y+18,w-10,18);
+  pix(ctx,ink,x+5,y+15,5,28);pix(ctx,'#423428',x+6,y+16,3,26);
+  pix(ctx,ink,x+w-10,y+15,5,28);pix(ctx,'#423428',x+w-9,y+16,3,26);
+  // 3. Solid 3D wooden counter base + vertical plank seams & sunlit tabletop
+  pix(ctx,ink,x+2,y+29,w-4,18);
+  pix(ctx,'#5c4632',x+4,y+35,w-8,10);
+  for(let px=x+12;px<x+w-8;px+=10)pix(ctx,'#3c2c1e',px,y+35,2,10);
+  pix(ctx,'#9c7854',x+3,y+30,w-6,5);pix(ctx,'#c8a278',x+4,y+30,w-8,2);
+  // 4. Brimming 3D merchandise displays tailored by canal booth specialty
+  if(kind==='books'){
+   // Stacked antique leather-bound books, rolled maps & brass astrolabe
+   pix(ctx,'#8c3840',x+8,y+23,14,7);pix(ctx,'#f2e8ce',x+10,y+25,10,3);
+   pix(ctx,'#2e5474',x+25,y+22,14,8);pix(ctx,'#e6d8b4',x+27,y+24,10,3);
+   pix(ctx,'#d8b458',x+43,y+21,11,9);pix(ctx,'#fff6c8',x+45,y+23,6,4);
+  }else if(kind==='porcelain'){
+   // Blue-and-white Imperial porcelain vases, tea jars & lacquerware
+   for(const [bx,c1,c2] of [[x+9,'#e8eef2','#386890'],[x+26,'#d8e6ec','#2e5678'],[x+43,'#883c42','#f2d488']]){
+    pix(ctx,ink,bx,y+21,12,9);pix(ctx,c1,bx+1,y+22,10,7);pix(ctx,c2,bx+2,y+25,8,3);
+   }
+  }else if(kind==='cloth'){
+   // Rolled azure, jade & silver-brocade Imperial silk bolts
+   pix(ctx,'#2e5c82',x+7,y+23,17,8);pix(ctx,'#6ca2c8',x+9,y+23,13,3);
+   pix(ctx,'#3a7264',x+26,y+23,16,8);pix(ctx,'#78b4a2',x+28,y+23,12,3);
+   pix(ctx,'#d8dce0',x+44,y+22,13,9);pix(ctx,'#ffffff',x+46,y+22,9,3);
+  }else{
+   // Woven baskets overflowing with golden orchard pears, apples & canal provisions
+   for(const [bx,c1,c2] of [[x+7,'#d87442','#f6b868'],[x+24,'#c84444','#f48274'],[x+41,'#4e8854','#92c878']]){
+    pix(ctx,'#4e3622',bx,y+25,15,8);pix(ctx,'#a88454',bx+1,y+27,13,5);
+    pix(ctx,c1,bx+2,y+22,11,6);pix(ctx,c2,bx+4,y+21,6,3);
+   }
+  }
+  // 5. Sturdy front beveled dark-oak corner posts standing cleanly in front of counter
+  pix(ctx,ink,x+1,y+13,6,35);pix(ctx,'#684c34',x+2,y+14,4,33);pix(ctx,'#9e7854',x+2,y+14,2,31);
+  pix(ctx,ink,x+w-7,y+13,6,35);pix(ctx,'#684c34',x+w-6,y+14,4,33);pix(ctx,'#9e7854',x+w-6,y+14,2,31);
+  // 6. Sloped 3/4 Billowing Striped Awning Roof + Scalloped Overhang Valance
+  pix(ctx,ink,x-2,y+2,w+4,19);
+  for(let s=0;s<6;s++){
+   const sx=x+s*10,sw=(s===5)?14:10,stripe=s%2===0?color:'#e6eef2';
+   pix(ctx,stripe,sx,y+3,sw,10);
+   pix(ctx,'rgba(240,250,255,0.24)',sx,y+3,sw,4);
+   pix(ctx,s%2===0?'rgba(14,20,26,0.34)':'rgba(30,40,48,0.18)',sx,y+13,sw,7);
+   pix(ctx,stripe,sx+1,y+13,sw-2,6);
+   pix(ctx,ink,sx,y+19,sw,2);
+  }
+  pix(ctx,'#46382c',x-2,y,w+4,3);pix(ctx,'#a8b8c4',x,y,w,1);
+  // 7. Hanging warm brass canal booth lantern
+  const lx=x+w-13,ly=y+20;
+  pix(ctx,'#202830',lx,ly,5,7);pix(ctx,'#ffd874',lx+1,ly+2,3,4);pix(ctx,'#fffbe0',lx+2,ly+2,1,2);
  }
 
  function accents(ctx,map){
@@ -401,16 +549,27 @@ const EmpireSanctuaryEnvironment=(()=>{
   const now=Date.now();
 
   if(map==='empirevillage'){
-   // Four Imperial border cottages with blue-slate roofs & blue mourning ribbons
-   drawImperialHouse(ctx,8,2,3,3,{roofMain:'#3c5c70',roofHi:'#5b8096',wall:'#c6c0ae',ribbon:true});
+   // Four 3D Imperial border cottages with blue-slate pitched roofs, chimneys, corner quoins & blue mourning ribbons
+   drawImperialHouse(ctx,8,2,3,3,{roofMain:'#3c5c70',roofHi:'#5b8096',wall:'#c6c0ae',ribbon:true,bannerLabel:'水車番の集会所'});
    drawImperialHouse(ctx,16,2,4,3,{roofMain:'#45666e',roofHi:'#668b94',wall:'#c8c2b0',ribbon:true});
    drawImperialHouse(ctx,16,9,4,3,{roofMain:'#3e5e72',roofHi:'#5e8298',wall:'#ccc4b2',ribbon:true});
    drawImperialHouse(ctx,8,9,3,3,{roofMain:'#485c74',roofHi:'#6a809c',wall:'#c6beac',ribbon:true});
+   // 3D Orchard Harvest Booth beside the village square
+   drawImperialBooth(ctx,13,9,'#3c6278','fruits');
 
-   // Rotating timber waterwheel at (5,6) over the irrigation canal
-   const wx=5*32+16,wy=6*32+16,angle=(now/900)%(Math.PI*2);
-   pix(ctx,'#3c2d20',4*32+14,5*32+10,20,44);
-   pix(ctx,'#6e533b',4*32+16,5*32+12,16,40);
+   // Rotating 3D timber waterwheel & 3D Pitched-Roof Stone Mill Sluice House at (4,5)-(5,6) over the irrigation canal
+   const wx=5*32+16,wy=6*32+16,angle=(now/900)%(Math.PI*2),mx=4*32+4,my=5*32+2;
+   pix(ctx,'rgba(12,18,24,0.36)',mx+2,my+46,32,8);
+   pix(ctx,'#201a16',mx,my+10,30,40);
+   pix(ctx,'#9e9a8e',mx+2,my+36,26,12); // dressed stone mill plinth
+   pix(ctx,'#785a3e',mx+2,my+14,26,22); // half-timber mill wall
+   pix(ctx,'#c8c0ae',mx+5,my+16,20,16);
+   pix(ctx,'#241c16',mx+10,my+19,10,10);pix(ctx,'#f2c86e',mx+12,my+21,6,6); // glowing mill window
+   for(let z=0;z<4;z++){
+    const ins=z*2;
+    pix(ctx,'#1c242c',mx-2+ins,my+12-z*4,34-ins*2,5);
+    pix(ctx,z%2?'#52748a':'#385468',mx+ins,my+13-z*4,30-ins*2,3);
+   }
    ctx.save();
    ctx.strokeStyle='#3a2a1d';ctx.lineWidth=5;
    ctx.beginPath();ctx.arc(wx,wy,17,0,Math.PI*2);ctx.stroke();
@@ -441,7 +600,7 @@ const EmpireSanctuaryEnvironment=(()=>{
     if(tx%2===0)pix(ctx,'#9ed8e6',tx*32+8,5*32+25,10,1);
    }
    // Terraced herb/berry garden rows & warm village lantern posts (placed cleanly off the x=11..12 road!)
-   for(const [gx,gy] of [[13,2],[14,2],[13,3],[14,3],[13,9],[14,9],[13,10],[14,10]]){
+   for(const [gx,gy] of [[13,2],[14,2],[13,3],[14,3]]){
     const px=gx*32,py=gy*32;
     pix(ctx,'#4f6644',px+3,py+6,26,20);
     for(let r=0;r<3;r++){
@@ -460,29 +619,28 @@ const EmpireSanctuaryEnvironment=(()=>{
   }
 
   if(map==='imperialcity'){
-   // Grand 36x24 blue-slate Imperial stone architecture blocks
-   drawImperialHouse(ctx,3,2,7,4,{roofMain:'#325068',roofHi:'#527692',wall:'#bfc4c2',bannerLabel:'地方公文書館'});
-   drawImperialHouse(ctx,26,2,7,4,{roofMain:'#38566e',roofHi:'#587c98',wall:'#c2c6c2',bannerLabel:'水運組合'});
-   drawImperialHouse(ctx,3,18,6,3,{roofMain:'#365268',roofHi:'#567892',wall:'#c4c4bc',bannerLabel:'水鳥亭'});
-   drawImperialHouse(ctx,27,18,6,3,{roofMain:'#3c526a',roofHi:'#5c7694',wall:'#c4c2ba',bannerLabel:'運河古書店'});
+   // Grand 36x24 3D blue-slate Imperial stone architecture blocks with bespoke roofs, spires, rose windows & awnings!
+   drawImperialHouse(ctx,3,2,7,4,{tag:'archive',roofMain:'#325068',roofHi:'#547896',wall:'#c2c6c4',bannerLabel:'地方公文書館'});
+   drawImperialHouse(ctx,26,2,7,4,{tag:'guild',roofMain:'#38566e',roofHi:'#5a7e9a',wall:'#c4c8c4',bannerLabel:'水運組合'});
+   drawImperialHouse(ctx,3,18,6,3,{tag:'inn',roofMain:'#365268',roofHi:'#567892',wall:'#c6c6be',bannerLabel:'水鳥亭'});
+   drawImperialHouse(ctx,27,18,6,3,{tag:'books',roofMain:'#3c526a',roofHi:'#5c7694',wall:'#c6c4bc',bannerLabel:'運河古書店'});
 
-   // Moored wooden canal boats gently bobbing on the two canals (y=8 & y=16)
+   // Moored 3D wooden canal cargo boats gently bobbing on the two canals (y=8 & y=16)
    const bob=Math.round(Math.sin(now/450)*1);
    for(const [bx,by] of [[11,8],[24,8],[32,8],[10,16],[22,16]]){
     const x=bx*32,y=by*32+bob;
-    pix(ctx,'rgba(12,24,32,0.35)',x+2,y+19,28,6);
-    pix(ctx,'#3e2e22',x+3,y+13,26,8);
-    pix(ctx,'#785940',x+5,y+14,22,5);
-    pix(ctx,'#cbb894',x+10,y+11,12,5);
+    pix(ctx,'rgba(10,20,28,0.40)',x+1,y+19,30,7);
+    pix(ctx,'#281c14',x+2,y+12,28,9);
+    pix(ctx,'#785940',x+4,y+13,24,6);
+    pix(ctx,'#a6805c',x+5,y+13,22,2);
+    pix(ctx,'#3a5c78',x+9,y+9,14,6);pix(ctx,'#d8e2e8',x+11,y+10,10,2);
    }
-   // Canal market stalls lining the spacious east & west promenade squares
-   for(const [sx,sy,col] of [[26,10,'#3c627a'],[30,10,'#586e66'],[25,14,'#4f5870'],[5,10,'#46647a'],[9,14,'#5a6e60']]){
-    const x=sx*32,y=sy*32;
-    pix(ctx,'rgba(14,20,26,0.28)',x+3,y+24,26,5);
-    pix(ctx,'#54402e',x+4,y+15,24,11);
-    pix(ctx,col,x+2,y+5,28,10);
-    pix(ctx,'#d8e2e8',x+5,y+7,22,3);
-   }
+   // True 3D Sculpted Wooden Canal Market Pavilions lining the east & west promenade squares (no flat 2D boxes!)
+   drawImperialBooth(ctx,4,10,'#36607a','cloth');
+   drawImperialBooth(ctx,10,14,'#466e60','fruits');
+   drawImperialBooth(ctx,23,10,'#385874','porcelain');
+   drawImperialBooth(ctx,30,10,'#546862','cloth');
+   drawImperialBooth(ctx,30,14,'#4c546e','books');
    // Imperial canal wrought-iron streetlamps with smooth radial golden reflections across the 36x24 quays
    for(const [lx,ly] of [[12,9],[23,9],[12,15],[23,15],[15,6],[20,6],[15,18],[20,18]]){
     const x=lx*32+14,y=ly*32+6;
@@ -612,23 +770,54 @@ const EmpireSanctuaryEnvironment=(()=>{
   }
 
   if(map==='elsia'){
-   // West: Ancient White-Marble Sanctuary Colonnade & Ruined Arches (x=2..6, y=2..4)
-   const rx=2*32,ry=2*32,rw=5*32,rh=3*32;
-   pix(ctx,'rgba(24,32,26,0.26)',rx+4,ry+rh-4,rw-4,9);
-   pix(ctx,'#8d8c7e',rx+4,ry+rh-18,rw-8,16);
-   pix(ctx,'#d6d3c4',rx+6,ry+rh-16,rw-12,12);
-   // Fluted marble columns & lintel entablature
-   pix(ctx,'#969486',rx+6,ry+6,rw-12,12);
-   pix(ctx,'#e6e4d6',rx+8,ry+8,rw-16,7);
-   for(let i=0;i<4;i++){
-    const cx=rx+12+i*42;
-    pix(ctx,'#8c8a7c',cx,ry+18,14,rh-32);
-    pix(ctx,'#dedcd0',cx+2,ry+18,10,rh-32);
-    pix(ctx,'#f4f2e8',cx+4,ry+18,4,rh-32);
-    // Creeping sanctuary vines on ancient column
-    if(i%2===1){pix(ctx,'#587852',cx+2,ry+28,10,6);pix(ctx,'#789a6e',cx+4,ry+26,6,4)}
+   // West: Soaring 3D Classical White-Marble Sanctuary Temple Portico & Colonnade (x=2..6, y=2..4)
+   const rx=2*32,ry=2*32,rw=5*32,rh=3*32,ink='#262c28',rmid=rx+Math.floor(rw/2);
+   // 1. Deep two-stage southeast cast shadow anchoring the marble temple onto the lawn
+   pix(ctx,'rgba(14,22,18,0.38)',rx+6,ry+rh-2,rw+6,13);
+   pix(ctx,'rgba(14,22,18,0.18)',rx+10,ry+rh+8,rw+4,7);
+   pix(ctx,'rgba(14,22,18,0.22)',rx+rw,ry+12,9,rh-8);
+   // 2. Recessed dark temple cella sanctuary back wall + glowing turquoise inner sanctuary portal
+   pix(ctx,ink,rx+8,ry+16,rw-16,rh-28);
+   pix(ctx,'#8c9286',rx+10,ry+18,rw-20,rh-32);
+   pix(ctx,'#223e42',rmid-18,ry+32,36,rh-46);
+   pix(ctx,'#4aa8a4',rmid-12,ry+38,24,rh-54);
+   pix(ctx,'#c6fff6',rmid-6,ry+44,12,16);
+   // 3. Stepped 3-tier white-marble stylobate plinth foundation + protruding entrance stairs
+   pix(ctx,ink,rx+2,ry+rh-18,rw-4,18);
+   pix(ctx,'#b0aea0',rx+4,ry+rh-16,rw-8,14);
+   pix(ctx,'#dedcd0',rx+6,ry+rh-15,rw-12,5);
+   pix(ctx,'#f8f6ec',rx+8,ry+rh-15,rw-16,2);
+   pix(ctx,'#686a62',rmid-24,ry+rh-3,48,6);pix(ctx,'#e6e4d8',rmid-22,ry+rh-2,44,4);
+   // 4. Five 3D Fluted Corinthian White-Marble Columns with carved capitals, bases & cast shadows
+   for(let i=0;i<5;i++){
+    const cx=rx+10+i*32;
+    pix(ctx,'rgba(18,24,20,0.30)',cx+12,ry+20,6,rh-36);
+    pix(ctx,ink,cx-1,ry+16,16,rh-32);
+    pix(ctx,'#cac8ba',cx+1,ry+18,12,rh-36);
+    pix(ctx,'#f6f4ea',cx+2,ry+18,5,rh-36); // sunlit cylindrical left flute
+    pix(ctx,'#9e9c8e',cx+9,ry+18,3,rh-36); // shaded right flute
+    // Corinthian capital & Attic base
+    pix(ctx,ink,cx-3,ry+14,20,6);pix(ctx,'#eceade',cx-1,ry+15,16,4);pix(ctx,'#d8be74',cx+1,ry+16,12,2);
+    pix(ctx,ink,cx-2,ry+rh-20,18,5);pix(ctx,'#e6e4d6',cx,ry+rh-19,14,3);
+    if(i===1||i===3){
+     pix(ctx,'#426c48',cx+1,ry+32,12,8);pix(ctx,'#72a26c',cx+3,ry+30,8,5);
+    }
    }
-   // East: Lived-in Sanctuary Village Stone-and-Timber Home (x=17..21, y=9..11)
+   // 5. Carved Marble Entablature Frieze + Towering Triangular Classical Pediment Roof with Golden Sun-Crest!
+   pix(ctx,ink,rx-2,ry+4,rw+4,13);
+   pix(ctx,'#d6d4c6',rx,ry+6,rw,9);
+   pix(ctx,'#f6f4ea',rx+2,ry+6,rw-4,3);
+   for(let tx=rx+8;tx<rx+rw-8;tx+=14)pix(ctx,'#949284',tx,ry+10,3,4); // classical triglyphs
+   for(let z=0;z<6;z++){
+    const ins=z*11,pw=rw+8-ins*2;
+    pix(ctx,ink,rx-4+ins,ry+2-z*4,pw,6);
+    pix(ctx,z%2?'#eceade':'#d4d2c4',rx-2+ins,ry+3-z*4,pw-4,4);
+   }
+   // Golden sacred sun-disc relief in center pediment tympanum & apex finial
+   pix(ctx,'#d8b864',rmid-10,ry-8,20,8);pix(ctx,'#fff4c2',rmid-6,ry-6,12,4);
+   pix(ctx,'#e6c870',rmid-3,ry-26,6,8);
+
+   // East: Lived-in Sanctuary Village 3D Stone-and-Timber Home (x=17..21, y=9..11)
    drawImperialHouse(ctx,17,9,5,3,{roofDark:'#4e584a',roofMain:'#687662',roofHi:'#889880',wall:'#d8d2be',bannerLabel:'語り部の家'});
 
    // Terraced olive/herb sanctuary gardens on East & broken ancient marble columns on North-East/South-West
@@ -682,15 +871,44 @@ const EmpireSanctuaryEnvironment=(()=>{
   }
 
   if(['finalfield','imperialcamp','royalcamp'].includes(map)){
-   // Entrenched war pavilions, breastworks, glowing braziers & twilight front atmosphere
+   // Monumental 3D Ridged Military Command Pavilions, breastworks, glowing braziers & twilight front atmosphere!
    const drawCampTent=(tx,ty,main,hi)=>{
-    const x=tx*32,y=ty*32;
-    pix(ctx,'rgba(12,14,18,0.34)',x+2,y+48,88,8);
-    pix(ctx,'#2a2624',x+4,y+12,84,40);
-    pix(ctx,main,x+6,y+14,80,34);
-    pix(ctx,hi,x+10,y+16,72,8);
-    pix(ctx,'#d8c492',x+10,y+25,72,2);
-    pix(ctx,'#1e1c1a',x+38,y+30,16,20);
+    const x=tx*32,y=ty*32,w=96,h=58,ink='#1c1816',mid=x+48;
+    // 1. Deep two-stage ground cast shadow + guy-ropes pegged into camp earth
+    pix(ctx,'rgba(10,12,18,0.40)',x+2,y+h-6,w+6,12);
+    pix(ctx,'rgba(10,12,18,0.20)',x+6,y+h+2,w+4,6);
+    for(const rx of [x-4,x+w+1]){
+     pix(ctx,'#9c8868',rx,y+28,3,18);pix(ctx,'#543c26',rx,y+44,4,5);
+    }
+    // 2. Vertical tent canvas walls, timber corner posts & recessed dark command interior
+    pix(ctx,ink,x+2,y+22,w-4,h-26);
+    pix(ctx,main,x+5,y+24,w-10,h-30);
+    pix(ctx,'rgba(14,12,10,0.34)',x+5,y+24,w-10,6); // under-valance shadow
+    for(const px of [x+4,x+w-8]){
+     pix(ctx,ink,px,y+20,4,h-24);pix(ctx,'#785638',px+1,y+21,2,h-26);
+    }
+    // 3. Parted command pavilion flaps revealing a warm lantern-lit war table inside!
+    pix(ctx,'#161210',mid-16,y+28,32,h-32);
+    pix(ctx,hi,mid-22,y+26,8,h-30);pix(ctx,hi,mid+14,y+26,8,h-30);
+    pix(ctx,'#7c5636',mid-10,y+42,20,8);pix(ctx,'#ecd8a8',mid-8,y+41,16,3); // war map table inside tent
+    pix(ctx,'#f8c864',mid-3,y+33,6,6);pix(ctx,'#fff8d4',mid-2,y+34,3,3); // hanging command lantern
+    // 4. Stepped 3/4 Sloped Canvas Pavilion Roof + Scalloped Heraldic Valance + Gilded Ridge Pole & Finials!
+    for(let z=0;z<5;z++){
+     const ins=z*5,rw=w-ins*2;
+     pix(ctx,ink,x+ins,y+18-z*4,rw,7);
+     pix(ctx,z===4?hi:(z%2?main:hi),x+2+ins,y+19-z*4,rw-4,5);
+     for(let sx=x+8+ins;sx<x+w-8-ins;sx+=14)pix(ctx,'rgba(16,14,18,0.24)',sx,y+20-z*4,2,4);
+    }
+    // Scalloped gold-trimmed valance along eaves
+    for(let s=0;s<9;s++){
+     const sx=x+3+s*10;
+     pix(ctx,s%2===0?hi:'#e8d8b0',sx,y+21,10,5);
+     pix(ctx,ink,sx,y+26,10,1);
+    }
+    pix(ctx,'#5c4228',x+16,y,w-32,3);pix(ctx,'#e4c678',x+18,y,w-36,1);
+    for(const fx of [x+18,x+w-22]){
+     pix(ctx,'#e6c670',fx,y-8,4,9);pix(ctx,hi,fx+4,y-7,12,5);
+    }
    };
    if(map==='finalfield')drawCampTent(2,2,'#7c3840','#9e4c56');
    if(map==='finalfield')drawCampTent(16,2,'#2f4c6c','#486c92');
@@ -745,18 +963,24 @@ const EmpireSanctuaryEnvironment=(()=>{
    return true;
   }
   if(o.id==='villageHearth'){
-   const f=Math.round(Math.sin(now/160)*1);
-   pix(ctx,'rgba(255,184,84,0.20)',x-2,y+2,36,30);
-   pix(ctx,'#4a4e52',x+5,y+14,22,13);pix(ctx,'#72767a',x+7,y+16,18,9);
-   pix(ctx,'#2a3036',x+9,y+10,14,8);
-   pix(ctx,'#e2782c',x+11,y+18+f,10,5);pix(ctx,'#dce8ec',x+12,y+6-f,8,3);
+   // Positioned cleanly on the stone courtyard edge above the south cottage roof
+   const f=Math.round(Math.sin(now/160)*1),hy=y-18;
+   pix(ctx,'rgba(255,184,84,0.22)',x+2,hy+2,32,26);
+   pix(ctx,'rgba(12,16,20,0.32)',x+5,hy+22,22,5);
+   pix(ctx,'#3a4046',x+5,hy+10,22,14);pix(ctx,'#788088',x+7,hy+12,18,10);
+   pix(ctx,'#22282e',x+9,hy+13,14,8);
+   pix(ctx,'#e2782c',x+11,hy+15+f,10,5);pix(ctx,'#ffe898',x+13,hy+16+f,6,3);
    return true;
   }
-  if(o.id==='canalDock'){
-   pix(ctx,'#4a3828',x+2,y+12,28,16);pix(ctx,'#846548',x+4,y+14,24,12);
-   pix(ctx,'#d6ccb4',x+7,y+15,8,7);pix(ctx,'#c4b89e',x+17,y+16,8,6);
+  if(o.id==='canalDock'||o.id==='imperialMarket'){
+   // Grounded 3D wooden canal cargo crate & banded barrel cluster
+   pix(ctx,'rgba(12,18,24,0.34)',x+2,y+23,28,6);
+   pix(ctx,'#221a14',x+2,y+11,16,15);pix(ctx,'#78583a',x+4,y+13,12,11);pix(ctx,'#b48e5e',x+4,y+13,12,3);
+   pix(ctx,'#386890',x+6,y+9,8,5);pix(ctx,'#d8e6ee',x+7,y+10,5,2);
+   pix(ctx,'#221a14',x+18,y+13,12,14);pix(ctx,'#845e3c',x+19,y+14,10,12);pix(ctx,'#525c66',x+19,y+17,10,2);pix(ctx,'#525c66',x+19,y+22,10,2);
    return true;
   }
+  if(o.id==='imperialArchive')return true; // Drawn as part of the 3D Regional Archive facade in accents()
   if(o.id==='readingBench'){
    pix(ctx,'#4a545e',x+4,y+15,24,11);pix(ctx,'#8c98a2',x+6,y+16,20,6);
    pix(ctx,'#ece4cc',x+10,y+16,7,4);

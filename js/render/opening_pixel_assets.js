@@ -929,24 +929,30 @@ const OpeningPixelAssets=(()=>{
    const a=tile.getContext('2d');a.imageSmoothingEnabled=false;
    const [roof,wall,beam,roofHighlight]=k;
    const ink='#2a1e1a',roofDark=tint(roof,-30),roofDeep=tint(roof,-48),wallShade=tint(wall,-20),wallLight=tint(wall,14),beamHi=tint(beam,22);
-   // 1. Grounded masonry stone foundation & textured warm plaster walls with deep under-eave shadow
+   // 1. Grounded masonry stone foundation & textured warm plaster walls with deep under-eave shadow + 3D stone corner quoins!
    P(a,ink,2,36,100,68);
    P(a,wall,4,38,96,62);
-   P(a,wallShade,4,38,96,9); // Deep ambient occlusion shadow under the eaves!
-   P(a,tint(wall,-10),4,47,96,3);
-   P(a,wallLight,8,50,88,2);
+   P(a,wallShade,4,38,96,10); // Deep ambient occlusion shadow under the eaves!
+   P(a,tint(wall,-10),4,48,96,3);
+   P(a,wallLight,8,51,88,2);
    // Subtle plaster stonework & diagonal half-timber bracing
    for(let by=54;by<86;by+=9)for(let bx=10;bx<90;bx+=16){
     P(a,wallShade,bx+((by%18)?5:0),by,6,2);
     if((bx+by)%32===0)P(a,wallLight,bx+2,by-1,4,1);
    }
-   // Layered dressed-stone foundation with moss accents
-   P(a,'#5e584f',4,89,96,13);
-   P(a,'#8c8376',5,90,94,3);
+   // Alternating 3D corner stone quoins on left & right house corners + center timber post
+   for(let qy=44;qy<86;qy+=8){
+    const qw=((qy/8)|0)%2?7:5;
+    P(a,beam,3,qy,qw,7);P(a,wallLight,4,qy+1,qw-2,4);
+    P(a,beam,101-qw,qy,qw,7);P(a,wallShade,102-qw,qy+1,qw-2,4);
+   }
+   // Layered 14px dressed-stone foundation plinth with moss accents
+   P(a,'#5e584f',4,88,96,14);
+   P(a,'#8c8376',5,89,94,3);
    for(let sx=6;sx<94;sx+=10){
-    P(a,'#46413b',sx,90,1,11);
-    P(a,'#9e9587',sx+2,92,6,4);
-    P(a,'#736b61',sx+2,96,6,3);
+    P(a,'#46413b',sx,89,1,12);
+    P(a,'#9e9587',sx+2,91,6,4);
+    P(a,'#736b61',sx+2,95,6,4);
     if(sx%20===6)P(a,'#5d7a4c',sx+1,98,4,2); // subtle mossy base
    }
    P(a,ink,4,100,96,2);
@@ -1055,11 +1061,13 @@ const OpeningPixelAssets=(()=>{
   }
   c.save();c.imageSmoothingEnabled=false;
   if(c.fillRect){
-   // Rich southeast directional drop shadow grounding the cottage into the meadow
-   c.fillStyle='rgba(18,24,18,.32)';
-   c.fillRect(x-1,y+91,111,16);
-   c.fillStyle='rgba(18,24,18,.18)';
-   c.fillRect(x+100,y+30,10,74);
+   // Deep two-stage southeast directional drop shadow grounding every cottage firmly into the meadow
+   c.fillStyle='rgba(14,20,14,.38)';
+   c.fillRect(x,y+90,112,15);
+   c.fillStyle='rgba(14,20,14,.18)';
+   c.fillRect(x+5,y+101,108,8);
+   c.fillStyle='rgba(14,20,14,.24)';
+   c.fillRect(x+101,y+28,11,76);
   }
   c.drawImage(tile,0,0,104,108,x-4,y-10,112,116);
   c.restore();return true

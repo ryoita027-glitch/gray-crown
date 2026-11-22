@@ -492,18 +492,26 @@ function drawRegionDecor(){if(RoadCaveQuality.enabled&&RoadCaveQuality.active.ha
  const flag=(x,y,c)=>{ctx.fillStyle='#5f4b35';ctx.fillRect(x*TILE+15,y*TILE,4,50);ctx.fillStyle=c;ctx.fillRect(x*TILE+19,y*TILE+4,36,18);ctx.fillStyle='rgba(242,222,168,.75)';ctx.fillRect(x*TILE+30,y*TILE+9,8,8)};
  const tent=(x,y,c='#9e9178')=>{
   const px=x*TILE,py=y*TILE;
-  // Grounded medieval canvas war-tent with shadow, ridge pole & draped flap
-  ctx.fillStyle='rgba(16,14,12,.32)';ctx.fillRect(px-2,py+23,40,6);
-  ctx.fillStyle='#2e2822';
-  ctx.beginPath();ctx.moveTo(px-3,py+26);ctx.lineTo(px+18,py+1);ctx.lineTo(px+39,py+26);ctx.closePath();ctx.fill();
-  ctx.fillStyle=c;
-  ctx.beginPath();ctx.moveTo(px,py+25);ctx.lineTo(px+18,py+4);ctx.lineTo(px+36,py+25);ctx.closePath();ctx.fill();
-  ctx.fillStyle='rgba(255,244,218,.18)';
-  ctx.beginPath();ctx.moveTo(px+2,py+24);ctx.lineTo(px+18,py+5);ctx.lineTo(px+18,py+24);ctx.closePath();ctx.fill();
-  ctx.fillStyle='rgba(24,20,16,.24)';
-  ctx.beginPath();ctx.moveTo(px+18,py+5);ctx.lineTo(px+34,py+24);ctx.lineTo(px+18,py+24);ctx.closePath();ctx.fill();
-  ctx.fillStyle='#28221e';ctx.fillRect(px+14,py+14,8,11);
-  ctx.fillStyle='#6b5239';ctx.fillRect(px+17,py-1,2,6);
+  // True 3D Ridged Medieval Military Pavilion Tent with guy-ropes, ridge beam, scalloped valance & lantern glow!
+  ctx.fillStyle='rgba(12,14,18,.36)';ctx.fillRect(px-3,py+23,44,8);
+  ctx.fillStyle='#241e1a';ctx.fillRect(px-2,py+3,38,23);
+  // Sloped 3/4 canvas roof planes (sunlit upper-left slope + shaded lower slope)
+  ctx.fillStyle=c;ctx.fillRect(px,py+5,34,11);
+  ctx.fillStyle='rgba(255,248,226,.22)';ctx.fillRect(px+1,py+5,32,4);
+  // Scalloped front valance & vertical tent walls
+  for(let s=0;s<5;s++){
+   ctx.fillStyle=s%2===0?c:'#e8dcc0';
+   ctx.fillRect(px+1+s*6,py+15,6,3);
+  }
+  ctx.fillStyle='rgba(20,16,14,.28)';ctx.fillRect(px,py+18,34,7);
+  ctx.fillStyle=c;ctx.fillRect(px+1,py+18,32,6);
+  // Timber tent poles, ridge cap & guy-ropes pegged into ground
+  ctx.fillStyle='#5c422c';ctx.fillRect(px-1,py+3,36,2);
+  ctx.fillStyle='#d8bc78';ctx.fillRect(px+2,py+1,3,3);ctx.fillRect(px+29,py+1,3,3);
+  ctx.fillStyle='#8c7a62';ctx.fillRect(px-4,py+14,3,10);ctx.fillRect(px+35,py+14,3,10);
+  // Parted tent flaps with warm amber lantern light inside
+  ctx.fillStyle='#1c1614';ctx.fillRect(px+12,py+15,10,10);
+  ctx.fillStyle='#f4b858';ctx.fillRect(px+15,py+18,4,5);ctx.fillStyle='#fff6c8';ctx.fillRect(px+16,py+19,2,2);
  };
  const stall=(x,y,c='#8d3d46')=>{const px=x*TILE,py=y*TILE;ctx.fillStyle='#684a32';ctx.fillRect(px+4,py+18,25,9);ctx.fillStyle=c;ctx.fillRect(px+2,py+6,29,10);ctx.fillStyle='#e6d6ac';ctx.fillRect(px+5,py+8,5,6);ctx.fillRect(px+15,py+8,5,6);ctx.fillRect(px+25,py+8,4,6)};
  if(state.map==='road'){
@@ -563,25 +571,59 @@ function drawRegionDecor(){if(RoadCaveQuality.enabled&&RoadCaveQuality.active.ha
  }
  if(state.map==='ashroad'){
   for(const [x,y] of [[2,2],[18,2],[6,11]]){ctx.fillStyle='#3a3029';ctx.fillRect(x*TILE+8,y*TILE+15,18,7);ctx.fillStyle='#5d4a38';ctx.fillRect(x*TILE+15,y*TILE+3,4,16)}
-  ctx.fillStyle='#46372d';ctx.fillRect(3*TILE,3*TILE+20,90,45);ctx.fillStyle='#2f2925';ctx.beginPath();ctx.moveTo(3*TILE-4,3*TILE+22);ctx.lineTo(4*TILE+14,3*TILE-4);ctx.lineTo(6*TILE+6,3*TILE+22);ctx.closePath();ctx.fill();
-  ctx.strokeStyle='#8f8678';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(19*TILE,8*TILE+28);ctx.lineTo(21*TILE,8*TILE+8);ctx.stroke();ctx.beginPath();ctx.arc(20*TILE,8*TILE+9,18,Math.PI,0);ctx.stroke()
+  // 3D Charred Timber-Framed Farmhouse Ruin with standing stone hearth chimney, charred rafters & glowing ember ash at (3,3)
+  const rx=3*TILE,ry=3*TILE,rw=96,rh=54;
+  ctx.fillStyle='rgba(12,12,14,.38)';ctx.fillRect(rx+4,ry+rh-2,rw+6,10);
+  ctx.fillStyle='#221d1a';ctx.fillRect(rx,ry+12,rw,rh-12);
+  ctx.fillStyle='#584e46';ctx.fillRect(rx+3,ry+16,rw-6,rh-18); // scorched plaster & stone lower walls
+  ctx.fillStyle='#3a3430';ctx.fillRect(rx+2,ry+rh-12,rw-4,10); // stone plinth
+  // Standing stone hearth chimney on left with drifting ash smoke
+  ctx.fillStyle='#201c1a';ctx.fillRect(rx+6,ry-12,18,36);ctx.fillStyle='#68625c';ctx.fillRect(rx+8,ry-10,14,32);ctx.fillStyle='#8c847c';ctx.fillRect(rx+9,ry-10,5,28);
+  // Broken pitched roof & exposed charred timber rafters
+  for(let z=0;z<4;z++){
+   ctx.fillStyle='#241e1c';ctx.fillRect(rx-2+z*4,ry+14-z*5,rw+4-z*8,6);
+   ctx.fillStyle=z%2?'#3e342e':'#2e2622';ctx.fillRect(rx+z*4,ry+15-z*5,rw-z*8,4);
+  }
+  for(let bx=rx+26;bx<rx+rw-14;bx+=14){ctx.fillStyle='#1c1614';ctx.fillRect(bx,ry+2,4,22)}
+  ctx.fillStyle='#1a1412';ctx.fillRect(rx+38,ry+26,20,26); // collapsed doorway
+  ctx.fillStyle='#d86828';ctx.fillRect(rx+14,ry+rh-10,8,3);ctx.fillStyle='#ffd268';ctx.fillRect(rx+16,ry+rh-10,4,2); // smoldering embers
+  // 3D Weathered Wayside Stone Chapel Arch at (19,8)
+  const sx=19*TILE+4,sy=8*TILE-4;
+  ctx.fillStyle='rgba(12,12,14,.34)';ctx.fillRect(sx+2,sy+32,52,7);
+  ctx.fillStyle='#2c2a28';ctx.fillRect(sx+4,sy+6,12,28);ctx.fillRect(sx+36,sy+10,12,24);
+  ctx.fillStyle='#7c766c';ctx.fillRect(sx+6,sy+8,8,24);ctx.fillRect(sx+38,sy+12,8,20);
+  ctx.fillStyle='#9e988c';ctx.fillRect(sx+2,sy+2,46,7);ctx.fillStyle='#c2bcb0';ctx.fillRect(sx+4,sy+3,30,3);
  }
  if(state.map==='frontier'){
-  for(const p of [[3,3],[18,3],[3,10],[18,10]])tent(p[0],p[1]);flag(10,1,'#8d3d46');
+  for(const p of [[3,3],[18,3],[3,10],[18,10]])tent(p[0],p[1],p[0]<10?'#7c4248':'#5c6c78');flag(10,1,'#8d3d46');
   // Timber-reinforced trench parapets & wooden duckboards
   ctx.fillStyle='#3b3229';for(const y of [6,12]){ctx.fillRect(TILE,y*TILE+18,10*TILE,7);ctx.fillRect(13*TILE,y*TILE+18,10*TILE,7)}
   ctx.fillStyle='#735c44';for(const y of [6,12]){ctx.fillRect(TILE,y*TILE+19,10*TILE,3);ctx.fillRect(13*TILE,y*TILE+19,10*TILE,3)}
-  // Detailed timber-and-canvas Field Hospital Pavilion (replaces flat beige rectangle)
-  const hx=2*TILE+4,hy=9*TILE+4,hw=4*TILE+8,hh=59;
-  ctx.fillStyle='rgba(14,16,18,.34)';ctx.fillRect(hx+3,hy+hh-2,hw,7);
-  ctx.fillStyle='#2c2722';ctx.fillRect(hx,hy,hw,hh);
-  ctx.fillStyle='#d4ccb6';ctx.fillRect(hx+3,hy+14,hw-6,hh-17);
-  ctx.fillStyle='#bfb69e';ctx.fillRect(hx+3,hy+hh-10,hw-6,7);
-  ctx.fillStyle='#5c6e5c';ctx.fillRect(hx+2,hy+2,hw-4,13);ctx.fillStyle='#788f75';ctx.fillRect(hx+4,hy+3,hw-8,6);
-  ctx.fillStyle='#5e4734';ctx.fillRect(hx+5,hy+15,4,hh-19);ctx.fillRect(hx+hw-9,hy+15,4,hh-19);
-  ctx.fillStyle='#e8e0ca';ctx.fillRect(hx+14,hy+22,22,18);ctx.fillStyle='#5f8c68';ctx.fillRect(hx+23,hy+25,4,12);ctx.fillRect(hx+19,hy+29,12,4);
-  ctx.fillStyle='rgba(36,28,22,.88)';ctx.fillRect(hx+42,hy+22,56,17);ctx.strokeStyle='#c9ae72';ctx.strokeRect(hx+42.5,hy+22.5,55,16);
-  ctx.fillStyle='#f3e8ce';ctx.font='bold 9px system-ui';ctx.fillText('野戦病院',hx+52,hy+34);
+  // True 3D Pitched-Roof Timber-and-Canvas Field Hospital Pavilion at (2,9)
+  const hx=2*TILE+2,hy=9*TILE-6,hw=4*TILE+12,hh=70;
+  ctx.fillStyle='rgba(12,16,18,.38)';ctx.fillRect(hx+4,hy+hh-3,hw+4,11);
+  ctx.fillStyle='rgba(12,16,18,.22)';ctx.fillRect(hx+hw,hy+18,8,hh-18);
+  ctx.fillStyle='#24201c';ctx.fillRect(hx,hy+16,hw,hh-16);
+  ctx.fillStyle='#dcd4be';ctx.fillRect(hx+3,hy+20,hw-6,hh-28);
+  ctx.fillStyle='rgba(18,16,14,.32)';ctx.fillRect(hx+3,hy+20,hw-6,6); // deep eave shadow
+  ctx.fillStyle='#686256';ctx.fillRect(hx+2,hy+hh-10,hw-4,8); // stone/sandbag foundation plinth
+  for(let bx=hx+6;bx<hx+hw-8;bx+=26){ctx.fillStyle='#5c4430';ctx.fillRect(bx,hy+20,4,hh-28)}
+  // 5-course 3/4 pitched sage-canvas & timber hospital roof
+  for(let z=0;z<5;z++){
+   const ins=z*4;
+   ctx.fillStyle='#202622';ctx.fillRect(hx-3+ins,hy+18-z*4,hw+6-ins*2,6);
+   ctx.fillStyle=z%2?'#688268':'#4e6650';ctx.fillRect(hx-1+ins,hy+19-z*4,hw+2-ins*2,4);
+  }
+  ctx.fillStyle='#c8b278';ctx.fillRect(hx+18,hy,hw-36,3);
+  ctx.fillStyle='#f0ead6';ctx.fillRect(hx+14,hy+28,22,18);ctx.fillStyle='#4e8858';ctx.fillRect(hx+23,hy+31,4,12);ctx.fillRect(hx+19,hy+35,12,4);
+  ctx.fillStyle='#241c16';ctx.fillRect(hx+44,hy+34,24,32);ctx.fillStyle='#6e4e34';ctx.fillRect(hx+46,hy+36,20,28);
+  // Warm hospital windows on right wing & signboard mounted cleanly on roof eaves (zero overlap with + recovery badge!)
+  for(const wx of [hx+82,hx+110]){
+   ctx.fillStyle='#241c16';ctx.fillRect(wx,hy+28,18,16);ctx.fillStyle='#f4cf72';ctx.fillRect(wx+2,hy+30,14,12);
+   ctx.fillStyle='#5c4430';ctx.fillRect(wx+8,hy+30,2,12);ctx.fillRect(wx+2,hy+35,14,2);
+  }
+  ctx.fillStyle='rgba(24,20,18,.94)';ctx.fillRect(hx+40,hy+3,60,15);ctx.strokeStyle='#d4b878';ctx.strokeRect(hx+40.5,hy+3.5,59,14);
+  ctx.fillStyle='#faf0d8';ctx.font='bold 9px system-ui';ctx.fillText('野戦病院',hx+51,hy+14);
   if(isEventComplete('alpha2.frontier.complete')){ctx.fillStyle='#5c4a39';for(const [x,y] of [[14,6],[15,6],[16,6]])ctx.fillRect(x*TILE+4,y*TILE+20,26,5);ctx.strokeStyle='#9a8970';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(14*TILE+5,6*TILE+10);ctx.lineTo(17*TILE-5,6*TILE+25);ctx.stroke();for(const [x,y] of [[6,10],[7,10],[8,10]]){ctx.fillStyle='#d2c8ad';ctx.fillRect(x*TILE+3,y*TILE+16,26,7);ctx.fillStyle='#6b5b48';ctx.fillRect(x*TILE+5,y*TILE+23,22,3)}}
  }
  if(state.map==='frontierfield'){
@@ -628,7 +670,7 @@ function drawRegionDecor(){if(RoadCaveQuality.enabled&&RoadCaveQuality.active.ha
  if(state.map==='returnroad'&&!(typeof EmpireSanctuaryEnvironment!=='undefined'&&EmpireSanctuaryEnvironment.enabled)){
   ctx.fillStyle='#79806e';ctx.beginPath();ctx.moveTo(3*TILE,8*TILE);ctx.lineTo(7*TILE,5*TILE);ctx.lineTo(7*TILE,9*TILE);ctx.closePath();ctx.fill();ctx.fillStyle='#9fa38e';ctx.fillRect(4*TILE,7*TILE+12,3*TILE,4)
  }
- if(state.map==='finalfield'){flag(5,4,'#8d3d46');flag(17,4,'#354f78');for(const p of [[3,3],[18,3]])tent(p[0],p[1],p[0]<10?'#80675d':'#60717f')}
+ if(state.map==='finalfield'){flag(5,4,'#8d3d46');flag(17,4,'#354f78');if(!(typeof EmpireSanctuaryEnvironment!=='undefined'&&EmpireSanctuaryEnvironment.enabled))for(const p of [[3,3],[18,3]])tent(p[0],p[1],p[0]<10?'#80675d':'#60717f')}
  if(state.map==='imperialcamp'){flag(10,2,'#354f78');flag(13,2,'#354f78')}
  if(state.map==='royalcamp'){flag(10,2,'#8d3d46');flag(13,2,'#8d3d46')}
  if(state.map==='borderland'&&!(typeof BorderWatchfortEnvironment!=='undefined'&&BorderWatchfortEnvironment.enabled)){
@@ -641,7 +683,7 @@ function drawRegionDecor(){if(RoadCaveQuality.enabled&&RoadCaveQuality.active.ha
   ctx.strokeStyle='#6f5940';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(15*TILE,4*TILE+4);ctx.lineTo(19*TILE,4*TILE+4);ctx.stroke();ctx.fillStyle='#d8c6a5';ctx.fillRect(15*TILE+10,4*TILE+5,18,12);ctx.fillStyle='#7e94a6';ctx.fillRect(17*TILE+2,4*TILE+5,18,12);
   ctx.fillStyle='#6f573e';for(let x=2;x<22;x+=2){ctx.fillRect(x*TILE+5,7*TILE+24,4,12)}ctx.fillRect(2*TILE+5,7*TILE+29,20*TILE,3)
  }
- if(state.map==='relayvillage'){house(5,4,'#725147','#c7b68f',5);ctx.fillStyle='rgba(20,20,20,.45)';ctx.fillRect(4*TILE,9*TILE,16*TILE,2*TILE)}
+ if(state.map==='relayvillage'&&!(typeof BorderWatchfortEnvironment!=='undefined'&&BorderWatchfortEnvironment.enabled)){house(5,4,'#725147','#c7b68f',5);ctx.fillStyle='rgba(20,20,20,.45)';ctx.fillRect(4*TILE,9*TILE,16*TILE,2*TILE)}
  if(state.map==='watchfort'&&!(typeof BorderWatchfortEnvironment!=='undefined'&&BorderWatchfortEnvironment.enabled)){
   ctx.fillStyle='#686660';ctx.fillRect(2*TILE,7*TILE+8,6*TILE,6*TILE-14);ctx.fillRect(16*TILE,7*TILE+8,6*TILE,6*TILE-14);
   ctx.fillStyle='#85827a';for(const x of [2,7,16,21]){ctx.fillRect(x*TILE+2,7*TILE-4,28,42);ctx.fillStyle='#a39e91';ctx.fillRect(x*TILE-1,7*TILE-7,34,8);ctx.fillStyle='#85827a'}
@@ -651,7 +693,7 @@ function drawRegionDecor(){if(RoadCaveQuality.enabled&&RoadCaveQuality.active.ha
   ctx.fillStyle='#8d8b82';ctx.fillRect(11*TILE,0,2*TILE,7*TILE);ctx.fillStyle='#b5b0a2';for(let y=0;y<7;y++){ctx.fillRect(11*TILE+2,y*TILE+3,4,24);ctx.fillRect(13*TILE-6,y*TILE+3,4,24)}
   ctx.strokeStyle='#555b60';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(11*TILE+7,0);ctx.lineTo(11*TILE+7,7*TILE);ctx.moveTo(13*TILE-7,0);ctx.lineTo(13*TILE-7,7*TILE);ctx.stroke();flag(13,2,'#354f78');ctx.fillStyle='#b5aa8d';ctx.fillRect(10*TILE+5,6*TILE+5,24,24)
  }
- if(state.map==='ravine'){ctx.fillStyle='#15191b';ctx.fillRect(5*TILE,2*TILE,14*TILE,10*TILE)}
+ if(state.map==='ravine'&&!(typeof BorderWatchfortEnvironment!=='undefined'&&BorderWatchfortEnvironment.enabled)){ctx.fillStyle='#15191b';ctx.fillRect(5*TILE,2*TILE,14*TILE,10*TILE)}
 
 }
 function drawObject(o){if(RyuneOutskirts.drawObject(ctx,state.map,o,!!state.world?.treasures?.[o.id]))return;if(typeof EmpireSanctuaryEnvironment!=='undefined'&&EmpireSanctuaryEnvironment.enabled&&EmpireSanctuaryEnvironment.objectAccent(ctx,state.map,o))return;if(typeof BorderWatchfortEnvironment!=='undefined'&&BorderWatchfortEnvironment.enabled&&BorderWatchfortEnvironment.objectAccent(ctx,state.map,o))return;AshFrontierEnvironment.objectAccent(ctx,state.map,o);CapitalEnvironment.objectAccent(ctx,state.map,o);if(RoadCaveQuality.enabled&&RoadCaveQuality.active.has(state.map))RoadCaveQuality.objectBackdrop(ctx,state.map,o);if(RyuneEnvironment.enabled&&RyuneEnvironment.drawObject(ctx,state.map,o))return;const px=o.x*TILE,py=o.y*TILE;
@@ -780,8 +822,19 @@ function drawObject(o){if(RyuneOutskirts.drawObject(ctx,state.map,o,!!state.worl
   ctx.fillStyle='rgba(240,252,255,.88)';ctx.fillRect(px+15,py+3-Math.abs(sp),2,6);
   ctx.fillRect(px+11,py+9+sp*0.5,2,2);ctx.fillRect(px+19,py+9-sp*0.5,2,2);ctx.fillRect(px+13,py+14,6,1);
  }
- if(['capitalBarracks','fieldHospital','imperialArchive'].includes(o.id)){ctx.fillStyle='#74685a';ctx.fillRect(px+5,py+8,22,19);ctx.fillStyle='#d6caa7';ctx.fillRect(px+9,py+12,14,5)}
- if(o.id==='watchTower'){ctx.fillStyle='#5a4938';ctx.fillRect(px+13,py+4,6,25);ctx.fillRect(px+5,py+5,22,5);ctx.fillStyle='#8a7657';ctx.fillRect(px+8,py+1,16,5)}
+ if(o.id==='capitalBarracks'){ctx.fillStyle='#74685a';ctx.fillRect(px+5,py+8,22,19);ctx.fillStyle='#d6caa7';ctx.fillRect(px+9,py+12,14,5)}
+ if(o.id==='watchTower'){
+  // True 3D Timber Military Lookout Tower with 4 corner legs, cross-bracing, railed deck, pitched roof & lantern!
+  ctx.fillStyle='rgba(12,14,18,.36)';ctx.fillRect(px+2,py+25,30,6);
+  ctx.fillStyle='#261c14';ctx.fillRect(px+5,py+8,4,21);ctx.fillRect(px+23,py+8,4,21);
+  ctx.fillStyle='#6e4e32';ctx.fillRect(px+6,py+9,2,19);ctx.fillRect(px+24,py+9,2,19);
+  ctx.fillStyle='#4a3422';ctx.fillRect(px+8,py+16,16,2);ctx.fillRect(px+8,py+22,16,2);
+  ctx.fillStyle='#261c14';ctx.fillRect(px+2,py+5,28,7);ctx.fillStyle='#8c6844';ctx.fillRect(px+4,py+6,24,4);
+  ctx.fillStyle='#261c14';ctx.fillRect(px+5,py-5,3,11);ctx.fillRect(px+24,py-5,3,11);
+  ctx.fillStyle='#261c14';ctx.fillRect(px+1,py-10,30,6);ctx.fillStyle='#784838';ctx.fillRect(px+3,py-9,26,4);
+  ctx.fillStyle='#9c624c';ctx.fillRect(px+6,py-12,20,3);
+  ctx.fillStyle='#ffd874';ctx.fillRect(px+14,py-2,4,5);ctx.fillStyle='#fffbe0';ctx.fillRect(px+15,py-1,2,2);
+ }
  if(o.id==='waterMill'){ctx.strokeStyle='#8e7755';ctx.lineWidth=3;ctx.beginPath();ctx.arc(px+16,py+17,12,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#66503b';ctx.fillRect(px+13,py+7,6,20)}
  if(o.id==='empireShrine'||o.id==='ruinedShrine'||o.id==='oldSanctum'){ctx.fillStyle='#8e8879';ctx.fillRect(px+8,py+10,16,18);ctx.fillStyle='#b0a993';ctx.fillRect(px+5,py+8,22,4);ctx.fillRect(px+11,py+4,10,5)}
  if(o.id==='canalMonument'){ctx.fillStyle='#92989a';ctx.fillRect(px+11,py+5,10,24);ctx.fillStyle='#c4c0aa';ctx.fillRect(px+8,py+4,16,5)}

@@ -311,32 +311,56 @@ const RyuneEnvironment=(()=>{
    rect(c,'#927c59',xx,yy,11,2);
    if(x%2===0)rect(c,'#6e815b',xx+3,yy-5,3,5);
   }
-  // Eda's Outdoor Wood-Fired Stone Bakery Oven & Bread Counter on blocked H tiles (7,5)-(8,5)
+  // Eda's Outdoor 3D Domed Wood-Fired Brick Bakery Oven & 4-Post Sculpted Striped Bakery Pavilion on blocked H tiles (7,5)-(8,5)
   const bx=7*32,by=5*32;
-  rect(c,'rgba(22,18,14,.28)',bx+2,by+24,62,7);
-  rect(c,'#463529',bx+2,by+4,28,24);
-  rect(c,'#8c6b52',bx+4,by+6,24,20);
-  rect(c,'#a68468',bx+6,by+6,20,5);
-  rect(c,'#241a15',bx+9,by+14,14,10);
-  rect(c,'#e07b32',bx+11,by+17,10,6);rect(c,'#ffd878',bx+13,by+19,6,3);
-  rect(c,'rgba(255,186,88,.18)',bx+2,by+16,28,16);
+  rect(c,'rgba(16,20,16,.36)',bx+2,by+25,66,9);
+  rect(c,'rgba(16,20,16,.20)',bx+62,by+6,8,24);
+  // Left (7,5): 3D Domed Brick Oven with Stone Plinth, Chimney Flue & Glowing Hearth Embers
+  rect(c,'#241a15',bx+1,by+3,29,26);
+  rect(c,'#6e5646',bx+3,by+17,25,11); // stone base plinth
+  rect(c,'#9c5844',bx+3,by+6,25,12);  // brick oven dome
+  rect(c,'#be765c',bx+5,by+5,21,4);   // sunlit upper brick arch
+  for(let ox=bx+6;ox<bx+24;ox+=6)rect(c,'#5e3428',ox,by+9,1,7);
+  rect(c,'#241a15',bx+19,by-6,8,11);rect(c,'#7a5444',bx+20,by-5,6,9);rect(c,'#a67862',bx+21,by-5,2,8); // brick chimney flue
+  rect(c,'#1a120e',bx+8,by+13,14,11); // arched oven mouth
+  rect(c,'#e4782e',bx+10,by+16,10,6);rect(c,'#ffd874',bx+12,by+18,6,3);rect(c,'#fff6c8',bx+13,by+19,3,2);
+  rect(c,'rgba(255,186,88,.22)',bx+2,by+16,28,16);
   // Living village chimney & bakery oven smoke wisps (gentle animation!)
   const sm=(typeof Date!=='undefined'?Date.now():0)/420;
-  for(const [sx,sy] of [[bx+16,by+2],[4*32+18,2*32+2],[18*32+76,10*32-4]]){
+  for(const [sx,sy] of [[bx+22,by-7],[4*32+18,2*32+2],[18*32+76,10*32-4]]){
    for(let k=0;k<3;k++){
     const phase=(sm+k*0.95)%3,oy=sy-phase*7,ox=sx+Math.sin(sm+k*2)*3;
     rect(c,`rgba(246,244,238,${(0.42-phase*0.11).toFixed(2)})`,ox,oy,4+phase,3+phase*0.6);
    }
   }
-  // Striped bakery counter & golden crusty bread loaves at (8,5)
-  rect(c,'#543d2b',bx+32,by+10,30,18);
-  rect(c,'#9e7852',bx+34,by+12,26,14);
-  for(let i=0;i<4;i++)rect(c,i%2?'#efe2c4':'#a64d46',bx+32+i*7,by+4,7,6);
-  for(const lx of [36,45,53]){rect(c,'#c88d48',bx+lx,by+13,6,4);rect(c,'#e6b66e',bx+lx+1,by+13,4,2)}
+  // Right (8,5): True 3D Sculpted Timber-and-Canvas Bakery Pavilion (4 oak posts, sloped striped awning, counter & golden loaves!)
+  const px=bx+31,py=by-6;
+  rect(c,'rgba(22,16,12,.52)',px+4,py+14,26,14); // recessed interior shade
+  rect(c,'#241a14',px+4,py+11,4,22);rect(c,'#583c26',px+5,py+12,2,20); // rear left post
+  rect(c,'#241a14',px+26,py+11,4,22);rect(c,'#583c26',px+27,py+12,2,20); // rear right post
+  rect(c,'#241a14',px+2,py+21,30,14);
+  rect(c,'#6e4e34',px+4,py+25,26,9); // planked counter front
+  for(let sx=px+10;sx<px+28;sx+=6)rect(c,'#4a3220',sx,py+25,1,9);
+  rect(c,'#ab8052',px+3,py+22,28,4);rect(c,'#d6ac78',px+4,py+22,26,2); // sunlit counter tabletop
+  for(const lx of [6,15,23]){
+   rect(c,'#4e3622',px+lx-1,py+18,7,5);rect(c,'#cc8a42',px+lx,py+17,6,4);rect(c,'#f4c474',px+lx+1,py+17,4,2);
+  }
+  // Front beveled oak corner posts
+  rect(c,'#241a14',px+1,py+10,5,25);rect(c,'#825a38',px+2,py+11,3,23);rect(c,'#b48658',px+2,py+11,1,21);
+  rect(c,'#241a14',px+28,py+10,5,25);rect(c,'#825a38',px+29,py+11,3,23);rect(c,'#b48658',px+29,py+11,1,21);
+  // Sloped 3/4 billowing crimson-and-cream striped awning + scalloped valance
+  rect(c,'#241a14',px-1,py+1,36,14);
+  for(let i=0;i<4;i++){
+   const sx=px+i*8,sw=(i===3)?10:8,col=i%2?'#f6ebd2':'#a44246';
+   rect(c,col,sx,py+2,sw,8);rect(c,'rgba(255,252,240,.22)',sx,py+2,sw,3);
+   rect(c,i%2?'#d6c6a8':'#782a30',sx,py+10,sw,4);
+   rect(c,'#241a14',sx,py+14,sw,1);
+  }
+  rect(c,'#5c3e26',px-1,py,36,2);
   // Warm bread steam rising gently from Eda's counter
   for(let k=0;k<2;k++){
    const st=(sm*1.2+k*1.3)%2;
-   rect(c,'rgba(255,250,236,.38)',bx+40+k*12,by+10-st*4,2,3);
+   rect(c,'rgba(255,250,236,.38)',bx+40+k*12,by+6-st*4,2,3);
   }
   // Pecking white village chickens near the western fields
   const peck=Math.floor(sm)%2;
@@ -556,18 +580,46 @@ const RyuneEnvironment=(()=>{
     return true;
    }
    if(obj.id==='store'){
-    rect(c,'#674b35',x+4,y+10,26,19);
-    rect(c,'#ab855b',x+6,y+12,22,14);
-    rect(c,'#d4ba89',x+8,y+7,16,7);
-    rect(c,'#695136',x+7,y+22,19,3);
+    // True 3D Sculpted Timber-and-Canvas Village General Store Pavilion at (16,9)
+    const sy=y-8;
+    rect(c,'rgba(16,22,16,.36)',x+1,sy+33,34,8);
+    rect(c,'rgba(16,22,16,.20)',x+30,sy+14,6,22);
+    rect(c,'rgba(22,16,12,.52)',x+3,sy+14,26,14);
+    rect(c,'#241a14',x+3,sy+11,4,22);rect(c,'#543a24',x+4,sy+12,2,20);
+    rect(c,'#241a14',x+25,sy+11,4,22);rect(c,'#543a24',x+26,sy+12,2,20);
+    rect(c,'#241a14',x+1,sy+21,30,15);
+    rect(c,'#6e4e34',x+3,sy+25,26,9);
+    for(let px=x+9;px<x+27;px+=6)rect(c,'#4a3220',px,sy+25,1,9);
+    rect(c,'#a67c52',x+2,sy+22,28,4);rect(c,'#cfa472',x+3,sy+22,26,2);
+    // Displayed apothecary potion bottles, herb bundle & travel ration sack
+    rect(c,'#386844',x+6,sy+17,6,5);rect(c,'#7ab46a',x+7,sy+17,4,2);
+    rect(c,'#c8484c',x+14,sy+17,5,5);rect(c,'#ff9ca0',x+15,sy+18,2,2);
+    rect(c,'#c6ad82',x+21,sy+16,6,6);rect(c,'#e8d8b4',x+22,sy+16,4,2);
+    // Front beveled oak corner posts
+    rect(c,'#241a14',x,sy+10,5,26);rect(c,'#7c5636',x+1,sy+11,3,24);rect(c,'#b08256',x+1,sy+11,1,22);
+    rect(c,'#241a14',x+27,sy+10,5,26);rect(c,'#7c5636',x+28,sy+11,3,24);rect(c,'#b08256',x+28,sy+11,1,22);
+    // Sloped 3/4 forest-green-and-cream striped awning roof + scalloped valance
+    rect(c,'#241a14',x-2,sy+1,36,14);
+    for(let i=0;i<4;i++){
+     const sx=x-1+i*8,sw=(i===3)?10:8,col=i%2?'#f4ead2':'#48724e';
+     rect(c,col,sx,sy+2,sw,8);rect(c,'rgba(255,252,240,.22)',sx,sy+2,sw,3);
+     rect(c,i%2?'#d4c4a4':'#325238',sx,sy+10,sw,4);
+     rect(c,'#241a14',sx,sy+14,sw,1);
+    }
+    rect(c,'#5c3e26',x-2,sy,36,2);
+    rect(c,'#2c241e',x+25,sy+15,4,6);rect(c,'#ffd874',x+26,sy+16,2,3);
     return true;
    }
    if(obj.id==='bakeryOven')return true; // Drawn as part of Eda's brick bakery oven in districtDetails
    if(obj.id==='villageBoard'){
-    rect(c,'rgba(20,24,18,.26)',x+5,y+25,22,4);
-    rect(c,'#4a3726',x+6,y+6,20,21);rect(c,'#8c6b48',x+8,y+8,16,13);
-    rect(c,'#efe4c8',x+9,y+9,6,6);rect(c,'#e2d4b4',x+16,y+10,6,5);
-    rect(c,'#d9786c',x+17,y+16,4,4);
+    // 3D Timber-Roofed Village Bulletin Board with twin posts & pitched shingle hood
+    rect(c,'rgba(16,22,14,.32)',x+4,y+25,26,5);
+    rect(c,'#241a14',x+5,y+7,4,21);rect(c,'#6e4e34',x+6,y+8,2,19);
+    rect(c,'#241a14',x+23,y+7,4,21);rect(c,'#6e4e34',x+24,y+8,2,19);
+    rect(c,'#241a14',x+5,y+6,22,16);rect(c,'#8c6b48',x+7,y+8,18,12);
+    rect(c,'#f4ead0',x+8,y+9,7,7);rect(c,'#b04848',x+10,y+10,3,1);
+    rect(c,'#e6d8b8',x+16,y+10,7,6);rect(c,'#d9786c',x+17,y+16,5,3);
+    rect(c,'#241a14',x+2,y+3,28,5);rect(c,'#7c4e32',x+3,y+4,26,3);rect(c,'#ab7350',x+5,y+2,22,2);
     return true;
    }
    if(['home','doorOrphanage','doorMayor','doorCottage'].includes(obj.id)){
