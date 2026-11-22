@@ -65,7 +65,7 @@ const CapitalEnvironment=(()=>{
    const at=(xx,yy)=>m?.tiles?.[yy]?.[xx]||'K';
    const up=at(x,y-1),down=at(x,y+1),left=at(x-1,y),right=at(x+1,y);
    if(ch==='A'){
-    const marketZone=x<10&&y>5,garrisonZone=x>14&&y>5;
+    const marketZone=x<16&&y>=9,garrisonZone=x>25&&y>=11;
     const tone=marketZone?'market':garrisonZone?'garrison':'capital';
     if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(c,'cobble',x,y,tone)){
      const base=marketZone?'#b4a48a':garrisonZone?'#8a9198':'#bab5aa';
@@ -162,17 +162,18 @@ const CapitalEnvironment=(()=>{
   }
   return false
  }
- // Distinct capital districts: roofs/window cadence/stock use the actual
- // existing blocked H cells. No false doors, unexplained heraldry or obstacles.
+ // Distinct capital districts across the grand 42x28 Royal Capital.
+ // Every facade strictly occupies blocked 'H' tiles — zero road coverage!
  const facades=Object.freeze([
-  {x:2,y:2,w:3,h:3,kind:'market'},
-  {x:19,y:2,w:3,h:3,kind:'garrison'},
-  {x:4,y:1,w:6,h:2,kind:'palace'},
-  {x:14,y:1,w:6,h:2,kind:'palace'},
-  {x:2,y:11,w:3,h:2,kind:'market'},
-  {x:7,y:10,w:3,h:2,kind:'guild'},
-  {x:16,y:10,w:2,h:2,kind:'garrison'},
-  {x:20,y:10,w:2,h:2,kind:'garrison'}
+  {x:3,y:2,w:4,h:3,kind:'market'},
+  {x:35,y:2,w:4,h:3,kind:'garrison'},
+  {x:8,y:1,w:9,h:3,kind:'palace'},
+  {x:25,y:1,w:9,h:3,kind:'palace'},
+  {x:33,y:5,w:5,h:3,kind:'palace'},
+  {x:3,y:19,w:4,h:3,kind:'market'},
+  {x:9,y:19,w:5,h:3,kind:'guild'},
+  {x:28,y:19,w:4,h:3,kind:'garrison'},
+  {x:34,y:19,w:5,h:3,kind:'garrison'}
  ]);
   function districtFacades(c){
   const ink='#241e20';
@@ -292,71 +293,90 @@ const CapitalEnvironment=(()=>{
   }
  }
  function districtPaving(c){
-  // Street zones have different foot-wear and water run-off, not random dots.
-  for(const [x,y] of [[7,8],[8,8],[6,10],[17,7],[18,7],[19,8]]){
+  // Subtle paving curbs & drainage across the spacious 42x28 districts
+  for(const [x,y] of [[14,14],[15,14],[26,14],[27,14],[16,23],[25,23]]){
    box(c,'#7c7e79',x*W+2,y*W+27,26,2);
    box(c,'#b6b3a6',x*W+5,y*W+26,19,1);
   }
-  // Reinforced road leading to garrison, keeping doors and NPCs unobstructed.
-  for(const y of [7,8,9,10]){
-   box(c,'#666e72',20*W+3,y*W+12,24,1);
-   box(c,'#a6aaa6',20*W+10,y*W+12,6,1);
-  }
-  // The trades use a rougher street-side drainage strip.
-  for(const y of [7,8,9,10]){
+  for(const y of [12,13,14,15,16]){
+   box(c,'#666e72',38*W+3,y*W+12,24,1);
    box(c,'#747267',3*W+4,y*W+29,21,2);
   }
  }
  function street(c,map){
   if(!on()||map!=='capital')return false;
-  // Majestic dressed white-limestone Royal Palace wings & outer terrace towers (replaces flat beige boxes!)
-  for(const [x,y,w,height,wall,roof,isPalace] of [
-   [2,2,3,2,'#cfc8b6','#7e4648',false],[19,2,3,2,'#b8bec2','#4a5a68',false],
-   [4,1,6,2,'#ded9ca','#6d3240',true],[14,1,6,2,'#d8d5c8','#52606e',true]]){
-   const px=x*W,py=y*W,pw=w*W,ph=height*W;
-   box(c,'rgba(14,18,24,.34)',px+3,py+ph-4,pw-2,8);
-   box(c,'#2c2a2e',px+1,py+2,pw-2,ph-3);
-   box(c,wall,px+3,py+4,pw-6,ph-7);
-   // Dressed limestone ashlar courses & cornice molding
-   for(let row=py+12;row<py+ph-8;row+=10)box(c,'rgba(64,62,58,.18)',px+3,row,pw-6,1);
-   box(c,'#7c786e',px+3,py+ph-10,pw-6,6);
-   for(let col=0;col<w;col++){
-    const cx=(x+col)*W;
-    // Stone pilaster between bays
-    box(c,'#9c968a',cx+2,py+8,4,ph-18);box(c,'#ece7da',cx+3,py+8,2,ph-18);
-    // Tall arched palace / terrace stained-glass window with warm golden interior light
-    box(c,'#36343a',cx+10,py+12,13,20);
-    box(c,isPalace?'#5e869c':'#6e8e96',cx+12,py+14,9,16);
-    box(c,'#f2cc74',cx+13,py+20,7,9);box(c,'#fff6c8',cx+14,py+22,4,4);
-    box(c,'#9c9488',cx+16,py+14,1,16);box(c,'#9c9488',cx+12,py+20,9,1);
-    box(c,'#d8c080',cx+11,py+11,11,2);
-   }
-   // Royal slate-and-gold crenellated parapet & roof cornice
-   box(c,'#26242a',px-1,py,pw+2,10);
-   box(c,roof,px+1,py+1,pw-2,8);
-   box(c,'#d8be7e',px+2,py+8,pw-4,2);
-   for(let col=0;col<w;col++){
-    box(c,'#3a3840',(x+col)*W+2,py-4,14,6);
-    box(c,'#d4d0c4',(x+col)*W+3,py-3,12,4);
-    box(c,'#f0ece0',(x+col)*W+4,py-3,10,1);
-   }
-  }
-  // 3-Phase Royal Capital Atmospheric Storytelling (Pre-Ceremony Festive -> Post-Ceremony Afterglow -> Chapter 7 Wartime)
+  // 3-Phase Royal Capital Atmospheric Storytelling across the Grand 42x28 City
   const ceremonyDone=typeof isEventComplete==='function'&&isEventComplete('alpha.capital.ceremony');
   const wartime=typeof getWorldSwitch==='function'&&getWorldSwitch('returnedKingdom');
   const wave=Math.round(Math.sin((typeof Date!=='undefined'?Date.now():0)/280)*1.6);
-  // Central Plaza Carved Octagonal Marble Apron & Gold Sun-Compass Inlay surrounding the Fountain (12,8)
-  const fcx=12*W+16,fcy=8*W+16;
-  box(c,'rgba(44,40,34,.18)',fcx-44,fcy-34,88,68);
-  box(c,'rgba(44,40,34,.18)',fcx-34,fcy-44,68,88);
-  box(c,'#d8d2be',fcx-42,fcy-32,84,64);
-  box(c,'#d8d2be',fcx-32,fcy-42,64,84);
-  box(c,'#eae4d2',fcx-38,fcy-28,76,56);
-  box(c,'#eae4d2',fcx-28,fcy-38,56,76);
-  // Subtle inlaid brass sun-compass lines radiating from the fountain
-  box(c,'#bfa264',fcx-40,fcy-1,80,2);box(c,'#bfa264',fcx-1,fcy-40,2,80);
-  // Ornate wrought-iron streetlamps with warm amber glass lanterns along the boulevard
-  for(const [lx,ly] of [[6,7],[17,7],[10,11],[14,11]]){
+
+  // 1. Central Royal Fountain Plaza: Carved Octagonal Marble Sun-Compass Mosaic surrounding capitalFountain (20,15)
+  const fcx=20*W+16,fcy=15*W+16;
+  box(c,'rgba(44,40,34,.18)',fcx-68,fcy-48,136,96);
+  box(c,'rgba(44,40,34,.18)',fcx-48,fcy-68,96,136);
+  box(c,'#d8d2be',fcx-64,fcy-44,128,88);
+  box(c,'#d8d2be',fcx-44,fcy-64,88,128);
+  box(c,'#eae4d2',fcx-58,fcy-38,116,76);
+  box(c,'#eae4d2',fcx-38,fcy-58,76,116);
+  box(c,'#bfa264',fcx-60,fcy-1,120,2);box(c,'#bfa264',fcx-1,fcy-60,2,120);
+  // Wooden plaza benches flanking the fountain square
+  for(const [bx,by] of [[17,14],[23,14]]){
+   box(c,'rgba(16,20,24,.24)',bx*W+3,by*W+23,28,5);
+   box(c,'#4c3624',bx*W+2,by*W+16,28,9);box(c,'#9c764c',bx*W+4,by*W+17,24,5);box(c,'#c8a06e',bx*W+5,by*W+17,22,2);
+  }
+  // Flower parterres at the 4 corners of Central Fountain Plaza (festive gold/crimson vs wartime white vigils)
+  for(const [fx,fy] of [[17,12],[24,12],[17,18],[24,18]]){
+   box(c,'#6e6c64',fx*W+4,fy*W+10,24,14);
+   box(c,wartime?'#4e5d52':'#4c7246',fx*W+6,fy*W+12,20,10);
+   if(wartime){
+    box(c,'#f2f4ee',fx*W+8,fy*W+14,4,3);box(c,'#f2f4ee',fx*W+17,fy*W+15,4,3);
+    box(c,'#e6e2d4',fx*W+13,fy*W+13,3,6);box(c,'#f7d06b',fx*W+14,fy*W+11,2,2);
+   }else{
+    box(c,'#e6c86a',fx*W+9,fy*W+14,4,3);box(c,'#d87478',fx*W+18,fy*W+15,4,3);
+   }
+  }
+
+  // 2. North Royal Castle Forecourt: Ceremonial Steps, Crimson Carpet, Tall Royal Banners & Gilded Braziers
+  for(const y of [8,9])box(c,'#c7c1b4',18*W,y*W+28,6*W,3);
+  box(c,wartime?'#593238':'#7c2f38',20*W+10,1*W+4,44,8*W-6);
+  box(c,wartime?'#9c9278':'#d5b872',20*W+12,1*W+4,3,8*W-6);box(c,wartime?'#9c9278':'#d5b872',21*W+19,1*W+4,3,8*W-6);
+  for(const x of [17,24]){
+   box(c,'#3c383a',x*W+15,5*W,3,56);box(c,'#d8bc74',x*W+14,5*W-2,5,4);
+   box(c,wartime?'#5e4348':'#9c3642',x*W+18,5*W+5,14,wartime?24:34);
+   box(c,wartime?'#4e353a':'#782430',x*W+18+wave,5*W+23,14,wartime?8:16);
+   box(c,wartime?'#9e9684':'#e6c874',x*W+19,5*W+7,12,3);
+   box(c,wartime?'#9e9684':'#e6c874',x*W+22,5*W+14,6,8);
+  }
+  for(const gx of [18,23]){
+   const bg=c.createRadialGradient?.(gx*W+16,5*W+16,3,gx*W+16,5*W+16,28);
+   if(bg&&typeof bg.addColorStop==='function'){
+    bg.addColorStop(0,wartime?'rgba(220,170,110,0.22)':'rgba(255,204,104,0.34)');bg.addColorStop(1,'rgba(255,160,60,0)');
+    c.fillStyle=bg;c.beginPath();c.arc(gx*W+16,5*W+16,28,0,Math.PI*2);c.fill();
+   }
+   box(c,'#463d36',gx*W+11,5*W+14,10,12);box(c,'#d4af62',gx*W+10,5*W+12,12,4);
+   box(c,'#f28838',gx*W+12,5*W+7,8,6);box(c,'#fff2b8',gx*W+14,5*W+8,4,3);
+  }
+  // Phase A (Festive Pre-Ceremony): celebratory red-and-white pennant garlands spanning the Grand Boulevard
+  if(!wartime&&!ceremonyDone){
+   for(const gy of [5*W+2,10*W+2,22*W+2]){
+    box(c,'#5c4a38',17*W+10,gy,8*W-20,2);
+    for(let i=0;i<11;i++){
+     const gx=17*W+16+i*21;
+     box(c,i%2===0?'#b5454e':'#f0e8d4',gx,gy+2,11,6);
+     box(c,i%2===0?'#d96b70':'#d8c8a2',gx+2,gy+8,7,3);
+    }
+   }
+  }
+
+  // 3. Ornate Wrought-Iron Streetlamps with Smooth Circular Golden Light Pools across the Grand Boulevard & Districts
+  for(const [lx,ly] of [[18,12],[23,12],[18,18],[23,18],[18,24],[23,24],[12,13],[29,13]]){
+   const gx=lx*W+16,gy=ly*W+8;
+   const lg=c.createRadialGradient?.(gx,gy,2,gx,gy,28);
+   if(lg&&typeof lg.addColorStop==='function'){
+    lg.addColorStop(0,wartime?'rgba(200,220,240,0.22)':'rgba(255,224,132,0.28)');
+    lg.addColorStop(1,'rgba(255,200,100,0)');
+    c.fillStyle=lg;c.beginPath();c.arc(gx,gy,28,0,Math.PI*2);c.fill();
+   }
    const px=lx*W+13,py=ly*W+2;
    box(c,'rgba(16,20,28,.28)',px-1,py+23,8,4);
    box(c,'#2c3038',px+2,py+6,3,19);box(c,'#4c5460',px+3,py+7,1,17);
@@ -364,113 +384,78 @@ const CapitalEnvironment=(()=>{
    box(c,wartime?'#b8c8d8':'#ffd874',px+1,py+2,5,5);
    box(c,wartime?'#e6f0f8':'#fff8d6',px+2,py+3,3,2);
   }
-  // Blossoming ornamental boulevard trees on southern garden lawn strips (zero signboard or walkway overlap!)
+
+  // 4. Blossoming Ornamental Boulevard & Park Trees on manicured emerald lawns (ZERO overlap with roads or signs!)
   if(typeof HD2DAtlas!=='undefined'){
-   for(const [tx,ty] of [[2,13],[21,13]]){
+   for(const [tx,ty] of [[17,10],[24,10],[17,20],[24,20],[14,26],[27,26],[5,7],[29,7],[38,10],[2,26],[39,26]]){
     HD2DAtlas.drawTree(c,tx,ty,'ornamental');
    }
   }
-  // Gently fluttering royal banners flanking the palace forecourt
-  for(const x of [9,14]){
-   box(c,'#3c383a',x*W+15,4*W,3,52);box(c,'#d8bc74',x*W+14,4*W-2,5,4);
-   box(c,wartime?'#5e4348':'#9c3642',x*W+18,4*W+5,13,wartime?24:32);
-   box(c,wartime?'#4e353a':'#782430',x*W+18+wave,4*W+22,13,wartime?8:15);
-   box(c,wartime?'#9e9684':'#e6c874',x*W+19,4*W+7,11,3);
-   box(c,wartime?'#9e9684':'#e6c874',x*W+22,4*W+13,5,8);
-  }
-  // Phase A (Festive Pre-Ceremony): red-and-white celebratory pennant garlands spanning the forecourt & grand boulevard
-  if(!wartime&&!ceremonyDone){
-   for(const gy of [3*W+2,6*W+2]){
-    box(c,'#5c4a38',8*W+12,gy,8*W-24,2);
-    for(let i=0;i<11;i++){
-     const gx=8*W+18+i*21;
-     box(c,i%2===0?'#b5454e':'#f0e8d4',gx,gy+2,11,6);
-     box(c,i%2===0?'#d96b70':'#d8c8a2',gx+2,gy+8,7,3);
-    }
-   }
-  }
-  // Square has a stepped approach, ceremonial runner and two queued viewing areas.
-  box(c,wartime?'#593238':'#7c2f38',11*W+18,3*W+4,28,3*W-6);
-  box(c,wartime?'#9c9278':'#d5b872',11*W+20,3*W+4,2,3*W-6);box(c,wartime?'#9c9278':'#d5b872',12*W+12,3*W+4,2,3*W-6);
-  for(const y of [3,4,5])box(c,'#c7c1b4',11*W+2,y*W+29,61,2);
-  // Warm circular golden streetlamp light pools (cooler & dimmer in wartime; zero harsh square boxes!)
-  for(const [lx,ly] of [[6,7],[17,7],[10,11],[14,11]]){
-   const gx=lx*W+16,gy=ly*W+8;
-   const lg=c.createRadialGradient?.(gx,gy,2,gx,gy,26);
-   if(lg&&typeof lg.addColorStop==='function'){
-    lg.addColorStop(0,wartime?'rgba(200,220,240,0.22)':'rgba(255,224,132,0.28)');
-    lg.addColorStop(1,'rgba(255,200,100,0)');
-    c.fillStyle=lg;c.beginPath();c.arc(gx,gy,26,0,Math.PI*2);c.fill();
-   }else{
-    box(c,wartime?'rgba(218,228,236,0.12)':'rgba(255,232,164,0.16)',lx*W+6,ly*W+4,20,20);
-   }
-  }
-  for(const [x,y] of [[8,6],[16,6],[8,8],[15,8]]){box(c,'#8a8279',x*W+3,y*W+23,24,4);box(c,'#d7c49c',x*W+9,y*W+23,8,2)}
-  // Market and rationing: brimming wares in Phase A/B vs visibly depleted wartime shelves in Phase C
-  for(const [x,y,color] of [[3,7,'#936354'],[5,9,'#9d7e54'],[7,7,'#668189']]){
-   box(c,'#574639',x*W+3,y*W+9,26,20);
-   box(c,wartime?'#5c5854':color,x*W+2,y*W+6,28,7);
-   box(c,'#d9c8a9',x*W+6,y*W+12,5,5);
-   box(c,'#7c5942',x*W+7,y*W+20,18,6);
+
+  // 5. West Central Market: Spacious open-air merchant booths with striped awnings & seasonal produce
+  for(const [x,y,color] of [[3,11,'#9c4348'],[7,11,'#a87c46'],[11,11,'#4f7688'],[3,15,'#7e5676'],[11,15,'#647c4e']]){
+   box(c,'rgba(16,20,16,.28)',x*W+4,y*W+24,26,5);
+   box(c,'#574639',x*W+3,y*W+9,26,18);
+   box(c,wartime?'#5c5854':color,x*W+2,y*W+5,28,8);
+   box(c,'#f0e4c8',x*W+7,y*W+5,6,8);box(c,'#f0e4c8',x*W+19,y*W+5,6,8);
+   box(c,'#7c5942',x*W+6,y*W+19,20,6);
    if(!wartime){
-    box(c,'#d88246',x*W+13,y*W+14,4,4);box(c,'#e6c45c',x*W+19,y*W+14,4,4);
+    box(c,'#e68642',x*W+8,y*W+14,5,4);box(c,'#f4d060',x*W+15,y*W+14,5,4);box(c,'#5c9462',x*W+21,y*W+14,4,4);
    }else{
-    box(c,'#665c52',x*W+14,y*W+15,4,3); // mostly empty shelf
+    box(c,'#665c52',x*W+13,y*W+15,6,3);
    }
   }
-  // Residential Southwest Quarter (White Stag Lane): laundry line & ration baskets
-  box(c,'#5c4836',3*W+16,10*W+6,3*W,2);
-  box(c,'#ece2c8',3*W+24,10*W+8,14,10);box(c,wartime?'#6a747c':'#7c98ad',4*W+14,10*W+8,14,9);box(c,wartime?'#86746e':'#c67e72',5*W+6,10*W+8,12,9);
-  // Royal Castle Forecourt: gilded braziers
-  for(const gx of [10,13]){
-   box(c,wartime?'rgba(220,170,110,0.14)':'rgba(255,198,92,0.22)',gx*W+4,3*W+8,24,24);
-   box(c,'#463d36',gx*W+11,3*W+14,10,12);
-   box(c,'#d4af62',gx*W+10,3*W+12,12,4);
-   box(c,'#f28838',gx*W+12,3*W+7,8,6);box(c,'#fff2b8',gx*W+14,3*W+8,4,3);
+  // Residential Southwest Lane (between Rowhouse & White Stag Inn): cozy laundry line
+  box(c,'#5c4836',7*W+6,19*W+12,2*W-12,2);
+  box(c,'#ece2c8',7*W+10,19*W+14,12,10);box(c,wartime?'#6a747c':'#7c98ad',7*W+26,19*W+14,12,9);box(c,wartime?'#86746e':'#c67e72',8*W+8,19*W+14,11,9);
+
+  // 6. East Garrison Supply Stacks & Pennants
+  for(const [x,y] of [[37,13],[38,15],[27,16]]){
+   box(c,'rgba(14,18,24,.28)',x*W+4,y*W+22,24,5);
+   box(c,'#555b5e',x*W+4,y*W+14,22,11);box(c,'#a6a397',x*W+6,y*W+12,18,6);box(c,'#736c64',x*W+9,y*W+16,4,3);
   }
-  // Flower parterres around Central Plaza Fountain (12,8): festive crimson/gold vs wartime white memorial bouquets & vigil candles!
-  for(const [fx,fy] of [[10,7],[14,7],[10,9],[14,9]]){
-   box(c,'#6e6c64',fx*W+4,fy*W+10,24,14);
-   box(c,wartime?'#4e5d52':'#4c7246',fx*W+6,fy*W+12,20,10);
-   if(wartime){
-    // White memorial flowers & small vigil candles laid around the plaza
-    box(c,'#f2f4ee',fx*W+8,fy*W+14,4,3);box(c,'#f2f4ee',fx*W+17,fy*W+15,4,3);
-    box(c,'#e6e2d4',fx*W+13,fy*W+13,3,6);box(c,'#f7d06b',fx*W+14,fy*W+11,2,2);
-   }else{
-    box(c,'#e6c86a',fx*W+9,fy*W+14,4,3);box(c,'#d87478',fx*W+18,fy*W+15,4,3);
-   }
-  }
-  // Supply stacks in Garrison (expanded with wartime staging crates & barricades in Phase B/C)
-  for(const [x,y] of [[18,7],[20,8],[18,10]]){box(c,'#555b5e',x*W+4,y*W+17,21,9);box(c,'#a6a397',x*W+6,y*W+15,19,6);box(c,'#736c64',x*W+9,y*W+18,3,3)}
   if(ceremonyDone||wartime){
-   for(const [x,y] of [[19,6],[20,7]]){box(c,'#4f4438',x*W+5,y*W+16,22,11);box(c,'#8d7556',x*W+7,y*W+14,18,6);box(c,'#c6b084',x*W+10,y*W+16,12,2)}
+   for(const [x,y] of [[36,12],[37,16]]){box(c,'#4f4438',x*W+5,y*W+16,22,11);box(c,'#8d7556',x*W+7,y*W+14,18,6);box(c,'#c6b084',x*W+10,y*W+16,12,2)}
   }
-  // Sparse small trade goods; no fake doors/loot.
-  for(const [x,y] of [[3,10],[6,8],[19,9]]){box(c,'#846e53',x*W+9,y*W+23,10,4);box(c,'#d0b887',x*W+11,y*W+20,5,3)}
-  // Phase B: scattered celebratory petals across the square after the ceremony.
+
+  // 7. Phase B celebratory petals & Phase C memorial white blossoms around the Central Fountain (20,15)
   if(ceremonyDone&&!wartime){
-   for(const [x,y] of [[10,7],[11,6],[14,7],[12,9],[15,8],[11,10],[12,11]]){
-    box(c,'#b96966',x*W+5,y*W+21,4,2);
-    box(c,'#e5dcca',x*W+21,y*W+12,3,2)
+   for(const [x,y] of [[18,14],[19,13],[22,14],[20,17],[21,16],[19,17],[22,16]]){
+    box(c,'#b96966',x*W+5,y*W+21,4,2);box(c,'#e5dcca',x*W+21,y*W+12,3,2);
    }
   }
-  // Phase C: memorial white blossoms at the base of the Central Fountain (12,8)
   if(wartime){
-   for(const [mx,my] of [[11*W+24,8*W+26],[12*W+6,8*W+28],[12*W+19,8*W+27],[12*W+28,8*W+24]]){
+   for(const [mx,my] of [[19*W+24,15*W+26],[20*W+6,15*W+28],[20*W+19,15*W+27],[21*W+2,15*W+24]]){
     box(c,'#4e6a50',mx,my,7,4);box(c,'#f5f7f2',mx+1,my-1,3,3);box(c,'#f5f7f2',mx+4,my,2,2);
    }
   }
+
   districtFacades(c);districtPaving(c);
+
+  // 8. Crisp District Signboards placed cleanly over open plaza entrances (ZERO overlaps!)
+  const sign=(sx,sy,label)=>{
+   const px=sx*W,py=sy*W+6;
+   box(c,'rgba(28,24,20,.92)',px,py,72,17);
+   box(c,'#d4b678',px+1,py+1,70,1);box(c,'#886e44',px+1,py+15,70,1);
+   c.fillStyle='#f6ecd4';c.font='bold 9px system-ui';c.textAlign='center';
+   c.fillText(label,px+36,py+12);c.textAlign='start';
+  };
+  sign(6,9,'中央市場');
+  sign(10,18,'白鹿亭・下町');
+  sign(31,11,'軍務街');
+  sign(34,4,'白石の礼拝堂');
+  sign(19.5,3,'王城正門');
   return true
  }
  // Ambient strolling residents across towns & final front camps (purely visual, zero collision blocking!)
  // Speeds are calm medieval strolling speeds in tiles/second (tps), with natural endpoint pauses.
  const regionWalkers=Object.freeze({
   capital:[
-   {pts:[[11,5],[11,12]],tps:1.18,pause:2100,festive:'strollerFestive',after:'strollerScholar',wartime:'strollerSomber'},
-   {pts:[[3,8],[8,8]],tps:1.05,pause:2400,festive:'strollerMerchant',after:'strollerBaker',wartime:'strollerSomber'},
-   {pts:[[6,13],[12,13]],tps:1.38,pause:1600,festive:'capitalStreetKid',after:'strollerBard',wartime:'strollerPatrol'},
-   {pts:[[15,7],[19,7]],tps:1.02,pause:2200,festive:'strollerPatrol',after:'strollerPatrol',wartime:'strollerPatrol'}
+   {pts:[[19,9],[19,24]],tps:1.18,pause:2100,festive:'strollerFestive',after:'strollerScholar',wartime:'strollerSomber'},
+   {pts:[[4,14],[13,14]],tps:1.05,pause:2400,festive:'strollerMerchant',after:'strollerBaker',wartime:'strollerSomber'},
+   {pts:[[6,24],[15,24]],tps:1.34,pause:1700,festive:'capitalStreetKid',after:'strollerBard',wartime:'strollerPatrol'},
+   {pts:[[28,13],[37,13]],tps:1.02,pause:2200,festive:'strollerPatrol',after:'strollerPatrol',wartime:'strollerPatrol'},
+   {pts:[[27,23],[36,23]],tps:1.08,pause:2300,festive:'strollerScholar',after:'strollerFestive',wartime:'strollerSomber'}
   ],
   village:[
    {pts:[[6,7],[16,7]],tps:1.32,pause:1900,festive:'strollerChild',after:'strollerChild',wartime:'strollerChild'},
@@ -490,9 +475,9 @@ const CapitalEnvironment=(()=>{
    {pts:[[8,7],[19,7]],tps:1.32,pause:1800,festive:'strollerChild',after:'strollerChild',wartime:'strollerChild'}
   ],
   imperialcity:[
-   {pts:[[11,2],[11,13]],tps:1.14,pause:2200,festive:'strollerScholar',after:'strollerMerchant',wartime:'strollerSomber'},
-   {pts:[[3,7],[19,7]],tps:1.12,pause:2100,festive:'strollerFestive',after:'strollerBard',wartime:'strollerSomber'},
-   {pts:[[4,11],[18,11]],tps:1.04,pause:2000,festive:'strollerImperialPatrol',after:'strollerImperialPatrol',wartime:'strollerImperialPatrol'}
+   {pts:[[17,3],[17,21]],tps:1.14,pause:2200,festive:'strollerScholar',after:'strollerMerchant',wartime:'strollerSomber'},
+   {pts:[[4,12],[31,12]],tps:1.12,pause:2100,festive:'strollerFestive',after:'strollerBard',wartime:'strollerSomber'},
+   {pts:[[5,17],[30,17]],tps:1.04,pause:2000,festive:'strollerImperialPatrol',after:'strollerImperialPatrol',wartime:'strollerImperialPatrol'}
   ],
   elsia:[
    {pts:[[11,5],[11,12]],tps:1.02,pause:2600,festive:'strollerVillager',after:'strollerBaker',wartime:'strollerVillager'},

@@ -14,7 +14,7 @@ function encounterSafeZone(map=state.map,x=state.x,y=state.y){
 function rollEncounterThreshold(map=state.map){const [min,max]=encounterRange(map);return min+Math.floor(Math.random()*(max-min+1))}
 function resetEncounterCounter(map=state.map){state.encounterSteps=0;state.nextEncounterAt=rollEncounterThreshold(map)}
 function setMap(map,x,y,dir,trail){const from=state.map;state.map=map;state.x=x;state.y=y;state.dir=dir;state.trail=trail;state.worldStepsOnMap=0;markVisited(map,true);resetEncounterCounter(map);if(!state.battle)setMusic(mapMusicTheme(map));GC.Log?.info('Map Transition',{from,to:map,x,y,dir});renderHud();draw();GC.Dev?.refresh?.()}
-function enterInterior(mapId,doorX,doorY){const firstVisit=!state.world.visited?.[mapId];state.interiorReturn={map:state.map,x:doorX,y:Math.min(ROWS-2,doorY+1),dir:'up'};setMap(mapId,11,11,'up',[[12,11],[13,11],[14,11]]);if(mapId==='capitalinn'&&isEventComplete('alpha.capital.ceremony')&&!isEventComplete('alpha.capital.whiteStagNight'))advanceStory(STORY_STAGES.WHITE_STAG,null,'白鹿亭で四人の夜を過ごす');if(firstVisit)say('ナレーション',`${maps[mapId].name}に入った。`)}
+function enterInterior(mapId,doorX,doorY){const firstVisit=!state.world.visited?.[mapId];state.interiorReturn={map:state.map,x:doorX,y:Math.min(mapRows(state.map)-2,doorY+1),dir:'up'};setMap(mapId,11,11,'up',[[12,11],[13,11],[14,11]]);if(mapId==='capitalinn'&&isEventComplete('alpha.capital.ceremony')&&!isEventComplete('alpha.capital.whiteStagNight'))advanceStory(STORY_STAGES.WHITE_STAG,null,'白鹿亭で四人の夜を過ごす');if(firstVisit)say('ナレーション',`${maps[mapId].name}に入った。`)}
 function leaveInterior(){const r=state.interiorReturn||{map:'village',x:12,y:12,dir:'up'};state.interiorReturn=null;setMap(r.map,r.x,r.y,r.dir,[[r.x+1,r.y],[r.x+2,r.y],[r.x+3,r.y]])}
 function leaveVillage(){
  advanceStory(STORY_STAGES.ROAD,null,'街道を北へ進み、道を塞ぐ灰牙狼を越える');
@@ -53,7 +53,7 @@ function returnCaveNorth(){if(getWorldSwitch('northRoadFromRoad')){useMapTransit
 
 function showChapterCard(chapter,objective,done){const box=$('chapterCard');if(!box){if(done)done();return}state.locked=true;$('chapterCardTitle').textContent=chapter;$('chapterCardObjective').textContent=objective;box.classList.remove('hidden');requestAnimationFrame(()=>box.classList.add('show'));setTimeout(()=>{box.classList.remove('show');setTimeout(()=>{box.classList.add('hidden');state.locked=false;if(done)done()},180)},1250)}
 function travelScene(map,x,y,dir,chapter,objective,text,done=null){const chapterChanged=state.chapter!==chapter;setMap(map,x,y,dir,[[x+1,y],[x+2,y],[x+3,y]]);state.chapter=chapter;state.objective=objective;renderHud();const finish=()=>done?.();const after=()=>{if(text)say('ナレーション',text,[],finish);else finish()};if(chapterChanged)showChapterCard(chapter,objective,after);else after()}
-function enterCapital(first=true){markVisited('capital',true);if(!first)setWorldSwitch('returnedKingdom',true);travelScene('capital',11,first?13:1,first?'up':'down',first?'第一章 — 白い旗':'第七章 — 勇者の値段',first?'王城前で任命式に出る':'軍務街で歴代勇者の記録を探す',first?'城壁をくぐると、四人の名を呼ぶ歓声が石造りの街に響いた。|リュネ村とは別世界のような熱気だ。':'長い迂回路を経て四人は王都へ戻った。出発時の歓声と同じ街なのに、今は聞こえ方が違う。');if(first)advanceStory(STORY_STAGES.CAPITAL,null,'王城前で任命式に出る')}
+function enterCapital(first=true){markVisited('capital',true);if(!first)setWorldSwitch('returnedKingdom',true);const capY=first?mapRows('capital')-2:1;travelScene('capital',20,capY,first?'up':'down',first?'第一章 — 白い旗':'第七章 — 勇者の値段',first?'王城前で任命式に出る':'軍務街で歴代勇者の記録を探す',first?'城壁をくぐると、四人の名を呼ぶ歓声が石造りの街に響いた。|リュネ村とは別世界のような熱気だ。':'長い迂回路を経て四人は王都へ戻った。出発時の歓声と同じ街なのに、今は聞こえ方が違う。');if(first)advanceStory(STORY_STAGES.CAPITAL,null,'王城前で任命式に出る')}
 function enterAshRoad(){markVisited('ashroad',true);advanceStory(STORY_STAGES.ASH_ROAD,null,'避難民の話を聞き、焼けた街道を調べる');travelScene('ashroad',11,13,'up','第二章 — 灰の街道','避難民の話を聞き、焼けた街道を調べる','王都で命じられたのは、前線拠点セラドへ向かうことだった。ところが街道へ出ると、最初に目に入ったのは戦勝旗ではなく、焼けた畑と避難民の列だった。')}
 function enterFrontier(){markVisited('frontier',true);advanceStory(STORY_STAGES.FRONTIER_ARRIVAL,null,'前線将校からセラドの戦況を聞く');travelScene('frontier',11,13,'up','第二章 — セラド前線','前線将校からセラドの戦況を聞く','灰の街道の先に王国前線拠点セラドが見えた。勇者到着を告げる声より早く、泥を跳ね上げる担架が四人の横を通り過ぎる。ここでは英雄譚より、負傷者と補給箱の数の方が戦況を語っていた。',()=>runTriggeredEvent('arrival','frontier',{map:'frontier'}))}
 function enterFrontierField(){markVisited('frontierfield',true);travelScene('frontierfield',11,13,'up','第二章 — セラド前線','戦闘跡で帝国軍の撤退痕跡を調べる','北防壁の外は、昨日までの戦闘が嘘のように静かだった。泥には北へ向かう轍と担架の跡が残り、壊れた装備だけが両軍の位置を示している。',()=>runTriggeredEvent('arrival','frontierfield',{map:'frontierfield'}))}
@@ -63,7 +63,7 @@ function enterRelay(){enterBorderland()}
 function enterWatchfort(){markVisited('watchfort',true);travelScene('watchfort',11,13,'up','第三章 — 第一の四天王','監視砦長から国境橋の状況を聞く',null,()=>runTriggeredEvent('arrival','watchfort',{map:'watchfort'}))}
 function enterRavine(){enterWatchfort()}
 function enterEmpireVillage(){setWorldSwitch('strandedEmpire',true);markVisited('empirevillage',true);travelScene('empirevillage',11,13,'up','第四章 — 敵国','身分を隠して帝国領を北へ進む','渓谷橋の崩落で四人は帝国側へ取り残された。長い国境地帯を越えた先で、ようやく最初の帝国村が見えた。そこで目にしたのは「魔王軍の巣」ではなく、水車と果樹畑、そして青い喪章だった。')}
-function enterImperialCity(){markVisited('imperialcity',true);travelScene('imperialcity',11,13,'up','第四章 — 敵国','帝国の町で情報を集める','辺境村で何度も目にした「ユウキ」という名を確かめるため、四人は地方都市の公文書館を目指す。市場も運河も役所もある。ここは敵の本拠地である前に、人が暮らす国だった。')}
+function enterImperialCity(){markVisited('imperialcity',true);travelScene('imperialcity',17,mapRows('imperialcity')-2,'up','第四章 — 敵国','帝国の町で情報を集める','辺境村で何度も目にした「ユウキ」という名を確かめるため、四人は地方都市の公文書館を目指す。市場も運河も役所もある。ここは敵の本拠地である前に、人が暮らす国だった。')}
 function enterYukiRoad(){travelScene('yukiroad',11,13,'up','第五章 — ユウキ','旧戦場でユウキの記録を探す','王都では「討伐された四天王」、クラインテッドは「ユウキを討った勇者」と口にし、帝国では「皆を逃がした将軍」と語られた。同じ女の話とは思えない。その死んだ場所へ、自分たちの目で確かめに行く。')}
 function enterElsia(){markVisited('elsia',true);travelScene('elsia',11,13,'up','第六章 — 千年前の国境','聖域の住民と古い記録を調べる','エルシア聖域。王国の祈りの起源であり、千年近く帝国の人々が暮らしてきた土地へ四人は足を踏み入れた。')}
 function enterReturnRoad(){markVisited('returnroad',true);travelScene('returnroad',11,13,'up','第七章 — 勇者の値段','王国へ戻り、王都を目指す','得た資料を抱え、四人は戦線の隙間を縫う帰還路へ入った。')}
@@ -343,9 +343,9 @@ function showWorldSkeletonEnding(route){
 function move(dir){if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started)return;if(isInputLocked()||state.battle)return;state.dir=dir;const now=Date.now();if(now<VISUAL.nextMoveAt){draw();return}VISUAL.nextMoveAt=now+(GC.Dev?.settings?.moveDelay??88);let nx=state.x,ny=state.y;if(dir==='up')ny--;if(dir==='down')ny++;if(dir==='left')nx--;if(dir==='right')nx++;
  // Optional Ryune outskirts. Border exits are checked before generic wall collision.
   if(state.map==='village'&&ny===8&&nx===0){useMapTransition('villageToFields');return}
-  if(state.map==='ryunefields'&&ny===8&&nx===23){useMapTransition('fieldsToVillage');return}
+  if(state.map==='ryunefields'&&ny===6&&nx>=mapCols('ryunefields')-1){useMapTransition('fieldsToVillage');return}
   if(state.map==='village'&&ny===8&&nx===23){useMapTransition('villageToBrook');return}
-  if(state.map==='ryunebrook'&&ny===8&&nx===0){useMapTransition('brookToVillage');return}
+  if(state.map==='ryunebrook'&&ny===6&&nx<=0){useMapTransition('brookToVillage');return}
   if(state.map==='road'&&ny===11&&nx===23){useMapTransition('roadToHollow');return}
   if(state.map==='roadhollow'&&ny===11&&nx===0){useMapTransition('hollowToRoad');return}
   if(state.map==='northroad'&&ny===7&&nx===23){useMapTransition('northToWaystation');return}
@@ -367,9 +367,9 @@ function move(dir){if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started
  if(INTERIOR_MAPS.includes(state.map)&&ny>=13&&[11,12].includes(nx)){leaveInterior();return}
  if(state.map==='road'&&ny<0){if(!isDefeated('wolf')){say('トリトン','「先に街道を塞いでいる灰牙狼を何とかしよう」');return}enterNorthRoad('road');return}
  // 全章マップ骨組み
- if(state.map==='capital'&&ny>=15&&[11,12].includes(nx)){if(getWorldSwitch('returnedKingdom')){enterReturnRoad();return}travelScene('northroad',11,1,'down','第一章 — 白い旗','王都へ戻る／周辺を確認する','王都南側の旧街道へ戻った。');return}
- if(state.map==='capital'&&ny<0&&[11,12].includes(nx)){if(getWorldSwitch('returnedKingdom')){if(!isEventComplete('heroRecordsFound')){say('マーガレット','「軍務街に“勇者候補管理”の記録がある。まずそれを確かめたい」');return}if(!isEventComplete('heroTruth')){say('総司令部','台帳の内容をグランツ本人に問い質す必要がある。');return}enterFinalField();return}if(!isEventComplete('alpha.capital.ceremony')){say('王都北門','正式な任命式を終えるまでは前線へ出られない。');return}if(!isEventComplete('alpha2.capital.granzBriefing')){say('王都北門','総司令グランツから前線任務の説明を受けてから出発しよう。');return}enterAshRoad();return}
- if(state.map==='ashroad'&&ny>=15&&[11,12].includes(nx)){travelScene('capital',11,1,'down','第二章 — 灰の街道','前線へ向かう／王都へ戻る','王都へ戻った。');return}
+ if(state.map==='capital'&&ny>=mapRows('capital')&&[20,21].includes(nx)){if(getWorldSwitch('returnedKingdom')){enterReturnRoad();return}travelScene('northroad',11,1,'down','第一章 — 白い旗','王都へ戻る／周辺を確認する','王都南側の旧街道へ戻った。');return}
+ if(state.map==='capital'&&ny<0&&[20,21].includes(nx)){if(getWorldSwitch('returnedKingdom')){if(!isEventComplete('heroRecordsFound')){say('マーガレット','「軍務街に“勇者候補管理”の記録がある。まずそれを確かめたい」');return}if(!isEventComplete('heroTruth')){say('総司令部','台帳の内容をグランツ本人に問い質す必要がある。');return}enterFinalField();return}if(!isEventComplete('alpha.capital.ceremony')){say('王都北門','正式な任命式を終えるまでは前線へ出られない。');return}if(!isEventComplete('alpha2.capital.granzBriefing')){say('王都北門','総司令グランツから前線任務の説明を受けてから出発しよう。');return}enterAshRoad();return}
+ if(state.map==='ashroad'&&ny>=15&&[11,12].includes(nx)){travelScene('capital',20,1,'down','第二章 — 灰の街道','前線へ向かう／王都へ戻る','王都へ戻った。');return}
  if(state.map==='ashroad'&&ny<0&&[11,12].includes(nx)){if(isEventComplete('alpha2.ashroad.complete')){enterFrontier();return}if(!isEventComplete('alpha2.ashroad.patrolVictory')){say('カレン','「前方に帝国軍の斥候がいる。街道を抜けるなら、避けては通れない」');return}if(!isEventComplete('alpha2.ashroad.refugee')){say('ソフィ','「先へ行く前に、避難してきた人の話を聞いておきたいです」');return}if(!isEventComplete('alpha2.ashroad.orders')){say('マーガレット','「焼け跡に残った命令書を確認しましょう。何を狙った攻撃なのか知っておきたい」');return}runTriggeredEvent('boundary','north',{map:'ashroad'});return}
  if(state.map==='frontier'&&ny>=15&&[11,12].includes(nx)){enterAshRoad();return}
  if(state.map==='frontier'&&ny<0&&[11,12].includes(nx)){if(!isEventComplete('alpha2.frontier.complete')){say('セラド北防壁','追撃命令は出ていない。前線将校へ報告し、この区間の任務を終えよう。');return}if(!isEventComplete('alpha2.frontier2.order')){say('カレン','「先に前線将校から、戦後の次の指示を聞こう」');return}if(!isEventComplete('alpha2.frontier2.aftermath')){say('ソフィ','「北へ出る前に、野戦病院の状況を確認しましょう」');return}if(isEventComplete('alpha2.frontier2.complete')){enterBorderland();return}enterFrontierField();return}
@@ -386,15 +386,15 @@ function move(dir){if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started
  if(state.map==='ravine'&&ny<0&&[11,12].includes(nx)){if(!isEventComplete('metKlein')){enterWatchfort();return}enterEmpireVillage();return}
  if(state.map==='empirevillage'&&ny>=15&&[11,12].includes(nx)){say('崩れた渡河点','戦闘で橋が落ちている。今は王国側へ戻れない。帝国内で別の道を探すしかない。');return}
  if(state.map==='empirevillage'&&ny<0&&[11,12].includes(nx)){enterImperialCity();return}
- if(state.map==='imperialcity'&&ny>=15&&[11,12].includes(nx)){travelScene('empirevillage',11,1,'down','第四章 — 敵国','帝国領を調べる','辺境の村へ戻った。');return}
- if(state.map==='imperialcity'&&ny<0&&[11,12].includes(nx)){if(!isEventComplete('heardYuki')){say('マーガレット','「ユウキについて、町の記録係から話を聞いておきたい」');return}enterYukiRoad();return}
- if(state.map==='yukiroad'&&ny>=15&&[11,12].includes(nx)){enterImperialCity();return}
+ if(state.map==='imperialcity'&&ny>=mapRows('imperialcity')&&[17,18].includes(nx)){travelScene('empirevillage',11,1,'down','第四章 — 敵国','帝国領を調べる','辺境の村へ戻った。');return}
+ if(state.map==='imperialcity'&&ny<0&&[17,18].includes(nx)){if(!isEventComplete('heardYuki')){say('マーガレット','「ユウキについて、町の記録係から話を聞いておきたい」');return}enterYukiRoad();return}
+ if(state.map==='yukiroad'&&ny>=15&&[11,12].includes(nx)){travelScene('imperialcity',17,1,'down','第四章 — 敵国','帝国の町で情報を集める','レグノア地方都市へ戻った。');return}
  if(state.map==='yukiroad'&&ny<0&&[11,12].includes(nx)){if(!isEventComplete('metZester')){say('ナレーション','聖域へ続く道には帝国軍が布陣している。ゼスターと話をつける必要がある。');return}enterElsia();return}
  if(state.map==='elsia'&&ny>=15&&[11,12].includes(nx)){enterYukiRoad();return}
  if(state.map==='elsia'&&ny<0&&[11,12].includes(nx)){if(!isEventComplete('metZenith')){say('ゼニス','「まだ見るべきものがある。住民と古い碑文、その両方を見てから来い」');return}enterReturnRoad();return}
  if(state.map==='returnroad'&&ny>=15&&[11,12].includes(nx)){enterElsia();return}
  if(state.map==='returnroad'&&ny<0&&[11,12].includes(nx)){enterCapital(false);return}
- if(state.map==='finalfield'&&ny>=15&&[11,12].includes(nx)){if(state.finalChoice==='ashcrown'&&!!state.events?.choices?.['route.companions.ashcrown']){say('カレン','「三人と別れた。戻っても、あの頃の四人には戻れない」');return}travelScene('capital',11,1,'down','最終章 — 誰のための勇者か','最後の選択へ向かう','王都側の前線へ戻った。');return}
+ if(state.map==='finalfield'&&ny>=15&&[11,12].includes(nx)){if(state.finalChoice==='ashcrown'&&!!state.events?.choices?.['route.companions.ashcrown']){say('カレン','「三人と別れた。戻っても、あの頃の四人には戻れない」');return}travelScene('capital',20,1,'down','最終章 — 誰のための勇者か','最後の選択へ向かう','王都側の前線へ戻った。');return}
  if(state.map==='finalfield'&&ny<0&&[11,12].includes(nx)){if(!state.finalChoice){say('決断の地点','中央にいる人物に話しかけ、どちら側に立つか決める必要がある。');return}enterFinalBranch();return}
  if(['imperialcamp','royalcamp'].includes(state.map)&&ny>=15&&[11,12].includes(nx)){travelScene('finalfield',11,1,'down','最終章 — 誰のための勇者か','最終決戦の相手へ向かう','両軍がぶつかる前線へ戻った。');return}
  if(isBlocked(nx,ny)){draw();return}state.trail.unshift([state.x,state.y]);state.trail=state.trail.slice(0,10);state.x=nx;state.y=ny;state.worldStepsOnMap=(state.worldStepsOnMap||0)+1;handleStep();draw()}

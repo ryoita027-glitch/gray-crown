@@ -55,7 +55,7 @@ function drawHeroSpriteSheet(x,y,heroId,leader,facing,motion,now=Date.now()){
  ctx.save();ctx.imageSmoothingEnabled=false;ctx.drawImage(cfg.image,fallbackFrame*32,fallbackRow*32,32,32,px,py,32,32);ctx.restore();if(leader)drawHeroMarker(px+16,py);return true
 }
 function heroRuntimeStatus(){const out={};for(const id of Object.keys(HERO_SPRITES.characters)){const rec=HERO_RUNTIME.images[id];out[id]={ready:!!rec?.ready,error:!!rec?.error,naturalWidth:rec?.image?.naturalWidth||rec?.image?.width||0,naturalHeight:rec?.image?.naturalHeight||rec?.image?.height||0}}return out}
-function tileAt(mapId,x,y){const m=maps[mapId];if(!m||x<0||y<0||x>=COLS||y>=ROWS)return'S';return m.tiles[y][x]}
+function tileAt(mapId,x,y){const m=maps[mapId];if(!m||x<0||y<0||x>=mapCols(m)||y>=mapRows(m))return'S';return m.tiles[y][x]}
 function objectCleared(id){if(TREASURE_DEFS[id]&&state.world.treasures[id])return true;return (id==='wolf'&&isDefeated('wolf'))||(id==='bandit'&&isDefeated('bandit'))||(id==='bats'&&isDefeated('bats'))||(id==='crawler'&&isDefeated('crawler'))||(id==='boss'&&isDefeated('boss'))||(id==='scavengerWolves'&&isDefeated('scavengerWolves'))||(['hungryBoar','nestBeetles','highlandWolves','ashHounds','canyonBoar','battlefieldPack','ridgeWolves','hollowStagWolf','watchAlpha','canyonAlpha','ridgeAlpha'].includes(id)&&isDefeated(id))||(id==='chest1'&&state.world.treasures.chest1)||(id==='chest2'&&state.world.treasures.chest2)||(id==='innerGate'&&getWorldSwitch('leverWest')&&getWorldSwitch('leverEast'))||((id==='imperialPatrol'&&isDefeated('imperialPatrol'))||((['fortGate','fortGateRight'].includes(id)&&getWorldSwitch('fortGateOpen'))||(['ashCache','frontierCache','empireCache','imperialCache','yukiCache','elsiaCache'].includes(id)&&state.world.treasures[id])))}
 function npcVisible(n){if(n.showWhen&&!structuredCondition(n.showWhen))return false;if(n.hideWhen&&structuredCondition(n.hideWhen))return false;return true}
 function isBlocked(x,y){
@@ -129,9 +129,10 @@ function drawTileDetail(ch,x,y){if(RyuneOutskirts.maps.has(state.map))return;if(
 }
 function drawTerrainBlend(m){if(RyuneOutskirts.maps.has(state.map))return;if(typeof EmpireSanctuaryEnvironment!=='undefined'&&EmpireSanctuaryEnvironment.enabled&&EmpireSanctuaryEnvironment.targets.has(state.map))return;if(typeof BorderWatchfortEnvironment!=='undefined'&&BorderWatchfortEnvironment.enabled&&BorderWatchfortEnvironment.targets.has(state.map))return;if(AshFrontierEnvironment.enabled&&AshFrontierEnvironment.targets.has(state.map))return;if(CapitalEnvironment.enabled&&CapitalEnvironment.mapsSupported.has(state.map))return;if(RoadCaveQuality.enabled&&RoadCaveQuality.active.has(state.map))return;if(RyuneEnvironment.enabled&&RyuneEnvironment.targets.has(state.map))return;
  const walk=new Set(['G','Q','P','D','A','E','B','M','F']);
- for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){
+ const mc=mapCols(m),mr=mapRows(m);
+ for(let y=0;y<mr;y++)for(let x=0;x<mc;x++){
   const ch=m.tiles[y][x],px=x*TILE,py=y*TILE;if(!walk.has(ch))continue;
-  const right=x+1<COLS?m.tiles[y][x+1]:null,down=y+1<ROWS?m.tiles[y+1][x]:null;
+  const right=x+1<mc?m.tiles[y][x+1]:null,down=y+1<mr?m.tiles[y+1][x]:null;
   if(right===ch){ctx.fillStyle='rgba(255,255,255,.012)';ctx.fillRect(px+TILE-2,py,4,TILE)}
   if(down===ch){ctx.fillStyle='rgba(0,0,0,.012)';ctx.fillRect(px,py+TILE-2,TILE,4)}
  }
@@ -139,12 +140,12 @@ function drawTerrainBlend(m){if(RyuneOutskirts.maps.has(state.map))return;if(typ
  // so the ground supports the characters instead of looking procedurally stained.
  const seed=state.map.length*31;
  for(let i=0;i<54;i++){
-  const sx=(i*137+seed*17)%(COLS*TILE),sy=(i*83+seed*29)%(ROWS*TILE),w=2+(i%4),h=1+(i%2);
+  const sx=(i*137+seed*17)%(mc*TILE),sy=(i*83+seed*29)%(mr*TILE),w=2+(i%4),h=1+(i%2);
   ctx.fillStyle=i%3===0?'rgba(232,218,172,.045)':'rgba(35,48,35,.05)';
   ctx.fillRect(Math.round(sx),Math.round(sy),w,h)
  }
 }
-function drawMapUnderlay(m){let c='#617556';if(INTERIOR_MAPS.includes(state.map))c='#8a6b49';else if(state.map==='capital')c='#858783';else if(state.map==='road')c='#657a59';else if(state.map==='village')c='#647a58';ctx.fillStyle=c;ctx.fillRect(-4,-4,COLS*TILE+8,ROWS*TILE+8)}
+function drawMapUnderlay(m){let c='#617556';if(INTERIOR_MAPS.includes(state.map))c='#1b1815';else if(state.map==='capital')c='#858783';else if(state.map==='road')c='#657a59';else if(state.map==='village')c='#647a58';ctx.fillStyle=c;ctx.fillRect(-4,-4,mapCols(m)*TILE+8,mapRows(m)*TILE+8)}
 function drawVerticalSliceGround(m){if(RyuneOutskirts.maps.has(state.map))return;if(typeof BorderWatchfortEnvironment!=='undefined'&&BorderWatchfortEnvironment.enabled&&BorderWatchfortEnvironment.targets.has(state.map))return;if(AshFrontierEnvironment.enabled&&AshFrontierEnvironment.targets.has(state.map))return;if(CapitalEnvironment.enabled&&CapitalEnvironment.mapsSupported.has(state.map))return;if(RoadCaveQuality.enabled&&RoadCaveQuality.active.has(state.map))return;if(RyuneEnvironment.enabled&&RyuneEnvironment.targets.has(state.map))return;
  const map=state.map;
  if(map==='village'){
@@ -398,7 +399,7 @@ function drawNpc(n){const dist=Math.abs(state.x-n.x)+Math.abs(state.y-n.y),close
    if(idx>=0&&talkers[idx]?.id===n.id){
     ctx.save();ctx.font='9px system-ui';
     const tw=Math.min(132,Math.max(46,ctx.measureText(line).width+12));
-    const bx=Math.max(4,Math.min(COLS*TILE-tw-4,n.x*TILE+16-tw/2));
+    const bx=Math.max(4,Math.min(mapCols(m)*TILE-tw-4,n.x*TILE+16-tw/2));
     const by=Math.max(6,n.y*TILE-(tall?34:21));
     ctx.fillStyle='rgba(24,22,19,.86)';ctx.fillRect(bx,by,tw,15);
     ctx.strokeStyle='rgba(232,208,154,.55)';ctx.strokeRect(bx+.5,by+.5,tw-1,14);
@@ -514,7 +515,7 @@ function drawRegionDecor(){if(RoadCaveQuality.enabled&&RoadCaveQuality.active.ha
   const rc=[12,12,11,11,10,10,10,11,12,12,11,11,12,12,12];ctx.strokeStyle='rgba(73,59,39,.25)';ctx.lineWidth=2.5;for(const off of [-.55,.55]){ctx.beginPath();for(let y=1;y<14;y++){const xx=(rc[y]+off)*TILE+16,yy=y*TILE+16;if(y===1)ctx.moveTo(xx,yy);else ctx.lineTo(xx,yy)}ctx.stroke()}
   for(let i=0;i<14;i++){const yy=(i*43)%420+26,c=rc[Math.max(0,Math.min(14,Math.floor(yy/TILE)))];const x=(c+(i%2?1.8:-1.7))*TILE+(i%3)*5;ctx.fillStyle='#817866';ctx.beginPath();ctx.ellipse(x,yy,4+(i%3)*2,2+(i%2),0,0,Math.PI*2);ctx.fill()}
  }
- if(state.map==='capital'){
+ if(state.map==='capital'&&!CapitalEnvironment.enabled){
 
   // 上層の屋根並みと遠景窓。城だけが浮かないよう街並みを作る。
   if(!CapitalEnvironment.enabled){
@@ -861,8 +862,9 @@ function drawHd2dEdgePolish(m){
  const solid=new Set(['W','H','K','S','T','Z']);
  const walk=new Set(['G','Q','P','D','A','E','B','M','F','C']);
  const shimmer=Math.floor(Date.now()/280);
- for(let y=0;y<ROWS;y++){
-  for(let x=0;x<COLS;x++){
+ const mc=mapCols(m),mr=mapRows(m);
+ for(let y=0;y<mr;y++){
+  for(let x=0;x<mc;x++){
    const ch=m.tiles[y][x],px=x*TILE,py=y*TILE;
    if(ch==='R'){
     // Subtle bank stone border & sunlit animated water glints across all river/canal maps
@@ -890,16 +892,16 @@ function drawHd2dEdgePolish(m){
    if((ch==='P'||ch==='D')&&!['village','capital'].includes(state.map)){
     const gEdge=t=>t==='G'||t==='Q';
     if(gEdge(left)){ctx.fillStyle='rgba(88,112,72,.52)';ctx.fillRect(px,py,3,TILE);ctx.fillStyle='rgba(88,112,72,.26)';ctx.fillRect(px+3,py+2,2,TILE-4)}
-    if(x+1<COLS&&gEdge(m.tiles[y][x+1])){ctx.fillStyle='rgba(88,112,72,.52)';ctx.fillRect(px+TILE-3,py,3,TILE);ctx.fillStyle='rgba(88,112,72,.26)';ctx.fillRect(px+TILE-5,py+2,2,TILE-4)}
+    if(x+1<mc&&gEdge(m.tiles[y][x+1])){ctx.fillStyle='rgba(88,112,72,.52)';ctx.fillRect(px+TILE-3,py,3,TILE);ctx.fillStyle='rgba(88,112,72,.26)';ctx.fillRect(px+TILE-5,py+2,2,TILE-4)}
     if(gEdge(up)){ctx.fillStyle='rgba(88,112,72,.52)';ctx.fillRect(px,py,TILE,3);ctx.fillStyle='rgba(88,112,72,.26)';ctx.fillRect(px+2,py+3,TILE-4,2)}
-    if(y+1<ROWS&&gEdge(m.tiles[y+1][x])){ctx.fillStyle='rgba(88,112,72,.52)';ctx.fillRect(px,py+TILE-3,TILE,3);ctx.fillStyle='rgba(88,112,72,.26)';ctx.fillRect(px+2,py+TILE-5,TILE-4,2)}
+    if(y+1<mr&&gEdge(m.tiles[y+1][x])){ctx.fillStyle='rgba(88,112,72,.52)';ctx.fillRect(px,py+TILE-3,TILE,3);ctx.fillStyle='rgba(88,112,72,.26)';ctx.fillRect(px+2,py+TILE-5,TILE-4,2)}
    }
   }
  }
 }
 function drawWorldAtmosphere(map){
  // Unified Square Enix HD-2D cinematic lighting, additive light blooms, drifting motes & diorama depth vignette across ALL 42 maps
- const w=COLS*TILE,h=ROWS*TILE,now=Date.now();
+ const w=mapCols(map)*TILE,h=mapRows(map)*TILE,now=Date.now();
  ctx.save();
  const bloom=(gx,gy,r,col)=>{
   const g=ctx.createRadialGradient?.(gx,gy,2,gx,gy,r);
@@ -912,9 +914,9 @@ function drawWorldAtmosphere(map){
  if(map==='capital'&&getWorldSwitch('returnedKingdom')){
   // Chapter 7 Wartime Overcast Aldina: heavy slate-blue sky, dim streetlamp halos & drifting memorial petals/ash
   ctx.fillStyle='rgba(24,34,52,.20)';ctx.fillRect(0,0,w,h);
-  for(const [lx,ly] of [[6,7],[17,7],[10,11],[14,11]])bloom(lx*TILE+16,ly*TILE+14,44,'rgba(210,180,126,.14)');
+  for(const [lx,ly] of [[18,12],[23,12],[18,18],[23,18],[18,24],[23,24],[12,13],[29,13]])bloom(lx*TILE+16,ly*TILE+14,44,'rgba(210,180,126,.14)');
   const drift=Math.floor(now/240);
-  for(let i=0;i<22;i++){
+  for(let i=0;i<32;i++){
    const mx=((i*173+drift*3)%(w-32))+16,my=((i*119+drift*2)%(h-32))+16;
    ctx.fillStyle=i%3===0?'rgba(244,248,252,.56)':'rgba(186,196,210,.30)';
    ctx.fillRect(mx,my,i%3===0?3:2,2);
@@ -924,12 +926,12 @@ function drawWorldAtmosphere(map){
   const postCeremony=map==='capital'&&isEventComplete('alpha.capital.ceremony');
   const dusk=['road','northroad','borderland','relayvillage'].includes(map);
   ctx.fillStyle=dusk?'rgba(255,198,128,.055)':map==='capital'?(postCeremony?'rgba(252,216,162,.052)':'rgba(255,240,192,.064)'):'rgba(255,238,176,.056)';
-  for(const sx of [56,248,452,640]){
+  for(let sx=56;sx<w+120;sx+=200){
    ctx.beginPath();ctx.moveTo(sx,0);ctx.lineTo(sx+82,0);ctx.lineTo(sx-48,h);ctx.lineTo(sx-130,h);ctx.closePath();ctx.fill();
   }
   if(map==='capital'){
-   for(const [lx,ly] of [[6,7],[17,7],[10,11],[14,11],[10,3],[13,3]])bloom(lx*TILE+16,ly*TILE+14,52,'rgba(255,204,112,.18)');
-   bloom(12*TILE+16,8*TILE+16,56,'rgba(148,224,244,.12)');
+   for(const [lx,ly] of [[18,12],[23,12],[18,18],[23,18],[18,24],[23,24],[12,13],[29,13],[18,5],[23,5]])bloom(lx*TILE+16,ly*TILE+14,52,'rgba(255,204,112,.18)');
+   bloom(20.5*TILE+16,15*TILE+16,64,'rgba(148,224,244,.14)');
   }else if(map==='village'){
    for(const [lx,ly] of [[4,4],[18,4],[4,11],[18,11]])bloom(lx*TILE+48,ly*TILE+62,48,'rgba(255,206,118,.15)');
   }
@@ -1044,13 +1046,14 @@ function currentQuestTarget(){const candidate=GC.CommercialDiscovery?.questHint?
 }
 function drawQuestMarker(){const q=currentQuestTarget();if(!q)return;const m=maps[state.map],item=q.kind==='npc'?m.npcs.find(n=>n.id===q.id&&npcVisible(n)):m.objects.find(o=>o.id===q.id&&visibleObject(o));if(!item)return;const px=item.x*TILE+16,py=item.y*TILE-8;ctx.fillStyle='rgba(26,20,11,.78)';ctx.beginPath();ctx.arc(px,py,8,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f2cf67';ctx.beginPath();ctx.moveTo(px,py-6);ctx.lineTo(px+5,py);ctx.lineTo(px,py+6);ctx.lineTo(px-5,py);ctx.closePath();ctx.fill();ctx.strokeStyle='#fff0ad';ctx.lineWidth=1;ctx.stroke()}
 function drawAreaIdentity(){/* area identity is rendered by the HTML world HUD */}
-function viewScale(){if(INTERIOR_MAPS.includes(state.map))return 1.18;if(['capital','imperialcity','borderland','watchfort','empirevillage','elsia'].includes(state.map))return 1.25;return 1.16}
+function viewScale(){if(INTERIOR_MAPS.includes(state.map))return 1.22;if(['ryunefields','ryunebrook'].includes(state.map))return 1.48;if(['capital','imperialcity'].includes(state.map))return 1.08;if(['borderland','watchfort','empirevillage','elsia'].includes(state.map))return 1.18;return 1.16}
 const VISUAL={lastActingFrame:0,map:null,camX:0,camY:0,playerX:0,playerY:0,travelPhase:0,followers:[[12,13],[13,13],[14,13]],followerPhases:[0,0,0],followerFaces:['down','down','down'],leaderQueue:[],leaderGoal:null,followerQueues:[[],[],[]],followerGoals:[null,null,null],raf:0,ambientTimer:0,nextMoveAt:0};
 function partyTrailPoints(){
  // A follower owns each previous whole step. No 2/4/6 tile teleporting.
  const trail=Array.isArray(state.trail)?state.trail:[],used=new Set([state.x+','+state.y]),out=[];
  const behind={down:[0,-1],up:[0,1],left:[1,0],right:[-1,0]}[state.dir]||[0,-1];
- const valid=(x,y)=>x>=0&&y>=0&&x<COLS&&y<ROWS&&!['T','H','S','W','R','K','Z'].includes(tileAt(state.map,x,y));
+ const mc=mapCols(state.map),mr=mapRows(state.map);
+ const valid=(x,y)=>x>=0&&y>=0&&x<mc&&y<mr&&!['T','H','S','W','R','K','Z'].includes(tileAt(state.map,x,y));
  const insert=(x,y)=>{let key=x+','+y;if(!Number.isInteger(x)||!Number.isInteger(y)||!valid(x,y)||used.has(key))return false;used.add(key);out.push([x,y]);return true};
  for(let i=0;i<3;i++){
   // For first 3 moves of a new map use the walking history only when
@@ -1090,7 +1093,15 @@ function enqueueWalkGoal(queue,previous,next){
  if(queue.length>12)queue.splice(0,queue.length-12);
  return [next[0],next[1]]
 }
-function cameraForMap(){const o=GC.Cinematic?.cameraTarget?.(),scale=o?.scale||viewScale(),vw=GC.DOM.width/scale,vh=GC.DOM.height/scale,worldW=COLS*TILE,worldH=ROWS*TILE,fx=Number.isFinite(o?.x)?o.x:state.x,fy=Number.isFinite(o?.y)?o.y:state.y,cx=fx*TILE+TILE/2,cy=fy*TILE+TILE/2;return{scale,x:Math.max(0,Math.min(worldW-vw,cx-vw/2)),y:Math.max(0,Math.min(worldH-vh,cy-vh/2))}}
+function cameraForMap(){
+ const o=GC.Cinematic?.cameraTarget?.(),scale=o?.scale||viewScale(),vw=GC.DOM.width/scale,vh=GC.DOM.height/scale;
+ const worldW=mapCols(state.map)*TILE,worldH=mapRows(state.map)*TILE;
+ const fx=Number.isFinite(o?.x)?o.x:state.x,fy=Number.isFinite(o?.y)?o.y:state.y;
+ const cx=fx*TILE+TILE/2,cy=fy*TILE+TILE/2;
+ const x=worldW<=vw?-(vw-worldW)/2:Math.max(0,Math.min(worldW-vw,cx-vw/2));
+ const y=worldH<=vh?-(vh-worldH)/2:Math.max(0,Math.min(worldH-vh,cy-vh/2));
+ return{scale,x,y};
+}
 function drawScene(){
  // Do not skip camera or actor frames to throttle villagers.
  // Dialogue's approved sheet poses need ~12fps, not an expensive full 60fps
@@ -1129,7 +1140,8 @@ function drawScene(){
  }
  RyuneOutskirts.setViewer(state.x,state.y);
  ctx.save();ctx.scale(target.scale,target.scale);ctx.translate(-VISUAL.camX,-VISUAL.camY);drawMapUnderlay(m);
- for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){drawTile(m.tiles[y][x],x,y);drawTileDetail(m.tiles[y][x],x,y)}drawTerrainBlend(m);drawVerticalSliceGround(m);drawHd2dEdgePolish(m);
+ const mc=mapCols(m),mr=mapRows(m);
+ for(let y=0;y<mr;y++)for(let x=0;x<mc;x++){drawTile(m.tiles[y][x],x,y);drawTileDetail(m.tiles[y][x],x,y)}drawTerrainBlend(m);drawVerticalSliceGround(m);drawHd2dEdgePolish(m);
  if(state.map==='village'){if(RyuneEnvironment.enabled)RyuneEnvironment.drawVillage(ctx);else{drawVillageDecor();villageHouses.forEach(drawHouse)}if(isEventComplete('alpha.capital.ceremony')){for(const [rx,ry] of [[15*TILE+16,9*TILE+16],[15*TILE+24,9*TILE+19],[16*TILE+2,9*TILE+22]]){ctx.fillStyle='#5c452e';ctx.fillRect(rx-1,ry-1,11,8);ctx.fillStyle='#dfc894';ctx.fillRect(rx,ry,9,6);ctx.fillStyle='#8c6a42';ctx.fillRect(rx+3,ry,2,6)}}}if(INTERIOR_MAPS.includes(state.map)){if(RyuneEnvironment.enabled&&RyuneEnvironment.rooms.has(state.map))RyuneEnvironment.drawInterior(ctx,state.map);else drawInteriorDecor();CapitalEnvironment.interior(ctx,state.map);if(typeof EmpireSanctuaryEnvironment!=='undefined')EmpireSanctuaryEnvironment.interior(ctx,state.map);}drawRegionDecor();AshFrontierEnvironment.accents(ctx,state.map);if(typeof BorderWatchfortEnvironment!=='undefined')BorderWatchfortEnvironment.accents(ctx,state.map);if(typeof EmpireSanctuaryEnvironment!=='undefined')EmpireSanctuaryEnvironment.accents(ctx,state.map);CapitalEnvironment.street(ctx,state.map);OpeningWorldLife.ground(ctx,state.map,state.events.choices);RyuneOutskirts.drawAccents(ctx,state.map);RyuneOutskirts.drawProgress(ctx,state.map,state.events.choices,state.events.completed);m.objects.forEach(drawObject);const cinematicActive=GC.Cinematic?.isActive?.()===true,controlledNpcs=new Set(GC.Cinematic?.controlledNpcIds?.()||[]);if(!cinematicActive&&CapitalEnvironment.drawWalkers)CapitalEnvironment.drawWalkers(ctx,state.map,Date.now());m.npcs.filter(n=>npcVisible(n)&&!controlledNpcs.has(n.id)).forEach(drawNpc);drawQuestMarker();
  if(cinematicActive){GC.Cinematic?.drawActors?.(ctx,{drawCharacterSprite,drawHeroSpriteSheet,drawNpcCommercial})}else{const leaderMoving=VISUAL.leaderQueue.length>0||Math.abs(state.x-VISUAL.playerX)>.015||Math.abs(state.y-VISUAL.playerY)>.015,phase=leaderMoving?VISUAL.travelPhase:0;drawPartyRuntime(leaderMoving,phase);drawInteractionMarker()}drawWorldAtmosphere(state.map);GC.Dev?.drawWorldOverlay?.(ctx);ctx.restore();drawAreaIdentity();$('locationLabel').textContent=m.name;if($('safetyLabel')){const safe=encounterSafeZone();$('safetyLabel').textContent=safe?'● 安全地帯':'▲ 危険地帯';$('safetyLabel').classList.toggle('danger',!safe)};
  const followerTargets=partyTrailPoints(),followerMoving=VISUAL.followers.some((p,i)=>{const t=followerTargets[i]||p;return Math.abs(t[0]-p[0])>.01||Math.abs(t[1]-p[1])>.01});const moving=cinematicActive||VISUAL.leaderQueue.length>0||VISUAL.followerQueues.some(q=>q.length>0)||Math.abs(target.x-VISUAL.camX)>.08||Math.abs(target.y-VISUAL.camY)>.08||Math.abs(state.x-VISUAL.playerX)>.01||Math.abs(state.y-VISUAL.playerY)>.01||followerMoving;

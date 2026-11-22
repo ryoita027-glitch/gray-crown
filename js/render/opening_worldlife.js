@@ -135,9 +135,8 @@ const OpeningWorldLife=(()=>{
   }
  }
  function capital(c){
-  // City shows prosperity and scarcity in neighboring, distinctly designed areas.
-  // Market booth cloth, fruit baskets, rope, and packaging all on existing stalls.
-  for(const [tx,ty,cloth] of [[3,7,'#a76655'],[5,9,'#aa8d58'],[7,7,'#628792']]){
+  // Grand 42x28 Royal Capital market wares & ration line markings aligned cleanly to spacious districts
+  for(const [tx,ty,cloth] of [[3,11,'#a76655'],[7,11,'#aa8d58'],[11,11,'#628792']]){
    const [x,y]=at(tx,ty);
    R(c,'#4a4136',x+1,y+10,30,17);
    R(c,cloth,x+1,y+3,30,9);
@@ -148,21 +147,17 @@ const OpeningWorldLife=(()=>{
     R(c,'#d9a875',x+ox+1,y+18,4,1)
    }
   }
-  // Ration line: restrained chalk and worn queue marks, not invented residents.
-  for(const [tx,ty] of [[15,9],[16,9],[17,9],[15,10],[16,10]]){
+  for(const [tx,ty] of [[28,15],[29,15],[30,15],[28,16],[29,16]]){
    const [x,y]=at(tx,ty);
    R(c,'#d1c5b3',x+6,y+25,18,2);
    R(c,'#827a71',x+8,y+28,14,1);
   }
-  basket(c,17*32+5,8*32+9,'empty');
-  // Palatial side of the square retains rich stone inlays.
-  for(const [tx,ty] of [[9,4],[12,4],[15,4]]){
+  basket(c,30*32+5,14*32+9,'empty');
+  for(const [tx,ty] of [[18,6],[20,6],[22,6]]){
    const [x,y]=at(tx,ty);
    R(c,'#cfc7b8',x+9,y+25,15,2);
    R(c,'#e4d7bb',x+11,y+24,11,1)
   }
-  // Municipal announcement board ties into the existing propaganda object.
-  // Use the existing victoryPoster object: no impassable-looking false board.
  }
  function ground(c,map,choices={}){if(!api.enabled)return false;
   if(map==='village')village(c,choices);

@@ -178,7 +178,7 @@ const EmpireSanctuaryEnvironment=(()=>{
     return true; // Full multi-story blue-tiled stone buildings drawn in accents()
    }
    if(ch==='E'||ch==='A'){
-    const onBridge=(y===5||y===10)&&(x===4||x===5||x===11||x===12||x===18||x===19);
+    const onBridge=(y===8||y===16)&&(x===6||x===7||x===17||x===18||x===28||x===29);
     const mainAve=ch==='A';
     if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(ctx,'cobble',x,y,onBridge||mainAve?'capital':'imperial')){
      const base=onBridge?'#959ea4':mainAve?(area%2===0?'#89949c':'#909ba3'):(area%2===0?'#6e7c86':'#75838e');
@@ -191,8 +191,8 @@ const EmpireSanctuaryEnvironment=(()=>{
     }
     if(onBridge){
      // Arched carved-limestone canal bridge parapets on left & right edges
-     if(x===4||x===11||x===18){pix(ctx,'#333d47',a,b,6,32);pix(ctx,'#c4ced4',a+1,b+2,4,28);pix(ctx,'#e6edf0',a+2,b+2,2,26)}
-     if(x===5||x===12||x===19){pix(ctx,'#333d47',a+26,b,6,32);pix(ctx,'#c4ced4',a+27,b+2,4,28);pix(ctx,'#e6edf0',a+28,b+2,2,26)}
+     if(x===6||x===17||x===28){pix(ctx,'#333d47',a,b,6,32);pix(ctx,'#c4ced4',a+1,b+2,4,28);pix(ctx,'#e6edf0',a+2,b+2,2,26)}
+     if(x===7||x===18||x===29){pix(ctx,'#333d47',a+26,b,6,32);pix(ctx,'#c4ced4',a+27,b+2,4,28);pix(ctx,'#e6edf0',a+28,b+2,2,26)}
     }else{
      if(up==='H'||up==='K')pix(ctx,'rgba(14,20,28,0.32)',a,b,32,7);
      if(left==='H'||left==='K')pix(ctx,'rgba(14,20,28,0.18)',a,b,5,32);
@@ -460,31 +460,31 @@ const EmpireSanctuaryEnvironment=(()=>{
   }
 
   if(map==='imperialcity'){
-   // Grand blue-slate Imperial stone architecture blocks
-   drawImperialHouse(ctx,2,1,6,4,{roofMain:'#325068',roofHi:'#527692',wall:'#bfc4c2',bannerLabel:'地方公文書館'});
-   drawImperialHouse(ctx,16,1,6,4,{roofMain:'#38566e',roofHi:'#587c98',wall:'#c2c6c2',bannerLabel:'水運組合'});
-   drawImperialHouse(ctx,2,11,5,2,{roofMain:'#365268',roofHi:'#567892',wall:'#c4c4bc',bannerLabel:'水鳥亭'});
-   drawImperialHouse(ctx,17,11,5,2,{roofMain:'#3c526a',roofHi:'#5c7694',wall:'#c4c2ba',bannerLabel:'運河古書店'});
+   // Grand 36x24 blue-slate Imperial stone architecture blocks
+   drawImperialHouse(ctx,3,2,7,4,{roofMain:'#325068',roofHi:'#527692',wall:'#bfc4c2',bannerLabel:'地方公文書館'});
+   drawImperialHouse(ctx,26,2,7,4,{roofMain:'#38566e',roofHi:'#587c98',wall:'#c2c6c2',bannerLabel:'水運組合'});
+   drawImperialHouse(ctx,3,18,6,3,{roofMain:'#365268',roofHi:'#567892',wall:'#c4c4bc',bannerLabel:'水鳥亭'});
+   drawImperialHouse(ctx,27,18,6,3,{roofMain:'#3c526a',roofHi:'#5c7694',wall:'#c4c2ba',bannerLabel:'運河古書店'});
 
-   // Moored wooden canal boats gently bobbing on the two canals (y=5 & y=10)
+   // Moored wooden canal boats gently bobbing on the two canals (y=8 & y=16)
    const bob=Math.round(Math.sin(now/450)*1);
-   for(const [bx,by] of [[7,5],[20,5],[15,10]]){
+   for(const [bx,by] of [[11,8],[24,8],[32,8],[10,16],[22,16]]){
     const x=bx*32,y=by*32+bob;
     pix(ctx,'rgba(12,24,32,0.35)',x+2,y+19,28,6);
     pix(ctx,'#3e2e22',x+3,y+13,26,8);
     pix(ctx,'#785940',x+5,y+14,22,5);
     pix(ctx,'#cbb894',x+10,y+11,12,5);
    }
-   // Canal market stalls on the east plaza
-   for(const [sx,sy,col] of [[18,7,'#3c627a'],[20,8,'#586e66'],[16,8,'#4f5870']]){
+   // Canal market stalls lining the spacious east & west promenade squares
+   for(const [sx,sy,col] of [[26,10,'#3c627a'],[30,10,'#586e66'],[25,14,'#4f5870'],[5,10,'#46647a'],[9,14,'#5a6e60']]){
     const x=sx*32,y=sy*32;
     pix(ctx,'rgba(14,20,26,0.28)',x+3,y+24,26,5);
     pix(ctx,'#54402e',x+4,y+15,24,11);
     pix(ctx,col,x+2,y+5,28,10);
     pix(ctx,'#d8e2e8',x+5,y+7,22,3);
    }
-   // Imperial canal wrought-iron streetlamps with smooth radial golden reflections (zero square boxes!)
-   for(const [lx,ly] of [[7,6],[15,6],[7,9],[15,9]]){
+   // Imperial canal wrought-iron streetlamps with smooth radial golden reflections across the 36x24 quays
+   for(const [lx,ly] of [[12,9],[23,9],[12,15],[23,15],[15,6],[20,6],[15,18],[20,18]]){
     const x=lx*32+14,y=ly*32+6;
     const lg=ctx.createRadialGradient?.(x+2,y+2,2,x+2,y+2,26);
     if(lg&&typeof lg.addColorStop==='function'){

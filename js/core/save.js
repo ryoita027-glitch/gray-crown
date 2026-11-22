@@ -32,15 +32,16 @@ function nearestSafeTile(mapId,x,y,saveState=state){
   if(m.objects.some(o=>o.x===xx&&o.y===yy&&!passThrough.has(o.id)&&!cleared(o)))return true;
   return false
  };
- x=Math.max(0,Math.min(COLS-1,Math.floor(x)));
- y=Math.max(0,Math.min(ROWS-1,Math.floor(y)));
+ const mc=mapCols(m),mr=mapRows(m);
+ x=Math.max(0,Math.min(mc-1,Math.floor(x)));
+ y=Math.max(0,Math.min(mr-1,Math.floor(y)));
  if(!blockedTile(x,y))return[x,y];
- for(let r=1;r<12;r++)for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){
+ for(let r=1;r<16;r++)for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){
   if(Math.abs(dx)!==r&&Math.abs(dy)!==r)continue;
   const xx=x+dx,yy=y+dy;
-  if(xx>=0&&yy>=0&&xx<COLS&&yy<ROWS&&!blockedTile(xx,yy))return[xx,yy]
+  if(xx>=0&&yy>=0&&xx<mc&&yy<mr&&!blockedTile(xx,yy))return[xx,yy]
  }
- return INTERIOR_MAPS.includes(mapId)?[11,11]:[11,13]
+ return INTERIOR_MAPS.includes(mapId)?[Math.floor(mc/2)-1,mr-4]:[Math.floor(mc/2)-1,mr-2]
 }
 function mergeStructuredState(fresh,src){
  const loaded=createGameState();
@@ -64,11 +65,12 @@ function mergeStructuredState(fresh,src){
  return attachStateCompatibility(loaded)
 }
 function validateLoadedState(loaded,fresh=createGameState()){
- loaded.gold=safeNumber(loaded.gold,fresh.gold,0,999999);loaded.x=safeNumber(loaded.x,11,0,COLS-1);loaded.y=safeNumber(loaded.y,13,0,ROWS-1);
+ loaded.map=maps[loaded.map]?loaded.map:'village';if(loaded.map==='relayvillage'){loaded.map='borderland';loaded.x=11;loaded.y=5}if(loaded.map==='ravine'){loaded.map='watchfort';loaded.x=11;loaded.y=8}
+ const mc=mapCols(loaded.map),mr=mapRows(loaded.map);
+ loaded.gold=safeNumber(loaded.gold,fresh.gold,0,999999);loaded.x=safeNumber(loaded.x,Math.floor(mc/2)-1,0,mc-1);loaded.y=safeNumber(loaded.y,mr-2,0,mr-1);
  loaded.party=(loaded.party||fresh.party).slice(0,4).map((p,i)=>{const f=fresh.party[i]||fresh.party[0];return{...f,...p,level:safeNumber(p.level,f.level,1,MAX_LEVEL),exp:safeNumber(p.exp,f.exp,0,9999999),maxHp:safeNumber(p.maxHp,f.maxHp,1,9999),maxMp:safeNumber(p.maxMp,f.maxMp,0,9999),atk:safeNumber(p.atk,f.atk,1,999),def:safeNumber(p.def,f.def,0,999),spd:safeNumber(p.spd,f.spd,1,999),hp:safeNumber(p.hp,f.maxHp,0,safeNumber(p.maxHp,f.maxHp,1,9999)),mp:safeNumber(p.mp,f.maxMp,0,safeNumber(p.maxMp,f.maxMp,0,9999))}});
  for(const k of Object.keys(loaded.inventory||{}))loaded.inventory[k]=Math.floor(safeNumber(loaded.inventory[k],0,0,999));
  for(const k of Object.keys(loaded.world.recoveryUses||{}))loaded.world.recoveryUses[k]=Math.floor(safeNumber(loaded.world.recoveryUses[k],0,0,99));
- loaded.map=maps[loaded.map]?loaded.map:'village';if(loaded.map==='relayvillage'){loaded.map='borderland';loaded.x=11;loaded.y=5}if(loaded.map==='ravine'){loaded.map='watchfort';loaded.x=11;loaded.y=8}
  loaded.party.forEach(p=>{p.guard=false;p.buff=0});
  loaded.world.visited[loaded.map]=true;loaded.battle=null;loaded.battleReturn=null;loaded.symbolEncounter=null;loaded.locked=false;
  loaded.encounterSteps=Number.isFinite(loaded.encounterSteps)?loaded.encounterSteps:0;loaded.nextEncounterAt=Number.isFinite(loaded.nextEncounterAt)?loaded.nextEncounterAt:rollEncounterThreshold(loaded.map);

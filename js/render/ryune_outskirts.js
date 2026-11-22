@@ -8,7 +8,7 @@ const RyuneOutskirts=(()=>{
   if(map!=='ryunebrook')return false;
   if(typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches)return false;
   return Number.isFinite(x)&&Number.isFinite(y)&&
-   Math.min(Math.abs(x-12),Math.abs(x-13))+Math.abs(y-7)<=5
+   Math.min(Math.abs(x-7),Math.abs(x-8))+Math.abs(y-6)<=6
  }
  function setViewer(x,y){viewer.x=x;viewer.y=y}
  function nextWaterFrameDelay(map,x,y,now=Date.now()){
@@ -42,7 +42,7 @@ const RyuneOutskirts=(()=>{
   const x=tx*W,y=ty*W,h=hash(tx,ty);
   if(ch==='P'){
    drawPath(c,x,y);
-   if(map==='ryunebrook'&&(tx===12||tx===13)){
+   if(map==='ryunebrook'&&(tx===7||tx===8)){
     // Handcrafted HD-2D timber footbridge spanning the sparkling mountain brook
     pixel(c,'#2b5566',x,y,32,32);
     pixel(c,'#3a2a1c',x,y+1,32,30);
@@ -56,8 +56,8 @@ const RyuneOutskirts=(()=>{
     // Sturdy timber bridge guardrails & posts at top/bottom edges
     pixel(c,'#362418',x,y,32,4);pixel(c,'#8c6844',x,y+1,32,2);
     pixel(c,'#362418',x,y+28,32,4);pixel(c,'#8c6844',x,y+29,32,2);
-    if(tx===12){pixel(c,'#2e1e14',x,y-2,5,8);pixel(c,'#b89262',x+1,y-1,3,4);pixel(c,'#2e1e14',x,y+26,5,7);pixel(c,'#b89262',x+1,y+27,3,4)}
-    if(tx===13){pixel(c,'#2e1e14',x+27,y-2,5,8);pixel(c,'#b89262',x+28,y-1,3,4);pixel(c,'#2e1e14',x+27,y+26,5,7);pixel(c,'#b89262',x+28,y+27,3,4)}
+    if(tx===7){pixel(c,'#2e1e14',x,y-2,5,8);pixel(c,'#b89262',x+1,y-1,3,4);pixel(c,'#2e1e14',x,y+26,5,7);pixel(c,'#b89262',x+1,y+27,3,4)}
+    if(tx===8){pixel(c,'#2e1e14',x+27,y-2,5,8);pixel(c,'#b89262',x+28,y-1,3,4);pixel(c,'#2e1e14',x+27,y+26,5,7);pixel(c,'#b89262',x+28,y+27,3,4)}
    }
    return true;
   }
@@ -71,18 +71,18 @@ const RyuneOutskirts=(()=>{
     pixel(c,'#4c8899',x+3+off,y+6,14,2);pixel(c,'#8ec4c6',x+((7+flow*2+off)%19),y+18,11,2);
    }
    // Sculpted stone-and-moss riverbanks + water edge foam
-   if(tx===12){
+   if(tx===7){
     pixel(c,'#425a3c',x,y,4,32);pixel(c,'#6e8458',x,y,2,32);
     pixel(c,'#888674',x+2,y+(h%12)+2,4,8);pixel(c,'#b8b49e',x+3,y+(h%12)+3,2,5);
     pixel(c,'rgba(220,248,252,0.45)',x+5,y+((h+flow*4)%22)+2,2,8);
    }
-   if(tx===13){
+   if(tx===8){
     pixel(c,'#3a5036',x+28,y,4,32);pixel(c,'#667c52',x+30,y,2,32);
     pixel(c,'#7c7a6a',x+26,y+((h>>>3)%12)+4,4,8);pixel(c,'#aaa692',x+27,y+((h>>>3)%12)+5,2,5);
     pixel(c,'rgba(220,248,252,0.42)',x+25,y+((h+flow*5)%22)+2,2,7);
    }
    // Delicate floating lilypad & water blossom on calm stretches
-   if((h%7)===2&&ty!==7&&ty!==8){
+   if((h%7)===2&&ty!==6){
     const lx=x+9+(h%10),ly=y+10+((h>>>4)%10);
     pixel(c,'#244c34',lx,ly+1,8,6);pixel(c,'#46824e',lx+1,ly,6,5);pixel(c,'#7eb46a',lx+2,ly,3,2);
     if(h%2===0){pixel(c,'#fff2d4',lx+3,ly+1,3,2);pixel(c,'#f2c44c',lx+4,ly+1,1,1)}
@@ -157,34 +157,32 @@ const RyuneOutskirts=(()=>{
    return
   }
   if(map==='ryunefields'){
-   // Hay, wooden scarecrow & irrigation staves stay on nonessential cells; no fake blockers.
-   for(const [x,y] of [[3,11],[17,3],[6,5]]){
+   // Hay, wooden scarecrow & irrigation staves fitted neatly into the 16x12 farmstead
+   for(const [x,y] of [[1,5],[14,5],[9,2]]){
     const px=x*W,py=y*W;
     pixel(c,'#d3b071',px+8,py+17,20,8);
     pixel(c,'#876c48',px+7,py+22,22,3);
     pixel(c,'#e4c78a',px+12,py+15,10,2);
    }
-   // Village scarecrow watching over the western furrows
-   const sx=12*W+8,sy=3*W+2;
+   // Village scarecrow watching over the fields at (8,2)
+   const sx=8*W+8,sy=2*W+2;
    pixel(c,'#684c34',sx+6,sy+6,4,24);pixel(c,'#684c34',sx-2,sy+12,20,3);
    pixel(c,'#947858',sx+3,sy+12,10,10);pixel(c,'#d9c08a',sx+4,sy+4,8,7);
    pixel(c,'#8a523c',sx+1,sy+2,14,3);pixel(c,'#b89458',sx+3,sy,10,3);
-   pixel(c,'#786746',11*W+13,3*W+9,5,35);
   }else if(map==='ryunebrook'){
-   for(const y of [2,4,10,12]){
-    pixel(c,'#a6a284',11*W+22,y*W+18,7,4);
-    pixel(c,'#4a7b6d',14*W+2,y*W+21,12,4);
+   for(const y of [2,4,8,10]){
+    pixel(c,'#a6a284',6*W+22,y*W+18,7,4);
+    pixel(c,'#4a7b6d',9*W+2,y*W+21,12,4);
    }
-   // Wooden riverside fishing jetty beside oldAngler (10,10) & lush cattail reeds
-   pixel(c,'#543c28',11*W+6,10*W+10,26,14);pixel(c,'#94724e',11*W+8,10*W+12,22,10);
-   for(let px=10;px<28;px+=6)pixel(c,'#6a5036',11*W+px,10*W+12,1,10);
-   for(const [rx,ry] of [[11,6],[14,6],[11,11],[14,9]]){
+   // Wooden riverside fishing jetty beside oldAngler (5,8) & lush cattail reeds along the 16x12 brook
+   pixel(c,'#543c28',6*W+6,8*W+10,26,14);pixel(c,'#94724e',6*W+8,8*W+12,22,10);
+   for(let px=10;px<28;px+=6)pixel(c,'#6a5036',6*W+px,8*W+12,1,10);
+   for(const [rx,ry] of [[6,5],[9,5],[6,9],[9,8]]){
     pixel(c,'#3f6e48',rx*W+10,ry*W+14,2,10);pixel(c,'#4f8056',rx*W+14,ry*W+12,2,12);
     pixel(c,'#6e4c34',rx*W+14,ry*W+10,3,4);
    }
-   // A shallow, unblocked shoreline. Water itself remains collision-coded Z.
-   pixel(c,'#ae9c78',10*W+26,5*W+20,7,8);
-   pixel(c,'#cbba8e',10*W+27,5*W+18,5,3);
+   pixel(c,'#ae9c78',5*W+26,4*W+20,7,8);
+   pixel(c,'#cbba8e',5*W+27,4*W+18,5,3);
   }
  }
  function drawObject(c,map,o,alreadyTaken=false){
@@ -243,15 +241,13 @@ const RyuneOutskirts=(()=>{
     pixel(c,'#88795f',x+3,y,4,1);
    }
   }else if(map==='ryunefields'&&completed['ryune.outskirts.reported.fields']){
-   // Two slim measuring pegs placed beside, not across, the dry furrow.
-   for(const x of [7*W+26,8*W+3]){
-    const y=4*W+11;
+   for(const x of [5*W+26,6*W+3]){
+    const y=3*W+11;
     pixel(c,'#625037',x,y,2,17);
     pixel(c,'#c5b089',x-2,y+7,7,2);
    }
   }else if(map==='ryunebrook'&&completed['ryune.outskirts.reported.brook']){
-   // Only a small water-level marker; the blocked water is still blocked.
-   const x=11*W+24,y=5*W+8;
+   const x=6*W+24,y=4*W+8;
    pixel(c,'#665541',x,y,2,23);
    pixel(c,'#cab390',x-3,y+12,8,2);
    pixel(c,'#cab390',x-3,y+17,6,1);

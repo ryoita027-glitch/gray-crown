@@ -30,11 +30,12 @@ function makeBattlefieldTiles(){return[
  'SSSSSSSSSSSPPSSSSSSSSSSS','SGGGGGGGGGGPPGGGGGGGGGGS','SGGGGGSSGGGPPGGGSSGGGGGS','SGGGGGGGGGGPPGGGGGGGGGGS','SGGGSSGGGGGPPGGGGGSSGGGS','SGGGGGGGGGGPPGGGGGGGGGGS','SGGGGGPPPPPPPPPPPPGGGGGS','SGGGGGGGGGGPPGGGGGGGGGGS','SGGGGGGGGGGPPGGGGGGGGGGS','SGGGSSGGGGGPPGGGGGSSGGGS','SGGGGGGGGGGPPGGGGGGGGGGS','SGGGGGSSGGGPPGGGSSGGGGGS','SGGGGGGGGGGPPGGGGGGGGGGS','SGGGGGGGGGGPPGGGGGGGGGGS','SSSSSSSSSSSPPSSSSSSSSSSS'
 ]}
 
-function makeBlankRegion(fill='G',border='T'){
- const g=Array.from({length:ROWS},()=>Array(COLS).fill(fill));
- for(let x=0;x<COLS;x++){g[0][x]=border;g[ROWS-1][x]=border}
- for(let y=0;y<ROWS;y++){g[y][0]=border;g[y][COLS-1]=border}
- g[0][11]=g[0][12]='P';g[ROWS-1][11]=g[ROWS-1][12]='P';
+function makeBlankRegion(fill='G',border='T',cols=COLS,rows=ROWS){
+ const g=Array.from({length:rows},()=>Array(cols).fill(fill));
+ for(let x=0;x<cols;x++){g[0][x]=border;g[rows-1][x]=border}
+ for(let y=0;y<rows;y++){g[y][0]=border;g[y][cols-1]=border}
+ const mid=Math.floor(cols/2)-1;
+ g[0][mid]=g[0][mid+1]='P';g[rows-1][mid]=g[rows-1][mid+1]='P';
  return g
 }
 function paintRect(g,x,y,w,h,ch){for(let yy=y;yy<y+h;yy++)for(let xx=x;xx<x+w;xx++)if(g[yy]&&g[yy][xx]!==undefined)g[yy][xx]=ch}
@@ -115,19 +116,45 @@ function makeNorthWatchTiles(){
  return finishTiles(g)
 }
 function makeCapitalTiles(){
- const g=makeBlankRegion('G','K');
- // 中央大通りと王城前テラス
- paintV(g,0,14,11,'A');paintV(g,0,14,12,'A');paintRect(g,7,3,10,5,'A');paintH(g,5,19,7,'A');
- // 西の市場地区。広場と細い路地をずらして配置
- paintRect(g,2,6,8,5,'A');paintH(g,2,12,12,'A');paintV(g,7,12,5,'A');paintH(g,4,10,9,'A');
- // 東の軍務地区
- paintRect(g,15,6,7,6,'A');paintH(g,12,21,12,'A');paintV(g,7,12,18,'A');
- // 王城外壁と街区の建物。左右対称にしすぎない
- paintRect(g,4,1,6,2,'H');paintRect(g,14,1,6,2,'H');
- paintRect(g,2,2,3,3,'H');paintRect(g,19,2,3,3,'H');
- paintRect(g,2,11,3,2,'H');paintRect(g,7,10,3,2,'H');paintRect(g,16,10,2,2,'H');paintRect(g,20,10,2,2,'H');
- // 小庭と街路樹用の緑地
- paintRect(g,6,5,1,2,'G');paintRect(g,17,4,1,2,'G');paintRect(g,10,9,1,2,'G');paintRect(g,13,9,1,2,'G');
+ // Grand 42x28 Royal Capital of Aldina: spacious avenues, distinct breathing districts, zero crowding!
+ const g=makeBlankRegion('G','K',42,28);
+ // Grand North-South Royal Boulevard (4 tiles wide!) + open North/South Royal Gates at x=20,21
+ paintRect(g,19,1,4,26,'A');
+ g[0][20]=g[0][21]='A';g[27][20]=g[27][21]='A';
+ // South Entrance Welcome Plaza (y=23..26) flanked by royal lawns
+ paintRect(g,16,23,10,3,'A');
+ // Central Royal Fountain Plaza (x=16..25, y=12..18)
+ paintRect(g,16,12,10,7,'A');
+ // North Royal Castle Forecourt & Ceremonial Terrace (x=11..30, y=4..9)
+ paintRect(g,11,4,20,6,'A');
+ paintRect(g,17,1,8,4,'A'); // Wide ceremonial approach to the Royal Castle Gate
+ // West District: Central Market Promenade (y=10..16) & Lower Residential/White Stag Inn Quarter (y=18..25)
+ paintRect(g,2,10,13,7,'A');
+ paintRect(g,14,13,3,3,'A'); // Wide boulevard link to Market
+ paintRect(g,2,18,14,8,'A');
+ paintRect(g,15,22,5,3,'A'); // Wide boulevard link to White Stag Inn & Townhouses
+ paintRect(g,6,16,3,3,'A'); // North-south market-to-inn alley
+ // East District: Quiet White-Stone Chapel Courtyard (y=5..10), Garrison Parade Ground (y=12..17) & Armory Quarter (y=18..25)
+ paintRect(g,31,5,9,6,'A');
+ paintRect(g,34,10,3,3,'A'); // Peaceful stone walkway from Garrison to Chapel
+ paintRect(g,27,12,13,6,'A');
+ paintRect(g,25,13,3,3,'A'); // Wide boulevard link to Garrison
+ paintRect(g,26,18,14,8,'A');
+ paintRect(g,22,22,5,3,'A'); // Wide boulevard link to Armory & Garrison Barracks
+ paintRect(g,31,17,3,2,'A'); // Garrison-to-armory link
+ // Grand Architecture Blocks ('H' — every block matches CapitalEnvironment.facades!)
+ paintRect(g,8,1,9,3,'H');   // West Royal Palace Wing
+ paintRect(g,25,1,9,3,'H');  // East Royal Palace Wing
+ paintRect(g,3,2,4,3,'H');   // West Terrace Watchtower / Trade Hall
+ paintRect(g,35,2,4,3,'H');  // East Terrace Watchtower
+ paintRect(g,33,5,5,3,'H');  // White-Stone Royal Chapel (quiet northeast terrace!)
+ paintRect(g,3,19,4,3,'H');  // Lower Town Residential Rowhouse
+ paintRect(g,9,19,5,3,'H');  // White Stag Inn
+ paintRect(g,28,19,4,3,'H'); // Royal Capital Armory
+ paintRect(g,34,19,5,3,'H'); // Eastern Garrison Barracks
+ // Manicured floral garden parterres flanking the Grand Boulevard
+ paintRect(g,17,10,2,2,'G');paintRect(g,23,10,2,2,'G');
+ paintRect(g,17,19,2,3,'G');paintRect(g,23,19,2,3,'G');
  return finishTiles(g)
 }
 function makeAshRoadTiles(){
@@ -151,21 +178,25 @@ function makeEmpireVillageTiles(){
  paintRect(g,8,2,3,3,'H');paintRect(g,16,2,4,3,'H');paintRect(g,16,9,4,3,'H');paintRect(g,8,9,3,3,'H');return finishTiles(g)
 }
 function makeImperialCityTiles(){
- const g=makeBlankRegion('E','K');
- // 南北の主街路
- paintV(g,0,14,11,'A');paintV(g,0,14,12,'A');
- // 二本の運河で地区を分ける
- paintH(g,1,22,5,'R');paintH(g,1,22,10,'R');
- // 橋。ここだけ実際に渡れる
- for(const bx of [4,11,18]){paintRect(g,bx,5,2,1,'A');paintRect(g,bx,10,2,1,'A')}
- // 公文書館前広場と市場通り
- paintRect(g,8,6,8,4,'A');paintH(g,2,21,7,'A');paintH(g,2,21,8,'A');
- // 石造建築の塊。細い路地を残す
- paintRect(g,2,1,6,4,'H');paintRect(g,16,1,6,4,'H');
- paintRect(g,2,11,5,2,'H');paintRect(g,17,11,5,2,'H');
- paintRect(g,2,6,3,1,'H');paintRect(g,19,6,3,1,'H');
- // 運河沿いの遊歩道
- paintH(g,1,22,4,'E');paintH(g,1,22,11,'E');
+ // Grand 36x24 Imperial Canal City of Legnoa: twin stone canals, civic archive square & waterfront inns!
+ const g=makeBlankRegion('E','K',36,24);
+ // Main North-South Grand Avenue (x=17..18)
+ paintV(g,0,23,17,'A');paintV(g,0,23,18,'A');
+ g[0][17]=g[0][18]='A';g[23][17]=g[23][18]='A';
+ // Two wide Imperial Canals dividing North Civic / Central Market / South Waterfront districts
+ paintH(g,1,34,8,'R');paintH(g,1,34,16,'R');
+ // Three carved limestone canal bridges on each canal
+ for(const bx of [6,17,28]){paintRect(g,bx,8,2,1,'A');paintRect(g,bx,16,2,1,'A')}
+ // Central Canal Plaza & Wide Market Promenade
+ paintRect(g,12,10,12,5,'A');
+ paintH(g,2,33,11,'A');paintH(g,2,33,12,'A');paintH(g,2,33,13,'A');
+ // North & South waterfront quays
+ paintH(g,2,33,7,'E');paintH(g,2,33,9,'E');paintH(g,2,33,15,'E');paintH(g,2,33,17,'E');
+ // Grand blue-slate Imperial stone buildings (generous alleys & squares around every building)
+ paintRect(g,3,2,7,4,'H');   // 地方公文書館 (Regional Archive)
+ paintRect(g,26,2,7,4,'H');  // 水運組合 (Canal Guild)
+ paintRect(g,3,18,6,3,'H');  // 水鳥亭 (Waterbird Inn)
+ paintRect(g,27,18,6,3,'H'); // 運河古書店 (Canal Bookshop)
  return finishTiles(g)
 }
 function makeYukiRoadTiles(){
@@ -240,20 +271,22 @@ function makeWatchfortTiles(){
  return finishTiles(g)
 }
 function makeRavineTiles(){const g=makeBlankRegion('K','K');for(let y=0;y<15;y++){g[y][11]='D';g[y][12]='D'}paintRect(g,2,3,6,8,'B');paintRect(g,16,3,6,8,'B');paintH(g,7,16,7,'D');paintH(g,8,15,7,'A');return finishTiles(g)}
-// Optional early exploration, compatible with the existing 24x15 collision grammar.
+// Intimate, focused 16x12 early village excursions (properly smaller than the village & Royal Capital!)
 function makeRyuneOutskirtsTiles(kind){
- const g=makeBlankRegion('G','T');
+ const g=makeBlankRegion('G','T',16,12);
+ // Close default north/south exits; village outskirts connect east/west cleanly
+ g[0][7]=g[0][8]='T';g[11][7]=g[11][8]='T';
  if(kind==='fields'){
-  for(const [x,y,w,h] of [[2,2,7,4],[15,2,6,4],[3,10,7,3],[15,10,6,3]])paintRect(g,x,y,w,h,'D');
-  paintRect(g,4,3,2,1,'H');paintRect(g,17,3,2,1,'H');
-  paintH(g,1,22,7,'P');paintH(g,0,23,8,'P');
-  paintV(g,4,11,11,'P');paintH(g,9,13,4,'P');paintV(g,8,11,19,'P');
+  for(const [x,y,w,h] of [[2,2,4,3],[10,2,4,3],[2,8,4,2],[10,8,4,2]])paintRect(g,x,y,w,h,'D');
+  paintH(g,1,15,6,'P');
+  paintV(g,3,9,7,'P');paintH(g,6,9,3,'P');paintV(g,6,9,12,'P');
+  g[2][1]='T';g[2][14]='T';g[10][1]='T';
  }else{
-  paintRect(g,12,1,2,13,'Z'); // Impassable brook except for its two bridge rows.
-  paintH(g,1,22,7,'P');paintH(g,0,23,8,'P');
-  paintV(g,4,11,9,'P');paintV(g,4,11,18,'P');
-  paintH(g,16,21,5,'P');paintH(g,3,10,11,'P');
-  for(const [x,y] of [[3,3],[4,3],[5,12],[20,3],[21,11]])g[y][x]='T';
+  paintRect(g,7,1,2,10,'Z'); // Sparkling mountain brook
+  paintH(g,0,14,6,'P');      // Timber footbridge spans (7..8, 6)
+  paintV(g,3,9,5,'P');paintV(g,3,9,11,'P');
+  paintH(g,11,13,4,'P');paintH(g,3,5,9,'P');
+  for(const [x,y] of [[2,2],[3,2],[2,10],[13,2],[14,9]])g[y][x]='T';
  }
  return finishTiles(g)
 }
@@ -275,11 +308,11 @@ const maps={
   {id:'doorMayor',x:4,y:12},{id:'doorCottage',x:19,y:12},{id:'westFieldPath',x:2,y:7},{id:'eastBrookPath',x:21,y:7},{id:'gate',x:11,y:0}
  ]},
  ryunefields:{name:'リュネ西の畑',tag:'畑仕事と村の食卓',tiles:makeRyuneOutskirtsTiles('fields'),
-   npcs:[{id:'fieldWorker',x:9,y:5,name:'畑の手伝い人'},{id:'herbGirl',x:15,y:6,name:'薬草摘みの少女・リナ'}],
-   objects:[{id:'fieldFurrows',x:7,y:4},{id:'fieldCart',x:18,y:11},{id:'fieldCache',x:19,y:4}]},
+   npcs:[{id:'fieldWorker',x:6,y:4,name:'畑の手伝い人'},{id:'herbGirl',x:10,y:5,name:'薬草摘みの少女・リナ'}],
+   objects:[{id:'fieldFurrows',x:5,y:3},{id:'fieldCart',x:12,y:9},{id:'fieldCache',x:13,y:3}]},
   ryunebrook:{name:'リュネ東の小川',tag:'生活を支える水辺',tiles:makeRyuneOutskirtsTiles('brook'),
-   npcs:[{id:'brookKeeper',x:18,y:10,name:'川辺の見回り人'},{id:'oldAngler',x:10,y:10,name:'川辺の釣り師・ゴロー'}],
-   objects:[{id:'brookWater',x:11,y:5},{id:'brookStones',x:6,y:11},{id:'brookCache',x:19,y:5}]},
+   npcs:[{id:'brookKeeper',x:11,y:8,name:'川辺の見回り人'},{id:'oldAngler',x:5,y:8,name:'川辺の釣り師・ゴロー'}],
+   objects:[{id:'brookWater',x:6,y:4},{id:'brookStones',x:3,y:9},{id:'brookCache',x:13,y:4}]},
   karenhome:{name:'カレンの家',tiles:makeInteriorTiles(),npcs:[
   {id:'karenMother',x:7,y:6,name:'カレンの母'},
   {id:'karenFather',x:16,y:5,name:'カレンの父'},
@@ -377,20 +410,20 @@ const maps={
   {id:'bellKeeper',x:17,y:5,name:'鐘楼守の老匠・アルト'}
  ],objects:[{id:'watchCamp',x:15,y:11},{id:'pilgrimDiary',x:13,y:4},{id:'brokenBell',x:5,y:4},{id:'watchAlpha',x:7,y:8},{id:'watchVault',x:4,y:8}]},
  capital:{name:'アルディナ王都',tag:'白石の王城と大通り',tiles:makeCapitalTiles(),npcs:[
-  {id:'capitalOfficial',x:12,y:6,name:'王都係官',hideWhen:'capitalCeremony'},
-  {id:'capitalCitizen',x:9,y:8,name:'王都市民'},
-  {id:'capitalFlowerGirl',x:5,y:8,name:'花売りの少女'},
-  {id:'capitalRecruit',x:18,y:8,name:'新兵'},
-  {id:'capitalVendor',x:4,y:8,name:'市場商人マロ'},
-  {id:'rationMother',x:16,y:8,name:'配給待ちの母親'},
-  {id:'capitalScholar',x:14,y:10,name:'王都の地図学者・フェリクス'},
-  {id:'capitalCrier',x:13,y:11,name:'王都の瓦版売り・テオド'},
-  {id:'capitalBakerWife',x:8,y:12,name:'下町のパン売り・マルタ'},
-  {id:'capitalShopper',x:6,y:9,name:'市場の買い物客・アンナ'},
-  {id:'capitalStreetKid',x:10,y:7,name:'大通りの少年・トマ'},
-  {id:'capitalOldGuard',x:16,y:6,name:'城壁詰所の古参兵・ガロン'},
-  {id:'granz',x:8,y:5,name:'総司令グランツ'}
- ],objects:[{id:'royalCastle',x:7,y:5},{id:'capitalMarket',x:5,y:9},{id:'marketBazaar',x:3,y:6},{id:'capitalFountain',x:12,y:8},{id:'capitalBarracks',x:19,y:9},{id:'garrisonBoard',x:17,y:10},{id:'victoryPoster',x:15,y:6},{id:'heroLedger',x:20,y:11},{id:'residentialWell',x:4,y:12},{id:'capitalHouseDoor',x:2,y:12},{id:'capitalInnDoor',x:6,y:12},{id:'capitalArmoryDoor',x:18,y:12},{id:'capitalChapelDoor',x:20,y:4}]},
+  {id:'capitalOfficial',x:21,y:7,name:'王都係官',hideWhen:'capitalCeremony'},
+  {id:'capitalCitizen',x:17,y:15,name:'王都市民'},
+  {id:'capitalFlowerGirl',x:10,y:14,name:'花売りの少女'},
+  {id:'capitalRecruit',x:33,y:14,name:'新兵'},
+  {id:'capitalVendor',x:6,y:13,name:'市場商人マロ'},
+  {id:'rationMother',x:29,y:15,name:'配給待ちの母親'},
+  {id:'capitalScholar',x:24,y:16,name:'王都の地図学者・フェリクス'},
+  {id:'capitalCrier',x:23,y:18,name:'王都の瓦版売り・テオド'},
+  {id:'capitalBakerWife',x:14,y:23,name:'下町のパン売り・マルタ'},
+  {id:'capitalShopper',x:12,y:12,name:'市場の買い物客・アンナ'},
+  {id:'capitalStreetKid',x:18,y:17,name:'大通りの少年・トマ'},
+  {id:'capitalOldGuard',x:26,y:7,name:'城壁詰所の古参兵・ガロン'},
+  {id:'granz',x:16,y:6,name:'総司令グランツ'}
+ ],objects:[{id:'royalCastle',x:15,y:5},{id:'capitalMarket',x:8,y:15},{id:'marketBazaar',x:5,y:11},{id:'capitalFountain',x:20,y:15},{id:'capitalBarracks',x:34,y:15},{id:'garrisonBoard',x:32,y:20},{id:'victoryPoster',x:28,y:12},{id:'heroLedger',x:36,y:22},{id:'residentialWell',x:7,y:23},{id:'capitalHouseDoor',x:5,y:22},{id:'capitalInnDoor',x:11,y:22},{id:'capitalArmoryDoor',x:30,y:22},{id:'capitalChapelDoor',x:35,y:8}]},
  ashroad:{name:'灰の街道',tag:'焼けた農地と避難路',tiles:makeAshRoadTiles(),npcs:[
   {id:'refugee',x:8,y:5,name:'避難民の母'},
   {id:'fieldPriest',x:18,y:9,name:'従軍僧'}
@@ -421,10 +454,10 @@ const maps={
   {id:'empireFarmer',x:4,y:11,name:'果樹農家'}
  ],objects:[{id:'waterMill',x:5,y:6},{id:'orchardSluice',x:8,y:5},{id:'villageHearth',x:10,y:8},{id:'empireCottageDoor',x:9,y:4},{id:'empireShrine',x:19,y:10},{id:'yukiRibbon',x:14,y:7},{id:'empireCache',x:3,y:11}]},
  imperialcity:{name:'レグノア地方都市',tag:'青瓦と運河の石造都市',tiles:makeImperialCityTiles(),npcs:[
-  {id:'imperialCitizen',x:9,y:7,name:'帝国市民'},
-  {id:'recordKeeper',x:6,y:7,name:'記録係'},
-  {id:'canalVendor',x:18,y:9,name:'運河商人'}
- ],objects:[{id:'imperialArchive',x:6,y:6},{id:'readingBench',x:9,y:6},{id:'canalMonument',x:12,y:7},{id:'canalDock',x:7,y:4},{id:'imperialMarket',x:19,y:9},{id:'imperialCache',x:4,y:9},{id:'imperialInnDoor',x:7,y:12},{id:'imperialBookDoor',x:16,y:12},{id:'imperialGuildDoor',x:19,y:4}]},
+  {id:'imperialCitizen',x:14,y:12,name:'帝国市民'},
+  {id:'recordKeeper',x:9,y:11,name:'記録係'},
+  {id:'canalVendor',x:27,y:13,name:'運河商人'}
+ ],objects:[{id:'imperialArchive',x:7,y:6},{id:'readingBench',x:12,y:10},{id:'canalMonument',x:18,y:12},{id:'canalDock',x:10,y:7},{id:'imperialMarket',x:29,y:13},{id:'imperialCache',x:4,y:14},{id:'imperialInnDoor',x:6,y:21},{id:'imperialBookDoor',x:30,y:21},{id:'imperialGuildDoor',x:29,y:6}]},
  yukiroad:{name:'ユウキ旧戦場',tag:'風化した陣地と慰霊の丘',tiles:makeYukiRoadTiles(),npcs:[
   {id:'oldImperialSoldier',x:8,y:5,name:'帝国の老兵'},
   {id:'zester',x:12,y:4,name:'ゼスター'}
@@ -519,12 +552,12 @@ const MAP_ART_DISTRICTS=Object.freeze({
  })
 });
 const MAP_DESIGN_RULES=Object.freeze({minimumOptionalFeature:1,benchmarkMaps:['village','road','capital','karenhome']});
-function validateMapDesign(mapId){const m=maps[mapId],f=MAP_FEATURES[mapId]||{};if(!m)return{ok:false,errors:['map missing']};const count=(f.treasures?.length||0)+(f.npcs?.length||0)+(f.optional?.length||0)+(f.shortcuts?.length||0);const errors=[];if(count<MAP_DESIGN_RULES.minimumOptionalFeature)errors.push('optional exploration feature missing');if(m.tiles.length!==ROWS||m.tiles.some(r=>r.length!==COLS))errors.push('invalid map dimensions');return{ok:errors.length===0,errors,count}}
+function validateMapDesign(mapId){const m=maps[mapId],f=MAP_FEATURES[mapId]||{};if(!m)return{ok:false,errors:['map missing']};const count=(f.treasures?.length||0)+(f.npcs?.length||0)+(f.optional?.length||0)+(f.shortcuts?.length||0);const errors=[];if(count<MAP_DESIGN_RULES.minimumOptionalFeature)errors.push('optional exploration feature missing');const mr=m.tiles.length,mc=m.tiles[0]?.length||0;if(mr<10||mc<12||m.tiles.some(r=>r.length!==mc))errors.push('invalid map dimensions');return{ok:errors.length===0,errors,count}}
 function auditBenchmarkMaps(){return MAP_DESIGN_RULES.benchmarkMaps.map(id=>({id,...validateMapDesign(id)}))}
 const MAP_TRANSITIONS=Object.freeze({
- villageToFields:{from:'village',to:'ryunefields',x:20,y:8,dir:'left'},
+ villageToFields:{from:'village',to:'ryunefields',x:13,y:6,dir:'left'},
  fieldsToVillage:{from:'ryunefields',to:'village',x:3,y:8,dir:'right'},
- villageToBrook:{from:'village',to:'ryunebrook',x:3,y:8,dir:'right'},
+ villageToBrook:{from:'village',to:'ryunebrook',x:2,y:6,dir:'right'},
  brookToVillage:{from:'ryunebrook',to:'village',x:20,y:8,dir:'left'},
  villageToRoad:{from:'village',to:'road',x:11,y:13,dir:'up'},roadToVillage:{from:'road',to:'village',x:11,y:1,dir:'down'},roadToHollow:{from:'road',to:'roadhollow',x:2,y:11,dir:'right'},hollowToRoad:{from:'roadhollow',to:'road',x:21,y:11,dir:'left'},roadToCave:{from:'road',to:'cave',x:12,y:13,dir:'up'},caveToRoad:{from:'cave',to:'road',x:13,y:2,dir:'down'},roadToNorthRoad:{from:'road',to:'northroad',x:11,y:13,dir:'up'},northRoadToRoad:{from:'northroad',to:'road',x:12,y:1,dir:'down'},northToWaystation:{from:'northroad',to:'northwaystation',x:2,y:7,dir:'right'},waystationToNorth:{from:'northwaystation',to:'northroad',x:21,y:7,dir:'left'},northToWatch:{from:'northroad',to:'northwatch',x:21,y:7,dir:'left'},watchToNorth:{from:'northwatch',to:'northroad',x:2,y:7,dir:'right'},borderToCanyon:{from:'borderland',to:'bordercanyon',x:2,y:6,dir:'right'},canyonToBorder:{from:'bordercanyon',to:'borderland',x:21,y:6,dir:'left'},yukiToRidge:{from:'yukiroad',to:'yukiridge',x:2,y:9,dir:'right'},ridgeToYuki:{from:'yukiridge',to:'yukiroad',x:21,y:9,dir:'left'}
 });
