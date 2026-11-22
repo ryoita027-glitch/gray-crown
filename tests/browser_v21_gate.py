@@ -1,3 +1,4 @@
+from browser_launch import launch_chromium
 from pathlib import Path
 import re,base64,sys
 try:
@@ -51,14 +52,17 @@ def fight(page):
         if page.locator('#levelUpPanel').is_visible():page.locator('#levelUpContinue').click();page.wait_for_timeout(50);continue
         if not page.locator('#battlePanel').is_visible():return
         if page.evaluate('GC.State.get().locked'):page.wait_for_timeout(90);continue
-        if page.locator('#battleActions button').count():page.locator('#battleActions button').nth(0).click();page.wait_for_timeout(450)
-        else:page.wait_for_timeout(70)
+        buttons=page.locator('#battleActions button:visible')
+        if buttons.count():
+            buttons.first.click(timeout=5000);page.wait_for_timeout(450)
+        else:
+            page.wait_for_timeout(70)
     raise AssertionError('battle stuck')
 def dump(page):return page.evaluate('Object.fromEntries(Array.from({length:localStorage.length},(_,i)=>localStorage.key(i)).map(k=>[k,localStorage.getItem(k)]))')
 def new_page(browser,preload=None):
     pg=browser.new_page(viewport={'width':1365,'height':900});errs=[];pg.on('pageerror',lambda e:errs.append(str(e)));load(pg,preload);return pg,errs
 with sync_playwright() as p:
-    browser=p.chromium.launch(headless=True,executable_path='/usr/bin/chromium',args=['--no-sandbox'])
+    browser=launch_chromium(p)
     # Gate 1: real startup + Alpha 1 with irregular input and Save/Continue.
     a,e1=new_page(browser);assert a.locator('#titleScreen').is_visible();a.locator('#titleNewGame').click();a.wait_for_timeout(15)
     start=a.evaluate('({x:GC.State.get().x,y:GC.State.get().y,stage:GC.State.get().story.stage})')

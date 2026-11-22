@@ -1,0 +1,79 @@
+name: Gray Crown Phase 7 Capital First Arc Acceptance
+# Manual-only. Run the same tests on the developer PC using
+# tools/run_local_quality.py while the GitHub Actions budget is exhausted.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+concurrency:
+  group: gray-crown-p7-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  capital-first-arc:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-ci.txt
+      - name: Install pinned Python test dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements-ci.txt
+      - name: Cheap regression preflight, exact NPC/Story/asset authority
+        run: |
+          npm run verify-hygiene
+          npm run verify-authority
+          npm run verify-python-syntax
+          node tests/check-syntax.js
+          npm test
+          python tools/verify_phase1_asset_manifest.py
+          python tools/verify_sophie_direction_lock.py
+          python tools/verify_margaret_direction_lock.py
+          python tools/verify_clean_runtime_sprite_assets.py
+          python tools/verify_four_protagonist_appeal_runtime.py
+      - name: Install Chromium after cheap gates pass
+        run: python -m playwright install --with-deps chromium
+      - name: Full canonical regression including Story 00-19
+        run: npm run check
+      - name: First slice approved hero world/Battle real Chromium baseline
+        run: python tests/browser_pixel_vslice_acceptance_e2e_test.py
+      - name: Ryune appointment A/B acting and safety regression
+        run: python tests/browser_ryune_acting_e2e_test.py
+      - name: Approved village/interiors pixel scene regression
+        run: python tests/browser_ryune_environment_e2e_test.py
+      - name: Road/cave/boss display and save regression
+        run: python tests/browser_road_cave_quality_e2e_test.py
+      - uses: actions/checkout@v4
+        name: Production v23 source for read-only historical save fixture
+        with:
+          ref: d689aabb5146c9f45466a4f74f397e664c08fb4f
+          path: prototype_artifacts/main_v23_reference
+          persist-credentials: false
+      - name: Production v23 real saved data, backup, defeat and mobile controls
+        env:
+          GRAY_CROWN_MAIN_V23_DIR: prototype_artifacts/main_v23_reference
+        run: python tests/browser_phase0_remaining_e2e_test.py
+      - name: Fresh game through boss and naturally to capital, royal appointment and interiors
+        run: python tests/browser_capital_first_arc_e2e_test.py
+      - name: Raw unmodified game screenshots, trace metrics and failing checkpoints
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gray-crown-phase7-capital-real-play-evidence
+          path: |
+            prototype_artifacts/capital_first_arc_v1/
+            prototype_artifacts/vertical_slice_v1/
+            prototype_artifacts/ryune_acting_v1/
+            prototype_artifacts/ryune_environment_v1/
+            prototype_artifacts/road_cave_combat_v1/
+            prototype_artifacts/pixel_vslice_acceptance_v1/
+          if-no-files-found: warn
+          retention-days: 7

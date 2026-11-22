@@ -1,105 +1,35 @@
-# NEXT_WORK_ORDER.md
+# Gray Crown — Next Work Order (Phase 1)
+**Live development target:** `integration/phase1-pixel-native-baseline-20261010`. **Production:** main / v23 / Save schema 23 / Story 00–19, unchanged.
 
-## Gray Crown v23 — Current Work Order
+**Historical completed gate:** Triton Second Character Validation PASS. This is a retained proof-of-completion marker for legacy CI, **not** a pending or restarted work item.
 
-**Canonical production branch:** `main`  
-**Production baseline:** v23  
-**Current experimental base:** `pixel-karen-acting-prototype`  
-**Formal Pixel-native adoption:** NOT YET  
-**Do not start v24.**
+## Completed (do not queue again)
+- Four-character source approval/animation generation and clean runtime integration: complete.
+- Medium44, true 48px protagonist sheets in world and battle: implemented.
+- PR #35 commercial reconciliation, PR #36 adoption gate, PR #37 residual technical checks, PR #38 Ryune environment: implemented in isolated branches.
+- Two-parent PR #37/#38 source integration: committed; **combined CI on its own HEAD required**.
 
-For the complete current-state summary, see:
+## NOW — integrated release-candidate gate
+**Decision boundary:** Portrait ON/OFF remains UNDECIDED; art quality stays PROVISIONAL and user-approved development direction does not authorize a main merge.
 
-`docs/audit/CURRENT_PROJECT_STATE.md`
+1. Confirm integration branch/parent SHAs, `main` SHA, 32 runtime sprite blob SHAs and no changed game data.
+2. Run full lightweight regression and source-lock checks without re-generating committed PNGs.
+3. Run actual Chromium scene, defeat/Continue/save v23, extreme two-cell follower, battle/commercial and Ryune before/after checks on **one merged checkout**.
+4. Inspect screenshot artifacts from village, home, road, cave, battle, mobile + Portrait ON/OFF. Correct regressions in a **new reviewable commit** on this Draft branch.
+5. Mark engineering gate GO only on total success. User has already approved **development-baseline direction**, not `main` merge or final aesthetics.
 
----
+## AFTER GATE — production vertical slice
+- Deliver polish and gameplay for **Ryune Village → Royal Road → first dungeon (old fort) → first boss**, with full dialogue/movement/loot/battle, save/Continue/backup and recoverability.
+- Priorities: S1 player-blocking bugs, map collisions & save progression; S2 NPC protagonist design cohesion, 32px tile/44px actor overlaps, combat spatial balance, mobile control density; S3 optional cosmetics.
+- Respect the original ambition of an eventual 8–12 hour RPG, but **this vertical slice is a smaller sellable-quality reference**, not a claim that the full product is finished.
+- Retain Portrait ON/OFF A/B; present a direct comparative review before the user picks the default.
+- Do not mass-regenerate existing 8-category protagonist PNGs; do not use artificial comparison boards.
 
-# COMPLETED
+## Not authorized
+`main` merge, rewrite of old branches, history rewrite, force-push, final emblems/eyes/weapons/costumes/religious designs, Story 20+ changes or Save schema 24.
 
-- Stable v23 production foundation preserved.
-- Four protagonist Visual Identities locked.
-- Art Bible v2 provisional completed.
-- Karen Pixel Acting technical prototype completed.
-- 48×48 source-cell runtime feasibility proven.
-- eight prototype animation categories proven technically.
-- SceneRunner / camera / Portrait A-B / legacy baseline comparison proven.
-- foot-anchor scale-integration technique proven experimentally.
+## CI budget
+New phase-1 gate stages cheap regressions before Chromium; same runner executes browser checks once, no asset generation, pip cache and short artifact retention. Billing balance is **UNVERIFIED** through repository connector; owner must review GitHub billing settings. Historical branch-only workflows stay preserved but must not be copied into the integrated trigger list.
 
----
-
-# REJECTED / SUPERSEDED
-
-Do not treat the previous realistic / adult-proportion Karen 48px visual experiments as final art direction.
-
-Do not use the old Scale Integration visual verdict as adoption evidence.
-
-Those branches remain historical / technical reference only until cleanup is complete.
-
----
-
-# NOW
-
-## Karen Cute Chibi Pixel Direction — Front Idle Gate
-
-Create a dedicated new visual branch from the proven Karen technical prototype.
-
-First deliverable:
-
-> **one front-facing Karen Idle candidate only**
-
-Target:
-
-- cute Chibi Pixel RPG heroine
-- large head and compact body
-- expressive readable eyes
-- minimal nose
-- short torso / shorter legs
-- attractive red-hair silhouette
-- low partial tie
-- warm off-white + muted-red Stage A identity
-- clearly Karen
-- clearly protagonist-quality
-- adult identity preserved through clothing / posture / behavior
-
-Do not copy a specific commercial character or sprite.
-
-### Stop condition
-
-Do not create side/back directions or all eight animations until the front Idle is explicitly approved by the user.
-
----
-
-# AFTER FRONT IDLE PASSES
-
-1. left / right / back Idle
-2. eight-animation expansion
-3. Karen + Mika prototype scene
-4. 32px baseline comparison
-5. Portrait ON / OFF comparison
-6. rerun scale integration with the accepted Karen visual
-7. Karen prototype final verdict
-8. Triton second-character validation
-
----
-
-# NOT YET
-
-- Triton Pixel production
-- Sophie Pixel production
-- Margaret Pixel production
-- Portrait-system removal
-- Pixel Cinematic production rollout
-- NPC mass migration
-- main Pixel-native merge
-- formal Pixel-native adoption
-- v24
-- new story chapters
-- final Stage B costumes / final weapons / emblems / insignia
-
----
-
-# Regression policy
-
-Any later runtime code or asset change must preserve the established JavaScript, Node and Browser regression gates.
-
-A green CI is necessary but never sufficient for Visual acceptance.
+## Historical note
+The old **Four Protagonist Runtime Harmonization** and **Four Protagonist Environment Integration** work orders are completed. Their details remain in Git and original review reports; they are not today's instruction.

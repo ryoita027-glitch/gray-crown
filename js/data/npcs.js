@@ -8,6 +8,8 @@ const PARTY_STYLE={
 const NPC_STYLE={
  capitalVendor:{body:'#85623f',accent:'#d5bd78',hair:'#5d4230',hat:true},rationMother:{body:'#7b5a59',accent:'#d2b985',hair:'#59463f'},capitalInnHost:{body:'#8f6254',accent:'#dec394',hair:'#72503f'},offDutySoldier:{body:'#7f4148',accent:'#d8c69a',hair:'#4a3d36'},capitalSmith:{body:'#5e5149',accent:'#b4774f',hair:'#42352f'},armoryApprentice:{body:'#726457',accent:'#c8995d',hair:'#6d4d38'},
  imperialInnHost:{body:'#506c78',accent:'#b9a579',hair:'#4f4842'},canalBoatman:{body:'#536977',accent:'#9fb4bd',hair:'#5a4a3e',hat:true},bookSeller:{body:'#5b6370',accent:'#b9a570',hair:'#92877a'},studentReader:{body:'#607381',accent:'#b7a981',hair:'#4b3e39'},
+ fieldWorker:{body:'#73875a',accent:'#d6bd88',hair:'#796349',hat:true},
+ brookKeeper:{body:'#718a7d',accent:'#c1c6aa',hair:'#606354'},
  father:{body:'#765a45',accent:'#b79a72',hair:'#3d312a',weapon:'sword'},orphan:{body:'#a9796a',accent:'#d8c5a6',hair:'#704d37',small:true},
  mayor:{body:'#68685f',accent:'#bd9b5e',hair:'#a9a49b'},messenger:{body:'#8d3d46',accent:'#f0dfb6',hair:'#40382f',cape:true},merchant:{body:'#6d5d48',accent:'#9b7b4d',hair:'#4e3e31',hat:true},
  mika:{body:'#cc735c',accent:'#f0cf84',hair:'#5f3a28',small:true},ren:{body:'#54789b',accent:'#d9c887',hair:'#4b382d',small:true},lulu:{body:'#8d6ca0',accent:'#efe0b2',hair:'#8a603d',small:true},
@@ -100,15 +102,58 @@ const PORTRAITS={
  '皇帝シオン':{hair:'#30333a',body:'#344a66',accent:'#c4ab68',eyes:'#344052',hairStyle:'long'}
 };
 function heroPortraitMarkup(speaker){
- const commonStart=(bg1,bg2)=>`<svg viewBox="0 0 120 140" class="hero-portrait-svg" aria-hidden="true"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${bg1}"/><stop offset="1" stop-color="${bg2}"/></linearGradient><linearGradient id="skin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4d4bd"/><stop offset="1" stop-color="#d9a98f"/></linearGradient></defs><rect width="120" height="140" rx="10" fill="url(#bg)"/><circle cx="92" cy="25" r="38" fill="rgba(255,255,255,.055)"/><path d="M0 113 Q28 91 60 94 Q95 91 120 113 V140 H0Z" fill="rgba(0,0,0,.18)"/>`;
- const face=`<path d="M43 39 Q60 26 77 39 L80 66 Q77 89 60 94 Q43 89 40 66Z" fill="url(#skin)"/><path d="M54 72 Q60 75 66 72" fill="none" stroke="#9f6258" stroke-width="2" stroke-linecap="round"/><path d="M50 59 Q54 56 58 59" fill="none" stroke="#5a4038" stroke-width="2.4" stroke-linecap="round"/><path d="M63 59 Q67 56 71 59" fill="none" stroke="#5a4038" stroke-width="2.4" stroke-linecap="round"/><circle cx="55" cy="60" r="1.7" fill="#2e2b2a"/><circle cx="68" cy="60" r="1.7" fill="#2e2b2a"/><path d="M60 62 Q58 68 61 68" fill="none" stroke="#bd856f" stroke-width="1.5" stroke-linecap="round"/>`;
- if(speaker==='カレン')return commonStart('#5a2f34','#272f3f')+`<path d="M34 55 Q29 26 51 17 Q78 8 88 33 Q92 50 82 79 L76 62 Q80 43 69 32 Q55 23 42 38 L39 76 Q31 69 34 55Z" fill="#6c3a31"/><path d="M76 30 Q95 43 89 76 Q84 94 73 100 L76 72 Q84 54 76 30Z" fill="#5b302b"/><path d="M39 40 Q48 22 72 27 Q57 35 43 50Z" fill="#844739"/>${face}<path d="M48 54 Q54 50 58 53" stroke="#6b3d32" stroke-width="2" fill="none"/><path d="M63 53 Q69 50 73 54" stroke="#6b3d32" stroke-width="2" fill="none"/><path d="M40 88 Q51 98 60 98 Q71 98 81 88 L95 111 L86 140 H31 L23 111Z" fill="#a8434d"/><path d="M47 94 L60 105 L73 94 L78 111 L60 122 L42 111Z" fill="#efe0bd"/><path d="M31 113 L18 127 L28 140 H43 L42 111Z" fill="#7f333e"/><path d="M89 113 L102 127 L92 140 H77 L78 111Z" fill="#7f333e"/><circle cx="60" cy="110" r="4" fill="#d7b562"/><path d="M85 31 Q103 28 104 42 Q96 37 86 41Z" fill="#6c3a31"/><path d="M88 34 Q105 48 99 64" fill="none" stroke="#6c3a31" stroke-width="6" stroke-linecap="round"/>`+'</svg>';
- if(speaker==='トリトン')return commonStart('#253c55','#20252d')+`<path d="M38 43 Q40 22 59 17 Q78 17 84 34 L79 50 Q73 34 58 32 Q44 34 41 49Z" fill="#2f2b2b"/><path d="M37 42 L32 54 L41 51 L38 65 L47 58 L45 38Z" fill="#252323"/><path d="M82 37 L90 48 L80 50 L84 61 L75 56 L76 34Z" fill="#252323"/>${face}<path d="M48 53 L58 51" stroke="#343238" stroke-width="2.4"/><path d="M63 51 L73 53" stroke="#343238" stroke-width="2.4"/><path d="M42 90 L60 100 L78 90 L97 111 L91 140 H29 L23 111Z" fill="#456988"/><path d="M49 96 L60 105 L71 96 L76 109 L60 117 L44 109Z" fill="#c2c9cf"/><path d="M25 111 Q37 103 47 109 L42 140 H20Z" fill="#7d8790"/><path d="M95 111 Q83 103 73 109 L78 140 H100Z" fill="#7d8790"/><path d="M31 114 L25 137" stroke="#d4d8da" stroke-width="4"/><path d="M89 114 L95 137" stroke="#d4d8da" stroke-width="4"/><path d="M28 117 L35 120" stroke="#6a4c34" stroke-width="5"/>`+'</svg>';
- if(speaker==='ソフィ')return commonStart('#54664e','#2f3932')+`<path d="M38 45 Q35 23 56 16 Q76 14 85 34 Q90 55 80 82 L73 69 Q81 48 72 31 Q53 23 42 42 L43 76 Q35 66 38 45Z" fill="#c89f63"/><path d="M77 45 Q91 55 86 84 Q80 99 69 102 L72 75 Q81 60 77 45Z" fill="#b78c51"/><path d="M40 34 Q52 20 72 28 Q58 34 43 49Z" fill="#d9b476"/>${face}<path d="M49 54 Q54 52 58 54" stroke="#8a6a45" stroke-width="1.8" fill="none"/><path d="M63 54 Q68 52 72 54" stroke="#8a6a45" stroke-width="1.8" fill="none"/><path d="M46 73 Q60 81 74 73" stroke="#a86b60" stroke-width="1.5" fill="none"/><path d="M41 89 Q52 98 60 98 Q68 98 79 89 L94 111 L88 140 H32 L26 111Z" fill="#e8e0c9"/><path d="M41 91 L60 108 L79 91 L75 122 L60 132 L45 122Z" fill="#678e6c"/><path d="M30 115 Q42 107 47 114 L43 140 H21Z" fill="#d7d0bc"/><path d="M90 115 Q78 107 73 114 L77 140 H99Z" fill="#d7d0bc"/><circle cx="60" cy="114" r="5" fill="#c5ae70"/><path d="M82 72 Q96 82 90 103 Q86 112 78 116" fill="none" stroke="#b78c51" stroke-width="7" stroke-linecap="round"/><circle cx="91" cy="103" r="5" fill="#d5b16e"/>`+'</svg>';
- if(speaker==='マーガレット')return commonStart('#3f3150','#202735')+`<path d="M34 55 Q32 27 50 17 Q74 6 87 31 Q93 48 85 83 L78 72 Q84 49 75 30 Q55 19 42 38 L40 81 Q31 70 34 55Z" fill="#e1e4e9"/><path d="M38 31 Q52 13 78 23 Q68 26 61 34 Q48 31 40 48Z" fill="#f3f4f6"/><path d="M79 34 Q96 51 89 91 Q85 105 75 111 L77 74 Q86 53 79 34Z" fill="#c9ced6"/>${face}<path d="M48 52 Q54 48 59 51" stroke="#b8bec8" stroke-width="2.2" fill="none"/><path d="M62 51 Q68 48 74 52" stroke="#b8bec8" stroke-width="2.2" fill="none"/><path d="M50 73 Q60 76 70 72" stroke="#94605e" stroke-width="1.5" fill="none"/><path d="M39 89 Q50 98 60 98 Q71 98 81 88 L96 112 L88 140 H31 L23 112Z" fill="#685083"/><path d="M45 92 L60 106 L76 92 L80 113 L60 126 L40 113Z" fill="#b69acb"/><path d="M53 106 L60 114 L67 106 L65 131 L55 131Z" fill="#332b3f"/><circle cx="60" cy="112" r="4" fill="#ccb86d"/><path d="M24 113 L12 132 L24 140 H42 L40 112Z" fill="#4e3a66"/><path d="M96 113 L108 132 L96 140 H78 L80 112Z" fill="#4e3a66"/>`+'</svg>';
- return '';
+ // Pixel-native 3.25x bust framing of each protagonist's approved 4x4 idle sheet,
+ // matching the featured-resident pixel portrait language for cohesive HD-2D art.
+ const cfg={
+  'カレン':{id:'karen',path:'assets/characters/karen/acting/karen_portrait.png',dedicated:true,bg1:'#5c2c34',bg2:'#1d2332',rim:'#f7c27d',accent:'#e6c36c'},
+  'トリトン':{id:'triton',path:'assets/characters/triton/acting/triton_portrait.png',dedicated:true,bg1:'#253c56',bg2:'#171e2a',rim:'#9cc7f2',accent:'#c7d2dc'},
+  'ソフィ':{id:'sophie',path:'assets/characters/sophie/acting/sophie_portrait.png',dedicated:true,bg1:'#4c6449',bg2:'#202b24',rim:'#ebe3a4',accent:'#e2c676'},
+  'マーガレット':{id:'margaret',path:'assets/characters/margaret/acting/margaret_portrait.png',dedicated:true,bg1:'#3b3154',bg2:'#1b2232',rim:'#f3f4f6',accent:'#e1e4e9',trim:'#c9ced6'}
+ }[speaker];
+ if(!cfg)return '';
+ const source=(typeof window!=='undefined'&&window.__GC_INLINE_ASSETS__?.[cfg.path])||cfg.path;
+ const uid='hp_'+cfg.id;
+ const rimStroke=cfg.trim||cfg.accent;
+ const imgTag=cfg.dedicated
+  ?`<image href="${source}" x="0" y="0" width="120" height="140" style="image-rendering:auto"/>`
+  :`<image href="${source}" x="${cfg.x}" y="${cfg.y}" width="640" height="640" style="image-rendering:pixelated"/>`;
+ return `<svg viewBox="0 0 120 140" class="hero-portrait-svg" shape-rendering="crispEdges" aria-hidden="true"><defs><linearGradient id="${uid}_bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${cfg.bg1}"/><stop offset="1" stop-color="${cfg.bg2}"/></linearGradient><radialGradient id="${uid}_gl" cx=".5" cy=".34" r=".58"><stop offset="0" stop-color="${cfg.rim}" stop-opacity=".32"/><stop offset="1" stop-color="${cfg.rim}" stop-opacity="0"/></radialGradient><clipPath id="${uid}_cp"><rect x="4" y="4" width="112" height="132" rx="4"/></clipPath></defs><rect width="120" height="140" rx="6" fill="url(#${uid}_bg)"/><rect width="120" height="140" rx="6" fill="url(#${uid}_gl)"/><g clip-path="url(#${uid}_cp)">${imgTag}<rect x="4" y="122" width="112" height="14" fill="rgba(12,14,20,.42)"/></g><rect x="3" y="3" width="114" height="134" rx="5" fill="none" stroke="${rimStroke}" stroke-opacity=".46" stroke-width="1.2"/><rect x="6" y="6" width="108" height="128" rx="3" fill="none" stroke="${cfg.accent}" stroke-opacity=".22" stroke-width="1"/></svg>`;
+}
+// Resident dialogue portraits use the SAME individually drawn 32px identity
+// as the map. The legacy generic 64px face repeated one template for nearly
+// everyone and made players think characters had not changed at all.
+// These are pixel-native 2x character portraits, not invented close-up faces.
+const FEATURED_RESIDENT_SPEAKERS=Object.freeze({
+ 'パン屋のエダ':0,'農夫のボル':1,'老婆ナナ':2,'村長':3,
+ '王国使者':4,'レン':5,'花売りの少女':6,'新兵':7,'総司令グランツ':8
+});
+function featuredResidentPortraitMarkup(speaker){
+ const i=FEATURED_RESIDENT_SPEAKERS[speaker];
+ if(i===undefined)return null;
+ const id='residentPortraitCrop'+i;
+ // The atlas has 9 columns x 4 directions, each 48x48.
+ // The new in-dialogue head-and-shoulders view magnifies the SAME 48px
+ // game sprite instead of showing a tiny full-body or fabricated plastic face.
+ // Do not stretch the torso independently or overlay a second generic face.
+ // The dark uniforms disappeared against the prior identical charcoal cards.
+ // Each subdued district-colored backing supplies silhouette contrast, not
+ // a second generic face or a status badge.
+ const backdrops=['#445246','#4d493d','#554957','#4a5b69','#51434b',
+  '#50634f','#4a6270','#546474','#77756c'];
+ const backdrop=backdrops[i];
+ const legacy=typeof window!=='undefined'&&/(?:^|[?&])npcArt=legacy(?:&|$)/.test(window.location.search||'');
+ const path=legacy?'assets/npc/featured_residents_v1.png':'assets/npc/featured_residents_charm_v5.png';
+ const source=(typeof window!=='undefined'&&window.__GC_INLINE_ASSETS__?.[path])||path;
+ // 48px per NPC. At 2x magnification, remove 16px either side to place the
+ // individual eyes, hair and cheeks in the UI's 64px aperture. The old atlas
+ // intentionally retains its older full-body view for honest side-by-side AB.
+ const x=legacy?-(i*64):-(i*96+16),y=legacy?0:-3;
+ const width=legacy?576:864,height=legacy?256:384;
+ return `<svg class="portrait-svg resident-portrait" viewBox="0 0 64 72" aria-hidden="true" shape-rendering="crispEdges"><defs><clipPath id="${id}"><rect x="0" y="0" width="64" height="64"/></clipPath></defs><rect width="64" height="72" fill="${backdrop}"/><rect y="64" width="64" height="8" fill="#252c2b"/><g clip-path="url(#${id})"><image href="${source}" x="${x}" y="${y}" width="${width}" height="${height}" style="image-rendering:pixelated"/></g></svg>`;
 }
 function portraitMarkup(speaker){
+ const featured=featuredResidentPortraitMarkup(speaker);
+ if(featured)return featured;
  if(['カレン','トリトン','ソフィ','マーガレット'].includes(speaker))return heroPortraitMarkup(speaker);
  const p=PORTRAITS[speaker];
  if(!p){
@@ -121,6 +166,6 @@ function portraitMarkup(speaker){
  else if(p.hairStyle==='cap')hair=`<rect x="15" y="9" width="34" height="7" fill="${p.hair}"/><rect x="21" y="5" width="22" height="7" fill="${p.hair}"/><rect x="18" y="15" width="28" height="7" fill="${p.hair}"/>`;
  else if(p.hairStyle==='soft')hair=`<rect x="18" y="9" width="28" height="8" fill="${p.hair}"/><rect x="14" y="15" width="10" height="13" fill="${p.hair}"/><rect x="40" y="15" width="10" height="13" fill="${p.hair}"/>`;
  else hair=`<rect x="17" y="9" width="30" height="8" fill="${p.hair}"/><rect x="14" y="15" width="36" height="7" fill="${p.hair}"/>`;
- return `<svg viewBox="0 0 64 72" class="portrait-svg" aria-hidden="true" shape-rendering="crispEdges"><rect width="64" height="72" fill="#272b31"/><rect x="4" y="4" width="56" height="64" rx="3" fill="#3a3532"/><path d="M8 72V60c0-9 9-15 24-15s24 6 24 15v12z" fill="${p.body}"/><rect x="25" y="42" width="14" height="12" fill="#d3ad91"/><rect x="17" y="16" width="30" height="31" fill="#ddb99e"/><rect x="14" y="25" width="4" height="11" fill="#c99f83"/><rect x="46" y="25" width="4" height="11" fill="#c99f83"/>${hair}<rect x="22" y="28" width="6" height="4" fill="${p.eyes}"/><rect x="37" y="28" width="6" height="4" fill="${p.eyes}"/><rect x="29" y="39" width="7" height="2" fill="#9b6658"/><rect x="10" y="57" width="44" height="6" fill="${p.accent}"/><rect x="4" y="4" width="56" height="3" fill="rgba(255,255,255,.08)"/></svg>`
+ return `<svg viewBox="0 0 64 72" class="portrait-svg" aria-hidden="true" shape-rendering="crispEdges"><rect width="64" height="72" fill="#232830"/><rect x="3" y="3" width="58" height="66" rx="3" fill="#3c3735"/><rect x="4" y="4" width="56" height="64" rx="2" fill="none" stroke="rgba(226,198,132,.24)"/><path d="M8 72V59c0-9 9-14 24-14s24 5 24 14v13z" fill="${p.body}"/><rect x="25" y="42" width="14" height="10" fill="#cfa488"/><rect x="25" y="42" width="14" height="3" fill="rgba(90,48,38,.25)"/><rect x="17" y="16" width="30" height="30" rx="5" fill="#ebd0b8"/><rect x="14" y="25" width="4" height="10" fill="#d4ab90"/><rect x="46" y="25" width="4" height="10" fill="#d4ab90"/>${hair}<rect x="20" y="13" width="24" height="3" fill="rgba(255,255,255,.16)"/><rect x="21" y="27" width="6" height="5" fill="#fffaf4"/><rect x="37" y="27" width="6" height="5" fill="#fffaf4"/><rect x="22" y="27" width="4" height="5" fill="${p.eyes}"/><rect x="38" y="27" width="4" height="5" fill="${p.eyes}"/><rect x="22" y="27" width="2" height="2" fill="#ffffff"/><rect x="38" y="27" width="2" height="2" fill="#ffffff"/><rect x="20" y="34" width="4" height="2" fill="rgba(224,128,128,.34)"/><rect x="40" y="34" width="4" height="2" fill="rgba(224,128,128,.34)"/><rect x="29" y="39" width="6" height="2" fill="#9e6358"/><rect x="12" y="55" width="40" height="6" fill="${p.accent}"/><rect x="28" y="54" width="8" height="8" fill="#e0c178"/></svg>`
 }
 GC.Data=GC.Data||{};GC.Data.NPCs={PARTY_STYLE,NPC_STYLE,PORTRAITS,portraitMarkup,heroPortraitMarkup};

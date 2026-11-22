@@ -1,5 +1,5 @@
 'use strict';
-const INTERIOR_MAPS=['karenhome','orphanage','mayorhouse','cottage','capitalinn','capitalarmory','imperialinn','imperialbooks'];
+const INTERIOR_MAPS=['karenhome','orphanage','mayorhouse','cottage','waystationinn','capitalinn','capitalarmory','capitalhouse','capitalchapel','halminn','empirecottage','imperialinn','imperialbooks','imperialguild','elsiahouse'];
 function makeInteriorTiles(){
  const rows=[];
  for(let y=0;y<ROWS;y++){
@@ -41,13 +41,77 @@ function paintRect(g,x,y,w,h,ch){for(let yy=y;yy<y+h;yy++)for(let xx=x;xx<x+w;xx
 function paintH(g,x1,x2,y,ch){for(let x=x1;x<=x2;x++)if(g[y]&&g[y][x]!==undefined)g[y][x]=ch}
 function paintV(g,y1,y2,x,ch){for(let y=y1;y<=y2;y++)if(g[y]&&g[y][x]!==undefined)g[y][x]=ch}
 function finishTiles(g){return g.map(r=>r.join(''))}
+// Curated Ryune circulation: paths exist because residents use them.
+// Keep every original 24x15 exit, house blocker, NPC and interactable at its
+// existing coordinates. The field/stream routes become visible footpaths.
+function makeVillageTilesV2(){
+ const rows=[
+  'TTTTTTTTTTTPPTTTTTTTTTTT','TGGGGGGGGGGPPGGGGGGGGGGT',
+  'TGGHHHGGGGGPPGGGGHHHGGGT','TGGHHHGGGGGPPGGGGHHHGGGT',
+  'TGGHHHGGGGGPPGGGGHHHGGGT','TGGGGGGHHGGPPGGGGGGGGGGT',
+  'TGGGGPPPPPPPPPPPPPGGGGGT','TGGGGPGGGGGPPGGGGPGGGGGT',
+  'TGGGGPGGGGGPPGGGGPGGGGGT','TGGHHHGGGGGPPGGGGHHHGGGT',
+  'TGGHHHGGGGGPPGGGGHHHGGGT','TGGHHHGGGGGPPGGGGHHHGGGT',
+  'TGGGGGGGGGGPPGGGGGGGGGGT','TGGGGGGGGGGPPGGGGGGGGGGT',
+  'TTTTTTTTTTTPPTTTTTTTTTTT'
+ ].map(line=>line.split(''));
+ // Wagonless pedestrian side passages, joining existing north/south spokes.
+ for(const x of [1,2,3,4,5,18,19,20,21,22])rows[8][x]='P';
+ // Short, worn thresholds lead toward the southwest mayor and southeast home,
+ // but do not cross the homes, courtyard NPC positions or central well.
+ for(const x of [7,8,9,10,14,15,16,17])rows[12][x]='P';
+ return rows.map(row=>row.join(''))
+}
 function makeRoadTilesV15(){
  const g=makeBlankRegion('G','T');
  const centers=[12,12,11,11,10,10,10,11,12,12,11,11,12,12,12];
  for(let y=0;y<ROWS;y++){const c=centers[y];for(let x=c-1;x<=c+1;x++)if(g[y]&&x>0&&x<COLS-1)g[y][x]='P'}
  // side clearings and worn detours: travel is not a ruler-straight corridor.
- paintH(g,7,12,8,'P');paintV(g,5,8,7,'P');paintH(g,10,15,3,'P');
- paintRect(g,3,4,2,3,'T');paintRect(g,18,7,2,3,'T');paintRect(g,3,10,3,2,'T');paintRect(g,19,2,2,2,'T');
+ paintH(g,7,12,8,'P');paintV(g,5,8,7,'P');paintH(g,10,15,3,'P');paintH(g,13,23,11,'P');
+ paintRect(g,3,4,2,3,'T');paintRect(g,5,7,2,2,'T');paintRect(g,18,7,2,3,'T');paintRect(g,3,10,3,2,'T');paintRect(g,19,2,2,2,'T');
+ return finishTiles(g)
+}
+function makeRoadHollowTiles(){
+ const g=makeBlankRegion('G','T');
+ g[0][11]=g[0][12]='T';g[ROWS-1][11]=g[ROWS-1][12]='T';
+ // Winding mossy pilgrimage trail from west entrance (0,11) around the woodland spring to northeast ruin
+ paintH(g,0,10,11,'P');paintV(g,5,11,8,'P');paintH(g,8,16,5,'P');paintV(g,5,10,16,'P');paintH(g,16,20,10,'P');paintV(g,3,10,20,'P');paintH(g,14,20,3,'P');
+ // Sparkling sunken forest spring basin at center (10..14, 7..9) with stone causeway on north & south
+ paintRect(g,10,7,5,3,'R');paintH(g,10,14,11,'P');paintV(g,9,11,16,'P');
+ // Woodland groves framing sightlines
+ paintRect(g,2,2,4,3,'T');paintRect(g,4,7,2,2,'T');paintRect(g,17,6,2,2,'T');paintRect(g,21,11,2,2,'T');
+ return finishTiles(g)
+}
+function makeNorthRoadTiles(){
+ const g=makeBlankRegion('G','T');
+ paintV(g,0,14,11,'P');paintV(g,0,14,12,'P');
+ // West branch to Highland Belltower Ruin (0,7) & East branch to White Birch Waystation (23,7)
+ paintH(g,0,23,7,'P');
+ paintH(g,3,10,8,'P');paintH(g,13,16,8,'P');
+ return finishTiles(g)
+}
+function makeWaystationTiles(){
+ const g=makeBlankRegion('G','T');
+ g[0][11]=g[0][12]='T';g[ROWS-1][11]=g[ROWS-1][12]='T';
+ // West entry from northroad (0,7), central cobblestone/dirt square & carriage turnaround
+ paintH(g,0,21,7,'P');paintH(g,3,20,8,'P');
+ paintV(g,4,11,11,'P');paintV(g,4,11,12,'P');paintH(g,5,19,11,'P');
+ // West: White Birch Inn (4..8, 2..4); East: Traveler Carriage Barn (15..18, 2..4)
+ paintRect(g,4,2,5,3,'H');paintRect(g,15,2,4,3,'H');
+ // Framing birch groves
+ paintRect(g,1,1,2,3,'T');paintRect(g,21,1,2,3,'T');paintRect(g,1,11,3,2,'T');paintRect(g,21,11,2,2,'T');
+ return finishTiles(g)
+}
+function makeNorthWatchTiles(){
+ const g=makeBlankRegion('G','T');
+ g[0][11]=g[0][12]='T';g[ROWS-1][11]=g[ROWS-1][12]='T';
+ // Sparkling highland brook dividing east camp from west ancient belltower courtyard
+ paintV(g,1,13,11,'R');
+ paintH(g,6,23,7,'P');paintH(g,10,12,8,'P');
+ paintV(g,5,11,16,'P');paintH(g,13,19,5,'P');paintH(g,13,17,11,'P');
+ paintV(g,4,9,7,'P');paintH(g,4,8,8,'P');paintH(g,4,8,4,'P');
+ // Ruined stone belltower walls & highland trees
+ paintRect(g,2,2,2,4,'K');paintRect(g,2,10,3,2,'T');paintRect(g,19,2,3,2,'T');paintRect(g,19,11,3,2,'T');
  return finishTiles(g)
 }
 function makeCapitalTiles(){
@@ -105,7 +169,20 @@ function makeImperialCityTiles(){
  return finishTiles(g)
 }
 function makeYukiRoadTiles(){
- const g=makeBlankRegion('B','K');paintV(g,0,14,11,'D');paintV(g,0,14,12,'D');paintH(g,3,12,5,'D');paintH(g,11,20,9,'D');paintV(g,5,10,4,'D');paintV(g,8,12,19,'D');return finishTiles(g)
+ const g=makeBlankRegion('B','K');paintV(g,0,14,11,'D');paintV(g,0,14,12,'D');paintH(g,3,12,5,'D');paintH(g,11,23,9,'D');paintV(g,5,10,4,'D');paintV(g,8,12,19,'D');return finishTiles(g)
+}
+function makeYukiRidgeTiles(){
+ const g=makeBlankRegion('B','K');
+ g[0][11]=g[0][12]='K';g[ROWS-1][11]=g[ROWS-1][12]='K';
+ // Northern valley overlook cliff
+ paintRect(g,1,1,22,2,'Z');
+ // Winding sunset evacuation trail from west (0,9) -> memorial terrace -> east shelf
+ paintH(g,0,14,9,'D');paintV(g,5,11,6,'D');paintH(g,6,14,5,'D');paintV(g,5,9,14,'D');paintH(g,14,20,8,'D');paintV(g,8,11,20,'D');
+ // Stone memorial terrace at north-center (9..14, 4..5) & east ridge bastion (17..21, 9..11)
+ paintRect(g,9,4,6,2,'A');paintRect(g,17,9,4,3,'A');
+ // Shelter rocks & weathered barricades
+ paintRect(g,2,4,3,2,'M');paintRect(g,16,4,3,2,'M');paintRect(g,10,11,4,2,'M');
+ return finishTiles(g)
 }
 function makeElsiaTiles(){
  const g=makeBlankRegion('Q','K');paintV(g,0,14,11,'A');paintV(g,0,14,12,'A');paintRect(g,8,5,8,5,'A');paintH(g,3,20,7,'A');paintV(g,7,12,5,'A');paintV(g,7,12,19,'A');paintRect(g,2,2,5,3,'H');paintRect(g,17,9,5,3,'H');return finishTiles(g)
@@ -114,7 +191,7 @@ function makeReturnRoadTiles(){
  const g=makeBlankRegion('K','K');
  const pts=[[11,14],[11,13],[12,12],[13,11],[14,10],[15,9],[14,8],[13,7],[12,7],[11,7],[10,6],[9,5],[9,4],[10,3],[11,2],[11,1],[11,0]];
  for(const [x,y] of pts){g[y][x]='D';if(x+1<COLS-1&&g[y][x+1]==='K')g[y][x+1]='D'}
- paintH(g,5,11,7,'D');g[5][11]='D';paintRect(g,3,6,4,3,'G');paintRect(g,17,4,4,4,'G');return finishTiles(g)
+ paintH(g,5,11,7,'D');paintH(g,14,17,7,'D');g[5][11]='D';paintRect(g,3,6,4,3,'G');paintRect(g,17,4,4,4,'G');return finishTiles(g)
 }
 function makeFinalFieldTiles(){
  const g=makeBlankRegion('M','K');paintV(g,0,14,11,'D');paintV(g,0,14,12,'D');paintH(g,2,21,7,'D');paintRect(g,2,2,6,4,'B');paintRect(g,16,2,6,4,'E');return finishTiles(g)
@@ -125,12 +202,25 @@ function makeBorderlandTiles(){
  // 南：旧関所。中央：分岐する荒野。北：ハルム宿場。
  paintV(g,10,14,11,'D');paintV(g,10,14,12,'D');
  paintH(g,5,18,10,'D');paintV(g,6,10,5,'D');paintV(g,7,10,18,'D');
- paintH(g,3,20,6,'D');paintV(g,2,6,7,'D');paintV(g,2,6,16,'D');
+ paintH(g,3,23,6,'D');paintV(g,2,6,7,'D');paintV(g,2,6,16,'D');
  paintV(g,0,6,11,'P');paintV(g,0,6,12,'P');
  // 宿場の建物と旧関所の崩れた壁
  paintRect(g,3,1,5,3,'H');paintRect(g,16,1,5,3,'H');paintRect(g,3,11,4,2,'K');paintRect(g,17,11,4,2,'K');
  // 荒地の岩場を道の外に置く
- paintRect(g,1,5,3,3,'M');paintRect(g,20,6,3,3,'M');paintRect(g,8,8,2,2,'M');paintRect(g,14,11,2,2,'M');
+ paintRect(g,1,5,3,3,'M');paintRect(g,20,7,3,2,'M');paintRect(g,8,8,2,2,'M');paintRect(g,14,11,2,2,'M');
+ return finishTiles(g)
+}
+function makeBorderCanyonTiles(){
+ const g=makeBlankRegion('B','K');
+ g[0][11]=g[0][12]='K';g[ROWS-1][11]=g[ROWS-1][12]='K';
+ // Deep northern Razel chasm edge overlooking the imperial hills
+ paintRect(g,1,1,22,2,'Z');
+ // Old pre-war Salt Trade Canyon Road entering from west (0,6)
+ paintH(g,0,15,6,'D');paintV(g,6,11,7,'D');paintH(g,7,18,11,'D');paintV(g,5,11,18,'D');paintH(g,15,21,5,'D');
+ // Stone terrace & ruined tollhouse foundation
+ paintRect(g,3,3,4,2,'A');paintRect(g,11,3,5,2,'A');paintRect(g,19,8,3,3,'A');
+ // Canyon boulders & outcrops
+ paintRect(g,2,9,3,3,'M');paintRect(g,12,7,3,2,'M');paintRect(g,20,12,2,2,'K');
  return finishTiles(g)
 }
 function makeRelayTiles(){const g=makeBlankRegion('G','T');paintV(g,0,14,11,'P');paintV(g,0,14,12,'P');paintH(g,3,20,8,'P');paintRect(g,3,3,5,3,'H');paintRect(g,16,3,5,3,'H');paintRect(g,3,10,4,2,'H');paintRect(g,17,10,4,2,'H');return finishTiles(g)}
@@ -150,24 +240,25 @@ function makeWatchfortTiles(){
  return finishTiles(g)
 }
 function makeRavineTiles(){const g=makeBlankRegion('K','K');for(let y=0;y<15;y++){g[y][11]='D';g[y][12]='D'}paintRect(g,2,3,6,8,'B');paintRect(g,16,3,6,8,'B');paintH(g,7,16,7,'D');paintH(g,8,15,7,'A');return finishTiles(g)}
+// Optional early exploration, compatible with the existing 24x15 collision grammar.
+function makeRyuneOutskirtsTiles(kind){
+ const g=makeBlankRegion('G','T');
+ if(kind==='fields'){
+  for(const [x,y,w,h] of [[2,2,7,4],[15,2,6,4],[3,10,7,3],[15,10,6,3]])paintRect(g,x,y,w,h,'D');
+  paintRect(g,4,3,2,1,'H');paintRect(g,17,3,2,1,'H');
+  paintH(g,1,22,7,'P');paintH(g,0,23,8,'P');
+  paintV(g,4,11,11,'P');paintH(g,9,13,4,'P');paintV(g,8,11,19,'P');
+ }else{
+  paintRect(g,12,1,2,13,'Z'); // Impassable brook except for its two bridge rows.
+  paintH(g,1,22,7,'P');paintH(g,0,23,8,'P');
+  paintV(g,4,11,9,'P');paintV(g,4,11,18,'P');
+  paintH(g,16,21,5,'P');paintH(g,3,10,11,'P');
+  for(const [x,y] of [[3,3],[4,3],[5,12],[20,3],[21,11]])g[y][x]='T';
+ }
+ return finishTiles(g)
+}
 const maps={
- village:{name:'リュネ村',tag:'畑と石井戸の故郷',tiles:[
- 'TTTTTTTTTTTPPTTTTTTTTTTT',
- 'TGGGGGGGGGGPPGGGGGGGGGGT',
- 'TGGHHHGGGGGPPGGGGHHHGGGT',
- 'TGGHHHGGGGGPPGGGGHHHGGGT',
- 'TGGHHHGGGGGPPGGGGHHHGGGT',
- 'TGGGGGGGGGGPPGGGGGGGGGGT',
- 'TGGGGPPPPPPPPPPPPPGGGGGT',
- 'TGGGGPGGGGGPPGGGGPGGGGGT',
- 'TGGGGPGGGGGPPGGGGPGGGGGT',
- 'TGGHHHGGGGGPPGGGGHHHGGGT',
- 'TGGHHHGGGGGPPGGGGHHHGGGT',
- 'TGGHHHGGGGGPPGGGGHHHGGGT',
- 'TGGGGGGGGGGPPGGGGGGGGGGT',
- 'TGGGGGGGGGGPPGGGGGGGGGGT',
- 'TTTTTTTTTTTPPTTTTTTTTTTT'
- ],npcs:[
+ village:{name:'リュネ村',tag:'畑と石井戸の故郷',tiles:makeVillageTilesV2(),npcs:[
   {id:'father',x:5,y:6,name:'トリトンの父'},
   {id:'orphan',x:18,y:6,name:'孤児院の子'},
   {id:'mayor',x:6,y:9,name:'村長'},
@@ -180,10 +271,16 @@ const maps={
   {id:'oldwoman',x:15,y:12,name:'老婆ナナ'},
   {id:'veteran',x:9,y:4,name:'帰還兵ガルド'}
  ],objects:[
-  {id:'store',x:16,y:9},{id:'well',x:12,y:9},{id:'home',x:4,y:5},{id:'doorOrphanage',x:19,y:5},
-  {id:'doorMayor',x:4,y:12},{id:'doorCottage',x:19,y:12},{id:'gate',x:11,y:0}
+  {id:'store',x:16,y:9},{id:'well',x:12,y:9},{id:'renPracticeDummy',x:21,y:6},{id:'bakeryOven',x:7,y:5},{id:'villageBoard',x:10,y:8},{id:'home',x:4,y:5},{id:'doorOrphanage',x:19,y:5},
+  {id:'doorMayor',x:4,y:12},{id:'doorCottage',x:19,y:12},{id:'westFieldPath',x:2,y:7},{id:'eastBrookPath',x:21,y:7},{id:'gate',x:11,y:0}
  ]},
- karenhome:{name:'カレンの家',tiles:makeInteriorTiles(),npcs:[
+ ryunefields:{name:'リュネ西の畑',tag:'畑仕事と村の食卓',tiles:makeRyuneOutskirtsTiles('fields'),
+   npcs:[{id:'fieldWorker',x:9,y:5,name:'畑の手伝い人'},{id:'herbGirl',x:15,y:6,name:'薬草摘みの少女・リナ'}],
+   objects:[{id:'fieldFurrows',x:7,y:4},{id:'fieldCart',x:18,y:11},{id:'fieldCache',x:19,y:4}]},
+  ryunebrook:{name:'リュネ東の小川',tag:'生活を支える水辺',tiles:makeRyuneOutskirtsTiles('brook'),
+   npcs:[{id:'brookKeeper',x:18,y:10,name:'川辺の見回り人'},{id:'oldAngler',x:10,y:10,name:'川辺の釣り師・ゴロー'}],
+   objects:[{id:'brookWater',x:11,y:5},{id:'brookStones',x:6,y:11},{id:'brookCache',x:19,y:5}]},
+  karenhome:{name:'カレンの家',tiles:makeInteriorTiles(),npcs:[
   {id:'karenMother',x:7,y:6,name:'カレンの母'},
   {id:'karenFather',x:16,y:5,name:'カレンの父'},
   {id:'karenBrother',x:14,y:8,name:'リオ'}
@@ -210,6 +307,26 @@ const maps={
   {id:'capitalSmith',x:8,y:6,name:'王都の鍛冶師'},
   {id:'armoryApprentice',x:15,y:8,name:'鍛冶見習い'}
  ],objects:[{id:'weaponRack',x:17,y:5},{id:'repairBench',x:6,y:5},{id:'indoorExit',x:11,y:12}]},
+ capitalhouse:{name:'王都・下町職人の長屋',tag:'配給と手仕事で支え合う路地の住まい',tiles:makeInteriorTiles(),npcs:[
+  {id:'veteran',x:8,y:6,name:'退役補給兵オルド'},
+  {id:'mother',x:15,y:8,name:'仕立て職人ミア'}
+ ],objects:[{id:'quartermasterChest',x:17,y:5},{id:'tailorTable',x:6,y:5},{id:'indoorExit',x:11,y:12}]},
+ capitalchapel:{name:'王都・白石の礼拝堂',tag:'聖地エルシアを模した静かな祈りの堂',tiles:makeInteriorTiles(),npcs:[
+  {id:'chapelPriest',x:8,y:6,name:'白石礼拝堂の司祭・ユリア'},
+  {id:'chapelElder',x:15,y:8,name:'祈る王都の老婦人・クララ'}
+ ],objects:[{id:'chapelAltar',x:12,y:4},{id:'chapelMemorialBook',x:6,y:5},{id:'indoorExit',x:11,y:12}]},
+ waystationinn:{name:'白樺の宿場・旅籠「白樺亭」',tag:'王都を目指す旅人と御者が集う木の宿',tiles:makeInteriorTiles(),npcs:[
+  {id:'waystationMonk',x:8,y:6,name:'旅の修道士・セバス'},
+  {id:'waystationDriver',x:15,y:8,name:'荷馬車の御者・ボブ'}
+ ],objects:[{id:'waystationCounter',x:17,y:5},{id:'waystationBed',x:17,y:4},{id:'waystationBoard',x:6,y:5},{id:'indoorExit',x:11,y:12}]},
+ halminn:{name:'ハルム宿場・旅籠「風見亭」',tag:'国境を行き交う商人と飛脚の逗留宿',tiles:makeInteriorTiles(),npcs:[
+  {id:'merchant',x:8,y:6,name:'国境薬草商フェルン'},
+  {id:'scout',x:15,y:8,name:'足止めされた国境飛脚'}
+ ],objects:[{id:'halmHerbCounter',x:17,y:5},{id:'halmInnBed',x:17,y:4},{id:'courierSatchel',x:6,y:5},{id:'indoorExit',x:11,y:12}]},
+ empirecottage:{name:'レグノア辺境村・水車番の寄り合い所',tag:'水路番と果樹農家が茶を分け合う集会所',tiles:makeInteriorTiles(),npcs:[
+  {id:'farmer',x:8,y:6,name:'水車番の老匠ヨハン'},
+  {id:'baker',x:15,y:8,name:'果樹村の保存食職人'}
+ ],objects:[{id:'preservedFruitShelf',x:17,y:5},{id:'empireCottageRest',x:17,y:4},{id:'millBlueprint',x:6,y:5},{id:'indoorExit',x:11,y:12}]},
  imperialinn:{name:'レグノア・水鳥亭',tag:'運河沿いの小さな宿',tiles:makeInteriorTiles(),npcs:[
   {id:'imperialInnHost',x:8,y:6,name:'水鳥亭の主人'},
   {id:'canalBoatman',x:15,y:8,name:'運河の船頭'}
@@ -218,14 +335,23 @@ const maps={
   {id:'bookSeller',x:8,y:6,name:'古書店主'},
   {id:'studentReader',x:15,y:8,name:'帝国の学生'}
  ],objects:[{id:'oldMaps',x:17,y:5},{id:'civilHistory',x:6,y:5},{id:'indoorExit',x:11,y:12}]},
- road:{name:'王都への街道',tag:'森を抜ける交易路',tiles:makeRoadTilesV15(),npcs:[{id:'merchant',x:8,y:8,name:'行商人'}],objects:[{id:'wolf',x:11,y:5},{id:'bandit',x:14,y:3},{id:'cave',x:13,y:1},{id:'roadSign',x:10,y:2},{id:'roadCache',x:7,y:6}]},
+ imperialguild:{name:'レグノア・運河水運組合',tag:'運河の船便と物資を差配する石造組合',tiles:makeInteriorTiles(),npcs:[
+  {id:'canalBoatman',x:8,y:6,name:'運河組合の書記長レナード'},
+  {id:'imperialCitizen',x:15,y:8,name:'薬草調合師の老女'}
+ ],objects:[{id:'guildApothecary',x:17,y:5},{id:'guildLedger',x:6,y:5},{id:'indoorExit',x:11,y:12}]},
+ elsiahouse:{name:'エルシア聖域・語り部の家',tag:'古代石材と千年の暮らしが同居する民家',tiles:makeInteriorTiles(),npcs:[
+  {id:'elsiaElder',x:8,y:6,name:'聖域の語り部・セリア'},
+  {id:'elsiaResident',x:15,y:8,name:'聖域の若い母'}
+ ],objects:[{id:'elsiaLoom',x:6,y:5},{id:'elsiaBed',x:17,y:4},{id:'indoorExit',x:11,y:12}]},
+ road:{name:'王都への街道',tag:'森を抜ける交易路',tiles:makeRoadTilesV15(),npcs:[{id:'merchant',x:8,y:8,name:'行商人'},{id:'roadTraveler',x:15,y:7,name:'王都帰りの旅人・ミレイ'}],objects:[{id:'wolf',x:11,y:5},{id:'bandit',x:14,y:3},{id:'cave',x:13,y:1},{id:'roadSign',x:10,y:2},{id:'roadCache',x:7,y:6},{id:'waysideShrine',x:17,y:5},{id:'merchantSupplies',x:6,y:8},{id:'hungryBoar',x:16,y:9},{id:'foragerBasket',x:17,y:10},{id:'eastHollowSign',x:21,y:10}]},
+ roadhollow:{name:'街道東・旧巡礼の泉',tag:'苔むす石鐘と清流の隠れ遺跡',tiles:makeRoadHollowTiles(),npcs:[{id:'oldwoman',x:7,y:6,name:'森の薬草採りシズ'}],objects:[{id:'hollowSpring',x:12,y:10},{id:'pilgrimBell',x:12,y:4},{id:'hollowStagWolf',x:19,y:5},{id:'hollowCache',x:20,y:3},{id:'herbDryingRack',x:6,y:5}]},
  cave:{name:'古砦跡',tag:'放棄された石造砦',tiles:[
  'SSSSSSSSSSSPPSSSSSSSSSSS',
  'SCCCCCCCCCCCCCCCCCCCCCCS',
  'SCCCCCCSSSSCCCCSSSSCCCCS',
  'SCCCCCCSCCCCCCCCCCSCCCCS',
- 'SCCCCCCSCCCCCCCCCCSCCCCS',
- 'SCCCCCCSCCSSSSSSCCSCCCCS',
+ 'SSSSSSSSSSSSCSSSSSSSSSSS',
+ 'SCCCCCCSCCSSCSSSCCSCCCCS',
  'SCCCCCCCCCCCCCCCCCCCCCCS',
  'SCCSSSSCCCCSSCCCCSSSSCCS',
  'SCCCCCCCCCCCCCCCCCCCCCCS',
@@ -236,10 +362,20 @@ const maps={
  'SCCCCCCCCCCCCCCCCCCCCCCS',
  'SSSSSSSSSSSSPPSSSSSSSSSS'
  ],npcs:[],objects:[
-   {id:'chest1',x:4,y:3},{id:'chest2',x:19,y:10},{id:'bats',x:4,y:8},{id:'crawler',x:20,y:6},
-   {id:'leverWest',x:3,y:8},{id:'leverEast',x:21,y:6},{id:'banner',x:3,y:6},{id:'caveRest',x:5,y:12},{id:'rations',x:20,y:12},{id:'innerGate',x:12,y:4},{id:'boss',x:12,y:3},{id:'exit',x:12,y:14},{id:'northExit',x:11,y:0}
+   {id:'chest1',x:4,y:5},{id:'chest2',x:19,y:10},{id:'bats',x:4,y:8},{id:'crawler',x:20,y:6},
+   {id:'leverWest',x:3,y:8},{id:'leverEast',x:21,y:6},{id:'banner',x:3,y:6},{id:'fortShield',x:16,y:8},{id:'watchLogbook',x:15,y:8},{id:'caveRest',x:5,y:12},{id:'oldArmoryRack',x:7,y:12},{id:'rations',x:20,y:12},{id:'nestBeetles',x:2,y:10},{id:'minerCache',x:2,y:9},{id:'collapsedWallNote',x:10,y:10},{id:'innerGate',x:12,y:4},{id:'boss',x:12,y:3},{id:'exit',x:12,y:14},{id:'northExit',x:11,y:0}
  ]},
- northroad:{name:'王都への旧街道',tag:'城壁へ続く古道',tiles:makeRouteTiles(),npcs:[{id:'scout',x:12,y:3,name:'王国軍の斥候'}],objects:[{id:'southExit',x:11,y:14},{id:'milestone',x:9,y:6}]},
+ northroad:{name:'王都への旧街道',tag:'城壁へ続く古道と宿場分岐',tiles:makeNorthRoadTiles(),npcs:[{id:'scout',x:12,y:3,name:'王国軍の斥候'},{id:'northPeddler',x:14,y:5,name:'荷馬車商人・ハンス'}],objects:[{id:'southExit',x:11,y:14},{id:'milestone',x:9,y:6},{id:'capitalOverlook',x:10,y:3},{id:'ancientGuardpost',x:15,y:8},{id:'highlandWolves',x:6,y:8},{id:'pilgrimCache',x:4,y:8},{id:'caravanWreck',x:15,y:11},{id:'westWatchSign',x:2,y:6},{id:'eastWaystationSign',x:21,y:6}]},
+ northwaystation:{name:'高台の宿場町・白樺の宿場',tag:'王都を望む旅人と荷馬車の中継町',tiles:makeWaystationTiles(),npcs:[
+  {id:'waystationHost',x:7,y:5,name:'白樺亭の女将・ハンナ'},
+  {id:'waystationGuard',x:10,y:4,name:'王都南門の交代衛兵'},
+  {id:'waystationBard',x:13,y:6,name:'旅の吟遊詩人・ルカ'},
+  {id:'waystationPeddler',x:16,y:6,name:'王都帰りの行商人・トビ'},
+  {id:'waystationChild',x:18,y:9,name:'宿場の見習い少年・ピート'}
+ ],objects:[{id:'waystationInnDoor',x:6,y:4},{id:'waystationNotice',x:9,y:5},{id:'waystationWell',x:11,y:9},{id:'waystationWagon',x:19,y:10}]},
+ northwatch:{name:'旧街道西・見晴らしの鐘楼跡',tag:'王都の白壁を見渡す古鐘楼と清流',tiles:makeNorthWatchTiles(),npcs:[
+  {id:'bellKeeper',x:17,y:5,name:'鐘楼守の老匠・アルト'}
+ ],objects:[{id:'watchCamp',x:15,y:11},{id:'pilgrimDiary',x:13,y:4},{id:'brokenBell',x:5,y:4},{id:'watchAlpha',x:7,y:8},{id:'watchVault',x:4,y:8}]},
  capital:{name:'アルディナ王都',tag:'白石の王城と大通り',tiles:makeCapitalTiles(),npcs:[
   {id:'capitalOfficial',x:12,y:6,name:'王都係官',hideWhen:'capitalCeremony'},
   {id:'capitalCitizen',x:9,y:8,name:'王都市民'},
@@ -247,12 +383,18 @@ const maps={
   {id:'capitalRecruit',x:18,y:8,name:'新兵'},
   {id:'capitalVendor',x:4,y:8,name:'市場商人マロ'},
   {id:'rationMother',x:16,y:8,name:'配給待ちの母親'},
+  {id:'capitalScholar',x:14,y:10,name:'王都の地図学者・フェリクス'},
+  {id:'capitalCrier',x:13,y:11,name:'王都の瓦版売り・テオド'},
+  {id:'capitalBakerWife',x:8,y:12,name:'下町のパン売り・マルタ'},
+  {id:'capitalShopper',x:6,y:9,name:'市場の買い物客・アンナ'},
+  {id:'capitalStreetKid',x:10,y:7,name:'大通りの少年・トマ'},
+  {id:'capitalOldGuard',x:16,y:6,name:'城壁詰所の古参兵・ガロン'},
   {id:'granz',x:8,y:5,name:'総司令グランツ'}
- ],objects:[{id:'royalCastle',x:7,y:5},{id:'capitalMarket',x:5,y:9},{id:'capitalFountain',x:12,y:8},{id:'capitalBarracks',x:19,y:9},{id:'victoryPoster',x:15,y:6},{id:'heroLedger',x:20,y:11},{id:'capitalInnDoor',x:6,y:12},{id:'capitalArmoryDoor',x:18,y:12}]},
+ ],objects:[{id:'royalCastle',x:7,y:5},{id:'capitalMarket',x:5,y:9},{id:'marketBazaar',x:3,y:6},{id:'capitalFountain',x:12,y:8},{id:'capitalBarracks',x:19,y:9},{id:'garrisonBoard',x:17,y:10},{id:'victoryPoster',x:15,y:6},{id:'heroLedger',x:20,y:11},{id:'residentialWell',x:4,y:12},{id:'capitalHouseDoor',x:2,y:12},{id:'capitalInnDoor',x:6,y:12},{id:'capitalArmoryDoor',x:18,y:12},{id:'capitalChapelDoor',x:20,y:4}]},
  ashroad:{name:'灰の街道',tag:'焼けた農地と避難路',tiles:makeAshRoadTiles(),npcs:[
   {id:'refugee',x:8,y:5,name:'避難民の母'},
   {id:'fieldPriest',x:18,y:9,name:'従軍僧'}
- ],objects:[{id:'burnedCart',x:17,y:9},{id:'burnedHomestead',x:4,y:5},{id:'ruinedShrine',x:20,y:9},{id:'scorchedOrders',x:18,y:5},{id:'imperialPatrol',x:11,y:4},{id:'ashCache',x:4,y:10}]},
+ ],objects:[{id:'burnedCart',x:17,y:9},{id:'burnedHomestead',x:4,y:5},{id:'ruinedShrine',x:20,y:9},{id:'scorchedOrders',x:18,y:5},{id:'imperialPatrol',x:11,y:4},{id:'ashCache',x:4,y:10},{id:'refugeeBundle',x:6,y:9},{id:'ashHounds',x:15,y:11}]},
  frontier:{name:'王国前線拠点',tag:'泥の塹壕と野戦病院',tiles:makeFrontierTiles(),npcs:[
   {id:'frontierOfficer',x:9,y:7,name:'前線将校'},{id:'vanguardCaptain',x:12,y:4,name:'帝国前衛隊長ヴァルク',hideWhen:'vanguardDefeated'},{id:'frontierMedic',x:5,y:11,name:'衛生兵'},{id:'kingdomGuard',x:9,y:4,name:'王国兵'},{id:'imperialGuard',x:15,y:4,name:'帝国兵',hideWhen:'vanguardDefeated'}
  ],objects:[{id:'fieldHospital',x:4,y:10},{id:'watchTower',x:19,y:4},{id:'frontierCache',x:19,y:11},{id:'frontierBarricade',x:15,y:9},{id:'frontierNotice',x:7,y:11}]},
@@ -264,54 +406,96 @@ const maps={
   {id:'lostMerchant',x:18,y:10,name:'足止めされた商人'},
   {id:'relayHost',x:7,y:6,name:'ハルム宿場の女将'},
   {id:'relayChild',x:16,y:6,name:'宿場の子ども'}
- ],objects:[{id:'borderGrave',x:3,y:6},{id:'oldCheckpoint',x:20,y:10},{id:'brokenWagon',x:19,y:9},{id:'borderCampfire',x:12,y:5},{id:'relayBoard',x:6,y:5}]},
+ ],objects:[{id:'borderGrave',x:3,y:6},{id:'oldCheckpoint',x:4,y:10},{id:'borderCache',x:20,y:10},{id:'brokenWagon',x:19,y:9},{id:'borderCampfire',x:12,y:5},{id:'relayBoard',x:6,y:5},{id:'halmInnDoor',x:5,y:3},{id:'canyonBoar',x:15,y:8},{id:'smugglerCrate',x:21,y:4},{id:'eastCanyonSign',x:21,y:5}]},
+ bordercanyon:{name:'旧塩街道の峡谷跡',tag:'戦前に両国が塩を運んだ断崖の交易路',tiles:makeBorderCanyonTiles(),npcs:[{id:'tiredGuard',x:6,y:4,name:'旧塩道の番人バルド'}],objects:[{id:'saltTollLedger',x:13,y:4},{id:'canyonCamp',x:10,y:10},{id:'canyonAlpha',x:18,y:7},{id:'canyonVault',x:20,y:9},{id:'chasmSaltCart',x:15,y:5}]},
  relayvillage:{name:'ハルム中継集落',tag:'国境手前の小さな宿場',tiles:makeRelayTiles(),npcs:[{id:'relayHost',x:7,y:8,name:'宿場の女将'},{id:'relayChild',x:18,y:8,name:'宿場の子ども'}],objects:[{id:'relayWell',x:13,y:8},{id:'relayBoard',x:5,y:8}]},
  watchfort:{name:'ベルド国境砦・ラゼル峡谷',tag:'王国最後の砦から国境橋へ続く要衝',tiles:makeWatchfortTiles(),npcs:[
   {id:'fortCommander',x:8,y:11,name:'監視砦長'},
   {id:'tiredGuard',x:15,y:11,name:'若い王国兵'},
   {id:'klein',x:12,y:3,name:'クラインテッド',showWhen:'fortGateOpen'}
- ],objects:[{id:'signalFire',x:18,y:8},{id:'fortMap',x:8,y:9},{id:'fortRest',x:10,y:11},{id:'fortGate',x:11,y:6},{id:'fortGateRight',x:12,y:6},{id:'ravineLookout',x:8,y:6},{id:'bridgeMarker',x:15,y:6}]},
+ ],objects:[{id:'signalFire',x:18,y:8},{id:'fortMap',x:8,y:9},{id:'fortRest',x:10,y:11},{id:'fortGate',x:11,y:6},{id:'fortGateRight',x:12,y:6},{id:'ravineLookout',x:8,y:6},{id:'bridgeMarker',x:15,y:6},{id:'fortCache',x:18,y:6}]},
  ravine:{name:'ラゼル渓谷橋',tag:'王国と帝国を隔てる深い峡谷',tiles:makeRavineTiles(),npcs:[{id:'klein',x:12,y:5,name:'クラインテッド'}],objects:[{id:'ravineLookout',x:7,y:7},{id:'bridgeMarker',x:16,y:7}]},
  empirevillage:{name:'レグノア辺境村',tag:'水路と果樹畑の国境村',tiles:makeEmpireVillageTiles(),npcs:[
   {id:'empireInnkeeper',x:9,y:7,name:'帝国の宿主'},
   {id:'empireChild',x:18,y:7,name:'帝国の子ども'},
   {id:'empireFarmer',x:4,y:11,name:'果樹農家'}
- ],objects:[{id:'waterMill',x:5,y:6},{id:'empireShrine',x:19,y:10},{id:'yukiRibbon',x:14,y:7},{id:'empireCache',x:3,y:11}]},
+ ],objects:[{id:'waterMill',x:5,y:6},{id:'orchardSluice',x:8,y:5},{id:'villageHearth',x:10,y:8},{id:'empireCottageDoor',x:9,y:4},{id:'empireShrine',x:19,y:10},{id:'yukiRibbon',x:14,y:7},{id:'empireCache',x:3,y:11}]},
  imperialcity:{name:'レグノア地方都市',tag:'青瓦と運河の石造都市',tiles:makeImperialCityTiles(),npcs:[
   {id:'imperialCitizen',x:9,y:7,name:'帝国市民'},
   {id:'recordKeeper',x:6,y:7,name:'記録係'},
   {id:'canalVendor',x:18,y:9,name:'運河商人'}
- ],objects:[{id:'imperialArchive',x:6,y:6},{id:'canalMonument',x:12,y:7},{id:'imperialMarket',x:19,y:9},{id:'imperialCache',x:4,y:9},{id:'imperialInnDoor',x:7,y:12},{id:'imperialBookDoor',x:16,y:12}]},
+ ],objects:[{id:'imperialArchive',x:6,y:6},{id:'readingBench',x:9,y:6},{id:'canalMonument',x:12,y:7},{id:'canalDock',x:7,y:4},{id:'imperialMarket',x:19,y:9},{id:'imperialCache',x:4,y:9},{id:'imperialInnDoor',x:7,y:12},{id:'imperialBookDoor',x:16,y:12},{id:'imperialGuildDoor',x:19,y:4}]},
  yukiroad:{name:'ユウキ旧戦場',tag:'風化した陣地と慰霊の丘',tiles:makeYukiRoadTiles(),npcs:[
   {id:'oldImperialSoldier',x:8,y:5,name:'帝国の老兵'},
   {id:'zester',x:12,y:4,name:'ゼスター'}
- ],objects:[{id:'yukiMemorial',x:19,y:9},{id:'tornLetter',x:4,y:5},{id:'brokenStandard',x:19,y:5},{id:'yukiCache',x:4,y:10}]},
+ ],objects:[{id:'yukiMemorial',x:19,y:9},{id:'tornLetter',x:4,y:5},{id:'retreatBreastwork',x:6,y:5},{id:'oldCommandPost',x:15,y:5},{id:'whiteLilyHill',x:9,y:10},{id:'battlefieldPack',x:15,y:10},{id:'brokenStandard',x:19,y:5},{id:'yukiCache',x:4,y:10},{id:'eastRidgeSign',x:21,y:8}]},
+ yukiridge:{name:'旧戦場東・慰霊尾根',tag:'四百十八名が駆け抜けた夕暮れの稜線',tiles:makeYukiRidgeTiles(),npcs:[
+  {id:'oldImperialSoldier',x:8,y:5,name:'元第十四隊の衛生兵'}
+ ],objects:[{id:'yukiLantern',x:12,y:4},{id:'ridgeCamp',x:6,y:11},{id:'ridgeAlpha',x:18,y:9},{id:'ridgeVault',x:20,y:10},{id:'evacCartAxle',x:14,y:7}]},
  elsia:{name:'エルシア聖域',tag:'古代遺構と千年の暮らし',tiles:makeElsiaTiles(),npcs:[
   {id:'elsiaResident',x:18,y:7,name:'聖域の住民'},
   {id:'zenith',x:12,y:4,name:'ゼニス'},
   {id:'elsiaElder',x:5,y:7,name:'聖域の老人'}
- ],objects:[{id:'elsiaTablet',x:6,y:6},{id:'oldSanctum',x:4,y:5},{id:'sacredSpring',x:5,y:10},{id:'elsiaCache',x:20,y:11}]},
- returnroad:{name:'王国への帰還路',tag:'崖沿いの迂回山道',tiles:makeReturnRoadTiles(),npcs:[{id:'returnScout',x:10,y:6,name:'王国軍伝令'}],objects:[{id:'mountainOverlook',x:5,y:7}]},
- finalfield:{name:'エルシア総攻撃前線',tag:'赤旗と青旗が向かい合う無人地帯',tiles:makeFinalFieldTiles(),npcs:[{id:'decisionGuide',x:12,y:6,name:'決断の地点'}],objects:[{id:'kingdomLine',x:6,y:5},{id:'empireLine',x:18,y:5}]},
- imperialcamp:{name:'帝国本陣前',tag:'青旗の帝国陣地',tiles:makeBattlefieldTiles(),npcs:[{id:'shion',x:12,y:4,name:'皇帝シオン'}],objects:[]},
- royalcamp:{name:'王国軍総司令部前',tag:'赤旗の王国陣地',tiles:makeBattlefieldTiles(),npcs:[{id:'granzFinal',x:12,y:4,name:'総司令グランツ'}],objects:[]}
+ ],objects:[{id:'elsiaTablet',x:6,y:6},{id:'oldSanctum',x:4,y:5},{id:'colonnadeArch',x:6,y:4},{id:'sacredSpring',x:5,y:10},{id:'oliveTerrace',x:17,y:6},{id:'elsiaHouseDoor',x:19,y:11},{id:'elsiaCache',x:20,y:11}]},
+ returnroad:{name:'王国への帰還路',tag:'崖沿いの迂回山道',tiles:makeReturnRoadTiles(),npcs:[{id:'returnScout',x:10,y:6,name:'王国軍伝令'}],objects:[{id:'mountainOverlook',x:5,y:7},{id:'smugglerCamp',x:4,y:6},{id:'ridgeWolves',x:17,y:6},{id:'returnCache',x:19,y:5},{id:'discardedEnlistment',x:18,y:4}]},
+ finalfield:{name:'エルシア総攻撃前線',tag:'赤旗と青旗が向かい合う無人地帯',tiles:makeFinalFieldTiles(),npcs:[
+  {id:'decisionGuide',x:12,y:6,name:'決断の地点'},
+  {id:'finalKingdomSoldier',x:6,y:8,name:'王国軍の若い伝令兵・レオ'},
+  {id:'finalEmpireScout',x:17,y:8,name:'帝国軍の衛生兵・エルナ'}
+ ],objects:[
+  {id:'kingdomLine',x:6,y:5},{id:'empireLine',x:18,y:5},
+  {id:'finalCampfire',x:10,y:10},{id:'finalTruceStone',x:13,y:10},
+  {id:'finalSupplyCrate',x:4,y:10},{id:'finalImperialCrate',x:19,y:10}
+ ]},
+ imperialcamp:{name:'帝国本陣前',tag:'青旗の帝国陣地',tiles:makeBattlefieldTiles(),npcs:[
+  {id:'shion',x:12,y:4,name:'皇帝シオン'},
+  {id:'imperialQuartermaster',x:7,y:8,name:'帝国本陣の補給官・バルター'},
+  {id:'imperialVeteranGuard',x:16,y:8,name:'ユウキ隊生き残りの近衛兵'}
+ ],objects:[
+  {id:'imperialCampBrazier',x:9,y:10},{id:'imperialWarMap',x:16,y:5},{id:'imperialBanner',x:7,y:5}
+ ]},
+ royalcamp:{name:'王国軍総司令部前',tag:'赤旗の王国陣地',tiles:makeBattlefieldTiles(),npcs:[
+  {id:'granzFinal',x:12,y:4,name:'総司令グランツ'},
+  {id:'royalMedicCaptain',x:7,y:8,name:'王国軍救護班長・ミリア'},
+  {id:'royalSergeant',x:16,y:8,name:'総司令部付き古参曹長・ダレン'}
+ ],objects:[
+  {id:'royalCampBrazier',x:9,y:10},{id:'royalOrderDesk',x:16,y:5},{id:'royalStandard',x:7,y:5}
+ ]}
 
 };
 
 const TREASURE_DEFS=Object.freeze({
+ fieldCache:{map:'ryunefields',item:'薬草',amount:1,label:'畑の道具箱'},
+ brookCache:{map:'ryunebrook',item:'魔力草',amount:1,label:'川辺の採集袋'},
+ outskirtsThanks:{map:'village',item:'携帯食',amount:1,label:'農夫からのお礼'},
  roadCache:{map:'road',item:'薬草',amount:1,label:'旅人の小箱'},
+ hollowCache:{map:'roadhollow',item:'携帯食',amount:2,label:'巡礼泉の備蓄箱'},
+ minerCache:{map:'cave',item:'携帯食',amount:1,label:'採掘工夫の道具箱'},
+ pilgrimCache:{map:'northroad',item:'魔力草',amount:1,label:'巡礼者の遺留箱'},
+ watchVault:{map:'northwatch',item:'魔力草',amount:2,label:'鐘楼守の遺留箱'},
  ashCache:{map:'ashroad',item:'薬草',amount:2,label:'捨てられた荷袋'},
  frontierCache:{map:'frontier',item:'魔力草',amount:1,label:'前線補給箱'},
+ borderCache:{map:'borderland',item:'携帯食',amount:1,label:'崩れた検問箱'},
+ canyonVault:{map:'bordercanyon',item:'魔力草',amount:2,label:'旧塩道商会の金庫箱'},
+ fortCache:{map:'watchfort',item:'魔力草',amount:1,label:'見張り塔の薬箱'},
+ ridgeVault:{map:'yukiridge',item:'携帯食',amount:2,label:'殿軍の補給木箱'},
+ returnCache:{map:'returnroad',item:'魔力草',amount:2,label:'帰還路の隠匿物資'},
+ finalSupplyCrate:{map:'finalfield',item:'薬草',amount:2,label:'王国軍の前線補給箱'},
+ finalImperialCrate:{map:'finalfield',item:'魔力草',amount:2,label:'帝国軍の遺留救急箱'},
  chest1:{map:'cave',item:'薬草',amount:2,label:'古い宝箱'},chest2:{map:'cave',item:'魔力草',amount:2,label:'古い宝箱'}
 });
 const MAP_FEATURES=Object.freeze({
- village:{npcs:['father','orphan','mayor'],optional:['well','store'],shortcuts:['villageWestFieldLoop']},
+ village:{npcs:['father','orphan','mayor'],optional:['well','store','westFieldPath','eastBrookPath'],shortcuts:['villageWestFieldLoop']},
+ ryunefields:{npcs:['fieldWorker'],optional:['fieldFurrows','fieldCart'],treasures:['fieldCache']},
+ ryunebrook:{npcs:['brookKeeper'],optional:['brookWater','brookStones'],treasures:['brookCache']},
  road:{npcs:['merchant'],treasures:['roadCache'],shortcuts:['roadWestClearing']},
  capital:{npcs:['capitalVendor','rationMother'],optional:['capitalInnDoor','capitalArmoryDoor'],shortcuts:['capitalMarketLane']},
  karenhome:{npcs:['karenMother','karenFather','karenBrother'],optional:['familyTable','restBed'],shortcuts:['karenHomeRoomLoop']},
  ashroad:{npcs:['refugee','fieldPriest'],treasures:['ashCache'],optional:['burnedCart','burnedHomestead','ruinedShrine','scorchedOrders','imperialPatrol']},
  frontier:{npcs:['frontierOfficer','frontierMedic','kingdomGuard'],treasures:['frontierCache'],optional:['fieldHospital','watchTower','frontierBarricade','frontierNotice']},
- frontierfield:{npcs:['frontierScout','woundedImperial'],optional:['stretcherTracks','imperialSatchel','withdrawalOrders','fieldGraves','brokenSignalPost','scavengerWolves']}
+ frontierfield:{npcs:['frontierScout','woundedImperial'],optional:['stretcherTracks','imperialSatchel','withdrawalOrders','fieldGraves','brokenSignalPost','scavengerWolves']},
+ borderland:{npcs:['borderScout','lostMerchant','relayHost','relayChild'],treasures:['borderCache'],optional:['borderGrave','oldCheckpoint','brokenWagon','borderCampfire','relayBoard']},
+ watchfort:{npcs:['fortCommander','tiredGuard'],treasures:['fortCache'],optional:['signalFire','fortMap','fortRest','ravineLookout','bridgeMarker']}
 });
 const SHORTCUT_DEFS=Object.freeze({
  villageWestFieldLoop:{map:'village',label:'西畑を回る生活路'},
@@ -319,11 +503,30 @@ const SHORTCUT_DEFS=Object.freeze({
  capitalMarketLane:{map:'capital',label:'市場横丁の抜け道'},
  karenHomeRoomLoop:{map:'karenhome',label:'食卓まわりの回遊動線'}
 });
+const MAP_ART_DISTRICTS=Object.freeze({
+ village:Object.freeze({
+  center:{label:'共同井戸の広場',heart:[12,9],purpose:'水汲みと生活の交点'},
+  west:{label:'生産・農作業圏',heart:[3,8],purpose:'畑と市場の行き来'},
+  northeast:{label:'孤児院・生活圏',heart:[19,5],purpose:'共同養育と子供の活動'},
+  southwest:{label:'村長と村務',heart:[4,12],purpose:'文書・記録と意思決定'},
+  southeast:{label:'東の民家',heart:[19,12],purpose:'帰還を待つ家族'},
+  north:{label:'王都への出入口',heart:[11,0],purpose:'旅立ち、内と外の対照'}
+ }),
+ capital:Object.freeze({
+  market:{label:'市場・交易',heart:[5,9],purpose:'値札、商品、商人、配給の距離感'},
+  palace:{label:'王城前広場',heart:[12,4],purpose:'石造りと儀式の重み'},
+  garrison:{label:'軍務街',heart:[18,9],purpose:'補給、兵装、兵士の生活'}
+ })
+});
 const MAP_DESIGN_RULES=Object.freeze({minimumOptionalFeature:1,benchmarkMaps:['village','road','capital','karenhome']});
 function validateMapDesign(mapId){const m=maps[mapId],f=MAP_FEATURES[mapId]||{};if(!m)return{ok:false,errors:['map missing']};const count=(f.treasures?.length||0)+(f.npcs?.length||0)+(f.optional?.length||0)+(f.shortcuts?.length||0);const errors=[];if(count<MAP_DESIGN_RULES.minimumOptionalFeature)errors.push('optional exploration feature missing');if(m.tiles.length!==ROWS||m.tiles.some(r=>r.length!==COLS))errors.push('invalid map dimensions');return{ok:errors.length===0,errors,count}}
 function auditBenchmarkMaps(){return MAP_DESIGN_RULES.benchmarkMaps.map(id=>({id,...validateMapDesign(id)}))}
 const MAP_TRANSITIONS=Object.freeze({
- villageToRoad:{from:'village',to:'road',x:11,y:13,dir:'up'},roadToVillage:{from:'road',to:'village',x:11,y:1,dir:'down'},roadToCave:{from:'road',to:'cave',x:12,y:13,dir:'up'},caveToRoad:{from:'cave',to:'road',x:13,y:2,dir:'down'},roadToNorthRoad:{from:'road',to:'northroad',x:11,y:13,dir:'up'},northRoadToRoad:{from:'northroad',to:'road',x:12,y:1,dir:'down'}
+ villageToFields:{from:'village',to:'ryunefields',x:20,y:8,dir:'left'},
+ fieldsToVillage:{from:'ryunefields',to:'village',x:3,y:8,dir:'right'},
+ villageToBrook:{from:'village',to:'ryunebrook',x:3,y:8,dir:'right'},
+ brookToVillage:{from:'ryunebrook',to:'village',x:20,y:8,dir:'left'},
+ villageToRoad:{from:'village',to:'road',x:11,y:13,dir:'up'},roadToVillage:{from:'road',to:'village',x:11,y:1,dir:'down'},roadToHollow:{from:'road',to:'roadhollow',x:2,y:11,dir:'right'},hollowToRoad:{from:'roadhollow',to:'road',x:21,y:11,dir:'left'},roadToCave:{from:'road',to:'cave',x:12,y:13,dir:'up'},caveToRoad:{from:'cave',to:'road',x:13,y:2,dir:'down'},roadToNorthRoad:{from:'road',to:'northroad',x:11,y:13,dir:'up'},northRoadToRoad:{from:'northroad',to:'road',x:12,y:1,dir:'down'},northToWaystation:{from:'northroad',to:'northwaystation',x:2,y:7,dir:'right'},waystationToNorth:{from:'northwaystation',to:'northroad',x:21,y:7,dir:'left'},northToWatch:{from:'northroad',to:'northwatch',x:21,y:7,dir:'left'},watchToNorth:{from:'northwatch',to:'northroad',x:2,y:7,dir:'right'},borderToCanyon:{from:'borderland',to:'bordercanyon',x:2,y:6,dir:'right'},canyonToBorder:{from:'bordercanyon',to:'borderland',x:21,y:6,dir:'left'},yukiToRidge:{from:'yukiroad',to:'yukiridge',x:2,y:9,dir:'right'},ridgeToYuki:{from:'yukiridge',to:'yukiroad',x:21,y:9,dir:'left'}
 });
 const villageHouses=[
  {x:3,y:2,label:'カレン家',roof:'#874c42',wall:'#d6bd91'},
@@ -331,4 +534,4 @@ const villageHouses=[
  {x:3,y:9,label:'村長宅',roof:'#5e6575',wall:'#d2bd96'},
  {x:18,y:9,label:'東の民家',roof:'#7f5744',wall:'#cfb589'}
 ];
-GC.Data=GC.Data||{};GC.Data.Maps={maps,INTERIOR_MAPS,TREASURE_DEFS,MAP_FEATURES,SHORTCUT_DEFS,MAP_DESIGN_RULES,MAP_TRANSITIONS,villageHouses};
+GC.Data=GC.Data||{};GC.Data.Maps={maps,INTERIOR_MAPS,TREASURE_DEFS,MAP_FEATURES,SHORTCUT_DEFS,MAP_DESIGN_RULES,MAP_ART_DISTRICTS,MAP_TRANSITIONS,villageHouses};
