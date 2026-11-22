@@ -43,43 +43,87 @@ const RyuneOutskirts=(()=>{
   if(ch==='P'){
    drawPath(c,x,y);
    if(map==='ryunebrook'&&(tx===12||tx===13)){
-    pixel(c,'#4a6771',x,y,32,32);
+    // Handcrafted HD-2D timber footbridge spanning the sparkling mountain brook
+    pixel(c,'#2b5566',x,y,32,32);
+    pixel(c,'#3a2a1c',x,y+1,32,30);
     for(let k=0;k<4;k++){
-     pixel(c,'#624c35',x,y+k*8,32,6);
-     pixel(c,'#b09469',x+2,y+k*8,27,3);
-     pixel(c,'#3d3b31',x+7+(k%2)*12,y+k*8+4,2,2);
+     pixel(c,'#5e4630',x,y+2+k*7,32,6);
+     pixel(c,'#9c7a52',x+1,y+2+k*7,30,4);
+     pixel(c,'#c29f6e',x+2,y+2+k*7,28,2);
+     pixel(c,'#3e2d1e',x+5+(k%2)*14,y+5+k*7,2,2);
+     pixel(c,'#3e2d1e',x+24-(k%2)*12,y+5+k*7,2,2);
     }
+    // Sturdy timber bridge guardrails & posts at top/bottom edges
+    pixel(c,'#362418',x,y,32,4);pixel(c,'#8c6844',x,y+1,32,2);
+    pixel(c,'#362418',x,y+28,32,4);pixel(c,'#8c6844',x,y+29,32,2);
+    if(tx===12){pixel(c,'#2e1e14',x,y-2,5,8);pixel(c,'#b89262',x+1,y-1,3,4);pixel(c,'#2e1e14',x,y+26,5,7);pixel(c,'#b89262',x+1,y+27,3,4)}
+    if(tx===13){pixel(c,'#2e1e14',x+27,y-2,5,8);pixel(c,'#b89262',x+28,y-1,3,4);pixel(c,'#2e1e14',x+27,y+26,5,7);pixel(c,'#b89262',x+28,y+27,3,4)}
    }
    return true;
   }
   if(ch==='Z'){
-   // Seamless sparkling mountain brook (no repeating 32px bottom seam bar)
+   // High-density animated HD2DAtlas sparkling mountain brook with mossy banks & lilypads
    const flow=waterMotion&&waterMotion(map,viewer.x,viewer.y)?
-    Math.floor(Date.now()/700)%4:0;
-   pixel(c,'#35687a',x,y,33,33);
-   if(tx===12)pixel(c,'#2b5566',x,y,3,33);
-   if(tx===13)pixel(c,'#2b5566',x+29,y,3,33);
-   const off=(ty%2)*6;
-   pixel(c,'#4c8899',x+3+off,y+6,14,2);
-   pixel(c,'#76b1ba',x+6+off,y+7,8,1);
-   pixel(c,'#8ec4c6',x+((7+flow*2+off)%19),y+18,11,2);
-   pixel(c,'#d9f2ee',x+((10+flow*2+off)%19),y+18,4,1);
-   if((tx+ty)%2===0)pixel(c,'#2c5a6c',x+12,y+25,12,2);
+    Math.floor(Date.now()/420)%4:Math.floor(Date.now()/700)%4;
+   if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(c,'water',tx,ty,'river',flow)){
+    pixel(c,'#35687a',x,y,33,33);
+    const off=(ty%2)*6;
+    pixel(c,'#4c8899',x+3+off,y+6,14,2);pixel(c,'#8ec4c6',x+((7+flow*2+off)%19),y+18,11,2);
+   }
+   // Sculpted stone-and-moss riverbanks + water edge foam
+   if(tx===12){
+    pixel(c,'#425a3c',x,y,4,32);pixel(c,'#6e8458',x,y,2,32);
+    pixel(c,'#888674',x+2,y+(h%12)+2,4,8);pixel(c,'#b8b49e',x+3,y+(h%12)+3,2,5);
+    pixel(c,'rgba(220,248,252,0.45)',x+5,y+((h+flow*4)%22)+2,2,8);
+   }
+   if(tx===13){
+    pixel(c,'#3a5036',x+28,y,4,32);pixel(c,'#667c52',x+30,y,2,32);
+    pixel(c,'#7c7a6a',x+26,y+((h>>>3)%12)+4,4,8);pixel(c,'#aaa692',x+27,y+((h>>>3)%12)+5,2,5);
+    pixel(c,'rgba(220,248,252,0.42)',x+25,y+((h+flow*5)%22)+2,2,7);
+   }
+   // Delicate floating lilypad & water blossom on calm stretches
+   if((h%7)===2&&ty!==7&&ty!==8){
+    const lx=x+9+(h%10),ly=y+10+((h>>>4)%10);
+    pixel(c,'#244c34',lx,ly+1,8,6);pixel(c,'#46824e',lx+1,ly,6,5);pixel(c,'#7eb46a',lx+2,ly,3,2);
+    if(h%2===0){pixel(c,'#fff2d4',lx+3,ly+1,3,2);pixel(c,'#f2c44c',lx+4,ly+1,1,1)}
+   }
    return true;
   }
   if(ch==='D'){
-   // Rich plowed village furrows with leafy crops & warm golden topsoil
-   pixel(c,'#7a6042',x,y,32,32);
+   // Rich plowed village furrows with varied crops (golden wheat, cabbages, pumpkins, herbs)
+   pixel(c,'#685036',x,y,32,32);
+   const cropType=(Math.floor(tx/3)+Math.floor(ty/4))%4;
    for(let k=0;k<3;k++){
-    pixel(c,'#54402b',x+2,y+4+k*10,28,3);
-    pixel(c,'#9c7a52',x+2,y+7+k*10,28,3);
-    pixel(c,'#b59063',x+4,y+7+k*10,24,1);
-    if((h+k)%3!==0){
-     const cx=x+8+((h>>k)%7),cy=y+k*10;
-     pixel(c,'#2b4f34',cx,cy+1,6,8);
-     pixel(c,'#467c4c',cx+1,cy+2,5,6);
-     pixel(c,'#8cb365',cx+1,cy+2,4,3);
-     if((h+k)%2===0)pixel(c,'#d9c275',cx+3,cy+3,2,2);
+    const ry=y+2+k*10;
+    pixel(c,'#4a3724',x+1,ry+6,30,3);
+    pixel(c,'#886945',x+1,ry+2,30,4);
+    pixel(c,'#a68358',x+2,ry+2,28,1);
+    if(cropType===0){
+     // Swaying golden wheat rows
+     for(let wx=x+4;wx<x+27;wx+=6){
+      pixel(c,'#8c6e2c',wx,ry+1,4,5);pixel(c,'#cfa94e',wx,ry,4,4);pixel(c,'#f2d878',wx+1,ry-1,2,2);
+     }
+    }else if(cropType===1){
+     // Lush village cabbages
+     for(let wx=x+5;wx<x+26;wx+=10){
+      pixel(c,'#24462c',wx,ry+1,8,6);pixel(c,'#467c46',wx+1,ry,6,5);
+      pixel(c,'#7ab464',wx+2,ry+1,4,3);pixel(c,'#b8dc88',wx+3,ry+1,2,1);
+     }
+    }else if(cropType===2){
+     // Pumpkin & leafy vine patch
+     pixel(c,'#2e5634',x+4,ry+2,24,4);pixel(c,'#4c8248',x+6,ry+1,20,3);
+     if((h+k)%2===0){
+      const px=x+8+((h+k*7)%12);
+      pixel(c,'#94481e',px,ry+1,7,6);pixel(c,'#df7a32',px+1,ry,5,5);
+      pixel(c,'#f6b058',px+2,ry,3,2);pixel(c,'#4a7638',px+3,ry-1,2,2);
+     }
+    }else{
+     // Fragrant flowering medicinal herbs
+     for(let wx=x+4;wx<x+27;wx+=7){
+      pixel(c,'#2b5236',wx,ry+1,5,5);pixel(c,'#548e54',wx+1,ry,4,4);
+      if((wx+k)%2===0)pixel(c,'#f6e698',wx+2,ry,2,2);
+      else pixel(c,'#d2b6f0',wx+2,ry,2,2);
+     }
     }
    }
    return true;
@@ -88,14 +132,14 @@ const RyuneOutskirts=(()=>{
    drawGrass(c,x,y,h);
    if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawTree(c,tx,ty,'oak'))return true;
    // Towering 45px storybook oak matching Ryune Village scale
-   const sway=(h%3)-1,ty=y-14;
+   const sway=(h%3)-1,treeY=y-14;
    pixel(c,'#48633e',x+4,y+24,24,7);
    pixel(c,'#2c1f17',x+11,y+12,10,17);
    pixel(c,'#5c412d',x+12,y+13,8,14);pixel(c,'#7a573d',x+13,y+14,3,12);
-   pixel(c,'#22362a',x+2+sway,ty+16,28,18);pixel(c,'#22362a',x+5+sway,ty+7,22,13);pixel(c,'#22362a',x+9+sway,ty+2,14,8);
-   pixel(c,'#2c4a38',x+3+sway,ty+18,26,15);pixel(c,'#3a6142',x+4+sway,ty+14,24,14);
-   pixel(c,'#4c784b',x+6+sway,ty+8,20,13);pixel(c,'#5c8b52',x+10+sway,ty+4,12,8);
-   pixel(c,'#74a05b',x+8+sway,ty+6,10,5);pixel(c,'#8fb56b',x+11+sway,ty+5,6,3);
+   pixel(c,'#22362a',x+2+sway,treeY+16,28,18);pixel(c,'#22362a',x+5+sway,treeY+7,22,13);pixel(c,'#22362a',x+9+sway,treeY+2,14,8);
+   pixel(c,'#2c4a38',x+3+sway,treeY+18,26,15);pixel(c,'#3a6142',x+4+sway,treeY+14,24,14);
+   pixel(c,'#4c784b',x+6+sway,treeY+8,20,13);pixel(c,'#5c8b52',x+10+sway,treeY+4,12,8);
+   pixel(c,'#74a05b',x+8+sway,treeY+6,10,5);pixel(c,'#8fb56b',x+11+sway,treeY+5,6,3);
    return true;
   }
   drawGrass(c,x,y,h);

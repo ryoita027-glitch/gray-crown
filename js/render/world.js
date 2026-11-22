@@ -517,17 +517,21 @@ function drawRegionDecor(){if(RoadCaveQuality.enabled&&RoadCaveQuality.active.ha
  if(state.map==='capital'){
 
   // 上層の屋根並みと遠景窓。城だけが浮かないよう街並みを作る。
-  for(const [x,w,roof] of [[1,4,'#74424a'],[5,3,'#6b3c45'],[16,3,'#4f5967'],[19,4,'#485664']]){const px=x*TILE;ctx.fillStyle='rgba(0,0,0,.2)';ctx.fillRect(px,2*TILE+30,w*TILE,46);ctx.fillStyle=roof;ctx.beginPath();ctx.moveTo(px-3,2*TILE+31);ctx.lineTo(px+w*TILE/2,2*TILE+5);ctx.lineTo(px+w*TILE+3,2*TILE+31);ctx.closePath();ctx.fill();ctx.fillStyle='#c8c0ad';ctx.fillRect(px+7,2*TILE+32,w*TILE-14,43);for(let q=0;q<w;q++){ctx.fillStyle='#8db0b6';ctx.fillRect(px+q*TILE+11,2*TILE+42,10,13)}}
+  if(!CapitalEnvironment.enabled){
+   for(const [x,w,roof] of [[1,4,'#74424a'],[5,3,'#6b3c45'],[16,3,'#4f5967'],[19,4,'#485664']]){const px=x*TILE;ctx.fillStyle='rgba(0,0,0,.2)';ctx.fillRect(px,2*TILE+30,w*TILE,46);ctx.fillStyle=roof;ctx.beginPath();ctx.moveTo(px-3,2*TILE+31);ctx.lineTo(px+w*TILE/2,2*TILE+5);ctx.lineTo(px+w*TILE+3,2*TILE+31);ctx.closePath();ctx.fill();ctx.fillStyle='#c8c0ad';ctx.fillRect(px+7,2*TILE+32,w*TILE-14,43);for(let q=0;q<w;q++){ctx.fillStyle='#8db0b6';ctx.fillRect(px+q*TILE+11,2*TILE+42,10,13)}}
+  }
   // 式典用の長旗と石畳の紋章
   for(const x of [9,14]){ctx.fillStyle='#5e4934';ctx.fillRect(x*TILE+15,4*TILE+2,3,54);ctx.fillStyle='#913f48';ctx.fillRect(x*TILE+18,4*TILE+4,22,34);ctx.fillStyle='#d5bd78';ctx.beginPath();ctx.arc(x*TILE+29,4*TILE+20,5,0,Math.PI*2);ctx.fill()}
   ctx.strokeStyle='rgba(207,183,126,.26)';ctx.lineWidth=3;ctx.beginPath();ctx.arc(12*TILE+16,8*TILE+16,37,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(12*TILE+16,8*TILE+16,48,0,Math.PI*2);ctx.stroke();
   // 北：王城外壁と正門。巨大な一枚絵ではなく、街から続く城門として見せる。
-  ctx.fillStyle='rgba(0,0,0,.2)';ctx.fillRect(4*TILE,1*TILE+10,16*TILE,68);
-  ctx.fillStyle='#b9b5aa';ctx.fillRect(4*TILE,1*TILE+2,16*TILE,58);
-  ctx.fillStyle='#d2cec1';for(let x=4;x<20;x+=2)ctx.fillRect(x*TILE+3,1*TILE-4,49,13);
-  ctx.fillStyle='#6e3d46';ctx.fillRect(10*TILE+7,1*TILE+19,3*TILE+18,41);ctx.fillStyle='#32292a';ctx.fillRect(11*TILE+5,1*TILE+29,54,31);
-  ctx.fillStyle='#d0b667';ctx.fillRect(12*TILE+8,1*TILE+35,8,12);
-  for(const tx of [5,18]){ctx.fillStyle='#99988f';ctx.fillRect(tx*TILE,1*TILE-12,42,83);ctx.fillStyle='#c4c1b7';ctx.fillRect(tx*TILE-4,1*TILE-15,50,11);ctx.fillStyle='#793f48';ctx.fillRect(tx*TILE+14,1*TILE-28,5,20)}
+  if(!CapitalEnvironment.enabled){
+   ctx.fillStyle='rgba(0,0,0,.2)';ctx.fillRect(4*TILE,1*TILE+10,16*TILE,68);
+   ctx.fillStyle='#b9b5aa';ctx.fillRect(4*TILE,1*TILE+2,16*TILE,58);
+   ctx.fillStyle='#d2cec1';for(let x=4;x<20;x+=2)ctx.fillRect(x*TILE+3,1*TILE-4,49,13);
+   ctx.fillStyle='#6e3d46';ctx.fillRect(10*TILE+7,1*TILE+19,3*TILE+18,41);ctx.fillStyle='#32292a';ctx.fillRect(11*TILE+5,1*TILE+29,54,31);
+   ctx.fillStyle='#d0b667';ctx.fillRect(12*TILE+8,1*TILE+35,8,12);
+   for(const tx of [5,18]){ctx.fillStyle='#99988f';ctx.fillRect(tx*TILE,1*TILE-12,42,83);ctx.fillStyle='#c4c1b7';ctx.fillRect(tx*TILE-4,1*TILE-15,50,11);ctx.fillStyle='#793f48';ctx.fillRect(tx*TILE+14,1*TILE-28,5,20)}
+  }
   // 王城前テラス：階段、像、植え込み。式典空間だが空白にはしない。
   ctx.fillStyle='#aaa69c';for(let i=0;i<4;i++)ctx.fillRect(7*TILE+i*5,5*TILE+i*3,10*TILE-i*10,4);
   for(const x of [8,15]){ctx.fillStyle='#747571';ctx.fillRect(x*TILE+12,5*TILE+4,9,26);ctx.fillStyle='#c8c2b0';ctx.beginPath();ctx.arc(x*TILE+16,5*TILE,7,0,Math.PI*2);ctx.fill()}

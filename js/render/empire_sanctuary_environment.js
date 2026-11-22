@@ -136,9 +136,11 @@ const EmpireSanctuaryEnvironment=(()=>{
   if(map==='empirevillage'){
    const grassBase='#617c56';
    if(ch==='G'||ch==='T'||ch==='H'){
-    pix(ctx,grassBase,a,b,32,32);
-    if(r%3===0){pix(ctx,'#6d8b61',a+3+(r%12),b+5+((r>>>4)%12),11,5);pix(ctx,'#7c9a6e',a+5+(r%12),b+6+((r>>>4)%12),6,2)}
-    if(r%4===1)pix(ctx,'#4f6947',a+13,b+17+((r>>>6)%8),10,4);
+    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(ctx,'grass',x,y,'empire')){
+     pix(ctx,grassBase,a,b,32,32);
+     if(r%3===0){pix(ctx,'#6d8b61',a+3+(r%12),b+5+((r>>>4)%12),11,5);pix(ctx,'#7c9a6e',a+5+(r%12),b+6+((r>>>4)%12),6,2)}
+     if(r%4===1)pix(ctx,'#4f6947',a+13,b+17+((r>>>6)%8),10,4);
+    }
     if(ch==='G'){
      if(up==='T'||up==='H')pix(ctx,'rgba(18,26,22,0.20)',a,b,32,6);
      if(r%6===2){pix(ctx,'#43603e',a+10,b+14,3,4);pix(ctx,'#9ab8e0',a+11,b+13,2,2)} // blue border blossoms
@@ -152,7 +154,7 @@ const EmpireSanctuaryEnvironment=(()=>{
    }
    if(ch==='E'){
     const onBridge=(x===5||x===6)&&((y>=6&&y<=7)||(y>=10&&y<=11));
-    pix(ctx,grassBase,a,b,32,32);
+    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(ctx,'grass',x,y,'empire'))pix(ctx,grassBase,a,b,32,32);
     if(onBridge){
      // Stone-and-timber canal footbridge
      pix(ctx,'#424c54',a,b+2,32,28);
@@ -161,12 +163,10 @@ const EmpireSanctuaryEnvironment=(()=>{
      pix(ctx,'#b4bec4',a+2,b+4,28,3);pix(ctx,'#545e66',a+2,b+25,28,3);
      return true;
     }
+    if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawTile(ctx,'cobble',x,y,'imperial'))return true;
     const padL=left==='G'?2:0,padR=right==='G'?2:0,padT=up==='G'?2:0,padB=down==='G'?2:0;
     pix(ctx,'#57646e',a+Math.max(0,padL-1),b+Math.max(0,padT-1),32-Math.max(0,padL-1)-Math.max(0,padR-1),32-Math.max(0,padT-1)-Math.max(0,padB-1));
     pix(ctx,area%2===0?'#73828e':'#7a8995',a+padL,b+padT,32-padL-padR,32-padT-padB);
-    pix(ctx,'#53606a',a+padL,b+15,32-padL-padR,1);pix(ctx,'#53606a',a+padL,b+31,32-padL-padR,1);
-    pix(ctx,'#53606a',a+(y%2?10:21),b+padT,1,15-padT);
-    pix(ctx,'#96a5b0',a+padL+2,b+padT+1,11,2);
     return true;
    }
   }
@@ -180,20 +180,22 @@ const EmpireSanctuaryEnvironment=(()=>{
    if(ch==='E'||ch==='A'){
     const onBridge=(y===5||y===10)&&(x===4||x===5||x===11||x===12||x===18||x===19);
     const mainAve=ch==='A';
-    const base=onBridge?'#959ea4':mainAve?(area%2===0?'#89949c':'#909ba3'):(area%2===0?'#6e7c86':'#75838e');
-    const seam=mainAve?'#616c74':'#4f5b64';
-    const hi=mainAve?'#b2bcc2':'#8fa0ab';
-    pix(ctx,base,a,b,32,32);
-    pix(ctx,seam,a,b+15,32,1);pix(ctx,seam,a,b+31,32,1);
-    pix(ctx,seam,a+(y%2?9:21),b,1,15);pix(ctx,seam,a+(y%2?22:11),b+16,1,15);
-    pix(ctx,hi,a+2,b+1,24,2);
+    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(ctx,'cobble',x,y,onBridge||mainAve?'capital':'imperial')){
+     const base=onBridge?'#959ea4':mainAve?(area%2===0?'#89949c':'#909ba3'):(area%2===0?'#6e7c86':'#75838e');
+     const seam=mainAve?'#616c74':'#4f5b64';
+     const hi=mainAve?'#b2bcc2':'#8fa0ab';
+     pix(ctx,base,a,b,32,32);
+     pix(ctx,seam,a,b+15,32,1);pix(ctx,seam,a,b+31,32,1);
+     pix(ctx,seam,a+(y%2?9:21),b,1,15);pix(ctx,seam,a+(y%2?22:11),b+16,1,15);
+     pix(ctx,hi,a+2,b+1,24,2);
+    }
     if(onBridge){
-     // Arched stone canal bridge parapets on left & right edges
-     if(x===4||x===11||x===18){pix(ctx,'#3b4650',a,b,5,32);pix(ctx,'#b8c2c8',a+1,b+2,3,28)}
-     if(x===5||x===12||x===19){pix(ctx,'#3b4650',a+27,b,5,32);pix(ctx,'#b8c2c8',a+28,b+2,3,28)}
+     // Arched carved-limestone canal bridge parapets on left & right edges
+     if(x===4||x===11||x===18){pix(ctx,'#333d47',a,b,6,32);pix(ctx,'#c4ced4',a+1,b+2,4,28);pix(ctx,'#e6edf0',a+2,b+2,2,26)}
+     if(x===5||x===12||x===19){pix(ctx,'#333d47',a+26,b,6,32);pix(ctx,'#c4ced4',a+27,b+2,4,28);pix(ctx,'#e6edf0',a+28,b+2,2,26)}
     }else{
-     if(up==='H'||up==='K')pix(ctx,'rgba(16,22,30,0.26)',a,b,32,6);
-     if(left==='H'||left==='K')pix(ctx,'rgba(16,22,30,0.16)',a,b,5,32);
+     if(up==='H'||up==='K')pix(ctx,'rgba(14,20,28,0.32)',a,b,32,7);
+     if(left==='H'||left==='K')pix(ctx,'rgba(14,20,28,0.18)',a,b,5,32);
     }
     return true;
    }
@@ -250,30 +252,36 @@ const EmpireSanctuaryEnvironment=(()=>{
 
   if(map==='elsia'){
    if(ch==='K'){drawCliffTile(ctx,def,x,y,r,'sanctuary');return true}
-   if(ch==='H'){pix(ctx,'#687066',a,b,32,32);return true}
+   if(ch==='H'){
+    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(ctx,'grass',x,y,'sanctuary'))pix(ctx,'#687066',a,b,32,32);
+    return true;
+   }
    const lawn='#808e75';
    if(ch==='Q'){
-    pix(ctx,lawn,a,b,32,32);
-    if(r%3===0)pix(ctx,'#8f9e83',a+3+(r%12),b+4+((r>>>4)%12),12,5);
-    if(r%4===1)pix(ctx,'#6b7862',a+10,b+16+((r>>>6)%8),11,4);
-    if(r%5===0){
-     // Sacred white & pale-gold sanctuary blossoms
-     pix(ctx,'#556e52',a+8+(r%14),b+10+((r>>>5)%12),4,4);
-     pix(ctx,r%2?'#f4f2e6':'#ebd894',a+9+(r%14),b+9+((r>>>5)%12),2,2);
+    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(ctx,'grass',x,y,'sanctuary')){
+     pix(ctx,lawn,a,b,32,32);
+     if(r%3===0)pix(ctx,'#8f9e83',a+3+(r%12),b+4+((r>>>4)%12),12,5);
+     if(r%4===1)pix(ctx,'#6b7862',a+10,b+16+((r>>>6)%8),11,4);
     }
-    if(up==='K'||up==='H')pix(ctx,'rgba(22,28,24,0.20)',a,b,32,6);
+    if(r%5===0){
+     // Luminous sacred white & pale-gold sanctuary blossoms
+     pix(ctx,'#3a6448',a+8+(r%14),b+10+((r>>>5)%12),4,4);
+     pix(ctx,r%2?'#f8f6ea':'#f2df96',a+9+(r%14),b+9+((r>>>5)%12),2,2);
+    }
+    if(up==='K'||up==='H')pix(ctx,'rgba(16,28,24,0.28)',a,b,32,7);
     return true;
    }
    if(ch==='A'){
-    // Ancient white-marble sanctuary paving with gold-moss joints
-    pix(ctx,lawn,a,b,32,32);
-    const padL=left==='Q'?2:0,padR=right==='Q'?2:0,padT=up==='Q'?2:0,padB=down==='Q'?2:0;
-    pix(ctx,'#9e9d90',a+Math.max(0,padL-1),b+Math.max(0,padT-1),32-Math.max(0,padL-1)-Math.max(0,padR-1),32-Math.max(0,padT-1)-Math.max(0,padB-1));
-    pix(ctx,area%2===0?'#cbc8b8':'#d2cfc0',a+padL,b+padT,32-padL-padR,32-padT-padB);
-    pix(ctx,'#969485',a+padL,b+15,32-padL-padR,1);pix(ctx,'#969485',a+padL,b+31,32-padL-padR,1);
-    pix(ctx,'#969485',a+(y%2?10:20),b+padT,1,15-padT);pix(ctx,'#969485',a+(y%2?21:11),b+16,1,15-padB);
-    pix(ctx,'#e6e3d5',a+padL+2,b+padT+1,12,2);
-    if(r%6===0)pix(ctx,'#788c6e',a+14,b+14,5,2);
+    // Ancient carved white-marble sanctuary paving backed by HD2DAtlas marble flagstones
+    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(ctx,'cobble',x,y,'marble')){
+     pix(ctx,lawn,a,b,32,32);
+     pix(ctx,'#d2cfc0',a+1,b+1,30,30);
+    }
+    if(left==='Q')pix(ctx,'#527a54',a,b,2,32);
+    if(right==='Q')pix(ctx,'#527a54',a+30,b,2,32);
+    if(up==='Q')pix(ctx,'#527a54',a,b,32,2);
+    if(down==='Q')pix(ctx,'#527a54',a,b+30,32,2);
+    if(r%7===0){pix(ctx,'#5a8458',a+13,b+14,5,2);pix(ctx,'#88b478',a+14,b+14,3,1)}
     return true;
    }
   }
@@ -475,12 +483,17 @@ const EmpireSanctuaryEnvironment=(()=>{
     pix(ctx,col,x+2,y+5,28,10);
     pix(ctx,'#d8e2e8',x+5,y+7,22,3);
    }
-   // Imperial canal streetlamps with cool-amber reflections
+   // Imperial canal wrought-iron streetlamps with smooth radial golden reflections (zero square boxes!)
    for(const [lx,ly] of [[7,6],[15,6],[7,9],[15,9]]){
     const x=lx*32+14,y=ly*32+6;
-    pix(ctx,'rgba(245,212,138,0.14)',x-12,y-4,28,28);
-    pix(ctx,'#323c46',x,y+4,4,20);
-    pix(ctx,'#f2d488',x-1,y,6,5);
+    const lg=ctx.createRadialGradient?.(x+2,y+2,2,x+2,y+2,26);
+    if(lg&&typeof lg.addColorStop==='function'){
+     lg.addColorStop(0,'rgba(255,222,138,0.30)');lg.addColorStop(1,'rgba(245,196,100,0)');
+     ctx.fillStyle=lg;ctx.beginPath();ctx.arc(x+2,y+2,26,0,Math.PI*2);ctx.fill();
+    }
+    pix(ctx,'rgba(12,18,24,0.30)',x-2,y+22,8,4);
+    pix(ctx,'#242e38',x,y+4,4,20);pix(ctx,'#4e5e6c',x+1,y+5,2,18);
+    pix(ctx,'#242e38',x-2,y-1,8,7);pix(ctx,'#f6d87e',x-1,y,6,5);pix(ctx,'#fffbe2',x+1,y+1,2,2);
    }
    return true;
   }
@@ -627,23 +640,44 @@ const EmpireSanctuaryEnvironment=(()=>{
     pix(ctx,'#4f6c4a',px+18,py+10,7,10);pix(ctx,'#78986c',px+19,py+9,5,4);
     pix(ctx,'#f2eed8',px+10,py+11,2,2);pix(ctx,'#ebd68a',px+21,py+12,2,2);
    }
-   // Sacred stone lantern pillars lining the central white-marble processional avenue
+   // Luminous sanctuary trees framing outer lawns (cleanly off walkways & NPCs)
+   if(typeof HD2DAtlas!=='undefined'){
+    for(const [tx,ty] of [[2,12],[21,2],[21,6],[1,9]]){
+     HD2DAtlas.drawTree(ctx,tx,ty,'sanctuary');
+    }
+   }
+   // Sacred carved marble lantern shrines with smooth circular turquoise-gold light blooms (zero square halos!)
    for(const [lx,ly] of [[9,2],[14,2],[9,4],[14,4],[9,10],[14,10],[9,12],[14,12]]){
     const px=lx*32+10,py=ly*32+6;
-    pix(ctx,'rgba(190,242,228,0.16)',px-8,py-4,28,28);
-    pix(ctx,'#7c7b70',px+2,py+6,8,18);pix(ctx,'#d6d4c6',px+3,py+6,6,16);
-    pix(ctx,'#9e9d90',px,py+4,12,4);
-    pix(ctx,'#b8f2e6',px+4,py+9,4,4);
+    const lg=ctx.createRadialGradient?.(px+6,py+10,2,px+6,py+10,24);
+    if(lg&&typeof lg.addColorStop==='function'){
+     lg.addColorStop(0,'rgba(176,248,232,0.34)');lg.addColorStop(1,'rgba(160,236,220,0)');
+     ctx.fillStyle=lg;ctx.beginPath();ctx.arc(px+6,py+10,24,0,Math.PI*2);ctx.fill();
+    }
+    pix(ctx,'rgba(18,28,24,0.28)',px,py+22,12,4);
+    pix(ctx,'#5e6258',px+1,py+6,10,18);pix(ctx,'#dad8ca',px+2,py+6,8,16);pix(ctx,'#f2f0e6',px+3,py+6,3,15);
+    pix(ctx,'#6e7266',px-1,py+3,14,5);pix(ctx,'#eae8dc',px,py+4,12,3);
+    pix(ctx,'#80e8dc',px+4,py+9,4,5);pix(ctx,'#e8fff8',px+5,py+10,2,2);
    }
-   // Carved white-marble rotunda basin ring around the Sacred Spring (5,10)
-   pix(ctx,'#9e9d90',4*32+18,9*32+22,60,44);
-   pix(ctx,'#dad8ca',4*32+20,9*32+24,56,40);
+   // Sculpted octagonal white-marble Sacred Spring rotunda filled with animated turquoise sacred water (5,10)
+   const scx=5*32+16,scy=10*32+16,sFrame=Math.floor(now/420)%4;
+   pix(ctx,'rgba(16,28,24,0.28)',scx-32,scy-22,64,46);
+   pix(ctx,'#787a70',scx-30,scy-22,60,44);pix(ctx,'#787a70',scx-22,scy-30,44,60);
+   pix(ctx,'#dad8ca',scx-28,scy-20,56,40);pix(ctx,'#dad8ca',scx-20,scy-28,40,56);
+   pix(ctx,'#f2f0e6',scx-26,scy-20,52,4);pix(ctx,'#f2f0e6',scx-18,scy-28,36,4);
+   // Luminous inner spring water basin
+   pix(ctx,'#226a74',scx-20,scy-16,40,32);pix(ctx,'#329298',scx-18,scy-14,36,28);
+   pix(ctx,'#6ad4cc',scx-14+(sFrame*2)%8,scy-8,14,3);pix(ctx,'#d6fff8',scx-10+(sFrame*2)%8,scy-8,6,1);
+   pix(ctx,'#6ad4cc',scx-4-(sFrame*2)%6,scy+4,14,3);pix(ctx,'#e6fff8',scx-(sFrame*2)%6,scy+4,6,1);
+   // Floating sacred lotus petals on the spring water
+   pix(ctx,'#3c7c52',scx+7,scy-10,6,4);pix(ctx,'#fff2e2',scx+9,scy-11,3,3);
+   pix(ctx,'#3c7c52',scx-14,scy+5,6,4);pix(ctx,'#fff2e2',scx-12,scy+4,3,3);
 
    // Serene sanctuary light wash
-   const light=ctx.createRadialGradient(5*32+16,10*32+16,4,5*32+16,10*32+16,64);
-   light.addColorStop(0,'rgba(164,238,224,0.24)');
+   const light=ctx.createRadialGradient(scx,scy,6,scx,scy,72);
+   light.addColorStop(0,'rgba(164,248,232,0.28)');
    light.addColorStop(1,'rgba(164,238,224,0)');
-   ctx.fillStyle=light;ctx.beginPath();ctx.arc(5*32+16,10*32+16,64,0,Math.PI*2);ctx.fill();
+   ctx.fillStyle=light;ctx.beginPath();ctx.arc(scx,scy,72,0,Math.PI*2);ctx.fill();
    return true;
   }
 

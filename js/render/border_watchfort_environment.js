@@ -222,14 +222,13 @@ const BorderWatchfortEnvironment=(()=>{
    }
    if(ch==='A'){
     const onBridge=y<=5&&(x===11||x===12);
-    const stoneBase=onBridge?'#959690':(area%3===0?'#878984':'#8f918b');
-    pix(ctx,stoneBase,a,b,32,32);
-    // Worn fortress flagstone courses
-    pix(ctx,'#66696b',a,b+15,32,1);pix(ctx,'#66696b',a,b+31,32,1);
-    pix(ctx,'#66696b',a+(y%2?9:21),b,1,15);pix(ctx,'#66696b',a+(y%2?22:10),b+16,1,15);
-    pix(ctx,onBridge?'#babbb3':'#aba9a0',a+2,b+1,26,2);
-    pix(ctx,onBridge?'#aeb0a8':'#9ea099',a+2,b+17,24,1);
-    if(r%6===0)pix(ctx,'#767874',a+4+(r%12),b+4,8,6);
+    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(ctx,'cobble',x,y,onBridge?'capital':'garrison')){
+     const stoneBase=onBridge?'#959690':(area%3===0?'#878984':'#8f918b');
+     pix(ctx,stoneBase,a,b,32,32);
+     pix(ctx,'#66696b',a,b+15,32,1);pix(ctx,'#66696b',a,b+31,32,1);
+     pix(ctx,'#66696b',a+(y%2?9:21),b,1,15);pix(ctx,'#66696b',a+(y%2?22:10),b+16,1,15);
+     pix(ctx,onBridge?'#babbb3':'#aba9a0',a+2,b+1,26,2);
+    }
     if(r%9===3)pix(ctx,'#5c6952',a+2+(r%18),b+14,5,2); // subtle crevice moss
     if(onBridge){
      // Carved stone bridge parapets with shadow & sunlit coping

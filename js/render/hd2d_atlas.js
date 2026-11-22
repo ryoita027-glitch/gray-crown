@@ -124,7 +124,8 @@ const HD2DAtlas=(()=>{
    capital:['#76726c','#b8b3a8','#cac5ba','#a6a095','#ded9ce','#5e5b56'],
    market:['#746756','#b8a88e','#cbbba0','#a4947a','#dfd1b8','#5c5144'],
    garrison:['#545c66','#889098','#9ca5ae','#788088','#b6c0c8','#3f464e'],
-   imperial:['#4a5866','#7c8b96','#94a4b0','#6c7b86','#b2c2ce','#36424e'],
+   imperial:['#465462','#748490','#8b9ca8','#647480','#aabcc8','#34404c'],
+   marble:['#8c8a7c','#d4d1c2','#e4e1d2','#c2bfb0','#f4f2e6','#727064'],
    cave:['#262830','#4a4c54','#5a5d66','#3d3f47','#70747e','#1c1e24']
   };
   const [mortar,base,hi,lo,rim,deep]=pals[tone]||pals.capital;
@@ -329,18 +330,20 @@ const HD2DAtlas=(()=>{
   return el;
  }
  function drawTile(c,kind,x,y,sub='',frameOverride=null){
+  if(!c||typeof c.drawImage!=='function')return false;
   const v=frameOverride!==null?(frameOverride&3):(hash(x,y,kind.length)&3);
   const tile=getTile(kind,v,sub);
   if(!tile)return false;
-  c.drawImage(tile,x*32,y*32);
+  c.drawImage(tile,Math.round(x*32),Math.round(y*32));
   return true;
  }
  function drawTree(c,x,y,biome='oak'){
+  if(!c||typeof c.drawImage!=='function')return false;
   const h=hash(x,y,55);
   const spr=getTree(h%3,biome);
   if(!spr)return false;
   const sway=(h%3)-1;
-  c.drawImage(spr,x*32-8+sway,y*32-24);
+  c.drawImage(spr,Math.round(x*32-8+sway),Math.round(y*32-24));
   return true;
  }
  return {drawTile,drawTree,getTile,getTree,hash};

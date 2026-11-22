@@ -309,27 +309,52 @@ const CapitalEnvironment=(()=>{
  }
  function street(c,map){
   if(!on()||map!=='capital')return false;
-  // Palace / terrace height differs from western trade stalls and eastern logistics.
-  for(const [x,y,w,height,wall,roof] of [
-   [2,2,3,2,'#bcb5a6','#875f58'],[19,2,3,2,'#adb3b4','#53616c'],
-   [4,1,6,2,'#c9c3b7','#776068'],[14,1,6,2,'#c3c1b9','#5e666e']]){
-   box(c,'#4d5054',x*W+2,y*W+height*W-5,w*W-4,7);
-   for(let col=0;col<w;col++){box(c,wall,(x+col)*W+3,y*W+4,27,25);
-    box(c,'#605d60',(x+col)*W+8,y*W+10,9,10);
-    box(c,'#a2b4b5',(x+col)*W+9,y*W+11,7,5)}
-   box(c,roof,x*W,y*W+1,w*W,7);
-   for(let col=0;col<w;col++)box(c,'#b3ada5',(x+col)*W+2,y*W-3,16,4);
+  // Majestic dressed white-limestone Royal Palace wings & outer terrace towers (replaces flat beige boxes!)
+  for(const [x,y,w,height,wall,roof,isPalace] of [
+   [2,2,3,2,'#cfc8b6','#7e4648',false],[19,2,3,2,'#b8bec2','#4a5a68',false],
+   [4,1,6,2,'#ded9ca','#6d3240',true],[14,1,6,2,'#d8d5c8','#52606e',true]]){
+   const px=x*W,py=y*W,pw=w*W,ph=height*W;
+   box(c,'rgba(14,18,24,.34)',px+3,py+ph-4,pw-2,8);
+   box(c,'#2c2a2e',px+1,py+2,pw-2,ph-3);
+   box(c,wall,px+3,py+4,pw-6,ph-7);
+   // Dressed limestone ashlar courses & cornice molding
+   for(let row=py+12;row<py+ph-8;row+=10)box(c,'rgba(64,62,58,.18)',px+3,row,pw-6,1);
+   box(c,'#7c786e',px+3,py+ph-10,pw-6,6);
+   for(let col=0;col<w;col++){
+    const cx=(x+col)*W;
+    // Stone pilaster between bays
+    box(c,'#9c968a',cx+2,py+8,4,ph-18);box(c,'#ece7da',cx+3,py+8,2,ph-18);
+    // Tall arched palace / terrace stained-glass window with warm golden interior light
+    box(c,'#36343a',cx+10,py+12,13,20);
+    box(c,isPalace?'#5e869c':'#6e8e96',cx+12,py+14,9,16);
+    box(c,'#f2cc74',cx+13,py+20,7,9);box(c,'#fff6c8',cx+14,py+22,4,4);
+    box(c,'#9c9488',cx+16,py+14,1,16);box(c,'#9c9488',cx+12,py+20,9,1);
+    box(c,'#d8c080',cx+11,py+11,11,2);
+   }
+   // Royal slate-and-gold crenellated parapet & roof cornice
+   box(c,'#26242a',px-1,py,pw+2,10);
+   box(c,roof,px+1,py+1,pw-2,8);
+   box(c,'#d8be7e',px+2,py+8,pw-4,2);
+   for(let col=0;col<w;col++){
+    box(c,'#3a3840',(x+col)*W+2,py-4,14,6);
+    box(c,'#d4d0c4',(x+col)*W+3,py-3,12,4);
+    box(c,'#f0ece0',(x+col)*W+4,py-3,10,1);
+   }
   }
   // 3-Phase Royal Capital Atmospheric Storytelling (Pre-Ceremony Festive -> Post-Ceremony Afterglow -> Chapter 7 Wartime)
   const ceremonyDone=typeof isEventComplete==='function'&&isEventComplete('alpha.capital.ceremony');
   const wartime=typeof getWorldSwitch==='function'&&getWorldSwitch('returnedKingdom');
   const wave=Math.round(Math.sin((typeof Date!=='undefined'?Date.now():0)/280)*1.6);
-  // Central Plaza Radial Marble Mosaic Emblem surrounding the Fountain (12,8)
-  for(const [rx,ry,col] of [[11,7,'#e4dec8'],[13,7,'#e4dec8'],[11,9,'#e4dec8'],[13,9,'#e4dec8'],[12,7,'#d6c496'],[12,9,'#d6c496'],[11,8,'#d6c496'],[13,8,'#d6c496']]){
-   box(c,'rgba(44,42,38,.16)',rx*W+4,ry*W+4,24,24);
-   box(c,col,rx*W+6,ry*W+6,20,20);
-   box(c,'#f4efe2',rx*W+8,ry*W+8,16,3);
-  }
+  // Central Plaza Carved Octagonal Marble Apron & Gold Sun-Compass Inlay surrounding the Fountain (12,8)
+  const fcx=12*W+16,fcy=8*W+16;
+  box(c,'rgba(44,40,34,.18)',fcx-44,fcy-34,88,68);
+  box(c,'rgba(44,40,34,.18)',fcx-34,fcy-44,68,88);
+  box(c,'#d8d2be',fcx-42,fcy-32,84,64);
+  box(c,'#d8d2be',fcx-32,fcy-42,64,84);
+  box(c,'#eae4d2',fcx-38,fcy-28,76,56);
+  box(c,'#eae4d2',fcx-28,fcy-38,56,76);
+  // Subtle inlaid brass sun-compass lines radiating from the fountain
+  box(c,'#bfa264',fcx-40,fcy-1,80,2);box(c,'#bfa264',fcx-1,fcy-40,2,80);
   // Ornate wrought-iron streetlamps with warm amber glass lanterns along the boulevard
   for(const [lx,ly] of [[6,7],[17,7],[10,11],[14,11]]){
    const px=lx*W+13,py=ly*W+2;
@@ -339,10 +364,9 @@ const CapitalEnvironment=(()=>{
    box(c,wartime?'#b8c8d8':'#ffd874',px+1,py+2,5,5);
    box(c,wartime?'#e6f0f8':'#fff8d6',px+2,py+3,3,2);
   }
-  // Blossoming ornamental boulevard trees in carved stone planters (framing market & plaza, zero collision impact)
+  // Blossoming ornamental boulevard trees on southern garden lawn strips (zero signboard or walkway overlap!)
   if(typeof HD2DAtlas!=='undefined'){
-   for(const [tx,ty] of [[4,6],[19,6]]){
-    box(c,'#5c5852',tx*W+2,ty*W+18,28,12);box(c,'#cfc8b8',tx*W+4,ty*W+19,24,8);
+   for(const [tx,ty] of [[2,13],[21,13]]){
     HD2DAtlas.drawTree(c,tx,ty,'ornamental');
    }
   }
@@ -369,10 +393,17 @@ const CapitalEnvironment=(()=>{
   box(c,wartime?'#593238':'#7c2f38',11*W+18,3*W+4,28,3*W-6);
   box(c,wartime?'#9c9278':'#d5b872',11*W+20,3*W+4,2,3*W-6);box(c,wartime?'#9c9278':'#d5b872',12*W+12,3*W+4,2,3*W-6);
   for(const y of [3,4,5])box(c,'#c7c1b4',11*W+2,y*W+29,61,2);
-  // Warm golden streetlamp light pools (cooler & dimmer in wartime)
+  // Warm circular golden streetlamp light pools (cooler & dimmer in wartime; zero harsh square boxes!)
   for(const [lx,ly] of [[6,7],[17,7],[10,11],[14,11]]){
-   box(c,wartime?'rgba(186,204,224,0.09)':'rgba(255,208,116,0.12)',lx*W-4,ly*W-2,40,36);
-   box(c,wartime?'rgba(218,228,236,0.12)':'rgba(255,232,164,0.16)',lx*W+6,ly*W+4,20,20);
+   const gx=lx*W+16,gy=ly*W+8;
+   const lg=c.createRadialGradient?.(gx,gy,2,gx,gy,26);
+   if(lg&&typeof lg.addColorStop==='function'){
+    lg.addColorStop(0,wartime?'rgba(200,220,240,0.22)':'rgba(255,224,132,0.28)');
+    lg.addColorStop(1,'rgba(255,200,100,0)');
+    c.fillStyle=lg;c.beginPath();c.arc(gx,gy,26,0,Math.PI*2);c.fill();
+   }else{
+    box(c,wartime?'rgba(218,228,236,0.12)':'rgba(255,232,164,0.16)',lx*W+6,ly*W+4,20,20);
+   }
   }
   for(const [x,y] of [[8,6],[16,6],[8,8],[15,8]]){box(c,'#8a8279',x*W+3,y*W+23,24,4);box(c,'#d7c49c',x*W+9,y*W+23,8,2)}
   // Market and rationing: brimming wares in Phase A/B vs visibly depleted wartime shelves in Phase C

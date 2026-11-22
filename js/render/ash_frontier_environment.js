@@ -40,9 +40,10 @@ const AshFrontierEnvironment=(()=>{
    // First fillRect MUST remain full-bleed 32x32 (verified by ashroad_serad_first_arc.test.js)
    const roadCol=map==='ashroad'?(area%3===0?'#b29a7b':'#b8a080'):(area%3===0?'#a49b88':'#ada38d');
    pix(ctx,roadCol,a,b,32,32);
+   if(typeof HD2DAtlas!=='undefined')HD2DAtlas.drawTile(ctx,'path',x,y,map==='ashroad'?'dark':'warm');
    // Neighbor-aware organic shoulder blending where road meets ground/mud
    const groundEdge=map==='ashroad'?p.ground:p.ground;
-   const vergeCol=map==='ashroad'?'#968268':'#847c6d';
+   const vergeCol=map==='ashroad'?'#8a7860':'#746c5e';
    if(left!=='D'){pix(ctx,groundEdge,a,b,2,32);pix(ctx,vergeCol,a+2,b+((r&3)*2),2,24)}
    if(right!=='D'){pix(ctx,groundEdge,a+30,b,2,32);pix(ctx,vergeCol,a+28,b+(((r>>>2)&3)*2),2,24)}
    if(up!=='D'){pix(ctx,groundEdge,a,b,32,2);pix(ctx,vergeCol,a+((r&3)*2),b+2,24,2)}
@@ -55,6 +56,7 @@ const AshFrontierEnvironment=(()=>{
   if(map==='ashroad'&&(ch==='B'||ch==='T')){
    const burnt=ch==='T';
    pix(ctx,burnt?(area%3===0?'#3c3d37':p.edge):(area%4===0?'#6e6458':p.ground),a,b,32,32);
+   if(!burnt&&typeof HD2DAtlas!=='undefined')HD2DAtlas.drawTile(ctx,'path',x,y,'ash');
    if(burnt){
     // Layered charred woodland silhouette with gnarled branches & ember ash
     const sway=(r%3)-1;
@@ -66,7 +68,7 @@ const AshFrontierEnvironment=(()=>{
     if(r%3===0){pix(ctx,'#9e6842',a+13+sway,b+9,4,2);pix(ctx,'#d88c4a',a+14+sway,b+9,2,1)}
     if(down!=='T')pix(ctx,'#1b1a18',a,b+28,32,4);
    }else{
-    if(up==='T')pix(ctx,'#585046',a,b,32,4);
+    if(up==='T')pix(ctx,'rgba(18,16,14,0.34)',a,b,32,5);
     if(r%4===0)pix(ctx,'#847769',a+((r>>>5)%18)+3,b+((r>>>10)%20)+4,10,3);
     if(r%5===2){pix(ctx,'#544c42',a+((r>>>4)%18)+5,b+((r>>>8)%18)+6,7,3);pix(ctx,'#9e8b74',a+((r>>>4)%18)+6,b+((r>>>8)%18)+6,4,1)}
     if(r%7===0)pix(ctx,'#9a8772',a+((r>>>11)%21)+3,b+((r>>>16)%22)+4,5,2);
@@ -76,6 +78,7 @@ const AshFrontierEnvironment=(()=>{
   if((map==='frontier'||map==='frontierfield')&&['M','B','K','H'].includes(ch)){
    const wall=ch==='K'||ch==='H';
    pix(ctx,wall?(area%3===0?'#424548':p.edge):(area%3===0?'#6f6a5f':p.ground),a,b,32,32);
+   if(!wall&&typeof HD2DAtlas!=='undefined')HD2DAtlas.drawTile(ctx,'path',x,y,'mud');
    if(wall){
     // Neighbor-aware chiseled frontier stone bastion with coping edge & weathered blocks
     const s1=10+(r%8),s2=12+((r>>>4)%8);
@@ -89,10 +92,9 @@ const AshFrontierEnvironment=(()=>{
     }
     if(down!=='K'&&down!=='H')pix(ctx,'#26282c',a,b+28,32,4);
    }else{
-    if(up==='K'||up==='H')pix(ctx,'#4d4b44',a,b,32,4);
-    if((r&3)===0)pix(ctx,p.mud,a+((r>>>3)%18)+4,b+((r>>>7)%18)+4,11,3);
-    if((r&7)===2)pix(ctx,'#9c8974',a+((r>>>13)%21)+3,b+((r>>>17)%21)+3,6,2);
-    if((r&7)===5){pix(ctx,'#535746',a+(r%20)+4,b+((r>>>5)%20)+5,5,3);pix(ctx,'#7a7e64',a+(r%20)+5,b+((r>>>5)%20)+4,3,2)}
+    if(up==='K'||up==='H')pix(ctx,'rgba(16,18,22,0.34)',a,b,32,6);
+    if((r&7)===1){pix(ctx,'#3a4850',a+(r%14)+4,b+((r>>>4)%14)+6,11,5);pix(ctx,'#6c8490',a+(r%14)+6,b+((r>>>4)%14)+7,6,2)}
+    if((r&7)===5){pix(ctx,'#4a563e',a+(r%20)+4,b+((r>>>5)%20)+5,6,4);pix(ctx,'#7a8a5e',a+(r%20)+5,b+((r>>>5)%20)+4,4,2)}
    }
    return true;
   }
