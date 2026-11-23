@@ -168,7 +168,7 @@ const RyuneOutskirts=(()=>{
   if(map==='ryunefields'){
    // Expanded 26x18 Sunlit Pastoral Farmstead: Authentic Rural Weathered Red-Plank Hay Barn + Rustic Fieldstone Well!
    if(typeof HD2DAtlas!=='undefined'){
-    HD2DAtlas.drawGrandHouse(c,3,2,6,4,{tag:'rf_barn',region:'rural',ruralStyle:'barn',label:'リュネ農園納屋',sideShed:true,doorOffsetPx:3*32});
+    HD2DAtlas.drawGrandHouse(c,3,2,6,4,{tag:'rf_barn',region:'rural',ruralStyle:'barn',emblem:'barn',sideShed:true,doorOffsetPx:3*32});
     HD2DAtlas.drawSculptedWell(c,13,7,{rustic:true,roof:'#6e4e2e',roofHi:'#9a7046'});
    }
    for(const [dx,dy] of [[6,6]]){
@@ -222,11 +222,12 @@ const RyuneOutskirts=(()=>{
     pixel(c,'#f8e27a',x+8,y+15,3,3);pixel(c,'#fff6e0',x+14,y+17,3,3);pixel(c,'#e88688',x+11,y+19,2,2);
    }
   }else if(map==='ryunebrook'){
-   // Expanded 26x18 Crystal Woodland River Valley with Waterfall Grotto, Angler's Timber Cabin, Fishing Pier & Moored Rowboat!
+   // Expanded 26x18 Crystal Woodland River Valley with Waterfall Grotto, Arched Bridge & Angler's Log Cabin!
    const now=Date.now();
    if(typeof HD2DAtlas!=='undefined'){
     HD2DAtlas.drawWaterfallCulvert(c,11,2,3,{stone:'#6e7068',stoneHi:'#b8b6a8'});
-    HD2DAtlas.drawGrandHouse(c,18,3,5,3,{tag:'rb_cabin',region:'rural',ruralStyle:'log_cabin',label:'川辺の釣り小屋',roofDark:'#283e36',roofMain:'#406054',roofHi:'#5e8474',chimneyLeft:false,doorOffsetPx:2*32+16});
+    if(HD2DAtlas.drawArchedBridge)HD2DAtlas.drawArchedBridge(c,11,9,3);
+    HD2DAtlas.drawGrandHouse(c,18,3,5,3,{tag:'rb_cabin',region:'rural',ruralStyle:'log_cabin',emblem:'wheat',roofDark:'#283e36',roofMain:'#406054',roofHi:'#5e8474',chimneyLeft:false,doorOffsetPx:2*32+16});
    }
    // Cobblestone stepping stones leading cleanly to Angler's Cabin door
    for(const [dx,dy] of [[20,6]]){

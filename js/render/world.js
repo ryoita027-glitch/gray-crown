@@ -644,10 +644,19 @@ function drawInteriorDecor(){
   R('#4e3a2c',px+11,py+4,2,14);R('#4e3a2c',px+4,py+10,16,2);
  };
 
- // Perimeter depth shadow along north wall & subtle ceiling timber beams
- R('rgba(12,14,20,.30)',5*TILE,3*TILE,14*TILE,7);
- R('rgba(32,22,16,.24)',4*TILE,6*TILE-2,16*TILE,3);
- R('rgba(32,22,16,.24)',4*TILE,9*TILE-2,16*TILE,3);
+ // Deep 4-sided HD-2D diorama room perimeter shadow framing, overhead timber beams & warm brass wall sconces!
+ R('rgba(12,12,18,.36)',5*TILE,3*TILE,14*TILE,9);
+ R('rgba(12,12,18,.16)',5*TILE,3*TILE+9,14*TILE,9);
+ R('rgba(12,12,18,.24)',5*TILE,3*TILE,10,9*TILE);
+ R('rgba(12,12,18,.20)',19*TILE-10,3*TILE,10,9*TILE);
+ R('rgba(12,12,18,.26)',5*TILE,12*TILE-10,14*TILE,10);
+ for(const bx of [8,12,16])R('rgba(28,18,12,.11)',bx*TILE,3*TILE,11,9*TILE);
+ for(const sx of [5*TILE+10,18*TILE+14]){
+  const sy=2*TILE+6;
+  const sg=ctx.createRadialGradient?.(sx+3,sy+2,2,sx+3,sy+2,28);
+  if(sg&&typeof sg.addColorStop==='function'){sg.addColorStop(0,'rgba(255,204,104,.28)');sg.addColorStop(1,'rgba(255,170,60,0)');ctx.fillStyle=sg;ctx.beginPath();ctx.arc(sx+3,sy+2,28,0,Math.PI*2);ctx.fill()}
+  R('#46301e',sx+1,sy+5,4,6);R('#e8c468',sx+2,sy+2,2,4);R('#fffbe0',sx+2,sy,2,3);
+ }
 
  // Helper: round tavern / café / tea table with stools & tabletop props
  const roundTable=(tx,ty,cloth=null,props='mugs')=>{
@@ -1551,15 +1560,45 @@ function drawBeast(px,py,type){
   r('#ffb848',5,15,2,2);
  }
 }
+const ORGANIC_TERRAIN_CONFIGS={
+ village:{biome:'lush',wellCenter:[18*32+16,12*32+20,74],bridges:[[25,13],[26,13],[25,20],[26,20]]},
+ ryunefields:{biome:'lush',noDirtD:true},
+ ryunebrook:{biome:'lush',zWater:true,bridges:[[11,9],[12,9],[13,9]]},
+ road:{biome:'lush'},
+ roadhollow:{biome:'sanctuary'},
+ northroad:{biome:'autumn'},
+ northwaystation:{biome:'autumn',wellCenter:[15*32+16,13*32+16,56],cobbleFn:(tx,ty,ch)=>(tx>=13&&tx<=18&&ty>=10&&ty<=15&&(ch==='A'||ch==='P'))},
+ northwatch:{biome:'lush',bridges:[[13,9],[14,9],[13,10],[14,10]]},
+ borderland:{biome:'autumn'},
+ relayvillage:{biome:'autumn',wellCenter:[13*32+16,8*32+18,48]},
+ empirevillage:{biome:'empire',bridges:[[6,9],[7,9],[6,16],[7,16]]},
+ elsia:{biome:'sanctuary',wellCenter:[16*32,11*32,62]}
+};
 function drawHd2dEdgePolish(m){
  // Global Square Enix HD-2D Diorama grounding pass across ALL 42 maps:
- // 1. Directional southeast ambient occlusion cast by walls/buildings/trees/cliffs onto walkable floors
- // 2. Animated stone embankments & caustic sparkles on all river/canal tiles ('R')
- // 3. Organic scalloped grass-overhang & rounded inner/outer corners along EVERY dirt/earth road edge!
- const solid=new Set(['W','H','K','S','T','Z']);
- const walk=new Set(['G','Q','P','D','A','E','B','M','F','C']);
+ // Organic-terrain maps already pre-bake seamless shorelines, curved road verges & AO into their pixel buffer!
+ const orgCfg=ORGANIC_TERRAIN_CONFIGS[state.map];
  const shimmer=Math.floor(Date.now()/280);
  const mc=mapCols(m),mr=mapRows(m);
+ if(orgCfg){
+  // Live animated water sun-sparkles & sky shimmer on non-village organic streams/springs!
+  if(state.map!=='village'){
+   for(let y=0;y<mr;y++)for(let x=0;x<mc;x++){
+    const ch=m.tiles[y][x];
+    if(ch==='R'||(orgCfg.zWater&&ch==='Z')){
+     const wh=((Math.imul(x+19,374761393)^Math.imul(y+7,668265263))>>>0);
+     if(((wh+shimmer)%4)===0){
+      const gx=x*TILE+6+((wh+shimmer*3)%18),gy=y*TILE+6+((wh>>>5)%18);
+      ctx.fillStyle='rgba(245,254,255,.54)';ctx.fillRect(gx,gy,4,1);
+      ctx.fillStyle='rgba(210,248,255,.28)';ctx.fillRect(gx+1,gy-1,2,3);
+     }
+    }
+   }
+  }
+  return;
+ }
+ const solid=new Set(['W','H','K','S','T','Z']);
+ const walk=new Set(['G','Q','P','D','A','E','B','M','F','C']);
  const at=(x,y)=>(x>=0&&y>=0&&x<mc&&y<mr)?m.tiles[y][x]:null;
  const isGrass=t=>t==='G'||t==='Q'||t==='T'||t==='B'||t==='M';
  const autumnMap=['borderland','bordercanyon','relayvillage'].includes(state.map);
@@ -1666,10 +1705,22 @@ function drawWorldAtmosphere(map){
    skyWash.addColorStop(1,'rgba(255,220,150,0)');
    ctx.fillStyle=skyWash;ctx.fillRect(0,0,w,h*0.42);ctx.restore();
   }
-  // Volumetric diagonal Square Enix HD-2D sunbeams
-  const cTop=dusk?'rgba(255,186,112,.14)':postCeremony?'rgba(255,220,156,.13)':'rgba(255,240,184,.15)';
+  // Volumetric diagonal Square Enix HD-2D sunbeams + gentle slow-drifting sunlit cloud-dapple shadows!
+  const cTop=dusk?'rgba(255,186,112,.14)':postCeremony?'rgba(255,220,156,.13)':'rgba(255,240,184,.16)';
   const cMid=dusk?'rgba(255,170,96,.05)':'rgba(255,228,158,.05)';
-  for(let sx=70;sx<w+140;sx+=210)sunShaft(sx,78,cTop,cMid);
+  for(let sx=70;sx<w+140;sx+=210)sunShaft(sx,82,cTop,cMid);
+  // Subtle drifting cloud-dapple shadows gliding across outdoor meadows & towns (true HD-2D atmosphere!)
+  if(typeof ctx.createRadialGradient==='function'){
+   const cDrift=(now/140)%w;
+   for(let ci=0;ci<3;ci++){
+    const cx0=((ci*390+cDrift)%(w+280))-140,cy0=(ci*210+120)%h;
+    const cg=ctx.createRadialGradient(cx0,cy0,20,cx0,cy0,165);
+    if(cg&&typeof cg.addColorStop==='function'){
+     cg.addColorStop(0,'rgba(14,34,48,.10)');cg.addColorStop(1,'rgba(14,34,48,0)');
+     ctx.fillStyle=cg;ctx.beginPath();ctx.ellipse(cx0,cy0,165,95,0,0,Math.PI*2);ctx.fill();
+    }
+   }
+  }
 
   // Warm additive window, oven, lantern & water reflections
   if(map==='capital'){
@@ -1901,7 +1952,10 @@ function pushOcclusionItems(queue,m){
  if(mapId!=='ashroad'){
   for(let y=0;y<mr;y++){
    for(let x=0;x<mc;x++){
-    if(m.tiles[y][x]==='T')queue.push({kind:'treeCanopy',x,y:y+0.05,tx:x,ty:y,biome:tBiome});
+    if(m.tiles[y][x]==='T'){
+     const b2=(mapId==='village'&&((x>=28&&y>=19)||(x===22&&y===16)))?'willow':tBiome;
+     queue.push({kind:'treeCanopy',x,y:y+0.05,tx:x,ty:y,biome:b2});
+    }
    }
   }
  }
@@ -2018,7 +2072,33 @@ function drawScene(){
  RyuneOutskirts.setViewer(state.x,state.y);
  ctx.save();ctx.scale(target.scale,target.scale);ctx.translate(-VISUAL.camX,-VISUAL.camY);drawMapUnderlay(m);
  const mc=mapCols(m),mr=mapRows(m);
- for(let y=0;y<mr;y++)for(let x=0;x<mc;x++){drawTile(m.tiles[y][x],x,y);drawTileDetail(m.tiles[y][x],x,y)}drawTerrainBlend(m);drawVerticalSliceGround(m);drawHd2dEdgePolish(m);
+ const orgCfg=ORGANIC_TERRAIN_CONFIGS[state.map];
+ const organicActive=!!(orgCfg&&typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawOrganicTerrain&&HD2DAtlas.drawOrganicTerrain(ctx,state.map,m,orgCfg));
+ if(organicActive){
+  const tBiome=state.map==='elsia'||state.map==='roadhollow'?'sanctuary':
+   state.map==='empirevillage'?'ornamental':
+   ['northwaystation','northroad','northwatch','relayvillage'].includes(state.map)?'birch':
+   ['borderland'].includes(state.map)?'pine':'oak';
+  for(let y=0;y<mr;y++)for(let x=0;x<mc;x++){
+   const ch=m.tiles[y][x];
+   if(ch==='T'){
+    const b2=(state.map==='village'&&((x>=28&&y>=19)||(x===22&&y===16)))?'willow':tBiome;
+    HD2DAtlas.drawTree(ctx,x,y,b2);
+    // Lush overlapping forest understory bridging adjacent border tree trunks along top/bottom woods
+    if((y===0||y===mr-1)&&x+1<mc&&m.tiles[y][x+1]==='T'&&HD2DAtlas.drawBush){
+     const bh=((x*73+y*19)>>>0)%7;
+     const bloom=bh===0?'#fff4dc':bh===3?'#f6e684':bh===5?'#f4a4aa':null;
+     HD2DAtlas.drawBush(ctx,x*32+14+(bh%5)-2,y*32+(y===0?8:10),{bloom});
+    }
+   }else if(ch==='K'||ch==='M'||ch==='S'||(ch==='Z'&&!orgCfg.zWater)||(state.map==='ryunefields'&&ch==='D')||(state.map==='northwatch'&&ch==='P'&&(x===13||x===14)&&(y===9||y===10))||(state.map==='empirevillage'&&ch==='E'&&(x===6||x===7)&&(y===9||y===16))){
+    drawTile(ch,x,y);
+   }
+  }
+ }else{
+  for(let y=0;y<mr;y++)for(let x=0;x<mc;x++){drawTile(m.tiles[y][x],x,y);drawTileDetail(m.tiles[y][x],x,y)}
+  drawTerrainBlend(m);drawVerticalSliceGround(m);
+ }
+ drawHd2dEdgePolish(m);
  if(state.map==='village'){if(RyuneEnvironment.enabled)RyuneEnvironment.drawVillage(ctx);else{drawVillageDecor();villageHouses.forEach(drawHouse)}if(isEventComplete('alpha.capital.ceremony')){for(const [rx,ry] of [[20*TILE+8,14*TILE+16],[20*TILE+16,14*TILE+19],[20*TILE+24,14*TILE+22]]){ctx.fillStyle='#5c452e';ctx.fillRect(rx-1,ry-1,11,8);ctx.fillStyle='#dfc894';ctx.fillRect(rx,ry,9,6);ctx.fillStyle='#8c6a42';ctx.fillRect(rx+3,ry,2,6)}}}if(INTERIOR_MAPS.includes(state.map)){if(RyuneEnvironment.enabled&&RyuneEnvironment.rooms.has(state.map))RyuneEnvironment.drawInterior(ctx,state.map);else drawInteriorDecor();CapitalEnvironment.interior(ctx,state.map);if(typeof EmpireSanctuaryEnvironment!=='undefined')EmpireSanctuaryEnvironment.interior(ctx,state.map);}drawRegionDecor();AshFrontierEnvironment.accents(ctx,state.map);if(typeof BorderWatchfortEnvironment!=='undefined')BorderWatchfortEnvironment.accents(ctx,state.map);if(typeof EmpireSanctuaryEnvironment!=='undefined')EmpireSanctuaryEnvironment.accents(ctx,state.map);CapitalEnvironment.street(ctx,state.map);OpeningWorldLife.ground(ctx,state.map,state.events.choices);RyuneOutskirts.drawAccents(ctx,state.map);RyuneOutskirts.drawProgress(ctx,state.map,state.events.choices,state.events.completed);m.objects.forEach(drawObject);
  const cinematicActive=GC.Cinematic?.isActive?.()===true,controlledNpcs=new Set(GC.Cinematic?.controlledNpcIds?.()||[]);
  // Unified Foot-Y Sorted Actor Render Queue (NPCs + Strolling Walkers + Party Leader + Followers!)

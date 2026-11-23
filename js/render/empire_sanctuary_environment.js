@@ -930,21 +930,11 @@ const EmpireSanctuaryEnvironment=(()=>{
     HD2DAtlas.drawDoves(ctx,[[13*32+10,10*32+14,1],[18*32+16,12*32+10,-1],[9*32+8,16*32+14,1]],now);
    }
 
-   // Central Marble Plaza Inlaid Aquamarine Sunburst Medallion centered at (15.5, 10.5)
-   const pcx=16*32,pcy=11*32;
-   if(typeof ctx.beginPath==='function'){
-    ctx.save();
-    ctx.strokeStyle='rgba(72,158,154,0.44)';ctx.lineWidth=4;ctx.beginPath();ctx.arc(pcx,pcy,58,0,Math.PI*2);ctx.stroke();
-    ctx.strokeStyle='rgba(222,196,118,0.58)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(pcx,pcy,50,0,Math.PI*2);ctx.stroke();
-    ctx.strokeStyle='rgba(72,158,154,0.34)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(pcx,pcy,28,0,Math.PI*2);ctx.stroke();
-    for(let a=0;a<8;a++){
-     const ang=a*Math.PI/4;
-     ctx.strokeStyle='rgba(208,184,112,0.42)';ctx.lineWidth=2;
-     ctx.beginPath();ctx.moveTo(pcx+Math.cos(ang)*28,pcy+Math.sin(ang)*28);ctx.lineTo(pcx+Math.cos(ang)*50,pcy+Math.sin(ang)*50);ctx.stroke();
-    }
-    ctx.restore();
+   // Central Marble Plaza Flush Inlaid Aquamarine & Gold Pixel-Art Medallion centered at (16, 11)
+   if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawPlazaMedallion){
+    HD2DAtlas.drawPlazaMedallion(ctx,16*32,11*32,54,'sanctuary');
    }
-   // Northeast: Continuous White-Limestone Terraced Ancient Olive Groves with Lush Rounded Silver-Green Olive Trees & Amphorae!
+   // Northeast: Continuous White-Limestone Terraced Ancient Olive Groves with Crisp Pixel-Cluster Silver-Green Olive Trees!
    for(const [ty,cols] of [[4,[22,23,24,25,26]],[5,[22,23,24,25,26]],[6,[22,24,26]]]){
     const x0=cols[0]*32,w0=(cols[cols.length-1]-cols[0]+1)*32,y0=ty*32;
     if(ty<6){
@@ -953,12 +943,12 @@ const EmpireSanctuaryEnvironment=(()=>{
     }
     for(const gx of cols){
      const cx=gx*32+16,cy=y0+15;
-     if(typeof ctx.beginPath==='function'){
-      ctx.fillStyle='rgba(16,34,26,0.26)';ctx.beginPath();ctx.ellipse(cx+1,cy+7,12,4.5,0,0,Math.PI*2);ctx.fill();
-      pix(ctx,'#5c4a36',cx-2,cy+1,4,8);pix(ctx,'#826a4e',cx-1,cy+1,2,7);
-      ctx.fillStyle='#345d42';ctx.beginPath();ctx.ellipse(cx,cy-1,11,7.5,0,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#5c8e64';ctx.beginPath();ctx.ellipse(cx-1,cy-3,9,6,0,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#96c294';ctx.beginPath();ctx.ellipse(cx-2,cy-5,5.5,3.5,0,0,Math.PI*2);ctx.fill();
+     if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.pCluster){
+      HD2DAtlas.pOval(ctx,'rgba(16,34,26,0.28)',cx+1,cy+7,12,4.5);
+      pix(ctx,'#463424',cx-3,cy+1,6,9);pix(ctx,'#785e42',cx-2,cy+1,4,8);pix(ctx,'#a28460',cx-2,cy+1,2,7);
+      HD2DAtlas.pCluster(ctx,'#264c38',cx,cy,11,7.5,gx*7+ty,1);
+      HD2DAtlas.pCluster(ctx,'#4e845c',cx-1,cy-2,9,6,gx*11+ty,1);
+      HD2DAtlas.pCluster(ctx,'#8ec08e',cx-2,cy-4,5.5,3.5,gx*13+ty,1);
       pix(ctx,'#f6f4e2',cx-4,cy-3,2,2);pix(ctx,'#efe090',cx+4,cy-2,2,2);
      }else{
       pix(ctx,'#5c8e64',cx-8,cy-6,16,12);

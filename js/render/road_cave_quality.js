@@ -248,7 +248,6 @@ const RoadCaveQuality=(()=>{
     fill(c,'#9c927a',px+6,py+15,20,9);fill(c,'#d2c8ae',px+7,py+16,18,3);
    }
    if(typeof HD2DAtlas!=='undefined'){
-    HD2DAtlas.drawPlazaMedallion(c,15*32+16,13*32+16,58,'warm');
     HD2DAtlas.drawStoneArchGate(c,14,7,4,{style:'rural_wood',label:'白樺の宿場'});
    }
    // Authentic Alpine White-Birch Chalet Inn & Mountain Carriage Barn (steep A-frame roofs, log purlins & granite bases!)
