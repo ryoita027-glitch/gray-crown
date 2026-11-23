@@ -73,22 +73,29 @@ const EmpireSanctuaryEnvironment=(()=>{
 
  function drawCliffTile(ctx,m,x,y,r,paletteMode){
   const a=x*32,b=y*32;
-  const up=tileOf(m,x,y-1),down=tileOf(m,x,y+1);
-  const dark=paletteMode==='sanctuary'?'#424844':paletteMode==='empire'?'#2c3640':'#3b3833';
-  const mid=paletteMode==='sanctuary'?'#677068':paletteMode==='empire'?'#495664':'#59544b';
-  const hi=paletteMode==='sanctuary'?'#8d968b':paletteMode==='empire'?'#687888':'#7a7366';
-  const rim=paletteMode==='sanctuary'?'#b8c0b2':paletteMode==='empire'?'#8fa0b0':'#9e9684';
+  const up=tileOf(m,x,y-1),down=tileOf(m,x,y+1),left=tileOf(m,x-1,y),right=tileOf(m,x+1,y);
+  const dark=paletteMode==='sanctuary'?'#3e4640':paletteMode==='empire'?'#28333d':'#35332e';
+  const mid=paletteMode==='sanctuary'?'#646e66':paletteMode==='empire'?'#465564':'#575249';
+  const hi=paletteMode==='sanctuary'?'#8a9488':paletteMode==='empire'?'#6a7b8c':'#7d7669';
+  const rim=paletteMode==='sanctuary'?'#bcc4b4':paletteMode==='empire'?'#96a8b8':'#a8a08e';
   pix(ctx,dark,a,b,32,32);
-  const s1=10+(r%8),s2=12+((r>>>4)%8);
-  pix(ctx,mid,a+1,b+2,s1-2,13);pix(ctx,mid,a+s1,b+2,31-s1,13);
-  pix(ctx,mid,a+1,b+17,s2-2,13);pix(ctx,mid,a+s2,b+17,31-s2,13);
-  pix(ctx,hi,a+2,b+3,s1-4,4);pix(ctx,hi,a+s1+1,b+3,28-s1,4);
+  // Organic irregular jagged alpine crag strata (replaces uniform brick rows!)
+  const j1=7+(r%12),j2=10+((r>>>5)%12),o1=(r>>>9)%5;
+  pix(ctx,mid,a+1,b+1+o1,j1,14);pix(ctx,mid,a+j1+2,b+2,29-j1,13);
+  pix(ctx,mid,a+1,b+16,j2,14);pix(ctx,mid,a+j2+2,b+15+((r>>>3)%3),29-j2,14);
+  pix(ctx,hi,a+2,b+2+o1,Math.max(4,j1-3),5);pix(ctx,hi,a+j1+3,b+3,Math.max(4,26-j1),4);
+  pix(ctx,hi,a+3,b+17,Math.max(4,j2-4),4);
+  // Vertical rock fissures & alpine moss/lichen crevices breaking horizontal grid lines
+  if(r%3===0){pix(ctx,dark,a+j1,b+4,2,24);pix(ctx,'#466042',a+4+(r%14),b+12+((r>>>4)%10),7,3)}
+  if(r%5===2){pix(ctx,rim,a+5+(r%12),b+7+((r>>>6)%10),6,2)}
   if(up!=='K'&&up!=='H'){
-   pix(ctx,rim,a,b,32,4);
+   pix(ctx,rim,a,b,32,5);pix(ctx,'rgba(240,242,236,0.34)',a+2,b+1,28,2);
   }
   if(down!=='K'&&down!=='H'){
-   pix(ctx,'#202428',a,b+28,32,4);
+   pix(ctx,'#1c1f24',a,b+27,32,5);
   }
+  if(left!=='K'&&left!=='H')pix(ctx,'#222428',a,b,3,32);
+  if(right!=='K'&&right!=='H')pix(ctx,'#222428',a+29,b,3,32);
  }
 
  function paintTile(ctx,map,ch,x,y,m){
@@ -204,48 +211,75 @@ const EmpireSanctuaryEnvironment=(()=>{
   if(map==='yukiroad'||map==='yukiridge'){
    if(ch==='K'){drawCliffTile(ctx,def,x,y,r,'border');return true}
    if(ch==='Z'){
-    // Deep sunset valley chasm along the northern overlook of Yuki Ridge
-    pix(ctx,'#1e2330',a,b,32,32);
-    pix(ctx,y===1?'#3b3344':'#262c3b',a,b,32,18);
-    pix(ctx,y===1?'#68484f':'#353a4d',a,b+10,32,10);
-    if((x+y)%3===0)pix(ctx,'rgba(246,196,136,0.16)',a+3,b+6+(r%8),24,4);
-    if(down!=='Z'){pix(ctx,'#787066',a,b+27,32,5);pix(ctx,'#aca496',a,b+28,32,2)}
+    // Panoramic sunset valley chasm along the northern overlook of Yuki Ridge
+    pix(ctx,y===1?'#3b3048':'#202436',a,b,32,32);
+    if(y===1){
+     pix(ctx,'#6e474e',a,b,32,12);
+     pix(ctx,'#b86e54',a,b,32,5);
+     pix(ctx,'#e6a66c',a,b,32,2);
+     // Distant jagged indigo mountain ridge silhouette
+     const peak=4+((x*7)%10);
+     pix(ctx,'#2a283e',a,b+peak+6,32,26-peak);
+     pix(ctx,'#3c344c',a+4,b+peak+4,24,6);
+    }else{
+     pix(ctx,'#2a2d40',a,b,32,14);
+     pix(ctx,'#191c2b',a,b+14,32,18);
+     if((x+y)%3===0)pix(ctx,'rgba(246,196,136,0.18)',a+2,b+4+(r%8),26,4);
+    }
+    if(down!=='Z'){
+     // Carved cliffside rim stones overlooking the chasm
+     pix(ctx,'#443e38',a,b+24,32,8);
+     pix(ctx,'#8c8478',a+1,b+25,30,5);
+     pix(ctx,'#c0b8a8',a+2,b+25,28,2);
+    }
     return true;
    }
    if(ch==='A'){
-    // Weathered memorial stone terrace & ridge bastion flagstones
-    pix(ctx,'#726e64',a,b,32,32);
-    pix(ctx,'#8c887c',a+1,b+1,30,14);pix(ctx,'#858176',a+1,b+17,30,14);
-    pix(ctx,'#b0aa9c',a+2,b+2,14,2);pix(ctx,'#545149',a+(y%2?10:21),b,1,15);
-    if(up==='Z')pix(ctx,'#b8b2a4',a,b,32,3);
+    // Weathered memorial stone terrace & ridge bastion flagstones backed by HD2DAtlas
+    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(ctx,'cobble',x,y,'marble')){
+     pix(ctx,'#726e64',a,b,32,32);
+     pix(ctx,'#8c887c',a+1,b+1,30,14);pix(ctx,'#858176',a+1,b+17,30,14);
+    }
+    pix(ctx,'rgba(92,80,68,0.16)',a,b,32,32);
+    if(up==='Z'){pix(ctx,'#645e56',a,b,32,4);pix(ctx,'#d6d0c0',a,b,32,2)}
     return true;
    }
    if(ch==='M'){
-    // Rugged highland boulders & ridge outcrops
-    pix(ctx,'#585148',a,b,32,32);
-    pix(ctx,'#443f38',a+3,b+6,26,22);pix(ctx,'#746c60',a+5,b+8,22,16);
-    pix(ctx,'#988f80',a+7,b+9,12,5);
+    // Organic varied craggy highland rock outcrop over painterly steppe grass (no uniform block grid!)
+    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(ctx,'grass',x,y,'steppe'))pix(ctx,'#585148',a,b,32,32);
+    const ox=a+2+(r%5),oy=b+4+((r>>>3)%6),rw=22+((r>>>6)%6),rh=16+((r>>>9)%6);
+    pix(ctx,'rgba(14,16,20,0.34)',ox-1,oy+rh-2,rw+4,5);
+    pix(ctx,'#322f2b',ox+2,oy,rw-4,rh);pix(ctx,'#322f2b',ox,oy+3,rw,rh-5);
+    pix(ctx,'#686258',ox+2,oy+2,rw-4,rh-4);
+    pix(ctx,'#8c8476',ox+4,oy+2,rw-8,Math.max(4,Math.floor(rh*0.45)));
+    pix(ctx,'#b8b0a0',ox+6,oy+3,Math.max(5,rw-14),3);
+    if(r%2===0){pix(ctx,'#4a6842',ox+3,oy+rh-6,8,4);pix(ctx,'#729460',ox+5,oy+rh-7,5,2)}
+    if(right==='M'){pix(ctx,'#58524a',a+24,b+10+(r%6),10,12);pix(ctx,'#847c70',a+25,b+11+(r%6),8,4)}
     return true;
    }
-   const base='#675d50';
-   pix(ctx,base,a,b,32,32);
    if(ch==='B'){
-    if(r%3===0)pix(ctx,'#756a5c',a+(r%14)+3,b+((r>>>4)%14)+4,12,5);
-    if(r%4===1)pix(ctx,'#544b40',a+((r>>>5)%14)+4,b+((r>>>9)%14)+5,10,4);
-    if(r%5===0){
-     // White memorial highland flowers & dry grass
-     pix(ctx,'#546348',a+(r%18)+5,b+((r>>>6)%18)+7,4,4);
-     pix(ctx,'#e8ECE6',a+(r%18)+6,b+((r>>>6)%18)+6,2,2);
+    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(ctx,'grass',x,y,'steppe')){
+     pix(ctx,'#675d50',a,b,32,32);
     }
-    if(up==='K'||up==='Z')pix(ctx,'rgba(18,16,14,0.24)',a,b,32,6);
+    pix(ctx,'rgba(116,86,62,0.12)',a,b,32,32);
+    if(r%4===0){
+     // Swaying white memorial highland lilies & dry autumn grass
+     const fx=a+(r%16)+5,fy=b+((r>>>6)%16)+7;
+     pix(ctx,'#3e5c3e',fx-1,fy+1,6,5);
+     pix(ctx,'#f2f6ee',fx,fy,3,3);pix(ctx,'#ebd074',fx+1,fy+1,1,1);
+     if(r%8===0){pix(ctx,'#f2f6ee',fx+4,fy+2,3,3);pix(ctx,'#ebd074',fx+5,fy+3,1,1)}
+    }
+    if(up==='K'||up==='Z')pix(ctx,'rgba(18,16,14,0.26)',a,b,32,6);
     return true;
    }
    if(ch==='D'){
+    if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawTile(ctx,'path',x,y,'dusty')){
+     pix(ctx,'rgba(104,78,56,0.10)',a,b,32,32);
+     return true;
+    }
     const padL=left!=='D'?3:0,padR=right!=='D'?3:0,padT=up!=='D'?3:0,padB=down!=='D'?3:0;
     pix(ctx,'#806d56',a+Math.max(0,padL-1),b+Math.max(0,padT-1),32-Math.max(0,padL-1)-Math.max(0,padR-1),32-Math.max(0,padT-1)-Math.max(0,padB-1));
     pix(ctx,area%2===0?'#9e886c':'#a68f72',a+padL,b+padT,32-padL-padR,32-padT-padB);
-    if((r&3)===0)pix(ctx,'#87735a',a+5+(r%14),b+6+((r>>>4)%14),9,3);
-    if((r&7)===2)pix(ctx,'#c2ad8e',a+6+((r>>>5)%14),b+8+((r>>>9)%14),6,2);
     return true;
    }
   }
@@ -294,53 +328,59 @@ const EmpireSanctuaryEnvironment=(()=>{
      drawCliffTile(ctx,def,x,y,r,map==='imperialcamp'?'empire':'fort');
      return true;
     }
-    // Interior 'S' tiles on imperialcamp / royalcamp: HD-2D timber-and-sandbag military breastworks on camp ground
+    // Interior 'S' tiles on imperialcamp / royalcamp: 3D timber-and-sandbag military breastworks with sharpened pikes
     const imp=map==='imperialcamp';
-    pix(ctx,imp?'#546258':'#5e6452',a,b,32,32);
-    pix(ctx,'rgba(14,18,22,0.34)',a+2,b+23,28,6);
-    pix(ctx,'#3a2e24',a+2,b+8,28,17);
-    pix(ctx,'#6e5640',a+4,b+10,24,13);
-    // Stacked sandbags & faction armor shield trim
-    for(const sx of [5,16]){
-     pix(ctx,'#b8ad94',a+sx,b+11,10,5);pix(ctx,'#d6ccb4',a+sx+1,b+12,8,2);
-     pix(ctx,'#9e937b',a+sx,b+17,10,5);
+    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(ctx,'grass',x,y,imp?'empire':'steppe')){
+     pix(ctx,imp?'#546258':'#5e6452',a,b,32,32);
     }
-    pix(ctx,imp?'#345678':'#8c3a42',a+4,b+8,24,3);
-    pix(ctx,'#d8c694',a+13,b+9,6,2);
+    pix(ctx,'rgba(12,16,22,0.40)',a+2,b+24,28,7);
+    pix(ctx,'#221a14',a+1,b+7,30,19);
+    pix(ctx,'#6e5640',a+3,b+9,26,15);
+    // Sharpened timber barricade stakes jutting above the sandbags
+    for(const px of [5,13,22]){
+     pix(ctx,'#2c2016',a+px,b+2,4,9);pix(ctx,'#9a7652',a+px+1,b+3,2,7);
+    }
+    // Stacked sandbags & faction armor shield crest
+    for(const sx of [4,16]){
+     pix(ctx,'#b8ad94',a+sx,b+11,11,5);pix(ctx,'#e2d8c0',a+sx+1,b+12,9,2);
+     pix(ctx,'#9a8e76',a+sx,b+17,11,5);
+    }
+    pix(ctx,imp?'#2c527a':'#92343e',a+3,b+8,26,3);
+    pix(ctx,'#e6cc86',a+12,b+8,8,3);
     return true;
    }
    if(ch==='P'){
-    // Military command causeway with stone curbing & compacted earth
+    // Military command stone causeway backed by HD2DAtlas cobbles
     const imp=map==='imperialcamp';
-    pix(ctx,imp?'#546258':'#5e6452',a,b,32,32);
-    const padL=left!=='P'?2:0,padR=right!=='P'?2:0,padT=up!=='P'?2:0,padB=down!=='P'?2:0;
-    pix(ctx,imp?'#5c6872':'#746858',a+Math.max(0,padL-1),b+Math.max(0,padT-1),32-Math.max(0,padL-1)-Math.max(0,padR-1),32-Math.max(0,padT-1)-Math.max(0,padB-1));
-    pix(ctx,imp?(area%2===0?'#7c8a94':'#84929c'):(area%2===0?'#a28e72':'#aa967a'),a+padL,b+padT,32-padL-padR,32-padT-padB);
-    pix(ctx,imp?'#525e68':'#7e6c54',a+padL,b+15,32-padL-padR,1);
-    pix(ctx,imp?'#9eb0bc':'#c8b698',a+padL+3,b+padT+2,11,2);
+    if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawTile(ctx,'cobble',x,y,imp?'imperial':'market')){
+     if(left!=='P')pix(ctx,imp?'#405060':'#685a48',a,b,2,32);
+     if(right!=='P')pix(ctx,imp?'#405060':'#685a48',a+30,b,2,32);
+     return true;
+    }
+    pix(ctx,imp?'#7c8a94':'#a28e72',a,b,32,32);
     return true;
    }
    if(ch==='G'){
-    const camp=map==='imperialcamp'||map==='royalcamp';
-    const base=map==='imperialcamp'?'#546258':camp?'#5e6452':'#677a58';
-    pix(ctx,base,a,b,32,32);
-    if(r%3===0)pix(ctx,map==='imperialcamp'?'#627266':camp?'#6c745e':'#768a65',a+4+(r%12),b+6,11,5);
-    if(r%4===1)pix(ctx,map==='imperialcamp'?'#46524a':'#4e5644',a+12,b+18+(r%6),10,4);
-    if(camp&&up==='S')pix(ctx,'rgba(14,18,22,0.22)',a,b,32,5);
+    const imp=map==='imperialcamp',ret=map==='returnroad';
+    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(ctx,'grass',x,y,ret?'autumn':imp?'empire':'steppe')){
+     pix(ctx,imp?'#546258':ret?'#677a58':'#5e6452',a,b,32,32);
+    }
+    if((imp||map==='royalcamp')&&up==='S')pix(ctx,'rgba(14,18,22,0.28)',a,b,32,6);
+    if(ret&&r%5===0){pix(ctx,'#426440',a+8+(r%14),b+12+(r%10),4,4);pix(ctx,r%2?'#f4ea9c':'#d8e6f8',a+9+(r%14),b+11+(r%10),2,2)}
     return true;
    }
    if(ch==='M'||ch==='B'||ch==='E'){
-    const base=ch==='E'?'#5c6d7a':ch==='B'?'#6e5c52':'#615c53';
-    pix(ctx,base,a,b,32,32);
-    if(r%3===0)pix(ctx,ch==='E'?'#6d7f8c':ch==='B'?'#7e6a5f':'#706a60',a+4+(r%12),b+5+((r>>>4)%14),11,4);
-    if(up==='K')pix(ctx,'rgba(16,18,22,0.24)',a,b,32,6);
+    // Seamless painterly war-torn battlefield earth / steppe grass backed by HD2DAtlas (no rectangular faction boxes!)
+    const variant=ch==='M'?'ash':'steppe';
+    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(ctx,'grass',x,y,variant)){
+     pix(ctx,ch==='E'?'#5c6d7a':ch==='B'?'#6e5c52':'#615c53',a,b,32,32);
+    }
+    if(up==='K')pix(ctx,'rgba(16,18,22,0.28)',a,b,32,6);
     return true;
    }
    if(ch==='D'){
-    const padL=left!=='D'?2:0,padR=right!=='D'?2:0,padT=up!=='D'?2:0,padB=down!=='D'?2:0;
-    pix(ctx,'#6e6658',a,b,32,32);
-    pix(ctx,area%2===0?'#9e8c72':'#a69378',a+padL,b+padT,32-padL-padR,32-padT-padB);
-    if((r&3)===0)pix(ctx,'#85745d',a+5+(r%14),b+6+((r>>>4)%14),9,3);
+    if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawTile(ctx,'path',x,y,'dusty'))return true;
+    pix(ctx,'#9e8c72',a,b,32,32);
     return true;
    }
   }
@@ -581,13 +621,14 @@ const EmpireSanctuaryEnvironment=(()=>{
     ctx.lineTo(wx+Math.cos(a)*17,wy+Math.sin(a)*17);ctx.stroke();
    }
    ctx.restore();
-   pix(ctx,'#d0eef6',wx-4,wy+15,10,3); // waterwheel splash
+   pix(ctx,'#a2dce8',wx-10,wy+14,20,4);pix(ctx,'#e6fbff',wx-6,wy+15,12,2); // lively waterwheel spray foam
 
    // Orchard harvest baskets, wooden irrigation aqueduct troughs & terraced garden beds
    for(const [bx,by] of [[2,10],[3,10],[14,12],[13,4],[14,4]]){
-    pix(ctx,'#59422e',bx*32+8,by*32+18,16,10);
+    pix(ctx,'rgba(14,22,18,0.28)',bx*32+7,by*32+25,18,4);
+    pix(ctx,'#4e3824',bx*32+8,by*32+18,16,10);
     pix(ctx,'#9c7650',bx*32+9,by*32+19,14,7);
-    pix(ctx,'#d87a4a',bx*32+11,by*32+16,4,3);pix(ctx,'#e69a58',bx*32+16,by*32+16,4,3);
+    pix(ctx,'#d87a4a',bx*32+11,by*32+15,4,4);pix(ctx,'#f2b262',bx*32+16,by*32+15,4,4);
    }
    // Wooden irrigation flume carrying canal water east into the village orchards (passes under main road at x=11..12)
    for(let tx=7;tx<=15;tx++){
@@ -599,7 +640,7 @@ const EmpireSanctuaryEnvironment=(()=>{
     pix(ctx,'#386d82',tx*32,5*32+24,32,3);
     if(tx%2===0)pix(ctx,'#9ed8e6',tx*32+8,5*32+25,10,1);
    }
-   // Terraced herb/berry garden rows & warm village lantern posts (placed cleanly off the x=11..12 road!)
+   // Terraced herb/berry garden rows & blooming orchard trees framing outer lawns
    for(const [gx,gy] of [[13,2],[14,2],[13,3],[14,3]]){
     const px=gx*32,py=gy*32;
     pix(ctx,'#4f6644',px+3,py+6,26,20);
@@ -609,11 +650,20 @@ const EmpireSanctuaryEnvironment=(()=>{
     }
     pix(ctx,'#88b4e6',px+10,py+13,3,2);pix(ctx,'#e69458',px+19,py+19,3,2);
    }
+   if(typeof HD2DAtlas!=='undefined'){
+    for(const [tx,ty] of [[2,3],[3,12],[21,4],[21,12]])HD2DAtlas.drawTree(ctx,tx,ty,'ornamental');
+   }
+   // Wrought-iron Imperial village streetlamps with smooth radial warm light pools (zero square boxes!)
    for(const [lx,ly] of [[7,6],[15,6],[7,11],[15,11]]){
-    const px=lx*32+12,py=ly*32+4;
-    pix(ctx,'rgba(255,206,118,0.16)',px-10,py-4,28,28);
-    pix(ctx,'#3a4650',px,py+4,4,20);
-    pix(ctx,'#f2c86e',px-1,py,6,5);
+    const px=lx*32+14,py=ly*32+5;
+    const lg=ctx.createRadialGradient?.(px+2,py+2,2,px+2,py+2,24);
+    if(lg&&typeof lg.addColorStop==='function'){
+     lg.addColorStop(0,'rgba(255,216,124,0.34)');lg.addColorStop(1,'rgba(248,188,88,0)');
+     ctx.fillStyle=lg;ctx.beginPath();ctx.arc(px+2,py+2,24,0,Math.PI*2);ctx.fill();
+    }
+    pix(ctx,'rgba(12,18,24,0.30)',px-2,py+21,8,4);
+    pix(ctx,'#242e38',px,py+4,4,19);pix(ctx,'#4e5e6c',px+1,py+5,2,17);
+    pix(ctx,'#242e38',px-2,py-1,8,7);pix(ctx,'#f6d87e',px-1,py,6,5);pix(ctx,'#fffbe2',px+1,py+1,2,2);
    }
    return true;
   }
@@ -657,115 +707,166 @@ const EmpireSanctuaryEnvironment=(()=>{
   }
 
   if(map==='yukiroad'){
-   // Weathered battlefield breastworks & broken timber barricades
+   const sway=Math.round(Math.sin(now/380)*1);
+   // 1. Weathered timber battlefield breastworks + sharpened cheval-de-frise stakes along flanking hills
    for(const [bx,by,bw] of [[2,2,5],[16,2,5],[2,11,5],[15,11,5]]){
     const x=bx*32,y=by*32,w=bw*32;
-    pix(ctx,'rgba(16,14,12,0.30)',x+2,y+18,w-4,6);
-    pix(ctx,'#3e362e',x+4,y+10,w-8,10);
-    pix(ctx,'#685a4c',x+6,y+11,w-12,4);
-    for(let px=x+10;px<x+w-10;px+=18)pix(ctx,'#4e4339',px,y+4,4,18);
-   }
-   // Ruined Stone Watchtower Foundation & Rear-Guard Bastion Ring (x=6..9, y=7..8)
-   pix(ctx,'rgba(18,16,14,0.28)',6*32+4,7*32+6,3*32-8,2*32-12);
-   pix(ctx,'#4e4a44',6*32+6,7*32+8,3*32-12,2*32-16);
-   pix(ctx,'#78736a',6*32+10,7*32+12,3*32-20,2*32-24);
-   pix(ctx,'#5d5850',6*32+16,7*32+18,3*32-32,2*32-36);
-   // Collapsed Rear-Guard Command Tent Canopy near oldCommandPost (15,5)
-   pix(ctx,'rgba(16,14,12,0.30)',14*32+6,4*32+16,2*32+12,22);
-   pix(ctx,'#2a3e54',14*32+8,4*32+10,2*32+8,16);
-   pix(ctx,'#486684',14*32+12,4*32+12,2*32,6);
-   pix(ctx,'#5e4834',14*32+6,4*32+8,4,22);pix(ctx,'#5e4834',16*32+14,4*32+12,4,18);
-   // White Lily Memorial Hollow around whiteLilyHill (9,10) & yukiMemorial (19,9)
-   for(const [lx,ly] of [[8,10],[9,10],[10,10],[18,9],[19,8],[20,9]]){
-    const x=lx*32,y=ly*32;
-    pix(ctx,'#4a6246',x+4,y+12,24,12);
-    for(const ox of [7,15,22]){
-     pix(ctx,'#eef2ec',x+ox,y+10+(ox%3),3,3);
-     pix(ctx,'#e6cc74',x+ox+1,y+11+(ox%3),1,1);
+    pix(ctx,'rgba(16,14,12,0.36)',x+2,y+20,w-4,7);
+    pix(ctx,'#2a221c',x+3,y+11,w-6,12);
+    pix(ctx,'#5e4f42',x+5,y+12,w-10,8);pix(ctx,'#847260',x+6,y+12,w-12,3);
+    for(let px=x+8;px<x+w-10;px+=16){
+     pix(ctx,'#362a20',px,y+2,4,21);pix(ctx,'#8c7258',px+1,y+3,2,19);
     }
    }
-   // Rusted Swords, Shields & Broken Wagon Wheels half-buried in the earth
+   // 2. Ruined Moss-Covered Stone Watchtower Foundation & Broken Archway (x=6..9, y=6..8)
+   const rx=6*32,ry=6*32+14,rw=3*32,rh=2*32-4;
+   pix(ctx,'rgba(16,14,12,0.34)',rx+4,ry+rh-4,rw,10);
+   pix(ctx,'#322e2a',rx+4,ry+4,rw-8,rh-6);
+   pix(ctx,'#68635a',rx+6,ry+6,rw-12,rh-10);
+   pix(ctx,'#908a7e',rx+10,ry+10,rw-20,rh-18);
+   pix(ctx,'#565148',rx+16,ry+16,rw-32,rh-30);
+   // Crumbled watchtower corner piers with mossy ivy
+   for(const [px,py] of [[rx+4,ry-6],[rx+rw-22,ry-6],[rx+4,ry+rh-22],[rx+rw-22,ry+rh-22]]){
+    pix(ctx,'#2c2a26',px,py,16,18);pix(ctx,'#8e887c',px+2,py+2,12,14);pix(ctx,'#bab4a4',px+3,py+2,10,3);
+    pix(ctx,'#466a42',px+2,py+10,8,5);
+   }
+   // 3. Collapsed 3D Rear-Guard Imperial Command Tent near oldCommandPost (14..16, 3..4)
+   const tx=14*32,ty=3*32+6;
+   pix(ctx,'rgba(14,14,18,0.38)',tx+4,ty+34,92,10);
+   pix(ctx,'#1c2430',tx+6,ty+14,84,24);
+   pix(ctx,'#2e4866',tx+8,ty+16,80,18);pix(ctx,'#4e7296',tx+10,ty+12,72,10);
+   pix(ctx,'#7698b8',tx+14,ty+10,58,4);
+   pix(ctx,'#3a281a',tx+4,ty+6,4,32);pix(ctx,'#6c4e36',tx+5,ty+7,2,30);
+   pix(ctx,'#3a281a',tx+84,ty+14,4,24);pix(ctx,'#d8bc78',tx+36,ty+18,16,4);
+   // 4. Sweeping White-Lily Memorial Meadows & Fluttering Blue/Crimson Prayer Ribbons (whiteLilyHill & yukiMemorial)
+   for(const [lx,ly] of [[8,10],[9,10],[10,10],[8,11],[9,11],[18,9],[19,8],[20,9],[18,10],[20,10]]){
+    const x=lx*32,y=ly*32;
+    pix(ctx,'#3a5a3a',x+2,y+10,28,16);pix(ctx,'#4f764a',x+4,y+12,24,11);
+    for(const [ox,oy] of [[5,8],[12,13],[19,9],[24,15],[9,18],[17,17]]){
+     pix(ctx,'#f4f8f0',x+ox,y+oy,3,3);pix(ctx,'#f0d26e',x+ox+1,y+oy+1,1,1);
+    }
+   }
+   // Memorial stone cairns, vigil lanterns & fluttering 14th-Division blue ribbons
+   for(const [mx,my,lit] of [[5,8,true],[18,10,true],[6,3,false],[17,6,false]]){
+    const x=mx*32,y=my*32;
+    pix(ctx,'rgba(16,14,12,0.32)',x+6,y+24,20,5);
+    pix(ctx,'#383632',x+8,y+6,16,20);pix(ctx,'#8c887e',x+10,y+8,12,16);
+    pix(ctx,'#beb9ac',x+10,y+8,12,3);
+    if(lit){
+     const lg=ctx.createRadialGradient?.(x+16,y+12,2,x+16,y+12,34);
+     if(lg&&typeof lg.addColorStop==='function'){
+      lg.addColorStop(0,'rgba(255,212,126,0.34)');lg.addColorStop(1,'rgba(255,168,78,0)');
+      ctx.fillStyle=lg;ctx.beginPath();ctx.arc(x+16,y+12,34,0,Math.PI*2);ctx.fill();
+     }
+     pix(ctx,'#ffd674',x+13,y+11,6,5);pix(ctx,'#fffbe4',x+14,y+12,4,3);
+    }
+    // Prayer ribbon tied beside marker
+    pix(ctx,'#4a3a2a',x+24,y+10,2,16);pix(ctx,'#3a6c9e',x+26,y+12,7+sway,3);
+   }
+   // 5. Planted Rusted Swords, Battered Shields & Broken Supply Wagon Wheels
    for(const [sx,sy] of [[3,7],[13,7],[16,7],[7,12],[14,12]]){
     const x=sx*32,y=sy*32;
-    pix(ctx,'#46382c',x+8,y+18,16,5);
-    pix(ctx,'#727a82',x+13,y+7,3,14);pix(ctx,'#b09668',x+11,y+12,7,2);
+    pix(ctx,'rgba(14,12,10,0.30)',x+6,y+21,20,5);
+    pix(ctx,'#4a3a2c',x+8,y+17,16,6);
+    pix(ctx,'#424a54',x+12,y+5,5,16);pix(ctx,'#8c98a4',x+13,y+6,3,13);pix(ctx,'#c4a66e',x+10,y+11,9,2);
    }
-   // Fallen stone markers & golden-hour dusk lighting wash
-   for(const [mx,my] of [[5,8],[18,10],[6,3]]){
-    const x=mx*32,y=my*32;
-    pix(ctx,'rgba(16,14,12,0.26)',x+7,y+24,18,4);
-    pix(ctx,'#5a5750',x+9,y+8,14,18);pix(ctx,'#8c887e',x+10,y+9,11,15);
-    pix(ctx,'#b2ada0',x+11,y+10,8,3);
+   // 6. Gnarled Golden-Autumn Memorial Trees framing outer clearings
+   if(typeof HD2DAtlas!=='undefined'){
+    for(const [ax,ay] of [[2,3],[21,3],[2,12],[21,12],[14,7],[17,4]]){
+     HD2DAtlas.drawTree(ctx,ax,ay,'birch');
+    }
    }
    const dusk=ctx.createLinearGradient(0,0,768,480);
-   dusk.addColorStop(0,'rgba(245,188,116,0.12)');
-   dusk.addColorStop(1,'rgba(36,44,58,0.14)');
+   dusk.addColorStop(0,'rgba(248,186,112,0.14)');
+   dusk.addColorStop(1,'rgba(36,42,60,0.16)');
    ctx.fillStyle=dusk;ctx.fillRect(0,0,768,480);
    return true;
   }
 
   if(map==='yukiridge'){
-   // Sunset chasm mist & distant mountain silhouettes over the northern valley (y=1..2)
-   const drift=Math.round(Math.sin(now/640)*4);
+   const drift=Math.round(Math.sin(now/640)*5);
+   const sway=Math.round(Math.sin(now/360)*1);
+   // 1. Backlit Sunset Chasm Mist Clouds drifting across the northern gorge (y=1..2)
    for(const [mx,mw] of [[2,6],[10,7],[18,4]]){
-    pix(ctx,'rgba(246,192,138,0.14)',mx*32+drift,1*32+14,mw*32,10);
-    pix(ctx,'rgba(196,178,208,0.10)',mx*32-drift,2*32+8,mw*32-12,8);
+    pix(ctx,'rgba(252,196,138,0.18)',mx*32+drift,1*32+12,mw*32,10);
+    pix(ctx,'rgba(216,184,218,0.12)',mx*32-drift,2*32+6,mw*32-12,8);
    }
-   // Memorial stone cairns & white wild lilies framing the 418-soldier terrace (x=9..14, y=4..5)
+   // 2. Carved Marble Balustrade & 418-Soldier Memorial Terrace Pillars along overlook (x=9..14, y=3..5)
+   for(let bx=9;bx<=14;bx++){
+    const x=bx*32,y=3*32+18;
+    pix(ctx,'#3a3632',x,y,32,12);pix(ctx,'#b8b2a4',x+1,y+1,30,6);pix(ctx,'#eae4d4',x+2,y+1,28,2);
+    pix(ctx,'#686258',x+6,y+7,4,5);pix(ctx,'#686258',x+22,y+7,4,5);
+   }
    for(const [cx,cy] of [[9,4],[10,4],[13,4],[14,4],[10,5],[13,5]]){
     const x=cx*32,y=cy*32;
-    pix(ctx,'#4a6246',x+4,y+16,10,8);
-    pix(ctx,'#f2f4ee',x+6,y+14,3,3);pix(ctx,'#ebd078',x+7,y+15,1,1);
-    pix(ctx,'#6e6a62',x+18,y+19,8,5);pix(ctx,'#9e9a90',x+19,y+16,6,4);pix(ctx,'#c4c0b4',x+20,y+14,4,3);
+    pix(ctx,'#3a5a3c',x+3,y+14,13,10);
+    pix(ctx,'#f4f8f0',x+5,y+12,3,3);pix(ctx,'#f0d26e',x+6,y+13,1,1);
+    pix(ctx,'#f4f8f0',x+10,y+16,3,3);pix(ctx,'#f0d26e',x+11,y+17,1,1);
+    // Stacked stone memorial cairn
+    pix(ctx,'rgba(16,14,12,0.28)',x+17,y+22,11,4);
+    pix(ctx,'#5a564e',x+18,y+18,10,6);pix(ctx,'#9e9a90',x+19,y+15,8,4);pix(ctx,'#dcd8cc',x+20,y+12,6,3);
    }
-   // Rear-guard timber breastworks & blue memorial ribbons along the east bastion (x=17..21, y=9..11)
-   const sway=Math.round(Math.sin(now/360)*1);
-   for(const [fx,fy] of [[17,8],[21,8],[17,12]]){
+   // 3. Rear-Guard Timber Bastion Parapet & Fluttering Blue 14th-Division Memorial Standards (x=17..21, y=8..12)
+   for(const [fx,fy] of [[17,8],[21,8],[17,12],[21,12]]){
     const x=fx*32,y=fy*32;
-    pix(ctx,'#46382b',x+14,y+4,4,22);
-    pix(ctx,'#2e547c',x+18,y+6,9+sway,5);pix(ctx,'#6e9ed2',x+18,y+7,6+sway,2);
+    pix(ctx,'rgba(16,14,12,0.30)',x+10,y+24,12,4);
+    pix(ctx,'#36281e',x+13,y+2,4,24);pix(ctx,'#8c6c4a',x+14,y+3,2,22);
+    pix(ctx,'#1c3450',x+17,y+4,12+sway,9);
+    pix(ctx,'#366494',x+18,y+5,10+sway,7);
+    pix(ctx,'#a2cce8',x+19,y+6,7+sway,2);
    }
-   // Warm lantern & campfire radial light pools
-   for(const [lx,ly,rad] of [[12*32+16,4*32+12,48],[6*32+16,11*32+16,44]]){
+   // 4. Wind-Swept Highland Birches & Pines framing the evacuation ridge
+   if(typeof HD2DAtlas!=='undefined'){
+    for(const [tx,ty,k] of [[2,7,'birch'],[3,12,'pine'],[15,12,'birch'],[21,6,'pine'],[7,12,'birch']]){
+     HD2DAtlas.drawTree(ctx,tx,ty,k);
+    }
+   }
+   // 5. Warm Vigil Lantern & Ridge Campfire Radial Blooms + Smoldering Bedroll near ridgeCamp (6,11)
+   pix(ctx,'#4a3626',5*32+4,11*32+14,22,10);pix(ctx,'#8c6244',5*32+6,11*32+15,18,7);pix(ctx,'#e2d2b0',5*32+8,11*32+16,14,3);
+   for(const [lx,ly,rad] of [[12*32+16,4*32+12,56],[6*32+16,11*32+16,52]]){
     const g=ctx.createRadialGradient(lx,ly,4,lx,ly,rad);
-    g.addColorStop(0,'rgba(255,198,104,0.28)');g.addColorStop(1,'rgba(255,160,72,0)');
+    g.addColorStop(0,'rgba(255,204,112,0.34)');g.addColorStop(1,'rgba(255,156,68,0)');
     ctx.fillStyle=g;ctx.beginPath();ctx.arc(lx,ly,rad,0,Math.PI*2);ctx.fill();
    }
-   // Dramatic golden-crimson dusk wash across the evacuation ridge
    const sunset=ctx.createLinearGradient(0,0,768,480);
-   sunset.addColorStop(0,'rgba(248,162,92,0.16)');
+   sunset.addColorStop(0,'rgba(250,164,92,0.18)');
    sunset.addColorStop(0.5,'rgba(196,132,102,0.06)');
-   sunset.addColorStop(1,'rgba(32,38,56,0.16)');
+   sunset.addColorStop(1,'rgba(32,38,58,0.18)');
    ctx.fillStyle=sunset;ctx.fillRect(0,0,768,480);
    return true;
   }
 
   if(map==='returnroad'){
-   // Alpine mountain pass: drifting valley mist clouds, cliffside pine trees, timber bridge & campfire glow
-   const drift=Math.round(Math.sin(now/620)*5);
-   for(const [mx,my,mw] of [[1,3,6],[1,11,8],[16,11,6],[2,1,5]]){
-    pix(ctx,'rgba(210,226,238,0.12)',mx*32+drift,my*32+8,mw*32,14);
-    pix(ctx,'rgba(230,240,248,0.08)',mx*32+12-drift,my*32+14,mw*32-20,8);
+   const drift=Math.round(Math.sin(now/620)*6);
+   // 1. Layered High-Altitude Alpine Mist Clouds drifting over the mountain cliffs
+   for(const [mx,my,mw] of [[1,3,6],[1,11,8],[16,11,6],[2,1,5],[17,1,5]]){
+    pix(ctx,'rgba(216,232,244,0.14)',mx*32+drift,my*32+8,mw*32,14);
+    pix(ctx,'rgba(236,244,252,0.10)',mx*32+12-drift,my*32+14,mw*32-20,8);
    }
-   // Timber plank bridge reinforcement along the narrow ridge pass (y=7, x=6..16)
+   // 2. Handcrafted Timber Plank Mountain Bridges & Rope Guardposts along the narrow ridge pass (y=7)
    for(const bx of [7,8,15,16]){
     const x=bx*32,y=7*32;
-    pix(ctx,'#3e2e20',x,y+4,32,24);
-    for(let p=2;p<30;p+=6){pix(ctx,'#7e6042',x+p,y+6,5,20);pix(ctx,'#9e7c58',x+p,y+6,5,2)}
-    pix(ctx,'#2e2218',x,y+3,32,3);pix(ctx,'#2e2218',x,y+26,32,3);
+    pix(ctx,'rgba(12,16,20,0.36)',x,y+26,32,6);
+    pix(ctx,'#2e2016',x,y+3,32,26);
+    for(let p=2;p<30;p+=6){pix(ctx,'#7e6042',x+p,y+5,5,22);pix(ctx,'#b08a60',x+p,y+5,5,3)}
+    pix(ctx,'#463222',x,y+2,32,3);pix(ctx,'#c4a272',x,y+3,32,1);
+    pix(ctx,'#463222',x,y+27,32,3);pix(ctx,'#c4a272',x,y+28,32,1);
    }
-   // Alpine pine trees & wildflowers in West Overlook Clearing (3..6, 6..8) and East Shelf (17..20, 4..7)
-   for(const [tx,ty] of [[3,6],[6,8],[17,4],[20,4],[20,7],[17,7]]){
-    const x=tx*32,y=ty*32;
-    pix(ctx,'rgba(14,20,16,0.28)',x+6,y+24,20,5);
-    pix(ctx,'#3b2a1e',x+13,y+16,6,10);
-    pix(ctx,'#213a2b',x+5,y+9,22,10);pix(ctx,'#2f523c',x+8,y+4,16,9);pix(ctx,'#467252',x+11,y,10,7);
+   // 3. Carved Stone Overlook Balustrade & Smuggler's Canvas Lean-To Shelter at West Overlook (3..6, 6..8)
+   pix(ctx,'#3a3e42',3*32+2,8*32+18,4*32-4,10);pix(ctx,'#8c908c',3*32+4,8*32+19,4*32-8,6);pix(ctx,'#ccd0c8',3*32+6,8*32+19,4*32-12,2);
+   // Smuggler's small lean-to tarp & supply pack tucked at (3,6)
+   pix(ctx,'rgba(14,18,16,0.32)',3*32+2,6*32+22,28,7);
+   pix(ctx,'#3a281c',3*32+2,6*32+8,26,18);pix(ctx,'#8e7858',3*32+4,6*32+9,22,12);pix(ctx,'#c8b48e',3*32+6,6*32+9,18,4);
+   // 4. Towering HD-2D Alpine Pines framing both grassy cliff ledges & outer peaks!
+   if(typeof HD2DAtlas!=='undefined'){
+    for(const [tx,ty] of [[3,8],[6,8],[17,4],[20,4],[20,7],[17,7],[2,5],[21,5],[16,9]]){
+     HD2DAtlas.drawTree(ctx,tx,ty,'pine');
+    }
    }
-   // Warm glow around the Smuggler's Campfire at (4,6) & stone cliff balustrade at West Overlook
-   pix(ctx,'#54585c',3*32+2,7*32+22,3*32-4,6);pix(ctx,'#a8aca4',3*32+4,7*32+23,3*32-8,2);
-   const cg=ctx.createRadialGradient(4*32+16,6*32+18,3,4*32+16,6*32+18,38);
-   cg.addColorStop(0,'rgba(255,192,92,0.28)');cg.addColorStop(1,'rgba(255,150,50,0)');
-   ctx.fillStyle=cg;ctx.beginPath();ctx.arc(4*32+16,6*32+18,38,0,Math.PI*2);ctx.fill();
+   // 5. Warm Crackling Smuggler's Campfire Glow at (4,6)
+   const cg=ctx.createRadialGradient(4*32+16,6*32+18,3,4*32+16,6*32+18,44);
+   cg.addColorStop(0,'rgba(255,196,96,0.36)');cg.addColorStop(1,'rgba(255,148,50,0)');
+   ctx.fillStyle=cg;ctx.beginPath();ctx.arc(4*32+16,6*32+18,44,0,Math.PI*2);ctx.fill();
    return true;
   }
 
@@ -868,82 +969,149 @@ const EmpireSanctuaryEnvironment=(()=>{
   }
 
   if(['finalfield','imperialcamp','royalcamp'].includes(map)){
+   const sway=Math.round(Math.sin(now/300)*1),flick=Math.round(Math.sin(now/160)*1);
    // Monumental 3D Ridged Military Command Pavilions, breastworks, glowing braziers & twilight front atmosphere!
-   const drawCampTent=(tx,ty,main,hi)=>{
-    const x=tx*32,y=ty*32,w=96,h=58,ink='#1c1816',mid=x+48;
+   const drawCampTent=(tx,ty,main,hi,compact=false)=>{
+    const x=tx*32,y=ty*32,w=compact?84:96,h=compact?50:58,ink='#1c1816',mid=x+Math.floor(w/2);
     // 1. Deep two-stage ground cast shadow + guy-ropes pegged into camp earth
     pix(ctx,'rgba(10,12,18,0.40)',x+2,y+h-6,w+6,12);
     pix(ctx,'rgba(10,12,18,0.20)',x+6,y+h+2,w+4,6);
     for(const rx of [x-4,x+w+1]){
-     pix(ctx,'#9c8868',rx,y+28,3,18);pix(ctx,'#543c26',rx,y+44,4,5);
+     pix(ctx,'#9c8868',rx,y+24,3,16);pix(ctx,'#543c26',rx,y+38,4,5);
     }
     // 2. Vertical tent canvas walls, timber corner posts & recessed dark command interior
-    pix(ctx,ink,x+2,y+22,w-4,h-26);
-    pix(ctx,main,x+5,y+24,w-10,h-30);
-    pix(ctx,'rgba(14,12,10,0.34)',x+5,y+24,w-10,6); // under-valance shadow
+    pix(ctx,ink,x+2,y+20,w-4,h-24);
+    pix(ctx,main,x+5,y+22,w-10,h-28);
+    pix(ctx,'rgba(14,12,10,0.34)',x+5,y+22,w-10,6);
     for(const px of [x+4,x+w-8]){
-     pix(ctx,ink,px,y+20,4,h-24);pix(ctx,'#785638',px+1,y+21,2,h-26);
+     pix(ctx,ink,px,y+18,4,h-22);pix(ctx,'#785638',px+1,y+19,2,h-24);
     }
     // 3. Parted command pavilion flaps revealing a warm lantern-lit war table inside!
-    pix(ctx,'#161210',mid-16,y+28,32,h-32);
-    pix(ctx,hi,mid-22,y+26,8,h-30);pix(ctx,hi,mid+14,y+26,8,h-30);
-    pix(ctx,'#7c5636',mid-10,y+42,20,8);pix(ctx,'#ecd8a8',mid-8,y+41,16,3); // war map table inside tent
-    pix(ctx,'#f8c864',mid-3,y+33,6,6);pix(ctx,'#fff8d4',mid-2,y+34,3,3); // hanging command lantern
+    pix(ctx,'#161210',mid-15,y+26,30,h-30);
+    pix(ctx,hi,mid-20,y+24,7,h-28);pix(ctx,hi,mid+13,y+24,7,h-28);
+    pix(ctx,'#7c5636',mid-9,y+h-16,18,7);pix(ctx,'#ecd8a8',mid-7,y+h-17,14,3);
+    pix(ctx,'#f8c864',mid-3,y+30,6,5);pix(ctx,'#fff8d4',mid-2,y+31,3,3);
     // 4. Stepped 3/4 Sloped Canvas Pavilion Roof + Scalloped Heraldic Valance + Gilded Ridge Pole & Finials!
     for(let z=0;z<5;z++){
      const ins=z*5,rw=w-ins*2;
-     pix(ctx,ink,x+ins,y+18-z*4,rw,7);
-     pix(ctx,z===4?hi:(z%2?main:hi),x+2+ins,y+19-z*4,rw-4,5);
-     for(let sx=x+8+ins;sx<x+w-8-ins;sx+=14)pix(ctx,'rgba(16,14,18,0.24)',sx,y+20-z*4,2,4);
+     pix(ctx,ink,x+ins,y+16-z*4,rw,7);
+     pix(ctx,z===4?hi:(z%2?main:hi),x+2+ins,y+17-z*4,rw-4,5);
+     for(let sx=x+8+ins;sx<x+w-8-ins;sx+=14)pix(ctx,'rgba(16,14,18,0.24)',sx,y+18-z*4,2,4);
     }
-    // Scalloped gold-trimmed valance along eaves
-    for(let s=0;s<9;s++){
+    for(let s=0;s<Math.floor((w-6)/10);s++){
      const sx=x+3+s*10;
-     pix(ctx,s%2===0?hi:'#e8d8b0',sx,y+21,10,5);
-     pix(ctx,ink,sx,y+26,10,1);
+     pix(ctx,s%2===0?hi:'#e8d8b0',sx,y+19,10,5);
+     pix(ctx,ink,sx,y+24,10,1);
     }
-    pix(ctx,'#5c4228',x+16,y,w-32,3);pix(ctx,'#e4c678',x+18,y,w-36,1);
+    pix(ctx,'#5c4228',x+16,y-2,w-32,3);pix(ctx,'#e4c678',x+18,y-2,w-36,1);
     for(const fx of [x+18,x+w-22]){
-     pix(ctx,'#e6c670',fx,y-8,4,9);pix(ctx,hi,fx+4,y-7,12,5);
+     pix(ctx,'#e6c670',fx,y-10,4,9);pix(ctx,hi,fx+4,y-9,11+sway,5);
     }
    };
-   if(map==='finalfield')drawCampTent(2,2,'#7c3840','#9e4c56');
-   if(map==='finalfield')drawCampTent(16,2,'#2f4c6c','#486c92');
-   if(map==='imperialcamp'){
-    drawCampTent(1,1,'#274260','#42648c');
-    drawCampTent(19,1,'#274260','#42648c');
-    // Emperor Shion's central command dais & blue-flame braziers at (10..13, 2..3)
-    pix(ctx,'rgba(14,20,28,0.34)',10*32+4,2*32+6,4*32-8,52);
-    pix(ctx,'#3a4856',10*32+6,2*32+8,4*32-12,48);
-    pix(ctx,'#627484',10*32+10,2*32+12,4*32-20,40);
-    pix(ctx,'#2a4868',11*32+4,2*32+10,2*32-8,44);
-    pix(ctx,'#8cb4d0',11*32+6,2*32+10,2,44);pix(ctx,'#8cb4d0',13*32-8,2*32+10,2,44);
+   const drawWarBrazier=(bx,by,blueFire)=>{
+    const x=bx*32+8,y=by*32+6;
+    const g=ctx.createRadialGradient?.(x+8,y+6,3,x+8,y+6,42);
+    if(g&&typeof g.addColorStop==='function'){
+     g.addColorStop(0,blueFire?'rgba(144,218,255,0.38)':'rgba(255,196,94,0.38)');
+     g.addColorStop(1,'rgba(255,140,60,0)');
+     ctx.fillStyle=g;ctx.beginPath();ctx.arc(x+8,y+6,42,0,Math.PI*2);ctx.fill();
+    }
+    pix(ctx,'rgba(12,14,18,0.38)',x,y+19,16,5);
+    pix(ctx,'#22262c',x+3,y+11,10,10);pix(ctx,'#4a525c',x+5,y+12,6,8);
+    pix(ctx,'#1c2026',x,y+5,16,8);pix(ctx,'#3c444e',x+2,y+6,12,5);
+    pix(ctx,blueFire?'#3a8cd4':'#e66824',x+3,y-1+flick,10,7);
+    pix(ctx,blueFire?'#9ce4ff':'#ffd460',x+5,y+1+flick,6,5);
+    pix(ctx,'#ffffff',x+7,y+2+flick,2,3);
+   };
+   const drawBannerPole=(bx,by,col,hi)=>{
+    const x=bx*32+14,y=by*32+2;
+    pix(ctx,'rgba(12,14,18,0.32)',x-4,y+24,12,4);
+    pix(ctx,'#2e2218',x,y,4,26);pix(ctx,'#8c6c4a',x+1,y+1,2,24);
+    pix(ctx,'#e6c870',x-1,y-3,6,4);
+    pix(ctx,'#1a1c22',x+4,y+2,15+sway,12);
+    pix(ctx,col,x+5,y+3,13+sway,10);
+    pix(ctx,hi,x+6,y+5,10+sway,3);pix(ctx,'#f2dc96',x+8,y+8,6,2);
+   };
+   const drawSupplyCluster=(sx,sy)=>{
+    const x=sx*32,y=sy*32;
+    pix(ctx,'rgba(14,16,20,0.34)',x+2,y+22,28,6);
+    // Wooden supply crate + strapped oak barrel + spear rack
+    pix(ctx,'#3a281a',x+3,y+11,14,14);pix(ctx,'#8c6844',x+4,y+12,12,12);pix(ctx,'#b0885c',x+5,y+13,10,2);
+    pix(ctx,'#3a281a',x+18,y+13,11,12);pix(ctx,'#765436',x+19,y+14,9,10);pix(ctx,'#4e5660',x+19,y+18,9,2);
+    pix(ctx,'#6e5236',x+8,y+2,2,10);pix(ctx,'#bcc6ce',x+8,y,2,3);
+    pix(ctx,'#6e5236',x+14,y+3,2,9);pix(ctx,'#bcc6ce',x+14,y+1,2,3);
+   };
+   const drawCheval=(cx,cy)=>{
+    const x=cx*32,y=cy*32;
+    pix(ctx,'rgba(14,14,18,0.32)',x+3,y+22,26,6);
+    pix(ctx,'#34261a',x+4,y+12,24,6);pix(ctx,'#7c5c3e',x+5,y+13,22,4);
+    for(const ox of [7,15,23]){
+     pix(ctx,'#2a1e14',x+ox,y+4,4,19);pix(ctx,'#a07a52',x+ox+1,y+5,2,17);
+    }
+   };
+
+   if(map==='finalfield'){
+    // West Kingdom Assault Front (Red) vs East Imperial Assault Front (Blue)
+    drawCampTent(2,2,'#7c323a','#a64852',false);
+    drawCampTent(18,2,'#2a4a6e','#46709c',false);
+    drawCampTent(1,11,'#6e2c34','#96404a',true);
+    drawCampTent(20,11,'#244060','#3c648e',true);
+    drawSupplyCluster(6,2);drawSupplyCluster(6,3);
+    drawSupplyCluster(16,2);drawSupplyCluster(16,3);
+    // Facing cheval-de-frise spike barricades & fluttering opposing battle standards
+    for(const by of [2,4,9,11]){drawCheval(8,by);drawCheval(15,by)}
+    for(const [bx,by] of [[8,6],[5,6],[8,8]])drawBannerPole(bx,by,'#8e2c36','#c44e58');
+    for(const [bx,by] of [[15,6],[18,6],[15,8]])drawBannerPole(bx,by,'#2a5078','#5688ba');
+    // No-man's-land smoldering artillery craters & broken war gear
+    for(const [cx,cy] of [[10,3],[13,4],[9,12],[14,11]]){
+     const x=cx*32,y=cy*32;
+     pix(ctx,'#2a2422',x+4,y+10,24,14);pix(ctx,'#483c34',x+7,y+12,18,10);
+     pix(ctx,'#e26c28',x+13,y+15,6,3);pix(ctx,'#ffd470',x+15,y+16,2,1);
+    }
+    drawWarBrazier(9,5,false);drawWarBrazier(14,5,true);
+    drawWarBrazier(9,8,false);drawWarBrazier(14,8,true);
    }
-   if(map==='royalcamp'){
-    drawCampTent(1,1,'#74323a','#984650');
-    drawCampTent(19,1,'#74323a','#984650');
-    // Commander Granz's central war dais & crimson runner at (10..13, 2..3)
-    pix(ctx,'rgba(18,14,14,0.34)',10*32+4,2*32+6,4*32-8,52);
-    pix(ctx,'#4e463e',10*32+6,2*32+8,4*32-12,48);
-    pix(ctx,'#847a6c',10*32+10,2*32+12,4*32-20,40);
-    pix(ctx,'#7c323a',11*32+4,2*32+10,2*32-8,44);
-    pix(ctx,'#d8bc78',11*32+6,2*32+10,2,44);pix(ctx,'#d8bc78',13*32-8,2*32+10,2,44);
+
+   if(map==='imperialcamp'||map==='royalcamp'){
+    const imp=map==='imperialcamp';
+    const tentMain=imp?'#244262':'#742c36',tentHi=imp?'#426c98':'#a2444e';
+    const trimCol=imp?'#9cc4e2':'#e6c878',trimDk=imp?'#2c4866':'#5c242c';
+    // 4 Full 3D Military Command & Troop Pavilions framing all four corners of the camp!
+    drawCampTent(1,1,tentMain,tentHi,false);
+    drawCampTent(19,1,tentMain,tentHi,false);
+    drawCampTent(1,10,tentMain,tentHi,true);
+    drawCampTent(20,10,tentMain,tentHi,true);
+    // Supply clusters & camp banners lining the main tactical parade causeway
+    drawSupplyCluster(2,5);drawSupplyCluster(20,5);
+    drawSupplyCluster(2,7);drawSupplyCluster(20,7);
+    for(const [bx,by] of [[8,2],[15,2],[8,7],[15,7],[8,12],[15,12]]){
+     drawBannerPole(bx,by,tentMain,tentHi);
+    }
+    // Monumental 3D Ceremonial Command Dais, Velvet Carpet & Twin Pedestal War Braziers framing Shion / Granz at (10..13, 1..4)!
+    const dx=10*32,dy=2*32,dw=4*32;
+    pix(ctx,'rgba(10,14,20,0.42)',dx-2,dy+4,dw+4,74);
+    pix(ctx,imp?'#2c3844':'#423830',dx,dy+2,dw,70);
+    pix(ctx,imp?'#5c6e7e':'#827666',dx+3,dy+4,dw-6,64);
+    pix(ctx,imp?'#8ea2b2':'#b4a894',dx+5,dy+5,dw-10,3); // sunlit upper dais step
+    pix(ctx,imp?'#768a9a':'#9c907e',dx+5,dy+62,dw-10,5); // lower marble stairs
+    // Ceremonial Faction Carpet Runner with gilded double selvedge leading to commander
+    pix(ctx,trimDk,11*32+2,dy+4,2*32-4,68);
+    pix(ctx,tentMain,11*32+5,dy+4,2*32-10,68);
+    pix(ctx,trimCol,11*32+7,dy+4,2,68);pix(ctx,trimCol,13*32-9,dy+4,2,68);
+    // Carved Heraldic Command Arch & Draped Ceremonial Valance crowning the top of the dais (y=1)
+    pix(ctx,'#1c2026',dx-6,1*32+4,dw+12,24);
+    pix(ctx,tentMain,dx-4,1*32+6,dw+8,18);
+    pix(ctx,tentHi,dx-2,1*32+6,dw+4,6);
+    for(let s=0;s<12;s++)pix(ctx,s%2?trimCol:tentHi,dx-2+s*11,1*32+21,11,5);
+    pix(ctx,trimCol,dx+dw/2-14,1*32+9,28,10);pix(ctx,tentMain,dx+dw/2-10,1*32+11,20,6);pix(ctx,'#fff6d0',dx+dw/2-4,1*32+12,8,4);
+    // Twin Carved Pillar Braziers flanking the commander's dais!
+    drawWarBrazier(9,3,imp);drawWarBrazier(14,3,imp);
    }
-   // Timber defensive breastworks & glowing war braziers
-   for(const [bx,by] of [[3,11],[17,11]]){
-    pix(ctx,'#3e342b',bx*32,by*32+14,3*32,8);pix(ctx,'#6c5b48',bx*32+2,by*32+15,3*32-4,4);
-   }
-   const glowSpots=map==='finalfield'?[[10*32+16,10*32+16,52]]:[[9*32+16,10*32+16,46],[10*32+16,4*32+16,38],[14*32+16,4*32+16,38]];
-   for(const [gx,gy,rad] of glowSpots){
-    const g=ctx.createRadialGradient(gx,gy,4,gx,gy,rad);
-    g.addColorStop(0,map==='imperialcamp'?'rgba(164,218,248,0.24)':'rgba(255,192,98,0.26)');
-    g.addColorStop(1,'rgba(255,150,64,0)');
-    ctx.fillStyle=g;ctx.beginPath();ctx.arc(gx,gy,rad,0,Math.PI*2);ctx.fill();
-   }
+
    // Dramatic eve-of-battle dusk sky gradient
    const eve=ctx.createLinearGradient(0,0,768,480);
-   eve.addColorStop(0,map==='imperialcamp'?'rgba(42,64,96,0.16)':'rgba(132,68,54,0.12)');
-   eve.addColorStop(1,'rgba(20,24,36,0.18)');
+   eve.addColorStop(0,map==='imperialcamp'?'rgba(42,68,104,0.16)':'rgba(136,68,52,0.14)');
+   eve.addColorStop(1,'rgba(18,22,34,0.20)');
    ctx.fillStyle=eve;ctx.fillRect(0,0,768,480);
    return true;
   }
@@ -1054,12 +1222,14 @@ const EmpireSanctuaryEnvironment=(()=>{
  function interior(ctx,map){
   if(!on()||!interiors.has(map))return false;
   const warm=map==='imperialinn'||map==='elsiahouse'||map==='empirecottage';
-  for(const wx of [7,12,16]){
-   const lx=wx*32+11,ly=2*32+6;
-   pix(ctx,warm?'rgba(255,216,142,0.14)':'rgba(186,220,245,0.13)',lx-16,ly+16,42,46);
-   pix(ctx,'#28323c',lx,ly+6,10,12);
-   pix(ctx,warm?'#f5cb6e':'#9ed4f5',lx+2,ly+7,6,6);
-   pix(ctx,'#ffffff',lx+4,ly+8,2,3);
+  for(const wx of [7,16]){
+   const lx=wx*32+16,ly=2*32+14;
+   const lg=ctx.createRadialGradient?.(lx,ly,2,lx,ly,34);
+   if(lg&&typeof lg.addColorStop==='function'){
+    lg.addColorStop(0,map==='elsiahouse'?'rgba(168,248,214,0.18)':warm?'rgba(255,216,136,0.16)':'rgba(176,220,252,0.16)');
+    lg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=lg;ctx.beginPath();ctx.arc(lx,ly,34,0,Math.PI*2);ctx.fill();
+   }
   }
   return true;
  }

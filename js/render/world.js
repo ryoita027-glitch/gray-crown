@@ -431,61 +431,389 @@ function drawVillageDecor(){
  for(let y=8;y<=11;y++){ctx.fillStyle='#6d8b52';for(let x=1;x<=2;x++){ctx.beginPath();ctx.arc(x*TILE+10,y*TILE+12,4,0,Math.PI*2);ctx.arc(x*TILE+22,y*TILE+19,4,0,Math.PI*2);ctx.fill()}}
 }
 function drawInteriorDecor(){
- const bed=(x,y,blanket='#8d6559')=>{const px=x*TILE,py=y*TILE;ctx.fillStyle='#503d2e';ctx.fillRect(px+2,py+4,28,24);ctx.fillStyle='#d8c7a5';ctx.fillRect(px+5,py+6,22,7);ctx.fillStyle=blanket;ctx.fillRect(px+5,py+13,22,12)};
- const table=(x,y,w=2)=>{const px=x*TILE,py=y*TILE;ctx.fillStyle='#6e4f34';ctx.fillRect(px+3,py+8,TILE*w-6,15);ctx.fillStyle='#4d3727';ctx.fillRect(px+7,py+23,4,8);ctx.fillRect(px+TILE*w-11,py+23,4,8)};
- const shelf=(x,y)=>{const px=x*TILE,py=y*TILE;ctx.fillStyle='#513b2a';ctx.fillRect(px+3,py+2,26,28);ctx.fillStyle='#c0a66d';for(let i=0;i<3;i++){ctx.fillRect(px+6,py+7+i*8,20,3)}ctx.fillStyle='#7d4d42';ctx.fillRect(px+7,py+4,4,6);ctx.fillStyle='#536b75';ctx.fillRect(px+13,py+4,5,6);ctx.fillStyle='#77628d';ctx.fillRect(px+20,py+4,4,6)};
- const hearth=(x,y)=>{
-  const px=x*TILE,py=y*TILE,fl=Math.sin(Date.now()/140)*1.4;
-  ctx.fillStyle='rgba(255,168,74,.20)';ctx.beginPath();ctx.arc(px+16,py+20,26,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#3b3430';ctx.fillRect(px+2,py+4,28,27);ctx.fillStyle='#625850';ctx.fillRect(px+4,py+6,24,23);
-  ctx.fillStyle='#82776e';ctx.fillRect(px+3,py+5,26,4);
-  ctx.fillStyle='#1c1512';ctx.fillRect(px+8,py+13,16,14);
-  ctx.fillStyle='#e27a30';ctx.beginPath();ctx.moveTo(px+16,py+25);ctx.lineTo(px+10,py+17);ctx.lineTo(px+16+fl*0.5,py+10-Math.abs(fl));ctx.lineTo(px+22,py+18);ctx.closePath();ctx.fill();
-  ctx.fillStyle='#ffe88a';ctx.beginPath();ctx.moveTo(px+16,py+24);ctx.lineTo(px+13,py+19);ctx.lineTo(px+16,py+14);ctx.lineTo(px+19,py+19);ctx.closePath();ctx.fill();
+ // Handcrafted Square Enix HD-2D Interior Engine — every single one of the 11 town/city/sanctuary interiors gets a unique bespoke layout!
+ const R=(col,x,y,w,h)=>{ctx.fillStyle=col;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h))};
+ const fl=Math.sin(Date.now()/150)*1.3;
+ const room=state.map;
+ const bed=(x,y,blanket='#8d6559',wood='#523a28')=>{
+  const px=x*TILE,py=y*TILE;
+  R('rgba(14,10,8,.28)',px+2,py+26,30,6);
+  R('#241a14',px+1,py+1,30,28);
+  R(wood,px+2,py+2,28,26);R('#8a6442',px+3,py+3,26,4);
+  R('#f2e8d2',px+4,py+7,24,7);R('#d8ccb4',px+6,py+11,20,2);
+  R(blanket,px+4,py+14,24,12);R('rgba(255,248,226,.22)',px+5,py+15,22,3);R('rgba(14,10,16,.24)',px+4,py+23,24,3);
  };
- const rug=(x,y,w,h,c='#765361')=>{
-  ctx.fillStyle='rgba(12,10,8,.22)';ctx.fillRect(x*TILE+6,y*TILE+7,w*TILE-8,h*TILE-10);
-  ctx.fillStyle=c;ctx.fillRect(x*TILE+4,y*TILE+5,w*TILE-8,h*TILE-10);
-  ctx.strokeStyle='rgba(246,222,166,.52)';ctx.strokeRect(x*TILE+7,y*TILE+8,w*TILE-14,h*TILE-16);
-  ctx.fillStyle='#e8d4a4';for(let fy=y*TILE+7;fy<y*TILE+h*TILE-7;fy+=4){ctx.fillRect(x*TILE+2,fy,2,2);ctx.fillRect(x*TILE+w*TILE-4,fy,2,2)}
+ const diningTable=(x,y,w=3,style='food')=>{
+  const px=x*TILE,py=y*TILE,tw=TILE*w-6;
+  R('rgba(14,10,8,.30)',px+5,py+25,tw,7);
+  R('#281c14',px+2,py+6,tw+2,24);
+  R('#7e5838',px+3,py+7,tw,16);R('#ad8256',px+4,py+8,tw-2,5);
+  R('#4a3220',px+5,py+23,4,7);R('#4a3220',px+tw-7,py+23,4,7);
+  // Crisp linen center runner
+  R('#ebe0c6',px+10,py+10,tw-18,9);R('rgba(180,144,82,.45)',px+10,py+10,tw-18,1);R('rgba(180,144,82,.45)',px+10,py+18,tw-18,1);
+  if(style==='food'){
+   for(let i=0;i<Math.max(2,w-1);i++){
+    const fx=px+16+i*28;
+    R('#f4ede0',fx,py+12,10,5);R('#cf7a3e',fx+2,py+13,6,3);
+    R('#d8b26a',fx+13,py+10,4,6);R('#fff6d4',fx+14,py+9,2,2);
+   }
+  }else if(style==='books'){
+   R('#efe2be',px+14,py+11,22,8);R('#54748c',px+16,py+13,8,4);R('#9a4848',px+26,py+13,8,4);
+   R('#e6c470',px+tw-24,py+9,6,8);R('#fff4c4',px+tw-22,py+6,2,3);
+  }else if(style==='weapons'){
+   R('#9aa6b2',px+14,py+12,26,4);R('#e2eef4',px+16,py+12,18,2);R('#d8b464',px+38,py+11,5,6);
+   R('#6c7884',px+tw-30,py+10,14,9);R('#d8bc78',px+tw-26,py+12,6,5);
+  }
  };
- const chair=(x,y)=>{const px=x*TILE,py=y*TILE;ctx.fillStyle='rgba(0,0,0,.22)';ctx.fillRect(px+9,py+13,16,15);ctx.fillStyle='#684c35';ctx.fillRect(px+10,py+10,14,10);ctx.fillRect(px+11,py+20,3,10);ctx.fillRect(px+21,py+20,3,10)};
- const crate=(x,y)=>{const px=x*TILE,py=y*TILE;ctx.fillStyle='rgba(0,0,0,.22)';ctx.fillRect(px+7,py+9,23,22);ctx.fillStyle='#7d5c3c';ctx.fillRect(px+5,py+6,23,22);ctx.strokeStyle='#b08a5d';ctx.strokeRect(px+6,py+7,21,20);ctx.beginPath();ctx.moveTo(px+7,py+8);ctx.lineTo(px+26,py+26);ctx.moveTo(px+26,py+8);ctx.lineTo(px+7,py+26);ctx.stroke()};
- const pot=(x,y)=>{const px=x*TILE,py=y*TILE;ctx.fillStyle='#927056';ctx.beginPath();ctx.ellipse(px+16,py+20,9,7,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#b48d69';ctx.fillRect(px+9,py+10,14,8);ctx.fillStyle='#51463a';ctx.fillRect(px+11,py+9,10,3)};
- // 全室共通の生活感：梁・窓・小物・椅子。空の大部屋に見えないようにする。
- ctx.fillStyle='rgba(49,34,24,.36)';for(const yy of [3,6,9])ctx.fillRect(4*TILE,yy*TILE-3,16*TILE,4);
- for(const xx of [6,11,16]){
-  // Diagonal sunlit window shafts pouring onto the indoor floorboards
-  ctx.fillStyle='rgba(255,238,184,.11)';
-  ctx.beginPath();ctx.moveTo(xx*TILE+7,2*TILE+22);ctx.lineTo(xx*TILE+25,2*TILE+22);ctx.lineTo(xx*TILE+40,5*TILE+16);ctx.lineTo(xx*TILE+14,5*TILE+16);ctx.closePath();ctx.fill();
-  ctx.fillStyle='#78a6ba';ctx.fillRect(xx*TILE+7,2*TILE+9,18,12);
-  ctx.fillStyle='#d8f0f4';ctx.fillRect(xx*TILE+8,2*TILE+10,7,5);
-  ctx.strokeStyle='#e8d6ac';ctx.strokeRect(xx*TILE+6,2*TILE+8,20,14);
-  ctx.beginPath();ctx.moveTo(xx*TILE+16,2*TILE+8);ctx.lineTo(xx*TILE+16,2*TILE+22);ctx.moveTo(xx*TILE+6,2*TILE+15);ctx.lineTo(xx*TILE+26,2*TILE+15);ctx.stroke();
+ const chair=(x,y,ox=0,oy=0)=>{
+  const px=x*TILE+ox,py=y*TILE+oy;
+  R('rgba(14,10,8,.22)',px+8,py+18,16,7);
+  R('#2c1e14',px+8,py+6,16,17);R('#845e3c',px+10,py+8,12,10);R('#b4885c',px+11,py+8,10,3);
+  R('#4a3220',px+10,py+18,3,5);R('#4a3220',px+19,py+18,3,5);
+ };
+ const tallShelf=(x,y,kind='books')=>{
+  const px=x*TILE,py=y*TILE;
+  R('rgba(14,10,8,.28)',px+3,py+26,28,6);
+  R('#241a14',px+1,py-6,30,35);
+  R('#664830',px+3,py-4,26,31);R('#966e4a',px+4,py-4,24,3);
+  const cols=kind==='bottles'?['#4c945c','#d4a848','#b8484c','#568eb0','#e6d4a0']:kind==='jars'?['#e69638','#c84a4e','#6ca44c','#e8ca58','#9462a6']:['#9c4448','#446e88','#c8a24c','#6a5284','#4c7c54','#b86c42'];
+  for(let row=0;row<3;row++){
+   const ry=py+row*9;
+   R('#3e2a1c',px+4,ry+5,24,3);
+   for(let b=0;b<5;b++){
+    const col=cols[(row*5+b+x)%cols.length];
+    R(col,px+5+b*4.5,ry-1,4,7);R('rgba(255,248,220,.30)',px+5+b*4.5,ry,4,1);
+   }
+  }
+ };
+ const grandHearth=(x,y,stone='#6a645c',lit=true)=>{
+  const px=x*TILE,py=y*TILE;
+  if(lit){
+   const hg=ctx.createRadialGradient?.(px+32,py+30,4,px+32,py+30,68);
+   if(hg&&typeof hg.addColorStop==='function'){
+    ctx.save();ctx.globalCompositeOperation='lighter';
+    hg.addColorStop(0,'rgba(255,168,72,.28)');hg.addColorStop(1,'rgba(255,120,40,0)');
+    ctx.fillStyle=hg;ctx.fillRect(px-36,py-38,136,136);ctx.restore();
+   }
+  }
+  R('rgba(14,10,8,.30)',px+2,py+34,60,8);
+  R('#241e1c',px+2,py-4,60,42);
+  R(stone,px+4,py-2,56,38);R('rgba(255,250,234,.18)',px+6,py,52,5);
+  for(let bx=px+8;bx<px+52;bx+=12){R('rgba(24,20,18,.35)',bx,py,1,34)}
+  // Oak mantelpiece + brass candlesticks
+  R('#362418',px-1,py+4,66,6);R('#8a6440',px,py+5,64,4);R('#c29868',px+1,py+5,62,1);
+  R('#e8c46a',px+7,py-1,3,6);R('#fff6c4',px+8,py-3,1,2);
+  R('#e8c46a',px+54,py-1,3,6);R('#fff6c4',px+55,py-3,1,2);
+  R('#161210',px+14,py+12,36,24);
+  if(lit){
+   R('#5a321e',px+18,py+29,28,5);
+   R('#e87424',px+20,py+21-Math.abs(fl),24,12);
+   R('#ffca52',px+24,py+23-Math.abs(fl),16,8);
+   R('#fff8ce',px+27,py+25,10,5);
+  }
+ };
+ const ornRug=(x,y,w,h,main,trim='#e2c684')=>{
+  const rx=x*TILE+4,ry=y*TILE+4,rw=w*TILE-8,rh=h*TILE-8;
+  R('rgba(12,10,8,.26)',rx+3,ry+4,rw,rh);
+  R('#2c221c',rx,ry,rw,rh);
+  R(main,rx+3,ry+3,rw-6,rh-6);
+  R(trim,rx+7,ry+7,rw-14,2);R(trim,rx+7,ry+rh-9,rw-14,2);
+  R(trim,rx+7,ry+7,2,rh-14);R(trim,rx+rw-9,ry+7,2,rh-14);
+  const mx=rx+rw/2,my=ry+rh/2;
+  R('rgba(255,244,206,.18)',mx-22,my-12,44,24);
+  R(trim,mx-12,my-6,24,12);R(main,mx-7,my-3,14,6);
+  for(let fy=ry+5;fy<ry+rh-5;fy+=5){R('#ead8b0',rx-2,fy,2,3);R('#ead8b0',rx+rw,fy,2,3)}
+ };
+ const tavernCounter=(x,y,w=4)=>{
+  const px=x*TILE,py=y*TILE,tw=w*TILE-4;
+  R('rgba(14,10,8,.30)',px+2,py+24,tw,7);
+  R('#261a12',px,py+6,tw,21);R('#6a482c',px+2,py+10,tw-4,15);
+  for(let kx=px+10;kx<px+tw-8;kx+=14)R('#462e1c',kx,py+11,2,13);
+  R('#a67c50',px+1,py+7,tw-2,5);R('#d4aa76',px+2,py+7,tw-4,2);
+  // Ale mugs & brass tap on counter
+  for(let m=0;m<w-1;m++){R('#d8b66c',px+12+m*28,py+3,6,6);R('#fff6dc',px+13+m*28,py+2,4,2)}
+ };
+ const barrel=(x,y)=>{
+  const px=x*TILE,py=y*TILE;
+  R('rgba(12,10,8,.26)',px+5,py+24,24,6);
+  R('#241a12',px+5,py+5,22,23);R('#845c38',px+7,py+7,18,19);R('#b48658',px+8,py+7,7,18);
+  R('#485058',px+6,py+11,20,3);R('#485058',px+6,py+20,20,3);
+ };
+ const armorStand=(x,y)=>{
+  const px=x*TILE,py=y*TILE;
+  R('rgba(12,14,18,.30)',px+6,py+26,20,6);
+  R('#36281c',px+14,py+4,4,24);R('#5a422c',px+8,py+24,16,4);
+  R('#242a32',px+7,py+4,18,19);R('#9aa8b6',px+9,py+6,14,15);R('#e2eef6',px+10,py+7,5,11);
+  R('#d8b868',px+9,py+14,14,3);R('#b8c6d2',px+11,py-1,10,7);R('#eef6fc',px+12,py,4,4);
+ };
+ const weaponRack=(x,y)=>{
+  const px=x*TILE,py=y*TILE;
+  R('rgba(12,14,18,.28)',px+3,py+25,28,6);
+  R('#362418',px+2,py+2,28,25);R('#6a4a30',px+4,py+4,24,21);
+  for(let i=0;i<4;i++){
+   const bx=px+6+i*6;
+   R('#2a3038',bx,py+3,4,20);R('#c2d0da',bx+1,py+4,2,14);R('#f0f8fc',bx+1,py+4,1,11);
+   R('#dfbe70',bx,py+17,4,2);
+  }
+ };
+ const plant=(x,y,bloom=true)=>{
+  const px=x*TILE,py=y*TILE;
+  R('rgba(14,12,10,.24)',px+6,py+23,20,6);
+  R('#3a2418',px+8,py+14,16,13);R('#9c5c3e',px+9,py+15,14,11);R('#c8825a',px+10,py+15,12,3);
+  R('#224a2e',px+5,py+4,22,12);R('#448248',px+7,py+2,18,10);R('#7cb864',px+9,py+3,12,5);
+  if(bloom){R('#f4d468',px+10,py+5,3,3);R('#e87886',px+18,py+6,3,3)}
+ };
+ const banner=(x,y,col,gold='#e4c674')=>{
+  const px=x*TILE+4,py=y*TILE+2;
+  R('#3a2a1e',px-2,py,28,3);R('#221c18',px,py+3,24,23);R(col,px+2,py+4,20,20);
+  R(gold,px+4,py+6,16,2);R(gold,px+10,py+10,4,8);R(gold,px+4,py+21,16,2);
+ };
+ const stairs=(x,y)=>{
+  const px=x*TILE,py=y*TILE;
+  R('#281c14',px+2,py-2,28,32);
+  for(let s=0;s<6;s++){R(s%2?'#8c6642':'#745234',px+4,py+s*5,24,4);R('#be9668',px+5,py+s*5,22,1)}
+  R('#4a3422',px+2,py-2,3,32);R('#4a3422',px+27,py-2,3,32);
+ };
+ const windowBeam=(xx,tinted=null)=>{
+  const px=xx*TILE+4,py=2*TILE+4;
+  // Soft diagonal sunlit shaft pouring across the floorboards!
+  const g=ctx.createLinearGradient?.(px+12,py+22,px+36,py+132);
+  if(g&&typeof g.addColorStop==='function'){
+   ctx.save();ctx.globalCompositeOperation='screen';
+   g.addColorStop(0,tinted||'rgba(255,238,184,.24)');g.addColorStop(1,'rgba(255,220,150,0)');
+   ctx.fillStyle=g;
+   ctx.beginPath();ctx.moveTo(px+2,py+22);ctx.lineTo(px+22,py+22);ctx.lineTo(px+48,py+132);ctx.lineTo(px+16,py+132);ctx.closePath();ctx.fill();
+   ctx.restore();
+  }
+  R('#2e241c',px,py,24,22);R('#785a40',px+2,py+2,20,18);
+  if(tinted){
+   R('#4882b8',px+4,py+4,16,14);R('#e26878',px+6,py+5,5,6);R('#f4d468',px+11,py+4,5,13);R('#68c4a8',px+5,py+12,6,5);
+  }else{
+   R('#7cb2c2',px+4,py+4,16,14);R('#e4f6f4',px+5,py+5,7,5);
+  }
+  R('#4e3a2c',px+11,py+4,2,14);R('#4e3a2c',px+4,py+10,16,2);
+ };
+
+ // Perimeter depth shadow along north wall & subtle ceiling timber beams
+ R('rgba(12,14,20,.30)',5*TILE,3*TILE,14*TILE,7);
+ R('rgba(32,22,16,.24)',4*TILE,6*TILE-2,16*TILE,3);
+ R('rgba(32,22,16,.24)',4*TILE,9*TILE-2,16*TILE,3);
+
+ // Helper: round tavern / café / tea table with stools & tabletop props
+ const roundTable=(tx,ty,cloth=null,props='mugs')=>{
+  const x=tx*TILE+2,y=ty*TILE+2;
+  R('rgba(14,10,8,.30)',x+2,y+22,26,7);
+  R('#2a1c12',x+1,y+3,26,21);R('#7a5638',x+3,y+5,22,17);R('#a87e52',x+5,y+6,18,12);
+  if(cloth){R(cloth,x+4,y+6,20,13);R('#faf2dc',x+6,y+7,16,4)}
+  if(props==='mugs'){R('#d8b262',x+8,y+9,4,5);R('#f8f0d0',x+8,y+8,4,2);R('#d8b262',x+16,y+11,4,5);R('#f8f0d0',x+16,y+10,4,2)}
+  else if(props==='wine'){R('#365e48',x+9,y+7,4,8);R('#b43c48',x+15,y+10,4,5);R('#f6e6b0',x+14,y+12,2,2)}
+  else if(props==='tea'){R('#dce4dc',x+10,y+8,7,6);R('#88c8a4',x+12,y+10,3,2);R('#f4e8c4',x+19,y+11,4,3)}
+  else if(props==='sewing'){R('#a83c48',x+7,y+9,7,5);R('#e8cc72',x+16,y+10,5,4)}
+  R('#362418',x-7,y+10,7,8);R('#8e6844',x-6,y+11,5,5);
+  R('#362418',x+28,y+10,7,8);R('#8e6844',x+29,y+11,5,5);
+ };
+ // Helper: iron-bound shipping cargo crate + rope coil
+ const cargoCrate=(tx,ty,withRope=false)=>{
+  const x=tx*TILE+3,y=ty*TILE+6;
+  R('rgba(14,10,8,.30)',x+1,y+18,24,6);
+  R('#261a12',x,y,24,20);R('#7c5c3c',x+2,y+2,20,16);R('#a47e54',x+3,y+3,18,3);
+  R('#4c3624',x+2,y+9,20,2);R('#4c3624',x+11,y+2,2,16);
+  if(withRope){R('#c6aa74',x+5,y-5,14,7);R('#8e7246',x+8,y-3,8,3)}
+ };
+ // Helper: freestanding glowing crystal / brass floor lamp
+ const crystalLamp=(tx,ty,col='#7ce8d4')=>{
+  const x=tx*TILE+10,y=ty*TILE+4;
+  const g=ctx.createRadialGradient?.(x+6,y+8,2,x+6,y+8,26);
+  if(g&&typeof g.addColorStop==='function'){g.addColorStop(0,'rgba(156,250,224,.30)');g.addColorStop(1,'rgba(156,250,224,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x+6,y+8,26,0,Math.PI*2);ctx.fill()}
+  R('#3e4642',x+2,y+14,8,10);R('#c8c4b4',x+4,y+10,4,10);
+  R(col,x+2,y+4,8,8);R('#f4fffc',x+4,y+6,4,4);
+ };
+
+ // ---- BESPOKE ROOM-BY-ROOM SQUARE ENIX INTERIOR COMPOSITIONS (ALL 11 NON-RYUNE INTERIORS!) ----
+ if(room==='capitalchapel'){
+  // White-Stone Royal Cathedral Chapel: rainbow stained-glass lancets, gilded marble altar, candelabras, crimson runner & oak pews!
+  windowBeam(6,'rgba(148,214,255,.28)');windowBeam(11,'rgba(255,222,146,.32)');windowBeam(12,'rgba(255,168,186,.28)');windowBeam(17,'rgba(148,214,255,.28)');
+  banner(8,2,'#7c303a');banner(15,2,'#7c303a');
+  // Grand Stepped White-Marble Sanctuary Altar & Golden Candelabras (x=10..13, y=3..4)
+  R('rgba(18,22,30,.24)',9*TILE+16,3*TILE+12,5*TILE,2*TILE-8);
+  R('#c8c4b6',9*TILE+20,3*TILE+10,5*TILE-8,2*TILE-12);R('#ece8dc',10*TILE,3*TILE+14,4*TILE,2*TILE-20);
+  R('#3c3630',10*TILE+20,3*TILE+18,2*TILE+24,26);R('#eae6d8',10*TILE+22,3*TILE+20,2*TILE+20,22);
+  R('#8a303c',11*TILE+10,3*TILE+20,44,24);R('#ecc86e',11*TILE+13,3*TILE+20,3,24);R('#ecc86e',12*TILE+16,3*TILE+20,3,24);
+  R('#f6d874',11*TILE+28,3*TILE+26,8,10);R('#fff8d4',11*TILE+30,3*TILE+28,4,6);
+  // Twin 7-branch golden floor candelabras flanking the altar
+  for(const cx of [10*TILE+6,13*TILE+20]){
+   R('#b89242',cx,3*TILE+16,6,22);R('#f0cf72',cx-4,3*TILE+14,14,4);
+   R('#fff6c8',cx-3,3*TILE+10,2,4);R('#fff6c8',cx+2,3*TILE+8,2,6);R('#fff6c8',cx+7,3*TILE+10,2,4);
+  }
+  // Crimson-and-gold royal nave aisle runner
+  R('#3a1c22',11*TILE+2,5*TILE,2*TILE-4,7*TILE+12);
+  R('#862e3a',11*TILE+5,5*TILE+2,2*TILE-10,7*TILE+8);
+  R('#e2c270',11*TILE+8,5*TILE+2,2,7*TILE+8);R('#e2c270',13*TILE-10,5*TILE+2,2,7*TILE+8);
+  // Symmetrical carved oak cathedral pews with crimson velvet cushions
+  for(const py of [6,8,10]){
+   for(const px of [6,15]){
+    R('rgba(16,18,24,.24)',px*TILE+2,py*TILE+18,3*TILE-4,8);
+    R('#2e1e14',px*TILE+1,py*TILE+6,3*TILE-2,16);
+    R('#7e5a3a',px*TILE+3,py*TILE+8,3*TILE-6,12);
+    R('#9a3642',px*TILE+5,py*TILE+12,3*TILE-10,6);
+    R('#b89062',px*TILE+4,py*TILE+8,3*TILE-8,3);
+   }
+  }
+  // Memorial vigil candle table at (6,5) & tall marble pillars
+  tallShelf(5,4,'books');tallShelf(18,4,'books');
+  plant(5,10,true);plant(18,10,true);
+ }else if(room==='capitalinn'){
+  // White Stag Tavern & Royal Inn: roaring stag hearth, L-shaped mahogany pub bar, THREE round oak drinking tables with foaming mugs & ale casks!
+  windowBeam(6);windowBeam(16);
+  grandHearth(9,2,'#6e665c',true);
+  banner(12,2,'#8c3440');
+  stairs(5,3);
+  tallShelf(13,3,'bottles');tallShelf(14,3,'bottles');tallShelf(15,3,'bottles');
+  tavernCounter(13,4,4);
+  bed(17,4,'#9a3c48');
+  ornRug(9,6,5,4,'#8a3e46','#e8ca82');
+  roundTable(6,8,null,'mugs');
+  roundTable(11,8,null,'mugs');
+  roundTable(16,9,null,'mugs');
+  barrel(5,9);barrel(5,10);barrel(6,10);barrel(18,8);barrel(18,9);
+  plant(7,10,true);plant(17,10,true);
+ }else if(room==='capitalarmory'){
+  // Royal Blacksmith Forge & Armory: blazing brick forge furnace, iron anvil, quenching trough, FOUR full-plate armor stands & steel display racks!
+  windowBeam(6);windowBeam(16);
+  grandHearth(10,2,'#3c424c',true);
+  R('#2a2e36',10*TILE+6,3*TILE+2,52,20);R('#545a64',10*TILE+8,3*TILE+4,48,16);
+  R('#d85a20',10*TILE+16,3*TILE+7,32,9);R('#ffd464',10*TILE+22,3*TILE+9,20,5);
+  armorStand(5,3);armorStand(18,3);armorStand(5,8);armorStand(18,8);
+  weaponRack(14,3);weaponRack(15,3);weaponRack(16,3);weaponRack(17,4);
+  R('rgba(10,12,16,.34)',6*TILE+3,5*TILE+22,26,6);
+  R('#242830',6*TILE+4,5*TILE+10,24,14);R('#5c6672',6*TILE+6,5*TILE+11,20,6);R('#9aa6b4',6*TILE+8,5*TILE+11,14,2);
+  barrel(5,5);
+  R('#363c46',10*TILE,5*TILE+12,3*TILE,5*TILE+16);R('#525c68',10*TILE+3,5*TILE+15,3*TILE-6,5*TILE+10);
+  diningTable(10,7,3,'weapons');
+  cargoCrate(5,10,false);cargoCrate(6,10,false);cargoCrate(17,10,false);cargoCrate(18,10,false);
+ }else if(room==='capitalhouse'){
+  // Royal Artisan & Tailor Home: wide cloth-bolt cutting table, dress-form mannequin, small sewing tea-table, patchwork rug & stacked fabric chests!
+  windowBeam(6);windowBeam(16);
+  grandHearth(10,2,'#746c62',true);
+  banner(8,2,'#884c5c');banner(14,2,'#4c6c84');
+  bed(5,4,'#7a6858');
+  R('rgba(14,10,8,.28)',6*TILE+2,5*TILE+22,58,6);
+  R('#34241a',6*TILE+2,5*TILE+5,58,21);R('#8a6644',6*TILE+4,5*TILE+7,54,17);
+  R('#a6424c',6*TILE+6,5*TILE+8,16,12);R('#3e648a',6*TILE+24,5*TILE+9,14,11);R('#e4c672',6*TILE+42,5*TILE+9,12,10);
+  R('#38261a',9*TILE+12,4*TILE+18,8,10);R('#2e4c70',9*TILE+9,4*TILE+6,14,13);R('#d8be78',9*TILE+14,4*TILE+8,4,9);R('#b89872',9*TILE+12,4*TILE+2,8,4);
+  tallShelf(17,3,'books');tallShelf(18,3,'jars');
+  ornRug(9,7,5,3,'#7c5258','#e6cc92');
+  roundTable(11,8,'#efe2c4','sewing');
+  cargoCrate(17,9,false);cargoCrate(18,10,false);tallShelf(5,9,'books');plant(6,10,true);plant(16,10,true);
+ }else if(room==='waystationinn'){
+  // Birch Waystation Timber Lodge ('白樺亭'): pine hearth, check-in counter, THREE cozy traveler bunk beds with forest plaid quilts & pine bench table!
+  windowBeam(6);windowBeam(16);
+  grandHearth(9,2,'#786e60',true);
+  banner(12,2,'#4c7254');
+  stairs(5,3);
+  tallShelf(14,3,'bottles');tallShelf(15,3,'jars');
+  tavernCounter(14,4,4);
+  bed(17,4,'#6c865e');bed(5,7,'#5c7854');bed(5,9,'#86644c');
+  ornRug(9,6,6,4,'#647650','#e4c886');
+  chair(10,6,6,8);chair(12,6,6,8);chair(10,8,6,-4);chair(12,8,6,-4);
+  diningTable(10,7,3,'food');
+  barrel(18,8);barrel(18,9);plant(7,10,true);plant(17,10,true);
+ }else if(room==='halminn'){
+  // Halm Frontier Herb-Merchant & Courier Inn ('風見亭'): apothecary racks, courier dispatch desk, golden-ochre runner & TWO intimate café tables!
+  windowBeam(6);windowBeam(16);
+  grandHearth(9,2,'#5c544c',true);
+  banner(12,2,'#84583a');
+  stairs(5,3);
+  tallShelf(13,3,'jars');tallShelf(14,3,'jars');tallShelf(15,3,'bottles');
+  tavernCounter(14,4,4);
+  bed(17,4,'#8c5e47');
+  ornRug(10,5,4,6,'#866242','#ebd294');
+  roundTable(6,9,'#dfd0a8','tea');
+  roundTable(16,9,'#dfd0a8','mugs');
+  cargoCrate(5,7,true);cargoCrate(5,10,false);barrel(18,8);plant(17,10,true);
+ }else if(room==='empirecottage'){
+  // Regnore Frontier Millwright Hall: slate hearth, preserved-fruit jars, cider barrels & central engineering blueprint drafting island!
+  windowBeam(6);windowBeam(16);
+  grandHearth(10,2,'#50606c',true);
+  banner(8,2,'#3c5e7a');
+  tallShelf(16,3,'jars');tallShelf(17,3,'jars');tallShelf(18,3,'jars');
+  bed(17,4,'#4e7488');
+  R('#2e2218',6*TILE+1,5*TILE+5,34,22);R('#7e5c3e',6*TILE+3,5*TILE+7,30,18);
+  R('#e8f2f8',6*TILE+6,5*TILE+9,24,12);R('#3c6896',6*TILE+8,5*TILE+11,20,8);
+  ornRug(9,6,6,4,'#446874','#dce0c4');
+  R('rgba(12,16,20,.28)',10*TILE+2,7*TILE+6,3*TILE,46);
+  R('#2e2218',10*TILE,7*TILE+2,3*TILE,44);R('#8a6646',10*TILE+3,7*TILE+5,3*TILE-6,38);
+  R('#eaf4fa',10*TILE+10,7*TILE+9,3*TILE-20,28);R('#366492',10*TILE+14,7*TILE+12,3*TILE-28,20);
+  R('#b4e2fc',10*TILE+22,7*TILE+16,3*TILE-44,10);R('#e6c268',12*TILE+10,7*TILE+14,6,6);
+  tallShelf(5,8,'jars');barrel(5,10);barrel(6,10);barrel(18,8);barrel(18,9);plant(17,10,true);
+ }else if(room==='imperialinn'){
+  // Regnore Canal Waterbird Bistro & Inn ('水鳥亭'): cerulean-and-silver Venetian tapestries, wine bar & THREE white-cloth waterfront dining tables!
+  windowBeam(6,'rgba(210,238,255,.24)');windowBeam(16,'rgba(210,238,255,.24)');
+  grandHearth(10,2,'#4c5c6c',true);
+  banner(8,2,'#2c527a','#dce4ec');banner(14,2,'#2c527a','#dce4ec');
+  stairs(5,3);
+  tallShelf(14,3,'bottles');tallShelf(15,3,'bottles');
+  tavernCounter(14,4,4);
+  bed(17,4,'#4a6e8c','#423836');
+  ornRug(10,5,4,6,'#365472','#dce4ec');
+  roundTable(6,8,'#f2eee2','wine');
+  roundTable(16,9,'#f2eee2','wine');
+  roundTable(11,7,'#f2eee2','wine');
+  barrel(5,10);barrel(18,10);plant(6,10,true);plant(17,10,true);
+ }else if(room==='imperialbooks'){
+  // Regnore Canal Antiquarian Bookshop: TWELVE walnut bookcases (including freestanding book-aisle islands!), antique globe & emerald banker's reading desk!
+  windowBeam(8,'rgba(220,242,255,.24)');windowBeam(14,'rgba(220,242,255,.24)');
+  tallShelf(5,3,'books');tallShelf(6,3,'books');tallShelf(10,3,'books');tallShelf(11,3,'books');tallShelf(12,3,'books');
+  tallShelf(16,3,'books');tallShelf(17,3,'books');tallShelf(18,3,'books');
+  tallShelf(5,7,'books');tallShelf(5,9,'books');tallShelf(18,7,'books');tallShelf(18,9,'books');
+  tallShelf(7,8,'books');tallShelf(16,6,'books');
+  R('#4e3824',9*TILE+11,4*TILE+18,10,8);R('#d4b464',9*TILE+14,4*TILE+14,4,6);
+  R('#366886',9*TILE+9,4*TILE+4,14,12);R('#629668',9*TILE+12,4*TILE+6,6,5);R('#b4e0ec',9*TILE+11,4*TILE+5,4,2);
+  ornRug(9,6,6,4,'#3f5268','#dfc890');
+  chair(10,6,6,8);chair(12,6,6,8);chair(10,8,6,-4);chair(12,8,6,-4);
+  diningTable(10,7,3,'books');
+  R('#36a66c',11*TILE+12,7*TILE+6,10,5);R('#b8ffd6',11*TILE+14,7*TILE+10,6,3);
+  for(const [bx,by] of [[6,10],[7,10],[17,9],[16,10]]){
+   R('#2a201c',bx*TILE+6,by*TILE+10,18,16);R('#9a4448',bx*TILE+8,by*TILE+19,14,5);
+   R('#466c86',bx*TILE+7,by*TILE+14,15,5);R('#d4b468',bx*TILE+9,by*TILE+9,12,5);
+  }
+  plant(7,4,false);plant(15,4,false);
+ }else if(room==='imperialguild'){
+  // Regnore Canal Shipping Guild Hall: Imperial maritime banners, accounting counter, grand canal chart table, cargo crates & ship ropes!
+  windowBeam(6,'rgba(210,238,255,.24)');windowBeam(16,'rgba(210,238,255,.24)');
+  grandHearth(11,2,'#465868',true);
+  banner(8,2,'#284c76','#e6cc7a');banner(14,2,'#284c76','#e6cc7a');
+  tallShelf(5,3,'books');tallShelf(17,3,'jars');tallShelf(18,3,'books');
+  tavernCounter(15,4,3);
+  ornRug(8,6,8,4,'#2d4964','#e2c882');
+  R('rgba(12,16,22,.30)',9*TILE+6,7*TILE+6,5*TILE-12,42);
+  R('#241a12',9*TILE+4,7*TILE+2,5*TILE-8,40);R('#6c4e36',9*TILE+7,7*TILE+5,5*TILE-14,34);
+  R('#ebe0be',9*TILE+16,7*TILE+8,5*TILE-32,26);R('#3e7496',9*TILE+22,7*TILE+14,5*TILE-44,6);R('#3e7496',9*TILE+22,7*TILE+24,5*TILE-44,5);
+  R('#9a3440',11*TILE+12,7*TILE+16,10,5);R('#f8f2e0',11*TILE+15,7*TILE+10,4,7);
+  cargoCrate(5,9,true);cargoCrate(6,10,false);cargoCrate(17,10,true);cargoCrate(18,9,false);
+  tallShelf(5,7,'books');plant(7,10,false);
+ }else if(room==='elsiahouse'){
+  // Elsia Sanctuary Storyteller's Home: luminous emerald-gold weaving loom, circular sanctuary dais rug, floor cushions, low cedar tea-table & turquoise crystal lamps!
+  windowBeam(6,'rgba(190,252,216,.28)');windowBeam(16,'rgba(190,252,216,.28)');
+  grandHearth(11,2,'#7c8478',true);
+  banner(8,2,'#3c6e5c','#f0e29a');banner(14,2,'#3c6e5c','#f0e29a');
+  R('rgba(14,20,16,.26)',6*TILE+2,5*TILE+22,32,6);
+  R('#36281c',6*TILE+2,5*TILE+2,30,24);R('#7e5e3e',6*TILE+4,5*TILE+4,26,20);
+  R('#42886e',6*TILE+7,5*TILE+7,20,14);R('#e8d888',6*TILE+10,5*TILE+9,14,3);R('#a6f0ce',6*TILE+10,5*TILE+14,14,3);
+  tallShelf(5,3,'books');tallShelf(18,3,'jars');
+  bed(17,4,'#5a886c','#6a5844');
+  ornRug(9,6,6,4,'#48725a','#f2e4a8');
+  for(const [cx,cy] of [[10,6],[13,6],[10,9],[13,9]]){
+   R('#32483c',cx*TILE+6,cy*TILE+8,18,14);R('#d4be74',cx*TILE+8,cy*TILE+10,14,10);R('#5a9878',cx*TILE+10,cy*TILE+12,10,6);
+  }
+  roundTable(11,7,'#dfece2','tea');
+  crystalLamp(5,10,'#7ce8d4');crystalLamp(18,10,'#7ce8d4');
+  tallShelf(5,8,'books');plant(6,10,true);plant(17,10,true);
  }
- chair(8,7);chair(15,7);crate(18,10);pot(5,10);pot(18,8);
- ctx.fillStyle='rgba(242,190,93,.18)';ctx.beginPath();ctx.arc(12*TILE+16,5*TILE+7,27,0,Math.PI*2);ctx.fill();ctx.fillStyle='#d5ad64';ctx.fillRect(12*TILE+13,5*TILE+4,6,7);
- if(state.map==='karenhome'){rug(8,6,7,3,'#7f544b');bed(5,4,'#a35c59');bed(17,4,'#6c7589');table(10,7,3);hearth(17,9);shelf(5,9)}
- if(state.map==='orphanage'){rug(8,6,8,4,'#687a64');for(const p of [[5,4],[7,4],[16,4],[18,4]])bed(p[0],p[1],'#7b8596');table(9,7,5);hearth(17,9);shelf(5,9)}
- if(state.map==='mayorhouse'){rug(8,6,7,3,'#685877');table(9,7,4);shelf(17,4);shelf(5,4);hearth(17,9);ctx.fillStyle='#d6c49a';ctx.fillRect(10*TILE+7,7*TILE+11,42,21);ctx.strokeStyle='#6f5841';ctx.strokeRect(10*TILE+7,7*TILE+11,42,21)}
- if(state.map==='cottage'){rug(9,7,6,2,'#705b50');bed(5,4,'#64778c');bed(7,4,'#8f665f');table(10,7,3);hearth(17,9);shelf(17,4)}
- if(state.map==='capitalinn'){rug(8,6,8,4,'#7b5a4b');table(9,7,5);hearth(17,9);shelf(5,4);bed(17,4,'#8d4b52')}
- if(state.map==='capitalarmory'){rug(9,7,6,2,'#565b63');table(10,7,3);shelf(17,4);shelf(5,4);ctx.fillStyle='#59606a';for(let i=0;i<4;i++){ctx.fillRect(17*TILE+6+i*5,5*TILE+4,3,24)}ctx.fillStyle='#a77745';ctx.fillRect(6*TILE+4,5*TILE+9,24,13)}
- if(state.map==='capitalhouse'){rug(8,6,8,3,'#6b5348');bed(5,4,'#7a6855');table(10,7,3);hearth(17,9);shelf(17,4);shelf(5,9)}
- if(state.map==='waystationinn'){rug(8,6,8,4,'#6d5642');table(9,7,5);hearth(17,9);shelf(5,4);bed(17,4,'#7a8a68');shelf(5,9)}
- if(state.map==='capitalchapel'){shelf(5,4);shelf(18,4)}
- if(state.map==='halminn'){rug(8,6,8,4,'#7a5c43');table(9,7,5);hearth(17,9);shelf(5,4);bed(17,4,'#8c5e47');bed(5,8,'#6a745c')}
- if(state.map==='empirecottage'){rug(8,6,8,3,'#4e686e');table(9,7,4);hearth(17,9);shelf(5,4);bed(17,4,'#527482');shelf(5,8)}
- if(state.map==='imperialinn'){rug(8,6,8,4,'#516875');table(9,7,5);hearth(17,9);shelf(5,4);bed(17,4,'#577b8a')}
- if(state.map==='imperialbooks'){rug(8,6,8,4,'#4d5d6a');for(const xx of [5,17]){shelf(xx,4);shelf(xx,8)}table(10,7,3)}
- if(state.map==='imperialguild'){rug(8,6,8,4,'#3f596b');table(9,7,4);hearth(17,9);shelf(5,4);shelf(17,4);shelf(5,8)}
- if(state.map==='elsiahouse'){rug(8,6,8,4,'#63755f');table(10,7,3);hearth(17,9);shelf(5,4);bed(17,4,'#7a9174');shelf(5,9)}
- // 生活小物：食器、壁絵、収納、窓辺の植物
- ctx.fillStyle='#6d5138';ctx.fillRect(5*TILE+6,10*TILE+5,42,14);ctx.fillStyle='#c9b48a';for(let i=0;i<3;i++){ctx.beginPath();ctx.arc(5*TILE+15+i*12,10*TILE+7,4,0,Math.PI*2);ctx.fill()}
- ctx.fillStyle='#54473c';for(const x of [8,13,17]){ctx.fillRect(x*TILE+7,3*TILE+6,20,14);ctx.strokeStyle='#b69c69';ctx.strokeRect(x*TILE+7,3*TILE+6,20,14)}
- ctx.fillStyle='#496a4e';for(const x of [6,18]){ctx.beginPath();ctx.arc(x*TILE+16,11*TILE+12,6,0,Math.PI*2);ctx.fill();ctx.fillStyle='#876344';ctx.fillRect(x*TILE+12,11*TILE+17,8,7);ctx.fillStyle='#496a4e'}
- // 出入口の敷物
- ctx.fillStyle='#49372a';ctx.fillRect(11*TILE+2,12*TILE+14,60,12);ctx.fillStyle='#b6935f';ctx.fillRect(11*TILE+8,12*TILE+17,48,6)
+ // Ornate braided entrance welcome mat anchoring exit tiles (11..12, 12)
+ R('#342820',11*TILE+2,12*TILE+12,60,14);
+ R('#9c7a50',11*TILE+4,12*TILE+14,56,10);
+ R('#e2ca94',11*TILE+8,12*TILE+17,48,4);
 }
 function drawRegionDecor(){if(RoadCaveQuality.enabled&&RoadCaveQuality.active.has(state.map)){RoadCaveQuality.drawAccents(ctx,state.map);return}
  const house=(x,y,roof,wall,w=3)=>{const px=x*TILE,py=y*TILE,W=TILE*w;ctx.fillStyle='rgba(0,0,0,.22)';ctx.fillRect(px+7,py+35,W-2,60);ctx.fillStyle=wall;ctx.fillRect(px+7,py+31,W-14,61);ctx.fillStyle=roof;ctx.beginPath();ctx.moveTo(px-3,py+35);ctx.lineTo(px+W/2,py+2);ctx.lineTo(px+W+3,py+35);ctx.closePath();ctx.fill();ctx.fillStyle='#4d382b';ctx.fillRect(px+W/2-9,py+58,18,34);ctx.fillStyle='#b8d0d5';ctx.fillRect(px+13,py+48,18,14);ctx.fillRect(px+W-31,py+48,18,14)};
@@ -595,7 +923,10 @@ function drawRegionDecor(){if(RoadCaveQuality.enabled&&RoadCaveQuality.active.ha
   ctx.fillStyle='#9e988c';ctx.fillRect(sx+2,sy+2,46,7);ctx.fillStyle='#c2bcb0';ctx.fillRect(sx+4,sy+3,30,3);
  }
  if(state.map==='frontier'){
-  for(const p of [[3,3],[18,3],[3,10],[18,10]])tent(p[0],p[1],p[0]<10?'#7c4248':'#5c6c78');flag(10,1,'#8d3d46');
+  if(!(typeof AshFrontierEnvironment!=='undefined'&&AshFrontierEnvironment.enabled)){
+   for(const p of [[3,3],[18,3],[3,10],[18,10]])tent(p[0],p[1],p[0]<10?'#7c4248':'#5c6c78');
+  }
+  flag(10,1,'#8d3d46');
   // Timber-reinforced trench parapets & wooden duckboards
   ctx.fillStyle='#3b3229';for(const y of [6,12]){ctx.fillRect(TILE,y*TILE+18,10*TILE,7);ctx.fillRect(13*TILE,y*TILE+18,10*TILE,7)}
   ctx.fillStyle='#735c44';for(const y of [6,12]){ctx.fillRect(TILE,y*TILE+19,10*TILE,3);ctx.fillRect(13*TILE,y*TILE+19,10*TILE,3)}
@@ -990,7 +1321,7 @@ function drawHd2dEdgePolish(m){
     ctx.fillStyle='rgba(10,14,24,.14)';ctx.fillRect(px,py,7,7);
    }
    // Organic scalloped grassy shoulders & softly rounded corners along EVERY dirt/path tile (eliminates boxy 90-deg Lego edges!)
-   if((ch==='P'||ch==='D')&&!['village','capital'].includes(state.map)){
+   if((ch==='P'||ch==='D')&&!['village','capital','ravine','watchfort','ryunefields','ashroad','frontier','frontierfield'].includes(state.map)){
     const h=((Math.imul(x+17,374761393)^Math.imul(y+29,668265263))>>>0);
     if(isGrass(left)){
      for(let i=0;i<8;i++){

@@ -271,6 +271,15 @@ const BorderWatchfortEnvironment=(()=>{
     return true;
    }
    if(ch==='D'){
+    if(map==='ravine'){
+     // Monumental carved stone bridge deck spanning the entire Razel Canyon crossing (no dirt strips or grass tufts on stone balconies!)
+     if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(ctx,'cobble',x,y,'capital')){
+      pix(ctx,'#959690',a,b,32,32);pix(ctx,'#66696b',a,b+15,32,1);pix(ctx,'#66696b',a,b+31,32,1);
+     }
+     if(x===11&&y!==7){pix(ctx,'#393d42',a,b,5,32);pix(ctx,'#c2bfb2',a+1,b+2,3,28)}
+     if(x===12&&y!==7){pix(ctx,'#393d42',a+27,b,5,32);pix(ctx,'#c2bfb2',a+28,b+2,3,28)}
+     return true;
+    }
     // Watchtower timber-planked ramp on x=18 vs compacted gravel approach south
     if(x===18&&y>=6&&y<=10){
      pix(ctx,'#49392a',a,b,32,32);
@@ -531,35 +540,59 @@ const BorderWatchfortEnvironment=(()=>{
   if(!inScope(map))return false;
   const now=Date.now();
   if(map==='bordercanyon'){
-   // Ruined Pre-War Kingdom-Empire Joint Salt Tollhouse Stone Pillars (x=11..15, y=3..4)
+   // Dramatic Old Salt-Road Canyon Ruins: weathered joint-trade stone archway, mossy canyon boulders, salt barrels, timber rails & campfire!
+   // Carved stone tollhouse arch lintel bridging x=11..15, y=3
+   pix(ctx,'rgba(16,12,10,0.34)',11*32+2,3*32+24,5*32-4,10);
    for(const px of [11,15]){
-    pix(ctx,'rgba(18,14,10,0.32)',px*32+4,3*32+22,24,10);
-    pix(ctx,'#3a3630',px*32+6,3*32+2,20,30);pix(ctx,'#8c8578',px*32+8,3*32+4,16,24);
-    pix(ctx,'#b8b1a0',px*32+6,3*32+1,20,5);
+    pix(ctx,'#2e2a24',px*32+4,2*32+18,24,44);pix(ctx,'#8c8578',px*32+6,2*32+20,20,38);
+    pix(ctx,'#b8b1a0',px*32+7,2*32+20,6,36);pix(ctx,'#586e46',px*32+8,3*32+14,9,5);
    }
-   // Salt barrels & trade sacks stacked on the old stone terrace (x=3..5, y=3)
-   for(const bx of [3,4,12,14]){
-    pix(ctx,'#463526',bx*32+8,3*32+12,16,14);pix(ctx,'#8c6c4a',bx*32+10,3*32+13,12,10);
-    pix(ctx,'#e8ecee',bx*32+11,3*32+11,10,4);
+   pix(ctx,'#2e2a24',11*32+2,2*32+12,5*32-4,12);pix(ctx,'#a29a8a',11*32+4,2*32+14,5*32-8,8);pix(ctx,'#cfc8b6',11*32+6,2*32+14,5*32-12,3);
+   // Crumbled salt-trade stone terrace wall & stacked white salt barrels
+   for(const bx of [3,4,12,14,18,19]){
+    pix(ctx,'rgba(14,12,10,0.28)',bx*32+7,3*32+24,18,4);
+    pix(ctx,'#3a2b1e',bx*32+7,3*32+11,18,15);pix(ctx,'#8c6c4a',bx*32+9,3*32+12,14,12);
+    pix(ctx,'#eef2f4',bx*32+10,3*32+10,12,4);
    }
-   // Warm canyon campfire glow at (10,10)
+   // Weathered steppe boulder outcrops & gnarled highland pines framing the canyon walls
+   for(const [rx,ry] of [[3,7],[4,11],[7,12],[14,9],[16,12],[18,7],[21,11]])drawSteppeBoulder(ctx,rx*32,ry*32,hash(rx,ry,9));
+   if(typeof HD2DAtlas!=='undefined'){
+    for(const [tx,ty] of [[2,5],[2,12],[21,4],[17,12]])HD2DAtlas.drawTree(ctx,tx,ty,'oak');
+   }
+   // Warm canyon campfire glow & timber pack-bench at (10,10)
    const pulse=Math.sin(now/220)*3;
-   const cg=ctx.createRadialGradient(10*32+16,10*32+18,4,10*32+16,10*32+18,42+pulse);
-   cg.addColorStop(0,'rgba(255,192,88,0.28)');cg.addColorStop(1,'rgba(240,140,50,0)');
-   ctx.fillStyle=cg;ctx.beginPath();ctx.arc(10*32+16,10*32+18,42+pulse,0,Math.PI*2);ctx.fill();
-   // Dramatic golden-ochre canyon sunset wash
+   const cg=ctx.createRadialGradient(10*32+16,10*32+18,4,10*32+16,10*32+18,52+pulse);
+   cg.addColorStop(0,'rgba(255,196,92,0.36)');cg.addColorStop(1,'rgba(240,140,50,0)');
+   ctx.fillStyle=cg;ctx.beginPath();ctx.arc(10*32+16,10*32+18,52+pulse,0,Math.PI*2);ctx.fill();
+   pix(ctx,'#463222',8*32+12,10*32+14,24,10);pix(ctx,'#8a6844',8*32+14,10*32+15,20,6);
    const sun=ctx.createLinearGradient(0,0,768,480);
-   sun.addColorStop(0,'rgba(255,204,132,0.10)');sun.addColorStop(1,'rgba(30,24,34,0.12)');
+   sun.addColorStop(0,'rgba(255,204,132,0.12)');sun.addColorStop(1,'rgba(30,24,34,0.14)');
    ctx.fillStyle=sun;ctx.fillRect(0,0,768,480);
    return true;
   }
   if(map==='relayvillage'){
-   // Halm Relay Settlement: 4 grounded 3D half-timbered waystation lodges + 3D caravan market pavilion
+   // Halm Relay Settlement: 4 grounded 3D half-timbered lodges, caravan market pavilion, lush autumn woodland framing & warm village lanterns!
    drawWaystationInn(ctx,3,3,5,3,{roofDark:'#583c30',roofMain:'#785040',roofHi:'#9a6c56',wall:'#d8c8a4',shutter:'#523f31',sign:true,label:'ハルム中継宿'});
    drawWaystationInn(ctx,16,3,5,3,{roofDark:'#4b3e36',roofMain:'#66544a',roofHi:'#867062',wall:'#d2c4a0',shutter:'#47525e',sign:false,label:'交易荷倉'});
    drawWaystationInn(ctx,3,10,4,2,{roofDark:'#524236',roofMain:'#6e5848',roofHi:'#8e7460',wall:'#cfc09c',shutter:'#4e5c48',sign:false});
    drawWaystationInn(ctx,17,10,4,2,{roofDark:'#4e423a',roofMain:'#68584e',roofHi:'#887466',wall:'#cec09c',shutter:'#523f31',sign:false});
    drawBorderBooth(ctx,8,5,'#8e3c42','herbs');
+   // Ornate village well-square lantern posts, flower parterres & stacked firewood
+   for(const [lx,ly] of [[10,6],[13,6],[10,9],[13,9]]){
+    const x=lx*32+14,y=ly*32+4;
+    const lg=ctx.createRadialGradient?.(x+2,y+2,2,x+2,y+2,28);
+    if(lg&&typeof lg.addColorStop==='function'){lg.addColorStop(0,'rgba(255,216,120,0.34)');lg.addColorStop(1,'rgba(255,180,80,0)');ctx.fillStyle=lg;ctx.beginPath();ctx.arc(x+2,y+2,28,0,Math.PI*2);ctx.fill()}
+    pix(ctx,'#2a221c',x,y+4,4,21);pix(ctx,'#54483e',x+1,y+5,2,19);
+    pix(ctx,'#2a221c',x-2,y-1,8,7);pix(ctx,'#fad876',x-1,y,6,5);pix(ctx,'#fffbe2',x+1,y+1,2,2);
+   }
+   for(const [fx,fy] of [[8,9],[14,9],[14,6],[9,11]]){
+    pix(ctx,'rgba(16,20,14,0.24)',fx*32+5,fy*32+21,24,5);
+    pix(ctx,'#585248',fx*32+4,fy*32+15,24,10);pix(ctx,'#4a7a42',fx*32+6,fy*32+14,20,8);
+    pix(ctx,'#f4d872',fx*32+8,fy*32+15,4,3);pix(ctx,'#e87880',fx*32+17,fy*32+16,4,3);
+   }
+   if(typeof HD2DAtlas!=='undefined'){
+    for(const [tx,ty] of [[2,1],[21,1],[1,6],[22,6],[1,12],[22,12]])HD2DAtlas.drawTree(ctx,tx,ty,'birch');
+   }
    return true;
   }
   if(map==='borderland'){
@@ -620,17 +653,62 @@ const BorderWatchfortEnvironment=(()=>{
   }
 
   if(map==='ravine'){
-   // High-altitude Razel Canyon Bridge: deep support arches, carved stone parapets & border banners
-   for(const by of [2,4,6,8,10]){
-    pix(ctx,'#3e464e',11*32-6,by*32+4,6,20);pix(ctx,'#616a72',11*32-5,by*32+6,4,14);
-    pix(ctx,'#3e464e',13*32,by*32+4,6,20);pix(ctx,'#616a72',13*32+1,by*32+6,4,14);
+   // Vertigo-Inducing Razel Canyon Gorge Bridge: rugged layered chasm cliff walls, diagonal waterfalls, glistening river rapids, drifting mist clouds & glowing lanterns!
+   const drift=Math.round(Math.sin(now/520)*6);
+   const flow=Math.floor(now/280)%16;
+   for(const [ax,aw] of [[2,5],[17,5]]){
+    const x=ax*32,w=aw*32;
+    // Jagged craggy cliff walls descending smoothly into the abyss (cleanly framing both gorge basins without touching lookout balconies!)
+    pix(ctx,'#1b2534',x,3*32,w,8*32);
+    pix(ctx,'#131c28',x+10,3*32+12,w-20,8*32-24);
+    for(let i=0;i<5;i++){
+     const ox=x+i*32,oh=14+((i*7)%12);
+     pix(ctx,'#2a323c',ox,3*32,32,oh);pix(ctx,'#464e56',ox+2,3*32,28,Math.floor(oh*0.5));
+     const bh=12+(((i+3)*9)%10);
+     pix(ctx,'#242b34',ox,11*32-bh,32,bh);pix(ctx,'#3c444d',ox+2,11*32-bh+2,28,4);
+    }
+    // Glistening distant silver-azure gorge river far below!
+    pix(ctx,'#1b4562',x+18,3*32+14,w-36,8*32-28);
+    pix(ctx,'#286286',x+32,3*32+18,w-64,8*32-36);
+    for(let ry=3*32+22;ry<11*32-20;ry+=16){
+     pix(ctx,'rgba(176,228,248,0.44)',x+36+((ry+flow*3)%24),ry,24,2);
+     pix(ctx,'rgba(232,250,255,0.62)',x+42+((ry+flow*3)%24),ry,10,1);
+    }
+    // Sparkling thin waterfall cascade pouring off the northern canyon cliff into the gorge river!
+    const wfx=x+Math.floor(w/2)-8;
+    pix(ctx,'rgba(182,232,252,0.52)',wfx,3*32+6,16,30);
+    pix(ctx,'rgba(240,252,255,0.72)',wfx+4,3*32+8+((flow*2)%10),6,16);
+    pix(ctx,'rgba(218,244,255,0.45)',wfx-8,3*32+32,32,8);
+    // Layered drifting white-blue mountain chasm mist clouds overlapping cliff rims
+    pix(ctx,'rgba(182,214,238,0.18)',x-4+drift,4*32+10,w+8,16);
+    pix(ctx,'rgba(208,232,250,0.14)',x-2-drift,8*32+6,w+4,18);
+    pix(ctx,'rgba(172,204,232,0.16)',x+drift*0.7,9*32+20,w,12);
    }
-   drawBanner(ctx,8*32+10,6*32+2,'#8d3d46','#be616b','#dfc48a');
-   drawBanner(ctx,15*32+10,6*32+2,'#2f4c70','#5e83ad','#c8d6e0');
-   const drift=Math.round(Math.sin(now/520)*4);
-   for(const [mx,my,mw] of [[2,4,5],[16,5,5],[3,9,4],[16,10,5]]){
-    pix(ctx,'rgba(164,196,222,0.14)',mx*32+drift,my*32+8,mw*32,8);
+   // Carved stone lookout balcony piers anchoring (7,7) and (16,7) cleanly over the abyss!
+   for(const lx of [7,16]){
+    pix(ctx,'#2e353d',lx*32,7*32,32,32);pix(ctx,'#9ca098',lx*32+2,7*32+2,28,28);
+    pix(ctx,'#d2d0c4',lx*32+3,7*32+3,26,4);pix(ctx,'#525860',lx*32+3,7*32+26,26,3);
    }
+   // Monumental stone bridge parapet buttresses & glowing iron bridge lanterns spanning the chasm!
+   for(const by of [2,4,6,8,10,12]){
+    pix(ctx,'rgba(8,12,18,0.45)',11*32-10,by*32+4,10,24);
+    pix(ctx,'#3a424c',11*32-8,by*32+2,8,24);pix(ctx,'#8c9298',11*32-7,by*32+3,6,18);pix(ctx,'#c8ccc6',11*32-6,by*32+3,4,4);
+    pix(ctx,'rgba(8,12,18,0.45)',13*32,by*32+4,10,24);
+    pix(ctx,'#3a424c',13*32,by*32+2,8,24);pix(ctx,'#8c9298',13*32+1,by*32+3,6,18);pix(ctx,'#c8ccc6',13*32+2,by*32+3,4,4);
+    if(by===4||by===8||by===12){
+     for(const lx of [11*32-4,13*32+4]){
+      const lg=ctx.createRadialGradient(lx,by*32+10,2,lx,by*32+10,28);
+      lg.addColorStop(0,'rgba(255,216,120,0.38)');lg.addColorStop(1,'rgba(255,176,72,0)');
+      ctx.fillStyle=lg;ctx.beginPath();ctx.arc(lx,by*32+10,28,0,Math.PI*2);ctx.fill();
+      pix(ctx,'#ffd874',lx-2,by*32+8,4,4);pix(ctx,'#fffbe2',lx-1,by*32+9,2,2);
+     }
+    }
+   }
+   // Flanking Kingdom crimson & Imperial cerulean truce standards on the center lookout balconies
+   drawBanner(ctx,8*32+10,6*32+2,'#9a3440','#cc5c68','#ebd082');
+   drawBanner(ctx,15*32+10,6*32+2,'#284e7c','#5888be','#d6e4f0');
+   drawBanner(ctx,9*32+10,3*32+2,'#9a3440','#cc5c68','#ebd082');
+   drawBanner(ctx,14*32+10,3*32+2,'#284e7c','#5888be','#d6e4f0');
    return true;
   }
 

@@ -508,48 +508,179 @@ const RyuneEnvironment=(()=>{
  }
  function indoor(c,map){
   const room=roomPalette[map],l=4*32,t=2*32;
-  // Room identity uses restrained furniture; navigable tiles remain exactly the same.
-  rect(c,'#5b493c',l+3,t+27,16*32-6,4);
-  for(let i=0;i<7;i++)rect(c,'#b5a080',l+14+i*69,t+10,3,12);
-  // Windows only on existing blocked back-wall W tiles, casting soft sunlit beams onto the floor.
-  for(const xx of [6,12,17]){
+  const fl=Math.round(Math.sin((typeof Date!=='undefined'?Date.now():0)/160)*1.2);
+  // Handcrafted Square Enix interior furniture helpers (100% rect-safe for all test mocks!)
+  const hearth=(hx,hy,pot=true)=>{
+   rect(c,'rgba(255,176,82,.16)',hx-14,hy+24,84,48);
+   rect(c,'rgba(16,12,10,.28)',hx-2,hy+34,60,8);
+   rect(c,'#2b2420',hx,hy-2,56,40);
+   rect(c,'#6e665c',hx+2,hy,52,36);
+   rect(c,'#948b7e',hx+4,hy+2,48,6);
+   for(let bx=hx+6;bx<hx+48;bx+=11){rect(c,'#524c44',bx,hy+2,1,32);rect(c,'#a69d8e',bx+2,hy+10,7,4)}
+   // Oak mantelpiece with brass candlesticks & stoneware pitcher
+   rect(c,'#3a281c',hx-3,hy+6,62,6);rect(c,'#8f6842',hx-2,hy+7,60,4);rect(c,'#c69c6c',hx-1,hy+7,58,1);
+   rect(c,'#e6c470',hx+5,hy+1,3,6);rect(c,'#fff6c4',hx+6,hy-1,1,2);
+   rect(c,'#e6c470',hx+48,hy+1,3,6);rect(c,'#fff6c4',hx+49,hy-1,1,2);
+   rect(c,'#7c9aa4',hx+25,hy+1,6,6);rect(c,'#b8d4dc',hx+26,hy+2,2,3);
+   // Recessed firebox with glowing embers, animated flame & hanging iron stew cauldron
+   rect(c,'#18120e',hx+12,hy+14,32,22);
+   rect(c,'#5e3422',hx+16,hy+29,24,5);
+   rect(c,'#e6782a',hx+18,hy+22-Math.abs(fl),20,11);
+   rect(c,'#ffca58',hx+21,hy+24-Math.abs(fl),14,8);
+   rect(c,'#fff6c8',hx+24,hy+26,8,5);
+   if(pot){
+    rect(c,'#2c2e32',hx+22,hy+17,12,9);rect(c,'#4c525a',hx+24,hy+18,4,4);
+    rect(c,'#b4c0c6',hx+27,hy+14,2,4);
+   }
+   // Stacked birch firewood beside hearth
+   rect(c,'#3e2a1c',hx+58,hy+22,18,14);
+   for(let j=0;j<3;j++){rect(c,'#8e6440',hx+60+j*5,hy+24,4,10);rect(c,'#d4ae7e',hx+61+j*5,hy+25,2,3)}
+  };
+  const chair=(cx,cy,dir='s')=>{
+   rect(c,'rgba(16,12,10,.22)',cx+4,cy+18,18,7);
+   rect(c,'#3a271a',cx+4,cy+4,16,18);
+   rect(c,'#845e3c',cx+6,cy+6,12,11);
+   rect(c,'#b28658',cx+7,cy+6,10,3);
+   if(dir==='n')rect(c,'#5c3e26',cx+6,cy+15,12,3);
+   rect(c,'#4d3422',cx+6,cy+18,3,5);rect(c,'#4d3422',cx+15,cy+18,3,5);
+  };
+  const plant=(px,py,bloom=false)=>{
+   rect(c,'rgba(16,12,10,.22)',px+6,py+22,20,6);
+   rect(c,'#3a2418',px+8,py+14,16,12);rect(c,'#9c5c3e',px+9,py+15,14,10);rect(c,'#c67e58',px+10,py+15,12,3);
+   rect(c,'#244c2c',px+5,py+4,22,12);rect(c,'#468246',px+7,py+2,18,10);rect(c,'#7eb662',px+9,py+3,12,5);
+   if(bloom){rect(c,'#f4d064',px+10,py+5,3,3);rect(c,'#eb7c88',px+18,py+6,3,3)}
+  };
+  const clock=(px,py)=>{
+   rect(c,'rgba(16,12,10,.26)',px+5,py+30,22,5);
+   rect(c,'#2e1e14',px+5,py-6,22,38);rect(c,'#6e4a30',px+7,py-4,18,34);rect(c,'#986b46',px+8,py-3,6,32);
+   rect(c,'#f2e8cc',px+10,py-1,12,10);rect(c,'#362820',px+15,py+1,2,4);rect(c,'#362820',px+15,py+4,4,1);
+   rect(c,'#e6c268',px+14,py+14,4,10);
+  };
+  const tapestry=(px,py,col,gold='#e4c674')=>{
+   rect(c,'#3a281c',px-2,py-2,28,4);rect(c,gold,px-2,py-2,3,4);rect(c,gold,px+23,py-2,3,4);
+   rect(c,'#241c18',px,py+2,24,22);rect(c,col,px+2,py+3,20,19);
+   rect(c,gold,px+4,py+5,16,2);rect(c,gold,px+10,py+9,4,7);rect(c,gold,px+4,py+19,16,2);
+  };
+  const kitchen=(kx,ky)=>{
+   rect(c,'rgba(16,12,10,.24)',kx+2,ky+24,58,6);
+   rect(c,'#36261a',kx,ky+4,58,24);rect(c,'#886442',kx+2,ky+6,54,20);rect(c,'#b89062',kx+3,ky+6,52,4);
+   rect(c,'#5c422c',kx+28,ky+11,2,14);
+   // Bread loaf, cutting board, stoneware jug & herbs on counter
+   rect(c,'#c89c62',kx+6,ky+2,12,5);rect(c,'#eab66c',kx+8,ky+1,8,3);
+   rect(c,'#d8cfc0',kx+24,ky+1,7,7);rect(c,'#6c8c96',kx+25,ky+3,5,3);
+   rect(c,'#b85c42',kx+36,ky+2,8,6);rect(c,'#56864c',kx+46,ky+2,7,5);
+  };
+
+  // Rich timber-beam wainscoting, baseboards & ceiling shadow framing along perimeter
+  rect(c,'rgba(16,12,10,.28)',l+32,t+32,14*32,6);
+  rect(c,'#4c382a',l+3,t+27,16*32-6,5);
+  for(let i=0;i<7;i++)rect(c,'#b8a282',l+14+i*69,t+9,3,13);
+  // Warm mullioned cottage windows with fabric curtains & soft diagonal sunlit beams
+  const winCols=map==='orphanage'?[6,17]:map==='mayorhouse'?[8,15]:[6,17];
+  for(const xx of winCols){
    const px=xx*32+2;
-   rect(c,'#3c2e24',px,t+5,30,24);
-   rect(c,'#785c45',px+2,t+7,26,20);
-   rect(c,'#8bb8bf',px+4,t+9,22,15);
-   rect(c,'#dff0e6',px+5,t+10,8,6);
-   rect(c,'#c8e2dc',px+15,t+17,9,5);
-   rect(c,'#574233',px+14,t+9,2,15);rect(c,'#574233',px+4,t+16,22,2);
-   rect(c,'#c9ab80',px+1,t+24,28,3);
-   // Subtle warm HD-2D afternoon sunlight pool below each window
-   rect(c,'rgba(255,234,178,.11)',px-2,t+32,34,42);
-   rect(c,'rgba(255,242,202,.08)',px+2,t+36,26,26);
+   rect(c,'#38291f',px-2,t+4,34,25);
+   rect(c,'#7a5c44',px,t+6,30,21);
+   rect(c,'#82b8c4',px+3,t+8,24,16);
+   rect(c,'#e6f6ee',px+4,t+9,9,6);
+   rect(c,'#cbe6e0',px+16,t+17,10,5);
+   rect(c,'#574233',px+14,t+8,2,16);rect(c,'#574233',px+3,t+15,24,2);
+   // Draped cottage curtains flanking each window
+   rect(c,room.rug,px-1,t+6,5,19);rect(c,room.rug,px+26,t+6,5,19);
+   rect(c,'#d4b484',px-1,t+25,32,3);
+   rect(c,'rgba(255,238,180,.13)',px-4,t+32,40,48);
+   rect(c,'rgba(255,244,202,.09)',px+2,t+38,32,34);
   }
-  // Small furnishing anchored near known interactable objects, never on exits.
+  // Grand patterned Persian/braided rugs, hearths, bookshelves, chairs & bespoke room storytelling!
+  const ornRug=(rx,ry,rw,rh,main,trim='#e2c88c')=>{
+   rect(c,'rgba(16,12,10,.24)',rx+3,ry+4,rw,rh);
+   rect(c,'#3a2820',rx,ry,rw,rh);
+   rect(c,main,rx+3,ry+3,rw-6,rh-6);
+   rect(c,trim,rx+6,ry+6,rw-12,2);rect(c,trim,rx+6,ry+rh-8,rw-12,2);
+   rect(c,trim,rx+6,ry+6,2,rh-12);rect(c,trim,rx+rw-8,ry+6,2,rh-12);
+   // Central geometric woven diamond medallion
+   const mx=rx+Math.floor(rw/2),my=ry+Math.floor(rh/2);
+   rect(c,'rgba(255,242,202,.22)',mx-18,my-10,36,20);
+   rect(c,trim,mx-10,my-5,20,10);rect(c,main,mx-6,my-3,12,6);
+   for(let fy=ry+4;fy<ry+rh-4;fy+=5){rect(c,'#ead8b0',rx-2,fy,2,3);rect(c,'#ead8b0',rx+rw,fy,2,3)}
+  };
+
   if(map==='karenhome'){
-   rug(c,map,8*32+10,6*32+11,7*32-20,3*32-28);
-   bed(c,6*32,4*32,'#ab7967');table(c,11*32-19,7*32+2,76);
-   cabinet(c,18*32,5*32);bookshelf(c,5*32+4,8*32,8);
-   rect(c,'#bdb4a5',12*32,7*32+7,9,5);rect(c,'#a07853',13*32,7*32+7,8,5);
+   // Karen's Cozy Family Cottage: roaring stone hearth, family kitchen counter, grandfather clock, rose quilt & dinner table!
+   hearth(10*32+4,2*32+2,true);
+   tapestry(8*32+4,2*32+4,'#9a484c');tapestry(14*32+4,2*32+4,'#4e7464');
+   ornRug(8*32+4,6*32+2,8*32-8,4*32-10,'#98544e','#e8ca86');
+   bed(c,5*32+6,4*32,'#b8685c');
+   // Bedside nightstand with flickering candle
+   rect(c,'#3c2a1e',7*32+6,4*32+6,18,18);rect(c,'#8e6844',7*32+8,4*32+8,14,14);
+   rect(c,'#f2e6c8',7*32+13,4*32+2,4,6);rect(c,'#ffd868',7*32+14,4*32,2,3);
+   kitchen(16*32+16,3*32+18);
+   cabinet(c,18*32,5*32+8);
+   bookshelf(c,5*32+4,7*32+8,14);
+   clock(5*32+2,9*32+14);
+   // Dining chairs surrounding Karen's family oak table
+   chair(10*32+2,6*32+8,'n');chair(12*32+2,6*32+8,'n');
+   chair(10*32+2,8*32-2,'s');chair(12*32+2,8*32-2,'s');
+   table(c,10*32+6,7*32+2,92);
+   rect(c,'#e8dec4',11*32+4,7*32+7,12,6);rect(c,'#d4884a',11*32+6,7*32+8,8,3);
+   rect(c,'#c2925a',12*32+10,7*32+7,10,5);
+   plant(6*32+8,10*32+8,true);plant(17*32+14,10*32+8,true);
+   // Cozy storage barrels & woven laundry basket in southeast corner
+   rect(c,'#3c2a1c',17*32+16,8*32+10,20,22);rect(c,'#88603c',17*32+18,8*32+12,16,18);rect(c,'#545a62',17*32+18,8*32+16,16,2);
   }else if(map==='orphanage'){
-   rug(c,map,9*32,6*32+11,6*32,3*32-22);
-   for(const p of [[5,4],[7,4],[16,4],[18,4]])bed(c,p[0]*32,p[1]*32,'#819487');
-   table(c,10*32-12,7*32,125);cabinet(c,17*32,5*32);
-   rect(c,'#9b815b',6*32,9*32+4,27,21);rect(c,'#ad9673',6*32+4,9*32+8,19,9);
+   // Ryune Orphanage: communal hearth, 4 colorful patchwork children's beds, toy chest, jam pantry & long craft table!
+   hearth(11*32+4,2*32+2,true);
+   tapestry(9*32,2*32+4,'#5a825c');tapestry(14*32+6,2*32+4,'#c4864a');
+   ornRug(8*32+8,6*32+2,8*32-16,4*32-8,'#5e7a64','#e6d298');
+   bed(c,5*32+2,4*32,'#6e8c7a');bed(c,7*32+2,4*32,'#b87c68');
+   bed(c,15*32+26,4*32,'#6c7ca0');bed(c,17*32+26,4*32,'#c29c5c');
+   cabinet(c,17*32+8,5*32+4);
+   bookshelf(c,5*32+2,6*32+12,16);
+   // Overflowing wooden toy chest with stuffed bear & painted blocks
+   rect(c,'rgba(16,12,10,.24)',5*32+18,9*32+22,34,6);
+   rect(c,'#3a281c',5*32+16,9*32+2,34,23);rect(c,'#9e764a',5*32+18,9*32+4,30,19);rect(c,'#caa06e',5*32+19,9*32+5,28,4);
+   rect(c,'#d45a5a',5*32+22,9*32-2,6,6);rect(c,'#5690b8',5*32+30,9*32-1,6,5);rect(c,'#e8c45e',5*32+38,9*32-2,5,6);
+   chair(9*32+14,6*32+8,'n');chair(11*32+16,6*32+8,'n');chair(13*32+14,6*32+8,'n');
+   chair(9*32+14,8*32-2,'s');chair(13*32+14,8*32-2,'s');
+   table(c,9*32+20,7*32,132);
+   plant(5*32+6,10*32+12,true);plant(18*32,10*32+12,true);
   }else if(map==='mayorhouse'){
-   rug(c,map,8*32+12,6*32+10,7*32-12,3*32-22);
-   table(c,10*32-12,7*32,124);
-   bookshelf(c,17*32,4*32,15);bookshelf(c,5*32,4*32,18);
-   rect(c,'#d9c5a1',10*32,7*32+9,28,13);
-   rect(c,'#8b8a7b',10*32+4,7*32+13,17,2);
+   // Mayor's Dignified Manor Study: grand library wall bookcases, stone hearth, portrait, map council desk & parlor palms!
+   hearth(11*32+4,2*32+2,false);
+   tapestry(5*32+4,2*32+4,'#44567a');tapestry(18*32,2*32+4,'#44567a');
+   bookshelf(c,5*32+2,3*32+22,18);bookshelf(c,6*32+6,3*32+22,18);
+   bookshelf(c,16*32+22,3*32+22,18);bookshelf(c,17*32+26,3*32+22,18);
+   bookshelf(c,5*32+2,8*32+12,18);
+   clock(18*32,7*32+12);
+   ornRug(8*32+4,6*32,8*32-8,4*32-8,'#4f5e7a','#e8cc84');
+   chair(10*32+4,6*32+8,'n');chair(12*32+24,6*32+8,'n');
+   chair(10*32+4,8*32-2,'s');chair(12*32+24,8*32-2,'s');
+   table(c,9*32+22,7*32,130);
+   // Detailed Frontier Map spread across the Mayor's council desk with brass compass & ledger
+   rect(c,'#efe0bc',10*32+6,7*32+6,54,18);rect(c,'#7c9a68',10*32+12,7*32+9,16,8);
+   rect(c,'#5c8ca6',10*32+32,7*32+8,8,12);rect(c,'#b04848',10*32+44,7*32+11,10,6);
+   rect(c,'#d8b460',12*32+12,7*32+8,6,6);
+   plant(6*32+10,10*32+10,false);plant(17*32+10,10*32+10,false);
   }else if(map==='cottage'){
-   rug(c,map,9*32,7*32+4,6*32,2*32-8);
-   bed(c,6*32,4*32,'#858b92');bed(c,8*32,4*32,'#a98978');
-   table(c,11*32,7*32,72);cabinet(c,17*32,4*32);bookshelf(c,5*32,9*32,7);
+   // Soldier's Family Cottage: quiet hearth, empty made bed, letter writing desk, herb drying rack & woven rug!
+   hearth(11*32+4,2*32+2,true);
+   tapestry(9*32,2*32+4,'#6e5662');
+   ornRug(8*32+16,6*32+6,7*32-12,3*32+4,'#7a5e5a','#dfd0a8');
+   bed(c,5*32+16,4*32,'#627894');bed(c,7*32+24,4*32,'#b28478');
+   cabinet(c,17*32+8,3*32+24);
+   // Letter-writing desk with wax-sealed parchment & candle at (16,4)
+   rect(c,'#3a281c',15*32+24,4*32+2,36,20);rect(c,'#8c6844',15*32+26,4*32+4,32,14);
+   rect(c,'#f4ead2',16*32+2,4*32+6,14,10);rect(c,'#b84248',16*32+10,4*32+11,4,4);
+   bookshelf(c,5*32+4,8*32+10,12);
+   kitchen(16*32+18,9*32+6);
+   chair(10*32+20,6*32+8,'n');chair(12*32+10,8*32-2,'s');
+   table(c,10*32+20,7*32,84);
+   plant(6*32+10,10*32+10,true);
   }
-  // Entrance mat visually anchors the existing 11/12 exit tiles.
-  rect(c,'#4d4036',11*32+1,12*32+13,62,13);
-  rect(c,'#bda37d',11*32+5,12*32+17,53,5);
+  // Ornate braided entrance welcome mat anchoring exit tiles (11..12, 12)
+  rect(c,'#3a2c22',11*32+1,12*32+12,62,15);
+  rect(c,'#9e7c52',11*32+3,12*32+14,58,11);
+  rect(c,'#dfc894',11*32+7,12*32+17,50,5);
   householdDetails(c,map);
  }
  function object(c,map,obj){

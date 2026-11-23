@@ -811,83 +811,18 @@ const CapitalEnvironment=(()=>{
  }
  function interior(c,map){
   if(!on()||!['capitalinn','capitalarmory','capitalhouse','capitalchapel'].includes(map))return false;
-  if(map==='capitalchapel'){
-   // Serene sunlit stained-glass beams, white-stone sanctuary columns, crimson-gold runner & wooden pews
-   for(const wx of [7,11,12,16]){
-    box(c,'rgba(232,244,255,0.16)',wx*W-4,2*W+12,40,124);
-    box(c,'#4c5c70',wx*W+7,2*W+4,18,16);
-    box(c,'#9ed2e6',wx*W+9,2*W+6,14,12);
-    box(c,'#f2d884',wx*W+14,2*W+7,4,10);
+  // Subtle ambient sconce glow complementing drawInteriorDecor's bespoke handcrafted room architecture
+  const warm=map!=='capitalchapel';
+  for(const wx of [7,16]){
+   const lx=wx*W+16,ly=2*W+14;
+   const lg=c.createRadialGradient?.(lx,ly,2,lx,ly,36);
+   if(lg&&typeof lg.addColorStop==='function'){
+    lg.addColorStop(0,warm?'rgba(255,212,124,.18)':'rgba(180,224,255,.16)');
+    lg.addColorStop(1,'rgba(0,0,0,0)');
+    c.fillStyle=lg;c.beginPath();c.arc(lx,ly,36,0,Math.PI*2);c.fill();
    }
-   // Crimson-gold central sanctuary runner from door to altar
-   box(c,'#7c343e',11*W+4,4*W+24,2*W-8,8*W-12);
-   box(c,'#d9bc72',11*W+7,4*W+24,2,8*W-12);box(c,'#d9bc72',13*W-9,4*W+24,2,8*W-12);
-   // Symmetrical oak chapel pews flanking the aisle
-   for(const py of [7,9]){
-    for(const px of [6,15]){
-     box(c,'rgba(16,18,22,0.22)',px*W+2,py*W+18,3*W-4,8);
-     box(c,'#543c2a',px*W+2,py*W+8,3*W-4,14);
-     box(c,'#8c6846',px*W+4,py*W+10,3*W-8,9);
-     box(c,'#b89266',px*W+6,py*W+10,3*W-12,2);
-    }
-   }
-   box(c,'#42352c',11*W+2,12*W+13,60,11);box(c,'#d8be8e',11*W+5,12*W+16,54,5);
-   return true;
   }
-  const inn=map!=='capitalarmory';
-  // Warm back-wall sconces / hearth lantern lighting pools
-  for(const wx of [7,12,16]){
-   const lx=wx*W+11,ly=2*W+6;
-   box(c,inn?'rgba(255,212,132,.14)':'rgba(248,162,92,.13)',lx-16,ly+16,42,46);
-   box(c,'#332822',lx,ly+6,10,12);
-   box(c,inn?'#f5c969':'#f09648',lx+2,ly+7,6,6);
-   box(c,'#fff4cf',lx+4,ly+8,2,3);
-  }
-  // Woven patterned centerpiece rug (crimson-gold tavern rug vs slate-bronze forge runner)
-  box(c,'rgba(18,14,12,.25)',8*W+2,7*W+2,8*W,3*W);
-  box(c,'#3a2e28',8*W,7*W,8*W,3*W);
-  box(c,inn?'#874747':'#49525c',8*W+3,7*W+3,8*W-6,3*W-6);
-  box(c,inn?'#dfc590':'#a89d86',8*W+6,7*W+6,8*W-12,2);
-  box(c,inn?'#dfc590':'#a89d86',8*W+6,10*W-8,8*W-12,2);
-  box(c,inn?'#dfc590':'#a89d86',8*W+6,7*W+6,2,3*W-12);
-  box(c,inn?'#dfc590':'#a89d86',16*W-8,7*W+6,2,3*W-12);
-  for(let y=7;y<=9;y++)for(let x=8;x<=15;x++)if((x+y)%2===0)box(c,'rgba(240,220,180,.14)',x*W+8,y*W+14,16,2);
-  // Fixed furnishings mirror original interaction IDs; no new map objects.
-  box(c,'rgba(16,12,10,.26)',17*W+4,5*W+20,27,7);
-  box(c,inn?'#6e523a':'#485059',17*W+3,5*W+15,27,10);
-  box(c,'#c7b08d',17*W+5,5*W+13,23,3);
-  for(const x of [5,17]){
-   box(c,'rgba(16,12,10,.24)',x*W+5,4*W+28,26,5);
-   box(c,'#352a23',x*W+3,4*W+2,28,30);
-   box(c,inn?'#69523b':'#424a52',x*W+5,4*W+4,24,26);
-   for(let row=0;row<3;row++)box(c,inn?'#cfa977':'#a8a496',x*W+7,4*W+7+row*8,20,3);
-  }
-  if(inn){
-   // White Stag Inn: carved oak communal counter/table, warm bowls & folded guest linens
-   box(c,'rgba(18,12,10,.28)',10*W+5,7*W+18,4*W-6,9);
-   box(c,'#3a291e',10*W+2,7*W+8,4*W-4,16);
-   box(c,'#8f6845',10*W+4,7*W+10,4*W-8,12);
-   box(c,'#ba9062',10*W+6,7*W+11,4*W-12,3);
-   box(c,'#ebe0c4',10*W+12,7*W+13,12,4);box(c,'#c48e58',10*W+14,7*W+14,8,2);
-   box(c,'#ebe0c4',12*W+8,7*W+13,12,4);box(c,'#c48e58',12*W+10,7*W+14,8,2);
-   for(const x of [6,18]){box(c,'#5c4534',x*W+5,10*W+8,22,7);box(c,'#c7b08e',x*W+7,10*W+7,18,5);box(c,'#e6d9bf',x*W+9,10*W+7,8,2)}
-  }else{
-   // Capital Armory: heavy timber-iron workbench, steel blade rack & glowing quench trough
-   box(c,'rgba(16,16,20,.30)',10*W+6,7*W+27,4*W-8,7);
-   box(c,'#2c3036',10*W+4,7*W+7,4*W-8,25);
-   box(c,'#525861',10*W+6,7*W+9,4*W-12,21);
-   box(c,'#b89b6e',10*W+8,7*W+11,4*W-16,5);box(c,'#d9c094',10*W+10,7*W+12,4*W-20,2);
-   for(let x=0;x<4;x++){
-    box(c,'#2c3138',17*W+4+x*6,4*W+4,5,20);
-    box(c,'#b3c2c9',17*W+5+x*6,4*W+5,3,15);box(c,'#e3eff2',17*W+6+x*6,4*W+6,1,12);
-    box(c,'#d9bc84',17*W+4+x*6,4*W+19,5,3);
-   }
-   box(c,'#4f3422',6*W+6,5*W+13,24,9);box(c,'#a66e43',6*W+8,5*W+14,20,6);
-  }
-  // Welcoming braided exit mat does not mask the actual exit collision.
-  box(c,'#42352c',11*W+2,12*W+13,60,11);
-  box(c,'#d8be8e',11*W+5,12*W+16,54,5);
-  return true
+  return true;
  }
  function objectAccent(c,map,o){
   if(!on()||map!=='capital')return;

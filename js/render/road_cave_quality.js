@@ -371,115 +371,169 @@ const RoadCaveQuality=(()=>{
   }
   if(map==='northwatch'){
    // Panoramic distant skyline of Aldina Royal Capital across the northern horizon
-   fill(c,'rgba(218,228,236,0.24)',4*32,0,16*32,18);
-   fill(c,'#949a9e',5*32,4,14*32,14);fill(c,'#c6cbc8',5*32+4,5,14*32-8,5);
-   for(const tx of [6,9,12,15,17]){fill(c,'#787e84',tx*32+6,1,20,17);fill(c,'#d8ddd8',tx*32+8,2,16,6);fill(c,'#8d3d46',tx*32+14,0,5,4)}
-   // Ruined White-Stone Belltower Courtyard (x=4..8, y=4..8) with mossy flagstones
+   fill(c,'rgba(218,228,236,0.28)',4*32,0,16*32,20);
+   fill(c,'#8d969e',5*32,4,14*32,16);fill(c,'#cfd6d8',5*32+4,5,14*32-8,6);
+   for(const tx of [6,9,12,15,17]){fill(c,'#707a84',tx*32+6,1,20,19);fill(c,'#e0e6e4',tx*32+8,2,16,7);fill(c,'#9c3844',tx*32+14,0,5,5)}
+   // Ruined White-Stone Belltower Courtyard (x=4..8, y=4..8) with weathered ashlar flagstones & moss
    for(let rx=4;rx<=8;rx++)for(let ry=4;ry<=8;ry++){
     if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(c,'cobble',rx,ry,'capital')){
      fill(c,'#a6a496',rx*32+1,ry*32+1,30,30);
     }
-    if((rx+ry)%3===0){fill(c,'#4e7246',rx*32+4,ry*32+22,8,4);fill(c,'#78a05c',rx*32+5,ry*32+22,5,2)}
+    if((rx+ry)%3===0){fill(c,'#466c40',rx*32+4,ry*32+22,9,4);fill(c,'#78a65a',rx*32+5,ry*32+22,6,2)}
    }
+   // Towering 3D Weathered White-Stone Belltower Archway & Hanging Bronze Bell crowning north edge of courtyard (x=5..7, y=2..3)
+   const bx=5*32+4,by=2*32-4,bw=3*32-8;
+   fill(c,'rgba(14,20,18,0.34)',bx+4,by+58,bw+4,10);
+   fill(c,'#2e3236',bx,by+12,22,52);fill(c,'#b8b5a6',bx+2,by+14,18,48);fill(c,'#e2ded0',bx+3,by+14,6,46);
+   fill(c,'#2e3236',bx+bw-22,by+12,22,52);fill(c,'#b8b5a6',bx+bw-20,by+14,18,48);fill(c,'#e2ded0',bx+bw-19,by+14,6,46);
+   // Arch lintel & crumbling stone gable crown
+   fill(c,'#2e3236',bx-4,by+4,bw+8,15);fill(c,'#cac6b6',bx-2,by+6,bw+4,11);fill(c,'#ece8dc',bx,by+6,bw,3);
+   fill(c,'#2e3236',bx+10,by-6,bw-20,12);fill(c,'#b4b0a0',bx+12,by-4,bw-24,8);fill(c,'#e4e0d2',bx+14,by-4,bw-28,2);
+   // Hanging verdigris-bronze signal bell suspended in the arch!
+   fill(c,'#4e3824',bx+20,by+17,bw-40,4);
+   fill(c,'#3a4842',bx+34,by+20,20,18);fill(c,'#6e8c7a',bx+36,by+22,16,14);fill(c,'#a6c6b0',bx+38,by+23,5,10);
+   fill(c,'#d8b86a',bx+42,by+36,4,4);
    // Sculpted broken classical stone pillars with capitals & trailing ivy
-   for(const [px,py] of [[4,3],[6,3],[8,3],[4,6],[8,6]]){
+   for(const [px,py] of [[4,3],[8,3],[4,6],[8,6],[4,8]]){
     const x=px*32,y=py*32;
     fill(c,'rgba(16,22,18,0.34)',x+6,y+24,22,6);
-    fill(c,'#464a46',x+7,y+4,18,23);fill(c,'#b8b6a8',x+9,y+6,14,19);
-    fill(c,'#dcd8ca',x+10,y+6,4,18);fill(c,'#8a8a7e',x+16,y+6,4,18);
-    fill(c,'#464a46',x+5,y+2,22,5);fill(c,'#e4e0d2',x+6,y+3,20,3);
+    fill(c,'#3c4240',x+7,y+4,18,23);fill(c,'#b8b6a8',x+9,y+6,14,19);
+    fill(c,'#e2ded0',x+10,y+6,4,18);fill(c,'#8a8a7e',x+16,y+6,4,18);
+    fill(c,'#3c4240',x+5,y+2,22,5);fill(c,'#ebe7da',x+6,y+3,20,3);
     fill(c,'#385e38',x+8,y+14,10,6);fill(c,'#689854',x+9,y+13,7,4);
    }
-   // Warm campfire glow around watchCamp (15,11)
-   const cg=c.createRadialGradient?.(15*32+16,11*32+16,6,15*32+16,11*32+16,56);
-   if(cg&&typeof cg.addColorStop==='function'){cg.addColorStop(0,'rgba(255,196,102,0.30)');cg.addColorStop(1,'rgba(255,156,64,0)');c.fillStyle=cg;c.beginPath();c.arc(15*32+16,11*32+16,56,0,Math.PI*2);c.fill()}
+   // Carved stone bridge parapets spanning the highland stream at (11,7)
+   fill(c,'#464a4c',11*32-2,7*32,36,4);fill(c,'#dcd8cc',11*32,7*32+1,32,2);
+   fill(c,'#464a4c',11*32-2,7*32+28,36,4);fill(c,'#dcd8cc',11*32,7*32+29,32,2);
+   // Golden highland birch groves framing the belltower bluff
+   if(typeof HD2DAtlas!=='undefined'){
+    for(const [tx,ty] of [[2,2],[2,11],[18,3],[20,6],[19,12]])HD2DAtlas.drawTree(c,tx,ty,'birch');
+   }
+   // Warm campfire glow & stone ring around watchCamp (15,11)
+   const cg=c.createRadialGradient?.(15*32+16,11*32+16,6,15*32+16,11*32+16,62);
+   if(cg&&typeof cg.addColorStop==='function'){cg.addColorStop(0,'rgba(255,196,102,0.36)');cg.addColorStop(1,'rgba(255,156,64,0)');c.fillStyle=cg;c.beginPath();c.arc(15*32+16,11*32+16,62,0,Math.PI*2);c.fill()}
    return;
   }
   if(map==='roadhollow'){
-   // Mossy Pilgrimage Sanctuary Ruins around the Crystal Spring (10..14, 7..9)
-   for(const [ax,ay] of [[9,6],[15,6],[9,10],[15,10],[14,2],[18,2]]){
-    const x=ax*32,y=ay*32;
-    fill(c,'rgba(18,28,22,0.28)',x+4,y+24,24,5);
-    fill(c,'#59615a',x+7,y+4,18,22);fill(c,'#a6aba0',x+9,y+6,14,18);
-    fill(c,'#cfd4c8',x+8,y+3,16,4);
-    fill(c,'#4e7a52',x+8,y+12,10,5);
+   // Hidden Square Enix Sacred Pilgrim Spring Grotto!
+   // Carved marble pool coping border surrounding the Crystal Spring (10..14, 7..9)
+   const sx=10*32,sy=7*32,sw=5*32,sh=3*32;
+   fill(c,'rgba(14,26,22,0.34)',sx-6,sy-4,sw+14,sh+12);
+   fill(c,'#545c56',sx-6,sy-6,sw+12,8);fill(c,'#dcdad0',sx-4,sy-5,sw+8,5);
+   fill(c,'#545c56',sx-6,sy+sh-2,sw+12,8);fill(c,'#c8c6ba',sx-4,sy+sh-1,sw+8,5);
+   fill(c,'#545c56',sx-6,sy,8,sh);fill(c,'#d4d2c6',sx-5,sy,5,sh);
+   fill(c,'#545c56',sx+sw-2,sy,8,sh);fill(c,'#bcbab0',sx+sw-1,sy,5,sh);
+   // Shimmering floating lotus blossoms & stepped submerged stone ledge inside the crystal spring!
+   const wave=Math.sin(Date.now()/340)*1.6;
+   fill(c,'rgba(176,248,242,0.28)',sx+6,sy+4,sw-12,6);
+   for(const [lx,ly] of [[sx+24,sy+24],[sx+112,sy+30],[sx+46,sy+66],[sx+124,sy+68]]){
+    fill(c,'rgba(14,38,44,0.32)',lx+1,ly+2,11,7);
+    fill(c,'#2a5e3c',lx,ly+1,10,6);fill(c,'#4c9258',lx+1,ly,8,5);
+    fill(c,'#fff4e4',lx+3,ly-1,4,3);fill(c,'#f6d468',lx+4,ly,2,1);
    }
-   // Ancient stone bell terrace north of spring (11..13, 4)
-   fill(c,'#787e74',11*32+2,4*32+8,3*32-4,24);fill(c,'#b8beb2',11*32+6,4*32+10,3*32-12,18);
-   // Northeast Ruin Floor Courtyard around hollowStagWolf (19,5) & hollowCache (20,3)
+   // North Springhead Cascading Waterfall Shrine Arch (11..13, 4..6)
+   const ax=11*32,ay=4*32;
+   fill(c,'rgba(14,24,20,0.32)',ax,ay+24,3*32,12);
+   fill(c,'#545c56',ax-2,ay+4,3*32+4,26);fill(c,'#cbc8ba',ax+2,ay+6,3*32-4,20);fill(c,'#ece8dc',ax+4,ay+6,3*32-8,4);
+   // Sparkling water spout pouring into the crystal spring
+   fill(c,'#5ad0d8',ax+42,ay+22,12,48);fill(c,'#d8fcff',ax+45+wave*0.4,ay+24,5,44);
+   fill(c,'rgba(240,254,255,0.84)',ax+38,sy+2,20,5);
+   // Four Moss-Draped Fluted Sanctuary Columns with Glowing Turquoise Lanterns framing the spring corners
+   for(const [px,py] of [[9,6],[15,6],[9,10],[15,10],[14,2],[18,2]]){
+    const x=px*32,y=py*32;
+    fill(c,'rgba(16,26,22,0.34)',x+4,y+24,24,6);
+    fill(c,'#464e4a',x+6,y+1,20,25);fill(c,'#c2c4b8',x+8,y+3,16,21);
+    fill(c,'#eaeae0',x+9,y+3,5,20);fill(c,'#8e9288',x+18,y+3,4,20);
+    fill(c,'#464e4a',x+4,y-2,24,5);fill(c,'#e8e6da',x+5,y-1,22,3);
+    fill(c,'#3a6e44',x+7,y+14,12,6);fill(c,'#6ca660',x+8,y+13,8,3);
+    if(py>=6){
+     const lg=c.createRadialGradient?.(x+16,y+2,2,x+16,y+2,26);
+     if(lg&&typeof lg.addColorStop==='function'){lg.addColorStop(0,'rgba(176,252,232,0.42)');lg.addColorStop(1,'rgba(140,236,220,0)');c.fillStyle=lg;c.beginPath();c.arc(x+16,y+2,26,0,Math.PI*2);c.fill()}
+     fill(c,'#80f0dc',x+13,y-1,6,4);fill(c,'#f2fffc',x+14,y,4,2);
+    }
+   }
+   // Northeast Mossy Ruin Courtyard flagstones around hollowStagWolf (19,5) & hollowCache (20,3)
    for(let rx=18;rx<=21;rx++)for(let ry=3;ry<=5;ry++){
-    fill(c,'rgba(140,144,132,0.45)',rx*32+3,ry*32+3,26,26);
+    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(c,'cobble',rx,ry,'marble')){
+     fill(c,'rgba(140,144,132,0.45)',rx*32+3,ry*32+3,26,26);
+    }
    }
-   // Sunlit forest spring mist & luminous water glow
-   const sg=c.createRadialGradient?.(12*32+16,8*32+16,12,12*32+16,8*32+16,96);
-   if(sg&&typeof sg.addColorStop==='function'){sg.addColorStop(0,'rgba(162,242,232,0.22)');sg.addColorStop(1,'rgba(162,242,232,0)');c.fillStyle=sg;c.fillRect(9*32,5*32,7*32,7*32)}
+   // Lush wild white-lily glades & sanctuary trees framing the grotto
+   for(const [fx,fy] of [[6,5],[7,10],[17,9],[16,12],[8,12],[18,7]]){
+    fill(c,'#325e38',fx*32+6,fy*32+14,18,10);fill(c,'#529254',fx*32+8,fy*32+13,14,7);
+    fill(c,'#fff8e6',fx*32+10,fy*32+12,4,3);fill(c,'#fff8e6',fx*32+18,fy*32+14,4,3);fill(c,'#f6d468',fx*32+11,fy*32+13,2,1);
+   }
+   if(typeof HD2DAtlas!=='undefined'){
+    for(const [tx,ty] of [[5,3],[6,11],[17,11],[21,9]])HD2DAtlas.drawTree(c,tx,ty,'sanctuary');
+   }
+   const sg=c.createRadialGradient?.(12*32+16,8*32+16,16,12*32+16,8*32+16,112);
+   if(sg&&typeof sg.addColorStop==='function'){sg.addColorStop(0,'rgba(162,252,238,0.28)');sg.addColorStop(1,'rgba(162,242,232,0)');c.fillStyle=sg;c.fillRect(8*32,4*32,9*32,9*32)}
    return;
   }
   if(map==='northroad'){
    // Panoramic distant skyline of Aldina Royal Capital along the northern horizon
-   fill(c,'rgba(214,224,232,0.22)',4*32,0,16*32,18);
-   fill(c,'#949a9e',5*32,4,14*32,14);
-   fill(c,'#c2c7c6',5*32+4,5,14*32-8,5);
+   fill(c,'rgba(214,224,232,0.26)',4*32,0,16*32,20);
+   fill(c,'#8d969e',5*32,4,14*32,16);
+   fill(c,'#ced5d6',5*32+4,5,14*32-8,6);
    for(const tx of [6,8,10,13,15,17]){
-    fill(c,'#787e84',tx*32+6,1,20,17);
-    fill(c,'#d6dbd8',tx*32+8,2,16,6);
-    fill(c,'#8d3d46',tx*32+14,0,5,4);
+    fill(c,'#707a84',tx*32+6,1,20,19);
+    fill(c,'#dde4e2',tx*32+8,2,16,7);
+    fill(c,'#9c3844',tx*32+14,0,5,5);
    }
-   // Highland brook crossing at row 11 with carved white-stone culvert bridge at (11..12, 11)
+   // Sparkling Highland Brook crossing at row 11 with carved white-stone arched culvert bridge at (11..12, 11)
+   const wave=Math.floor(Date.now()/400)%4;
    for(let bx=1;bx<=22;bx++){
     const x=bx*32,y=11*32;
     if(bx===11||bx===12){
-     fill(c,'#54585c',x-2,y+4,36,24);
-     fill(c,'#b8b6a8',x,y+6,32,20);
-     fill(c,'#dedad0',x,y+5,32,3);fill(c,'#7a786e',x,y+24,32,3);
+     fill(c,'rgba(14,22,26,0.34)',x-2,y+24,36,6);
+     fill(c,'#4c5256',x-2,y+3,36,26);
+     fill(c,'#c2bfb2',x,y+5,32,22);
+     fill(c,'#ebe7dc',x,y+4,32,4);fill(c,'#78766c',x,y+24,32,4);
+     fill(c,'#848276',x+10,y+8,1,15);fill(c,'#848276',x+22,y+8,1,15);
     }else{
-     fill(c,'#2c5868',x,y+11,32,10);fill(c,'#4a7e90',x+2,y+13,28,6);
-     if(bx%2===0)fill(c,'#a6dce6',x+8,y+15,10,2);
+     fill(c,'#3a5438',x,y+7,32,18);
+     fill(c,'#245872',x,y+10,32,12);fill(c,'#3a84a2',x,y+12,32,8);
+     fill(c,'#7cd2e4',x+((4+wave*5+bx*7)%18),y+14,9,2);
+     fill(c,'#e8fcff',x+((7+wave*5+bx*7)%18),y+14,4,1);
     }
    }
-   // Western Pilgrim Ruin Courtyard (x=3..9, y=7..9) leading to highlandWolves (6,8) & pilgrimCache (4,8)
+   // Western Pilgrim Ruin Courtyard (x=3..10, y=8) laid in weathered marble flagstones
    for(let rx=3;rx<=10;rx++){
-    const x=rx*32,y=8*32;
-    fill(c,'#8e8674',x+2,y+4,28,24);fill(c,'#b4aa94',x+4,y+6,24,18);
-    fill(c,'#6e685a',x+14,y+6,1,18);
+    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(c,'cobble',rx,8,'marble')){
+     fill(c,'#b4aa94',rx*32+2,8*32+4,28,24);
+    }
    }
    for(const [px,py] of [[3,7],[5,7],[7,7],[3,9],[5,9],[7,9]]){
     const x=px*32,y=py*32;
-    fill(c,'rgba(18,24,18,0.28)',x+5,y+23,22,5);
-    fill(c,'#5e625c',x+7,y+8,18,17);fill(c,'#b8b5a6',x+9,y+10,14,13);
-    fill(c,'#dcd8ca',x+8,y+7,16,4);
+    fill(c,'rgba(18,24,18,0.32)',x+5,y+23,22,5);
+    fill(c,'#4c524e',x+7,y+4,18,21);fill(c,'#c2bfb0',x+9,y+6,14,17);
+    fill(c,'#e6e2d4',x+10,y+6,4,16);fill(c,'#ece8dc',x+7,y+3,18,4);
+    fill(c,'#467242',x+8,y+16,8,5);
    }
-   // Eastern Guardpost Cobblestone Spur (x=13..17, y=8..11) connecting ancientGuardpost (15,8) & caravanWreck (15,11)
+   // Eastern Guardpost Cobblestone Spur (x=13..16, y=8..11)
    for(let gx=13;gx<=16;gx++){
-    fill(c,'#988a70',gx*32+2,8*32+6,28,20);fill(c,'#b8a684',gx*32+4,8*32+8,24,14);
+    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(c,'cobble',gx,8,'capital'))fill(c,'#b8a684',gx*32+2,8*32+6,28,20);
    }
    for(let gy=9;gy<=11;gy++){
-    fill(c,'#988a70',14*32+4,gy*32+2,24,28);fill(c,'#b8a684',14*32+6,gy*32+4,18,22);
+    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(c,'cobble',14,gy,'capital'))fill(c,'#b8a684',14*32+4,gy*32+2,24,28);
    }
-   // Highland cypress/pine trees & wildflower clusters breaking up the green expanse
-   for(const [tx,ty] of [[2,3],[4,4],[18,3],[20,4],[2,12],[20,12],[18,6],[3,5]]){
-    const x=tx*32,y=ty*32;
-    fill(c,'rgba(18,28,20,0.28)',x+6,y+24,20,6);
-    fill(c,'#3e2c20',x+13,y+16,6,11);
-    fill(c,'#243d2c',x+6,y+8,20,12);fill(c,'#34583e',x+8,y+3,16,11);fill(c,'#4c7852',x+10,y-1,12,8);
+   // Lush HD-2D Highland Pine & Birch Groves framing the approach to the Royal Capital!
+   if(typeof HD2DAtlas!=='undefined'){
+    for(const [tx,ty] of [[2,3],[4,4],[18,3],[20,4],[2,12],[20,12],[18,6],[3,5],[19,9],[2,6]]){
+     HD2DAtlas.drawTree(c,tx,ty,(tx+ty)%2===0?'pine':'birch');
+    }
    }
-   // Carved white-stone highland balustrade ruins & wildflowers flanking the causeway
-   for(const [bx,by] of [[8,2],[15,2],[8,5],[15,5],[8,9],[15,9],[8,12],[15,12]]){
+   // Ornate White-Stone Royal Highway Balustrade Pillars with warm glowing highway lanterns!
+   for(const [bx,by] of [[9,2],[14,2],[9,5],[14,5],[9,9],[14,9]]){
     const x=bx*32,y=by*32;
-    fill(c,'rgba(20,28,22,0.26)',x+4,y+24,24,5);
-    fill(c,'#5d625e',x+6,y+10,20,16);fill(c,'#b8b6a8',x+8,y+11,16,12);
-    fill(c,'#dedad0',x+7,y+8,18,4);
-    fill(c,'#527348',x+4,y+22,8,4);fill(c,'#f0df94',x+6,y+21,3,2);
-   }
-   // Ancient stone causeway curbing & ruts leading to the capital
-   for(const [tx,ty] of [[11,12],[12,10],[11,8],[12,6],[11,4],[12,2]]){
-    const x=tx*32,y=ty*32;
-    fill(c,'#948265',x+8,y+6,2,11);fill(c,'#948265',x+21,y+9,2,10);
-    fill(c,'#8a806b',x+12,y+22,9,2);fill(c,'#d5bc8e',x+13,y+21,6,1);
-   }
-   for(const [tx,ty] of [[9,11],[14,10],[9,7],[14,5],[9,3]]){
-    const x=tx*32,y=ty*32;
-    fill(c,'#6e726b',x+6,y+14,18,7);fill(c,'#aba89c',x+8,y+15,14,3);
+    fill(c,'rgba(16,22,18,0.30)',x+5,y+24,22,5);
+    fill(c,'#4c5250',x+7,y+8,18,18);fill(c,'#c4c1b4',x+9,y+9,14,15);
+    fill(c,'#eae6da',x+8,y+6,16,4);
+    if(by===2||by===9){
+     const lg=c.createRadialGradient?.(x+16,y+4,2,x+16,y+4,24);
+     if(lg&&typeof lg.addColorStop==='function'){lg.addColorStop(0,'rgba(255,216,120,0.34)');lg.addColorStop(1,'rgba(255,180,80,0)');c.fillStyle=lg;c.beginPath();c.arc(x+16,y+4,24,0,Math.PI*2);c.fill()}
+     fill(c,'#ffd874',x+13,y+2,6,4);fill(c,'#fffbe0',x+14,y+3,4,2);
+    }
    }
    return;
   }
@@ -523,7 +577,12 @@ const RoadCaveQuality=(()=>{
     c.fillStyle=campG;c.beginPath();c.arc(7*32+16,9*32+4,34,0,Math.PI*2);c.fill();
    }
    fill(c,'#4e3a28',7*32+10,9*32+4,12,8);fill(c,'#e67e2e',7*32+13,9*32+1,6,5);fill(c,'#fff0b5',7*32+15,9*32+2,2,3);
-   // Dense woodland ferns, red-cap mushrooms & wildflowers along the forest floor
+   // Dense woodland ferns, red-cap mushrooms, wildflowers & framing storybook oaks along outer meadow edges
+   if(typeof HD2DAtlas!=='undefined'){
+    for(const [tx,ty] of [[2,2],[2,8],[2,12],[21,4],[21,7],[20,12],[16,2],[6,2]]){
+     HD2DAtlas.drawTree(c,tx,ty,'oak');
+    }
+   }
    for(const [tx,ty] of [[7,5],[6,6],[15,10],[17,7],[19,4],[4,4],[16,5],[19,9],[5,12],[17,12]]){
     const x=tx*32,y=ty*32;
     fill(c,'#345632',x+4,y+18,14,8);fill(c,'#547e48',x+6,y+16,10,6);
