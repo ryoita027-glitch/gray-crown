@@ -72,8 +72,8 @@ const OpeningWorldLife=(()=>{
   }
  }
  function road(c,choices={}){
-  // Wheel ruts, erosion and roadside drainage give a true used-trade-route read.
-  for(const [x,y] of [[11,13],[11,11],[11,9],[10,8],[11,6],[12,4],[12,3]]){
+  // Wheel ruts, erosion and roadside milestones aligned to expanded 30x20 Forest Highway!
+  for(const [x,y] of [[14,18],[14,16],[14,13],[13,11],[14,9],[13,6],[14,4]]){
    const [px,py]=at(x,y);
    for(const dx of [7,22]){
     R(c,'#776c55',px+dx,py+5,2,19);
@@ -81,16 +81,12 @@ const OpeningWorldLife=(()=>{
    }
    R(c,'#c4b28c',px+12,py+23,8,1)
   }
-  c.save();c.translate(5*32+4,7*32+3);c.scale(.72,.72);cart(c,0,0,choices['early.merchantCart']);c.restore();
-  // Lumber and tied parcels near the road's original merchant position.
-  const [x,y]=at(8,8);
+  // Tied parcels beside the merchant (10,11) & weathered roadside stone milestones
+  const [x,y]=at(10,11);
   R(c,'#584d3b',x+17,y+18,12,9);
   R(c,'#a48b64',x+19,y+16,9,10);
   R(c,'#c7aa78',x+21,y+17,4,2);
-  // Weathered direction marker with no false clickable entrance.
-  // The existing roadSign interactive object is the actual signpost.
-  // Sparse, recognizable milestones: extra detail concentrated at bends.
-  for(const [tx,ty] of [[5,11],[18,8],[19,2]]){
+  for(const [tx,ty] of [[11,16],[22,10],[20,3]]){
    const [px,py]=at(tx,ty);
    R(c,'#4d584a',px+6,py+23,20,6);
    R(c,'#818577',px+11,py+12,11,15);

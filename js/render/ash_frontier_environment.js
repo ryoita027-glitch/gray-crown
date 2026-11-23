@@ -53,7 +53,7 @@ const AshFrontierEnvironment=(()=>{
    if((r&15)===5)pix(ctx,'#d6c4a4',a+((r>>>5)%18)+6,b+((r>>>11)%18)+6,4,1);
    return true;
   }
-  if(map==='ashroad'&&(ch==='B'||ch==='T')){
+  if(map==='ashroad'&&(ch==='B'||ch==='T'||ch==='H')){
    const burnt=ch==='T';
    pix(ctx,burnt?(area%3===0?'#3c3d37':p.edge):(area%4===0?'#6e6458':p.ground),a,b,32,32);
    if(!burnt&&typeof HD2DAtlas!=='undefined')HD2DAtlas.drawTile(ctx,'path',x,y,'ash');
@@ -76,7 +76,7 @@ const AshFrontierEnvironment=(()=>{
    return true;
   }
   if((map==='frontier'||map==='frontierfield')&&['M','B','K','H'].includes(ch)){
-   const wall=ch==='K'||ch==='H';
+   const wall=ch==='K';
    pix(ctx,wall?(area%3===0?'#424548':p.edge):(area%3===0?'#6f6a5f':p.ground),a,b,32,32);
    if(!wall&&typeof HD2DAtlas!=='undefined')HD2DAtlas.drawTile(ctx,'path',x,y,'mud');
    if(wall){
@@ -170,43 +170,55 @@ const AshFrontierEnvironment=(()=>{
   };
 
   if(map==='ashroad'){
-   // Scorched War-Torn Ash Road: glowing ember craters, charred skeletal trees, ruined stone wall, splintered barricades & smoke!
-   for(const [x,y] of [[0,3],[23,3],[0,10],[23,11]]){
-    pix(ctx,'#3e3c34',x*32+4,y*32+19,23,3);
-    pix(ctx,'#514738',x*32+12,y*32+6,4,16);
-    pix(ctx,'#827364',x*32+16,y*32+11,2,3);
+   // Expanded 28x18 Scorched War-Torn Ash Highway: 3D Charred Ruined Farmhouse, Ember Craters, Skeletal Trees & Burned Wagon!
+   // 1. 3D Charred Ruined Timber Farmhouse over 'H' (3..7, 3..5) with exposed blackened rafters, stone chimney & glowing hearth embers!
+   const hx=3*32,hy=3*32,hw=5*32,hh=3*32;
+   pix(ctx,'rgba(10,10,12,0.44)',hx+6,hy+hh-2,hw+6,12);
+   pix(ctx,'#1c1816',hx-1,hy+10,hw+2,hh-10);
+   pix(ctx,'#4a443e',hx+2,hy+hh-16,hw-4,15);pix(ctx,'#6e6860',hx+3,hy+hh-16,hw-6,3); // scorched stone foundation
+   pix(ctx,'#5c524a',hx+2,hy+16,hw-4,hh-32);pix(ctx,'#3a322c',hx+6,hy+16,hw-12,26); // soot-blackened stucco walls
+   // Jagged charred timber beams & broken roof rafters open to the ash sky
+   for(let bx=hx+12;bx<hx+hw-10;bx+=24){
+    pix(ctx,'#1a1614',bx,hy-8,7,hh-8);pix(ctx,'#3e342e',bx+1,hy-6,4,hh-12);
    }
-   for(const [cx,cy] of [[6,4],[15,5],[8,11],[18,12],[4,9]])drawCrater(cx,cy,cx%2===0);
-   for(const [tx,ty] of [[2,5],[5,12],[14,3],[19,4],[21,10],[16,12]])drawCharredTree(tx,ty);
-   // Crumbled burned-out stone roadside wall & shattered fence rails
-   for(const [wx,wy] of [[14,6],[15,6],[6,10],[7,10]]){
+   pix(ctx,'#181412',hx-2,hy+8,hw+4,12);pix(ctx,'#362a24',hx,hy+10,hw,7);
+   pix(ctx,'#1c1816',hx+16,hy-28,16,42);pix(ctx,'#66605a',hx+18,hy-26,12,38);pix(ctx,'#8c867e',hx+19,hy-26,5,34); // standing stone chimney!
+   // Glowing smoldering ember coals inside the collapsed farmhouse doorway
+   const eg=ctx.createRadialGradient?.(hx+hw/2,hy+hh-22,4,hx+hw/2,hy+hh-22,42);
+   if(eg&&typeof eg.addColorStop==='function'){eg.addColorStop(0,'rgba(255,126,48,0.34)');eg.addColorStop(1,'rgba(220,80,30,0)');ctx.fillStyle=eg;ctx.beginPath();ctx.arc(hx+hw/2,hy+hh-22,42,0,Math.PI*2);ctx.fill()}
+   pix(ctx,'#14100e',hx+hw/2-14,hy+hh-34,28,32);
+   pix(ctx,'#c84c1e',hx+hw/2-9,hy+hh-14,18,6);pix(ctx,'#ffae46',hx+hw/2-5,hy+hh-13,10,3);
+   // 2. Smoldering artillery craters, charred skeletal trees & crumbled roadside stone walls
+   for(const [cx,cy] of [[9,4],[17,4],[9,13],[22,14],[3,10],[24,7]])drawCrater(cx,cy,cx%2===0);
+   for(const [tx,ty] of [[2,8],[8,14],[16,3],[23,3],[25,13],[19,15]])drawCharredTree(tx,ty);
+   for(const [wx,wy] of [[16,8],[17,8],[8,10],[9,10]]){
     const x=wx*32,y=wy*32;
     pix(ctx,'rgba(14,12,10,0.34)',x+2,y+22,28,5);
     pix(ctx,'#34302c',x+2,y+11,28,13);pix(ctx,'#686258',x+4,y+13,24,9);pix(ctx,'#8c8478',x+5,y+13,18,2);
    }
-   drawWarBanner(9,4,'#8a343e');drawWarBanner(14,9,'#8a343e');
-   drawBrazier(10,7);drawBrazier(13,3);
-   for(const y of [2,4,6,8,10,12]){
-    for(const off of [-8,8])pix(ctx,'#685848',11*32+16+off,y*32+6,2,18);
-   }
-   for(const [x,y] of [[0,9],[23,9]]){
-    pix(ctx,'#594a3d',x*32+5,y*32+24,21,3);
-    pix(ctx,'#aa9580',x*32+8,y*32+18,15,6);
+   drawWarBanner(11,5,'#8a343e');drawWarBanner(16,12,'#8a343e');
+   drawBrazier(12,9);drawBrazier(15,4);
+   for(const y of [2,4,6,8,10,12,14,16]){
+    for(const off of [-8,8])pix(ctx,'#685848',13*32+16+off,y*32+6,2,18);
    }
   }
   if(map==='frontier'){
-   // Fortified Kingdom Frontline Garrison Outpost: command/supply war pavilions, palisade spikes, braziers, crates & banners!
-   drawWarTent(16,2,'#8c343e','#b4525a',false);
-   drawWarTent(19,8,'#7c6c56','#a69478',false);
+   // Expanded 28x18 Serad Kingdom Frontline Garrison Bastion: 3D Field Hospital, North Stone Rampart Archway & Ridged War Pavilions!
+   if(typeof HD2DAtlas!=='undefined'){
+    HD2DAtlas.drawStoneArchGate(ctx,12,1,4,{label:'セラド北防壁',roof:'#6c2a32',stone:'#787c82',stoneHi:'#a8acb2'});
+    HD2DAtlas.drawGrandHouse(ctx,3,10,5,3,{tag:'fr_hosp',label:'野戦病院',roofDark:'#364638',roofMain:'#526852',roofHi:'#748e70',roofRim:'#9cb696',wall:'#e4dec8',shutter:'#445244',canopyColor:'#9c3842',chimneyLeft:true,doorOffsetPx:2*32+16});
+   }
+   drawWarTent(19,2,'#8c343e','#b4525a',false);
+   drawWarTent(22,10,'#7c6c56','#a69478',false);
    drawWarTent(6,2,'#6d7a64','#92a284',true);
-   for(const [cx,cy] of [[3,3],[4,3],[14,3],[15,3],[15,11],[16,11],[7,12],[8,12]])drawCheval(cx,cy);
-   for(const [bx,by] of [[10,4],[13,4],[10,10],[13,10],[17,6]])drawBrazier(bx,by);
-   drawWarBanner(9,3,'#983440');drawWarBanner(14,3,'#983440');drawWarBanner(18,7,'#983440');
-   for(const [x,y] of [[7,9],[8,9],[14,6],[15,6],[18,11],[17,11]]){
+   for(const [cx,cy] of [[3,3],[4,3],[16,3],[17,3],[19,14],[20,14],[10,15],[11,15]])drawCheval(cx,cy);
+   for(const [bx,by] of [[12,6],[15,6],[12,12],[15,12],[20,8]])drawBrazier(bx,by);
+   drawWarBanner(11,3,'#983440');drawWarBanner(16,3,'#983440');drawWarBanner(21,9,'#983440');
+   for(const [x,y] of [[8,11],[9,11],[16,8],[17,8],[21,13],[22,13]]){
     pix(ctx,'rgba(12,12,14,0.34)',x*32+4,y*32+23,24,5);
     pix(ctx,'#3a2c20',x*32+4,y*32+11,24,14);pix(ctx,'#9e7c56',x*32+6,y*32+13,20,10);pix(ctx,'#c8a678',x*32+7,y*32+13,18,3);
    }
-   for(const [x,y] of [[7,7],[14,7],[7,11]]){
+   for(const [x,y] of [[9,9],[16,9],[9,14]]){
     pix(ctx,'#423a32',x*32+2,y*32+25,28,4);pix(ctx,'#8c7e66',x*32+2,y*32+21,28,4);
    }
   }
@@ -233,6 +245,10 @@ const AshFrontierEnvironment=(()=>{
   if(!inScope(map)||!o)return false;
   const x=o.x*32,y=o.y*32;
   if(map==='ashroad'&&o.id==='burnedCart'){
+   if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawCoveredWagon){
+    HD2DAtlas.drawCoveredWagon(ctx,o.x,o.y,{broken:true});
+    return true;
+   }
    pix(ctx,'#38342f',x+3,y+23,26,3);
    pix(ctx,'#7b6150',x+6,y+17,20,4);
   }else if(map==='ashroad'&&o.id==='scorchedOrders'){

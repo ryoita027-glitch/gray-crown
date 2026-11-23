@@ -73,31 +73,42 @@ function makeVillageTilesV2(){
  return finishTiles(g)
 }
 function makeRoadTilesV15(){
- const g=makeBlankRegion('G','T');
- const centers=[12,12,11,11,10,10,10,11,12,12,11,11,12,12,12];
- for(let y=0;y<ROWS;y++){const c=centers[y];for(let x=c-1;x<=c+1;x++)if(g[y]&&x>0&&x<COLS-1)g[y][x]='P'}
- paintH(g,7,12,8,'P');paintV(g,5,8,7,'P');paintH(g,10,15,3,'P');paintH(g,13,23,11,'P');
- paintRect(g,3,4,2,3,'T');paintRect(g,5,7,2,2,'T');paintRect(g,18,7,2,3,'T');paintRect(g,3,10,3,2,'T');paintRect(g,19,2,2,2,'T');
- // Additional genuine solid woodland oaks framing outer meadow edges
- for(const [tx,ty] of [[2,2],[2,8],[2,12],[21,4],[21,7],[20,12],[16,2],[6,2]])g[ty][tx]='T';
+ // Expanded 30x20 Sunlit Forest Trade Highway from Ryune Village to Aldina Highlands!
+ const g=makeBlankRegion('G','T',30,20);
+ g[0][14]=g[0][15]='P';g[19][14]=g[19][15]='P';g[14][29]='P';
+ const centers=[14,14,14,14,13,13,13,14,14,14,13,13,14,14,14,14,14,14,14,14];
+ for(let y=0;y<20;y++){const c=centers[y];for(let x=c-1;x<=c+1;x++)if(g[y]&&x>0&&x<29)g[y][x]='P'}
+ paintH(g,7,14,11,'P');paintV(g,7,12,7,'P');paintH(g,7,14,8,'P');
+ paintH(g,13,20,3,'P');paintH(g,15,29,14,'P');
+ paintH(g,15,24,9,'P');paintV(g,7,14,23,'P');paintH(g,18,24,7,'P');paintH(g,18,24,12,'P');
+ // Lush solid woodland oak groves framing the forest highway (all genuine 'T' tiles -> automatic 2.5D occlusion!)
+ for(const [tx,ty] of [[2,2],[3,2],[5,3],[2,6],[3,7],[5,7],[2,13],[3,14],[5,15],[9,16],[2,17],[7,17],[21,2],[24,2],[27,3],[26,6],[27,9],[26,11],[20,16],[24,17],[27,17],[10,4],[22,4],[18,16]])g[ty][tx]='T';
  return finishTiles(g)
 }
 function makeRoadHollowTiles(){
- const g=makeBlankRegion('G','T');
- g[0][11]=g[0][12]='T';g[ROWS-1][11]=g[ROWS-1][12]='T';
- paintH(g,0,10,11,'P');paintV(g,5,11,8,'P');paintH(g,8,16,5,'P');paintV(g,5,10,16,'P');paintH(g,16,20,10,'P');paintV(g,3,10,20,'P');paintH(g,14,20,3,'P');
- paintRect(g,10,7,5,3,'R');paintH(g,10,14,11,'P');paintV(g,9,11,16,'P');
- paintRect(g,2,2,4,3,'T');paintRect(g,4,7,2,2,'T');paintRect(g,17,6,2,2,'T');paintRect(g,21,11,2,2,'T');
- for(const [tx,ty] of [[6,12],[17,12],[21,9]])g[ty][tx]='T';
+ // Expanded 28x18 Hidden Sacred Pilgrim Spring Grotto & Shizu's Herbalist Cabin!
+ const g=makeBlankRegion('G','T',28,18);
+ g[0][13]=g[0][14]='T';g[17][13]=g[17][14]='T';g[13][0]='P';
+ // Shizu's cozy Herbalist Sanctuary Cabin ('H' at 3..7, 3..5)
+ paintRect(g,3,3,5,3,'H');
+ // Crystal Sacred Lotus Spring ('R' at 11..17, 7..10)
+ paintRect(g,11,7,7,4,'R');
+ // Pilgrimage stone-and-earth footpaths encircling the grotto & NE ruin courtyard
+ paintH(g,0,19,13,'P');paintV(g,5,13,9,'P');paintH(g,9,19,5,'P');paintV(g,5,13,19,'P');
+ paintH(g,6,9,7,'P');paintH(g,19,24,6,'P');paintV(g,3,12,24,'P');paintH(g,18,24,4,'P');
+ // Luminous solid sanctuary trees framing the outer glade
+ for(const [tx,ty] of [[2,2],[9,2],[18,2],[25,2],[2,8],[3,10],[5,10],[6,15],[12,15],[18,15],[22,15],[25,14],[25,9],[21,11]])g[ty][tx]='T';
  return finishTiles(g)
 }
 function makeNorthRoadTiles(){
- const g=makeBlankRegion('G','T');
- paintV(g,0,14,11,'P');paintV(g,0,14,12,'P');
- paintH(g,0,23,7,'P');
- paintH(g,3,10,8,'P');paintH(g,13,16,8,'P');
- // Solid highland pine & birch groves framing the approach to the Royal Capital
- for(const [tx,ty] of [[2,3],[4,4],[18,3],[20,4],[2,12],[20,12],[18,6],[3,5],[19,9],[2,6]])g[ty][tx]='T';
+ // Expanded 28x18 Old Royal Highway overlooking Aldina Capital's distant white walls!
+ const g=makeBlankRegion('G','T',28,18);
+ g[0][13]=g[0][14]='P';g[17][13]=g[17][14]='P';g[9][0]='P';g[9][27]='P';
+ paintV(g,0,17,13,'P');paintV(g,0,17,14,'P');
+ paintH(g,0,27,9,'P');
+ paintH(g,4,12,10,'P');paintH(g,15,21,10,'P');paintV(g,7,13,19,'P');paintH(g,15,20,7,'P');
+ // Solid golden birch & highland pine groves framing the royal highway
+ for(const [tx,ty] of [[2,2],[4,3],[7,3],[20,3],[24,3],[25,5],[2,6],[5,6],[22,6],[2,12],[4,15],[8,15],[22,15],[25,13],[24,15]])g[ty][tx]='T';
  return finishTiles(g)
 }
 function makeWaystationTiles(){
@@ -116,14 +127,19 @@ function makeWaystationTiles(){
  return finishTiles(g)
 }
 function makeNorthWatchTiles(){
- const g=makeBlankRegion('G','T');
- g[0][11]=g[0][12]='T';g[ROWS-1][11]=g[ROWS-1][12]='T';
- paintV(g,1,13,11,'R');
- paintH(g,6,23,7,'P');paintH(g,10,12,8,'P');
- paintV(g,5,11,16,'P');paintH(g,13,19,5,'P');paintH(g,13,17,11,'P');
- paintV(g,4,9,7,'P');paintH(g,4,8,8,'P');paintH(g,4,8,4,'P');
- paintRect(g,2,2,2,4,'K');paintRect(g,2,10,3,2,'T');paintRect(g,19,2,3,2,'T');paintRect(g,19,11,3,2,'T');
- for(const [tx,ty] of [[14,2],[21,6],[2,12]])g[ty][tx]='T';
+ // Expanded 28x18 Highland Ruined Belltower Overlook & Bellkeeper Alto's Stone Lodge!
+ const g=makeBlankRegion('G','T',28,18);
+ g[0][13]=g[0][14]='T';g[17][13]=g[17][14]='T';g[9][27]='P';
+ // Sparkling Highland Brook ('R' at x=13..14) crossed by stone bridge at y=9
+ paintV(g,1,16,13,'R');paintV(g,1,16,14,'R');
+ // Bellkeeper Alto's Stone Lodge ('H' at 19..23, 3..5)
+ paintRect(g,19,3,5,3,'H');
+ // Wide ridge trails & west belltower sanctuary courtyard
+ paintH(g,6,27,9,'P');paintH(g,12,15,10,'P');
+ paintV(g,5,13,18,'P');paintH(g,16,22,7,'P');paintH(g,16,20,13,'P');
+ paintV(g,4,10,8,'P');paintH(g,4,10,10,'P');paintH(g,4,10,5,'P');
+ paintRect(g,2,2,2,4,'K');
+ for(const [tx,ty] of [[2,12],[3,14],[7,15],[10,15],[16,2],[25,3],[25,6],[24,13],[22,15],[25,15]])g[ty][tx]='T';
  return finishTiles(g)
 }
 function makeCapitalTiles(){
@@ -175,11 +191,26 @@ function makeCapitalTiles(){
  return finishTiles(g)
 }
 function makeAshRoadTiles(){
- const g=makeBlankRegion('B','T');paintV(g,0,14,11,'D');paintV(g,0,14,12,'D');paintH(g,3,12,5,'D');paintH(g,11,21,9,'D');paintV(g,5,10,4,'D');paintV(g,8,12,20,'D');paintRect(g,2,2,4,2,'B');paintRect(g,17,2,4,2,'B');return finishTiles(g)
+ // Expanded 28x18 Scorched War-Torn Ash Highway with Charred Ruined Farmhouse!
+ const g=makeBlankRegion('B','T',28,18);
+ g[0][13]=g[0][14]='D';g[17][13]=g[17][14]='D';
+ paintV(g,0,17,13,'D');paintV(g,0,17,14,'D');
+ paintH(g,4,14,7,'D');paintV(g,7,13,5,'D');paintH(g,4,10,12,'D');
+ paintH(g,14,24,11,'D');paintV(g,6,13,22,'D');paintH(g,14,22,6,'D');
+ // Charred Ruined Timber Farmhouse ('H' at 3..7, 3..5)
+ paintRect(g,3,3,5,3,'H');
+ return finishTiles(g)
 }
 function makeFrontierTiles(){
- const g=makeBlankRegion('M','K');paintV(g,0,14,11,'D');paintV(g,0,14,12,'D');paintH(g,2,21,7,'D');paintH(g,4,19,11,'D');
- paintRect(g,2,2,5,3,'M');paintRect(g,17,2,5,3,'M');paintRect(g,2,8,5,3,'H');paintRect(g,17,9,5,3,'M');return finishTiles(g)
+ // Expanded 28x18 Serad Kingdom Frontline Garrison Bastion with 3D Field Hospital & North Rampart!
+ const g=makeBlankRegion('M','K',28,18);
+ g[0][13]=g[0][14]='D';g[17][13]=g[17][14]='D';
+ paintV(g,0,17,13,'D');paintV(g,0,17,14,'D');
+ paintH(g,3,24,9,'D');paintH(g,5,23,14,'D');paintV(g,5,14,10,'D');paintV(g,5,14,18,'D');
+ paintH(g,10,23,5,'D');
+ // Grand 3D Timber Field Hospital ('H' at 3..7, 10..12)
+ paintRect(g,3,10,5,3,'H');
+ return finishTiles(g)
 }
 function makeFrontierFieldTiles(){
  const g=makeBlankRegion('B','K');
@@ -313,22 +344,29 @@ function makeWatchfortTiles(){
  return finishTiles(g)
 }
 function makeRavineTiles(){const g=makeBlankRegion('K','K');for(let y=0;y<15;y++){g[y][11]='D';g[y][12]='D'}paintRect(g,2,3,6,8,'B');paintRect(g,16,3,6,8,'B');paintH(g,7,16,7,'D');paintH(g,8,15,7,'A');return finishTiles(g)}
-// Intimate, focused 16x12 early village excursions (properly smaller than the village & Royal Capital!)
+// Spacious 26x18 Ryune Outskirts matching Ryune Village's Square Enix HD-2D scale!
 function makeRyuneOutskirtsTiles(kind){
- const g=makeBlankRegion('G','T',16,12);
- // Close default north/south exits; village outskirts connect east/west cleanly
- g[0][7]=g[0][8]='T';g[11][7]=g[11][8]='T';
+ const g=makeBlankRegion('G','T',26,18);
+ g[0][12]=g[0][13]='T';g[17][12]=g[17][13]='T';
  if(kind==='fields'){
-  for(const [x,y,w,h] of [[2,2,4,3],[10,2,4,3],[2,8,4,2],[10,8,4,2]])paintRect(g,x,y,w,h,'D');
-  paintH(g,1,15,6,'P');
-  paintV(g,3,9,7,'P');paintH(g,6,9,3,'P');paintV(g,6,9,12,'P');
-  g[2][1]='T';g[2][14]='T';g[10][1]='T';
+  g[9][25]='P';
+  // Red-Roofed Timber Farmhouse Barn ('H' at 3..8, 2..5)
+  paintRect(g,3,2,6,4,'H');
+  // Rich plowed golden wheat, cabbage, pumpkin & herb terraces ('D')
+  paintRect(g,2,11,8,5,'D');paintRect(g,14,3,8,4,'D');paintRect(g,15,12,7,4,'D');
+  paintH(g,2,25,9,'P');paintV(g,6,16,11,'P');paintV(g,6,16,12,'P');
+  paintH(g,5,12,7,'P');paintH(g,12,23,8,'P');paintV(g,3,15,23,'P');
+  for(const [tx,ty] of [[1,2],[1,6],[10,2],[13,2],[23,2],[24,5],[1,15],[13,15],[24,14],[24,16]])g[ty][tx]='T';
  }else{
-  paintRect(g,7,1,2,10,'Z'); // Sparkling mountain brook
-  paintH(g,0,14,6,'P');      // Timber footbridge spans (7..8, 6)
-  paintV(g,3,9,5,'P');paintV(g,3,9,11,'P');
-  paintH(g,11,13,4,'P');paintH(g,3,5,9,'P');
-  for(const [x,y] of [[2,2],[3,2],[2,10],[13,2],[14,9],[14,3],[2,5],[12,10]])g[y][x]='T';
+  g[9][0]='P';
+  // Sparkling Wide Crystal Woodland Brook ('Z' at x=11..13, y=2..16) + Arched Timber Bridge at y=9!
+  paintRect(g,11,2,3,15,'Z');
+  // Cozy Riverside Angler's Cabin ('H' at 18..22, 3..5)
+  paintRect(g,18,3,5,3,'H');
+  paintH(g,0,22,9,'P');
+  paintV(g,5,14,8,'P');paintV(g,5,14,9,'P');paintH(g,4,9,13,'P');
+  paintV(g,6,14,16,'P');paintV(g,6,14,17,'P');paintH(g,16,22,7,'P');paintH(g,16,21,12,'P');
+  for(const [tx,ty] of [[2,2],[4,2],[7,3],[2,6],[3,11],[2,15],[7,15],[15,2],[24,2],[24,7],[23,11],[24,15],[19,15],[16,15]])g[ty][tx]='T';
  }
  return finishTiles(g)
 }
@@ -350,11 +388,11 @@ const maps={
   {id:'doorMayor',x:7,y:19},{id:'doorCottage',x:30,y:19},{id:'westFieldPath',x:2,y:12},{id:'eastBrookPath',x:33,y:12},{id:'gate',x:17,y:0}
  ]},
  ryunefields:{name:'リュネ西の畑',tag:'畑仕事と村の食卓',tiles:makeRyuneOutskirtsTiles('fields'),
-   npcs:[{id:'fieldWorker',x:6,y:4,name:'畑の手伝い人'},{id:'herbGirl',x:10,y:5,name:'薬草摘みの少女・リナ'}],
-   objects:[{id:'fieldFurrows',x:5,y:3},{id:'fieldCart',x:12,y:9},{id:'fieldCache',x:13,y:3}]},
+   npcs:[{id:'fieldWorker',x:10,y:7,name:'畑の手伝い人'},{id:'herbGirl',x:16,y:8,name:'薬草摘みの少女・リナ'}],
+   objects:[{id:'fieldFurrows',x:7,y:7},{id:'fieldCart',x:19,y:10},{id:'fieldCache',x:23,y:4}]},
   ryunebrook:{name:'リュネ東の小川',tag:'生活を支える水辺',tiles:makeRyuneOutskirtsTiles('brook'),
-   npcs:[{id:'brookKeeper',x:11,y:8,name:'川辺の見回り人'},{id:'oldAngler',x:5,y:8,name:'川辺の釣り師・ゴロー'}],
-   objects:[{id:'brookWater',x:6,y:4},{id:'brookStones',x:3,y:9},{id:'brookCache',x:13,y:4}]},
+   npcs:[{id:'brookKeeper',x:18,y:12,name:'川辺の見回り人'},{id:'oldAngler',x:8,y:12,name:'川辺の釣り師・ゴロー'}],
+   objects:[{id:'brookWater',x:9,y:6},{id:'brookStones',x:5,y:13},{id:'brookCache',x:21,y:7}]},
   karenhome:{name:'カレンの家',tiles:makeInteriorTiles(),npcs:[
   {id:'karenMother',x:7,y:6,name:'カレンの母'},
   {id:'karenFather',x:16,y:5,name:'カレンの父'},
@@ -418,8 +456,8 @@ const maps={
   {id:'elsiaElder',x:8,y:6,name:'聖域の語り部・セリア'},
   {id:'elsiaResident',x:15,y:8,name:'聖域の若い母'}
  ],objects:[{id:'elsiaLoom',x:6,y:5},{id:'elsiaBed',x:17,y:4},{id:'indoorExit',x:11,y:12}]},
- road:{name:'王都への街道',tag:'森を抜ける交易路',tiles:makeRoadTilesV15(),npcs:[{id:'merchant',x:8,y:8,name:'行商人'},{id:'roadTraveler',x:15,y:7,name:'王都帰りの旅人・ミレイ'}],objects:[{id:'wolf',x:11,y:5},{id:'bandit',x:14,y:3},{id:'cave',x:13,y:1},{id:'roadSign',x:10,y:2},{id:'roadCache',x:7,y:6},{id:'waysideShrine',x:17,y:5},{id:'merchantSupplies',x:6,y:8},{id:'hungryBoar',x:16,y:9},{id:'foragerBasket',x:17,y:10},{id:'eastHollowSign',x:21,y:10}]},
- roadhollow:{name:'街道東・旧巡礼の泉',tag:'苔むす石鐘と清流の隠れ遺跡',tiles:makeRoadHollowTiles(),npcs:[{id:'oldwoman',x:7,y:6,name:'森の薬草採りシズ'}],objects:[{id:'hollowSpring',x:12,y:10},{id:'pilgrimBell',x:12,y:4},{id:'hollowStagWolf',x:19,y:5},{id:'hollowCache',x:20,y:3},{id:'herbDryingRack',x:6,y:5}]},
+ road:{name:'王都への街道',tag:'森を抜ける交易路',tiles:makeRoadTilesV15(),npcs:[{id:'merchant',x:10,y:11,name:'行商人'},{id:'roadTraveler',x:19,y:9,name:'王都帰りの旅人・ミレイ'}],objects:[{id:'wolf',x:14,y:6},{id:'bandit',x:18,y:4},{id:'cave',x:17,y:2},{id:'roadSign',x:12,y:3},{id:'roadCache',x:8,y:8},{id:'waysideShrine',x:23,y:7},{id:'merchantSupplies',x:8,y:11},{id:'hungryBoar',x:21,y:12},{id:'foragerBasket',x:23,y:13},{id:'eastHollowSign',x:27,y:13}]},
+ roadhollow:{name:'街道東・旧巡礼の泉',tag:'苔むす石鐘と清流の隠れ遺跡',tiles:makeRoadHollowTiles(),npcs:[{id:'oldwoman',x:9,y:7,name:'森の薬草採りシズ'}],objects:[{id:'hollowSpring',x:14,y:12},{id:'pilgrimBell',x:14,y:5},{id:'hollowStagWolf',x:22,y:6},{id:'hollowCache',x:24,y:4},{id:'herbDryingRack',x:8,y:6}]},
  cave:{name:'古砦跡',tag:'放棄された石造砦',tiles:[
  'SSSSSSSSSSSPPSSSSSSSSSSS',
  'SCCCCCCCCCCCCCCCCCCCCCCS',
@@ -440,7 +478,7 @@ const maps={
    {id:'chest1',x:4,y:5},{id:'chest2',x:19,y:10},{id:'bats',x:4,y:8},{id:'crawler',x:20,y:6},
    {id:'leverWest',x:3,y:8},{id:'leverEast',x:21,y:6},{id:'banner',x:3,y:6},{id:'fortShield',x:16,y:8},{id:'watchLogbook',x:15,y:8},{id:'caveRest',x:5,y:12},{id:'oldArmoryRack',x:7,y:12},{id:'rations',x:20,y:12},{id:'nestBeetles',x:2,y:10},{id:'minerCache',x:2,y:9},{id:'collapsedWallNote',x:10,y:10},{id:'innerGate',x:12,y:4},{id:'boss',x:12,y:3},{id:'exit',x:12,y:14},{id:'northExit',x:11,y:0}
  ]},
- northroad:{name:'王都への旧街道',tag:'城壁へ続く古道と宿場分岐',tiles:makeNorthRoadTiles(),npcs:[{id:'scout',x:12,y:3,name:'王国軍の斥候'},{id:'northPeddler',x:14,y:5,name:'荷馬車商人・ハンス'}],objects:[{id:'southExit',x:11,y:14},{id:'milestone',x:9,y:6},{id:'capitalOverlook',x:10,y:3},{id:'ancientGuardpost',x:15,y:8},{id:'highlandWolves',x:6,y:8},{id:'pilgrimCache',x:4,y:8},{id:'caravanWreck',x:15,y:11},{id:'westWatchSign',x:2,y:6},{id:'eastWaystationSign',x:21,y:6}]},
+ northroad:{name:'王都への旧街道',tag:'城壁へ続く古道と宿場分岐',tiles:makeNorthRoadTiles(),npcs:[{id:'scout',x:14,y:4,name:'王国軍の斥候'},{id:'northPeddler',x:17,y:7,name:'荷馬車商人・ハンス'}],objects:[{id:'southExit',x:13,y:17},{id:'milestone',x:11,y:8},{id:'capitalOverlook',x:12,y:4},{id:'ancientGuardpost',x:19,y:10},{id:'highlandWolves',x:7,y:10},{id:'pilgrimCache',x:4,y:10},{id:'caravanWreck',x:19,y:13},{id:'westWatchSign',x:2,y:8},{id:'eastWaystationSign',x:25,y:8}]},
  northwaystation:{name:'高台の宿場町・白樺の宿場',tag:'王都を望む旅人と荷馬車の中継町',tiles:makeWaystationTiles(),npcs:[
   {id:'waystationHost',x:9,y:8,name:'白樺亭の女将・ハンナ'},
   {id:'waystationGuard',x:16,y:8,name:'王都南門の交代衛兵'},
@@ -449,8 +487,8 @@ const maps={
   {id:'waystationChild',x:19,y:14,name:'宿場の見習い少年・ピート'}
  ],objects:[{id:'waystationInnDoor',x:7,y:7},{id:'waystationNotice',x:11,y:7},{id:'waystationWell',x:15,y:13},{id:'waystationWagon',x:23,y:14}]},
  northwatch:{name:'旧街道西・見晴らしの鐘楼跡',tag:'王都の白壁を見渡す古鐘楼と清流',tiles:makeNorthWatchTiles(),npcs:[
-  {id:'bellKeeper',x:17,y:5,name:'鐘楼守の老匠・アルト'}
- ],objects:[{id:'watchCamp',x:15,y:11},{id:'pilgrimDiary',x:13,y:4},{id:'brokenBell',x:5,y:4},{id:'watchAlpha',x:7,y:8},{id:'watchVault',x:4,y:8}]},
+  {id:'bellKeeper',x:21,y:7,name:'鐘楼守の老匠・アルト'}
+ ],objects:[{id:'watchCamp',x:18,y:13},{id:'pilgrimDiary',x:16,y:5},{id:'brokenBell',x:6,y:5},{id:'watchAlpha',x:8,y:10},{id:'watchVault',x:4,y:10}]},
  capital:{name:'アルディナ王都',tag:'白石の王城と大通り',tiles:makeCapitalTiles(),npcs:[
   {id:'capitalOfficial',x:21,y:9,name:'王都係官',hideWhen:'capitalCeremony'},
   {id:'capitalCitizen',x:17,y:17,name:'王都市民'},
@@ -467,12 +505,12 @@ const maps={
   {id:'granz',x:16,y:8,name:'総司令グランツ'}
  ],objects:[{id:'royalCastle',x:20,y:6},{id:'capitalMarket',x:8,y:17},{id:'marketBazaar',x:5,y:13},{id:'capitalFountain',x:20,y:17},{id:'capitalBarracks',x:34,y:17},{id:'garrisonBoard',x:32,y:22},{id:'victoryPoster',x:28,y:14},{id:'heroLedger',x:36,y:24},{id:'residentialWell',x:7,y:25},{id:'capitalHouseDoor',x:5,y:24},{id:'capitalInnDoor',x:11,y:24},{id:'capitalArmoryDoor',x:30,y:24},{id:'capitalChapelDoor',x:35,y:10}]},
  ashroad:{name:'灰の街道',tag:'焼けた農地と避難路',tiles:makeAshRoadTiles(),npcs:[
-  {id:'refugee',x:8,y:5,name:'避難民の母'},
-  {id:'fieldPriest',x:18,y:9,name:'従軍僧'}
- ],objects:[{id:'burnedCart',x:17,y:9},{id:'burnedHomestead',x:4,y:5},{id:'ruinedShrine',x:20,y:9},{id:'scorchedOrders',x:18,y:5},{id:'imperialPatrol',x:11,y:4},{id:'ashCache',x:4,y:10},{id:'refugeeBundle',x:6,y:9},{id:'ashHounds',x:15,y:11}]},
+  {id:'refugee',x:10,y:7,name:'避難民の母'},
+  {id:'fieldPriest',x:21,y:11,name:'従軍僧'}
+ ],objects:[{id:'burnedCart',x:19,y:11},{id:'burnedHomestead',x:6,y:6},{id:'ruinedShrine',x:24,y:11},{id:'scorchedOrders',x:21,y:6},{id:'imperialPatrol',x:13,y:5},{id:'ashCache',x:4,y:12},{id:'refugeeBundle',x:7,y:11},{id:'ashHounds',x:18,y:13}]},
  frontier:{name:'王国前線拠点',tag:'泥の塹壕と野戦病院',tiles:makeFrontierTiles(),npcs:[
-  {id:'frontierOfficer',x:9,y:7,name:'前線将校'},{id:'vanguardCaptain',x:12,y:4,name:'帝国前衛隊長ヴァルク',hideWhen:'vanguardDefeated'},{id:'frontierMedic',x:5,y:11,name:'衛生兵'},{id:'kingdomGuard',x:9,y:4,name:'王国兵'},{id:'imperialGuard',x:15,y:4,name:'帝国兵',hideWhen:'vanguardDefeated'}
- ],objects:[{id:'fieldHospital',x:4,y:10},{id:'watchTower',x:19,y:4},{id:'frontierCache',x:19,y:11},{id:'frontierBarricade',x:15,y:9},{id:'frontierNotice',x:7,y:11}]},
+  {id:'frontierOfficer',x:11,y:9,name:'前線将校'},{id:'vanguardCaptain',x:14,y:5,name:'帝国前衛隊長ヴァルク',hideWhen:'vanguardDefeated'},{id:'frontierMedic',x:6,y:14,name:'衛生兵'},{id:'kingdomGuard',x:11,y:5,name:'王国兵'},{id:'imperialGuard',x:18,y:5,name:'帝国兵',hideWhen:'vanguardDefeated'}
+ ],objects:[{id:'fieldHospital',x:5,y:13},{id:'watchTower',x:23,y:5},{id:'frontierCache',x:23,y:14},{id:'frontierBarricade',x:18,y:11},{id:'frontierNotice',x:9,y:14}]},
  frontierfield:{name:'セラド北側・戦闘跡',tag:'退路の轍と置き去りの担架が残る無人地帯',tiles:makeFrontierFieldTiles(),npcs:[
   {id:'frontierScout',x:8,y:11,name:'王国斥候'},{id:'woundedImperial',x:17,y:5,name:'負傷した帝国兵'}
  ],objects:[{id:'stretcherTracks',x:5,y:9},{id:'imperialSatchel',x:18,y:9},{id:'withdrawalOrders',x:7,y:5},{id:'fieldGraves',x:4,y:4},{id:'brokenSignalPost',x:19,y:4},{id:'scavengerWolves',x:15,y:6}]},
@@ -597,11 +635,11 @@ const MAP_DESIGN_RULES=Object.freeze({minimumOptionalFeature:1,benchmarkMaps:['v
 function validateMapDesign(mapId){const m=maps[mapId],f=MAP_FEATURES[mapId]||{};if(!m)return{ok:false,errors:['map missing']};const count=(f.treasures?.length||0)+(f.npcs?.length||0)+(f.optional?.length||0)+(f.shortcuts?.length||0);const errors=[];if(count<MAP_DESIGN_RULES.minimumOptionalFeature)errors.push('optional exploration feature missing');const mr=m.tiles.length,mc=m.tiles[0]?.length||0;if(mr<10||mc<12||m.tiles.some(r=>r.length!==mc))errors.push('invalid map dimensions');return{ok:errors.length===0,errors,count}}
 function auditBenchmarkMaps(){return MAP_DESIGN_RULES.benchmarkMaps.map(id=>({id,...validateMapDesign(id)}))}
 const MAP_TRANSITIONS=Object.freeze({
- villageToFields:{from:'village',to:'ryunefields',x:13,y:6,dir:'left'},
+ villageToFields:{from:'village',to:'ryunefields',x:23,y:9,dir:'left'},
  fieldsToVillage:{from:'ryunefields',to:'village',x:2,y:13,dir:'right'},
- villageToBrook:{from:'village',to:'ryunebrook',x:2,y:6,dir:'right'},
+ villageToBrook:{from:'village',to:'ryunebrook',x:2,y:9,dir:'right'},
  brookToVillage:{from:'ryunebrook',to:'village',x:33,y:13,dir:'left'},
- villageToRoad:{from:'village',to:'road',x:11,y:13,dir:'up'},roadToVillage:{from:'road',to:'village',x:17,y:1,dir:'down'},roadToHollow:{from:'road',to:'roadhollow',x:2,y:11,dir:'right'},hollowToRoad:{from:'roadhollow',to:'road',x:21,y:11,dir:'left'},roadToCave:{from:'road',to:'cave',x:12,y:13,dir:'up'},caveToRoad:{from:'cave',to:'road',x:13,y:2,dir:'down'},roadToNorthRoad:{from:'road',to:'northroad',x:11,y:13,dir:'up'},northRoadToRoad:{from:'northroad',to:'road',x:12,y:1,dir:'down'},northToWaystation:{from:'northroad',to:'northwaystation',x:2,y:10,dir:'right'},waystationToNorth:{from:'northwaystation',to:'northroad',x:21,y:7,dir:'left'},northToWatch:{from:'northroad',to:'northwatch',x:21,y:7,dir:'left'},watchToNorth:{from:'northwatch',to:'northroad',x:2,y:7,dir:'right'},borderToCanyon:{from:'borderland',to:'bordercanyon',x:2,y:6,dir:'right'},canyonToBorder:{from:'bordercanyon',to:'borderland',x:29,y:9,dir:'left'},yukiToRidge:{from:'yukiroad',to:'yukiridge',x:2,y:9,dir:'right'},ridgeToYuki:{from:'yukiridge',to:'yukiroad',x:21,y:9,dir:'left'}
+ villageToRoad:{from:'village',to:'road',x:14,y:18,dir:'up'},roadToVillage:{from:'road',to:'village',x:17,y:1,dir:'down'},roadToHollow:{from:'road',to:'roadhollow',x:2,y:13,dir:'right'},hollowToRoad:{from:'roadhollow',to:'road',x:27,y:14,dir:'left'},roadToCave:{from:'road',to:'cave',x:12,y:13,dir:'up'},caveToRoad:{from:'cave',to:'road',x:17,y:3,dir:'down'},roadToNorthRoad:{from:'road',to:'northroad',x:13,y:16,dir:'up'},northRoadToRoad:{from:'northroad',to:'road',x:14,y:1,dir:'down'},northToWaystation:{from:'northroad',to:'northwaystation',x:2,y:10,dir:'right'},waystationToNorth:{from:'northwaystation',to:'northroad',x:25,y:9,dir:'left'},northToWatch:{from:'northroad',to:'northwatch',x:25,y:9,dir:'left'},watchToNorth:{from:'northwatch',to:'northroad',x:2,y:9,dir:'right'},borderToCanyon:{from:'borderland',to:'bordercanyon',x:2,y:6,dir:'right'},canyonToBorder:{from:'bordercanyon',to:'borderland',x:29,y:9,dir:'left'},yukiToRidge:{from:'yukiroad',to:'yukiridge',x:2,y:9,dir:'right'},ridgeToYuki:{from:'yukiridge',to:'yukiroad',x:21,y:9,dir:'left'}
 });
 const villageHouses=[
  {x:4,y:3,w:6,h:4,kind:'village',label:'カレンの家',roof:'#8c463c',wall:'#ebe2cd'},

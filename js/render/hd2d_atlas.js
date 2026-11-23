@@ -795,5 +795,75 @@ const HD2DAtlas=(()=>{
   }
  }
 
- return {drawTile,drawTree,drawTreeCanopy,drawGrandHouse,drawGrandHouseCanopy,drawStoneArchGate,drawSculptedWell,drawCoveredWagon,getTile,getTree,hash};
+ // ---- 2F. REUSABLE 2.5D OVERHEAD GATE ARCH LINTEL (For Y-Sorted Foreground Occlusion on ALL town/highway gates!) ----
+ function drawArchwayLintel(c,tx,ty,wTiles=4,opts={}){
+  const x=tx*32,y=ty*32,w=wTiles*32,ink='#1e1916';
+  const roof=opts.roof||'#7a4238',roofHi=opts.roofHi||'#c27866';
+  const beam=opts.beam||'#6e4d34',beamHi=opts.beamHi||'#9c724c';
+  px(c,ink,x+18,y-22,w-36,12);px(c,beam,x+20,y-20,w-40,8);px(c,beamHi,x+22,y-20,w-44,3);
+  px(c,ink,x+14,y-28,w-28,8);px(c,roof,x+16,y-27,w-32,6);px(c,roofHi,x+18,y-27,w-36,2);
+  if(opts.label){
+   const lw=Math.max(76,opts.label.length*10+18),mx=x+Math.floor(w/2);
+   px(c,'rgba(24,18,14,.92)',mx-Math.floor(lw/2),y-23,lw,14);
+   px(c,'#e6c878',mx-Math.floor(lw/2)+1,y-22,lw-2,1);
+   if(typeof c.fillText==='function'){
+    c.fillStyle='#faf0d8';c.font='bold 9px system-ui';c.textAlign='center';
+    c.fillText(opts.label,mx,y-13);c.textAlign='start';
+   }
+  }
+ }
+
+ // ---- 2G. CARVED INLAID SUNBURST PLAZA MEDALLION (Square Enix Town Square Focal Anchor!) ----
+ function drawPlazaMedallion(c,cx,cy,r=56,theme='warm'){
+  if(!c||typeof c.beginPath!=='function')return;
+  const pal={
+   warm:['rgba(76,66,48,.46)','rgba(236,226,198,.44)','rgba(92,80,58,.30)'],
+   royal:['rgba(136,46,56,.44)','rgba(236,208,128,.54)','rgba(176,144,86,.36)'],
+   imperial:['rgba(46,74,102,.46)','rgba(176,204,226,.46)','rgba(82,118,148,.34)'],
+   sanctuary:['rgba(72,158,154,.44)','rgba(222,196,118,.58)','rgba(208,184,112,.42)']
+  }[theme]||['rgba(76,66,48,.46)','rgba(236,226,198,.44)','rgba(92,80,58,.30)'];
+  c.save();
+  c.strokeStyle=pal[0];c.lineWidth=3;c.beginPath();c.arc(cx,cy,r,0,Math.PI*2);c.stroke();
+  c.strokeStyle=pal[1];c.lineWidth=2;c.beginPath();c.arc(cx,cy,r-5,0,Math.PI*2);c.stroke();
+  c.strokeStyle=pal[0];c.lineWidth=2;c.beginPath();c.arc(cx,cy,Math.round(r*0.58),0,Math.PI*2);c.stroke();
+  c.strokeStyle=pal[2];c.lineWidth=2;
+  for(let a=0;a<8;a++){
+   const ang=a*Math.PI/4;
+   c.beginPath();c.moveTo(cx+Math.cos(ang)*r*0.58,cy+Math.sin(ang)*r*0.58);c.lineTo(cx+Math.cos(ang)*(r-3),cy+Math.sin(ang)*(r-3));c.stroke();
+  }
+  c.restore();
+ }
+
+ // ---- 2H. CARVED MOSSY STONE WATERFALL CULVERT / SPRING HEADWALL ----
+ function drawWaterfallCulvert(c,tx,ty,wTiles=2,opts={}){
+  const x=tx*32,y=ty*32,w=wTiles*32,tNow=(typeof Date!=='undefined'?Date.now():0)/240;
+  const stone=opts.stone||'#7a7870',stoneHi=opts.stoneHi||'#b8b4a6';
+  px(c,'#24201c',x-4,y-10,w+8,18);
+  px(c,stone,x-2,y-8,w+4,14);px(c,stoneHi,x,y-8,w,4);
+  for(let sx=x+6;sx<x+w-4;sx+=12)px(c,'#4c4a44',sx,y-7,2,12);
+  px(c,'#1a2d38',x+10,y-3,w-20,12);px(c,'#387c96',x+13,y,w-26,10);
+  const fOff=Math.floor(tNow)%3;
+  px(c,'#d8f6fc',x+16,y+2+fOff,Math.max(8,Math.floor((w-32)*0.36)),8);
+  px(c,'#ffffff',x+18,y+4+fOff,Math.max(4,Math.floor((w-32)*0.22)),5);
+  px(c,'#d8f6fc',x+w-26,y+3+(2-fOff),Math.max(8,Math.floor((w-32)*0.36)),8);
+  px(c,'#ffffff',x+w-24,y+5+(2-fOff),Math.max(4,Math.floor((w-32)*0.22)),4);
+  px(c,'rgba(220,250,255,.68)',x+12,y+10,w-24,4);
+  px(c,'#3c6838',x+2,y-8,12,5);px(c,'#6e9e54',x+4,y-8,7,3);
+  px(c,'#3c6838',x+w-14,y-7,12,5);px(c,'#6e9e54',x+w-12,y-7,7,3);
+ }
+
+ // ---- 2I. LIVING SQUARE ENIX TOWN CRITTERS (White Doves / Village Birds) ----
+ function drawDoves(c,coords,now=Date.now()){
+  const hop=Math.floor(now/420)%2;
+  for(let i=0;i<coords.length;i++){
+   const [bx,by,dir]=coords[i],flap=((Math.floor(now/300)+i)%3)===0?1:0;
+   px(c,'rgba(16,22,20,.22)',bx-3,by+4,8,3);
+   px(c,'#eef2f4',bx-3,by-flap,7,5);px(c,'#cfd8de',bx-2,by+2-flap,5,2);
+   px(c,'#ffffff',bx+(dir>0?3:-4),by-2+(i%2?hop:0),3,3);
+   px(c,'#e4a842',bx+(dir>0?5:-5),by-1+(i%2?hop:0),2,1);
+   if(flap){px(c,'#ffffff',bx-2,by-4,5,3)}
+  }
+ }
+
+ return {drawTile,drawTree,drawTreeCanopy,drawGrandHouse,drawGrandHouseCanopy,drawStoneArchGate,drawArchwayLintel,drawSculptedWell,drawCoveredWagon,drawPlazaMedallion,drawWaterfallCulvert,drawDoves,getTile,getTree,hash};
 })();

@@ -4,13 +4,13 @@ const DEV_SETTINGS_DEFAULTS=Object.freeze({encounters:true,invincible:false,inst
 const DEV_STATE={open:false,tainted:false,lastEvent:null,settings:{...DEV_SETTINGS_DEFAULTS}};
 const DEV_STAGE_LOCATION=Object.freeze({
  [STORY_STAGES.VILLAGE]:['village',18,16,'up'],[STORY_STAGES.APPOINTED]:['village',17,2,'up'],
- [STORY_STAGES.ROAD]:['road',11,13,'up'],[STORY_STAGES.FIRST_BATTLE]:['road',11,6,'up'],
- [STORY_STAGES.CAPITAL_APPROACH]:['northroad',11,13,'up'],[STORY_STAGES.CAPITAL]:['capital',11,13,'up'],
- [STORY_STAGES.CEREMONY]:['capital',11,10,'up'],[STORY_STAGES.WHITE_STAG]:['capitalinn',11,11,'up'],
+ [STORY_STAGES.ROAD]:['road',14,18,'up'],[STORY_STAGES.FIRST_BATTLE]:['road',14,7,'up'],
+ [STORY_STAGES.CAPITAL_APPROACH]:['northroad',13,16,'up'],[STORY_STAGES.CAPITAL]:['capital',20,25,'up'],
+ [STORY_STAGES.CEREMONY]:['capital',20,10,'up'],[STORY_STAGES.WHITE_STAG]:['capitalinn',11,11,'up'],
  [STORY_STAGES.ALPHA_COMPLETE]:['capitalinn',11,11,'up'],
- [STORY_STAGES.ASH_ROAD_ORDER]:['capital',11,1,'up'],[STORY_STAGES.ASH_ROAD]:['ashroad',11,13,'up'],[STORY_STAGES.ASH_ROAD_COMPLETE]:['ashroad',11,0,'up'],
- [STORY_STAGES.FRONTIER_ARRIVAL]:['frontier',11,13,'up'],[STORY_STAGES.FRONTIER_CRISIS]:['frontier',7,10,'up'],[STORY_STAGES.FRONTIER_BATTLE_WON]:['frontier',11,6,'down'],[STORY_STAGES.FRONTIER_COMPLETE]:['frontier',9,8,'up'],
- [STORY_STAGES.FRONTIER_AFTERMATH]:['frontier',9,8,'up'],[STORY_STAGES.FRONTIER_INVESTIGATION]:['frontier',11,1,'up'],[STORY_STAGES.FRONTIER_DISCOVERY]:['frontierfield',16,6,'right'],[STORY_STAGES.FRONTIER_SECOND_COMPLETE]:['frontier',9,8,'up']
+ [STORY_STAGES.ASH_ROAD_ORDER]:['capital',6,2,'up'],[STORY_STAGES.ASH_ROAD]:['ashroad',13,16,'up'],[STORY_STAGES.ASH_ROAD_COMPLETE]:['ashroad',13,1,'up'],
+ [STORY_STAGES.FRONTIER_ARRIVAL]:['frontier',13,16,'up'],[STORY_STAGES.FRONTIER_CRISIS]:['frontier',7,14,'up'],[STORY_STAGES.FRONTIER_BATTLE_WON]:['frontier',13,7,'down'],[STORY_STAGES.FRONTIER_COMPLETE]:['frontier',11,10,'up'],
+ [STORY_STAGES.FRONTIER_AFTERMATH]:['frontier',11,10,'up'],[STORY_STAGES.FRONTIER_INVESTIGATION]:['frontier',13,1,'up'],[STORY_STAGES.FRONTIER_DISCOVERY]:['frontierfield',16,6,'right'],[STORY_STAGES.FRONTIER_SECOND_COMPLETE]:['frontier',11,10,'up']
 });
 function devEl(id){return $(id)}
 function setOptions(el,items,selected=null){if(!el)return;el.innerHTML=items.map(([v,l])=>`<option value="${String(v).replace(/"/g,'&quot;')}">${l}</option>`).join('');if(selected!=null)el.value=selected}

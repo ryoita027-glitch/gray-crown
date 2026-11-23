@@ -678,7 +678,19 @@ const CapitalEnvironment=(()=>{
    }
   }
 
-  // 8. Draw Towering Aldina Royal Castle + All 3D Grounded Capital Buildings + Royal Promenade Urns & Bunting!
+  // 8. Draw Towering Aldina Royal Castle + All 3D Grounded Capital Buildings + North-West Royal Archway + Plaza Medallion & Doves!
+  if(typeof HD2DAtlas!=='undefined'){
+   HD2DAtlas.drawPlazaMedallion(c,20*W+16,17*W+16,84,'royal');
+   HD2DAtlas.drawStoneArchGate(c,5,1,4,{label:'北西門・灰の街道へ',roof:'#7a323c',stone:'#b6b2a6',stoneHi:'#ece8dc'});
+   HD2DAtlas.drawDoves(c,[[17*W+20,16*W+18,1],[23*W+10,16*W+22,-1],[18*W+12,19*W+12,1]],Date.now());
+  }
+  // Cobblestone stepping-stone thresholds welcoming visitors to every Capital shop & chapel door
+  for(const [dx,dy] of [[5,24],[11,24],[30,24],[35,10]]){
+   const px=dx*W,py=dy*W;
+   box(c,'rgba(16,20,28,.22)',px+4,py+2,24,26);
+   box(c,'#b8b09c',px+5,py+2,22,10);box(c,'#ece4d0',px+6,py+3,20,3);
+   box(c,'#a69e8c',px+6,py+15,20,9);box(c,'#e0d8c4',px+7,py+16,18,3);
+  }
   drawRoyalCastle(c,wartime,wave);
   districtFacades(c);districtPaving(c);
   // Sculpted white-marble floral urns flanking the central fountain plaza
@@ -709,7 +721,6 @@ const CapitalEnvironment=(()=>{
    c.fillStyle='#faf0d8';c.font='bold 9px system-ui';c.textAlign='center';
    c.fillText(label,px+Math.floor(sw/2),py+12);c.textAlign='start';
   };
-  sign(5.2,0.85,'↑ 北西門・灰の街道へ',112);
   sign(6,11,'中央市場',72);
   sign(10,20,'白鹿亭・下町',80);
   sign(31,13,'軍務街',72);

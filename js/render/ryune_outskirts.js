@@ -8,7 +8,7 @@ const RyuneOutskirts=(()=>{
   if(map!=='ryunebrook')return false;
   if(typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches)return false;
   return Number.isFinite(x)&&Number.isFinite(y)&&
-   Math.min(Math.abs(x-7),Math.abs(x-8))+Math.abs(y-6)<=6
+   Math.abs(x-12)+Math.abs(y-9)<=10
  }
  function setViewer(x,y){viewer.x=x;viewer.y=y}
  function nextWaterFrameDelay(map,x,y,now=Date.now()){
@@ -42,8 +42,8 @@ const RyuneOutskirts=(()=>{
   const x=tx*W,y=ty*W,h=hash(tx,ty);
   if(ch==='P'){
    drawPath(c,x,y);
-   if(map==='ryunebrook'&&(tx===7||tx===8)){
-    // Handcrafted HD-2D timber footbridge spanning the sparkling mountain brook
+   if(map==='ryunebrook'&&(tx===11||tx===12||tx===13)&&ty===9){
+    // Handcrafted 3-tile HD-2D timber footbridge spanning the wide crystal woodland brook
     pixel(c,'#2b5566',x,y,32,32);
     pixel(c,'#3a2a1c',x,y+1,32,30);
     for(let k=0;k<4;k++){
@@ -53,61 +53,38 @@ const RyuneOutskirts=(()=>{
      pixel(c,'#3e2d1e',x+5+(k%2)*14,y+5+k*7,2,2);
      pixel(c,'#3e2d1e',x+24-(k%2)*12,y+5+k*7,2,2);
     }
-    // Sturdy timber bridge guardrails & posts at top/bottom edges
     pixel(c,'#362418',x,y,32,4);pixel(c,'#8c6844',x,y+1,32,2);
     pixel(c,'#362418',x,y+28,32,4);pixel(c,'#8c6844',x,y+29,32,2);
-    if(tx===7){pixel(c,'#2e1e14',x,y-2,5,8);pixel(c,'#b89262',x+1,y-1,3,4);pixel(c,'#2e1e14',x,y+26,5,7);pixel(c,'#b89262',x+1,y+27,3,4)}
-    if(tx===8){pixel(c,'#2e1e14',x+27,y-2,5,8);pixel(c,'#b89262',x+28,y-1,3,4);pixel(c,'#2e1e14',x+27,y+26,5,7);pixel(c,'#b89262',x+28,y+27,3,4)}
+    if(tx===11){pixel(c,'#2e1e14',x,y-2,5,8);pixel(c,'#b89262',x+1,y-1,3,4);pixel(c,'#2e1e14',x,y+26,5,7);pixel(c,'#b89262',x+1,y+27,3,4)}
+    if(tx===13){pixel(c,'#2e1e14',x+27,y-2,5,8);pixel(c,'#b89262',x+28,y-1,3,4);pixel(c,'#2e1e14',x+27,y+26,5,7);pixel(c,'#b89262',x+28,y+27,3,4)}
    }
    return true;
   }
   if(ch==='Z'){
-   // High-density animated HD2DAtlas crystal woodland brook with mossy earthen cliffs, river stones, cattails & bridge shadow
+   // High-density animated HD2DAtlas crystal woodland brook (x=11..13) with mossy banks, stones, cattails & bridge shadow
    const flow=waterMotion&&waterMotion(map,viewer.x,viewer.y)?
     Math.floor(Date.now()/360)%4:Math.floor(Date.now()/650)%4;
    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(c,'water',tx,ty,'river',flow)){
     pixel(c,'#2f708e',x,y,33,33);
    }
-   // Soft translucent shallows near banks + sculpted mossy earthen bank ledges & water foam
-   if(tx===7){
+   if(tx===11){
     pixel(c,'rgba(128,214,224,0.22)',x+5,y,6,32);
-    pixel(c,'#463726',x,y,5,32);
-    pixel(c,'#6e593d',x+1,y,3,32);
-    // Scalloped overhanging grass lip & river boulders
-    for(let k=0;k<8;k++){
-     const ow=2+((h+k*3)%3);
-     pixel(c,k%2?'#4c6e3f':'#688d50',x,y+k*4,ow,4);
-     pixel(c,'#2c462b',x+ow,y+k*4,1,4);
-    }
-    pixel(c,'#6c6b5e',x+3,y+(h%14)+2,5,7);pixel(c,'#aba896',x+4,y+(h%14)+3,3,4);pixel(c,'#dcd9c6',x+4,y+(h%14)+3,2,1);
+    pixel(c,'#463726',x,y,5,32);pixel(c,'#6e593d',x+1,y,3,32);
+    for(let k=0;k<8;k++){const ow=2+((h+k*3)%3);pixel(c,k%2?'#4c6e3f':'#688d50',x,y+k*4,ow,4);pixel(c,'#2c462b',x+ow,y+k*4,1,4)}
+    pixel(c,'#6c6b5e',x+3,y+(h%14)+2,5,7);pixel(c,'#aba896',x+4,y+(h%14)+3,3,4);
     pixel(c,'rgba(228,252,255,0.52)',x+6,y+((h+flow*5)%22)+2,2,8);
-    if(h%3===0&&ty!==6){
-     // Swaying riverside reed & cattail tuft
-     pixel(c,'#2a5436',x+4,y+12,1,9);pixel(c,'#467c4c',x+6,y+10,1,11);pixel(c,'#6d472c',x+6,y+9,2,4);
-    }
+    if(h%3===0&&ty!==9){pixel(c,'#2a5436',x+4,y+12,1,9);pixel(c,'#467c4c',x+6,y+10,1,11);pixel(c,'#6d472c',x+6,y+9,2,4)}
    }
-   if(tx===8){
+   if(tx===13){
     pixel(c,'rgba(128,214,224,0.20)',x+21,y,6,32);
-    pixel(c,'#3a2d20',x+27,y,5,32);
-    pixel(c,'#5e4b34',x+28,y,3,32);
-    for(let k=0;k<8;k++){
-     const ow=2+((h+k*5)%3);
-     pixel(c,k%2?'#4c6e3f':'#688d50',x+32-ow,y+k*4,ow,4);
-     pixel(c,'#2c462b',x+31-ow,y+k*4,1,4);
-    }
+    pixel(c,'#3a2d20',x+27,y,5,32);pixel(c,'#5e4b34',x+28,y,3,32);
+    for(let k=0;k<8;k++){const ow=2+((h+k*5)%3);pixel(c,k%2?'#4c6e3f':'#688d50',x+32-ow,y+k*4,ow,4);pixel(c,'#2c462b',x+31-ow,y+k*4,1,4)}
     pixel(c,'#626155',x+24,y+((h>>>3)%14)+4,5,7);pixel(c,'#9c9988',x+25,y+((h>>>3)%14)+5,3,4);
     pixel(c,'rgba(228,252,255,0.48)',x+24,y+((h+flow*6)%22)+2,2,7);
-    if(h%3===1&&ty!==6){
-     pixel(c,'#2a5436',x+27,y+14,1,8);pixel(c,'#467c4c',x+25,y+11,1,10);pixel(c,'#6d472c',x+24,y+10,2,4);
-    }
+    if(h%3===1&&ty!==9){pixel(c,'#2a5436',x+27,y+14,1,8);pixel(c,'#467c4c',x+25,y+11,1,10);pixel(c,'#6d472c',x+24,y+10,2,4)}
    }
-   // Soft bridge cast shadow onto the brook water directly south of the footbridge (ty===7)
-   if(ty===7){
-    pixel(c,'rgba(12,26,38,0.34)',x,y,32,7);
-    pixel(c,'rgba(12,26,38,0.16)',x,y+7,32,5);
-   }
-   // Delicate floating lilypad & lotus blossom on calm stretches
-   if((h%5)===2&&ty!==6&&ty!==7){
+   if(ty===10){pixel(c,'rgba(12,26,38,0.34)',x,y,32,7);pixel(c,'rgba(12,26,38,0.16)',x,y+7,32,5)}
+   if((h%5)===2&&ty>3&&ty!==9&&ty!==10){
     const lx=x+10+(h%9),ly=y+9+((h>>>4)%10);
     pixel(c,'rgba(12,32,42,0.34)',lx+1,ly+2,9,6);
     pixel(c,'#234c34',lx,ly+1,8,6);pixel(c,'#44824c',lx+1,ly,6,5);pixel(c,'#82b86c',lx+2,ly,3,2);
@@ -154,7 +131,11 @@ const RyuneOutskirts=(()=>{
    }
    return true;
   }
-  if(ch==='T'||ch==='H'){
+  if(ch==='H'){
+   drawGrass(c,x,y,h);
+   return true;
+  }
+  if(ch==='T'){
    drawGrass(c,x,y,h);
    if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawTree(c,tx,ty,'oak'))return true;
    // Towering 45px storybook oak matching Ryune Village scale
@@ -183,9 +164,20 @@ const RyuneOutskirts=(()=>{
    return
   }
   if(map==='ryunefields'){
-   // Charming post-and-rail farmstead fencing bordering the crop fields
-   for(const [fx1,fx2,fy] of [[2,5,5],[10,13,5],[2,5,7],[10,13,7]]){
-    const y=fy*W+(fy===5?2:22);
+   // Expanded 26x18 Sunlit Pastoral Farmstead matching Ryune Village HD-2D Craftsmanship!
+   // 1. Grand Red-Roofed Timber Farmhouse Barn & Hayloft ('H' at 3..8, 2..5) + Stepping-Stone Walkway
+   if(typeof HD2DAtlas!=='undefined'){
+    HD2DAtlas.drawGrandHouse(c,3,2,6,4,{tag:'rf_barn',label:'リュネ農園納屋',roofDark:'#5c2822',roofMain:'#8c3d32',roofHi:'#b85b4c',roofRim:'#dc8472',wall:'#eadfc6',shutter:'#466448',sideShed:true,flowerBorder:true,chimneyLeft:true,doorOffsetPx:3*32});
+    HD2DAtlas.drawSculptedWell(c,13,7,{roof:'#78523a',roofHi:'#a47252'});
+   }
+   for(const [dx,dy] of [[6,6]]){
+    const px=dx*W,py=dy*W;
+    pixel(c,'#a69c84',px+4,py+2,24,10);pixel(c,'#d8ceb4',px+5,py+3,22,4);
+    pixel(c,'#9c927a',px+6,py+15,20,9);pixel(c,'#d2c8ae',px+7,py+16,18,3);
+   }
+   // 2. Charming post-and-rail farmstead fencing neatly framing the sprawling crop terraces
+   for(const [fx1,fx2,fy,offY] of [[2,9,10,20],[14,21,7,4],[15,21,11,20]]){
+    const y=fy*W+offY;
     for(let fx=fx1;fx<=fx2;fx++){
      const x=fx*W;
      pixel(c,'rgba(18,28,16,0.28)',x+2,y+6,28,3);
@@ -194,70 +186,83 @@ const RyuneOutskirts=(()=>{
      if(fx===fx2){pixel(c,'#3a281a',x+26,y-2,4,9);pixel(c,'#a68058',x+27,y-1,2,6)}
     }
    }
-   // 3D Stacked golden hay bales with hemp rope bindings & cast shadows
-   for(const [x,y] of [[1,5],[14,5],[9,2],[8,10]]){
+   // 3. 3D Stacked golden hay bales with hemp rope bindings & cast shadows (solid-blocked!)
+   for(const [x,y] of [[2,7],[9,6],[13,3],[14,15],[23,11]]){
     const px=x*W,py=y*W;
     pixel(c,'rgba(18,28,16,0.34)',px+5,py+23,24,5);
     pixel(c,'#543e20',px+6,py+12,22,13);
     pixel(c,'#c8a256',px+7,py+13,20,11);pixel(c,'#ebd07e',px+8,py+13,18,4);
-    pixel(c,'#7c5a2c',px+12,py+13,2,11);pixel(c,'#7c5a2c',px+21,py+13,2,11); // hemp ties
+    pixel(c,'#7c5a2c',px+12,py+13,2,11);pixel(c,'#7c5a2c',px+21,py+13,2,11);
     pixel(c,'#f6e49e',px+10,py+10,12,4);
    }
-   // Wooden water trough & stacked farmstead barrels near south-center path (6,8)
+   // 4. Wooden water trough at (10,12) & Storybook village scarecrow at (13,12)
    {
-    const tx=6*W+3,ty=8*W+10;
+    const tx=10*W+3,ty=12*W+10;
     pixel(c,'rgba(16,24,14,0.32)',tx,ty+14,26,5);
     pixel(c,'#3c2a1c',tx,ty+2,26,14);pixel(c,'#7e5c3e',tx+2,ty+3,22,12);
     pixel(c,'#347892',tx+4,ty+5,18,6);pixel(c,'#9ce4f0',tx+6,ty+6,10,2);
    }
-   // Cozy rustic thatched tool shelter tucked on southeast grass corner (14,9)
-   {
-    const hx=14*W-6,hy=9*W-8;
-    pixel(c,'rgba(16,24,14,0.34)',hx+4,hy+30,36,8);
-    pixel(c,'#3c2818',hx+4,hy+14,32,20);pixel(c,'#8c6844',hx+6,hy+16,28,16);
-    pixel(c,'#241c14',hx+12,hy+20,16,12);
-    for(let z=0;z<4;z++){
-     pixel(c,'#3a2814',hx+z*3,hy+14-z*4,40-z*6,6);
-     pixel(c,z%2?'#c29850':'#dcb468',hx+2+z*3,hy+15-z*4,36-z*6,4);
-    }
-   }
-   // Storybook village scarecrow with straw hat, patchwork shirt & scarf at (8,2)
-   const sx=8*W+8,sy=2*W;
+   const sx=13*W+8,sy=12*W;
    pixel(c,'rgba(18,28,16,0.30)',sx+2,sy+28,14,4);
    pixel(c,'#463020',sx+6,sy+8,4,22);pixel(c,'#463020',sx-3,sy+14,22,3);
-   pixel(c,'#4a6882',sx+3,sy+13,10,11);pixel(c,'#9e3c3c',sx+4,sy+12,8,3); // red neckerchief
+   pixel(c,'#4a6882',sx+3,sy+13,10,11);pixel(c,'#9e3c3c',sx+4,sy+12,8,3);
    pixel(c,'#ebd298',sx+4,sy+5,8,7);pixel(c,'#2e2218',sx+6,sy+7,1,2);pixel(c,'#2e2218',sx+9,sy+7,1,2);
    pixel(c,'#6e422a',sx,sy+3,16,3);pixel(c,'#c69e54',sx+2,sy,12,4);pixel(c,'#ebd07e',sx+4,sy,8,2);
-   // Bright meadow wildflower tufts along field margins
-   for(const [wx,wy] of [[1,7],[9,5],[9,8],[14,7],[6,2],[1,4]]){
+   // 5. Pecking farm chickens near barn yard & bright meadow wildflower tufts
+   const cpeck=Math.floor(Date.now()/430)%2;
+   for(const [cx,cy,dir] of [[4*W+10,8*W+14,1],[5*W+14,8*W+20,-1],[8*W+12,8*W+12,1]]){
+    pixel(c,'rgba(18,24,14,0.22)',cx-4,cy+5,9,3);
+    pixel(c,'#f6f2e8',cx-4,cy,8,6);pixel(c,'#e2d8c6',cx-3,cy+3,6,3);
+    pixel(c,'#f6f2e8',cx+(dir>0?3:-5),cy-2+cpeck,3,3);pixel(c,'#d84c44',cx+(dir>0?4:-4),cy-3+cpeck,2,2);
+   }
+   for(const [wx,wy] of [[2,8],[10,4],[13,10],[22,8],[14,10],[10,14]]){
     const x=wx*W,y=wy*W;
     pixel(c,'#3a663c',x+6,y+16,12,7);
     pixel(c,'#f8e27a',x+8,y+15,3,3);pixel(c,'#fff6e0',x+14,y+17,3,3);pixel(c,'#e88688',x+11,y+19,2,2);
    }
   }else if(map==='ryunebrook'){
-   // Mossy river boulders & lush flowering riverside clusters lining both banks
-   for(const y of [2,4,8,10]){
-    pixel(c,'rgba(14,26,22,0.28)',6*W+20,y*W+20,10,5);
-    pixel(c,'#5c5c50',6*W+21,y*W+15,9,8);pixel(c,'#a6a28a',6*W+22,y*W+16,7,5);pixel(c,'#dcd8c2',6*W+23,y*W+16,4,2);
-    pixel(c,'#3a6a4e',9*W+2,y*W+19,14,6);pixel(c,'#669e66',9*W+4,y*W+18,10,4);
-    pixel(c,y%4===0?'#f6e27c':'#a8d4f8',9*W+7,y*W+18,3,2);
+   // Expanded 26x18 Crystal Woodland River Valley with Waterfall Grotto, Angler's Timber Cabin, Fishing Pier & Moored Rowboat!
+   const now=Date.now();
+   if(typeof HD2DAtlas!=='undefined'){
+    HD2DAtlas.drawWaterfallCulvert(c,11,2,3,{stone:'#6e7068',stoneHi:'#b8b6a8'});
+    HD2DAtlas.drawGrandHouse(c,18,3,5,3,{tag:'rb_cabin',label:'川辺の釣り小屋',roofDark:'#2c463c',roofMain:'#466e5e',roofHi:'#689680',roofRim:'#94beaa',wall:'#e6ddc8',shutter:'#6c4a34',flowerBorder:true,chimneyLeft:false,doorOffsetPx:2*32+16});
    }
-   // Handcrafted 3D wooden riverside fishing jetty beside oldAngler (5,8) with warm lantern post & bait bucket!
-   const jx=6*W+4,jy=8*W+8;
-   pixel(c,'rgba(12,28,38,0.38)',jx+2,jy+16,30,6);
-   pixel(c,'#362418',jx,jy+2,30,16);pixel(c,'#8c6a46',jx+2,jy+4,26,12);
-   for(let px=4;px<26;px+=5){pixel(c,'#563e28',jx+px,jy+4,1,12);pixel(c,'#b89262',jx+px+1,jy+4,3,3)}
-   pixel(c,'#2c1e14',jx+24,jy,4,20);pixel(c,'#2c1e14',jx+2,jy,4,20);
-   // Bait bucket & warm glowing dock lantern perched on jetty corner
+   // Cobblestone stepping stones leading cleanly to Angler's Cabin door
+   for(const [dx,dy] of [[20,6]]){
+    const px=dx*W,py=dy*W;
+    pixel(c,'#a69c84',px+4,py+2,24,10);pixel(c,'#d8ceb4',px+5,py+3,22,4);
+    pixel(c,'#9c927a',px+6,py+15,20,9);pixel(c,'#d2c8ae',px+7,py+16,18,3);
+   }
+   // Mossy river boulders & lush flowering riverside clusters lining both banks (x=10 & x=14)
+   for(const y of [3,5,7,11,14,16]){
+    pixel(c,'rgba(14,26,22,0.28)',10*W+20,y*W+20,10,5);
+    pixel(c,'#5c5c50',10*W+21,y*W+15,9,8);pixel(c,'#a6a28a',10*W+22,y*W+16,7,5);pixel(c,'#dcd8c2',10*W+23,y*W+16,4,2);
+    pixel(c,'#3a6a4e',14*W+2,y*W+19,14,6);pixel(c,'#669e66',14*W+4,y*W+18,10,4);
+    pixel(c,y%4===0?'#f6e27c':'#a8d4f8',14*W+7,y*W+18,3,2);
+   }
+   // Handcrafted 3D wooden riverside fishing jetty beside oldAngler (8,12) extending onto (10,12) with warm dock lantern!
+   const jx=10*W+4,jy=12*W+8;
+   pixel(c,'rgba(12,28,38,0.38)',jx+2,jy+16,32,6);
+   pixel(c,'#362418',jx,jy+2,32,16);pixel(c,'#8c6a46',jx+2,jy+4,28,12);
+   for(let px=4;px<28;px+=5){pixel(c,'#563e28',jx+px,jy+4,1,12);pixel(c,'#b89262',jx+px+1,jy+4,3,3)}
+   pixel(c,'#2c1e14',jx+26,jy,4,20);pixel(c,'#2c1e14',jx+2,jy,4,20);
    pixel(c,'#4c3828',jx+5,jy+7,7,7);pixel(c,'#80b8cc',jx+6,jy+8,5,3);
-   const lg=c.createRadialGradient?.(jx+26,jy-2,2,jx+26,jy-2,28);
+   const lg=c.createRadialGradient?.(jx+28,jy-2,2,jx+28,jy-2,30);
    if(lg&&typeof lg.addColorStop==='function'){
-    lg.addColorStop(0,'rgba(255,216,122,0.36)');lg.addColorStop(1,'rgba(255,180,76,0)');
-    c.fillStyle=lg;c.beginPath();c.arc(jx+26,jy-2,28,0,Math.PI*2);c.fill();
+    lg.addColorStop(0,'rgba(255,216,122,0.38)');lg.addColorStop(1,'rgba(255,180,76,0)');
+    c.fillStyle=lg;c.beginPath();c.arc(jx+28,jy-2,30,0,Math.PI*2);c.fill();
    }
-   pixel(c,'#2c241e',jx+23,jy-6,6,6);pixel(c,'#ffd674',jx+24,jy-5,4,4);pixel(c,'#fffbe2',jx+25,jy-4,2,2);
-   // Tall swaying cattail reeds lining the crystal brook (all oak trees are now genuine solid 'T' tiles in maps.js!)
-   for(const [rx,ry] of [[6,5],[9,5],[6,9],[9,8],[6,3],[9,3]]){
+   pixel(c,'#2c241e',jx+25,jy-6,6,6);pixel(c,'#ffd674',jx+26,jy-5,4,4);pixel(c,'#fffbe2',jx+27,jy-4,2,2);
+   // Moored wooden rowboat gently bobbing on the crystal brook at (12, 13) + darting trout shadow!
+   const bob=Math.round(Math.sin(now/480)*1);
+   const rbx=12*W+4,rby=13*W+8+bob;
+   pixel(c,'rgba(12,30,42,0.38)',rbx+1,rby+14,24,7);
+   pixel(c,'#2a1c12',rbx,rby+4,26,12);pixel(c,'#865c3a',rbx+2,rby+5,22,10);pixel(c,'#b68858',rbx+4,rby+6,18,6);
+   pixel(c,'#5c3e26',rbx+11,rby+6,4,8);pixel(c,'#d8be88',rbx+6,rby+2,14,2);
+   const fishY=6*W+12+Math.round(Math.sin(now/390)*16);
+   pixel(c,'rgba(14,48,62,0.46)',12*W+14,fishY,11,4);
+   // Tall swaying cattail reeds lining both crystal brook banks
+   for(const [rx,ry] of [[10,4],[14,5],[10,8],[14,8],[10,13],[14,13],[10,15],[14,15]]){
     pixel(c,'#2d5836',rx*W+10,ry*W+13,2,12);pixel(c,'#467c4c',rx*W+14,ry*W+11,2,14);
     pixel(c,'#6e4a30',rx*W+14,ry*W+9,3,5);
    }
@@ -283,9 +288,11 @@ const RyuneOutskirts=(()=>{
    pixel(c,'#c2a576',x+7,y+18,19,2);
    for(let k=0;k<3;k++){pixel(c,'#48734d',x+8+k*7,y+12,3,8);pixel(c,'#a4b879',x+7+k*7,y+12,6,3)}
   }else if(o.id==='fieldCart'){
-   pixel(c,'#594b3a',x+2,y+13,28,10);
-   pixel(c,'#c0a06d',x+5,y+8,22,11);
-   for(const px of [7,23]){pixel(c,'#393b32',x+px-3,y+23,8,7);pixel(c,'#978b68',x+px-1,y+25,4,3)}
+   if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawCoveredWagon){
+    HD2DAtlas.drawCoveredWagon(c,o.x,o.y,{broken:false});
+   }else{
+    pixel(c,'#594b3a',x+2,y+13,28,10);pixel(c,'#c0a06d',x+5,y+8,22,11);
+   }
   }else if(o.id==='fieldCache'||o.id==='brookCache'){
    pixel(c,'#6a5340',x+4,y+18,24,12);
    pixel(c,alreadyTaken?'#4b4e47':'#c9a879',x+6,y+14,20,6);
@@ -307,15 +314,15 @@ const RyuneOutskirts=(()=>{
  function drawProgress(c,map,choices={},completed={}){
   if(map==='village'){
    if(choices['early.orphanMedicine']==='donate'){
-    // A quiet wrapped medicine packet near the established orphanage doorstep.
-    const x=19*W+22,y=5*W+23;
+    // A quiet wrapped medicine packet near the expanded orphanage doorstep.
+    const x=27*W+22,y=7*W+18;
     pixel(c,'#65523b',x-1,y-1,9,7);
     pixel(c,'#e2d5b5',x,y,7,5);
     pixel(c,'#819376',x+3,y,1,5);
    }
    if(completed['ryune.outskirts.reward']){
-    // Brought-back notes stay with Boru; no invented construction complete.
-    const x=7*W+3,y=12*W+22;
+    // Brought-back notes stay with Boru (12,18).
+    const x=12*W+3,y=18*W+22;
     pixel(c,'#645342',x,y,10,6);
     pixel(c,'#d6c39b',x+2,y-2,7,5);
     pixel(c,'#88795f',x+3,y,4,1);

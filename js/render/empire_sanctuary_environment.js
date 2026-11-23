@@ -594,18 +594,35 @@ const EmpireSanctuaryEnvironment=(()=>{
   const now=Date.now();
 
   if(map==='empirevillage'){
-   // Expanded 32x20 Imperial Canal & Orchard Village: Four Grand Blue-Slate Imperial Stone Cottages with spacious yards!
+   // Expanded 32x20 Imperial Canal & Orchard Village: Waterfall Culvert, Plaza Sunburst Medallion, Stepping Paths & 4 Distinct Cottages!
+   if(typeof HD2DAtlas!=='undefined'){
+    HD2DAtlas.drawWaterfallCulvert(ctx,6,1,2,{stone:'#68727a',stoneHi:'#9ea8b0'});
+    HD2DAtlas.drawPlazaMedallion(ctx,16*32,10*32,54,'imperial');
+   }
+   for(const [dx,dy] of [[11,6],[23,6],[11,15],[23,15]]){
+    const px=dx*32,py=dy*32;
+    pix(ctx,'rgba(16,22,28,0.22)',px+4,py+2,24,26);
+    pix(ctx,'#8c98a2',px+5,py+2,22,10);pix(ctx,'#bcc6ce',px+6,py+3,20,3);
+    pix(ctx,'#7c8892',px+6,py+15,20,9);pix(ctx,'#aeb8c0',px+7,py+16,18,3);
+   }
    const empHouses=[
-    {x:9,y:2,w:5,h:4,tag:'emp_mill',label:'水車番の集会所',roofDark:'#243a4e',roofMain:'#385a72',roofHi:'#587e9a',roofRim:'#84aac4',wall:'#dcd8cc',shutter:'#2f4c64',chimneyLeft:true,doorOffsetPx:2*32+16},
-    {x:20,y:2,w:6,h:4,tag:'emp_ne',roofDark:'#263f4c',roofMain:'#3e626e',roofHi:'#608996',roofRim:'#8cb2be',wall:'#dedad0',shutter:'#365464',chimneyLeft:false,doorOffsetPx:3*32+16},
-    {x:9,y:11,w:5,h:4,tag:'emp_sw',roofDark:'#283c52',roofMain:'#3c5c76',roofHi:'#5e829e',roofRim:'#88acc4',wall:'#dad4c4',shutter:'#2d4862',chimneyLeft:true,doorOffsetPx:2*32+16},
-    {x:20,y:11,w:6,h:4,tag:'emp_se',roofDark:'#263a4e',roofMain:'#3c5e74',roofHi:'#5c829a',roofRim:'#84aac2',wall:'#dcd6c6',shutter:'#325068',chimneyLeft:false,doorOffsetPx:3*32+16}
+    {x:9,y:2,w:5,h:4,tag:'emp_mill',label:'水車番の集会所',roofDark:'#243a4e',roofMain:'#385a72',roofHi:'#587e9a',roofRim:'#84aac4',wall:'#dcd8cc',shutter:'#2f4c64',bellGable:true,flowerBorder:true,chimneyLeft:true,doorOffsetPx:2*32+16},
+    {x:20,y:2,w:6,h:4,tag:'emp_ne',roofDark:'#264446',roofMain:'#3c686a',roofHi:'#5e8f90',roofRim:'#8cb8b8',wall:'#e0dcd2',shutter:'#365a5e',flowerBorder:true,chimneyLeft:false,doorOffsetPx:3*32+16},
+    {x:9,y:11,w:5,h:4,tag:'emp_sw',roofDark:'#283c52',roofMain:'#3c5c76',roofHi:'#5e829e',roofRim:'#88acc4',wall:'#dad4c4',shutter:'#2d4862',stonePortico:true,bannerColor:'#2d5074',chimneyLeft:true,doorOffsetPx:2*32+16},
+    {x:20,y:11,w:6,h:4,tag:'emp_se',roofDark:'#343a4a',roofMain:'#4c566c',roofHi:'#6e7b94',roofRim:'#96a4bc',wall:'#dcd6c6',shutter:'#325068',sideShed:true,chimneyLeft:false,doorOffsetPx:3*32+16}
    ];
    for(const b of empHouses){
     if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawGrandHouse(ctx,b.x,b.y,b.w,b.h,b)){
      drawImperialHouse(ctx,b.x,b.y,b.w,b.h,{roofMain:b.roofMain,roofHi:b.roofHi,wall:b.wall,ribbon:true,bannerLabel:b.label});
     }
    }
+   // Swaying canal reeds & darting fish shadow along the Imperial mill stream
+   for(const [rx,ry] of [[5,3],[8,4],[5,12],[8,13]]){
+    const px=rx*32+(rx===5?22:2),py=ry*32+6;
+    pix(ctx,'#2e5430',px+1,py+4,2,12);pix(ctx,'#4e8446',px+4,py+2,2,14);pix(ctx,'#5e3e28',px+4,py,2,5);
+   }
+   const efishY=12*32+14+Math.round(Math.sin(now/380)*14);
+   pix(ctx,'rgba(16,46,62,0.48)',6*32+22,efishY,10,4);
    // 3D Orchard Harvest Booth cleanly framed beside the village square at solid-blocked (17..18, 12) (zero overlap with SE house!)
    drawImperialBooth(ctx,17,12,'#3c6278','fruits');
 
@@ -671,11 +688,24 @@ const EmpireSanctuaryEnvironment=(()=>{
   }
 
   if(map==='imperialcity'){
-   // Grand 36x24 3D blue-slate Imperial stone architecture blocks with bespoke roofs, spires, rose windows & awnings!
-   drawImperialHouse(ctx,3,2,7,4,{tag:'archive',roofMain:'#325068',roofHi:'#547896',wall:'#c2c6c4',bannerLabel:'地方公文書館'});
-   drawImperialHouse(ctx,26,2,7,4,{tag:'guild',roofMain:'#38566e',roofHi:'#5a7e9a',wall:'#c4c8c4',bannerLabel:'水運組合'});
-   drawImperialHouse(ctx,3,18,6,3,{tag:'inn',roofMain:'#365268',roofHi:'#567892',wall:'#c6c6be',bannerLabel:'水鳥亭'});
-   drawImperialHouse(ctx,27,18,6,3,{tag:'books',roofMain:'#3c526a',roofHi:'#5c7694',wall:'#c6c4bc',bannerLabel:'運河古書店'});
+   // Grand 36x24 Legnoa Imperial Canal City upgraded to full HD2DAtlas grand architecture + North/South Gate Archways + Canal Plaza Medallion & Doves!
+   if(typeof HD2DAtlas!=='undefined'){
+    HD2DAtlas.drawPlazaMedallion(ctx,18*32,12*32+16,66,'imperial');
+    HD2DAtlas.drawStoneArchGate(ctx,16,1,4,{label:'レグノア北門',roof:'#2f4c66',stone:'#8a96a0',stoneHi:'#c4ced4'});
+    HD2DAtlas.drawStoneArchGate(ctx,16,22,4,{label:'レグノア南門',roof:'#2f4c66',stone:'#8a96a0',stoneHi:'#c4ced4'});
+    HD2DAtlas.drawDoves(ctx,[[15*32+18,11*32+12,1],[20*32+12,13*32+8,-1]],now);
+   }
+   const impCityBuildings=[
+    {x:3,y:2,w:7,h:4,tag:'imp_archive',label:'地方公文書館',roofDark:'#1e3244',roofMain:'#325068',roofHi:'#547896',roofRim:'#82a8c4',wall:'#dcdcd4',shutter:'#264056',stonePortico:true,bannerColor:'#2c5076',chimneyLeft:true,doorOffsetPx:3*32+16},
+    {x:26,y:2,w:7,h:4,tag:'imp_guild',label:'水運組合',roofDark:'#203846',roofMain:'#385c6e',roofHi:'#5a8498',roofRim:'#88b0c4',wall:'#deded6',shutter:'#2a4a5a',bellGable:true,flowerBorder:true,chimneyLeft:false,doorOffsetPx:3*32+16},
+    {x:3,y:18,w:6,h:3,tag:'imp_inn',label:'水鳥亭',roofDark:'#243a4c',roofMain:'#3a5c74',roofHi:'#5c829c',roofRim:'#88acc4',wall:'#e0dcd0',shutter:'#2d4a62',canopyColor:'#36607a',flowerBorder:true,doorOffsetPx:3*32},
+    {x:27,y:18,w:6,h:3,tag:'imp_books',label:'運河古書店',roofDark:'#2c3648',roofMain:'#44546c',roofHi:'#667894',roofRim:'#90a2bc',wall:'#dcd8cc',shutter:'#36445c',sideShed:true,chimneyLeft:false,doorOffsetPx:3*32}
+   ];
+   for(const b of impCityBuildings){
+    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawGrandHouse(ctx,b.x,b.y,b.w,b.h,b)){
+     drawImperialHouse(ctx,b.x,b.y,b.w,b.h,{roofMain:b.roofMain,roofHi:b.roofHi,wall:b.wall,bannerLabel:b.label});
+    }
+   }
 
    // Moored 3D wooden canal cargo boats with warm stern lanterns gently bobbing on the two canals (y=8 & y=16)
    const bob=Math.round(Math.sin(now/450)*1);
@@ -921,10 +951,14 @@ const EmpireSanctuaryEnvironment=(()=>{
    pix(ctx,'#d8b864',rmid-16,ry-12,32,12);pix(ctx,'#fff6c8',rmid-10,ry-9,20,6);
    pix(ctx,'#e6c870',rmid-4,ry-34,8,10);
 
-   // Southeast: Grand 7x4 Storyteller's Stone Sanctuary Villa (x=22..28, y=13..16)
-   const elsiaVilla={x:22,y:13,w:7,h:4,tag:'elsia_villa',label:'語り部の家',roofDark:'#36483e',roofMain:'#546e5e',roofHi:'#76947e',roofRim:'#9ec0a4',wall:'#e4e0ce',shutter:'#446454',chimneyLeft:true,doorOffsetPx:3*32+16};
+   // Southeast: Grand 7x4 Storyteller's Stone Sanctuary Villa with Bell-Gable & Blooming Flower Garden + White-Marble Entrance Archway & Sanctuary Doves!
+   const elsiaVilla={x:22,y:13,w:7,h:4,tag:'elsia_villa',label:'語り部の家',roofDark:'#36483e',roofMain:'#546e5e',roofHi:'#76947e',roofRim:'#9ec0a4',wall:'#e4e0ce',shutter:'#446454',bellGable:true,flowerBorder:true,chimneyLeft:true,doorOffsetPx:3*32+16};
    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawGrandHouse(ctx,elsiaVilla.x,elsiaVilla.y,elsiaVilla.w,elsiaVilla.h,elsiaVilla)){
     drawImperialHouse(ctx,22,13,7,4,{roofDark:'#4e584a',roofMain:'#687662',roofHi:'#889880',wall:'#d8d2be',bannerLabel:'語り部の家'});
+   }
+   if(typeof HD2DAtlas!=='undefined'){
+    HD2DAtlas.drawStoneArchGate(ctx,14,20,4,{label:'エルシア聖域',roof:'#5c7c72',stone:'#d8d6c8',stoneHi:'#faf8ee'});
+    HD2DAtlas.drawDoves(ctx,[[13*32+10,10*32+14,1],[18*32+16,12*32+10,-1],[9*32+8,16*32+14,1]],now);
    }
 
    // Central Marble Plaza Inlaid Aquamarine Sunburst Medallion centered at (15.5, 10.5)
