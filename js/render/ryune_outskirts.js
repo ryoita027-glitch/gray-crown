@@ -62,30 +62,56 @@ const RyuneOutskirts=(()=>{
    return true;
   }
   if(ch==='Z'){
-   // High-density animated HD2DAtlas sparkling mountain brook with mossy banks & lilypads
+   // High-density animated HD2DAtlas crystal woodland brook with mossy earthen cliffs, river stones, cattails & bridge shadow
    const flow=waterMotion&&waterMotion(map,viewer.x,viewer.y)?
-    Math.floor(Date.now()/420)%4:Math.floor(Date.now()/700)%4;
+    Math.floor(Date.now()/360)%4:Math.floor(Date.now()/650)%4;
    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(c,'water',tx,ty,'river',flow)){
-    pixel(c,'#35687a',x,y,33,33);
-    const off=(ty%2)*6;
-    pixel(c,'#4c8899',x+3+off,y+6,14,2);pixel(c,'#8ec4c6',x+((7+flow*2+off)%19),y+18,11,2);
+    pixel(c,'#2f708e',x,y,33,33);
    }
-   // Sculpted stone-and-moss riverbanks + water edge foam
+   // Soft translucent shallows near banks + sculpted mossy earthen bank ledges & water foam
    if(tx===7){
-    pixel(c,'#425a3c',x,y,4,32);pixel(c,'#6e8458',x,y,2,32);
-    pixel(c,'#888674',x+2,y+(h%12)+2,4,8);pixel(c,'#b8b49e',x+3,y+(h%12)+3,2,5);
-    pixel(c,'rgba(220,248,252,0.45)',x+5,y+((h+flow*4)%22)+2,2,8);
+    pixel(c,'rgba(128,214,224,0.22)',x+5,y,6,32);
+    pixel(c,'#463726',x,y,5,32);
+    pixel(c,'#6e593d',x+1,y,3,32);
+    // Scalloped overhanging grass lip & river boulders
+    for(let k=0;k<8;k++){
+     const ow=2+((h+k*3)%3);
+     pixel(c,k%2?'#4c6e3f':'#688d50',x,y+k*4,ow,4);
+     pixel(c,'#2c462b',x+ow,y+k*4,1,4);
+    }
+    pixel(c,'#6c6b5e',x+3,y+(h%14)+2,5,7);pixel(c,'#aba896',x+4,y+(h%14)+3,3,4);pixel(c,'#dcd9c6',x+4,y+(h%14)+3,2,1);
+    pixel(c,'rgba(228,252,255,0.52)',x+6,y+((h+flow*5)%22)+2,2,8);
+    if(h%3===0&&ty!==6){
+     // Swaying riverside reed & cattail tuft
+     pixel(c,'#2a5436',x+4,y+12,1,9);pixel(c,'#467c4c',x+6,y+10,1,11);pixel(c,'#6d472c',x+6,y+9,2,4);
+    }
    }
    if(tx===8){
-    pixel(c,'#3a5036',x+28,y,4,32);pixel(c,'#667c52',x+30,y,2,32);
-    pixel(c,'#7c7a6a',x+26,y+((h>>>3)%12)+4,4,8);pixel(c,'#aaa692',x+27,y+((h>>>3)%12)+5,2,5);
-    pixel(c,'rgba(220,248,252,0.42)',x+25,y+((h+flow*5)%22)+2,2,7);
+    pixel(c,'rgba(128,214,224,0.20)',x+21,y,6,32);
+    pixel(c,'#3a2d20',x+27,y,5,32);
+    pixel(c,'#5e4b34',x+28,y,3,32);
+    for(let k=0;k<8;k++){
+     const ow=2+((h+k*5)%3);
+     pixel(c,k%2?'#4c6e3f':'#688d50',x+32-ow,y+k*4,ow,4);
+     pixel(c,'#2c462b',x+31-ow,y+k*4,1,4);
+    }
+    pixel(c,'#626155',x+24,y+((h>>>3)%14)+4,5,7);pixel(c,'#9c9988',x+25,y+((h>>>3)%14)+5,3,4);
+    pixel(c,'rgba(228,252,255,0.48)',x+24,y+((h+flow*6)%22)+2,2,7);
+    if(h%3===1&&ty!==6){
+     pixel(c,'#2a5436',x+27,y+14,1,8);pixel(c,'#467c4c',x+25,y+11,1,10);pixel(c,'#6d472c',x+24,y+10,2,4);
+    }
    }
-   // Delicate floating lilypad & water blossom on calm stretches
-   if((h%7)===2&&ty!==6){
-    const lx=x+9+(h%10),ly=y+10+((h>>>4)%10);
-    pixel(c,'#244c34',lx,ly+1,8,6);pixel(c,'#46824e',lx+1,ly,6,5);pixel(c,'#7eb46a',lx+2,ly,3,2);
-    if(h%2===0){pixel(c,'#fff2d4',lx+3,ly+1,3,2);pixel(c,'#f2c44c',lx+4,ly+1,1,1)}
+   // Soft bridge cast shadow onto the brook water directly south of the footbridge (ty===7)
+   if(ty===7){
+    pixel(c,'rgba(12,26,38,0.34)',x,y,32,7);
+    pixel(c,'rgba(12,26,38,0.16)',x,y+7,32,5);
+   }
+   // Delicate floating lilypad & lotus blossom on calm stretches
+   if((h%5)===2&&ty!==6&&ty!==7){
+    const lx=x+10+(h%9),ly=y+9+((h>>>4)%10);
+    pixel(c,'rgba(12,32,42,0.34)',lx+1,ly+2,9,6);
+    pixel(c,'#234c34',lx,ly+1,8,6);pixel(c,'#44824c',lx+1,ly,6,5);pixel(c,'#82b86c',lx+2,ly,3,2);
+    if(h%2===0){pixel(c,'#fff2d8',lx+3,ly+1,3,2);pixel(c,'#f2c44c',lx+4,ly+1,1,1)}
    }
    return true;
   }

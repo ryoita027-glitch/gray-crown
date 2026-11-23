@@ -517,10 +517,14 @@ const OpeningPixelAssets=(()=>{
  function part(c,col,x,y,w,h){
   P(c,'#352d32',x-1,y-1,w+2,h+2);P(c,col,x,y,w,h)
  }
- // All pixels drawn in logical 32x32 cell coordinates.
+ // Square Enix hue-shifted shading: shadows shift cooler (plum/indigo), highlights warm (golden-cream).
  function tint(color,amount){
-  const n=parseInt(color.slice(1),16),f=x=>Math.min(255,Math.max(0,(x+amount)|0));
-  return '#'+[f(n>>16),f((n>>8)&255),f(n&255)].map(v=>v.toString(16).padStart(2,'0')).join('')
+  const n=parseInt(color.slice(1),16),cl=x=>Math.min(255,Math.max(0,Math.round(x)));
+  const r=n>>16,g=(n>>8)&255,b=n&255;
+  const dr=amount<0?amount*1.06:amount*1.12;
+  const dg=amount<0?amount*1.10:amount*1.02;
+  const db=amount<0?amount*0.82:amount*0.78;
+  return '#'+[cl(r+dr),cl(g+dg),cl(b+db)].map(v=>v.toString(16).padStart(2,'0')).join('')
  }
  // A person's face should convey their social role before a dialogue label
  // appears. Every currently authored fallback resident has an intentional
@@ -573,18 +577,26 @@ const OpeningPixelAssets=(()=>{
    for(let x=0;x<w;x++){
     const idx=(y*w+x)*4;
     if(d[idx+3]>20)continue;
-    let nr=0,ng=0,nb=0,cnt=0;
-    const check=(xx,yy)=>{
+    let nr=0,ng=0,nb=0,cnt=0,hasBelow=false,hasAbove=false,hasRight=false;
+    const check=(xx,yy,tag)=>{
      if(xx<0||yy<0||xx>=w||yy>=h)return;
      const j=(yy*w+xx)*4;
-     if(d[j+3]>160){nr+=d[j];ng+=d[j+1];nb+=d[j+2];cnt++}
+     if(d[j+3]>160){
+      nr+=d[j];ng+=d[j+1];nb+=d[j+2];cnt++;
+      if(tag==='b')hasBelow=true;
+      if(tag==='a')hasAbove=true;
+      if(tag==='r')hasRight=true;
+     }
     };
-    check(x-1,y);check(x+1,y);check(x,y-1);check(x,y+1);
+    check(x-1,y,'l');check(x+1,y,'r');check(x,y-1,'a');check(x,y+1,'b');
     if(cnt>0){
-     // Warm dark material-tinted pixel-art outline (matches Karen/Triton/Sophie/Margaret 48x48 sheets!)
-     out[idx]=Math.max(20,Math.min(92,Math.round((nr/cnt)*0.34+16)));
-     out[idx+1]=Math.max(12,Math.min(72,Math.round((ng/cnt)*0.27+9)));
-     out[idx+2]=Math.max(16,Math.min(82,Math.round((nb/cnt)*0.30+13)));
+     // Directional top-left lit organic selvedge outline (softer warm edge on sunlit top crowns, deeper cool-umber underside!)
+     const topLit=(hasBelow&&!hasAbove)||(hasRight&&!hasAbove);
+     const kR=topLit?0.44:0.30,kG=topLit?0.36:0.24,kB=topLit?0.38:0.28;
+     const addR=topLit?20:14,addG=topLit?13:8,addB=topLit?16:12;
+     out[idx]=Math.max(22,Math.min(108,Math.round((nr/cnt)*kR+addR)));
+     out[idx+1]=Math.max(14,Math.min(86,Math.round((ng/cnt)*kG+addG)));
+     out[idx+2]=Math.max(18,Math.min(96,Math.round((nb/cnt)*kB+addB)));
      out[idx+3]=255;
     }
    }
@@ -962,10 +974,10 @@ const OpeningPixelAssets=(()=>{
   c.restore();return true
  }
  const roofs={
-  village:['#a85240','#e6d4b0','#644634','#cc785a'],
-  orphanage:['#567452','#e2d4b4','#485c44','#82a26e'],
-  mayorhouse:['#48607a','#d8d0be','#3e4e62','#7690ae'],
-  cottage:['#845a3e','#decab0','#584030','#b28258']
+  village:['#b45842','#e8d8b6','#684834','#d88662'],
+  orphanage:['#567a54','#e4d7b8','#4a5f46','#86ad72'],
+  mayorhouse:['#4a6684','#ddd6c4','#3e5066','#7c9cb8'],
+  cottage:['#966442','#e2cfb4','#5c4230','#c49062']
  };
  function drawHouse(c,kind,x,y){
   const k=roofs[kind];if(!k)return false;
@@ -1002,65 +1014,77 @@ const OpeningPixelAssets=(()=>{
     if(sx%20===6)P(a,'#5d7a4c',sx+1,98,4,2); // subtle mossy base
    }
    P(a,ink,4,100,96,2);
-   // 2. Bespoke pitched HD-2D shingled roofs with layered ridges, fascia & chimneys per residence
-   if(kind==='orphanage'){
-    for(let z=0;z<7;z++){
-     const pad=z*4,ry=36-z*4;
-     P(a,ink,pad,ry+3,104-pad*2,6);
-     P(a,z%2?roofHighlight:roof,pad+1,ry,102-pad*2,5);
-     P(a,roofHighlight,pad+2,ry,100-pad*2,1);
-     for(let sx=pad+6;sx<100-pad;sx+=9){P(a,roofDark,sx,ry+1,2,4);P(a,roofDeep,sx+4,ry+3,2,2)}
+   // 2. Luminous Hand-Pixelled Shingled Roofs (painted TOP-TO-BOTTOM so every shingle gleams!)
+   const roofSun=tint(roofHighlight,22);
+   const paintRoofCourse=(lx,rx,ry,h,z,stepW=8)=>{
+    const w=rx-lx;if(w<=4)return;
+    P(a,ink,lx-1,ry,w+2,h+1);
+    P(a,z%2?roof:tint(roof,10),lx,ry,w,h);
+    P(a,roofHighlight,lx+1,ry,Math.max(4,Math.floor(w*0.64)),2);
+    P(a,roofSun,lx+2,ry,Math.max(3,Math.floor(w*0.34)),1);
+    const shift=(z%2)*Math.floor(stepW/2);
+    for(let sx=lx+shift;sx<rx-2;sx+=stepW){
+     const tw=Math.min(stepW-1,rx-sx-1);
+     if(tw>=3){
+      P(a,roofHighlight,sx+1,ry+1,Math.max(1,tw-2),1);
+      P(a,roofDark,sx,ry+h-1,tw,1);
+      P(a,roofDeep,sx+tw,ry,1,h);
+     }
     }
-    P(a,ink,22,8,60,4);P(a,'#b4c494',24,9,56,2);
+    P(a,beamHi,lx,ry,2,h);
+    P(a,ink,rx-1,ry,2,h);
+   };
+   if(kind==='orphanage'){
+    P(a,ink,20,7,64,4);P(a,'#c6d8a2',22,8,60,2);P(a,'#edf6d4',24,8,34,1);
+    for(let z=6;z>=0;z--){
+     const pad=z*4,ry=36-z*4;
+     paintRoofCourse(pad+1,103-pad,ry,5,z,8);
+    }
+    P(a,beam,1,41,102,3);P(a,beamHi,2,41,100,1);
     // Striped emerald-and-cream orphanage veranda awning with scalloped drop shadow
-    P(a,'rgba(24,20,16,.28)',8,54,88,4);
+    P(a,'rgba(24,20,16,.24)',8,54,88,4);
     P(a,ink,7,44,90,11);
     for(let i=0;i<8;i++){
-     P(a,i%2?'#f4ead2':'#62885a',9+i*11,45,11,8);
-     P(a,i%2?'#d6c6a4':'#476642',9+i*11,51,11,3);
+     P(a,i%2?'#f6ecd6':'#628c5c',9+i*11,45,11,7);
+     P(a,i%2?'#d9caa8':'#456942',9+i*11,51,11,3);
     }
    }else if(kind==='mayorhouse'){
-    for(let z=0;z<6;z++){
-     const pad=z*4,ry=38-z*4;
-     P(a,ink,pad,ry+3,104-pad*2,6);
-     P(a,z%2?roofHighlight:roof,pad+1,ry,102-pad*2,5);
-     P(a,roofHighlight,pad+2,ry,100-pad*2,1);
-     for(let sx=pad+7;sx<98-pad;sx+=10){P(a,roofDark,sx,ry+1,2,4);P(a,roofDeep,sx+5,ry+3,2,2)}
+    P(a,ink,20,12,64,4);P(a,'#b4c8dc',22,13,60,2);P(a,'#e2eef8',24,13,32,1);
+    for(let z=5;z>=0;z--){
+     const pad=z*4,ry=37-z*4;
+     paintRoofCourse(pad+1,103-pad,ry,5,z,9);
     }
+    P(a,beam,1,42,102,3);P(a,beamHi,2,42,100,1);
     // Formal stone-trimmed central gable dormer with sunlit clerestory window
-    P(a,ink,28,11,48,35);P(a,wall,30,13,44,31);P(a,wallLight,31,14,42,3);
-    for(let z=0;z<6;z++){
+    P(a,ink,28,11,48,34);P(a,wall,30,13,44,30);P(a,wallLight,31,14,42,3);
+    for(let z=5;z>=0;z--){
      const pad=z*3,ry=16-z*3;
-     P(a,ink,27+pad,ry+2,50-pad*2,5);
-     P(a,z%2?roof:roofHighlight,28+pad,ry,48-pad*2,4);
+     paintRoofCourse(28+pad,76-pad,ry,4,z,7);
     }
     P(a,ink,40,19,24,20);P(a,beam,41,20,22,18);
-    P(a,'#7ea8b4',44,22,16,14);P(a,'#eef4e6',45,23,6,5);P(a,'#f0cd7e',51,29,8,6);
+    P(a,'#7ea8b8',44,22,16,14);P(a,'#eef6ec',45,23,6,5);P(a,'#f6cf76',51,29,8,6);P(a,'#fff6cc',53,31,4,3);
     P(a,beam,51,22,2,14);P(a,beam,44,28,16,2);
    }else if(kind==='cottage'){
-    for(let z=0;z<8;z++){
-     const left=z*3,right=z*7,ry=37-z*4;
-     P(a,ink,left,ry+3,104-left-right,6);
-     P(a,z%2?roof:roofHighlight,left+1,ry,102-left-right,5);
-     P(a,roofHighlight,left+2,ry,100-left-right,1);
-     for(let sx=left+6;sx<100-right;sx+=10){P(a,roofDark,sx,ry+1,2,4);P(a,roofDeep,sx+4,ry+3,2,2)}
+    for(let z=7;z>=0;z--){
+     const left=z*3,right=z*7,ry=36-z*4;
+     paintRoofCourse(left+1,103-right,ry,5,z,9);
     }
+    P(a,beam,1,41,102,3);P(a,beamHi,2,41,100,1);
     // Stone hearth chimney with brick cap & hanging herb drying rack
-    P(a,ink,74,1,16,33);P(a,'#968a7c',76,3,12,29);P(a,'#bab0a0',77,4,4,25);P(a,'#72685e',84,4,4,25);
-    P(a,ink,72,0,20,5);P(a,'#6c6258',74,1,16,3);
+    P(a,ink,74,1,16,33);P(a,'#9c9082',76,3,12,29);P(a,'#c6bcb0',77,4,4,25);P(a,'#746a60',84,4,4,25);
+    P(a,ink,72,0,20,5);P(a,'#766b60',74,1,16,3);P(a,'#b4aaa0',75,1,10,1);
     P(a,'#664d39',10,87,24,3);
     for(let j=0;j<4;j++){P(a,'#4c7446',12+j*5,90,3,7);P(a,'#8eb26e',13+j*5,90,2,4)}
    }else{
-    for(let z=0;z<8;z++){
-     const pad=z*5,ry=37-z*4;
-     P(a,ink,pad,ry+3,104-pad*2,6);
-     P(a,z%2?roof:roofHighlight,pad+1,ry,102-pad*2,5);
-     P(a,roofHighlight,pad+2,ry,100-pad*2,1);
-     for(let sx=pad+6;sx<100-pad;sx+=9){P(a,roofDark,sx,ry+1,2,4);P(a,roofDeep,sx+4,ry+3,2,2)}
+    P(a,ink,30,5,44,4);P(a,'#f0be96',32,6,40,2);P(a,'#ffe4c4',34,6,22,1);
+    for(let z=7;z>=0;z--){
+     const pad=z*4,ry=36-z*4;
+     paintRoofCourse(pad+1,103-pad,ry,5,z,8);
     }
-    P(a,ink,32,6,40,4);P(a,'#e6b692',34,7,36,2);
+    P(a,beam,1,41,102,3);P(a,beamHi,2,41,100,1);
     // Warm brick chimney + neatly stacked firewood pile by the cottage wall
-    P(a,ink,12,9,14,26);P(a,'#9c6452',14,11,10,22);P(a,'#c68a72',15,12,4,19);
+    P(a,ink,12,8,14,27);P(a,'#a86852',14,10,10,23);P(a,'#d49478',15,11,4,20);
+    P(a,ink,10,7,18,4);P(a,'#8c5240',12,8,14,2);P(a,'#d49478',13,8,8,1);
     for(let j=0;j<4;j++){P(a,ink,72+j*6,89,6,8);P(a,'#9e704a',73+j*6,90,4,6);P(a,'#d8aa76',74+j*6,91,2,2)}
    }
    // 3. Rich timber framing (corner posts + lintel + climbing ivy) & cozy warm-lit windows with flower boxes

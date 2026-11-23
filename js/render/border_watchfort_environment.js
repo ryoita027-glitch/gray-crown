@@ -139,17 +139,13 @@ const BorderWatchfortEnvironment=(()=>{
     pix(ctx,'#b4afa0',a+2,b+1,26,2);pix(ctx,'#68655c',a+(y%2?10:21),b,1,15);
     return true;
    }
-   // Steppe warm-ochre moorland base (unified base eliminates 3x2 macro-block seams)
+   // High-density painterly HD-2D autumn steppe moorland base
    const steppeBase=map==='bordercanyon'?'#877558':'#7e7859';
    if(ch==='B'||ch==='M'){
-    pix(ctx,steppeBase,a,b,32,32);
-    // Subtle sun-dappled meadow/moor patches (soft, low contrast)
-    if((r%3)===0)pix(ctx,'#8c8664',a+(r%14)+2,b+((r>>>4)%14)+3,13,6);
-    if((r%4)===1)pix(ctx,'#6d684c',a+((r>>>6)%14)+4,b+((r>>>10)%14)+4,11,5);
-    if((r%5)===0)drawGrassTuft(ctx,a+(r%20)+2,b+((r>>>5)%18)+6,r%2);
-    if((r%9)===4){
-     // Tiny wild golden steppe flowers
-     pix(ctx,'#5c6b43',a+12,b+15,4,4);pix(ctx,'#e2cb7d',a+13,b+14,2,2);
+    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(ctx,'grass',x,y,'autumn')){
+     pix(ctx,steppeBase,a,b,32,32);
+     if((r%3)===0)pix(ctx,'#8c8664',a+(r%14)+2,b+((r>>>4)%14)+3,13,6);
+     if((r%4)===1)pix(ctx,'#6d684c',a+((r>>>6)%14)+4,b+((r>>>10)%14)+4,11,5);
     }
     if(ch==='M'){
      drawSteppeBoulder(ctx,a,b,r);
@@ -160,7 +156,9 @@ const BorderWatchfortEnvironment=(()=>{
    }
    if(ch==='D'||ch==='P'){
     const cobble=ch==='P';
-    // Paint steppe shoulder underneath, then lay road with organic edges
+    if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawTile(ctx,cobble?'cobble':'path',x,y,cobble?'capital':'warm')){
+     return true;
+    }
     pix(ctx,steppeBase,a,b,32,32);
     const padL=(left!=='D'&&left!=='P')?3:0;
     const padR=(right!=='D'&&right!=='P')?3:0;

@@ -848,25 +848,22 @@ const EmpireSanctuaryEnvironment=(()=>{
     pix(ctx,'#6e7266',px-1,py+3,14,5);pix(ctx,'#eae8dc',px,py+4,12,3);
     pix(ctx,'#80e8dc',px+4,py+9,4,5);pix(ctx,'#e8fff8',px+5,py+10,2,2);
    }
-   // Sculpted octagonal white-marble Sacred Spring rotunda filled with animated turquoise sacred water (5,10)
-   const scx=5*32+16,scy=10*32+16,sFrame=Math.floor(now/420)%4;
-   pix(ctx,'rgba(16,28,24,0.28)',scx-32,scy-22,64,46);
-   pix(ctx,'#787a70',scx-30,scy-22,60,44);pix(ctx,'#787a70',scx-22,scy-30,44,60);
-   pix(ctx,'#dad8ca',scx-28,scy-20,56,40);pix(ctx,'#dad8ca',scx-20,scy-28,40,56);
-   pix(ctx,'#f2f0e6',scx-26,scy-20,52,4);pix(ctx,'#f2f0e6',scx-18,scy-28,36,4);
-   // Luminous inner spring water basin
-   pix(ctx,'#226a74',scx-20,scy-16,40,32);pix(ctx,'#329298',scx-18,scy-14,36,28);
-   pix(ctx,'#6ad4cc',scx-14+(sFrame*2)%8,scy-8,14,3);pix(ctx,'#d6fff8',scx-10+(sFrame*2)%8,scy-8,6,1);
-   pix(ctx,'#6ad4cc',scx-4-(sFrame*2)%6,scy+4,14,3);pix(ctx,'#e6fff8',scx-(sFrame*2)%6,scy+4,6,1);
-   // Floating sacred lotus petals on the spring water
-   pix(ctx,'#3c7c52',scx+7,scy-10,6,4);pix(ctx,'#fff2e2',scx+9,scy-11,3,3);
-   pix(ctx,'#3c7c52',scx-14,scy+5,6,4);pix(ctx,'#fff2e2',scx-12,scy+4,3,3);
-
-   // Serene sanctuary light wash
-   const light=ctx.createRadialGradient(scx,scy,6,scx,scy,72);
-   light.addColorStop(0,'rgba(164,248,232,0.28)');
+   // Sculpted curved white-marble Sacred Spring rotunda terrace (5,10) — centerpiece chalice rendered by world.js sacredSpring!
+   const scx=5*32+16,scy=10*32+16;
+   if(typeof ctx.beginPath==='function'&&typeof ctx.ellipse==='function'){
+    ctx.save();
+    ctx.fillStyle='rgba(14,24,22,0.28)';ctx.beginPath();ctx.ellipse(scx+3,scy+5,40,34,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#8c9084';ctx.beginPath();ctx.ellipse(scx,scy+2,38,32,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#dedcd0';ctx.beginPath();ctx.ellipse(scx,scy,36,30,0,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='rgba(202,178,108,0.65)';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.ellipse(scx,scy,31,25,0,0,Math.PI*2);ctx.stroke();
+    ctx.restore();
+   }
+   // Luminous emerald-gold sanctuary light wash
+   const light=ctx.createRadialGradient(scx,scy,8,scx,scy,78);
+   light.addColorStop(0,'rgba(164,252,232,0.34)');
    light.addColorStop(1,'rgba(164,238,224,0)');
-   ctx.fillStyle=light;ctx.beginPath();ctx.arc(scx,scy,72,0,Math.PI*2);ctx.fill();
+   ctx.fillStyle=light;ctx.beginPath();ctx.arc(scx,scy,78,0,Math.PI*2);ctx.fill();
    return true;
   }
 
@@ -1032,13 +1029,7 @@ const EmpireSanctuaryEnvironment=(()=>{
    return true;
   }
   if(o.id==='sacredSpring'){
-   const pulse=Math.round(Math.sin(now/280)*1);
-   pix(ctx,'#7a8478',x+2,y+6,28,22);
-   pix(ctx,'#b8c0b4',x+4,y+8,24,18);
-   pix(ctx,'#2f6e78',x+6,y+10,20,14);
-   pix(ctx,'#58a8b2',x+8,y+11,16,11);
-   pix(ctx,'#b8f2f0',x+11+pulse,y+13,8,4);
-   return true;
+   return false;
   }
   if(o.id==='elsiaTablet'||o.id==='oldSanctum'||o.id==='canalMonument'){
    pix(ctx,'rgba(18,22,24,0.28)',x+5,y+25,22,4);

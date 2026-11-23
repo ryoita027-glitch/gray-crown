@@ -531,28 +531,60 @@ const CapitalEnvironment=(()=>{
   const wartime=typeof getWorldSwitch==='function'&&getWorldSwitch('returnedKingdom');
   const wave=Math.round(Math.sin((typeof Date!=='undefined'?Date.now():0)/280)*1.6);
 
-  // 1. Central Royal Fountain Plaza: Carved Octagonal Marble Sun-Compass Mosaic surrounding capitalFountain (20,17)
+  // 1. Central Royal Fountain Plaza: Grand Octagonal Inlaid Marble Terrace & Sun-Compass Mosaic surrounding capitalFountain (20,17)
   const fcx=20*W+16,fcy=17*W+16;
-  box(c,'rgba(44,40,34,.18)',fcx-68,fcy-48,136,96);
-  box(c,'rgba(44,40,34,.18)',fcx-48,fcy-68,96,136);
-  box(c,'#d8d2be',fcx-64,fcy-44,128,88);
-  box(c,'#d8d2be',fcx-44,fcy-64,88,128);
-  box(c,'#eae4d2',fcx-58,fcy-38,116,76);
-  box(c,'#eae4d2',fcx-38,fcy-58,76,116);
-  box(c,'#bfa264',fcx-60,fcy-1,120,2);box(c,'#bfa264',fcx-1,fcy-60,2,120);
-  // Plaza benches & corner flower parterres
+  const polyOct=(rx,ry,fill,stroke,lw=1)=>{
+   c.beginPath();
+   const k=0.414;
+   c.moveTo(fcx-rx*k,fcy-ry);c.lineTo(fcx+rx*k,fcy-ry);
+   c.lineTo(fcx+rx,fcy-ry*k);c.lineTo(fcx+rx,fcy+ry*k);
+   c.lineTo(fcx+rx*k,fcy+ry);c.lineTo(fcx-rx*k,fcy+ry);
+   c.lineTo(fcx-rx,fcy+ry*k);c.lineTo(fcx-rx,fcy-ry*k);
+   c.closePath();
+   if(fill){c.fillStyle=fill;c.fill()}
+   if(stroke){c.strokeStyle=stroke;c.lineWidth=lw;c.stroke()}
+  };
+  if(typeof c.beginPath==='function'&&typeof c.moveTo==='function'){
+   c.save();
+   // Soft stepped terrace drop shadow & beveled marble outer curb
+   c.translate(3,4);polyOct(70,66,'rgba(24,26,34,.20)',null);c.translate(-3,-4);
+   polyOct(68,64,'#9c9482','#6e685c',2);
+   polyOct(64,60,'#d4cebe','#ede8dc',1.5);
+   // Subtle warm radial flagstone inlay sectors
+   polyOct(54,50,'#c8c0ac','#9e9480',1);
+   polyOct(42,38,'#ded8c6','#c2a66a',1.5);
+   // Ornate brass 8-point royal compass rays inlaid in the terrace stone
+   c.strokeStyle='rgba(182,148,84,.65)';c.lineWidth=1.5;
+   for(let a=0;a<8;a++){
+    const ang=a*Math.PI/4;
+    c.beginPath();c.moveTo(fcx+Math.cos(ang)*22,fcy+Math.sin(ang)*20);
+    c.lineTo(fcx+Math.cos(ang)*58,fcy+Math.sin(ang)*54);c.stroke();
+   }
+   // Concentric carved mosaic stone rings
+   c.strokeStyle='rgba(130,122,106,.45)';c.lineWidth=1;
+   c.beginPath();c.ellipse(fcx,fcy,50,46,0,0,Math.PI*2);c.stroke();
+   c.beginPath();c.ellipse(fcx,fcy,34,31,0,0,Math.PI*2);c.stroke();
+   c.restore();
+  }else{
+   box(c,'#d4cebe',fcx-60,fcy-44,120,88);box(c,'#ded8c6',fcx-44,fcy-60,88,120);
+  }
+  // Sculpted wrought-iron & oak plaza benches + carved stone floral urns
   for(const [bx,by] of [[17,16],[23,16]]){
-   box(c,'rgba(16,20,24,.24)',bx*W+3,by*W+23,28,5);
-   box(c,'#4c3624',bx*W+2,by*W+16,28,9);box(c,'#9c764c',bx*W+4,by*W+17,24,5);box(c,'#c8a06e',bx*W+5,by*W+17,22,2);
+   box(c,'rgba(16,20,28,.28)',bx*W+3,by*W+23,28,5);
+   box(c,'#38281c',bx*W+2,by*W+15,28,10);box(c,'#966e46',bx*W+4,by*W+16,24,6);box(c,'#c89e6c',bx*W+5,by*W+16,22,2);
+   box(c,'#2a2e34',bx*W+3,by*W+16,2,8);box(c,'#2a2e34',bx*W+27,by*W+16,2,8);
   }
   for(const [fx,fy] of [[17,14],[24,14],[17,20],[24,20]]){
-   box(c,'#6e6c64',fx*W+4,fy*W+10,24,14);
-   box(c,wartime?'#4e5d52':'#4c7246',fx*W+6,fy*W+12,20,10);
+   box(c,'rgba(16,20,26,.26)',fx*W+5,fy*W+22,24,5);
+   box(c,'#5c5850',fx*W+3,fy*W+9,26,16);box(c,'#9c9688',fx*W+4,fy*W+10,24,14);box(c,'#cfc9ba',fx*W+5,fy*W+10,22,2);
+   box(c,wartime?'#46584c':'#3b643c',fx*W+6,fy*W+12,20,10);
+   box(c,wartime?'#586e5e':'#55884c',fx*W+7,fy*W+12,18,6);
    if(wartime){
     box(c,'#f2f4ee',fx*W+8,fy*W+14,4,3);box(c,'#f2f4ee',fx*W+17,fy*W+15,4,3);
     box(c,'#e6e2d4',fx*W+13,fy*W+13,3,6);box(c,'#f7d06b',fx*W+14,fy*W+11,2,2);
    }else{
-    box(c,'#e6c86a',fx*W+9,fy*W+14,4,3);box(c,'#d87478',fx*W+18,fy*W+15,4,3);
+    box(c,'#f4d46c',fx*W+8,fy*W+13,4,3);box(c,'#e6707c',fx*W+17,fy*W+14,4,3);
+    box(c,'#fff4d0',fx*W+13,fy*W+12,3,2);
    }
   }
 

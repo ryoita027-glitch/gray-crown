@@ -812,15 +812,56 @@ function drawObject(o){if(RyuneOutskirts.drawObject(ctx,state.map,o,!!state.worl
  if(o.id==='royalCastle'&&!(state.map==='capital'&&typeof CapitalEnvironment!=='undefined'&&CapitalEnvironment.enabled)){ctx.fillStyle='#c9b66e';ctx.fillRect(px+10,py+8,12,18);ctx.fillStyle='#7d3f48';ctx.fillRect(px+13,py+11,6,8)}
  if(o.id==='imperialMarket'||(o.id==='capitalMarket'&&!(state.map==='capital'&&typeof CapitalEnvironment!=='undefined'&&CapitalEnvironment.enabled))){ctx.fillStyle='#765037';ctx.fillRect(px+4,py+19,24,7);ctx.fillStyle=o.id==='capitalMarket'?'#a44d51':'#4e6e84';ctx.fillRect(px+3,py+7,26,9)}
  if(o.id==='capitalFountain'||o.id==='sacredSpring'){
-  const t=Date.now()/260,sp=Math.sin(t)*1.6;
-  ctx.fillStyle='rgba(14,18,26,.30)';ctx.beginPath();ctx.ellipse(px+17,py+22,15,10,0,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#566068';ctx.beginPath();ctx.arc(px+16,py+17,14,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#dcd8cc';ctx.beginPath();ctx.arc(px+16,py+16,13,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#4a8aa0';ctx.beginPath();ctx.arc(px+16,py+16,10,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#84c6d8';ctx.beginPath();ctx.arc(px+16,py+16,7+Math.sin(t)*0.9,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#ebe6d8';ctx.fillRect(px+14,py+8,4,9);ctx.fillRect(px+12,py+11,8,2);
-  ctx.fillStyle='rgba(240,252,255,.88)';ctx.fillRect(px+15,py+3-Math.abs(sp),2,6);
-  ctx.fillRect(px+11,py+9+sp*0.5,2,2);ctx.fillRect(px+19,py+9-sp*0.5,2,2);ctx.fillRect(px+13,py+14,6,1);
+  // Grand Multi-Tiered Carved White-Marble Square Enix Fountain Monument with Animated Sparkling Water Arcs!
+  const t=Date.now()/240,sp=Math.sin(t)*1.8,sacred=o.id==='sacredSpring';
+  const cx=px+16,cy=py+16;
+  ctx.save();
+  // Southeast architectural monument shadow
+  ctx.fillStyle='rgba(12,18,28,.34)';ctx.beginPath();ctx.ellipse(cx+4,cy+9,32,22,0,0,Math.PI*2);ctx.fill();
+  // Outer carved stepped marble rim & coping wall
+  ctx.fillStyle='#5c5a52';ctx.beginPath();ctx.ellipse(cx,cy+5,29,21,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#aba698';ctx.beginPath();ctx.ellipse(cx,cy+2,29,20,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#ebe6d8';ctx.beginPath();ctx.ellipse(cx,cy,28,19,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#ffffff';ctx.beginPath();ctx.ellipse(cx-2,cy-2,24,15,0,0,Math.PI*2);ctx.fill();
+  // Deep recessed crystal water basin with rich radial azure/jade depth gradient
+  ctx.fillStyle=sacred?'#1d646b':'#235b78';ctx.beginPath();ctx.ellipse(cx,cy+1,23,15,0,0,Math.PI*2);ctx.fill();
+  const wg=ctx.createRadialGradient?.(cx-3,cy-2,3,cx,cy+1,23);
+  if(wg&&typeof wg.addColorStop==='function'){
+   wg.addColorStop(0,sacred?'#7ef0dc':'#82daf0');
+   wg.addColorStop(0.55,sacred?'#329e9a':'#3484a6');
+   wg.addColorStop(1,sacred?'#1a545c':'#1d4e6a');
+   ctx.fillStyle=wg;
+  }else{ctx.fillStyle=sacred?'#369ea0':'#3c8aae'}
+  ctx.beginPath();ctx.ellipse(cx,cy+2,21,13,0,0,Math.PI*2);ctx.fill();
+  // Animated concentric foam ripples & sunlit caustic highlights on water surface
+  ctx.strokeStyle='rgba(232,252,255,.55)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.ellipse(cx,cy+2,11+(t%3)*2.5,6.5+(t%3)*1.4,0,0,Math.PI*2);ctx.stroke();
+  ctx.strokeStyle='rgba(255,255,255,.38)';
+  ctx.beginPath();ctx.ellipse(cx,cy+2,16+((t+1.5)%3)*1.8,9.5+((t+1.5)%3),0,0,Math.PI*2);ctx.stroke();
+  // Central two-tiered sculpted marble chalice column & golden finial
+  ctx.fillStyle='rgba(16,32,48,.34)';ctx.beginPath();ctx.ellipse(cx+1,cy+6,9,5,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#969284';ctx.fillRect(cx-4,cy-9,8,15);
+  ctx.fillStyle='#e8e2d2';ctx.fillRect(cx-3,cy-10,6,14);
+  ctx.fillStyle='#ffffff';ctx.fillRect(cx-2,cy-10,2,12);
+  // Upper overflowing marble bowl
+  ctx.fillStyle='#78746a';ctx.beginPath();ctx.ellipse(cx,cy-6,12,5.5,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#f2ede0';ctx.beginPath();ctx.ellipse(cx,cy-8,12,5,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=sacred?'#76ece0':'#7ad4ec';ctx.beginPath();ctx.ellipse(cx,cy-8,9,3.2,0,0,Math.PI*2);ctx.fill();
+  // Top spout spire & gilded crest
+  ctx.fillStyle='#dfd8c6';ctx.fillRect(cx-2,cy-16,4,9);
+  ctx.fillStyle='#eac872';ctx.fillRect(cx-2,cy-18,4,3);ctx.fillStyle='#fff8d2';ctx.fillRect(cx-1,cy-18,2,1);
+  // Animated sparkling cascading water arcs & white foam splashes
+  ctx.strokeStyle='rgba(220,250,255,.82)';ctx.lineWidth=1.5;
+  for(const dir of [-1,1]){
+   ctx.beginPath();ctx.moveTo(cx,cy-17);ctx.quadraticCurveTo(cx+dir*9,cy-19-Math.abs(sp)*0.6,cx+dir*11,cy-7);ctx.stroke();
+   ctx.beginPath();ctx.moveTo(cx+dir*9,cy-6);ctx.quadraticCurveTo(cx+dir*14,cy-4,cx+dir*15,cy+4);ctx.stroke();
+   ctx.fillStyle='rgba(245,254,255,.92)';
+   ctx.fillRect(cx+dir*14-1,cy+3+((dir>0?sp:-sp)*0.4),3,2);
+  }
+  ctx.fillStyle='#ffffff';
+  ctx.fillRect(cx-1,cy-22-Math.abs(sp),2,5);
+  ctx.fillRect(cx-3,cy-20+sp*0.4,2,2);ctx.fillRect(cx+2,cy-20-sp*0.4,2,2);
+  ctx.restore();
  }
  if(o.id==='capitalBarracks'){ctx.fillStyle='#74685a';ctx.fillRect(px+5,py+8,22,19);ctx.fillStyle='#d6caa7';ctx.fillRect(px+9,py+12,14,5)}
  if(o.id==='watchTower'){
@@ -908,150 +949,225 @@ function drawBeast(px,py,type){
  }
 }
 function drawHd2dEdgePolish(m){
- // Global HD-2D Diorama grounding pass across ALL 42 maps:
+ // Global Square Enix HD-2D Diorama grounding pass across ALL 42 maps:
  // 1. Directional southeast ambient occlusion cast by walls/buildings/trees/cliffs onto walkable floors
- // 2. Animated water edge stone banks & sparkles on all river/canal tiles ('R')
- // 3. Organic grass-to-path shoulder softening for maps without bespoke ground shaders
+ // 2. Animated stone embankments & caustic sparkles on all river/canal tiles ('R')
+ // 3. Organic scalloped grass-overhang & rounded inner/outer corners along EVERY dirt/earth road edge!
  const solid=new Set(['W','H','K','S','T','Z']);
  const walk=new Set(['G','Q','P','D','A','E','B','M','F','C']);
  const shimmer=Math.floor(Date.now()/280);
  const mc=mapCols(m),mr=mapRows(m);
+ const at=(x,y)=>(x>=0&&y>=0&&x<mc&&y<mr)?m.tiles[y][x]:null;
+ const isGrass=t=>t==='G'||t==='Q'||t==='T'||t==='B'||t==='M';
+ const autumnMap=['borderland','bordercanyon','relayvillage'].includes(state.map);
+ const gMain=state.map==='elsia'?'#426852':state.map==='empirevillage'?'#4a6949':autumnMap?'#657343':'#547544';
+ const gHi=state.map==='elsia'?'#568466':state.map==='empirevillage'?'#5e825a':autumnMap?'#7d8d52':'#688d50';
+ const gEdge=state.map==='elsia'?'#2a473a':state.map==='empirevillage'?'#324b35':autumnMap?'#45502e':'#3a5634';
+ const dirtRim='rgba(120,96,66,.34)';
  for(let y=0;y<mr;y++){
   for(let x=0;x<mc;x++){
    const ch=m.tiles[y][x],px=x*TILE,py=y*TILE;
    if(ch==='R'){
-    // Subtle bank stone border & sunlit animated water glints across all river/canal maps
-    if(y>0&&m.tiles[y-1][x]!=='R'){ctx.fillStyle='rgba(26,34,38,.36)';ctx.fillRect(px,py,TILE,3);ctx.fillStyle='rgba(196,214,218,.22)';ctx.fillRect(px,py+3,TILE,2)}
-    if(x>0&&m.tiles[y][x-1]!=='R'){ctx.fillStyle='rgba(26,34,38,.24)';ctx.fillRect(px,py,3,TILE)}
+    if(y>0&&m.tiles[y-1][x]!=='R'){ctx.fillStyle='rgba(20,30,38,.42)';ctx.fillRect(px,py,TILE,4);ctx.fillStyle='rgba(196,226,236,.28)';ctx.fillRect(px,py+4,TILE,2)}
+    if(x>0&&m.tiles[y][x-1]!=='R'){ctx.fillStyle='rgba(20,30,38,.28)';ctx.fillRect(px,py,3,TILE)}
     const gl=((x*13+y*7+shimmer)%18);
-    ctx.fillStyle='rgba(232,250,252,.36)';ctx.fillRect(px+4+gl%14,py+7+((x+y)%3)*6,5,1);
-    ctx.fillStyle='rgba(255,255,255,.45)';ctx.fillRect(px+10+((gl+5)%12),py+19,3,1);
+    ctx.fillStyle='rgba(232,252,255,.42)';ctx.fillRect(px+4+gl%14,py+7+((x+y)%3)*6,5,1);
+    ctx.fillStyle='rgba(255,255,255,.55)';ctx.fillRect(px+10+((gl+5)%12),py+19,3,1);
     continue;
    }
    if(!walk.has(ch))continue;
-   const up=y>0?m.tiles[y-1][x]:null,left=x>0?m.tiles[y][x-1]:null;
+   const up=at(x,y-1),dn=at(x,y+1),left=at(x-1,y),right=at(x+1,y);
+   // Soft cool-indigo southeast ambient occlusion from solid walls, cliffs, buildings & trees
    if(up&&solid.has(up)){
-    ctx.fillStyle='rgba(12,16,22,.22)';ctx.fillRect(px,py,TILE,5);
-    ctx.fillStyle='rgba(12,16,22,.09)';ctx.fillRect(px,py+5,TILE,4);
+    ctx.fillStyle='rgba(14,18,28,.24)';ctx.fillRect(px,py,TILE,5);
+    ctx.fillStyle='rgba(14,18,28,.10)';ctx.fillRect(px,py+5,TILE,5);
    }
    if(left&&solid.has(left)){
-    ctx.fillStyle='rgba(12,16,22,.14)';ctx.fillRect(px,py,4,TILE);
-    ctx.fillStyle='rgba(12,16,22,.06)';ctx.fillRect(px+4,py,3,TILE);
+    ctx.fillStyle='rgba(14,18,28,.15)';ctx.fillRect(px,py,4,TILE);
+    ctx.fillStyle='rgba(14,18,28,.06)';ctx.fillRect(px+4,py,3,TILE);
    }
    if(up&&solid.has(up)&&left&&solid.has(left)){
-    ctx.fillStyle='rgba(10,14,20,.14)';ctx.fillRect(px,py,6,6);
+    ctx.fillStyle='rgba(10,14,24,.14)';ctx.fillRect(px,py,7,7);
    }
-   // Soften hard 32px grid edges between grass and dirt lanes on maps without custom transitions
+   // Organic scalloped grassy shoulders & softly rounded corners along EVERY dirt/path tile (eliminates boxy 90-deg Lego edges!)
    if((ch==='P'||ch==='D')&&!['village','capital'].includes(state.map)){
-    const gEdge=t=>t==='G'||t==='Q';
-    if(gEdge(left)){ctx.fillStyle='rgba(88,112,72,.52)';ctx.fillRect(px,py,3,TILE);ctx.fillStyle='rgba(88,112,72,.26)';ctx.fillRect(px+3,py+2,2,TILE-4)}
-    if(x+1<mc&&gEdge(m.tiles[y][x+1])){ctx.fillStyle='rgba(88,112,72,.52)';ctx.fillRect(px+TILE-3,py,3,TILE);ctx.fillStyle='rgba(88,112,72,.26)';ctx.fillRect(px+TILE-5,py+2,2,TILE-4)}
-    if(gEdge(up)){ctx.fillStyle='rgba(88,112,72,.52)';ctx.fillRect(px,py,TILE,3);ctx.fillStyle='rgba(88,112,72,.26)';ctx.fillRect(px+2,py+3,TILE-4,2)}
-    if(y+1<mr&&gEdge(m.tiles[y+1][x])){ctx.fillStyle='rgba(88,112,72,.52)';ctx.fillRect(px,py+TILE-3,TILE,3);ctx.fillStyle='rgba(88,112,72,.26)';ctx.fillRect(px+2,py+TILE-5,TILE-4,2)}
+    const h=((Math.imul(x+17,374761393)^Math.imul(y+29,668265263))>>>0);
+    if(isGrass(left)){
+     for(let i=0;i<8;i++){
+      const w=2+(((h>>>i)+i)%3);
+      ctx.fillStyle=i%2?gMain:gHi;ctx.fillRect(px,py+i*4,w,4);
+      ctx.fillStyle=gEdge;ctx.fillRect(px+w,py+i*4,1,4);
+      ctx.fillStyle=dirtRim;ctx.fillRect(px+w+1,py+i*4,2,4);
+     }
+    }
+    if(isGrass(right)){
+     for(let i=0;i<8;i++){
+      const w=2+(((h>>>(i+3))+i)%3);
+      ctx.fillStyle=i%2?gMain:gHi;ctx.fillRect(px+TILE-w,py+i*4,w,4);
+      ctx.fillStyle=gEdge;ctx.fillRect(px+TILE-w-1,py+i*4,1,4);
+      ctx.fillStyle=dirtRim;ctx.fillRect(px+TILE-w-3,py+i*4,2,4);
+     }
+    }
+    if(isGrass(up)){
+     for(let i=0;i<8;i++){
+      const ht=2+(((h>>>(i+5))+i)%3);
+      ctx.fillStyle=i%2?gMain:gHi;ctx.fillRect(px+i*4,py,4,ht);
+      ctx.fillStyle=gEdge;ctx.fillRect(px+i*4,py+ht,4,1);
+      ctx.fillStyle=dirtRim;ctx.fillRect(px+i*4,py+ht+1,4,2);
+     }
+    }
+    if(isGrass(dn)){
+     for(let i=0;i<8;i++){
+      const ht=2+(((h>>>(i+7))+i)%3);
+      ctx.fillStyle=i%2?gMain:gHi;ctx.fillRect(px+i*4,py+TILE-ht,4,ht);
+      ctx.fillStyle=gEdge;ctx.fillRect(px+i*4,py+TILE-ht-1,4,1);
+      ctx.fillStyle=dirtRim;ctx.fillRect(px+i*4,py+TILE-ht-3,4,2);
+     }
+    }
+    // Rounded outer corner grass overhangs (softens every 90-degree T-junction & bend!)
+    if(isGrass(left)&&isGrass(up)){ctx.fillStyle=gMain;ctx.fillRect(px,py,7,5);ctx.fillRect(px,py+5,5,2);ctx.fillStyle=gEdge;ctx.fillRect(px+5,py+5,2,2)}
+    if(isGrass(right)&&isGrass(up)){ctx.fillStyle=gMain;ctx.fillRect(px+25,py,7,5);ctx.fillRect(px+27,py+5,5,2);ctx.fillStyle=gEdge;ctx.fillRect(px+25,py+5,2,2)}
+    if(isGrass(left)&&isGrass(dn)){ctx.fillStyle=gMain;ctx.fillRect(px,py+27,7,5);ctx.fillRect(px,py+25,5,2);ctx.fillStyle=gEdge;ctx.fillRect(px+5,py+25,2,2)}
+    if(isGrass(right)&&isGrass(dn)){ctx.fillStyle=gMain;ctx.fillRect(px+25,py+27,7,5);ctx.fillRect(px+27,py+25,5,2);ctx.fillStyle=gEdge;ctx.fillRect(px+25,py+25,2,2)}
+    // Rounded inner diagonal corner grass bevels
+    if(!isGrass(left)&&!isGrass(up)&&isGrass(at(x-1,y-1))){ctx.fillStyle=gMain;ctx.fillRect(px,py,5,4);ctx.fillStyle=gEdge;ctx.fillRect(px+5,py,1,4);ctx.fillRect(px,py+4,5,1)}
+    if(!isGrass(right)&&!isGrass(up)&&isGrass(at(x+1,y-1))){ctx.fillStyle=gMain;ctx.fillRect(px+27,py,5,4);ctx.fillStyle=gEdge;ctx.fillRect(px+26,py,1,4);ctx.fillRect(px+27,py+4,5,1)}
+    if(!isGrass(left)&&!isGrass(dn)&&isGrass(at(x-1,y+1))){ctx.fillStyle=gMain;ctx.fillRect(px,py+28,5,4);ctx.fillStyle=gEdge;ctx.fillRect(px+5,py+28,1,4);ctx.fillRect(px,py+27,5,1)}
+    if(!isGrass(right)&&!isGrass(dn)&&isGrass(at(x+1,y+1))){ctx.fillStyle=gMain;ctx.fillRect(px+27,py+28,5,4);ctx.fillStyle=gEdge;ctx.fillRect(px+26,py+28,1,4);ctx.fillRect(px+27,py+27,5,1)}
    }
   }
  }
 }
 function drawWorldAtmosphere(map){
- // Unified Square Enix HD-2D cinematic lighting, additive light blooms, drifting motes & diorama depth vignette across ALL 42 maps
+ // Unified Square Enix HD-2D cinematic lighting: volumetric soft-gradient god rays, additive blooms, living particles & diorama depth framing
  const w=mapCols(map)*TILE,h=mapRows(map)*TILE,now=Date.now();
  ctx.save();
  const bloom=(gx,gy,r,col)=>{
   const g=ctx.createRadialGradient?.(gx,gy,2,gx,gy,r);
   if(g&&typeof g.addColorStop==='function'){
    ctx.save();ctx.globalCompositeOperation='lighter';
-   g.addColorStop(0,col);g.addColorStop(1,'rgba(0,0,0,0)');
+   g.addColorStop(0,col);g.addColorStop(0.5,col.replace(/[\d.]+\)$/,m=>(parseFloat(m)*0.35).toFixed(2)+')'));
+   g.addColorStop(1,'rgba(0,0,0,0)');
    ctx.fillStyle=g;ctx.fillRect(gx-r,gy-r,r*2,r*2);ctx.restore();
   }
  };
+ // Soft gradient volumetric sunbeam shaft (true Octopath Traveler golden god-rays!)
+ const sunShaft=(sx,bw,colTop,colMid)=>{
+  const g=ctx.createLinearGradient?.(sx,0,sx-90,h*0.85);
+  if(!g||typeof g.addColorStop!=='function')return;
+  ctx.save();ctx.globalCompositeOperation='screen';
+  g.addColorStop(0,colTop);g.addColorStop(0.55,colMid);g.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=g;
+  ctx.beginPath();ctx.moveTo(sx,0);ctx.lineTo(sx+bw,0);ctx.lineTo(sx+bw-130,h);ctx.lineTo(sx-130,h);ctx.closePath();ctx.fill();
+  ctx.restore();
+ };
  if(map==='capital'&&getWorldSwitch('returnedKingdom')){
-  // Chapter 7 Wartime Overcast Aldina: heavy slate-blue sky, dim streetlamp halos & drifting memorial petals/ash
-  ctx.fillStyle='rgba(24,34,52,.20)';ctx.fillRect(0,0,w,h);
-  for(const [lx,ly] of [[18,12],[23,12],[18,18],[23,18],[18,24],[23,24],[12,13],[29,13]])bloom(lx*TILE+16,ly*TILE+14,44,'rgba(210,180,126,.14)');
+  ctx.fillStyle='rgba(20,30,48,.22)';ctx.fillRect(0,0,w,h);
+  for(const [lx,ly] of [[18,14],[23,14],[18,20],[23,20],[18,26],[23,26],[12,15],[29,15]])bloom(lx*TILE+16,ly*TILE+10,48,'rgba(220,186,126,.18)');
   const drift=Math.floor(now/240);
-  for(let i=0;i<32;i++){
+  for(let i=0;i<36;i++){
    const mx=((i*173+drift*3)%(w-32))+16,my=((i*119+drift*2)%(h-32))+16;
-   ctx.fillStyle=i%3===0?'rgba(244,248,252,.56)':'rgba(186,196,210,.30)';
+   ctx.fillStyle=i%3===0?'rgba(246,250,255,.62)':'rgba(186,198,214,.34)';
    ctx.fillRect(mx,my,i%3===0?3:2,2);
   }
  }else if(['village','ryunefields','ryunebrook','capital','road','roadhollow','northroad','northwaystation','northwatch','borderland','relayvillage'].includes(map)){
-  // Warm golden afternoon HD-2D sunbeams + glowing streetlamps / cottage windows
   const postCeremony=map==='capital'&&isEventComplete('alpha.capital.ceremony');
   const dusk=['road','northroad','borderland','relayvillage'].includes(map);
-  ctx.fillStyle=dusk?'rgba(255,198,128,.055)':map==='capital'?(postCeremony?'rgba(252,216,162,.052)':'rgba(255,240,192,.064)'):'rgba(255,238,176,.056)';
-  for(let sx=56;sx<w+120;sx+=200){
-   ctx.beginPath();ctx.moveTo(sx,0);ctx.lineTo(sx+82,0);ctx.lineTo(sx-48,h);ctx.lineTo(sx-130,h);ctx.closePath();ctx.fill();
+  // Subtle sunlit warm color-grading top atmospheric perspective wash
+  const skyWash=ctx.createLinearGradient?.(0,0,0,h*0.42);
+  if(skyWash&&typeof skyWash.addColorStop==='function'){
+   ctx.save();ctx.globalCompositeOperation='screen';
+   skyWash.addColorStop(0,dusk?'rgba(255,176,104,.11)':'rgba(255,232,168,.11)');
+   skyWash.addColorStop(1,'rgba(255,220,150,0)');
+   ctx.fillStyle=skyWash;ctx.fillRect(0,0,w,h*0.42);ctx.restore();
   }
+  // Volumetric diagonal Square Enix HD-2D sunbeams
+  const cTop=dusk?'rgba(255,186,112,.14)':postCeremony?'rgba(255,220,156,.13)':'rgba(255,240,184,.15)';
+  const cMid=dusk?'rgba(255,170,96,.05)':'rgba(255,228,158,.05)';
+  for(let sx=70;sx<w+140;sx+=210)sunShaft(sx,78,cTop,cMid);
+
+  // Warm additive window, oven, lantern & water reflections
   if(map==='capital'){
-   for(const [lx,ly] of [[18,14],[23,14],[18,20],[23,20],[18,26],[23,26],[12,15],[29,15],[18,7],[23,7]])bloom(lx*TILE+16,ly*TILE+14,52,'rgba(255,204,112,.18)');
-   bloom(20.5*TILE+16,17*TILE+16,64,'rgba(148,224,244,.14)');
+   for(const [lx,ly] of [[18,14],[23,14],[18,20],[23,20],[18,26],[23,26],[12,15],[29,15],[18,7],[23,7]])bloom(lx*TILE+16,ly*TILE+10,56,'rgba(255,204,112,.24)');
+   bloom(20*TILE+16,17*TILE+16,74,'rgba(148,236,252,.20)');
   }else if(map==='village'){
-   for(const [lx,ly] of [[4,4],[18,4],[4,11],[18,11]])bloom(lx*TILE+48,ly*TILE+62,48,'rgba(255,206,118,.15)');
+   // Cozy amber glow halos around all 4 village cottage doorways & Eda's brick bakery oven!
+   for(const [lx,ly] of [[3,2],[18,2],[3,9],[18,9]])bloom(lx*TILE+48,ly*TILE+68,58,'rgba(255,206,116,.20)');
+   bloom(7*TILE+16,5*TILE+20,44,'rgba(255,176,84,.26)');
+  }else if(map==='ryunebrook'){
+   bloom(7.5*TILE+16,6*TILE+16,76,'rgba(164,238,248,.16)');
   }
-  const drift=Math.floor(now/280);
-  for(let i=0;i<18;i++){
-   const mx=((i*193+map.length*47+drift*2)%(w-48))+24,my=((i*131+map.length*29+drift)%(h-56))+28;
-   ctx.fillStyle=map==='capital'?(i%3===0?'rgba(224,96,108,.54)':i%3===1?'rgba(255,250,238,.58)':'rgba(255,240,190,.42)'):'rgba(255,248,210,.42)';
-   ctx.fillRect(mx,my,map==='capital'&&i%3<2?3:2,2);
+  // Drifting sunlit golden pollen motes, petals & glowing river sparkles
+  const t=now/1000;
+  const count=map==='capital'?32:24;
+  for(let i=0;i<count;i++){
+   const mx=((i*179+map.length*47+t*(9+(i%5)*2)+Math.sin(t+i)*12)%(w-32)+w)%w;
+   const my=((i*131+map.length*29+t*(4+(i%3)*2)+Math.cos(t*0.7+i)*8)%(h-32)+h)%h;
+   if(map==='capital'&&i%3===0){
+    ctx.fillStyle='rgba(232,102,116,.66)';ctx.fillRect(mx|0,my|0,3,2);
+   }else if(map==='capital'&&i%3===1){
+    ctx.fillStyle='rgba(255,252,240,.72)';ctx.fillRect(mx|0,my|0,3,2);
+   }else{
+    ctx.fillStyle='rgba(255,246,196,.62)';ctx.fillRect(mx|0,my|0,2,2);
+    if(i%4===0){ctx.fillStyle='rgba(255,244,186,.22)';ctx.fillRect((mx-1)|0,(my-1)|0,4,4)}
+   }
   }
  }else if(map==='cave'){
-  // Atmospheric blue-slate dungeon depth + flickering orange torchlight blooms
-  ctx.fillStyle='rgba(12,18,34,.18)';ctx.fillRect(0,0,w,h);
-  const pulse=0.18+Math.sin(now/180)*0.04;
-  for(const [tx,ty] of [[9,5],[13,5],[17,5],[6,9],[18,9]])bloom(tx*TILE+16,ty*TILE+12,72,`rgba(255,186,92,${pulse.toFixed(2)})`);
+  ctx.fillStyle='rgba(10,16,32,.22)';ctx.fillRect(0,0,w,h);
+  const pulse=0.24+Math.sin(now/180)*0.05;
+  for(const [tx,ty] of [[9,5],[13,5],[17,5],[6,9],[18,9]])bloom(tx*TILE+16,ty*TILE+12,78,`rgba(255,186,92,${pulse.toFixed(2)})`);
  }else if(['ashroad','frontier','frontierfield','bordercanyon','watchfort','ravine','yukiroad','yukiridge','returnroad','finalfield','imperialcamp','royalcamp'].includes(map)){
-  // Dramatic twilight frontier haze + glowing embers, smoke motes & camp brazier blooms
-  ctx.fillStyle='rgba(38,24,18,.12)';ctx.fillRect(0,0,w,h);
-  const drift=Math.floor(now/220);
-  for(let i=0;i<22;i++){
-   const mx=((i*179+map.length*53+drift*2)%(w-32))+16,my=((i*113+map.length*37-drift+h*4)%(h-32))+16;
-   ctx.fillStyle=i%3===0?'rgba(255,168,78,.54)':'rgba(218,212,202,.28)';
-   ctx.fillRect(mx,my,i%3===0?3:2,2);
+  ctx.fillStyle='rgba(36,22,18,.15)';ctx.fillRect(0,0,w,h);
+  sunShaft(140,95,'rgba(255,154,84,.12)','rgba(255,128,68,.04)');
+  const t=now/1000;
+  for(let i=0;i<28;i++){
+   const mx=((i*179+map.length*53+t*14)%(w-24)+w)%w;
+   const my=((i*113+map.length*37-t*11+h*10)%(h-24)+h)%h;
+   if(i%3===0){
+    ctx.fillStyle='rgba(255,172,76,.74)';ctx.fillRect(mx|0,my|0,3,2);
+    ctx.fillStyle='rgba(255,130,48,.24)';ctx.fillRect((mx-1)|0,(my-1)|0,5,4);
+   }else{
+    ctx.fillStyle='rgba(218,210,200,.34)';ctx.fillRect(mx|0,my|0,2,2);
+   }
   }
   if(['imperialcamp','royalcamp','finalfield','frontier'].includes(map)){
-   for(const [lx,ly] of [[6,5],[17,5],[11,9]])bloom(lx*TILE+16,ly*TILE+16,58,'rgba(255,164,76,.16)');
+   for(const [lx,ly] of [[6,5],[17,5],[11,9]])bloom(lx*TILE+16,ly*TILE+16,66,'rgba(255,164,76,.22)');
   }
  }else if(['empirevillage','imperialcity'].includes(map)){
-  // Crisp cool cerulean canal sunlight + shimmering water reflections
-  ctx.fillStyle='rgba(208,236,255,.045)';
-  for(const sx of [92,310,540]){
-   ctx.beginPath();ctx.moveTo(sx,0);ctx.lineTo(sx+70,0);ctx.lineTo(sx-40,h);ctx.lineTo(sx-110,h);ctx.closePath();ctx.fill();
-  }
-  const drift=Math.floor(now/300);
-  for(let i=0;i<14;i++){
-   const mx=((i*167+drift)%(w-40))+20,my=((i*127+drift)%(h-40))+20;
-   ctx.fillStyle='rgba(220,244,255,.38)';ctx.fillRect(mx,my,2,2);
+  for(let sx=90;sx<w+120;sx+=220)sunShaft(sx,76,'rgba(204,238,255,.13)','rgba(180,224,252,.04)');
+  const t=now/1000;
+  for(let i=0;i<22;i++){
+   const mx=((i*167+t*8)%(w-32)+w)%w,my=((i*127+t*5)%(h-32)+h)%h;
+   ctx.fillStyle='rgba(226,248,255,.52)';ctx.fillRect(mx|0,my|0,2,2);
   }
  }else if(map==='elsia'){
-  // Mystical emerald-gold sanctuary sunbeams + floating golden spirit fireflies
-  ctx.fillStyle='rgba(196,246,204,.055)';
-  for(const sx of [80,280,490]){
-   ctx.beginPath();ctx.moveTo(sx,0);ctx.lineTo(sx+76,0);ctx.lineTo(sx-44,h);ctx.lineTo(sx-120,h);ctx.closePath();ctx.fill();
-  }
+  for(let sx=70;sx<w+120;sx+=200)sunShaft(sx,84,'rgba(196,252,216,.16)','rgba(164,242,202,.05)');
   const drift=now/600;
-  for(let i=0;i<20;i++){
-   const mx=((i*151+Math.sin(drift+i)*18+w)%(w-48))+24,my=((i*97+Math.cos(drift*0.8+i)*14+h)%(h-48))+24;
-   ctx.fillStyle=i%2?'rgba(255,244,168,.62)':'rgba(176,248,204,.50)';
-   ctx.fillRect(mx,my,2,2);
+  for(let i=0;i<28;i++){
+   const mx=((i*151+Math.sin(drift+i)*20+w)%(w-36))+18,my=((i*97+Math.cos(drift*0.8+i)*15+h)%(h-36))+18;
+   ctx.fillStyle=i%2?'rgba(255,248,176,.78)':'rgba(176,252,216,.66)';
+   ctx.fillRect(mx|0,my|0,2,2);
+   ctx.fillStyle=i%2?'rgba(255,244,160,.22)':'rgba(156,248,208,.20)';
+   ctx.fillRect((mx-2)|0,(my-2)|0,6,6);
   }
-  bloom(12*TILE+16,6*TILE+16,88,'rgba(220,255,196,.16)');
+  bloom(12*TILE+16,6*TILE+16,96,'rgba(220,255,204,.22)');
+  bloom(5*TILE+16,10*TILE+16,74,'rgba(148,250,232,.22)');
  }else if(INTERIOR_MAPS.includes(map)){
-  // Cozy hearth & lantern additive glow inside all 15 interiors
   const g=ctx.createRadialGradient?.(w*.5,h*.45,76,w*.5,h*.5,w*.58);
-  if(g&&typeof g.addColorStop==='function'){g.addColorStop(0,'rgba(255,226,168,.07)');g.addColorStop(1,'rgba(8,10,16,.24)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h)}
-  bloom(12*TILE+16,5*TILE+12,72,'rgba(255,204,116,.16)');
-  bloom(17*TILE+16,9*TILE+16,64,'rgba(255,164,84,.15)');
+  if(g&&typeof g.addColorStop==='function'){g.addColorStop(0,'rgba(255,226,168,.10)');g.addColorStop(1,'rgba(8,10,18,.28)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h)}
+  bloom(12*TILE+16,5*TILE+12,78,'rgba(255,204,116,.22)');
+  bloom(17*TILE+16,9*TILE+16,68,'rgba(255,164,84,.20)');
  }
- // Universal Square Enix HD-2D top & bottom diorama depth framing vignette
- const topV=ctx.createLinearGradient?.(0,0,0,46);
+ // Universal Square Enix HD-2D tilt-shift diorama depth framing (warm top horizon + cool indigo foreground depth)
+ const topV=ctx.createLinearGradient?.(0,0,0,54);
  if(topV&&typeof topV.addColorStop==='function'){
-  topV.addColorStop(0,'rgba(10,14,22,.22)');topV.addColorStop(1,'rgba(10,14,22,0)');
-  ctx.fillStyle=topV;ctx.fillRect(0,0,w,46);
+  topV.addColorStop(0,'rgba(14,18,28,.24)');topV.addColorStop(1,'rgba(14,18,28,0)');
+  ctx.fillStyle=topV;ctx.fillRect(0,0,w,54);
  }
- const botV=ctx.createLinearGradient?.(0,h-48,0,h);
+ const botV=ctx.createLinearGradient?.(0,h-56,0,h);
  if(botV&&typeof botV.addColorStop==='function'){
-  botV.addColorStop(0,'rgba(10,14,22,0)');botV.addColorStop(1,'rgba(10,14,22,.26)');
-  ctx.fillStyle=botV;ctx.fillRect(0,h-48,w,48);
+  botV.addColorStop(0,'rgba(10,14,24,0)');botV.addColorStop(1,'rgba(10,14,24,.30)');
+  ctx.fillStyle=botV;ctx.fillRect(0,h-56,w,56);
  }
  ctx.restore();
 }
