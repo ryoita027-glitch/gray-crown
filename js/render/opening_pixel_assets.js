@@ -1015,7 +1015,119 @@ const OpeningPixelAssets=(()=>{
   }
   return img
  }
+ // ---- HD-2D HERO-PARITY ILLUSTRATED NPC SPRITE SHEETS (assets/npc/hd/*.png) ----
+ // 30 bespoke 4-direction 512x128 illustrated chibi sheets matching Karen/Triton/Sophie/Margaret!
+ const HD_NPC_MAP=Object.freeze({
+  baker:'baker',capitalBakerWife:'baker',strollerBaker:'baker',
+  mayor:'mayor',bellKeeper:'mayor',
+  farmer:'farmer',empireFarmer:'farmer',
+  fieldWorker:'fieldWorker',oldAngler:'fieldWorker',brookKeeper:'fieldWorker',waystationDriver:'fieldWorker',
+  oldwoman:'oldwoman',chapelElder:'oldwoman',
+  ren:'ren',capitalStreetKid:'ren',
+  mika:'mika',soldierSister:'mika',
+  lulu:'lulu',strollerChild:'lulu',
+  emi:'emi',herbGirl:'emi',
+  noa:'noa',empireChild:'noa',
+  messenger:'messenger',capitalCrier:'messenger',
+  veteran:'veteran',capitalOldGuard:'veteran',oldImperialSoldier:'veteran',royalSergeant:'veteran',
+  father:'father',
+  caretaker:'caretaker',frontierMedic:'caretaker',royalMedicCaptain:'caretaker',waystationMonk:'caretaker',
+  karenMother:'karenMother',mother:'karenMother',soldierMother:'karenMother',rationMother:'karenMother',strollerVillager:'karenMother',refugee:'karenMother',
+  elsiaResident:'elsiaResident',finalEmpireScout:'elsiaResident',
+  orphan:'boyVillage',theo:'boyVillage',karenBrother:'boyVillage',waystationChild:'boyVillage',relayChild:'boyVillage',
+  margaretMother:'ladyNoble',strollerFestive:'ladyNoble',capitalShopper:'ladyNoble',
+  capitalFlowerGirl:'flowerGirl',
+  merchant:'merchant',northPeddler:'merchant',waystationPeddler:'merchant',lostMerchant:'merchant',
+  capitalVendor:'merchant',roadTraveler:'merchant',strollerMerchant:'merchant',canalVendor:'merchant',imperialQuartermaster:'merchant',
+  kingdomGuard:'kingdomGuard',capitalRecruit:'kingdomGuard',waystationGuard:'kingdomGuard',
+  strollerPatrol:'kingdomGuard',finalKingdomSoldier:'kingdomGuard',frontierOfficer:'kingdomGuard',
+  fortCommander:'kingdomGuard',offDutySoldier:'kingdomGuard',tiredGuard:'kingdomGuard',
+  imperialGuard:'imperialGuard',strollerImperialPatrol:'imperialGuard',vanguardCaptain:'imperialGuard',
+  imperialVeteranGuard:'imperialGuard',woundedImperial:'imperialGuard',imperialPatrolEnemy:'imperialGuard',
+  granz:'granz',granzFinal:'granz',
+  zester:'zester',zenith:'zester',
+  klein:'klein',
+  shion:'shion',
+  chapelPriest:'priest',fieldPriest:'priest',elsiaElder:'priest',bookSeller:'priest',
+  capitalScholar:'priest',studentReader:'priest',recordKeeper:'priest',strollerScholar:'priest',decisionGuide:'priest',clerk:'priest',
+  capitalSmith:'smith',karenFather:'smith',armoryApprentice:'smith',canalBoatman:'smith',banditEnemy:'smith',
+  scout:'scout',frontierScout:'scout',borderScout:'scout',returnScout:'scout',waystationBard:'scout',strollerBard:'scout',
+  imperialCitizen:'imperialCitizen',capitalCitizen:'imperialCitizen',capitalOfficial:'imperialCitizen',strollerSomber:'imperialCitizen',
+  capitalInnHost:'innHost',waystationHost:'innHost',relayHost:'innHost',empireInnkeeper:'innHost',imperialInnHost:'innHost'
+ });
+ const hdSheetCache=new Map();
+ function resolveHdSrc(key){
+  const rel='assets/npc/hd/'+key+'.png';
+  return (typeof window!=='undefined'&&window.__GC_INLINE_ASSETS__&&window.__GC_INLINE_ASSETS__[rel])||rel;
+ }
+ function getHdSheet(id){
+  const key=HD_NPC_MAP[id];
+  if(!key||typeof Image==='undefined')return null;
+  let rec=hdSheetCache.get(key);
+  if(!rec){
+   rec={key,img:new Image(),ready:false,failed:false};
+   rec.img.onload=()=>{rec.ready=true;GC?.Render?.World?.draw?.()};
+   rec.img.onerror=()=>{rec.failed=true};
+   rec.img.src=resolveHdSrc(key);
+   hdSheetCache.set(key,rec);
+  }
+  return rec.ready?rec.img:null;
+ }
+ if(typeof Image!=='undefined'){
+  for(const k of ['baker','mayor','farmer','fieldWorker','oldwoman','ren','mika','lulu','messenger','veteran','father','caretaker','karenMother','boyVillage','ladyNoble','merchant','smith','kingdomGuard','imperialGuard','granz','klein','priest','flowerGirl','innHost','scout','imperialCitizen','elsiaResident','shion','zester','emi','noa']){
+   getHdSheet(k);
+  }
+ }
+ const SPEAKER_HD_MAP=[
+  ['エダ','baker'],['パン屋','baker'],
+  ['村長','mayor'],
+  ['農夫','farmer'],['畑','fieldWorker'],['釣り','fieldWorker'],['川守','fieldWorker'],
+  ['老婆','oldwoman'],['おばあ','oldwoman'],['長老','priest'],
+  ['レン','ren'],['ミカ','mika'],['ルル','lulu'],['エミ','emi'],['ノア','noa'],['テオ','boyVillage'],
+  ['孤児','boyVillage'],['弟','boyVillage'],['子ども','boyVillage'],['少年','boyVillage'],['少女','lulu'],
+  ['伝令','messenger'],['触れ役','messenger'],
+  ['古参兵','veteran'],['剣の師','veteran'],['老兵','veteran'],['軍曹','veteran'],
+  ['カレンの母','karenMother'],['母','karenMother'],['世話役','caretaker'],['衛生','caretaker'],['看護','caretaker'],
+  ['カレンの父','smith'],['鍛冶','smith'],['船頭','smith'],
+  ['マーガレットの母','ladyNoble'],['花売り','flowerGirl'],
+  ['グランツ','granz'],['ゼスター','zester'],['ゼニス','zester'],
+  ['クライン','klein'],['シオン','shion'],
+  ['帝国兵','imperialGuard'],['帝国騎士','imperialGuard'],['前衛隊長','imperialGuard'],
+  ['王国兵','kingdomGuard'],['兵士','kingdomGuard'],['衛兵','kingdomGuard'],['隊長','kingdomGuard'],['司令','kingdomGuard'],['新兵','kingdomGuard'],
+  ['神父','priest'],['司祭','priest'],['学者','priest'],['書記','priest'],['本屋','priest'],['案内','priest'],
+  ['宿','innHost'],['女将','innHost'],
+  ['商人','merchant'],['行商','merchant'],['旅人','merchant'],
+  ['斥候','scout'],['吟遊','scout'],
+  ['エルシア','elsiaResident'],['帝国市民','imperialCitizen'],['市民','imperialCitizen'],['役人','imperialCitizen']
+ ];
+ function hdPortraitMarkup(speaker){
+  if(!speaker||['カレン','トリトン','ソフィ','マーガレット','ナレーション','システム'].includes(speaker))return '';
+  const s=String(speaker);
+  let key=null;
+  for(const [needle,k] of SPEAKER_HD_MAP){if(s.includes(needle)){key=k;break}}
+  if(!key)return '';
+  const src=resolveHdSrc(key);
+  return `<div class="portrait-hd-npc" aria-hidden="true"><img src="${src}" alt="" /></div>`;
+ }
  function drawNpc(c,n,dir='down',now=0){
+  const hdImg=getHdSheet(n.id);
+  if(hdImg){
+   const dIdx=dirs[dir]??0;
+   const centerX=n.x*32+16,footY=n.y*32+30,destSize=44;
+   let seed=0;for(const ch of String(n.id||''))seed=(seed*31+ch.charCodeAt(0))&255;
+   const breath=(now>0&&!(typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion:reduce)').matches))
+    ?Math.sin(now/720+seed*0.37)*0.45:0;
+   const drawW=destSize,drawH=destSize+breath;
+   c.save();
+   if(c.beginPath&&c.ellipse&&c.fill){
+    c.fillStyle='rgba(14,22,22,.30)';
+    c.beginPath();c.ellipse(centerX,footY-1,9.5,3.5,0,0,Math.PI*2);c.fill();
+   }
+   c.imageSmoothingEnabled=true;
+   if('imageSmoothingQuality' in c)c.imageSmoothingQuality='high';
+   c.drawImage(hdImg,dIdx*128,0,128,128,Math.round(centerX-drawW/2),Math.round(footY-drawH),drawW,drawH);
+   c.restore();return true
+  }
   if(tryFeatured(c,n,dir,now))return true;
   const profile=designs[n.id]||extendedDesigns[n.id];if(!profile)return false;
   let sheet=npcCache.get(n.id);
@@ -1036,6 +1148,21 @@ const OpeningPixelAssets=(()=>{
   c.restore();return true
  }
  function drawWalker(c,id,tx,ty,dir='down',frame=0){
+  const hdImg=getHdSheet(id);
+  if(hdImg){
+   const dIdx=dirs[dir]??0,destSize=43,centerX=tx*32+16,footY=ty*32+30;
+   const bob=Math.abs(Math.sin(((frame||0)%4)*Math.PI/2))*1.9;
+   const drawX=Math.round((centerX-destSize/2)*2)/2,drawY=Math.round((footY-destSize-bob)*2)/2;
+   c.save();
+   if(c.beginPath&&c.ellipse&&c.fill){
+    c.fillStyle='rgba(14,22,22,.26)';
+    c.beginPath();c.ellipse(centerX,footY-1,8.5,3.2,0,0,Math.PI*2);c.fill();
+   }
+   c.imageSmoothingEnabled=true;
+   if('imageSmoothingQuality' in c)c.imageSmoothingQuality='high';
+   c.drawImage(hdImg,dIdx*128,0,128,128,drawX,drawY,destSize,destSize);
+   c.restore();return true
+  }
   const profile=designs[id]||extendedDesigns[id];if(!profile)return false;
   let sheet=npcCache.get(id);
   if(!sheet){sheet=makeNpc(profile,id);if(!sheet)return false;npcCache.set(id,sheet)}
@@ -1219,6 +1346,6 @@ const OpeningPixelAssets=(()=>{
   c.drawImage(tile,0,0,104,108,x-4,y-10,112,116);
   c.restore();return true
  }
- const api={designs,identities,featuredNames,featuredStatus,drawNpc,drawWalker,drawHouse,dirs,getNpcAtlas:id=>npcCache.get(id),getHouseTile:id=>houseCache.get(id)};
+ const api={designs,identities,featuredNames,featuredStatus,drawNpc,drawWalker,drawHouse,dirs,hdPortraitMarkup,getHdSheet,getNpcAtlas:id=>npcCache.get(id),getHouseTile:id=>houseCache.get(id)};
  return api
 })();

@@ -204,7 +204,7 @@ const RyuneEnvironment=(()=>{
  }
 
  const grandVillageBuildings=[
-  {x:4,y:3,w:6,h:4,tag:'ryune_karen',region:'rural',ruralStyle:'thatch',emblem:'wreath',chimneyLeft:true,doorOffsetPx:3*32+16},
+  {x:4,y:3,w:6,h:4,tag:'ryune_karen',hdSprite:'ryune_karen',region:'rural',ruralStyle:'thatch',emblem:'wreath',chimneyLeft:false,doorOffsetPx:3*32+16},
   {x:24,y:3,w:7,h:4,tag:'ryune_orphanage',region:'rural',ruralStyle:'plank_hall',emblem:'bell',roofDark:'#2e4634',roofMain:'#4c6c50',roofHi:'#70946c',bellGable:true,chimneyLeft:false,doorOffsetPx:3*32+16},
   {x:4,y:15,w:6,h:4,tag:'ryune_mayor',region:'rural',ruralStyle:'fieldstone',emblem:'crest',roofDark:'#303a48',roofMain:'#4e5a6a',roofHi:'#707e92',chimneyLeft:false,doorOffsetPx:3*32+16},
   {x:27,y:15,w:6,h:4,tag:'ryune_cottage',region:'rural',ruralStyle:'log_cabin',emblem:'wheat',roofDark:'#4e321e',roofMain:'#785032',roofHi:'#a27248',chimneyLeft:false,sideShed:true,doorOffsetPx:3*32+16}
@@ -212,6 +212,7 @@ const RyuneEnvironment=(()=>{
 
  // Hand-Pixelled Square Enix Landmark: Eda's Brick Stone-Oven Bakery & Pastry Pavilion (5..8, 10..11)
  function drawEdasBakeryPixelArt(c,sm){
+  if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawBakerySprite&&HD2DAtlas.drawBakerySprite(c,5,10,sm))return;
   const bx=5*32,by=10*32,out='#442b1a';
   pOval(c,'rgba(14,28,24,0.34)',bx+66,by+60,70,11);
 
@@ -326,6 +327,36 @@ const RyuneEnvironment=(()=>{
   pOval(c,'rgba(16,52,66,0.48)',25*32+30,fishY,5.5,2.2);
   rect(c,'rgba(16,52,66,0.40)',25*32+22,fishY-1,3,3);
   // 4. Sculpted Arched Timber Footbridges spanning the brook at (25..26, 13) & (25..26, 20)!
+  // Plus shimmering willow canopy & golden lantern reflections rippling across the crystal brook!
+  for(let ry=14;ry<=18;ry++){
+   const wy=ry*32+8+Math.round(Math.sin(tNow*1.2+ry)*2);
+   rect(c,'rgba(36,98,74,0.22)',25*32+8,wy,22,4);
+   rect(c,'rgba(116,196,128,0.16)',25*32+12,wy+2,14,2);
+  }
+  for(const ly of [12*32+22,19*32+24]){
+   const shim=Math.round(Math.sin(tNow*2.1+ly)*2);
+   rect(c,'rgba(255,222,134,0.26)',25*32+6+shim,ly,10,2);
+   rect(c,'rgba(255,222,134,0.26)',26*32+14-shim,ly+2,10,2);
+  }
+  // Live Turning Oak Mill Waterwheel beside the East Brook Log Cabin (26..27, 17)
+  const wx=26*32+26,wy=17*32+16,ang=tNow*0.55;
+  pOval(c,'rgba(12,34,48,0.38)',wx-3,wy+15,12,5);
+  if(typeof c.beginPath==='function'){
+   c.save();
+   c.strokeStyle='#3c2414';c.lineWidth=4;c.beginPath();c.ellipse(wx,wy,7,18,0,0,Math.PI*2);c.stroke();
+   c.strokeStyle='#9e7044';c.lineWidth=2;c.beginPath();c.ellipse(wx,wy,7,18,0,0,Math.PI*2);c.stroke();
+   for(let k=0;k<6;k++){
+    const a=ang+k*Math.PI/3,px1=wx+Math.cos(a)*6.5,py1=wy+Math.sin(a)*17;
+    c.strokeStyle='#4e321e';c.lineWidth=2;c.beginPath();c.moveTo(wx,wy);c.lineTo(px1,py1);c.stroke();
+    rect(c,'#c69660',px1-3,py1-1,6,3);
+   }
+   pOval(c,'#464a50',wx,wy,3,4);pOval(c,'#c8b892',wx,wy,1.5,2);
+   c.restore();
+  }
+  // Animated splashing white waterwheel spray foam!
+  const sp=Math.floor(tNow*2.4)%3;
+  pCluster(c,'rgba(232,252,255,0.74)',wx-5,wy+16,8,3.5,sp,1);
+  rect(c,'#ffffff',wx-9+sp*2,wy+12-sp,2,2);rect(c,'#dff8ff',wx-3-sp,wy+14,3,2);
   if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawArchedBridge){
    HD2DAtlas.drawArchedBridge(c,25,13,2);
    HD2DAtlas.drawArchedBridge(c,25,20,2);
@@ -418,6 +449,17 @@ const RyuneEnvironment=(()=>{
   for(const b of grandVillageBuildings){
    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawGrandHouse(c,b.x,b.y,b.w,b.h,b)){
     rect(c,'#4a3220',b.x*32,b.y*32,b.w*32,b.h*32);
+   }
+  }
+  // Gentle curling white hearth woodsmoke drifting up from all 4 Ryune cottage chimneys!
+  const sm=(typeof Date!=='undefined'?Date.now():0)/520;
+  for(const [cx,cy,phase] of [[9*32-4,2*32-12,0.0],[30*32-4,2*32-16,1.1],[9*32-2,14*32-16,2.2],[32*32-2,14*32-16,3.1]]){
+   for(let k=0;k<3;k++){
+    const ph=(sm*0.6+phase+k*1.1)%3.3;
+    const ox=Math.round(cx+Math.sin(sm*0.7+k*2+phase)*5+ph*2.2);
+    const oy=Math.round(cy-ph*9);
+    const a=Math.max(0,0.36-ph*0.10).toFixed(2);
+    pCluster(c,`rgba(252,248,240,${a})`,ox,oy,3+ph*1.4,2.2+ph*0.9,k*5,2);
    }
   }
  }

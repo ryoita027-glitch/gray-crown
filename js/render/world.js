@@ -1727,10 +1727,11 @@ function drawWorldAtmosphere(map){
    for(const [lx,ly] of [[18,14],[23,14],[18,20],[23,20],[18,26],[23,26],[12,15],[29,15],[18,7],[23,7]])bloom(lx*TILE+16,ly*TILE+10,56,'rgba(255,204,112,.24)');
    bloom(20*TILE+16,17*TILE+16,74,'rgba(148,236,252,.20)');
   }else if(map==='village'){
-   // Cozy amber glow halos around all 4 grand village cottages, Eda's brick bakery oven & the sparkling eastern brook!
-   for(const [lx,ly] of [[7,6],[27,6],[7,18],[30,18]])bloom(lx*TILE+16,ly*TILE+12,68,'rgba(255,206,116,.22)');
-   bloom(6*TILE+16,11*TILE+12,56,'rgba(255,176,84,.28)');
-   bloom(25.5*TILE+16,13*TILE+16,72,'rgba(164,238,248,.16)');
+   // Cozy amber glow halos around all 4 grand village cottages, 4 plaza streetlamps, Eda's brick bakery oven & the sparkling eastern brook!
+   for(const [lx,ly] of [[7,6],[27,6],[7,18],[30,18]])bloom(lx*TILE+16,ly*TILE+12,76,'rgba(255,208,118,.26)');
+   for(const [lx,ly] of [[14,12],[21,12],[24,12],[27,12]])bloom(lx*TILE+12,ly*TILE+6,48,'rgba(255,216,124,.24)');
+   bloom(6*TILE+16,11*TILE+12,68,'rgba(255,176,82,.32)');
+   bloom(25.5*TILE+16,13*TILE+16,76,'rgba(164,238,248,.18)');
   }else if(map==='ryunebrook'){
    bloom(12*TILE+16,9*TILE+16,86,'rgba(164,238,248,.18)');
    bloom(12*TILE+16,3*TILE+12,64,'rgba(180,248,255,.20)');
