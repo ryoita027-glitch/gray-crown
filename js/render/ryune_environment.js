@@ -196,10 +196,10 @@ const RyuneEnvironment=(()=>{
   return false
  }
  const grandVillageBuildings=[
-  {x:4,y:3,w:6,h:4,tag:'ryune_karen',label:'カレンの家',roofDark:'#5c2c26',roofMain:'#8c443a',roofHi:'#b86252',roofRim:'#de8c78',wall:'#ebe2cd',shutter:'#446648',chimneyLeft:true,flowerBorder:true,doorOffsetPx:3*32+16},
-  {x:24,y:3,w:7,h:4,tag:'ryune_orphanage',label:'リュネ孤児院',roofDark:'#2c4a36',roofMain:'#487250',roofHi:'#6a9a6c',roofRim:'#96c28e',wall:'#efe7d2',shutter:'#7c4c38',canopyColor:'#56845a',bellGable:true,flowerBorder:true,doorOffsetPx:3*32+16},
-  {x:4,y:15,w:6,h:4,tag:'ryune_mayor',label:'村長宅',roofDark:'#2d3c52',roofMain:'#465c78',roofHi:'#6884a4',roofRim:'#92aecb',wall:'#e6dfd0',shutter:'#3c4c64',stonePortico:true,bannerColor:'#345480',doorOffsetPx:3*32+16},
-  {x:27,y:15,w:6,h:4,tag:'ryune_cottage',label:'東の民家',roofDark:'#4e3424',roofMain:'#7a523a',roofHi:'#a47252',roofRim:'#cc9a74',wall:'#e7dac0',shutter:'#4a644a',chimneyLeft:false,sideShed:true,flowerBorder:true,doorOffsetPx:3*32+16}
+  {x:4,y:3,w:6,h:4,tag:'ryune_karen',archStyle:'cottage',label:'カレンの家',roofDark:'#5c2c26',roofMain:'#8c443a',roofHi:'#b86252',roofRim:'#de8c78',wall:'#f2e4c6',wallShade:'#dccaa6',wallDark:'#b29e7c',shutter:'#446648',chimneyLeft:true,flowerBorder:true,doorOffsetPx:3*32+16},
+  {x:24,y:3,w:7,h:4,tag:'ryune_orphanage',archStyle:'hall',label:'リュネ孤児院',roofDark:'#264632',roofMain:'#3e6e4a',roofHi:'#629668',roofRim:'#90c08c',wall:'#ecd6b6',wallShade:'#d4bc98',wallDark:'#a8906e',shutter:'#7c4c38',canopyColor:'#4c7e54',bellGable:true,flowerBorder:true,doorOffsetPx:3*32+16},
+  {x:4,y:15,w:6,h:4,tag:'ryune_mayor',archStyle:'manor',lowerStone:true,label:'村長宅',roofDark:'#26364c',roofMain:'#3e5674',roofHi:'#627ea0',roofRim:'#8eaac8',wall:'#e4dfd2',wallShade:'#ccc6b6',wallDark:'#9e9888',shutter:'#364860',stonePortico:true,bannerColor:'#345480',doorOffsetPx:3*32+16},
+  {x:27,y:15,w:6,h:4,tag:'ryune_cottage',archStyle:'workshop',timberWall:true,label:'東の民家',roofDark:'#4a3020',roofMain:'#764e34',roofHi:'#a26e4c',roofRim:'#ca9670',wall:'#d8b892',wallShade:'#c09e78',wallDark:'#967856',shutter:'#425e44',chimneyLeft:false,sideShed:true,flowerBorder:true,doorOffsetPx:3*32+16}
  ];
 
  function lowProps(c){
@@ -307,42 +307,75 @@ const RyuneEnvironment=(()=>{
   const sm=(typeof Date!=='undefined'?Date.now():0)/420;
   // 1. Eda's Outdoor 3D Brick Bakery Workshop & Striped Bread Pavilion on blocked H tiles (5..8, 10..11) (4x2 = 128x64!)
   const bx=5*32,by=10*32;
-  rect(c,'rgba(16,20,16,.38)',bx+4,by+58,132,12);
-  rect(c,'rgba(16,20,16,.20)',bx+126,by+8,10,54);
-  // Left (5..6, 10..11): Sculpted Stone-and-Brick Domed Bread Oven House with smoking chimney & glowing hearth mouth
-  rect(c,'#241a15',bx,by+12,62,50);
-  rect(c,'#766e64',bx+2,by+44,58,16);rect(c,'#a69e92',bx+3,by+44,56,3); // stone base
-  rect(c,'#a05642',bx+2,by+16,58,28);rect(c,'#c6785e',bx+4,by+16,54,8); // domed brick oven chamber
-  for(let ox=bx+8;ox<bx+54;ox+=10)rect(c,'#5e3226',ox,by+22,1,20);
-  rect(c,'#241a15',bx+40,by-18,14,34);rect(c,'#7a5444',bx+42,by-16,10,30);rect(c,'#a87c64',bx+43,by-16,4,28);
-  rect(c,'#1a120e',bx+16,by+28,28,22); // arched blazing oven mouth
-  rect(c,'#e4782e',bx+19,by+34,22,12);rect(c,'#ffd874',bx+22,by+37,16,7);rect(c,'#fff8d0',bx+26,by+39,8,4);
-  const bg=c.createRadialGradient?.(bx+30,by+44,4,bx+30,by+44,42);
-  if(bg&&typeof bg.addColorStop==='function'){bg.addColorStop(0,'rgba(255,180,82,.34)');bg.addColorStop(1,'rgba(255,150,60,0)');c.fillStyle=bg;c.beginPath();c.arc(bx+30,by+44,42,0,Math.PI*2);c.fill()}
-  // Right (7..8, 10..11): Spacious 64px-wide 4-Post Sculpted Crimson-and-Cream Striped Bakery Stall loaded with golden loaves!
-  const px=bx+62,py=by+2;
-  rect(c,'rgba(22,16,12,.52)',px+4,py+20,56,28);
-  for(const postX of [px+3,px+57]){rect(c,'#241a14',postX,py+14,5,44);rect(c,'#8c623e',postX+1,py+15,3,42)}
-  rect(c,'#241a14',px+2,py+38,60,22);rect(c,'#745236',px+4,py+43,56,15);
-  for(let sx=px+10;sx<px+56;sx+=8)rect(c,'#4a3220',sx,py+43,1,15);
-  rect(c,'#b68858',px+3,py+39,58,5);rect(c,'#e0b680',px+4,py+39,56,2);
-  for(const lx of [8,20,33,46]){
-   rect(c,'#4e3622',px+lx-1,py+34,9,6);rect(c,'#d28e42',px+lx,py+33,8,5);rect(c,'#f8ce78',px+lx+1,py+33,5,2);
+  rect(c,'rgba(12,18,14,.42)',bx+6,by+58,134,14);
+  rect(c,'rgba(12,18,14,.26)',bx+128,by+4,12,58);
+  // Left (5..6, 10..11): Sculpted 3D Stone-and-Brick Domed Bread Oven House with 3D Pitched Shingle Hood, 3D Side Wall & Blazing Hearth!
+  rect(c,'#1e1510',bx-2,by+8,66,54);
+  rect(c,'#544e46',bx+58,by+6,6,54); // 3D oblique shaded right oven wall
+  rect(c,'#6e665c',bx,by+42,58,18);rect(c,'#a8a094',bx+2,by+42,54,3); // chiseled stone base
+  for(let sx=bx+10;sx<bx+54;sx+=14)rect(c,'#3e3a34',sx,by+45,2,14);
+  // Vaulted red-brick oven body with staggered brick courses
+  rect(c,'#984c38',bx+2,by+14,56,28);rect(c,'#c46e54',bx+4,by+14,34,26);rect(c,'#6e3224',bx+46,by+14,12,28);
+  for(let ry=by+18;ry<by+40;ry+=6){
+   rect(c,'#56261c',bx+2,ry,56,1);
+   for(let rx=bx+8+((ry%12)?6:0);rx<bx+52;rx+=12)rect(c,'#56261c',rx,ry-5,1,5);
   }
-  // Sloped billowing striped awning + scalloped valance
-  rect(c,'#241a14',px-2,py+4,68,18);
+  // 3D Pitched Slate-and-Timber Shelter Roof over the Brick Oven + Tall 3D Smoking Brick Chimney!
+  rect(c,'#1e1510',bx+40,by-24,18,36);rect(c,'#8e5846',bx+42,by-22,10,32);rect(c,'#b8826c',bx+43,by-22,4,30);rect(c,'#4e2e24',bx+52,by-22,5,32);
+  rect(c,'#1e1510',bx+38,by-27,22,5);rect(c,'#b8826c',bx+40,by-26,14,3);
+  for(let rz=0;rz<4;rz++){
+   const ins=rz*4;
+   rect(c,'#1e1510',bx-4+ins,by+10-rz*4,66-ins*2,6);
+   rect(c,rz%2?'#8c4a38':'#683426',bx-2+ins,by+11-rz*4,62-ins*2,4);
+  }
+  // Recessed stone arch & blazing wood-fired oven mouth + flour sack
+  rect(c,'#46403a',bx+12,by+24,34,26);rect(c,'#bdb5a6',bx+14,by+24,30,3);
+  rect(c,'#18100c',bx+16,by+27,26,22);
+  rect(c,'#e66e24',bx+18,by+33,22,13);rect(c,'#ffd468',bx+21,by+36,16,8);rect(c,'#fffbe0',bx+25,by+38,8,4);
+  rect(c,'#1e1510',bx-4,by+44,14,16);rect(c,'#d8ccb4',bx-2,by+46,10,12);rect(c,'#a83c3c',bx-2,by+49,10,2); // flour sack
+  const bg=c.createRadialGradient?.(bx+29,by+42,4,bx+29,by+42,46);
+  if(bg&&typeof bg.addColorStop==='function'){bg.addColorStop(0,'rgba(255,184,84,.38)');bg.addColorStop(1,'rgba(255,150,60,0)');c.fillStyle=bg;c.beginPath();c.arc(bx+29,by+42,46,0,Math.PI*2);c.fill()}
+  // Right (7..8, 10..11): 3D 4-Post Timber-and-Canvas Bakery Pavilion with 3D Right Side Depth & Multi-Course Sloped Awning!
+  const px=bx+62,py=by;
+  rect(c,'rgba(16,12,10,.56)',px+4,py+18,58,30);
+  // Rear & Front 3D beveled oak posts
+  for(const postX of [px+5,px+55]){rect(c,'#1e1510',postX,py+14,5,44);rect(c,'#543822',postX+1,py+15,3,42)}
+  // 3D wooden display counter with shaded right side-return panel & recessed front panelling
+  rect(c,'#1e1510',px+1,py+36,66,24);
+  rect(c,'#462e1c',px+60,py+34,6,24); // 3D right counter side panel
+  rect(c,'#7c5638',px+3,py+42,57,16);
+  for(const panX of [px+6,px+24,px+42]){rect(c,'#563a24',panX,py+44,14,12);rect(c,'#946a46',panX+1,py+45,12,10)}
+  rect(c,'#b88a58',px+2,py+37,60,6);rect(c,'#e4bc86',px+3,py+37,58,2);
+  // Wicker bread trays & golden artisan loaves + braided pretzels
+  for(const lx of [6,19,32,45]){
+   rect(c,'#3e2816',px+lx-1,py+31,11,8);rect(c,'#9e7042',px+lx,py+34,9,4);
+   rect(c,'#d48a38',px+lx,py+30,9,5);rect(c,'#fad278',px+lx+1,py+30,6,2);
+  }
+  for(const postX of [px+1,px+58]){rect(c,'#1e1510',postX,py+12,6,48);rect(c,'#8e643e',postX+1,py+13,4,46);rect(c,'#ba8e60',postX+1,py+13,2,44)}
+  // 3D Multi-Tier Sloped Striped Awning Roof with 3D Right Side Triangle & Scalloped Valance!
+  rect(c,'#1e1510',px+62,py,8,20);rect(c,'#5e2026',px+63,py+2,6,16); // 3D right side awning return
+  for(let az=0;az<3;az++){
+   const ay=py+8-az*5,aw=68-az*4,ax=px-2+az*2;
+   rect(c,'#1e1510',ax-1,ay-1,aw+2,8);
+   for(let i=0;i<8;i++){
+    const sx=ax+Math.round(i*aw/8),sw=Math.ceil(aw/8),col=i%2?'#f8eed6':'#a83c42';
+    rect(c,col,sx,ay,sw,6);
+    if(az===2)rect(c,'rgba(255,252,240,.28)',sx,ay,sw,2);
+   }
+  }
+  // Front scalloped valance casting dark shadow onto counter below
+  rect(c,'rgba(12,8,8,.42)',px,py+20,64,5);
   for(let i=0;i<8;i++){
-   const sx=px+i*8,col=i%2?'#f6ebd2':'#a44246';
-   rect(c,col,sx,py+5,8,11);rect(c,'rgba(255,252,240,.22)',sx,py+5,8,3);
-   rect(c,i%2?'#d6c6a8':'#782a30',sx,py+16,8,5);rect(c,'#241a14',sx,py+21,8,1);
+   const sx=px-1+i*8;
+   rect(c,i%2?'#d8c8a8':'#78242a',sx,py+14,8,6);rect(c,'#1e1510',sx+1,py+20,6,2);
   }
-  rect(c,'#5c3e26',px-2,py+2,68,3);
+  rect(c,'#5c3e26',px-2,py-4,66,4);rect(c,'#e0bc78',px,py-4,62,1);
   // Crisp bakery sign on eaves
-  rect(c,'rgba(24,18,14,.92)',bx+30,by-6,68,15);rect(c,'#e4c47a',bx+31,by-5,66,1);
-  if(typeof c.fillText==='function'){c.fillStyle='#faf0d8';c.font='bold 9px system-ui';c.textAlign='center';c.fillText('エダの石窯パン',bx+64,by+5);c.textAlign='start'}
+  rect(c,'rgba(22,16,14,.94)',bx+28,by-14,72,15);rect(c,'#e4c47a',bx+29,by-13,70,1);rect(c,'#8c6e42',bx+29,by-1,70,1);
+  if(typeof c.fillText==='function'){c.fillStyle='#faf0d8';c.font='bold 9px system-ui';c.textAlign='center';c.fillText('エダの石窯パン',bx+64,by-3);c.textAlign='start'}
   // Bakery oven rising smoke puffs
   for(let k=0;k<3;k++){
-   const phase=(sm+k*0.95)%3,oy=by-18-phase*8,ox=bx+45+Math.sin(sm+k*2)*4;
+   const phase=(sm+k*0.95)%3,oy=by-28-phase*8,ox=bx+45+Math.sin(sm+k*2)*4;
    rect(c,`rgba(246,244,238,${(0.44-phase*0.12).toFixed(2)})`,ox,oy,5+phase,3+phase*0.7);
   }
 

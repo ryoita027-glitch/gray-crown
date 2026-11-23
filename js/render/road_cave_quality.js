@@ -249,8 +249,8 @@ const RoadCaveQuality=(()=>{
    }
    // Grand Square Enix HD-2D Alpine Inn & Carriage Barn with distinct Ryune-grade architectural ornaments!
    const wayBuildings=[
-    {x:4,y:3,w:7,h:4,tag:'way_inn',label:'旅籠・白樺亭',roofDark:'#582e28',roofMain:'#88483c',roofHi:'#b46652',roofRim:'#dc8e76',wall:'#efe5ce',shutter:'#7c3e36',canopyColor:'#9c3842',flowerBorder:true,chimneyLeft:false,doorOffsetPx:3*32+16},
-    {x:20,y:3,w:6,h:4,tag:'way_barn',label:'荷馬車倉',roofDark:'#364234',roofMain:'#54664c',roofHi:'#748a68',roofRim:'#9ab28c',wall:'#dfd2b6',shutter:'#465642',bellGable:true,sideShed:true,chimneyLeft:true,doorOffsetPx:3*32+16}
+    {x:4,y:3,w:7,h:4,tag:'way_inn',archStyle:'hall',label:'旅籠・白樺亭',roofDark:'#582e28',roofMain:'#88483c',roofHi:'#b46652',roofRim:'#dc8e76',wall:'#f2e6ce',wallShade:'#d8c8a8',wallDark:'#aa9876',shutter:'#7c3e36',canopyColor:'#9c3842',flowerBorder:true,chimneyLeft:false,doorOffsetPx:3*32+16},
+    {x:20,y:3,w:6,h:4,tag:'way_barn',archStyle:'workshop',timberWall:true,label:'荷馬車倉',roofDark:'#303e2e',roofMain:'#4c6046',roofHi:'#6e8664',roofRim:'#96b088',wall:'#d4b690',wallShade:'#bc9c74',wallDark:'#90724e',shutter:'#3e4e3a',bellGable:true,sideShed:true,chimneyLeft:true,doorOffsetPx:3*32+16}
    ];
    for(const b of wayBuildings){
     if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawGrandHouse(c,b.x,b.y,b.w,b.h,b)){

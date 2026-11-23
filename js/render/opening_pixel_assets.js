@@ -7,120 +7,120 @@
  */
 const OpeningPixelAssets=(()=>{
  const designs={
-  fieldWorker:['#7a5a3c','#5b824e','#dfb590','farmer','hat'],
-  brookKeeper:['#4c5c52','#487a78','#e0bc9a','civil','short'],
-  father:['#3d3544','#3e5c7c','#c8a88e','fighter','short'],
-  orphan:['#b88856','#7c9668','#e2bc9a','child','bob'],
-  mayor:['#cfc8c0','#3d5272','#dcba9a','elder','part'],
-  messenger:['#6b4e3e','#a43240','#dcb492','courier','part'],
-  mika:['#a66b4c','#d9847c','#ecc09c','child','twin'],
-  ren:['#4a3630','#4c8a62','#dfb690','child','short'],
-  lulu:['#d4a664','#b86c94','#ecc09a','child','bob'],
-  baker:['#7e523e','#f0dfc0','#e0b28a','baker','bun'],
-  farmer:['#b69658','#588252','#d8ac86','farmer','hat'],
-  oldwoman:['#dad6cc','#7a586e','#e0bc9e','elder','bun'],
-  veteran:['#56525e','#4f6278','#cca690','fighter','scar'],
-  karenMother:['#965644','#c97c62','#e4be9e','civil','bun'],
-  karenFather:['#44332a','#786442','#dfb28e','civil','short'],
-  karenBrother:['#a86844','#4c7e6a','#e4b892','child','messy'],
-  caretaker:['#b29e7e','#5a886c','#e6c4a4','caretaker','bun'],
-  theo:['#d4b06e','#548496','#e8c09a','child','short'],
-  noa:['#7a4c42','#9872b2','#e2b692','child','bob'],
-  emi:['#ba8c58','#d69262','#e8bc96','child','twin'],
-  margaretMother:['#cbb4d4','#6b548e','#deb49a','civil','long'],
-  clerk:['#726654','#467874','#d8b292','scribe','short'],
-  soldierMother:['#745248','#766c84','#d8ae8e','civil','bun'],
-  soldierSister:['#7c4e4a','#b47488','#e2b69a','child','long'],
-  merchant:['#a88256','#8c6844','#dab08e','merchant','hat'],
-  scout:['#544032','#49755a','#d6ae8e','fighter','hood'],
-  capitalOfficial:['#564c5a','#4a5284','#deb898','scribe','part'],
-  capitalCitizen:['#8c5844','#4c7c8e','#e4bc9c','civil','part'],
-  capitalFlowerGirl:['#cc925c','#cc6684','#ecc09e','florist','twin'],
-  capitalRecruit:['#6a5244','#445e92','#dfb294','fighter','short'],
-  capitalVendor:['#784e3c','#c2864c','#e2b48e','merchant','bun'],
-  rationMother:['#78685c','#667a6c','#dcb298','caretaker','scarf'],
-  granz:['#444858','#3f4e6e','#cca488','fighter','part'],
-  capitalInnHost:['#8e5c42','#b07c4e','#e2bc9c','baker','bun'],
-  offDutySoldier:['#423e4c','#5c668c','#d2ab90','fighter','short'],
-  capitalSmith:['#5e4038','#785e54','#dab08e','smith','short'],
-  armoryApprentice:['#9e7458','#627894','#e0b692','smith','messy'],
-  herbGirl:['#946042','#529258','#e8c09c','child','twin'],
-  oldAngler:['#b2aea4','#426a7e','#d4aa8a','elder','hat'],
-  roadTraveler:['#5e4038','#a24852','#e2bc9c','civil','hood'],
-  northPeddler:['#846242','#9c7448','#dcaf8e','merchant','hat'],
-  waystationHost:['#80523e','#c87a52','#e4bc9c','baker','bun'],
-  waystationBard:['#446450','#388476','#e6c2a0','civil','messy'],
-  waystationPeddler:['#8c6644','#ad8048','#dfb490','merchant','hat'],
-  waystationGuard:['#463c38','#983844','#dab090','fighter','short'],
-  waystationChild:['#a87448','#58849e','#e8c09c','child','messy'],
-  waystationMonk:['#b2a694','#9e8c6e','#e0bc9e','caretaker','hood'],
-  waystationDriver:['#584436','#7a583e','#d6ac8c','farmer','short'],
-  bellKeeper:['#d4d0c4','#3e546e','#dab496','elder','part'],
-  chapelPriest:['#c6a474','#e2dac8','#e8c4a6','caretaker','long'],
-  chapelElder:['#d2cec4','#78627c','#e0bca0','elder','bun'],
-  capitalScholar:['#58463e','#3e527e','#e0b898','scribe','part'],
-  capitalCrier:['#765038','#387e82','#e4bc9c','courier','hat'],
-  capitalBakerWife:['#945c42','#d68e5c','#e8c09e','baker','bun'],
-  capitalShopper:['#6e4e48','#9e5e78','#e4bc9e','florist','bob'],
-  capitalStreetKid:['#aa6c42','#c84e4a','#ecc09c','child','messy'],
-  capitalOldGuard:['#b0aca6','#8c3642','#d4ac8e','fighter','scar'],
-  strollerFestive:['#6e483c','#b85064','#e6be9e','civil','long'],
-  strollerMerchant:['#886444','#9e7848','#deb694','merchant','hat'],
-  strollerSomber:['#525660','#545c6a','#d4b49c','civil','hood'],
-  strollerPatrol:['#443e42','#8e3640','#d6ac8e','fighter','short'],
-  strollerImperialPatrol:['#363e4c','#2e5280','#d6ae90','fighter','short'],
-  strollerVillager:['#825c42','#688a5a','#e4bc98','civil','bun'],
-  strollerChild:['#b88852','#d48854','#ecc09a','child','bob'],
-  strollerBaker:['#8e5a3e','#d69e66','#e6be9c','baker','bob'],
-  strollerScholar:['#4e4246','#445a82','#e0ba9c','scribe','bob'],
-  strollerBard:['#527054','#3a826c','#e4be9c','courier','messy'],
-  finalKingdomSoldier:['#6e5244','#963a44','#e2ba9a','fighter','messy'],
-  finalEmpireScout:['#7c5e54','#466e84','#e6c0a2','caretaker','bun'],
-  imperialQuartermaster:['#98968e','#365678','#d8b294','merchant','part'],
-  imperialVeteranGuard:['#4a4e5c','#2c4a74','#d4ac90','fighter','scar'],
-  royalMedicCaptain:['#945c4e','#628e72','#e8c2a4','caretaker','long'],
-  royalSergeant:['#aba49c','#8a3440','#d2aa8c','fighter','scar']
+  fieldWorker:['#6e442c','#b84834','#dfb590','farmer','hat'],
+  brookKeeper:['#364e48','#246e88','#e0bc9a','civil','short'],
+  father:['#2c2632','#26486e','#c8a88e','fighter','short'],
+  orphan:['#8c5836','#428858','#e2bc9a','child','bob'],
+  mayor:['#e8e6e0','#203e72','#dcba9a','elder','part'],
+  messenger:['#54382c','#b82436','#dcb492','courier','part'],
+  mika:['#9c4e36','#e6544a','#ecc09c','child','twin'],
+  ren:['#3e2822','#268c54','#dfb690','child','messy'],
+  lulu:['#e6b854','#864ea6','#ecc09a','child','bob'],
+  baker:['#744230','#c43c48','#e0b28a','baker','bun'],
+  farmer:['#8c6238','#2e7c44','#d8ac86','farmer','hat'],
+  oldwoman:['#ece8e0','#6c3e7c','#e0bc9e','elder','bun'],
+  veteran:['#787682','#3e546c','#cca690','fighter','scar'],
+  karenMother:['#8c4636','#b84840','#e4be9e','civil','bun'],
+  karenFather:['#3c2a20','#b2762e','#dfb28e','civil','short'],
+  karenBrother:['#c4522e','#247872','#e4b892','child','messy'],
+  caretaker:['#968264','#2a7456','#e6c4a4','caretaker','bun'],
+  theo:['#e2b458','#2c6498','#e8c09a','child','short'],
+  noa:['#5c3632','#9c487e','#e2b692','child','bob'],
+  emi:['#c87236','#dc8828','#e8bc96','child','twin'],
+  margaretMother:['#d8c4ec','#522e7c','#deb49a','civil','long'],
+  clerk:['#544438','#206a6c','#d8b292','scribe','short'],
+  soldierMother:['#64423a','#584c82','#d8ae8e','civil','bun'],
+  soldierSister:['#7c4240','#d45678','#e2b69a','child','long'],
+  merchant:['#8c6238','#b86e28','#dab08e','merchant','hat'],
+  scout:['#463226','#2c6a44','#d6ae8e','fighter','hood'],
+  capitalOfficial:['#463c4c','#36387a','#deb898','scribe','part'],
+  capitalCitizen:['#7c4834','#2c6e86','#e4bc9c','civil','part'],
+  capitalFlowerGirl:['#e2a64e','#dc4c76','#ecc09e','florist','twin'],
+  capitalRecruit:['#5a4236','#b02636','#dfb294','fighter','short'],
+  capitalVendor:['#683e2e','#c87424','#e2b48e','merchant','bun'],
+  rationMother:['#685448','#4a6c5e','#dcb298','caretaker','scarf'],
+  granz:['#c6c4be','#263a62','#cca488','fighter','part'],
+  capitalInnHost:['#844a32','#b85838','#e2bc9c','baker','bun'],
+  offDutySoldier:['#383442','#485884','#d2ab90','fighter','short'],
+  capitalSmith:['#362420','#8c4230','#dab08e','smith','short'],
+  armoryApprentice:['#b4683c','#3e6688','#e0b692','smith','messy'],
+  herbGirl:['#884e32','#36944a','#e8c09c','child','twin'],
+  oldAngler:['#e2ded4','#24627a','#d4aa8a','elder','hat'],
+  roadTraveler:['#4e322a','#9a2e3e','#e2bc9c','civil','hood'],
+  northPeddler:['#745034','#9e5e28','#dcaf8e','merchant','hat'],
+  waystationHost:['#784230','#c45238','#e4bc9c','baker','bun'],
+  waystationBard:['#385240','#207c6a','#e6c2a0','civil','messy'],
+  waystationPeddler:['#7c5636','#b4742a','#dfb490','merchant','hat'],
+  waystationGuard:['#3e3430','#b02636','#dab090','fighter','short'],
+  waystationChild:['#b86834','#2e789c','#e8c09c','child','messy'],
+  waystationMonk:['#c4b8a4','#e8e0cc','#e0bc9e','caretaker','hood'],
+  waystationDriver:['#4a3628','#7c502e','#d6ac8c','farmer','short'],
+  bellKeeper:['#e8e4da','#243e68','#dab496','elder','part'],
+  chapelPriest:['#d4b47c','#eee8d6','#e8c4a6','caretaker','long'],
+  chapelElder:['#e6e2d8','#6a4c78','#e0bca0','elder','bun'],
+  capitalScholar:['#483630','#243c76','#e0b898','scribe','part'],
+  capitalCrier:['#68422c','#208088','#e4bc9c','courier','hat'],
+  capitalBakerWife:['#8c4a32','#cc5e3c','#e8c09e','baker','bun'],
+  capitalShopper:['#5e3c38','#9e3a6a','#e4bc9e','florist','bob'],
+  capitalStreetKid:['#b85e2e','#d43838','#ecc09c','child','messy'],
+  capitalOldGuard:['#d0ccc4','#982434','#d4ac8e','fighter','scar'],
+  strollerFestive:['#623a30','#c43c58','#e6be9e','civil','long'],
+  strollerMerchant:['#785436','#a86c2c','#deb694','merchant','hat'],
+  strollerSomber:['#484c56','#485468','#d4b49c','civil','hood'],
+  strollerPatrol:['#3a3438','#ac2634','#d6ac8e','fighter','short'],
+  strollerImperialPatrol:['#2e3644','#1e4880','#d6ae90','fighter','short'],
+  strollerVillager:['#744c34','#3c8048','#e4bc98','civil','bun'],
+  strollerChild:['#c47c38','#e06c34','#ecc09a','child','bob'],
+  strollerBaker:['#824c32','#c85a3c','#e6be9c','baker','bob'],
+  strollerScholar:['#42363a','#2c467c','#e0ba9c','scribe','bob'],
+  strollerBard:['#426046','#227e64','#e4be9c','courier','messy'],
+  finalKingdomSoldier:['#5e4236','#ac2634','#e2ba9a','fighter','messy'],
+  finalEmpireScout:['#6c4e44','#286284','#e6c0a2','caretaker','bun'],
+  imperialQuartermaster:['#b8b4aa','#24486e','#d8b294','merchant','part'],
+  imperialVeteranGuard:['#424654','#1c4476','#d4ac90','fighter','scar'],
+  royalMedicCaptain:['#884c3e','#368462','#e8c2a4','caretaker','long'],
+  royalSergeant:['#c8c2ba','#982434','#d2aa8c','fighter','scar']
  };
  // Chapter 2-4 named & regional NPCs rendered in the exact same 48x48 (44px) chibi style
  const extendedDesigns=Object.freeze({
-  refugee:['#6e564a','#7e685c','#dab294','civil','scarf'],
-  fieldPriest:['#aa9c88','#cfc6b4','#e0be9e','caretaker','part'],
-  frontierOfficer:['#463a36','#963a44','#dab092','fighter','part'],
-  frontierMedic:['#825a48','#588a72','#e4be9e','caretaker','bun'],
-  kingdomGuard:['#4a3c36','#983e46','#d8ae90','fighter','short'],
-  imperialGuard:['#363c48','#345480','#d4ae90','fighter','short'],
-  frontierScout:['#584638','#527c5a','#d6ae8e','fighter','hood'],
-  woundedImperial:['#4a4e5a','#446080','#dec2aa','civil','messy'],
-  vanguardCaptain:['#2e323e','#284a76','#d4ad90','fighter','scar'],
-  borderScout:['#5e4838','#58805c','#d6ae8e','fighter','hood'],
-  lostMerchant:['#987654','#94724a','#dcaf8e','merchant','hat'],
-  relayHost:['#805642','#a6764c','#e2ba9a','baker','bun'],
-  relayChild:['#b4885c','#7c9c6c','#e8be9a','child','messy'],
-  fortCommander:['#4c4a54','#8c3640','#d2aa8c','fighter','part'],
-  klein:['#384056','#3c5e8a','#e0bc9e','fighter','part'],
-  empireFarmer:['#967c56','#5c7c60','#d8ac8a','farmer','hat'],
-  empireChild:['#946e54','#5a7e98','#e6bc98','child','bob'],
-  empireInnkeeper:['#725448','#4a7288','#e2ba9a','baker','bun'],
-  oldImperialSoldier:['#c2bcb2','#425e7a','#d6ae92','elder','scar'],
-  imperialCitizen:['#66564e','#52748c','#e2bc9c','civil','part'],
-  imperialInnHost:['#5e4c44','#466e82','#e0b898','baker','part'],
-  canalBoatman:['#5c483a','#426c82','#d6aa8a','civil','hat'],
-  canalVendor:['#825c48','#5e7e92','#e0b694','merchant','scarf'],
-  bookSeller:['#aa9e8e','#545c74','#dcb89a','elder','part'],
-  studentReader:['#4e3e38','#50708c','#e4be9e','scribe','bob'],
-  recordKeeper:['#72685e','#48627a','#dab698','scribe','part'],
-  elsiaElder:['#d2ccc0','#6e7e74','#e0be9e','elder','long'],
-  elsiaResident:['#7c6658','#6c8c78','#e2be9e','civil','bun'],
-  returnScout:['#52443a','#587a5e','#d6ab8c','fighter','hood'],
-  tiredGuard:['#4a3e38','#863e46','#d4ac8e','fighter','messy'],
-  granzFinal:['#444858','#3f4e6e','#cca488','fighter','part'],
-  shion:['#2a2e3e','#2c466e','#e4c6ae','fighter','long'],
-  zenith:['#323848','#344e78','#deb89c','fighter','part'],
-  zester:['#4e423c','#7c3842','#d4aa8c','fighter','scar'],
-  decisionGuide:['#6e6256','#5e687e','#dcb89c','scribe','hood'],
-  banditEnemy:['#4a342c','#744c3c','#d6aa8a','fighter','scar'],
-  imperialPatrolEnemy:['#303642','#2e507c','#d4ae90','fighter','short'],
-  mother:['#965644','#c97c62','#e4be9e','civil','bun']
+  refugee:['#5e463a','#6e564a','#dab294','civil','scarf'],
+  fieldPriest:['#c4b69e','#ece4d2','#e0be9e','caretaker','part'],
+  frontierOfficer:['#3a2e2a','#a82634','#dab092','fighter','part'],
+  frontierMedic:['#744a38','#328268','#e4be9e','caretaker','bun'],
+  kingdomGuard:['#3e302a','#b02636','#d8ae90','fighter','short'],
+  imperialGuard:['#2c323e','#1e4880','#d4ae90','fighter','short'],
+  frontierScout:['#4a382c','#2e6e46','#d6ae8e','fighter','hood'],
+  woundedImperial:['#3e424e','#2c527a','#dec2aa','civil','messy'],
+  vanguardCaptain:['#242834','#1c4274','#d4ad90','fighter','scar'],
+  borderScout:['#4e3a2c','#327248','#d6ae8e','fighter','hood'],
+  lostMerchant:['#886442','#a8682c','#dcaf8e','merchant','hat'],
+  relayHost:['#744632','#b85638','#e2ba9a','baker','bun'],
+  relayChild:['#c27e42','#489258','#e8be9a','child','messy'],
+  fortCommander:['#42404a','#9c2432','#d2aa8c','fighter','part'],
+  klein:['#243252','#245084','#e0bc9e','fighter','long'],
+  empireFarmer:['#866a44','#36784c','#d8ac8a','farmer','hat'],
+  empireChild:['#885e42','#34789c','#e6bc98','child','bob'],
+  empireInnkeeper:['#644438','#2e6884','#e2ba9a','baker','bun'],
+  oldImperialSoldier:['#dad4ca','#2c4e72','#d6ae92','elder','scar'],
+  imperialCitizen:['#56463e','#366888','#e2bc9c','civil','part'],
+  imperialInnHost:['#503e36','#2c6480','#e0b898','baker','part'],
+  canalBoatman:['#4e3a2c','#26627e','#d6aa8a','civil','hat'],
+  canalVendor:['#744e3a','#3a748e','#e0b694','merchant','scarf'],
+  bookSeller:['#dcd6ca','#34426e','#dcb89a','elder','part'],
+  studentReader:['#40302a','#326488','#e4be9e','scribe','bob'],
+  recordKeeper:['#62584e','#2e5276','#dab698','scribe','part'],
+  elsiaElder:['#eae6dc','#3e6e62','#e0be9e','elder','long'],
+  elsiaResident:['#6c5648','#428268','#e2be9e','civil','bun'],
+  returnScout:['#44362c','#346c4a','#d6ab8c','fighter','hood'],
+  tiredGuard:['#3c302a','#982836','#d4ac8e','fighter','messy'],
+  granzFinal:['#c6c4be','#263a62','#cca488','fighter','part'],
+  shion:['#dce2ee','#1c3664','#e4c6ae','fighter','long'],
+  zenith:['#b8c2d0','#284a78','#deb89c','fighter','part'],
+  zester:['#98928a','#842432','#d4aa8c','fighter','scar'],
+  decisionGuide:['#5e5246','#445474','#dcb89c','scribe','hood'],
+  banditEnemy:['#3c261e','#7c382c','#d6aa8a','fighter','scar'],
+  imperialPatrolEnemy:['#262c38','#1c467c','#d4ae90','fighter','short'],
+  mother:['#8c4636','#b84840','#e4be9e','civil','bun']
  });
  // Explicit role + silhouette grammar, not one shared body with palette swaps.
  // Each named resident uses a physical shape and practical object relevant to
@@ -273,167 +273,214 @@ const OpeningPixelAssets=(()=>{
   const front=dir===0,left=dir===1,right=dir===2,side=left||right,back=dir===3;
   const pulse=(frame===1?-1:frame===3?1:0);
   const y=baseY;
-  // Compact prop anchor at the outward-angled chibi hand (never bloats body or fills leg gap!).
   const px=(w=4)=>left?(18-w):right?28:30;
   const pxWide=(w=5)=>left?(18-w):right?28:30;
-  const staffX=left?15:right?31:32;
+  const staffX=left?14:right?32:32;
   switch(type){
    case 'trainer': case 'veteran': case 'scout':
     if(!side){
-     P(c,dark,20,y+21,2,5);P(c,dark,26,y+21,2,5);
+     P(c,'#5c4430',19,y+20,2,7);P(c,'#8c6848',21,y+22,2,5); // diagonal leather baldric
      P(c,'#7c6244',20,y+26,8,2);P(c,'#e6c884',23,y+26,2,2);
     }else{
      P(c,'#7c6244',21,y+26,6,2);
     }
-    if(type==='trainer'){P(c,'#a68456',staffX,y+12,2,26);P(c,'#e4cfa4',staffX,y+12,1,15)}
+    if(type==='trainer'){
+     // Broad steel-and-leather shoulder pauldrons + tall wooden greatsword/staff
+     if(!side){P(c,'#8c98a4',16,y+19,4,3);P(c,'#8c98a4',28,y+19,4,3)}
+     P(c,'#8c6238',staffX,y+9,3,29);P(c,'#e4cfa4',staffX,y+9,1,18);P(c,'#d8b464',staffX-1,y+17,5,2);
+    }
     if(type==='veteran'){
-     const sx=left?24:17;
-     P(c,'#98a2ac',sx,y+20,3,3);P(c,'#dde4ea',sx,y+20,2,1);
+     // Gleaming steel shoulder pauldrons & one-shoulder crimson veteran half-cloak!
+     const sx=left?24:16;
+     P(c,'#98a4b0',sx,y+19,4,4);P(c,'#e4ecf2',sx,y+19,3,2);
+     P(c,'#9e2c38',left?25:15,y+22,3,11);P(c,'#c84854',left?25:15,y+22,2,8);
     }
     if(type==='scout'){
-     const sx=left?25:17;
-     P(c,'#4a6a4c',sx,y+20,3,6);P(c,'#789a70',sx+1,y+21,1,4);
+     // Ranger quiver & recurve bow
+     const sx=left?25:15;
+     P(c,'#5c422c',sx,y+18,3,9);P(c,'#d8c8a0',sx,y+16,3,2);
+     P(c,'#8c643c',staffX,y+13,2,20);P(c,'#d8d2c4',staffX-1,y+15,1,16);
     }
     break;
    case 'baker':case 'innkeeper':case 'homeApron':case 'care':
     if(!back){
      if(!side){
-      // Flared A-line apron over waist & hips (never blocks lower leg gap!)
-      P(c,'#f2e8d2',21,y+23,6,3);
-      P(c,'#f2e8d2',20,y+26,8,4);
-      P(c,'#cbb696',20,y+29,8,1);
-      P(c,'#fff8ea',21,y+24,2,5);
+      // Crisp snow-white full baker/matron apron bib + flared white apron skirt over vivid colored dress!
+      P(c,'#faf4e8',21,y+20,6,6);P(c,'#ffffff',22,y+20,4,5);
+      P(c,'#faf4e8',19,y+27,10,6);P(c,'#ffffff',20,y+27,7,5);
+      P(c,'#d4c4a8',19,y+32,10,1);
      }else{
-      P(c,'#f2e8d2',21,y+24,5,6);P(c,'#cbb696',21,y+29,5,1);
+      P(c,'#faf4e8',left?20:22,y+21,5,11);P(c,'#d4c4a8',left?20:22,y+31,5,1);
      }
     }else{
-     P(c,'#f2e8d2',21,y+26,6,1);
+     P(c,'#faf4e8',19,y+26,10,2); // white apron waist tie bow on back!
     }
-    if(type==='care'&&!back){const bx=px(4);P(c,'#72986e',bx,y+25+pulse,4,3);P(c,'#f6f2e6',bx+1,y+26+pulse,2,1)}
-    if(type==='baker'&&!back){const bx=pxWide(5);P(c,'#946a42',bx,y+25+pulse,4,2);P(c,'#eab668',bx+1,y+23+pulse,3,2)}
-    if(type==='innkeeper'&&!back){const bx=px(4);P(c,'#cfa870',bx,y+24+pulse,4,3);P(c,'#fff2d4',bx+1,y+24+pulse,2,1)}
+    if(type==='care'&&!back){const bx=px(5);P(c,'#8c623c',bx,y+24+pulse,5,4);P(c,'#48924e',bx+1,y+22+pulse,3,3);P(c,'#f6e878',bx+2,y+22+pulse,2,2)}
+    if(type==='baker'&&!back){const bx=pxWide(6);P(c,'#8c5e38',bx,y+25+pulse,6,2);P(c,'#d88832',bx+1,y+22+pulse,5,3);P(c,'#fce088',bx+2,y+22+pulse,3,2)}
+    if(type==='innkeeper'&&!back){const bx=px(5);P(c,'#b88244',bx,y+23+pulse,5,5);P(c,'#ffffff',bx,y+21+pulse,5,2);P(c,'#f6d464',bx+1,y+24+pulse,3,3)}
     break;
    case 'farmer':case 'waterside':
     if(!side){
-     P(c,'#5e5640',20,y+21,2,6);P(c,'#5e5640',26,y+21,2,6);
-     P(c,'#9c9268',20,y+26,8,2);
+     // Sturdy tan/leather bib overalls with vertical straps & brass buckles over colored work shirt!
+     P(c,'#7c5a38',20,y+19,2,8);P(c,'#7c5a38',26,y+19,2,8);
+     P(c,'#7c5a38',20,y+23,8,6);P(c,'#9c744c',21,y+24,6,4);
+     P(c,'#f0cc68',20,y+22,2,1);P(c,'#f0cc68',26,y+22,2,1);
     }else{
-     P(c,'#5e5640',22,y+21,2,6);
+     P(c,'#7c5a38',21,y+20,5,8);
     }
-    if(type==='farmer'){P(c,'#a27e50',staffX,y+13,2,25);P(c,'#9aa69e',staffX-1,y+12,4,2)}
-    else if(!back){const bx=px(4);P(c,'#d2c09e',bx,y+24,4,3);P(c,'#689aa6',bx+1,y+25,2,1)}
+    if(type==='farmer'){
+     // Tall iron agricultural hoe / pitchfork
+     P(c,'#8c643c',staffX,y+10,2,28);
+     P(c,'#98a6b2',staffX-3,y+9,6,3);P(c,'#dce6ee',staffX-3,y+9,5,1);
+    }else if(!back){
+     const bx=px(5);P(c,'#8c643c',staffX,y+12,2,26);P(c,'#48a8c4',bx,y+23,4,4);
+    }
     break;
    case 'child':case 'ribbonChild':case 'practiceChild':case 'homeChild':case 'satchelChild':
-    if(!side){P(c,'#f8f0e0',22,y+21,4,2)}
-    if(type==='practiceChild'&&!back){const bx=left?16:30;P(c,'#c29e6c',bx,y+19,2,12)}
-    if(type==='satchelChild'){
-     const sx=left?24:19;
-     P(c,'#6e543c',left?23:20,y+21,2,6);P(c,'#d4b27c',sx,y+25,4,3);
+    if(!side){
+     // Crisp white-and-gold V-neck sailor collar on petite child body!
+     P(c,'#faf4e8',20,y+17,8,3);P(c,'#e45858',23,y+19,2,3);
     }
-    if(type==='homeChild'&&!back){const bx=px(3);P(c,'#e0b27c',bx,y+25,3,3)}
+    if(type==='practiceChild'&&!back){const bx=left?15:30;P(c,'#b88a54',bx,y+15,2,15);P(c,'#e8cfa0',bx,y+15,1,12);P(c,'#6e4c2c',bx-1,y+25,4,1)}
+    if(type==='satchelChild'){
+     const sx=left?24:18;
+     P(c,'#6e4c2e',left?23:20,y+18,2,7);P(c,'#c89654',sx,y+23,5,4);P(c,'#f4d478',sx+2,y+24,2,2);
+    }
+    if(type==='homeChild'&&!back){const bx=px(4);P(c,'#d84848',bx,y+22,4,4);P(c,'#fff4d0',bx+1,y+23,2,2)}
     break;
    case 'elderOffice':case 'elderShawl':case 'ledger':case 'homeBooks':
-    if(!side){
-     // Split coat tails on left/right hips so center leg gap stays 100% open!
-     P(c,dark,19,y+27,3,5);P(c,dark,26,y+27,3,5);
-     P(c,'#ded4c0',20,y+20,8,2);
-    }else{
-     P(c,dark,21,y+27,5,5);P(c,'#ded4c0',21,y+20,5,2);
-    }
     if(type==='elderShawl'){
-     if(!side){P(c,'#8c7480',18,y+20,12,4);P(c,'#b8a0ac',20,y+20,8,2)}
-     else{P(c,'#8c7480',20,y+20,7,4)}
-     P(c,'#a28664',staffX,y+21,2,17);
+     // Warm triangular knitted shawl with fringe wrapping shoulders & torso!
+     if(!side){
+      P(c,'#d8cce0',17,y+19,14,5);P(c,'#f2eaf8',18,y+19,12,3);
+      P(c,'#b8a4c6',19,y+24,10,3);P(c,'#f2eaf8',21,y+27,6,2);
+     }else{
+      P(c,'#d8cce0',19,y+19,8,6);P(c,'#f2eaf8',20,y+19,6,3);
+     }
+     P(c,'#7c5838',staffX,y+19,2,20);P(c,'#b88e62',staffX-2,y+18,4,2); // carved oak walking cane
+    }else{
+     // Dignified Mayor / Scholar ceremonial stole bands & gold collar
+     if(!side){
+      P(c,'#e6c468',20,y+19,2,12);P(c,'#e6c468',26,y+19,2,12);
+      P(c,'#f8e8b0',20,y+19,1,10);P(c,'#f8e8b0',26,y+19,1,10);
+     }else{
+      P(c,'#e6c468',22,y+19,2,12);
+     }
+     if(type==='elderOffice'){
+      P(c,'#8c6238',staffX,y+10,2,28);P(c,'#f2d268',staffX-1,y+8,4,4);
+     }else if(!back){
+      const bx=px(5);P(c,'#9c343c',bx,y+22,5,6);P(c,'#f8eed4',bx+1,y+23,3,4);P(c,'#e8c668',bx+2,y+24,2,2);
+     }
     }
-    else if(!back){const bx=px(4);P(c,'#c8a26e',bx,y+24,4,4);P(c,'#f8eed4',bx+1,y+25,2,2)}
     break;
    case 'courier':case 'cityOfficial':case 'commander':
     if(!side){
-     P(c,dark,20,y+21,2,6);P(c,dark,26,y+21,2,6);
-     P(c,'#dec080',20,y+26,8,2);
+     // Double-breasted gold military buttons & diagonal ceremonial sash
+     P(c,'#f0d072',21,y+20,1,6);P(c,'#f0d072',26,y+20,1,6);
+     P(c,'#e6c264',20,y+26,8,2);
     }else{
-     P(c,'#dec080',21,y+26,6,2);
+     P(c,'#e6c264',21,y+26,6,2);
     }
     if(type==='commander'){
-     if(!side){P(c,'#e0c68c',17,y+20,3,2);P(c,'#e0c68c',28,y+20,3,2)}
-     else{P(c,'#e0c68c',21,y+20,5,2)}
+     // Broad golden general epaulettes on both shoulders + gleaming broadsword!
+     if(!side){
+      P(c,'#d8a848',15,y+18,5,3);P(c,'#fff2a8',16,y+18,3,2);
+      P(c,'#d8a848',28,y+18,5,3);P(c,'#fff2a8',29,y+18,3,2);
+     }else{
+      P(c,'#d8a848',20,y+18,7,3);P(c,'#fff2a8',21,y+18,5,2);
+     }
+     P(c,'#d8e2ec',staffX,y+12,2,22);P(c,'#ffffff',staffX,y+12,1,18);P(c,'#e8c664',staffX-2,y+20,6,2);
+    }else if(!back){
+     const bx=px(5);P(c,'#f6ead0',bx,y+22+pulse,5,5);P(c,'#c8343e',bx+1,y+24+pulse,3,2);
     }
-    else if(!back){const bx=px(4);P(c,'#f2e4c4',bx,y+24+pulse,4,4);P(c,'#c84852',bx+1,y+25+pulse,2,1)}
     break;
    case 'homeWork':case 'queueFamily':case 'offDuty':case 'cityResident':
-    if(!side){P(c,dark,19,y+27,3,3);P(c,light,26,y+27,3,3)}
-    if(type==='queueFamily'){const sx=left?24:19;P(c,'#c6baa4',sx,y+21,4,5);P(c,'#e4dac4',sx+1,y+22,2,2)}
-    if(type==='offDuty'&&!side){P(c,'#b4bcc2',20,y+26,8,2);P(c,'#e4cc94',23,y+26,2,2)}
+    if(!side){
+     P(c,dark,20,y+19,2,8);P(c,dark,26,y+19,2,8);
+     P(c,'#d8b874',22,y+20,4,2);
+    }
+    if(type==='queueFamily'){const sx=left?24:17;P(c,'#b8925e',sx,y+21,5,6);P(c,'#f0e4cc',sx+1,y+22,3,3)}
+    if(type==='offDuty'&&!side){P(c,'#98a6b4',17,y+19,3,3);P(c,'#98a6b4',28,y+19,3,3);P(c,'#d8bc78',20,y+26,8,2)}
     break;
    case 'travelMerchant':case 'cityMerchant':
-    {const bx=back?20:left?25:17;
-     P(c,'#946e46',bx,y+21+pulse,back?8:3,6);P(c,'#dcb882',bx+1,y+22+pulse,back?6:1,2);
-     if(type==='cityMerchant'&&!back&&!side){P(c,'#e2cc9e',20,y+24,8,5)}}
+    {
+     // Huge bulging wooden-framed merchant backpack towering behind shoulders!
+     if(!side){
+      P(c,'#6e4a2c',14,y+14+pulse,5,13);P(c,'#9c7046',15,y+15+pulse,3,10);P(c,'#d8c298',14,y+12+pulse,5,3);
+      P(c,'#6e4a2c',29,y+14+pulse,5,13);P(c,'#9c7046',30,y+15+pulse,3,10);P(c,'#d8c298',29,y+12+pulse,5,3);
+      P(c,'#e8c870',20,y+21,8,2); // brass pack chest strap
+     }else{
+      const bx=left?26:14;
+      P(c,'#6e4a2c',bx,y+13+pulse,7,14);P(c,'#9c7046',bx+1,y+14+pulse,5,11);
+      P(c,'#3a6852',bx+1,y+10+pulse,5,4);P(c,'#e8c870',bx+2,y+18+pulse,3,2);
+     }
+     if(type==='cityMerchant'&&!back&&!side){P(c,'#f2e2c0',20,y+24,8,6);P(c,'#d4a85c',21,y+25,6,2)}
+    }
     break;
    case 'recruit':
-    if(!side){P(c,'#c6cece',20,y+20,8,4);P(c,'#e8eeec',21,y+20,4,2);P(c,'#dec898',23,y+21,2,6)}
-    else{P(c,'#c6cece',21,y+20,6,4);P(c,'#dec898',23,y+21,2,6)}
+    // Gleaming Steel Breastplate + Shoulder Pauldrons + Tall Upright Steel Spear/Halberd!
+    if(!side){
+     P(c,'#8c9aa8',16,y+18,4,4);P(c,'#dce6f0',17,y+18,2,2);
+     P(c,'#8c9aa8',28,y+18,4,4);P(c,'#dce6f0',29,y+18,2,2);
+     P(c,'#98a6b4',20,y+19,8,7);P(c,'#e4eef6',21,y+19,4,4);P(c,'#e6c674',23,y+21,2,5);
+    }else{
+     P(c,'#98a6b4',20,y+19,7,7);P(c,'#e4eef6',21,y+19,4,4);
+    }
+    // Tall upright guard spear/halberd
+    P(c,'#7c5636',staffX,y+6,2,34);
+    P(c,'#cfdbe4',staffX-1,y+1,4,6);P(c,'#ffffff',staffX,y+1,2,4);
+    P(c,'#d43844',staffX-2,y+7,5,2);
     break;
    case 'florist':
     if(!back){
-     P(c,'#da8c9c',side?21:20,y+24,side?5:8,6);
-     const bx=pxWide(4);
-     P(c,'#8c6844',bx+1,y+26+pulse,2,2);P(c,'#ea7c9c',bx,y+23+pulse,4,3);P(c,'#fae084',bx+1,y+23+pulse,2,2);
+     P(c,'#fae8ef',side?21:20,y+23,side?5:8,8);
+     const bx=pxWide(5);
+     P(c,'#8c623c',bx,y+25+pulse,5,4);P(c,'#e84c72',bx,y+21+pulse,5,4);P(c,'#ffe268',bx+1,y+21+pulse,3,2);P(c,'#529854',bx+2,y+23+pulse,2,2);
     }
     break;
    case 'smith':case 'smithApprentice':
-    P(c,'#5a504c',side?21:20,y+22,side?5:8,7);P(c,'#c4a480',side?22:21,y+23,side?3:6,5);
-    if(!back){const bx=px(4);P(c,'#967250',bx+1,y+22+pulse,2,5);P(c,'#c6ced2',bx,y+20+pulse,4,2)}
-    if(type==='smithApprentice'&&!side){P(c,'#8ea4b8',20,y+23,2,5)}
+    // Heavy dark leather blacksmith apron + forging hammer & glowing tongs
+    P(c,'#4a3222',side?21:19,y+20,side?6:10,11);P(c,'#745038',side?22:20,y+21,side?4:8,9);
+    if(!back){const bx=px(5);P(c,'#7c5636',bx+1,y+20+pulse,2,8);P(c,'#9aa8b4',bx-1,y+18+pulse,6,3);P(c,'#dce6ee',bx,y+18+pulse,4,1)}
     break;
    case 'bard':
-    P(c,'#e8cc82',side?21:20,y+21,side?5:8,2);
+    if(!side){P(c,'#ecc868',20,y+19,8,3)}
     if(!back){
-     const bx=pxWide(4);
-     P(c,'#ba8448',bx,y+23+pulse,4,4);P(c,'#ecc88a',bx+1,y+24+pulse,2,2);P(c,'#6e4828',bx+1,y+19+pulse,2,4);
+     const bx=pxWide(5);
+     P(c,'#b87638',bx,y+22+pulse,5,5);P(c,'#f2ce84',bx+1,y+23+pulse,3,3);P(c,'#5c381e',bx+2,y+16+pulse,2,6);
     }
     break;
    case 'angler':
-    P(c,'#7e6c54',side?21:20,y+21,side?5:8,5);P(c,'#d4c4a4',21,y+22,6,1);
-    P(c,'#c6a86e',staffX,y+11+pulse,1,25);
+    P(c,'#544432',side?21:20,y+20,side?5:8,6);P(c,'#d4c4a4',21,y+21,6,2);
+    // Tall bamboo fishing rod + dangling line & red bobber
+    P(c,'#c8a458',staffX,y+4+pulse,2,32);P(c,'#e6eef4',staffX+2,y+6+pulse,1,14);P(c,'#e44444',staffX+1,y+19+pulse,3,3);
     break;
    case 'herbGatherer':
     if(!back){
-     P(c,'#f6ecd6',side?21:20,y+24,side?5:8,6);
-     const bx=pxWide(4);
-     P(c,'#aa7e4c',bx+1,y+25+pulse,2,2);P(c,'#54924c',bx,y+23+pulse,4,2);P(c,'#9ad07e',bx+1,y+23+pulse,2,1);
+     P(c,'#faf2dc',side?21:20,y+22,side?5:8,7);
+     const bx=pxWide(5);
+     P(c,'#9c7042',bx,y+24+pulse,5,4);P(c,'#3c9448',bx,y+21+pulse,5,3);P(c,'#9ee078',bx+1,y+21+pulse,3,2);
     }
     break;
    case 'bellKeeper':
-    P(c,'#b8c0c6',side?21:20,y+21,side?5:8,2);
+    if(!side){P(c,'#e4c468',20,y+19,2,11);P(c,'#e4c468',26,y+19,2,11)}
     if(!back){
-     const bx=px(4);
-     P(c,'#d2aa5c',bx,y+24+pulse,3,2);P(c,'#fce084',bx,y+26+pulse,3,2);P(c,'#fff8dc',bx+1,y+26+pulse,1,1);
+     const bx=px(5);
+     P(c,'#d4a448',bx,y+22+pulse,5,5);P(c,'#fae078',bx+1,y+23+pulse,3,4);P(c,'#ffffff',bx+1,y+23+pulse,2,2);
     }
     break;
    case 'chapelPriest':
-    if(!side){P(c,'#e4c26e',21,y+20,1,10);P(c,'#e4c26e',26,y+20,1,10)}
-    if(!back){
-     const bx=px(3);
-     P(c,'#f8f2e4',bx+1,y+24+pulse,2,4);P(c,'#facc64',bx+1,y+22+pulse,2,2);
-    }
+    if(!side){P(c,'#e6be58',20,y+19,2,13);P(c,'#e6be58',26,y+19,2,13);P(c,'#fff4b8',23,y+20,2,6)}
+    P(c,'#d8b454',staffX,y+8,2,30);P(c,'#fff2a6',staffX-2,y+6,6,4);
     break;
    case 'scholar':
-    P(c,'#e2c478',side?21:20,y+21,side?5:8,2);
+    if(!side){P(c,'#e2c068',20,y+19,2,11);P(c,'#e2c068',26,y+19,2,11)}
     if(!back){
-     const bx=px(4);
-     P(c,'#f4ead0',bx+1,y+23+pulse,3,4);P(c,'#b24c52',bx+1,y+25+pulse,3,1);
+     const bx=px(5);
+     P(c,'#9c2c38',bx,y+21+pulse,5,6);P(c,'#faf0d8',bx+1,y+22+pulse,3,4);P(c,'#e8c668',bx+2,y+23+pulse,2,2);
     }
     break;
   }
-  if((type==='ribbonChild'||type==='homeBooks')&&!back){
-   const rx=left?18:27;
-   P(c,'#e6c89e',rx,y+8,3,2);
-   if(type==='ribbonChild')P(c,'#da7490',rx,y+8,2,2);
-  }
-  if(type==='elderShawl'&&front)P(c,'#f0dec6',22,y+20,4,2);
-  if(type==='cityOfficial'&&front)P(c,'#ead6a8',22,y+22,4,2);
-  if(type==='scout'&&side)P(c,'#9c9678',left?25:19,y+20,2,5);
  }
 
  // Nine bespoke resident silhouettes with four separately drawn directions.
@@ -605,19 +652,18 @@ const OpeningPixelAssets=(()=>{
   ctx.putImageData(img,0,0);
  }
  function person(c,profile,dir,frame,id=''){
-  // Protagonist-Matched Curved 48x48 Anime-Chibi Engine (matches karen_idle.png / triton_idle.png / sophie_idle.png / margaret_idle.png row-by-row):
-  // - Rounded oval head (6 -> 10 -> 14 -> 16px crown, 12 -> 10 -> 8 -> 6px face/chin, 4px pinched neck) with zero vertical face bars
-  // - Wide-spaced 3x3 anime eyes (x=19..21 & x=26..28, 4px nose bridge x=22..25) under parted bangs
-  // - Sloped shoulders, pinched 8px waist (x=20..27), and outward-angled forearms/hands (x=15..17 & x=30..32)
-  // - True parted A-stance legs (4px pre-outline gap x=22..25 => 2px-4px transparent daylight gap after outline!) OR flared A-line bell skirt (10 -> 12 -> 14 -> 16px) with parted ankle boots
+  // Protagonist-Matched Curved 48x48 Square Enix HD-2D Character Engine:
+  // Every resident has an unmistakable silhouette (petite child vs stooped/bearded elder vs armored soldier vs wide-hat farmer/merchant vs toque baker vs twin-tail/spiky/long hair)
+  // AND bold primary costume colors (zero generic white-shirt clones!).
   const [hair,coat,skin,job,style]=profile;
   const left=dir===1,right=dir===2,side=left||right,back=dir===3,front=dir===0;
   const child=job==='child',old=job==='elder',armed=job==='fighter',
    working=['baker','farmer','smith','florist','scribe','merchant'].includes(job);
+  const roleType=identities[id]||'';
   let seed=0;for(const letter of id)seed=(seed*33+letter.charCodeAt(0))>>>0;
   const variation=seed%4,mood=expressions[id]||'focused',trait=charTraits[id]||{};
   const bob=(!working&&(frame===1||frame===3))?-1:0;
-  const cx=24,baseY=(child?4:old?1:0)+bob;
+  const cx=24,baseY=(child?6:old?1:0)+bob;
   const headW=child?14:16,headX=cx-Math.floor(headW/2),headY=baseY+3;
   const step=working?0:[0,1,0,-1][frame],
    armL=frame===1?-1:frame===3?1:0,armR=frame===1?1:frame===3?-1:0;
@@ -625,43 +671,45 @@ const OpeningPixelAssets=(()=>{
   const hairDeep=tint(hair,-48),hairShade=tint(hair,-24),hairLight=tint(hair,26),hairGloss=tint(hair,52);
   const skinShadow=tint(skin,-22),skinDeep=tint(skin,-42),skinLight=tint(skin,16);
   const coatLight=tint(coat,26),coatHi=tint(coat,42),coatShade=tint(coat,-24),coatDeep=tint(coat,-44);
-  const pants=armed?'#3a3842':tint(coat,-44),pantsLight=tint(pants,18),pantsShade=tint(pants,-18);
-  const skirted=(!armed&&(['baker','caretaker','florist'].includes(job)||['bun','twin','long','bob'].includes(style)))||id==='oldwoman'||id==='karenMother'||id==='mother'||id==='margaretMother'||id==='soldierMother'||id==='soldierSister';
-  const blouse='#f5eee0',blouseShade='#d8cbb4',bootCol='#6b4832',bootLight='#9a6b48',bootDark='#3e261a';
-  const bodyTop=baseY+19,legTop=baseY+29,bootTop=child?37:36,footBot=42;
+  const pants=armed?'#323640':tint(coat,-38),pantsLight=tint(pants,18),pantsShade=tint(pants,-18);
+  const skirted=(!armed&&(['baker','caretaker','florist'].includes(job)||['bun','twin'].includes(style)))||id==='oldwoman'||id==='karenMother'||id==='mother'||id==='margaretMother'||id==='soldierMother'||id==='soldierSister'||id==='lulu'||id==='noa'||id==='chapelElder'||id==='strollerFestive'||id==='elsiaResident';
+  const blouse='#f5eee0',blouseShade='#d8cbb4',bootCol='#5e3e2a',bootLight='#8e6242',bootDark='#382216';
+  const bodyTop=baseY+(child?17:19),legTop=baseY+(child?25:29),bootTop=child?37:36,footBot=42;
 
-  // 0. Split mantle / cape only for explicit trait.cape characters (never blocks leg gap x=22..25!)
-  if(trait.cape){
-   const cCol=trait.cape,cS=tint(cCol,-26),cH=tint(cCol,20);
+  // 0. Full sweeping mantle / cape for trait.cape & commanders (frames the silhouette boldly!)
+  if(trait.cape||roleType==='commander'){
+   const cCol=trait.cape||(coat==='#263a62'?'#7c2430':tint(coat,-28)),cS=tint(cCol,-26),cH=tint(cCol,22);
    if(side){
-    const bx=left?25:19;
-    P(c,cS,bx,bodyTop+1,3,11);P(c,cCol,bx+(left?0:1),bodyTop+2,2,9);
+    const bx=left?25:18;
+    P(c,cS,bx,bodyTop,4,13);P(c,cCol,bx+(left?0:1),bodyTop+1,3,11);
    }else{
-    P(c,cS,17,bodyTop+1,3,12);P(c,cCol,18,bodyTop+2,2,10);P(c,cH,18,bodyTop+2,1,8);
-    P(c,cS,28,bodyTop+1,3,12);P(c,cCol,28,bodyTop+2,2,10);
-    if(back){P(c,cCol,20,bodyTop+1,8,10);P(c,trait.accent||'#e2c67e',19,bodyTop+10,10,1)}
+    P(c,cS,16,bodyTop,4,13);P(c,cCol,17,bodyTop+1,3,11);P(c,cH,17,bodyTop+1,1,9);
+    P(c,cS,28,bodyTop,4,13);P(c,cCol,28,bodyTop+1,3,11);
+    if(back){P(c,cCol,18,bodyTop,12,12);P(c,trait.accent||'#ecc872',18,bodyTop+11,12,1)}
    }
   }
 
-  // 1. Tapered outer hair locks / twin-tails (draped outside the neck pinch so y=17..18 neck notch stays crisp!)
-  if(['long','twin'].includes(style)&&!side){
-   // Left and right draped locks outside the neck/shoulders (leaving x=19..28 open at the neck!)
-   P(c,hairShade,15,headY+9,3,7);P(c,hair,16,headY+9,2,6);P(c,hairDeep,16,headY+16,2,3);
-   P(c,hairShade,30,headY+9,3,7);P(c,hair,30,headY+9,2,6);P(c,hairDeep,30,headY+16,2,3);
-   if(style==='twin'){
-    P(c,trait.bowColor||'#e67c8c',16,headY+7,2,2);P(c,trait.bowColor||'#e67c8c',30,headY+7,2,2);
-   }
+  // 1. Distinct Outer Hairstyle Silhouettes: Wide Bouncy Twin-Tails, Waist-Length Flowing Locks, or Ponytail!
+  if(style==='twin'&&!side){
+   // Wide bouncy high twin-tails flaring outward on both sides of the head (x=12..15 & x=32..35)!
+   P(c,hairDeep,12,headY+4,4,9);P(c,hair,13,headY+3,3,8);P(c,hairLight,13,headY+3,2,4);
+   P(c,hairDeep,32,headY+4,4,9);P(c,hair,32,headY+3,3,8);P(c,hairLight,33,headY+3,2,4);
+   const bc=trait.bowColor||'#f0627c';
+   P(c,bc,14,headY+2,3,3);P(c,'#fff4f6',15,headY+2,1,1);
+   P(c,bc,31,headY+2,3,3);P(c,'#fff4f6',32,headY+2,1,1);
+  }else if(style==='long'&&!side){
+   // Long flowing hair cascades framing shoulders & chest down to waist!
+   P(c,hairDeep,14,headY+6,4,13);P(c,hair,15,headY+6,3,11);P(c,hairLight,15,headY+7,1,6);
+   P(c,hairDeep,30,headY+6,4,13);P(c,hair,30,headY+6,3,11);P(c,hairLight,32,headY+7,1,6);
   }else if(variation===2&&!armed&&!old){
-   // Compact asymmetric ponytail tip (like Karen's!)
-   const px=left?28:16;
-   P(c,hairShade,px,headY+10,2,5);P(c,hair,px,headY+10,1,4);
+   const px=left?29:15;
+   P(c,hairShade,px,headY+8,3,6);P(c,hair,px+1,headY+8,2,5);
   }
 
   // 2. Protagonist-Matched Parted A-Stance Legs (4px pre-outline gap x=22..25 => true 2px-4px transparent gap after outline!)
   if(!side){
    const lOff=step>0?-1:0,rOff=step<0?-1:0;
    if(!skirted){
-    // Upper thighs (y=legTop..bootTop-1): Left leg x=19..21 (3px), 4px transparent gap x=22..25, Right leg x=26..28 (3px)
     const thH=Math.max(2,bootTop-legTop);
     P(c,pantsLight,19,legTop,1,thH+lOff);
     P(c,pants,20,legTop,1,thH+lOff);
@@ -669,7 +717,6 @@ const OpeningPixelAssets=(()=>{
     P(c,pantsLight,26,legTop,1,thH+rOff);
     P(c,pants,27,legTop,1,thH+rOff);
     P(c,pantsShade,28,legTop,1,thH+rOff);
-    // Lower legs & boots stepping 1px outward in Karen/Triton A-stance (Left x=18..20, Right x=27..29)!
     const btH=Math.max(3,footBot-bootTop);
     P(c,bootLight,18,bootTop+lOff,3,2);
     P(c,bootLight,18,bootTop+2+lOff,1,btH-2);
@@ -680,8 +727,7 @@ const OpeningPixelAssets=(()=>{
     P(c,bootCol,28,bootTop+2+rOff,1,btH-2);
     P(c,bootDark,29,bootTop+2+rOff,1,btH-2);
    }else{
-    // Skirted ankles & dainty boots below flared A-line bell skirt (Left x=19..21, 4px gap x=22..25, Right x=26..28)
-    const skBot=bodyTop+(child?14:16);
+    const skBot=bodyTop+(child?13:16);
     const ankH=Math.max(2,footBot-skBot);
     P(c,skinShadow,19,skBot+lOff,1,2);P(c,skin,20,skBot+lOff,2,2);
     P(c,bootLight,19,skBot+1+lOff,1,ankH-1);P(c,bootCol,20,skBot+1+lOff,1,ankH-1);P(c,bootDark,21,skBot+1+lOff,1,ankH-1);
@@ -689,7 +735,6 @@ const OpeningPixelAssets=(()=>{
     P(c,bootLight,26,skBot+1+rOff,1,ankH-1);P(c,bootCol,27,skBot+1+rOff,1,ankH-1);P(c,bootDark,28,skBot+1+rOff,1,ankH-1);
    }
   }else{
-   // Narrow profile legs with subtle front/back stride separation
    const st=step;
    const fx=left?21-st:23+st,bx=left?24+st:20-st;
    P(c,pantsShade,bx,legTop,2,bootTop-legTop);P(c,bootDark,bx,bootTop,2,footBot-bootTop-1);
@@ -698,104 +743,100 @@ const OpeningPixelAssets=(()=>{
    P(c,bootCol,fx,bootTop+2,3,footBot-bootTop-2);
   }
 
-  // 3. Pinched Neck, Sloped Shoulders, Cinched 8px Waist & Outward-Angled Arms/Hands (y=bodyTop-1..bodyTop+9)
-  const sleeveCol=trait.vest||skirted?blouse:coat,sleeveShade=trait.vest||skirted?blouseShade:coatShade,sleeveHi=trait.vest||skirted?'#fffcf4':coatLight;
+  // 3. Pinched Neck, Sloped Shoulders, Rich Colored Sleeves & Torso (NO universal white shirt clone override!)
+  const sleeveCol=coat,sleeveShade=coatShade,sleeveHi=coatLight;
+  const torsoH=child?6:7;
   if(!side){
-   // Pinched 4px neck (x=22..25, y=bodyTop-2..bodyTop) — open air on both sides creates true anime neck notch!
    P(c,skinShadow,22,bodyTop-2,4,1);
    P(c,skin,22,bodyTop-1,3,2);P(c,skinShadow,25,bodyTop-1,1,2);
-   // Row y=bodyTop: Sloping upper collarbone (8px wide x=20..27)
    P(c,coatLight,20,bodyTop,2,1);P(c,coatShade,26,bodyTop,2,1);
-   if(!back){P(c,blouse,21,bodyTop,2,2);P(c,blouseShade,25,bodyTop,2,2);P(c,skin,23,bodyTop,2,2)}
+   if(!back){P(c,trait.accent||blouse,22,bodyTop,4,2);P(c,skin,23,bodyTop,2,1)}
    else{P(c,coat,22,bodyTop,4,1)}
-   // Rows y=bodyTop+1..bodyTop+6: Sculpted 8px central torso (x=20..27)
-   P(c,coat,20,bodyTop+1,8,6);
-   P(c,coatLight,20,bodyTop+1,2,5);
-   P(c,coatShade,26,bodyTop+1,2,5);
+   // Primary colored torso (full vivid coat color instead of white square!)
+   P(c,coat,20,bodyTop+1,8,torsoH-1);
+   P(c,coatLight,20,bodyTop+1,2,torsoH-2);
+   P(c,coatShade,26,bodyTop+1,2,torsoH-2);
    if(!back){
-    P(c,blouse,22,bodyTop+1,4,4);P(c,blouseShade,23,bodyTop+4,2,2);
-    P(c,seam,21,bodyTop+1,1,4);P(c,seam,26,bodyTop+1,1,4);
+    // Subtle collar V-notch & vertical placket line in signature color family
+    P(c,trait.accent||coatHi,23,bodyTop+1,2,3);
+    P(c,coatDeep,22,bodyTop+1,1,torsoH-2);P(c,coatDeep,25,bodyTop+1,1,torsoH-2);
    }
    if(trait.vest){
     const vL=tint(trait.vest,22),vD=tint(trait.vest,-24);
-    P(c,trait.vest,20,bodyTop+1,2,6);P(c,trait.vest,26,bodyTop+1,2,6);
-    P(c,vL,20,bodyTop+1,1,5);P(c,vD,27,bodyTop+1,1,5);
+    P(c,trait.vest,20,bodyTop+1,2,torsoH-1);P(c,trait.vest,26,bodyTop+1,2,torsoH-1);
+    P(c,vL,20,bodyTop+1,1,torsoH-2);P(c,vD,27,bodyTop+1,1,torsoH-2);
    }
-   if(armed){
-    P(c,'#98a4b0',20,bodyTop+1,8,5);P(c,'#dee6ec',21,bodyTop+1,3,3);
-    P(c,'#64707c',26,bodyTop+1,2,5);P(c,ink,20,bodyTop+5,8,1);
+   if(armed&&roleType!=='commander'){
+    // Contoured steel or imperial gunmetal cuirass over colored surcoat!
+    const darkArmor=coat==='#1e4880'||coat==='#1c4476'||coat==='#1c467c';
+    const aMid=darkArmor?'#586e88':'#98a6b4',aHi=darkArmor?'#88a4c4':'#e2ecf4',aLo=darkArmor?'#344458':'#5c6874';
+    P(c,aMid,20,bodyTop+1,8,5);P(c,aHi,21,bodyTop+1,3,3);
+    P(c,aLo,26,bodyTop+1,2,5);P(c,ink,20,bodyTop+5,8,1);
    }
-   // Cinched 8px waist belt (y=bodyTop+7..8) + 2px gold buckle
-   P(c,'#543824',20,bodyTop+7,8,2);
-   P(c,'#ecc872',23,bodyTop+7,2,2);
-   // Lower garment below belt: Flared A-line Bell Skirt (Sophie/Margaret style) OR Split Tunic Hip Flaps (Karen/Triton style)
+   // Cinched 8px waist belt + 2px gold buckle
+   const beltY=bodyTop+torsoH;
+   P(c,'#4e321e',20,beltY,8,2);
+   P(c,'#f2ce6e',23,beltY,2,2);
    if(skirted){
-    // Graduated A-line bell flare: 10px (y+8..9) -> 12px (y+10..12) -> 14px (y+13..15, 16px with outline!) -> 12px ruffled hem
     const skRows=child?6:8;
-    P(c,coat,19,bodyTop+8,10,2);
-    P(c,coat,18,bodyTop+10,12,3);
+    P(c,coat,19,beltY+1,10,2);
+    P(c,coat,18,beltY+3,12,child?2:3);
     if(!child){
-     P(c,coat,17,bodyTop+13,14,2);
-     P(c,trait.accent||blouse,18,bodyTop+15,12,1);
+     P(c,coat,17,beltY+6,14,2);
+     P(c,trait.accent||coatHi,18,beltY+8,12,1);
     }else{
-     P(c,trait.accent||blouse,18,bodyTop+13,12,1);
+     P(c,trait.accent||coatHi,18,beltY+5,12,1);
     }
-    // Cylindrical & pleated skirt shading
-    P(c,coatLight,19,bodyTop+8,2,skRows-1);
-    P(c,coatLight,18,bodyTop+10,2,skRows-3);
-    P(c,coatShade,27,bodyTop+8,2,skRows-1);
-    P(c,coatShade,28,bodyTop+10,2,skRows-3);
-    P(c,coatDeep,21,bodyTop+9,1,skRows-2);
-    P(c,coatDeep,24,bodyTop+9,1,skRows-1);
-    P(c,coatDeep,27,bodyTop+9,1,skRows-2);
+    P(c,coatLight,19,beltY+1,2,skRows-1);
+    P(c,coatLight,18,beltY+3,2,skRows-3);
+    P(c,coatShade,27,beltY+1,2,skRows-1);
+    P(c,coatShade,28,beltY+3,2,skRows-3);
+    P(c,coatDeep,21,beltY+2,1,skRows-2);
+    P(c,coatDeep,24,beltY+2,1,skRows-1);
+    P(c,coatDeep,27,beltY+2,1,skRows-2);
    }else{
-    // Split left & right hip flaps (x=19..21 and x=26..28 at y=bodyTop+9..10) leaving center x=22..25 open!
-    P(c,coatLight,19,bodyTop+9,2,2);P(c,coat,21,bodyTop+9,1,2);
-    P(c,coat,26,bodyTop+9,1,2);P(c,coatShade,27,bodyTop+9,2,2);
+    P(c,coatLight,19,beltY+2,2,2);P(c,coat,21,beltY+2,1,2);
+    P(c,coat,26,beltY+2,1,2);P(c,coatShade,27,beltY+2,2,2);
    }
-   // Outward-Sloping Sleeves & Separated Forearms/Hands (creates clear waist pinch at x=18..19 & x=28..29!)
-   // Upper shoulder sleeve cap (y=bodyTop+1..bodyTop+3)
+   // Outward-Sloping Colored Sleeves & Hands
    P(c,sleeveHi,17,bodyTop+1+armL,2,2);P(c,sleeveShade,18,bodyTop+2+armL,1,2);
    P(c,sleeveCol,29,bodyTop+1+armR,2,2);P(c,sleeveShade,30,bodyTop+2+armR,1,2);
-   // Mid/lower sleeve angling 1px outward (x=15..17 and x=30..32 at y=bodyTop+3..bodyTop+5, leaving x=18..19 & x=28..29 open beside waist!)
    P(c,sleeveHi,15,bodyTop+3+armL,1,3);P(c,sleeveCol,16,bodyTop+3+armL,1,3);P(c,sleeveShade,17,bodyTop+3+armL,1,3);
    P(c,skinLight,15,bodyTop+6+armL,1,2);P(c,skin,16,bodyTop+6+armL,1,2);
    P(c,sleeveCol,30,bodyTop+3+armR,1,3);P(c,sleeveShade,31,bodyTop+3+armR,2,3);
    P(c,skin,31,bodyTop+6+armR,1,2);P(c,skinShadow,32,bodyTop+6+armR,1,2);
   }else{
-   // Narrow curved profile torso (x=21..26) & A-line profile skirt
+   const beltY=bodyTop+torsoH;
    P(c,skinShadow,22,bodyTop-2,3,2);
-   P(c,coat,21,bodyTop,6,7);
-   P(c,left?coatLight:coatShade,21,bodyTop+1,2,6);
-   P(c,left?coatShade:coatLight,25,bodyTop+1,2,6);
-   if(armed){P(c,'#98a4b0',21,bodyTop+1,6,5);P(c,'#dee6ec',left?21:24,bodyTop+1,2,3)}
-   P(c,'#543824',21,bodyTop+7,6,2);P(c,'#ecc872',left?21:26,bodyTop+7,1,2);
+   P(c,coat,21,bodyTop,6,torsoH);
+   P(c,left?coatLight:coatShade,21,bodyTop+1,2,torsoH-1);
+   P(c,left?coatShade:coatLight,25,bodyTop+1,2,torsoH-1);
+   if(armed&&roleType!=='commander'){P(c,'#98a4b0',21,bodyTop+1,6,5);P(c,'#dee6ec',left?21:24,bodyTop+1,2,3)}
+   P(c,'#4e321e',21,beltY,6,2);P(c,'#f2ce6e',left?21:26,beltY,1,2);
    if(skirted){
     const skRows=child?6:8;
-    P(c,coat,20,bodyTop+8,8,2);
-    P(c,coat,19,bodyTop+10,10,skRows-3);
-    P(c,coatLight,left?19:27,bodyTop+9,2,skRows-2);
-    P(c,coatDeep,23,bodyTop+9,1,skRows-1);
-    P(c,coatShade,left?27:19,bodyTop+9,2,skRows-2);
-    P(c,trait.accent||blouse,19,bodyTop+7+skRows,10,1);
+    P(c,coat,20,beltY+1,8,2);
+    P(c,coat,19,beltY+3,10,skRows-3);
+    P(c,coatLight,left?19:27,beltY+2,2,skRows-2);
+    P(c,coatDeep,23,beltY+2,1,skRows-1);
+    P(c,coatShade,left?27:19,beltY+2,2,skRows-2);
+    P(c,trait.accent||coatHi,19,beltY+skRows,10,1);
    }else{
-    P(c,coat,21,bodyTop+9,6,2);
+    P(c,coat,21,beltY+2,6,2);
    }
-   // Centered profile arm with 1px dark crease
    P(c,ink,21,bodyTop+2+armL,1,5);P(c,ink,25,bodyTop+2+armL,1,5);
    P(c,sleeveHi,22,bodyTop+2+armL,1,4);P(c,sleeveCol,23,bodyTop+2+armL,1,4);P(c,sleeveShade,24,bodyTop+2+armL,1,4);
    P(c,skin,22,bodyTop+6+armL,2,2);
   }
   if(trait.scarf){
-   const sx=side?21:20,sw=side?6:8;
-   P(c,trait.scarf,sx,bodyTop-1,sw,2);P(c,tint(trait.scarf,26),sx+1,bodyTop-1,sw-2,1);
+   const sx=side?21:19,sw=side?6:10;
+   P(c,trait.scarf,sx,bodyTop-1,sw,2);P(c,tint(trait.scarf,28),sx+1,bodyTop-1,sw-2,1);
   }
 
-  // 4. Protagonist-Matched Rounded Oval Head & Expressive Anime Face (y=headY..headY+14)
-  // Taper the cheeks into a rounded lower jaw
+  // 4. Rounded Oval Head, Expressive Anime Face & Distinct Hairstyle Silhouettes (y=headY..headY+14)
   const hy=headY;
+  const maleElder=old&&!['oldwoman','chapelElder'].includes(id);
   if(back){
-   // Rounded oval back-of-head hair dome (6 -> 10 -> 14 -> 16 -> 14 -> 10px)
    P(c,hairShade,21,hy,6,1);
    P(c,hair,19,hy+1,10,1);
    P(c,hair,17,hy+2,14,2);
@@ -805,64 +846,83 @@ const OpeningPixelAssets=(()=>{
    P(c,hairLight,18,hy+3,12,2);P(c,hairGloss,21,hy+3,6,1);
    P(c,hairDeep,20,hy+6,1,6);P(c,hairDeep,24,hy+5,1,7);P(c,hairDeep,27,hy+6,1,6);
   }else if(!side){
-   // FRONT VIEW (dir=0): Rounded anime skull & wide-spaced 3x3 eyes (NO vertical black face bars!)
-   // 4a. Rounded upper hair crown (width steps: 6 -> 10 -> 14 -> 16px)
+   // 4a. Upper hair crown + Spiky hair tufts for 'messy' characters!
    P(c,hairShade,21,hy,6,1);
    P(c,hair,19,hy+1,10,1);
    P(c,hair,17,hy+2,14,2);
    P(c,hair,16,hy+4,16,5);
-   // Specular hair sheen halo & center part shadow
+   if(style==='messy'){
+    // Wild spiky anime hair silhouette breaking outside the oval dome!
+    P(c,hair,17,hy-2,3,3);P(c,hairLight,18,hy-3,2,2);
+    P(c,hair,22,hy-3,3,3);P(c,hairGloss,23,hy-3,2,2);
+    P(c,hair,27,hy-2,3,3);P(c,hairLight,28,hy-2,2,2);
+    P(c,hair,14,hy+3,2,3);P(c,hair,32,hy+3,2,3);
+    P(c,hairShade,14,hy+7,2,2);P(c,hairShade,32,hy+7,2,2);
+   }else if(style==='bob'){
+    // Rounded flared bob-cut side curls at cheek level!
+    P(c,hair,15,hy+5,2,6);P(c,hairShade,15,hy+10,3,2);
+    P(c,hair,31,hy+5,2,6);P(c,hairShade,30,hy+10,3,2);
+   }
    P(c,hairDeep,23,hy+1,2,2);
    P(c,hairLight,18,hy+2,5,2);P(c,hairLight,25,hy+2,5,2);
    P(c,hairGloss,19,hy+2,3,1);P(c,hairGloss,26,hy+2,3,1);
-   // 4b. Smoothly tapered oval face skin (12px at eyes -> 10px at cheeks -> 8px at jaw -> 6px at chin!)
-   P(c,skin,19,hy+6,10,2);     // forehead under parted bangs
-   P(c,skin,18,hy+8,12,3);     // 12px eye/cheekbone span (x=18..29)
-   P(c,skin,19,hy+11,10,1);    // 10px lower cheek (x=19..28)
-   P(c,skin,20,hy+12,8,1);     // 8px upper jaw (x=20..27)
-   P(c,skinShadow,21,hy+13,6,1); // 6px rounded chin (x=21..26)
-   P(c,skinLight,22,hy+8,4,3); // soft nose-bridge light
-   // 4c. Soft Cheek-Framing Hair Side-Locks (2px wide at x=16..17 & x=30..31, tapering at y=hy+11 — NEVER vertical black face bars!)
+   // 4b. Smoothly tapered oval face skin
+   P(c,skin,19,hy+6,10,2);
+   P(c,skin,18,hy+8,12,3);
+   P(c,skin,19,hy+11,10,1);
+   P(c,skin,20,hy+12,8,1);
+   P(c,skinShadow,21,hy+13,6,1);
+   P(c,skinLight,22,hy+8,4,3);
+   // 4c. Cheek-framing side locks
    P(c,hairShade,16,hy+7,2,4);P(c,hair,17,hy+7,1,3);P(c,hairDeep,17,hy+11,2,1);
    P(c,hairShade,30,hy+7,2,4);P(c,hair,30,hy+7,1,3);P(c,hairDeep,29,hy+11,2,1);
-   // 4d. Feathered Parted Bangs (letting forehead skin peek through between locks!)
-   P(c,hair,17,hy+5,14,1);
-   P(c,hair,17,hy+6,3,2);P(c,hairShade,18,hy+8,1,1);
-   P(c,hair,28,hy+6,3,2);P(c,hairShade,29,hy+8,1,1);
-   if(variation===0){
-    P(c,hair,22,hy+5,4,2);P(c,hairShade,23,hy+7,2,1);
-   }else if(variation===1){
-    P(c,hair,21,hy+5,3,2);P(c,hairShade,22,hy+7,1,1);
-   }else if(variation===2){
-    P(c,hair,24,hy+5,3,2);P(c,hairShade,25,hy+7,1,1);
+   // 4d. Parted Bangs (receding high forehead for male elders!)
+   if(maleElder){
+    P(c,skin,19,hy+4,10,3);P(c,skinShadow,20,hy+5,8,1); // dignified high forehead with wisdom line
+    P(c,'#ffffff',18,hy+7,4,1);P(c,'#ffffff',26,hy+7,4,1); // bushy white elder eyebrows!
    }else{
-    P(c,hair,20,hy+6,2,1);P(c,hair,23,hy+5,2,2);P(c,hair,26,hy+6,2,1);
+    P(c,hair,17,hy+5,14,1);
+    P(c,hair,17,hy+6,3,2);P(c,hairShade,18,hy+8,1,1);
+    P(c,hair,28,hy+6,3,2);P(c,hairShade,29,hy+8,1,1);
+    if(variation===0){
+     P(c,hair,22,hy+5,4,2);P(c,hairShade,23,hy+7,2,1);
+    }else if(variation===1){
+     P(c,hair,21,hy+5,3,2);P(c,hairShade,22,hy+7,1,1);
+    }else if(variation===2){
+     P(c,hair,24,hy+5,3,2);P(c,hairShade,25,hy+7,1,1);
+    }else{
+     P(c,hair,20,hy+6,2,1);P(c,hair,23,hy+5,2,2);P(c,hair,26,hy+6,2,1);
+    }
+    if(old){P(c,'#f4f2ec',19,hy+7,3,1);P(c,'#f4f2ec',26,hy+7,3,1)}
    }
-   // 4e. Protagonist-Matched 3x3 Anime Eyes at x=19..21 and x=26..28 (4px nose bridge x=22..25!)
+   // 4e. 3x3 Anime Eyes
    const eyeIris=mood==='bright'?'#7e4884':mood==='gentle'?'#42748c':mood==='curious'?'#447c54':'#5c4868';
    const eyeHi=tint(eyeIris,32);
-   // Upper dark eyelash arch (3px wide at y=hy+8)
    P(c,ink,19,hy+8,3,1);P(c,ink,26,hy+8,3,1);
-   // Mid eye row (y=hy+9): 1px white catchlight + 1px dark pupil + 1px colored iris
    P(c,'#fff8ee',19,hy+9,1,1);P(c,ink,20,hy+9,1,1);P(c,eyeIris,21,hy+9,1,1);
    P(c,'#fff8ee',26,hy+9,1,1);P(c,ink,27,hy+9,1,1);P(c,eyeIris,28,hy+9,1,1);
-   // Lower eye row (y=hy+10): 1px soft sclera + 2px luminous lower iris gradient
    P(c,skinLight,19,hy+10,1,1);P(c,eyeIris,20,hy+10,1,1);P(c,eyeHi,21,hy+10,1,1);
    P(c,skinLight,26,hy+10,1,1);P(c,eyeIris,27,hy+10,1,1);P(c,eyeHi,28,hy+10,1,1);
-   // Soft rosy cheek blush & delicate 2px smile shadow
    if(!old){P(c,'#ee9896',19,hy+11,2,1);P(c,'#ee9896',27,hy+11,2,1)}
    P(c,skinDeep,23,hy+12,2,1);
-   if(trait.beard){
-    P(c,hairShade,20,hy+11,8,3);P(c,hair,21,hy+11,6,2);
+   if(maleElder){
+    // Magnificent full flowing white/silver elder beard!
+    P(c,hairShade,19,hy+11,10,4);P(c,'#faf8f2',20,hy+11,8,5);
+    P(c,hairShade,21,hy+15,6,3);P(c,'#ffffff',22,hy+12,4,5);
+   }else if(trait.beard){
+    P(c,hairDeep,19,hy+11,10,3);P(c,hairShade,20,hy+11,8,4);P(c,hair,21,hy+11,6,3);
    }
    if(trait.glasses){
-    P(c,'#d8bc74',19,hy+8,3,1);P(c,'#d8bc74',26,hy+8,3,1);P(c,'#d8bc74',22,hy+9,4,1);
+    P(c,'#f0d068',18,hy+8,4,3);P(c,'#f0d068',26,hy+8,4,3);P(c,'#f0d068',22,hy+9,4,1);
+    P(c,'#ffffff',19,hy+9,1,1);P(c,'#ffffff',26,hy+9,1,1);
    }
   }else{
-   // SIDE PROFILE VIEW (dir=1 Left, dir=2 Right): Rounded profile dome + 5px profile face + layered side hair
    P(c,hairShade,21,hy,6,1);
    P(c,hair,19,hy+1,10,1);
    P(c,hair,17,hy+2,14,3);
+   if(style==='messy'){
+    P(c,hair,18,hy-2,3,3);P(c,hair,23,hy-3,3,3);P(c,hair,27,hy-2,3,3);
+   }
    P(c,hairLight,19,hy+2,10,2);P(c,hairGloss,22,hy+2,4,1);
    const eyeIris=mood==='bright'?'#7e4884':mood==='gentle'?'#42748c':mood==='curious'?'#447c54':'#5c4868';
    if(left){
@@ -871,52 +931,82 @@ const OpeningPixelAssets=(()=>{
     if(!old)P(c,'#ee9896',20,hy+11,2,1);
     P(c,hair,17,hy+5,5,2);P(c,hairShade,18,hy+7,2,1);
     P(c,hair,23,hy+4,8,7);P(c,hairShade,23,hy+10,7,3);P(c,hairDeep,24,hy+12,5,2);
-    P(c,hairDeep,25,hy+6,1,6);P(c,hairDeep,28,hy+5,1,7);
-    if(trait.beard)P(c,hairShade,18,hy+11,4,3);
+    if(maleElder){P(c,'#faf8f2',17,hy+11,5,5);P(c,hairShade,18,hy+15,4,2)}
+    else if(trait.beard)P(c,hairShade,18,hy+11,4,4);
    }else{
     P(c,skin,25,hy+7,5,4);P(c,skin,25,hy+11,4,2);P(c,skinShadow,25,hy+13,3,1);
     P(c,ink,27,hy+8,2,1);P(c,eyeIris,27,hy+9,1,2);P(c,'#fff8ee',28,hy+9,1,1);
     if(!old)P(c,'#ee9896',26,hy+11,2,1);
     P(c,hair,26,hy+5,5,2);P(c,hairShade,28,hy+7,2,1);
     P(c,hair,17,hy+4,8,7);P(c,hairShade,18,hy+10,7,3);P(c,hairDeep,19,hy+12,5,2);
-    P(c,hairDeep,19,hy+5,1,7);P(c,hairDeep,22,hy+6,1,6);
-    if(trait.beard)P(c,hairShade,26,hy+11,4,3);
+    if(maleElder){P(c,'#faf8f2',26,hy+11,5,5);P(c,hairShade,26,hy+15,4,2)}
+    else if(trait.beard)P(c,hairShade,26,hy+11,4,4);
    }
   }
-  // Hairstyles: compact bun or fitted hood (never blocks neck pinch!)
+  // Prominent High Sculpted Hair Bun or Deep Pointed Ranger/Monk Hood
   if(style==='bun'){
-   const bx=left?25:right?19:22;
-   P(c,hairShade,bx,hy-2,4,2);P(c,hair,bx+1,hy-2,2,1);P(c,trait.bowColor||'#e8c474',bx,hy-1,4,1);
+   const bx=left?25:right?18:21;
+   P(c,hairDeep,bx,hy-4,6,4);P(c,hair,bx+1,hy-4,4,3);P(c,hairLight,bx+1,hy-4,2,2);
+   P(c,trait.bowColor||'#f2cc68',bx,hy-1,6,1);
   }
   if(style==='scarf'||style==='hood'){
-   P(c,coatShade,17,hy+1,14,4);P(c,coat,18,hy+1,12,3);P(c,coatLight,20,hy+1,8,1);
-   if(back)P(c,coat,17,hy+4,14,8);
+   // Deep pointed ranger/traveler hood peaking at crown & wrapping shoulders!
+   P(c,coatDeep,21,hy-3,6,2);P(c,coat,22,hy-3,4,2);
+   P(c,coatShade,16,hy-1,16,5);P(c,coat,17,hy-1,14,4);P(c,coatLight,20,hy-1,8,2);
+   if(!side){P(c,coatShade,15,hy+3,3,10);P(c,coatShade,30,hy+3,3,10)}
+   if(back)P(c,coat,16,hy+3,16,10);
   }
 
-  // 5. Fitted Low-Profile Headwear (sits naturally ON the crown y=hy..hy+4, never a tall block!)
+  // 5. Bold, Silhouette-Defining Square Enix Headwear (Wide Straw Sunhats, Tall Baker Toques, Plumed Steel Helms, Winged Bard Caps!)
   if(style==='hat'){
-   P(c,'#b89454',16,hy+3,16,1);P(c,'#e6c884',17,hy+2,14,1);
-   P(c,'#d4b26e',19,hy,10,2);P(c,'#f4e0a0',20,hy,8,1);
-   P(c,trait.scarf||'#9c463c',19,hy+2,10,1);
+   // Wide 24px Straw Sunhat / Merchant Traveler Hat extending 4px outside the head on both sides!
+   P(c,'#7c582c',12,hy+3,24,2);
+   P(c,'#cfa458',13,hy+2,22,2);
+   P(c,'#f2d284',15,hy+2,18,1);
+   P(c,'#b88c44',18,hy-3,12,5);
+   P(c,'#e8c26e',19,hy-3,10,4);
+   P(c,'#fff0aa',20,hy-3,6,2);
+   P(c,trait.scarf||coat,18,hy+1,12,1);
+  }else if(job==='baker'){
+   // Tall Puffy Snow-White Baker / Chef Toque!
+   P(c,'#d4c8b4',17,hy-4,14,7);
+   P(c,'#faf6ee',16,hy-5,16,6);
+   P(c,'#ffffff',18,hy-6,12,6);
+   P(c,'#d8ccb8',21,hy-4,1,5);P(c,'#d8ccb8',26,hy-4,1,5);
+   P(c,coat,17,hy+1,14,1);
   }else if(trait.head==='mobcap'){
-   P(c,'#dfd2bc',17,hy+1,14,3);P(c,'#faf4e8',18,hy,12,3);P(c,'#ffffff',20,hy,8,2);
+   // Wide Frilled White Matron Coif / Maid Mobcap!
+   P(c,'#d8ccb8',15,hy-1,18,5);
+   P(c,'#faf6ee',16,hy-2,16,5);
+   P(c,'#ffffff',18,hy-2,12,3);
+   P(c,coat,17,hy+2,14,1);
   }else if(trait.head==='featherCap'){
-   P(c,coatShade,17,hy+1,14,3);P(c,coat,18,hy,12,3);P(c,coatLight,20,hy,8,2);
-   const fx=left?28:18;
-   P(c,'#f6d468',fx,hy-2,2,3);P(c,'#fff8d0',fx,hy-2,1,2);
+   // Jaunty Slanted Minstrel / Herald Cap with Tall Sweeping Golden-White Plume!
+   P(c,coatDeep,15,hy,17,4);P(c,coat,16,hy-1,15,4);P(c,coatLight,18,hy-1,10,2);
+   const fx=left?28:14;
+   P(c,'#e6b83c',fx,hy-5,3,6);P(c,'#fff8c8',fx+1,hy-6,2,5);P(c,'#ffffff',fx+1,hy-6,1,3);
   }else if(trait.head==='beret'){
-   P(c,tint(coat,-16),17,hy+1,14,2);P(c,coatLight,19,hy,10,2);P(c,'#ecd074',left?19:27,hy+1,2,1);
-  }else if(trait.head==='helm'){
-   P(c,'#5e6874',17,hy+1,14,4);P(c,'#98a4b0',18,hy,12,4);P(c,'#dce6ee',20,hy,8,2);
-   const plume=trait.plume||'#c43c48';
-   P(c,plume,23,hy-2,2,2);P(c,tint(plume,42),23,hy-2,1,1);
+   // Slanted Scholar / Merchant Velvet Beret with Gold Badge!
+   P(c,coatDeep,15,hy,17,3);P(c,coat,16,hy-2,15,4);P(c,coatLight,18,hy-2,10,2);
+   P(c,'#f6d468',left?18:28,hy,2,2);
+  }else if(trait.head==='helm'||roleType==='recruit'){
+   // Gleaming Steel Battle Helmet with Cheek Guards, Brow Visor & Tall Waving Plume!
+   const darkHelm=coat==='#1e4880'||coat==='#1c4476'||coat==='#1c467c';
+   const hDark=darkHelm?'#2c3848':'#525e6c',hMid=darkHelm?'#566c86':'#94a2b0',hHi=darkHelm?'#8eb0d4':'#e4eef6';
+   P(c,hDark,16,hy+1,16,4);P(c,hMid,17,hy-1,14,5);P(c,hHi,19,hy-1,9,3);
+   if(!side){P(c,hDark,15,hy+4,2,5);P(c,hDark,31,hy+4,2,5)}
+   P(c,'#f0cc68',18,hy+3,12,1); // brass helm brow trim
+   const plume=trait.plume||(darkHelm?'#3898e8':'#d83240');
+   P(c,tint(plume,-24),22,hy-5,4,4);P(c,plume,23,hy-6,4,5);P(c,tint(plume,48),23,hy-6,2,3);
   }else if(trait.head==='circlet'){
-   P(c,'#eac86e',19,hy+4,10,1);P(c,'#fff8cc',23,hy+3,2,2);
+   P(c,'#d8a838',18,hy+3,12,2);P(c,'#fff6b8',20,hy+3,8,1);
+   P(c,'#48b8d8',23,hy+2,2,3);P(c,'#ffffff',23,hy+2,1,1);
   }else if(trait.head==='bandana'){
-   P(c,trait.scarf||'#a84842',17,hy+3,14,2);P(c,tint(trait.scarf||'#a84842',32),20,hy+3,8,1);
+   const bc=trait.scarf||'#c43838';
+   P(c,tint(bc,-24),16,hy+2,16,3);P(c,bc,17,hy+2,14,2);P(c,tint(bc,36),20,hy+2,8,1);
   }else if(trait.head==='bow'&&!back){
-   const bx=left?26:27,bc=trait.bowColor||'#e67288';
-   P(c,bc,bx,hy+2,3,2);P(c,tint(bc,42),bx+1,hy+2,1,1);
+   const bx=left?25:27,bc=trait.bowColor||'#f06284';
+   P(c,tint(bc,-24),bx-1,hy+1,5,4);P(c,bc,bx,hy+1,4,3);P(c,'#fff4f8',bx+1,hy+2,2,1);
   }
   signature(c,id,dir,frame,coat,skin,baseY);
  }

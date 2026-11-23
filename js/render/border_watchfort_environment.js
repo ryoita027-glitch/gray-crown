@@ -576,10 +576,10 @@ const BorderWatchfortEnvironment=(()=>{
     HD2DAtlas.drawPlazaMedallion(ctx,13*32+16,8*32+16,44,'warm');
    }
    const relayHouses=[
-    {x:3,y:3,w:5,h:3,tag:'rel_inn',label:'ハルム中継宿',roofDark:'#583228',roofMain:'#84483a',roofHi:'#b06450',roofRim:'#d68a72',wall:'#e4d6b6',shutter:'#523f31',canopyColor:'#8c3a40',flowerBorder:true,doorOffsetPx:2*32+16},
-    {x:16,y:3,w:5,h:3,tag:'rel_store',label:'交易荷倉',roofDark:'#324438',roofMain:'#4c6852',roofHi:'#6c8e72',roofRim:'#96b89a',wall:'#ded2b4',shutter:'#465648',sideShed:true,chimneyLeft:true,doorOffsetPx:2*32+16},
-    {x:3,y:10,w:4,h:2,tag:'rel_sw',roofDark:'#343e52',roofMain:'#4c5e78',roofHi:'#6e84a2',roofRim:'#94aac4',wall:'#dcd0b2',shutter:'#3c4c62',dormer:false,doorOffsetPx:2*32},
-    {x:17,y:10,w:4,h:2,tag:'rel_se',roofDark:'#4e3626',roofMain:'#78523c',roofHi:'#a07254',roofRim:'#c69876',wall:'#dad0b2',shutter:'#4c5c46',dormer:false,doorOffsetPx:2*32}
+    {x:3,y:3,w:5,h:3,tag:'rel_inn',archStyle:'hall',label:'ハルム中継宿',roofDark:'#583228',roofMain:'#84483a',roofHi:'#b06450',roofRim:'#d68a72',wall:'#eedcc0',wallShade:'#d4c0a0',wallDark:'#a69272',shutter:'#523f31',canopyColor:'#8c3a40',flowerBorder:true,doorOffsetPx:2*32+16},
+    {x:16,y:3,w:5,h:3,tag:'rel_store',archStyle:'workshop',timberWall:true,label:'交易荷倉',roofDark:'#2c3e32',roofMain:'#46624c',roofHi:'#66886c',roofRim:'#90b294',wall:'#d2b48e',wallShade:'#b89872',wallDark:'#8c6e4c',shutter:'#405042',sideShed:true,chimneyLeft:true,doorOffsetPx:2*32+16},
+    {x:3,y:10,w:4,h:2,tag:'rel_sw',archStyle:'manor',lowerStone:true,roofDark:'#2e384c',roofMain:'#465872',roofHi:'#687e9c',roofRim:'#8ea4c0',wall:'#ded8ca',wallShade:'#c6c0b0',wallDark:'#989282',shutter:'#36465c',dormer:false,doorOffsetPx:2*32},
+    {x:17,y:10,w:4,h:2,tag:'rel_se',archStyle:'cottage',roofDark:'#4e3626',roofMain:'#78523c',roofHi:'#a07254',roofRim:'#c69876',wall:'#ead8bc',wallShade:'#d0be9e',wallDark:'#a29070',shutter:'#4c5c46',dormer:false,doorOffsetPx:2*32}
    ];
    for(const b of relayHouses){
     if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawGrandHouse(ctx,b.x,b.y,b.w,b.h,b)){
@@ -608,8 +608,8 @@ const BorderWatchfortEnvironment=(()=>{
   if(map==='borderland'){
    // Expanded 32x22 Halm Borderland: Grand Square Enix Halm Inn & Border Trade Hall + Weathered Checkpoint Archway!
    const borderHouses=[
-    {x:4,y:2,w:7,h:4,tag:'halm_inn',label:'旅籠・風見亭',roofDark:'#4e2e24',roofMain:'#7c4b3a',roofHi:'#a46850',roofRim:'#ca8e72',wall:'#e4d6b6',shutter:'#523f31',canopyColor:'#8c3a40',flowerBorder:true,chimneyLeft:true,doorOffsetPx:3*32+16},
-    {x:21,y:2,w:7,h:4,tag:'halm_trade',label:'国境交易所',roofDark:'#2f3a48',roofMain:'#485a70',roofHi:'#68809c',roofRim:'#90a8c2',wall:'#dcd4be',shutter:'#47525e',stonePortico:true,bannerColor:'#7a343c',chimneyLeft:false,doorOffsetPx:3*32+16}
+    {x:4,y:2,w:7,h:4,tag:'halm_inn',archStyle:'hall',label:'旅籠・風見亭',roofDark:'#4e2e24',roofMain:'#7c4b3a',roofHi:'#a46850',roofRim:'#ca8e72',wall:'#f0debe',wallShade:'#d6c29e',wallDark:'#a89470',shutter:'#523f31',canopyColor:'#8c3a40',flowerBorder:true,chimneyLeft:true,doorOffsetPx:3*32+16},
+    {x:21,y:2,w:7,h:4,tag:'halm_trade',archStyle:'manor',lowerStone:true,label:'国境交易所',roofDark:'#283442',roofMain:'#405268',roofHi:'#607894',roofRim:'#88a0bc',wall:'#dcd6c8',wallShade:'#c4beb0',wallDark:'#969082',shutter:'#3e4a56',stonePortico:true,bannerColor:'#7a343c',chimneyLeft:false,doorOffsetPx:3*32+16}
    ];
    for(const b of borderHouses){
     if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawGrandHouse(ctx,b.x,b.y,b.w,b.h,b)){

@@ -1695,6 +1695,13 @@ function pushOcclusionItems(queue,m){
   queue.push({kind:'gateArch',x:14,y:7.35,gx:14,gy:7,gw:4,opts:{label:'白樺の宿場',roof:'#546e4c',roofHi:'#84a678'}});
  }else if(mapId==='capital'){
   queue.push({kind:'gateArch',x:5,y:1.35,gx:5,gy:1,gw:4,opts:{label:'北西門・灰の街道へ',roof:'#7a323c',roofHi:'#b85460'}});
+  queue.push({kind:'houseCanopy',x:2,y:2.05,hx:2,hy:2,w:3,h:3,opts:{tag:'cap_gate_2'}});
+  queue.push({kind:'houseCanopy',x:9,y:2.05,hx:9,hy:2,w:3,h:3,opts:{tag:'cap_gate_9'}});
+  queue.push({kind:'houseCanopy',x:35,y:2.05,hx:35,hy:2,w:4,h:3,opts:{tag:'cap_tower_35'}});
+  queue.push({kind:'houseCanopy',x:3,y:21.05,hx:3,hy:21,w:4,h:3,opts:{tag:'cap_market_shop'}});
+  queue.push({kind:'houseCanopy',x:9,y:21.05,hx:9,hy:21,w:5,h:3,opts:{tag:'cap_whitestag_inn'}});
+  queue.push({kind:'houseCanopy',x:28,y:21.05,hx:28,hy:21,w:4,h:3,opts:{tag:'cap_armory_28'}});
+  queue.push({kind:'houseCanopy',x:34,y:21.05,hx:34,hy:21,w:5,h:3,opts:{tag:'cap_barracks_34'}});
  }else if(mapId==='frontier'){
   queue.push({kind:'houseCanopy',x:3,y:10.05,hx:3,hy:10,w:5,h:3,opts:{tag:'fr_hosp'}});
   queue.push({kind:'gateArch',x:12,y:1.35,gx:12,gy:1,gw:4,opts:{label:'セラド北防壁',roof:'#6c2a32',roofHi:'#a84a54'}});
