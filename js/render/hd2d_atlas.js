@@ -430,5 +430,370 @@ const HD2DAtlas=(()=>{
   c.drawImage(spr,Math.round(x*32-16+sway),Math.round(y*32-38+lift));
   return true;
  }
- return {drawTile,drawTree,getTile,getTree,hash};
+ // Foreground 2.5D Occlusion Pass: draws ONLY the upper leafy crown (rows 0..40) ABOVE characters standing behind this tree!
+ function drawTreeCanopy(c,x,y,biome='oak'){
+  if(!c||typeof c.drawImage!=='function')return false;
+  const h=hash(x,y,55);
+  const spr=getTree(h%6,biome);
+  if(!spr)return false;
+  const sway=(h%5)-2;
+  const lift=((h>>>3)%3)-1;
+  c.drawImage(spr,0,0,64,42,Math.round(x*32-16+sway),Math.round(y*32-38+lift),64,42);
+  return true;
+ }
+
+ // ---- 2B. GRAND SQUARE ENIX HD-2D ARCHITECTURAL BUILDINGS (Multi-tile sculpted timber, stone & shingle!) ----
+ // Pre-renders rich multi-tone masonry, individual curved/beveled shingles, Tudor diagonal braces,
+ // dormers, leaded glowing windows, spilling flowerboxes, porches, ivy & roof-ridge overhang!
+ function buildGrandHouseCanvas(wTiles,hTiles,opts={}){
+  const padL=18,padR=18,padT=48,padB=18;
+  const w=wTiles*32,h=hTiles*32;
+  const cv=mkCanvas(w+padL+padR,h+padT+padB);if(!cv)return null;
+  const c=cv.ctx,ox=padL,oy=padT;
+  const ink='#1f1916',mid=ox+Math.floor(w/2);
+  const wall=opts.wall||'#ebe2cd',wallShade=opts.wallShade||'#d9ceb5',wallHi=opts.wallHi||'#faf4e4';
+  const roofDark=opts.roofDark||'#5a2d28',roofMain=opts.roofMain||'#8a453c',roofHi=opts.roofHi||'#b66354',roofRim=opts.roofRim||'#d98b74';
+  const beamDark=opts.beamDark||'#3b281c',beamMid=opts.beamMid||'#6b4a32',beamHi=opts.beamHi||'#966c4a';
+  const shutterCol=opts.shutter||'#3e5c48';
+  const stoneDark=opts.stoneDark||'#4e4c48',stoneMid=opts.stoneMid||'#7e7a72',stoneHi=opts.stoneHi||'#b2ada2';
+  const hasDormer=opts.dormer!==false&&wTiles>=5;
+  const hasCanopy=!!opts.canopyColor;
+  const wallY=oy+16,wallH=h-16;
+
+  // 1. Multi-stage soft southeast diorama cast shadow anchoring the architecture onto the ground
+  px(c,'rgba(12,18,16,.36)',ox+6,oy+h-2,w+8,13);
+  px(c,'rgba(12,18,16,.18)',ox+12,oy+h+8,w+6,7);
+  px(c,'rgba(12,18,16,.24)',ox+w,oy+14,10,h-8);
+
+  // 2. Sculpted Stone-and-Stucco Wall Volume with painterly tonal mottling (zero flat fills!)
+  px(c,ink,ox-1,wallY-2,w+2,wallH+3);
+  px(c,wall,ox+1,wallY,w-2,wallH-15);
+  // Painterly plaster mottling & subtle aged warmth
+  for(let py=wallY+6;py<oy+h-18;py+=8){
+   for(let px2=ox+6;px2<ox+w-14;px2+=14){
+    const mh=hash(px2,py,31);
+    if(mh%3===0)px(c,wallShade,px2,py,10,4);
+    else if(mh%5===0)px(c,wallHi,px2+2,py,8,3);
+   }
+  }
+  // Deep overhanging eave drop shadow across upper wall
+  px(c,'rgba(16,12,10,.38)',ox+1,wallY+1,w-2,8);
+  px(c,'rgba(16,12,10,.16)',ox+1,wallY+9,w-2,4);
+
+  // Heavy 16px dressed-stone foundation plinth with beveled mortar seams & mossy roots
+  px(c,ink,ox-1,oy+h-16,w+2,16);
+  px(c,stoneMid,ox+1,oy+h-14,w-2,13);
+  px(c,stoneHi,ox+2,oy+h-14,w-4,2);
+  px(c,stoneDark,ox+1,oy+h-4,w-2,3);
+  for(let sx=ox+8;sx<ox+w-6;sx+=14){
+   px(c,stoneDark,sx,oy+h-13,2,11);
+   px(c,stoneHi,sx+3,oy+h-12,7,2);
+   if((sx/14|0)%3===0){px(c,'#466a3c',sx+1,oy+h-5,6,3);px(c,'#6e9854',sx+2,oy+h-5,3,1)}
+  }
+
+  // Alternating 3D chiseled corner stone quoins on left & right walls
+  for(let qy=wallY+6;qy<oy+h-18;qy+=9){
+   const qw=((qy/9)|0)%2?10:6;
+   px(c,stoneDark,ox,qy,qw,8);px(c,stoneHi,ox+1,qy+1,qw-2,5);px(c,wallHi,ox+2,qy+1,qw-4,2);
+   px(c,stoneDark,ox+w-qw,qy,qw,8);px(c,stoneMid,ox+w-qw+1,qy+1,qw-2,5);
+  }
+
+  // Exposed Tudor Half-Timber Frame + Horizontal 2nd-Story Jetty Beam + Diagonal Corner Braces!
+  const midStoryY=oy+h-52;
+  px(c,beamDark,ox+1,midStoryY,w-2,6);px(c,beamMid,ox+2,midStoryY+1,w-4,4);px(c,beamHi,ox+3,midStoryY+1,w-6,1);
+  px(c,'rgba(16,12,10,.22)',ox+2,midStoryY+6,w-4,4);
+  const cols=Math.max(3,wTiles);
+  for(let i=0;i<=cols;i++){
+   const bx=ox+6+Math.round(i*(w-18)/cols);
+   px(c,beamDark,bx,wallY+4,6,wallH-19);px(c,beamMid,bx+1,wallY+4,4,wallH-19);px(c,beamHi,bx+1,wallY+4,1,wallH-19);
+  }
+  // Diagonal Tudor timber knee-braces on outer upper bays
+  for(let k=0;k<12;k++){
+   px(c,beamDark,ox+11+k,wallY+18-Math.floor(k*0.7),4,4);
+   px(c,beamMid,ox+12+k,wallY+18-Math.floor(k*0.7),2,2);
+   px(c,beamDark,ox+w-15-k,wallY+18-Math.floor(k*0.7),4,4);
+   px(c,beamMid,ox+w-14-k,wallY+18-Math.floor(k*0.7),2,2);
+  }
+
+  // 3. Towering 3/4 Multi-Course Shingled Roof (rises 34px ABOVE top tile row!) + Brick Chimney!
+  const chSide=opts.chimneyLeft?ox+20:ox+w-34,chY=oy-42;
+  px(c,ink,chSide-1,chY,16,38);px(c,'#7c6c60',chSide+1,chY+2,12,34);
+  px(c,'#a69688',chSide+2,chY+2,5,30);
+  for(let cy=chY+5;cy<chY+32;cy+=6)px(c,'#4c423c',chSide+1,cy,12,1);
+  px(c,ink,chSide-3,chY-3,20,6);px(c,'#9c8d80',chSide-1,chY-2,16,3);
+
+  const courses=8;
+  for(let z=0;z<courses;z++){
+   const ins=z*4,ry=oy+18-z*5,rw=w+12-ins*2,rx=ox-6+ins;
+   px(c,ink,rx-1,ry-1,rw+2,8);
+   const baseC=z===courses-1?roofRim:z>=courses-3?roofHi:(z%2?roofMain:roofDark);
+   px(c,baseC,rx,ry,rw,6);
+   px(c,z>=courses-2?roofRim:roofHi,rx+2,ry,rw-4,2);
+   // Individually staggered curved shingle scallops along every roof course!
+   const step=9,off=(z%2)*4;
+   for(let sx=rx+4+off;sx<rx+rw-6;sx+=step){
+    px(c,'rgba(16,10,10,.30)',sx,ry+1,2,5);
+    px(c,'rgba(255,244,224,.14)',sx+2,ry+1,4,2);
+    if(hash(sx,z,77)%11===0&&z<4){px(c,'#4c7442',sx+2,ry+2,5,3);px(c,'#7aa460',sx+3,ry+2,3,1)} // subtle mossy shingle
+   }
+  }
+  // Carved timber roof ridge beam & decorative gable finials!
+  const ridgeY=oy+18-(courses-1)*5-2;
+  px(c,ink,ox+20,ridgeY-1,w-40,6);px(c,beamHi,ox+22,ridgeY,w-44,3);px(c,'#ecd69e',ox+24,ridgeY,w-48,1);
+  for(const fx of [ox+20,ox+w-26]){px(c,ink,fx,ridgeY-6,6,8);px(c,'#e6ca7a',fx+1,ridgeY-5,4,6)}
+
+  // Carved Central Roof Dormer Window with peaked gable (for grand houses!) OR Timber Bell Cupola (bellGable)
+  if(opts.bellGable){
+   const bx=mid-12,by=oy-32;
+   px(c,ink,bx-2,by+12,28,20);px(c,beamMid,bx,by+14,24,16);px(c,beamDark,bx+4,by+16,16,12);
+   px(c,'#e8c668',mid-4,by+18,8,8);px(c,'#fff4b8',mid-2,by+19,4,4);
+   for(let bz=0;bz<4;bz++){const bi=bz*3;px(c,ink,bx-5+bi,by+11-bz*3,34-bi*2,5);px(c,bz%2?roofHi:roofMain,bx-3+bi,by+12-bz*3,30-bi*2,3)}
+   px(c,'#f2d67c',mid-1,by-4,2,6);
+  }else if(hasDormer){
+   const dx=mid-18,dy=oy-18;
+   px(c,ink,dx-2,dy+6,40,26);px(c,wall,dx,dy+8,36,22);px(c,beamDark,dx,dy+8,4,22);px(c,beamDark,dx+32,dy+8,4,22);
+   for(let dz=0;dz<4;dz++){
+    const di=dz*4;
+    px(c,ink,dx-5+di,dy+8-dz*4,46-di*2,6);
+    px(c,dz%2?roofHi:roofMain,dx-3+di,dy+9-dz*4,42-di*2,4);
+   }
+   px(c,ink,mid-9,dy+12,18,14);px(c,'#f6d476',mid-7,dy+14,14,10);px(c,'#fffbe0',mid-6,dy+15,6,4);
+   px(c,beamDark,mid-1,dy+14,2,10);px(c,beamDark,mid-7,dy+18,14,2);
+  }
+
+  // Optional Dignified Stone Manor Portico & Hanging Crests (for Mayor's Manor / Civic Halls!)
+  if(opts.stonePortico){
+   const px0=(opts.doorOffsetPx!==undefined?(ox+opts.doorOffsetPx):mid);
+   for(const sx of [px0-24,px0+18]){
+    px(c,ink,sx,oy+h-48,8,44);px(c,stoneHi,sx+1,oy+h-47,6,42);px(c,stoneMid,sx+4,oy+h-47,3,42);
+    px(c,ink,sx-2,oy+h-52,12,5);px(c,wallHi,sx-1,oy+h-51,10,3);
+   }
+   px(c,ink,px0-36,oy+h-42,10,24);px(c,opts.bannerColor||'#345480',px0-35,oy+h-41,8,20);px(c,'#eccb72',px0-33,oy+h-37,4,6);
+   px(c,ink,px0+28,oy+h-42,10,24);px(c,opts.bannerColor||'#345480',px0+29,oy+h-41,8,20);px(c,'#eccb72',px0+31,oy+h-37,4,6);
+  }
+  // Optional Timber Firewood Lean-To Shed tucked against east wall
+  if(opts.sideShed){
+   const sx=ox+w-2,sy=oy+h-32;
+   px(c,'rgba(12,18,14,.28)',sx+2,sy+28,16,6);
+   px(c,ink,sx,sy+2,16,28);px(c,'#4c3624',sx+1,sy+6,13,22);
+   for(let ly=0;ly<3;ly++)for(let lx=0;lx<3;lx++){px(c,'#8c623c',sx+2+lx*4,sy+14+ly*4,3,3);px(c,'#cfa46e',sx+3+lx*4,sy+14+ly*4,2,2)}
+   px(c,ink,sx-1,sy,18,8);px(c,roofMain,sx,sy+1,16,5);px(c,roofHi,sx,sy+1,15,2);
+  }
+
+  // 4. Grand Recessed Entrance Doorway, Striped/Timber Porch Canopy, Protruding Stone Steps & Warm Porch Lantern!
+  const doorX=opts.doorOffsetPx!==undefined?(ox+opts.doorOffsetPx):mid;
+  px(c,ink,doorX-16,oy+h-44,32,42);
+  px(c,stoneDark,doorX-14,oy+h-42,28,39);
+  px(c,stoneHi,doorX-13,oy+h-41,26,3);
+  px(c,'#3a2518',doorX-11,oy+h-38,22,35);
+  px(c,'#784f32',doorX-9,oy+h-36,18,32);px(c,'#9c6c46',doorX-7,oy+h-34,14,28);
+  px(c,'#4e3220',doorX-1,oy+h-34,2,28);px(c,'#383e46',doorX-8,oy+h-26,7,2);px(c,'#383e46',doorX-8,oy+h-14,7,2);
+  px(c,'#f6d470',doorX+4,oy+h-21,3,3);
+  // Warm arched transom fanlight above door
+  px(c,'#f6d472',doorX-7,oy+h-35,14,5);px(c,'#fffbe2',doorX-5,oy+h-34,10,3);
+  // Protruding 2-tier carved stone entrance stairs
+  px(c,ink,doorX-21,oy+h-4,42,9);px(c,'#b8b2a2',doorX-19,oy+h-3,38,7);px(c,'#eae5d8',doorX-18,oy+h-3,36,2);
+  px(c,ink,doorX-25,oy+h+3,50,6);px(c,'#c8c2b2',doorX-23,oy+h+4,46,4);px(c,'#f2ede0',doorX-22,oy+h+4,44,1);
+  // Striped fabric or carved timber porch awning above entrance
+  if(hasCanopy){
+   for(let a=0;a<6;a++){
+    px(c,ink,doorX-28+a*9,oy+h-51,10,12);
+    px(c,a%2?'#f6ecd6':opts.canopyColor,doorX-27+a*9,oy+h-50,9,7);
+    px(c,a%2?'#d6c8a8':roofDark,doorX-27+a*9,oy+h-43,9,3);
+   }
+  }else{
+   px(c,ink,doorX-24,oy+h-48,48,8);px(c,roofMain,doorX-22,oy+h-47,44,5);px(c,roofHi,doorX-20,oy+h-47,40,2);
+  }
+  // Glowing wrought-iron porch lantern beside door
+  px(c,'#24282e',doorX+18,oy+h-34,7,10);px(c,'#ffd670',doorX+19,oy+h-32,5,6);px(c,'#fffce4',doorX+20,oy+h-31,3,3);
+
+  // 5. Recessed Multi-Pane Glowing Windows with Painted Shutters & Overflowing Flower Boxes!
+  const drawWin=(wx,wy)=>{
+   px(c,ink,wx-2,wy-2,22,20);
+   // Painted wooden shutters with slatted shading
+   px(c,ink,wx-8,wy-1,6,18);px(c,shutterCol,wx-7,wy,4,16);px(c,'rgba(255,255,255,.16)',wx-7,wy,2,16);
+   px(c,ink,wx+20,wy-1,6,18);px(c,shutterCol,wx+21,wy,4,16);px(c,'rgba(255,255,255,.16)',wx+21,wy,2,16);
+   px(c,beamDark,wx,wy,18,16);
+   // Warm sunlit candlelit interior glass + reflections
+   px(c,'#e8b454',wx+2,wy+2,14,12);px(c,'#fad878',wx+2,wy+2,12,8);px(c,'#fffbe0',wx+3,wy+3,5,4);
+   px(c,beamDark,wx+8,wy+2,2,12);px(c,beamDark,wx+2,wy+7,14,2);
+   // Timber flowerbox overflowing with green vines & bright village blossoms
+   px(c,ink,wx-3,wy+14,24,7);px(c,'#6e4a30',wx-2,wy+15,22,5);
+   px(c,'#2c5c32',wx-2,wy+12,22,5);px(c,'#4e8e48',wx,wy+11,18,4);
+   px(c,'#ee6c74',wx+1,wy+11,4,3);px(c,'#f8dc68',wx+8,wy+11,4,3);px(c,'#fff4dc',wx+14,wy+12,4,2);
+   px(c,'#3a723c',wx+2,wy+18,3,4);px(c,'#3a723c',wx+15,wy+18,3,5);
+  };
+  const winCols=[];
+  for(let i=0;i<wTiles;i++){
+   const wx=ox+12+i*32;
+   if(Math.abs((wx+9)-doorX)<30)continue;
+   winCols.push(wx);
+  }
+  for(const wx of winCols){
+   drawWin(wx,oy+h-40);
+   if(hTiles>=4)drawWin(wx,wallY+12);
+  }
+  // Climbing ivy vines hugging one stone wall corner + stacked firewood / rain barrel!
+  for(let iv=0;iv<6;iv++){
+   px(c,'#244c2a',ox+4+(iv%2)*4,oy+h-18-iv*7,8,6);
+   px(c,'#4c8848',ox+5+(iv%2)*4,oy+h-18-iv*7,5,4);
+   if(iv%2===0)px(c,'#82ba68',ox+6,oy+h-18-iv*7,2,2);
+  }
+  // Rain barrel tucked against right plinth + optional blooming front garden beds!
+  px(c,ink,ox+w-18,oy+h-26,14,18);px(c,'#865c3a',ox+w-17,oy+h-25,12,16);px(c,'#ab7c52',ox+w-16,oy+h-24,4,14);
+  px(c,'#4a5058',ox+w-17,oy+h-21,12,2);px(c,'#4a5058',ox+w-17,oy+h-13,12,2);
+  if(opts.flowerBorder){
+   for(const gx of [ox+8,ox+w-46]){
+    px(c,ink,gx,oy+h-2,36,9);px(c,'#5e442c',gx+1,oy+h-1,34,7);
+    px(c,'#2c5c32',gx+1,oy+h-5,34,6);px(c,'#4e8e48',gx+3,oy+h-6,30,4);
+    px(c,'#f06e76',gx+5,oy+h-6,4,3);px(c,'#f8dc68',gx+15,oy+h-5,4,3);px(c,'#fff2dc',gx+25,oy+h-6,4,3);
+   }
+  }
+
+  // 6. Optional Gilded Timber Nameplate mounted cleanly on roof eaves
+  if(opts.label){
+   const lw=Math.max(66,opts.label.length*10+18),sy=oy-4;
+   px(c,'rgba(22,18,16,.92)',mid-Math.floor(lw/2),sy,lw,16);
+   px(c,'#e4c47a',mid-Math.floor(lw/2)+1,sy+1,lw-2,1);
+   px(c,'#8c6e42',mid-Math.floor(lw/2)+1,sy+14,lw-2,1);
+   c.fillStyle='#faf0d8';c.font='bold 9px system-ui';c.textAlign='center';
+   c.fillText(opts.label,mid,sy+12);c.textAlign='start';
+  }
+  return {el:cv.el,padL,padT,w:w+padL+padR,h:h+padT+padB};
+ }
+
+ function getGrandHouse(wTiles,hTiles,opts={}){
+  const key=`ghouse:${wTiles}x${hTiles}:${opts.tag||opts.label||opts.roofMain||'def'}`;
+  if(cache.has(key))return cache.get(key);
+  const res=buildGrandHouseCanvas(wTiles,hTiles,opts);
+  if(res)cache.set(key,res);
+  return res;
+ }
+ function drawGrandHouse(c,tx,ty,wTiles,hTiles,opts={}){
+  if(!c||typeof c.drawImage!=='function')return false;
+  const g=getGrandHouse(wTiles,hTiles,opts);
+  if(!g)return false;
+  const dx=Math.round(tx*32-g.padL),dy=Math.round(ty*32-g.padT);
+  c.drawImage(g.el,dx,dy);
+  // Subtle animated chimney smoke rising from roof flue
+  const now=typeof Date!=='undefined'?Date.now():0;
+  const chX=opts.chimneyLeft?(tx*32+24):(tx*32+wTiles*32-30),chY=ty*32-44;
+  for(let k=0;k<3;k++){
+   const p=((now/1500)+k*0.33)%1;
+   c.fillStyle=`rgba(248,244,234,${(0.42*(1-p)).toFixed(2)})`;
+   c.fillRect(Math.round(chX+Math.sin(p*6+k)*5),Math.round(chY-p*20),Math.round(6+p*5),Math.round(4+p*3));
+  }
+  return true;
+ }
+ // Foreground 2.5D Roof-Ridge Occlusion Pass: draws ONLY the overhanging roof peak & chimney ABOVE characters walking behind the building!
+ function drawGrandHouseCanopy(c,tx,ty,wTiles,hTiles,opts={}){
+  if(!c||typeof c.drawImage!=='function')return false;
+  const g=getGrandHouse(wTiles,hTiles,opts);
+  if(!g)return false;
+  const clipH=g.padT+12;
+  c.drawImage(g.el,0,0,g.w,clipH,Math.round(tx*32-g.padL),Math.round(ty*32-g.padT),g.w,clipH);
+  return true;
+ }
+
+ // ---- 2C. CARVED STONE-AND-TIMBER VILLAGE / TOWN ENTRANCE ARCHWAY ----
+ function drawStoneArchGate(c,tx,ty,wTiles=4,opts={}){
+  const x=tx*32,y=ty*32,w=wTiles*32,ink='#1e1916';
+  const stone=opts.stone||'#9e9a8e',stoneHi=opts.stoneHi||'#d4d0c2',roof=opts.roof||'#784238';
+  // Left & right dressed stone gate piers
+  for(const gx of [x,x+w-24]){
+   px(c,'rgba(12,18,16,.34)',gx+2,y+26,22,8);
+   px(c,ink,gx,y-14,24,44);px(c,stone,gx+2,y-12,20,40);px(c,stoneHi,gx+3,y-12,7,38);
+   px(c,ink,gx-2,y-18,28,6);px(c,stoneHi,gx,y-17,24,4);
+   // Hanging warm brass gate lantern
+   const lx=gx===x?gx+22:gx-6,ly=y-4;
+   const lg=c.createRadialGradient?.(lx+4,ly+4,2,lx+4,ly+4,26);
+   if(lg&&typeof lg.addColorStop==='function'){
+    lg.addColorStop(0,'rgba(255,218,128,.38)');lg.addColorStop(1,'rgba(255,180,80,0)');
+    c.fillStyle=lg;c.beginPath();c.arc(lx+4,ly+4,26,0,Math.PI*2);c.fill();
+   }
+   px(c,ink,lx,ly,8,9);px(c,'#ffd874',lx+1,ly+1,6,7);px(c,'#fffce4',lx+2,ly+2,3,4);
+  }
+  // Overhead timber-and-shingle welcome arch beam (spans cleanly over the open road!)
+  px(c,ink,x+18,y-22,w-36,12);px(c,'#6e4d34',x+20,y-20,w-40,8);px(c,'#9c724c',x+22,y-20,w-44,3);
+  px(c,ink,x+14,y-28,w-28,8);px(c,roof,x+16,y-27,w-32,6);px(c,'#c27866',x+18,y-27,w-36,2);
+  if(opts.label){
+   const lw=Math.max(76,opts.label.length*10+18),mx=x+Math.floor(w/2);
+   px(c,'rgba(24,18,14,.92)',mx-Math.floor(lw/2),y-23,lw,14);
+   px(c,'#e6c878',mx-Math.floor(lw/2)+1,y-22,lw-2,1);
+   c.fillStyle='#faf0d8';c.font='bold 9px system-ui';c.textAlign='center';
+   c.fillText(opts.label,mx,y-13);c.textAlign='start';
+  }
+ }
+
+ // ---- 2D. GRAND SCULPTED OCTAGONAL STONE VILLAGE WELL (Shingled gable roof, pulley, crank, bucket & splash apron!) ----
+ function drawSculptedWell(c,tx,ty,opts={}){
+  const x=tx*32,y=ty*32,ink='#1e1916';
+  const roof=opts.roof||'#8c4a3e',roofHi=opts.roofHi||'#b86854';
+  // Wide circular stone drainage apron + cast shadow
+  px(c,'rgba(14,20,18,.28)',x-4,y+12,42,22);
+  px(c,'#7c786e',x-3,y+13,38,18);px(c,'#b4aea0',x-2,y+14,36,15);px(c,'#dcd6c6',x,y+15,32,2);
+  // Subtle splash water puddle + wooden bucket resting beside well
+  px(c,'rgba(78,158,184,.52)',x+28,y+22,9,6);px(c,'rgba(208,246,255,.55)',x+30,y+23,4,2);
+  px(c,ink,x+27,y+15,9,10);px(c,'#8c623c',x+28,y+16,7,8);px(c,'#b88858',x+29,y+16,3,7);px(c,'#5298b2',x+29,y+16,5,2);
+  // Carved octagonal mossy stone well curb
+  px(c,ink,x+2,y+6,28,22);px(c,'#727068',x+3,y+10,26,17);px(c,'#98958a',x+4,y+10,24,13);
+  px(c,'#cbc6b8',x+4,y+7,24,5);px(c,'#f0ece0',x+6,y+7,20,2);
+  for(const sx of [x+10,x+18,x+24])px(c,'#4e4c46',sx,y+12,1,13);
+  px(c,'#466e3c',x+4,y+21,6,4);px(c,'#6e9a54',x+5,y+21,3,2);
+  // Deep sparkling aquamarine water basin inside well
+  px(c,'#183644',x+6,y+9,20,6);px(c,'#387c96',x+7,y+10,18,4);px(c,'#9ce2ec',x+10,y+11,7,2);
+  // Twin sturdy carved oak roof posts + wooden rope winch & iron crank
+  px(c,ink,x+3,y-14,5,23);px(c,'#785234',x+4,y-13,3,21);
+  px(c,ink,x+24,y-14,5,23);px(c,'#785234',x+25,y-13,3,21);
+  px(c,'#3a281c',x+6,y-3,20,3);px(c,'#d2ba88',x+13,y-4,6,5);px(c,'#c8b282',x+15,y+1,2,9);
+  px(c,'#2c323a',x+28,y-5,5,2);px(c,'#2c323a',x+31,y-5,2,6);
+  // Pitched multi-course shingled canopy roof with golden finial!
+  for(let z=0;z<4;z++){
+   const ins=z*4;
+   px(c,ink,x-4+ins,y-15-z*4,40-ins*2,6);
+   px(c,z%2?roofHi:roof,x-2+ins,y-14-z*4,36-ins*2,4);
+  }
+  px(c,'#f2d67c',x+15,y-30,2,4);
+ }
+
+ // ---- 2E. MULTI-TILE COVERED STAGECOACH / FRONTIER MERCHANT WAGON (Normal or Broken-Axle!) ----
+ function drawCoveredWagon(c,tx,ty,opts={}){
+  const x=tx*32,y=ty*32,ink='#1e1916',broken=!!opts.broken;
+  // Ground shadow
+  px(c,'rgba(14,18,16,.36)',x-4,y+24,66,9);
+  // Rear wooden cargo bed & tongue shafts
+  px(c,ink,x-10,y+16,12,4);px(c,'#7c5634',x-9,y+17,10,2);
+  px(c,ink,x,y+8+(broken?3:0),56,16);
+  px(c,'#6e4a2e',x+2,y+10+(broken?3:0),52,12);
+  px(c,'#9c7048',x+3,y+10+(broken?3:0),50,4);
+  for(let bx=x+10;bx<x+50;bx+=10)px(c,'#462e1c',bx,y+10+(broken?3:0),1,12);
+  // Arched ribbed canvas canopy hood
+  const tilt=broken?3:0;
+  px(c,ink,x+4,y-12+tilt,46,24);
+  px(c,'#d8ceb6',x+6,y-10+tilt,42,20);
+  px(c,'#f2ebd8',x+8,y-9+tilt,38,8);
+  px(c,'#b8ad94',x+6,y+4+tilt,42,6);
+  for(const rx of [x+14,x+26,x+38]){px(c,'rgba(64,50,36,.34)',rx,y-10+tilt,2,20);px(c,'rgba(255,252,242,.40)',rx+2,y-9+tilt,2,14)}
+  // Warm brass wagon lantern hanging on front bow (only when intact!)
+  if(!broken){
+   px(c,'#24282e',x+2,y-4,6,8);px(c,'#ffd670',x+3,y-3,4,6);px(c,'#fffbe4',x+4,y-2,2,3);
+  }
+  // Spoked oak wheels (if broken, rear wheel lies detached beside spilled crates!)
+  const drawWheel=(wx,wy)=>{
+   px(c,ink,wx,wy,14,14);px(c,'#6e4a2e',wx+2,wy+2,10,10);px(c,'#2c241e',wx+4,wy+4,6,6);
+   px(c,'#b88856',wx+6,wy+2,2,10);px(c,'#b88856',wx+2,wy+6,10,2);px(c,'#e4c47a',wx+6,wy+6,2,2);
+  };
+  drawWheel(x+4,y+16);
+  if(broken){
+   // Detached wheel lying on ground + spilled wooden supply crate
+   px(c,ink,x+42,y+24,16,8);px(c,'#7c5434',x+44,y+25,12,6);px(c,'#cfa46e',x+48,y+26,4,4);
+   px(c,ink,x+56,y+14,14,12);px(c,'#9c7448',x+57,y+15,12,10);px(c,'#5e4228',x+62,y+15,2,10);
+  }else{
+   drawWheel(x+38,y+16);
+   // Stacked travel crates & barrel beside wagon
+   px(c,ink,x+54,y+13,12,14);px(c,'#8e643c',x+55,y+14,10,12);px(c,'#4e545c',x+55,y+17,10,2);px(c,'#4e545c',x+55,y+22,10,2);
+  }
+ }
+
+ return {drawTile,drawTree,drawTreeCanopy,drawGrandHouse,drawGrandHouseCanopy,drawStoneArchGate,drawSculptedWell,drawCoveredWagon,getTile,getTree,hash};
 })();

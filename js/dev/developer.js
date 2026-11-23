@@ -3,7 +3,7 @@ const DEV_SNAPSHOT_KEY='gray-crown-dev-snapshots-v1';
 const DEV_SETTINGS_DEFAULTS=Object.freeze({encounters:true,invincible:false,instantVictory:false,moveDelay:88,showCollision:false,showNpcCoords:false,showPlayerCoords:false,showMapId:false,showEventTriggers:false});
 const DEV_STATE={open:false,tainted:false,lastEvent:null,settings:{...DEV_SETTINGS_DEFAULTS}};
 const DEV_STAGE_LOCATION=Object.freeze({
- [STORY_STAGES.VILLAGE]:['village',12,12,'up'],[STORY_STAGES.APPOINTED]:['village',11,1,'up'],
+ [STORY_STAGES.VILLAGE]:['village',18,16,'up'],[STORY_STAGES.APPOINTED]:['village',17,2,'up'],
  [STORY_STAGES.ROAD]:['road',11,13,'up'],[STORY_STAGES.FIRST_BATTLE]:['road',11,6,'up'],
  [STORY_STAGES.CAPITAL_APPROACH]:['northroad',11,13,'up'],[STORY_STAGES.CAPITAL]:['capital',11,13,'up'],
  [STORY_STAGES.CEREMONY]:['capital',11,10,'up'],[STORY_STAGES.WHITE_STAG]:['capitalinn',11,11,'up'],

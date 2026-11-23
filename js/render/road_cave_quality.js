@@ -14,6 +14,12 @@ const RoadCaveQuality=(()=>{
  function trail(c,ch,x,y,m){
   const px=x*32,py=y*32,h=mix(x,y);
   const at=(xx,yy)=>m?.tiles?.[yy]?.[xx]||'T';
+  if(ch==='A'){
+   if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(c,'cobble',x,y,'market')){
+    box(c,'#b8aa8c',px,py,32,32);box(c,'#948668',px,py+15,32,1);box(c,'#948668',px,py+31,32,1);
+   }
+   return true;
+  }
   if(ch==='P'){
    // Seamless warm woodland trade road backed by high-density HD2DAtlas grain + mossy shoulders
    const padR=at(x+1,y)==='P'?1:0,padD=at(x,y+1)==='P'?1:0;
@@ -83,6 +89,12 @@ const RoadCaveQuality=(()=>{
   const px=x*32,py=y*32,h=mix(x,y);
   const at=(xx,yy)=>m?.tiles?.[yy]?.[xx]||'S';
   const up=at(x,y-1),down=at(x,y+1),left=at(x-1,y),right=at(x+1,y);
+  if(ch==='A'){
+   if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(c,'cobble',x,y,'market')){
+    box(c,'#b8aa8c',px,py,32,32);box(c,'#948668',px,py+15,32,1);box(c,'#948668',px,py+31,32,1);
+   }
+   return true;
+  }
   if(ch==='P'){
    // Ancient stone threshold archway floor at south/north exits
    box(c,'#3d4047',px,py,32,32);
@@ -219,154 +231,83 @@ const RoadCaveQuality=(()=>{
  function drawAccents(c,map){
   if(!obj.enabled||!active.has(map))return;
   if(map==='northwaystation'){
-   // Distant Aldina Royal Capital skyline across the northern horizon
-   fill(c,'rgba(218,228,236,0.22)',6*32,0,12*32,16);
-   fill(c,'#949a9e',7*32,4,10*32,12);fill(c,'#c8cdc8',7*32+4,5,10*32-8,4);
-   for(const tx of [8,11,14]){fill(c,'#787e84',tx*32+6,1,18,15);fill(c,'#d8ddd8',tx*32+8,2,14,5);fill(c,'#8d3d46',tx*32+13,0,4,4)}
-   const now=Date.now();
-   // Handcrafted 3D HD-2D White Birch Waystation alpine half-timber inn & carriage barn (matching Royal Capital 3D volume!)
-   const drawWayHouse=(tx,ty,wT,hT,roofDark,roofMain,roofHi,label,isBarn=false)=>{
-    const x=tx*32,y=ty*32,w=wT*32,h=hT*32,wallY=y+10,wallH=h-10,ink='#201916';
-    // 1. Deep two-stage southeast diorama cast shadow anchoring the building onto the ground
-    fill(c,'rgba(12,18,14,0.38)',x+6,y+h-2,w+6,13);
-    fill(c,'rgba(12,18,14,0.18)',x+10,y+h+8,w+5,7);
-    fill(c,'rgba(12,18,14,0.24)',x+w,y+8,9,h-4);
-    // 2. Full-height cream plaster & half-timber wall volume + corner stone quoins + 14px granite plinth
-    fill(c,ink,x-1,wallY-2,w+2,wallH+3);
-    const wallCol=isBarn?'#d2c4a6':'#eae0c8',wallHi=isBarn?'#e6d8bc':'#f8f2e2',mortar=isBarn?'#5a4c3e':'#684c38';
-    fill(c,wallCol,x+2,wallY,w-4,wallH-12);
-    fill(c,'rgba(16,12,10,0.36)',x+2,wallY+4,w-4,7); // deep overhanging eave shadow!
-    // Alternating 3D corner stone quoins on left & right walls
-    for(let qy=wallY+8;qy<y+h-16;qy+=10){
-     const qw=((qy/10)|0)%2?8:5;
-     fill(c,mortar,x+1,qy,qw,8);fill(c,wallHi,x+2,qy+1,qw-2,5);
-     fill(c,mortar,x+w-qw-1,qy,qw,8);fill(c,wallCol,x+w-qw,qy+1,qw-2,5);
-    }
-    // Exposed Tudor half-timber beams & 2nd-floor horizontal jetty beam
-    for(let i=0;i<=wT;i++){
-     const bx=x+4+Math.round(i*(w-12)/wT);
-     fill(c,'#463022',bx,wallY+6,5,wallH-20);fill(c,'#76543b',bx+1,wallY+6,2,wallH-20);
-    }
-    fill(c,'#463022',x+2,wallY+32,w-4,4);
-    // Heavy 14px dressed-granite foundation plinth with mossy seams
-    fill(c,ink,x,y+h-14,w,14);
-    fill(c,'#6e685e',x+2,y+h-12,w-4,11);fill(c,'#a8a092',x+3,y+h-12,w-6,2);
-    for(let sx=x+8;sx<x+w-8;sx+=14)fill(c,'#3c3832',sx,y+h-11,2,9);
-    // 3. Towering 3/4 Pitched Shingled Roof rising 24px ABOVE top tile row + smoking stone chimney!
-    if(!isBarn){
-     const cx=x+w-28,cy=y-34;
-     fill(c,ink,cx-1,cy,14,26);fill(c,'#7a7268',cx+1,cy+2,10,22);
-     fill(c,'#b0a89a',cx+2,cy+2,4,20);fill(c,'#4a443e',cx-2,cy-2,16,4);
-     const p=(now/1400)%1;
-     fill(c,'rgba(246,242,232,0.42)',cx+3+Math.sin(p*6)*3,cy-8-p*14,7,5);
-     fill(c,'rgba(246,242,232,0.26)',cx+6+Math.sin(p*6+2)*4,cy-18-p*12,8,5);
-    }
-    for(let z=0;z<6;z++){
-     const ins=z*4;
-     fill(c,ink,x-4+ins,y+12-z*6,w+8-ins*2,8);
-     fill(c,z===5?roofHi:(z%2?roofMain:roofDark),x-2+ins,y+13-z*6,w+4-ins*2,6);
-     for(let sx=x+6+ins;sx<x+w-6-ins;sx+=10)fill(c,'rgba(24,16,12,0.28)',sx,y+14-z*6,2,5);
-    }
-    fill(c,'#e2c686',x+16,y-20,w-32,3); // gilded ridge beam
-    // 4. Recessed Arched Entrance Doorway + Protruding Stone Steps (or double carriage barn doors)
-    const mid=x+Math.floor(w/2);
-    if(isBarn){
-     fill(c,ink,mid-21,y+h-38,42,37);
-     fill(c,'#6e4d34',mid-19,y+h-36,18,34);fill(c,'#6e4d34',mid+1,y+h-36,18,34);
-     fill(c,'#946b48',mid-17,y+h-34,14,30);fill(c,'#946b48',mid+3,y+h-34,14,30);
-     fill(c,'#3a281c',mid-17,y+h-20,34,3);fill(c,'#d4b468',mid-4,y+h-20,3,3);fill(c,'#d4b468',mid+2,y+h-20,3,3);
-     fill(c,'#54524c',mid-22,y+h-3,44,6);fill(c,'#d4cec0',mid-20,y+h-2,40,4);
-    }else{
-     fill(c,ink,mid-14,y+h-38,28,37);
-     fill(c,'#4e3826',mid-12,y+h-36,24,34);
-     fill(c,'#7c5436',mid-9,y+h-33,18,31);fill(c,'#9e704e',mid-7,y+h-31,14,27);
-     fill(c,'#f2d070',mid+3,y+h-18,3,3);
-     // Protruding carved stone entrance steps!
-     fill(c,'#54524c',mid-16,y+h-3,32,6);fill(c,'#d8d2c2',mid-14,y+h-2,28,4);fill(c,'#f2ede0',mid-12,y+h-2,24,1);
-     // Cozy red-and-cream striped inn porch awning & warm porch lantern
-     for(let a=0;a<6;a++){
-      fill(c,a%2?'#f4e8ce':'#9c3842',mid-27+a*9,wallY+34,9,8);
-      fill(c,a%2?'#d6c8a6':'#70242c',mid-27+a*9,wallY+41,9,3);
-     }
-     fill(c,'#f8d878',mid+15,y+h-28,4,6);fill(c,'#fff8d4',mid+16,y+h-27,2,3);
-    }
-    // 5. Deep 3D Recessed Glowing Windows with Timber Shutters & Overflowing Flower Boxes
-    const winY=y+24;
-    for(let i=0;i<wT;i++){
-     const wx=x+11+i*32;
-     if(wT<=4&&(i===1||i===2))continue;
-     fill(c,ink,wx-3,winY-2,20,18);
-     fill(c,isBarn?'#4e5c48':'#7e4238',wx-6,winY-1,4,16);
-     fill(c,isBarn?'#4e5c48':'#7e4238',wx+16,winY-1,4,16);
-     fill(c,mortar,wx-1,winY,16,14);
-     fill(c,'#f6cf6e',wx+1,winY+2,12,10);fill(c,'#fff8ce',wx+2,winY+3,5,4);
-     fill(c,mortar,wx+6,winY+2,2,10);fill(c,mortar,wx+1,winY+6,12,2);
-     fill(c,ink,wx-3,winY+13,20,5);fill(c,'#487a42',wx-2,winY+12,18,4);
-     fill(c,'#e86c74',wx,winY+12,4,2);fill(c,'#f6d464',wx+6,winY+12,4,2);fill(c,'#fff0d8',wx+12,winY+12,3,2);
-    }
-    // Stacked oak barrels beside wall
-    fill(c,'#3a281c',x+6,y+h-22,12,15);fill(c,'#8c6442',x+7,y+h-21,10,13);fill(c,'#545860',x+7,y+h-17,10,2);
-    // Crisp hanging wooden signboard on eaves
-    const sy=y-3;
-    fill(c,'rgba(24,20,18,0.94)',mid-37,sy,74,16);
-    fill(c,'#e0be78',mid-36,sy+1,72,1);fill(c,'#8a6c40',mid-36,sy+14,72,1);
-    c.fillStyle='#faf0d8';c.font='bold 9px system-ui';c.textAlign='center';
-    c.fillText(label,mid,sy+12);c.textAlign='start';
-   };
-   drawWayHouse(4,2,5,3,'#62362e','#884c40','#ae6c58','旅籠・白樺亭',false);
-   drawWayHouse(15,2,4,3,'#464e3e','#606c54','#809070','荷馬車倉',true);
-   // Central dressed-stone highland plaza around waystationWell (11,9)
-   for(let px=10;px<=13;px++)for(let py=8;py<=10;py++){
-    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(c,'cobble',px,py,'market')){
-     fill(c,'#b0a48a',px*32+1,py*32+1,30,30);
+   // Panoramic distant Aldina Royal Capital skyline across the 32-tile northern highland horizon
+   fill(c,'rgba(218,228,236,0.22)',8*32,0,16*32,16);
+   fill(c,'#949a9e',9*32,4,14*32,12);fill(c,'#c8cdc8',9*32+4,5,14*32-8,4);
+   for(const tx of [10,13,16,19]){fill(c,'#787e84',tx*32+6,1,18,15);fill(c,'#d8ddd8',tx*32+8,2,14,5);fill(c,'#8d3d46',tx*32+13,0,4,4)}
+   // Grand Square Enix HD-2D Alpine Inn & Carriage Barn on the 32x20 highland plateau!
+   const wayBuildings=[
+    {x:4,y:3,w:7,h:4,tag:'way_inn',label:'旅籠・白樺亭',roofDark:'#582e28',roofMain:'#88483c',roofHi:'#b46652',roofRim:'#dc8e76',wall:'#efe5ce',shutter:'#7c3e36',canopyColor:'#9c3842',chimneyLeft:false,doorOffsetPx:3*32+16},
+    {x:20,y:3,w:6,h:4,tag:'way_barn',label:'荷馬車倉',roofDark:'#364234',roofMain:'#54664c',roofHi:'#748a68',roofRim:'#9ab28c',wall:'#dfd2b6',shutter:'#465642',chimneyLeft:true,doorOffsetPx:3*32+16}
+   ];
+   for(const b of wayBuildings){
+    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawGrandHouse(c,b.x,b.y,b.w,b.h,b)){
+     fill(c,'#544034',b.x*32,b.y*32,b.w*32,b.h*32);
     }
    }
-   // True 3D Sculpted Wooden Waystation Merchant Pavilion beside waystationPeddler (16,6) (zero overlap with peddler's hat!)
+   // True 3D Sculpted Wooden Waystation Merchant Pavilion beside waystationPeddler (22,9) at solid-blocked (24..25, 8..9)
    {
-    const sx=17*32-2,sy=5*32-8,sw=44,sh=38,ink='#221a16';
+    const sx=24*32-2,sy=8*32-8,sw=56,sh=42,ink='#221a16';
     fill(c,'rgba(14,18,16,0.36)',sx+4,sy+sh-5,sw+4,10);
-    fill(c,'rgba(22,16,12,0.52)',sx+4,sy+14,sw-8,14);
-    fill(c,ink,sx+4,sy+11,4,22);fill(c,'#543a24',sx+5,sy+12,2,20);
-    fill(c,ink,sx+sw-8,sy+11,4,22);fill(c,'#543a24',sx+sw-7,sy+12,2,20);
-    fill(c,ink,sx+2,sy+22,sw-4,15);
-    fill(c,'#6e4e34',sx+4,sy+26,sw-8,9);
-    for(let px=sx+10;px<sx+sw-6;px+=8)fill(c,'#4a3220',px,sy+26,2,9);
-    fill(c,'#a67c52',sx+3,sy+23,sw-6,4);fill(c,'#cfa472',sx+4,sy+23,sw-8,2);
-    // Travel provisions, spice jars & apples on counter
-    fill(c,'#d84844',sx+7,sy+18,8,5);fill(c,'#f48868',sx+8,sy+18,5,2);
-    fill(c,'#e8a838',sx+18,sy+17,8,6);fill(c,'#ffe28a',sx+19,sy+17,5,2);
-    fill(c,'#487854',sx+29,sy+18,8,5);fill(c,'#88c284',sx+30,sy+18,5,2);
-    // Front beveled oak corner posts
-    fill(c,ink,sx+1,sy+10,5,28);fill(c,'#7c5636',sx+2,sy+11,3,26);fill(c,'#b08256',sx+2,sy+11,1,24);
-    fill(c,ink,sx+sw-6,sy+10,5,28);fill(c,'#7c5636',sx+sw-5,sy+11,3,26);fill(c,'#b08256',sx+sw-5,sy+11,1,24);
-    // Sloped 3/4 billowing crimson-and-cream striped awning roof + valance
+    fill(c,'rgba(22,16,12,0.52)',sx+4,sy+14,sw-8,16);
+    fill(c,ink,sx+4,sy+11,4,24);fill(c,'#543a24',sx+5,sy+12,2,22);
+    fill(c,ink,sx+sw-8,sy+11,4,24);fill(c,'#543a24',sx+sw-7,sy+12,2,22);
+    fill(c,ink,sx+2,sy+24,sw-4,15);fill(c,'#6e4e34',sx+4,sy+28,sw-8,9);
+    for(let px=sx+10;px<sx+sw-6;px+=8)fill(c,'#4a3220',px,sy+28,2,9);
+    fill(c,'#a67c52',sx+3,sy+25,sw-6,4);fill(c,'#cfa472',sx+4,sy+25,sw-8,2);
+    fill(c,'#d84844',sx+8,sy+20,10,5);fill(c,'#f48868',sx+9,sy+20,6,2);
+    fill(c,'#e8a838',sx+22,sy+19,10,6);fill(c,'#ffe28a',sx+23,sy+19,6,2);
+    fill(c,'#487854',sx+36,sy+20,10,5);fill(c,'#88c284',sx+37,sy+20,6,2);
+    fill(c,ink,sx+1,sy+10,5,30);fill(c,'#7c5636',sx+2,sy+11,3,28);
+    fill(c,ink,sx+sw-6,sy+10,5,30);fill(c,'#7c5636',sx+sw-5,sy+11,3,28);
     fill(c,ink,sx-2,sy+1,sw+4,15);
-    for(let i=0;i<5;i++){
-     const ax=sx+i*8,aw=(i===4)?12:8,col=i%2?'#f6ecd4':'#9c3842';
-     fill(c,col,ax,sy+2,aw,8);fill(c,'rgba(255,252,240,0.22)',ax,sy+2,aw,3);
-     fill(c,i%2?'#d6c8a8':'#72242c',ax,sy+10,aw,5);
-     fill(c,ink,ax,sy+15,aw,1);
+    for(let i=0;i<7;i++){
+     const ax=sx+i*8,col=i%2?'#f6ecd4':'#9c3842';
+     fill(c,col,ax,sy+2,8,8);fill(c,'rgba(255,252,240,0.22)',ax,sy+2,8,3);
+     fill(c,i%2?'#d6c8a8':'#72242c',ax,sy+10,8,5);fill(c,ink,ax,sy+15,8,1);
     }
     fill(c,'#5c3e26',sx-2,sy,sw+4,2);
-    fill(c,'#2c241e',sx+sw-10,sy+16,4,6);fill(c,'#ffd874',sx+sw-9,sy+17,2,3);
    }
-   // Ornate wrought-iron lantern posts with smooth radial golden light pools
-   for(const [lx,ly] of [[10,6],[13,6],[10,10],[13,10]]){
+   // Ornate wrought-iron lantern posts framing the dressed-stone central plaza (13..18, 10..15)
+   for(const [lx,ly] of [[13,10],[18,10],[13,15],[18,15],[8,10],[23,10]]){
     const x=lx*32+14,y=ly*32+4;
-    const lg=c.createRadialGradient?.(x+2,y+2,2,x+2,y+2,26);
+    const lg=c.createRadialGradient?.(x+2,y+2,2,x+2,y+2,28);
     if(lg&&typeof lg.addColorStop==='function'){
-     lg.addColorStop(0,'rgba(255,216,120,0.34)');lg.addColorStop(1,'rgba(255,190,80,0)');
-     c.fillStyle=lg;c.beginPath();c.arc(x+2,y+2,26,0,Math.PI*2);c.fill();
+     lg.addColorStop(0,'rgba(255,216,120,0.36)');lg.addColorStop(1,'rgba(255,190,80,0)');
+     c.fillStyle=lg;c.beginPath();c.arc(x+2,y+2,28,0,Math.PI*2);c.fill();
     }
     fill(c,'#2c2620',x,y+4,4,21);fill(c,'#544a40',x+1,y+5,2,19);
     fill(c,'#2c2620',x-2,y-1,8,7);fill(c,'#f8d876',x-1,y,6,5);fill(c,'#fffbe0',x+1,y+1,2,2);
    }
-   // Wildflower stone planters framing the waystation square
-   for(const [fx,fy] of [[4,6],[8,6],[14,9],[15,10]]){
-    fill(c,'rgba(16,22,14,0.22)',fx*32+6,fy*32+21,22,6);
+   // Wildflower stone planters, birch hitching rail & warm traveler soup-kettle campfire cleanly spaced off roads!
+   for(const [fx,fy] of [[5,9],[11,9],[19,9],[26,9],[12,14],[19,15]]){
+    fill(c,'rgba(16,22,14,0.24)',fx*32+6,fy*32+21,22,6);
     fill(c,'#5a564c',fx*32+5,fy*32+15,22,10);fill(c,'#4a7a42',fx*32+7,fy*32+14,18,8);
     fill(c,'#f4d872',fx*32+9,fy*32+15,4,3);fill(c,'#e87880',fx*32+17,fy*32+16,4,3);fill(c,'#fff4d8',fx*32+13,fy*32+18,3,2);
    }
+   // Birch-timber horse hitching rail & water trough beside the Carriage Barn (20..22, 7)
+   const hx=21*32,hy=7*32+14;
+   fill(c,'rgba(14,20,14,0.28)',hx,hy+10,60,4);
+   fill(c,'#3a2e22',hx+2,hy-2,4,14);fill(c,'#dcd4c4',hx+3,hy-1,2,12);
+   fill(c,'#3a2e22',hx+54,hy-2,4,14);fill(c,'#dcd4c4',hx+55,hy-1,2,12);
+   fill(c,'#3a2e22',hx+2,hy+1,56,4);fill(c,'#e6ded0',hx+3,hy+2,54,2);
+   // Stacked birch travel barrels & crates beside the White Birch Inn (4, 8) & warm soup-kettle campfire at (10, 14)!
+   for(const [bx,by] of [[4,8],[26,14]]){
+    const x=bx*32,y=by*32;
+    fill(c,'rgba(14,20,14,0.28)',x+4,y+23,24,5);
+    fill(c,'#362418',x+4,y+11,12,15);fill(c,'#8c643c',x+5,y+12,10,13);fill(c,'#4a525c',x+5,y+15,10,2);fill(c,'#4a525c',x+5,y+21,10,2);
+    fill(c,'#362418',x+17,y+13,12,13);fill(c,'#a47a4c',x+18,y+14,10,11);fill(c,'#604228',x+22,y+14,2,11);
+   }
+   const fpx=10*32+16,fpy=14*32+16,flk=Math.sin(Date.now()/180)*1.5;
+   const fg=c.createRadialGradient?.(fpx,fpy,3,fpx,fpy,44);
+   if(fg&&typeof fg.addColorStop==='function'){fg.addColorStop(0,'rgba(255,196,92,0.34)');fg.addColorStop(1,'rgba(240,140,50,0)');c.fillStyle=fg;c.beginPath();c.arc(fpx,fpy,44,0,Math.PI*2);c.fill()}
+   fill(c,'#545048',fpx-10,fpy-4,20,12);fill(c,'#8c887e',fpx-8,fpy-3,16,8);
+   fill(c,'#e66824',fpx-5,fpy-4+flk,10,7);fill(c,'#ffd868',fpx-3,fpy-2+flk,6,4);
+   fill(c,'#2c241e',fpx-11,fpy-12,2,18);fill(c,'#2c241e',fpx+9,fpy-12,2,18);fill(c,'#2c241e',fpx-11,fpy-12,22,2);
+   fill(c,'#22262c',fpx-5,fpy-9,10,7);fill(c,'#525a64',fpx-4,fpy-8,8,2);
+   // Subtle carved curb accent along the stone plaza edges (x=13..18, y=10..15)
+   fill(c,'rgba(76,68,52,0.45)',13*32,10*32,2*32,2);fill(c,'rgba(76,68,52,0.45)',17*32,10*32,2*32,2);
+   fill(c,'rgba(76,68,52,0.45)',13*32,16*32-2,2*32,2);fill(c,'rgba(76,68,52,0.45)',17*32,16*32-2,2*32,2);
    return;
   }
   if(map==='northwatch'){
@@ -405,10 +346,7 @@ const RoadCaveQuality=(()=>{
    // Carved stone bridge parapets spanning the highland stream at (11,7)
    fill(c,'#464a4c',11*32-2,7*32,36,4);fill(c,'#dcd8cc',11*32,7*32+1,32,2);
    fill(c,'#464a4c',11*32-2,7*32+28,36,4);fill(c,'#dcd8cc',11*32,7*32+29,32,2);
-   // Golden highland birch groves framing the belltower bluff
-   if(typeof HD2DAtlas!=='undefined'){
-    for(const [tx,ty] of [[2,2],[2,11],[18,3],[20,6],[19,12]])HD2DAtlas.drawTree(c,tx,ty,'birch');
-   }
+   // Note: highland birch groves are now genuine solid 'T' tiles in maps.js (with automatic foreground occlusion!)
    // Warm campfire glow & stone ring around watchCamp (15,11)
    const cg=c.createRadialGradient?.(15*32+16,11*32+16,6,15*32+16,11*32+16,62);
    if(cg&&typeof cg.addColorStop==='function'){cg.addColorStop(0,'rgba(255,196,102,0.36)');cg.addColorStop(1,'rgba(255,156,64,0)');c.fillStyle=cg;c.beginPath();c.arc(15*32+16,11*32+16,62,0,Math.PI*2);c.fill()}
@@ -463,9 +401,7 @@ const RoadCaveQuality=(()=>{
     fill(c,'#325e38',fx*32+6,fy*32+14,18,10);fill(c,'#529254',fx*32+8,fy*32+13,14,7);
     fill(c,'#fff8e6',fx*32+10,fy*32+12,4,3);fill(c,'#fff8e6',fx*32+18,fy*32+14,4,3);fill(c,'#f6d468',fx*32+11,fy*32+13,2,1);
    }
-   if(typeof HD2DAtlas!=='undefined'){
-    for(const [tx,ty] of [[5,3],[6,11],[17,11],[21,9]])HD2DAtlas.drawTree(c,tx,ty,'sanctuary');
-   }
+   // Note: sanctuary trees are now genuine solid 'T' tiles in maps.js (with automatic foreground occlusion!)
    const sg=c.createRadialGradient?.(12*32+16,8*32+16,16,12*32+16,8*32+16,112);
    if(sg&&typeof sg.addColorStop==='function'){sg.addColorStop(0,'rgba(162,252,238,0.28)');sg.addColorStop(1,'rgba(162,242,232,0)');c.fillStyle=sg;c.fillRect(8*32,4*32,9*32,9*32)}
    return;
@@ -517,12 +453,7 @@ const RoadCaveQuality=(()=>{
    for(let gy=9;gy<=11;gy++){
     if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(c,'cobble',14,gy,'capital'))fill(c,'#b8a684',14*32+4,gy*32+2,24,28);
    }
-   // Lush HD-2D Highland Pine & Birch Groves framing the approach to the Royal Capital!
-   if(typeof HD2DAtlas!=='undefined'){
-    for(const [tx,ty] of [[2,3],[4,4],[18,3],[20,4],[2,12],[20,12],[18,6],[3,5],[19,9],[2,6]]){
-     HD2DAtlas.drawTree(c,tx,ty,(tx+ty)%2===0?'pine':'birch');
-    }
-   }
+   // Note: highland pine & birch groves are now genuine solid 'T' tiles in maps.js!
    // Ornate White-Stone Royal Highway Balustrade Pillars with warm glowing highway lanterns!
    for(const [bx,by] of [[9,2],[14,2],[9,5],[14,5],[9,9],[14,9]]){
     const x=bx*32,y=by*32;
@@ -577,12 +508,7 @@ const RoadCaveQuality=(()=>{
     c.fillStyle=campG;c.beginPath();c.arc(7*32+16,9*32+4,34,0,Math.PI*2);c.fill();
    }
    fill(c,'#4e3a28',7*32+10,9*32+4,12,8);fill(c,'#e67e2e',7*32+13,9*32+1,6,5);fill(c,'#fff0b5',7*32+15,9*32+2,2,3);
-   // Dense woodland ferns, red-cap mushrooms, wildflowers & framing storybook oaks along outer meadow edges
-   if(typeof HD2DAtlas!=='undefined'){
-    for(const [tx,ty] of [[2,2],[2,8],[2,12],[21,4],[21,7],[20,12],[16,2],[6,2]]){
-     HD2DAtlas.drawTree(c,tx,ty,'oak');
-    }
-   }
+   // Dense woodland ferns, red-cap mushrooms & wildflowers (all framing oaks are now genuine solid 'T' tiles in maps.js!)
    for(const [tx,ty] of [[7,5],[6,6],[15,10],[17,7],[19,4],[4,4],[16,5],[19,9],[5,12],[17,12]]){
     const x=tx*32,y=ty*32;
     fill(c,'#345632',x+4,y+18,14,8);fill(c,'#547e48',x+6,y+16,10,6);

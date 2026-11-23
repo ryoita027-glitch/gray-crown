@@ -596,59 +596,77 @@ const BorderWatchfortEnvironment=(()=>{
    return true;
   }
   if(map==='borderland'){
-   // Halm Waystation twin detailed 3D half-timbered inns + 3D caravan market pavilion
-   drawWaystationInn(ctx,3,1,5,3,{roofDark:'#583c30',roofMain:'#785040',roofHi:'#9a6c56',wall:'#d8c8a4',shutter:'#523f31',sign:true,label:'旅籠・風見亭'});
-   drawWaystationInn(ctx,16,1,5,3,{roofDark:'#4b3e36',roofMain:'#66544a',roofHi:'#867062',wall:'#d2c4a0',shutter:'#47525e',sign:false,label:'国境交易倉庫'});
-   drawBorderBooth(ctx,8,2,'#8e3c42','herbs');
-   // Laundry fluttering on line between eastern inn & road (lived-in village charm)
-   pix(ctx,'#5c4936',15*32+2,4*32+4,98,2);
+   // Expanded 32x22 Halm Borderland: Grand Square Enix Halm Inn & Border Trade Hall + Caravan Booth + Ruined South Gatehouse!
+   const borderHouses=[
+    {x:4,y:2,w:7,h:4,tag:'halm_inn',label:'旅籠・風見亭',roofDark:'#4e2e24',roofMain:'#7c4b3a',roofHi:'#a46850',roofRim:'#ca8e72',wall:'#e4d6b6',shutter:'#523f31',canopyColor:'#8c3a40',chimneyLeft:true,doorOffsetPx:3*32+16},
+    {x:21,y:2,w:7,h:4,tag:'halm_trade',label:'国境交易所',roofDark:'#3e342d',roofMain:'#625046',roofHi:'#867062',roofRim:'#ae9684',wall:'#dcd0b0',shutter:'#47525e',chimneyLeft:false,doorOffsetPx:3*32+16}
+   ];
+   for(const b of borderHouses){
+    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawGrandHouse(ctx,b.x,b.y,b.w,b.h,b)){
+     drawWaystationInn(ctx,b.x,b.y,b.w,b.h,{roofDark:b.roofDark,roofMain:b.roofMain,roofHi:b.roofHi,wall:b.wall,shutter:b.shutter,sign:true,label:b.label});
+    }
+   }
+   drawBorderBooth(ctx,11,5,'#8e3c42','herbs');
+   // Fenced laundry line tucked safely beside the far-west gable wall (x=1..3, y=5 — solid-blocked & completely off all roads!)
    const wind=Math.round(Math.sin(now/420));
-   pix(ctx,'#e2d7be',15*32+10,4*32+6,17,12+wind);pix(ctx,'#c9bca0',15*32+10,4*32+14,17,3);
-   pix(ctx,'#7892a8',16*32+6,4*32+6,18,11-wind);pix(ctx,'#5d758a',16*32+6,4*32+13,18,3);
-   pix(ctx,'#b6806e',17*32+2,4*32+6,15,10+wind);
+   pix(ctx,'#4a3726',1*32+8,5*32+2,3,24);pix(ctx,'#4a3726',3*32+20,5*32+2,3,24);
+   pix(ctx,'#c8b698',1*32+10,5*32+5,74,2);
+   pix(ctx,'#e2d7be',1*32+14,5*32+7,16,13+wind);pix(ctx,'#c9bca0',1*32+14,5*32+16,16,3);
+   pix(ctx,'#7892a8',2*32+6,5*32+7,17,12-wind);pix(ctx,'#b6806e',2*32+26,5*32+7,14,11+wind);
 
-   // Ruined West Old Border Checkpoint stone pillars, moss & broken timber boom arm (x=3..6, y=10..12)
-   pix(ctx,'rgba(18,15,12,0.34)',3*32+2,11*32+16,4*32-4,18);
-   for(const cx of [3,6]){
-    pix(ctx,'#2e2d2a',cx*32+4,10*32+16,24,46);
-    pix(ctx,'#747065',cx*32+6,10*32+18,20,40);
-    pix(ctx,'#9a9586',cx*32+6,10*32+18,8,38);
-    pix(ctx,'#aba594',cx*32+3,10*32+14,26,6);
-    pix(ctx,'#596e46',cx*32+8,10*32+20,7,4); // creeping moss
+   // Fortified South Old Border Checkpoint Stone Gatehouse Bastions + Twin Iron Watch-Braziers + Raised Striped Toll Barrier!
+   const flk=Math.round(Math.sin(now/160));
+   for(const [gx1,gx2] of [[4,9],[22,27]]){
+    pix(ctx,'rgba(18,15,12,0.36)',gx1*32+2,18*32+16,(gx2-gx1+1)*32-4,24);
+    for(const cx of [gx1,gx2]){
+     pix(ctx,'#2e2d2a',cx*32+4,16*32+14,24,62);
+     pix(ctx,'#747065',cx*32+6,16*32+16,20,56);
+     pix(ctx,'#9a9586',cx*32+6,16*32+16,8,54);
+     pix(ctx,'#aba594',cx*32+3,16*32+12,26,6);
+     pix(ctx,'#596e46',cx*32+8,16*32+22,7,4);
+    }
    }
-   // Snapped wooden checkpoint boom barrier & stone rubble
-   pix(ctx,'#4a3726',4*32+1,11*32+2,58,6);
-   pix(ctx,'#8c6b47',4*32+3,11*32+3,48,3);
-   pix(ctx,'#6e6a60',4*32+24,11*32+14,16,9);pix(ctx,'#989384',4*32+26,11*32+15,10,4);
-
-   // Wooden crossroads signpost pointing north to Beld Watchfort
-   pix(ctx,'rgba(18,14,10,0.28)',13*32+10,8*32+29,12,4);
-   pix(ctx,'#3e2f20',13*32+12,8*32+7,5,25);pix(ctx,'#6e543a',13*32+13,8*32+8,3,23);
-   pix(ctx,'#52402c',13*32+16,8*32+8,42,14);
-   pix(ctx,'#bda478',13*32+17,8*32+9,40,11);
-   pix(ctx,'#d6c198',13*32+18,8*32+10,38,2);
-   ctx.fillStyle='#3b2f22';ctx.font='bold 7px system-ui';ctx.fillText('ベルド砦 ↑',13*32+20,8*32+18);
-
-   // Caravan wagon ruts leading east toward broken cart
-   for(let tx=11;tx<=17;tx++){
-    pix(ctx,'rgba(76,58,38,0.26)',tx*32+2,10*32+9,25,2);
-    pix(ctx,'rgba(76,58,38,0.26)',tx*32+2,10*32+22,25,2);
+   // Twin flickering iron watch-braziers framing the South Checkpoint roadway at (13,17) & (18,17)
+   for(const bx of [13,18]){
+    const x=bx*32+8,y=17*32+8;
+    const bg=ctx.createRadialGradient?.(x+8,y+4,2,x+8,y+4,38);
+    if(bg&&typeof bg.addColorStop==='function'){bg.addColorStop(0,'rgba(255,192,88,0.34)');bg.addColorStop(1,'rgba(240,140,48,0)');ctx.fillStyle=bg;ctx.beginPath();ctx.arc(x+8,y+4,38,0,Math.PI*2);ctx.fill()}
+    pix(ctx,'#24282e',x+2,y+10,12,12);pix(ctx,'#4a525c',x+4,y+11,8,10);
+    pix(ctx,'#1c2026',x,y+5,16,7);pix(ctx,'#e66824',x+3,y+flk,10,6);pix(ctx,'#ffd868',x+5,y+2+flk,6,4);
+   }
+   // Raised weathered crimson-and-ivory toll barrier post tucked cleanly beside west bastion (10, 17..18)
+   pix(ctx,'#2e241c',10*32+6,17*32+12,10,20);pix(ctx,'#7c6244',10*32+8,17*32+14,6,16);
+   for(let s=0;s<6;s++){
+    const sx=10*32+12+s*11,sy=17*32+14-s*4;
+    pix(ctx,'#241c18',sx,sy,12,6);pix(ctx,s%2?'#e6dec8':'#9c3c42',sx+1,sy+1,10,4);
+   }
+   // Weathered highland pines framing the frontier steppe margins (solid-blocked!)
+   if(typeof HD2DAtlas!=='undefined'){
+    for(const [tx,ty] of [[2,2],[2,7],[29,2],[29,15],[2,17],[29,19]])HD2DAtlas.drawTree(ctx,tx,ty,'pine');
    }
 
-   // Warm late-afternoon hearth light pool around Halm campfire (x=12, y=5)
+   // Wooden crossroads signpost pointing north to Beld Watchfort (17, 12)
+   pix(ctx,'rgba(18,14,10,0.28)',17*32+10,12*32+29,12,4);
+   pix(ctx,'#3e2f20',17*32+12,12*32+7,5,25);pix(ctx,'#6e543a',17*32+13,12*32+8,3,23);
+   pix(ctx,'#52402c',17*32+16,12*32+8,42,14);pix(ctx,'#bda478',17*32+17,12*32+9,40,11);pix(ctx,'#d6c198',17*32+18,12*32+10,38,2);
+   ctx.fillStyle='#3b2f22';ctx.font='bold 7px system-ui';ctx.fillText('ベルド砦 ↑',17*32+20,12*32+18);
+
+   // Caravan wagon ruts leading east toward broken cart along y=14
+   for(let tx=15;tx<=23;tx++){
+    pix(ctx,'rgba(76,58,38,0.26)',tx*32+2,14*32+9,25,2);
+    pix(ctx,'rgba(76,58,38,0.26)',tx*32+2,14*32+22,25,2);
+   }
+   // Warm late-afternoon hearth light pool around Halm campfire (17, 8)
    const pulse=Math.sin(now/220)*3;
-   const grad=ctx.createRadialGradient(12*32+16,5*32+18,4,12*32+16,5*32+18,44+pulse);
-   grad.addColorStop(0,'rgba(255,198,96,0.26)');
-   grad.addColorStop(0.55,'rgba(240,148,58,0.11)');
+   const grad=ctx.createRadialGradient(17*32+16,8*32+18,4,17*32+16,8*32+18,52+pulse);
+   grad.addColorStop(0,'rgba(255,198,96,0.32)');
+   grad.addColorStop(0.55,'rgba(240,148,58,0.14)');
    grad.addColorStop(1,'rgba(240,148,58,0)');
-   ctx.fillStyle=grad;ctx.beginPath();ctx.arc(12*32+16,5*32+18,44+pulse,0,Math.PI*2);ctx.fill();
+   ctx.fillStyle=grad;ctx.beginPath();ctx.arc(17*32+16,8*32+18,52+pulse,0,Math.PI*2);ctx.fill();
 
-   // Gentle warm borderland sunlight wash from upper-left
-   const sun=ctx.createLinearGradient(0,0,768,480);
-   sun.addColorStop(0,'rgba(255,224,160,0.07)');
-   sun.addColorStop(0.55,'rgba(255,224,160,0)');
-   sun.addColorStop(1,'rgba(26,28,36,0.08)');
-   ctx.fillStyle=sun;ctx.fillRect(0,0,768,480);
+   const sun=ctx.createLinearGradient(0,0,1024,704);
+   sun.addColorStop(0,'rgba(255,224,160,0.08)');sun.addColorStop(0.55,'rgba(255,224,160,0)');sun.addColorStop(1,'rgba(26,28,36,0.09)');
+   ctx.fillStyle=sun;ctx.fillRect(0,0,1024,704);
    return true;
   }
 
@@ -836,12 +854,12 @@ const BorderWatchfortEnvironment=(()=>{
    }
    if(o.id==='brokenWagon'){
     const fixed=typeof structuredCondition==='function'&&structuredCondition('borderMerchantHelped');
+    if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawCoveredWagon){
+     HD2DAtlas.drawCoveredWagon(ctx,o.x,o.y,{broken:!fixed});
+     return true;
+    }
     pix(ctx,'rgba(18,14,10,0.30)',x+2,y+24,28,5);
     pix(ctx,'#493524',x+3,y+13,26,11);pix(ctx,'#876442',x+5,y+14,22,5);
-    pix(ctx,'#d0be96',x+7,y+8,16,7);pix(ctx,'#b49e74',x+9,y+10,12,4);
-    pix(ctx,'#2c221b',x+5,y+21,8,8);pix(ctx,'#785d44',x+7,y+23,4,4);
-    if(fixed){pix(ctx,'#2c221b',x+19,y+21,8,8);pix(ctx,'#785d44',x+21,y+23,4,4)}
-    else{pix(ctx,'#2c221b',x+20,y+25,8,4);pix(ctx,'#785d44',x+22,y+26,4,2)}
     return true;
    }
    if(o.id==='borderCampfire'){

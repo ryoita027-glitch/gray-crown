@@ -40,69 +40,35 @@ const OpeningWorldLife=(()=>{
   wheel(c,x+22,y+35);wheel(c,x+55,y+35);
  }
  function village(c,choices={}){
-  // Sense of daily life; props at authored NPC landmarks, not imaginary loot.
-  // Eda's 3D brick oven & striped bakery pavilion at (7,5)-(8,5) are rendered by RyuneEnvironment; add a woven flour sack & bread basket beside the booth!
-  const [bx,by]=at(7,5);
-  basket(c,bx+42,by+20,'full');
-  // Agricultural character of the village, crops rowed along the western field.
-  for(let x=1;x<=3;x++)for(let y=8;y<=11;y++){
-   const px=x*32+8,py=y*32+10;
-   R(c,'#5b6547',px+1,py+12,17,4);
-   for(let k=0;k<3;k++){
-    R(c,'#355f3f',px+2+k*6,py+2,2,11);
-    R(c,'#79935e',px+k*6,py+4,5,4)
-   }
-  }
-  // Shared life around the well: buckets, filled water trough; no overlay on exit.
-  const [wx,wy]=at(12,9);
+  // Sense of daily life aligned with the spacious 36x24 Ryune Village landmarks!
+  const [bx,by]=at(8,11);
+  basket(c,bx+24,by+12,'full');
+  // Shared life around the central stone well at (18,12): wooden water bucket
+  const [wx,wy]=at(18,12);
   R(c,'#544632',wx+24,wy+26,13,4);
   R(c,'#9b7c53',wx+25,wy+16,11,12);
   R(c,'#658386',wx+27,wy+18,7,2);
-  // Child's scattered play props outside the orphanage frontage.
-  const [ox,oy]=at(18,6);
-  R(c,'#a77b4a',ox+21,oy+24,7,6);
-  R(c,'#dbbf85',ox+23,oy+25,3,2);
-  R(c,'#806c8a',ox+9,oy+26,5,5);
-  R(c,'#d3c09b',ox+10,oy+27,3,2);
-  // Ren's actual practice interaction lives on (21,6). Its one-time player
-  // choice stays visible in the normal game renderer and in a reloaded save.
-  // No new remote art asset or floating quest decoration is needed.
-  const [dx,dy]=at(21,6),practice=choices['early.renPractice'];
+  // Child's scattered wooden blocks outside Ryune Orphanage yard (26,9)
+  const [ox,oy]=at(26,9);
+  R(c,'#a77b4a',ox+21,oy+24,7,6);R(c,'#dbbf85',ox+23,oy+25,3,2);
+  R(c,'#806c8a',ox+9,oy+26,5,5);R(c,'#d3c09b',ox+10,oy+27,3,2);
+  // Ren's actual practice training dummy on (31,9) in the Orphanage training yard!
+  const [dx,dy]=at(31,9),practice=choices['early.renPractice'];
   R(c,'#4d4939',dx+3,dy+27,26,3);
   R(c,'#8a7655',dx+6,dy+25,22,2);
   if(practice==='strike'){
-   // Knocked-down dummy: a physical memory of Triton's opening attack.
-   R(c,'#795636',dx+4,dy+22,23,5);
-   R(c,'#bf9562',dx+6,dy+22,18,2);
-   R(c,'#574e3e',dx+9,dy+17,5,5);
-   R(c,'#b09b77',dx+5,dy+14,14,3);
-   R(c,'#9b7860',dx+17,dy+20,7,2);
+   R(c,'#795636',dx+4,dy+22,23,5);R(c,'#bf9562',dx+6,dy+22,18,2);
+   R(c,'#574e3e',dx+9,dy+17,5,5);R(c,'#b09b77',dx+5,dy+14,14,3);R(c,'#9b7860',dx+17,dy+20,7,2);
   }else{
-   R(c,'#634a33',dx+13,dy+7,5,21);
-   R(c,'#ad8757',dx+13,dy+8,2,18);
-   R(c,'#88704b',dx+8,dy+10,16,4);
-   R(c,'#d0b48a',dx+10,dy+3,11,9);
-   R(c,'#8e795c',dx+11,dy+4,9,2);
-   R(c,'#5a4b3a',dx+12,dy+7,2,2);
-   R(c,'#5a4b3a',dx+18,dy+7,2,2);
+   R(c,'#634a33',dx+13,dy+7,5,21);R(c,'#ad8757',dx+13,dy+8,2,18);
+   R(c,'#88704b',dx+8,dy+10,16,4);R(c,'#d0b48a',dx+10,dy+3,11,9);
+   R(c,'#8e795c',dx+11,dy+4,9,2);R(c,'#5a4b3a',dx+12,dy+7,2,2);R(c,'#5a4b3a',dx+18,dy+7,2,2);
    if(practice==='guard'){
-    // A lifted wooden shield: unlike the knocked dummy, it stays upright.
-    R(c,'#3c594f',dx+4,dy+12,11,12);
-    R(c,'#8cae96',dx+5,dy+13,9,8);
-    R(c,'#d8bb7f',dx+9,dy+14,2,8);
-    R(c,'#655442',dx+5,dy+23,9,2);
+    R(c,'#3c594f',dx+4,dy+12,11,12);R(c,'#8cae96',dx+5,dy+13,9,8);
+    R(c,'#d8bb7f',dx+9,dy+14,2,8);R(c,'#655442',dx+5,dy+23,9,2);
    }else{
-    // A clean straw target tells the player there is something to try.
-    R(c,'#c7ae80',dx+17,dy+15,7,8);
-    R(c,'#84694f',dx+19,dy+17,3,4);
+    R(c,'#c7ae80',dx+17,dy+15,7,8);R(c,'#84694f',dx+19,dy+17,3,4);
    }
-  }
-  // Village notice board is at the square rather than a floating HUD label.
-  // No new solid board on a walkable square; the village door signs suffice.
-  // Small footprints into lived-in door thresholds.
-  for(const [x,y] of [[5,11],[18,11],[18,4],[4,4]]){
-   R(c,'#988c70',x*32+7,y*32+26,9,2);
-   R(c,'#b9ad8c',x*32+17,y*32+22,6,2)
   }
  }
  function road(c,choices={}){

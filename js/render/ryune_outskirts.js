@@ -35,7 +35,7 @@ const RyuneOutskirts=(()=>{
  }
  function paintTile(c,map,ch,tx,ty){
   // The two village hedgerow gaps are visual-only; movement owns the exits.
-  if(map==='village'&&ty===8&&(tx===0||tx===23)){
+  if(map==='village'&&ty===13&&(tx===0||tx===35)){
    drawPath(c,tx*W,ty*W);return true
   }
   if(!maps.has(map))return false;
@@ -174,8 +174,8 @@ const RyuneOutskirts=(()=>{
  function drawAccents(c,map){
   if(map==='village'){
    // Clear passable corridors without drawing obstacles over the actual path.
-   for(const [x,side] of [[0,'west'],[23,'east']]){
-    const px=x*W,py=7*W;
+   for(const [x,side] of [[0,'west'],[35,'east']]){
+    const px=x*W,py=12*W;
     pixel(c,'#4d4939',px+8,py+8,3,24);
     pixel(c,side==='west'?'#b99c69':'#95adb2',px+3,py+4,25,6);
     pixel(c,'#e0c69a',px+5,py+5,15,2);
@@ -256,13 +256,10 @@ const RyuneOutskirts=(()=>{
     c.fillStyle=lg;c.beginPath();c.arc(jx+26,jy-2,28,0,Math.PI*2);c.fill();
    }
    pixel(c,'#2c241e',jx+23,jy-6,6,6);pixel(c,'#ffd674',jx+24,jy-5,4,4);pixel(c,'#fffbe2',jx+25,jy-4,2,2);
-   // Tall swaying cattail reeds & wild woodland oaks framing open brook lawns
+   // Tall swaying cattail reeds lining the crystal brook (all oak trees are now genuine solid 'T' tiles in maps.js!)
    for(const [rx,ry] of [[6,5],[9,5],[6,9],[9,8],[6,3],[9,3]]){
     pixel(c,'#2d5836',rx*W+10,ry*W+13,2,12);pixel(c,'#467c4c',rx*W+14,ry*W+11,2,14);
     pixel(c,'#6e4a30',rx*W+14,ry*W+9,3,5);
-   }
-   if(typeof HD2DAtlas!=='undefined'){
-    for(const [tx,ty] of [[14,3],[2,5],[12,10]])HD2DAtlas.drawTree(c,tx,ty,'oak');
    }
    pixel(c,'#ae9c78',5*W+26,4*W+20,7,8);
    pixel(c,'#cbba8e',5*W+27,4*W+18,5,3);

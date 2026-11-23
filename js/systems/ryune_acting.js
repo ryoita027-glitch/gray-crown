@@ -40,11 +40,12 @@
  function sceneFor(def){
   const messenger=maps.village.npcs.find(n=>n.id==='messenger');
   if(!messenger)throw new Error('Ryune messenger missing from map');
+  const ox=messenger.x-12,oy=messenger.y-6;
   const actors=[
-   {id:'karen',character:'karen',x:11.15,y:8.0,facing:'up',animation:'idle',renderMode:'pixel48-medium',layer:2},
-   {id:'triton',character:'triton',x:9.35,y:8.1,facing:'right',animation:'idle',renderMode:'pixel48-medium',layer:2},
-   {id:'sophie',character:'sophie',x:13.3,y:8.35,facing:'up',animation:'idle',renderMode:'pixel48-medium',layer:2},
-   {id:'margaret',character:'margaret',x:15.35,y:8.15,facing:'left',animation:'idle',renderMode:'pixel48-medium',layer:2},
+   {id:'karen',character:'karen',x:11.15+ox,y:8.0+oy,facing:'up',animation:'idle',renderMode:'pixel48-medium',layer:2},
+   {id:'triton',character:'triton',x:9.35+ox,y:8.1+oy,facing:'right',animation:'idle',renderMode:'pixel48-medium',layer:2},
+   {id:'sophie',character:'sophie',x:13.3+ox,y:8.35+oy,facing:'up',animation:'idle',renderMode:'pixel48-medium',layer:2},
+   {id:'margaret',character:'margaret',x:15.35+ox,y:8.15+oy,facing:'left',animation:'idle',renderMode:'pixel48-medium',layer:2},
    {id:'messenger',character:'messenger',styleId:'messenger',x:messenger.x,y:messenger.y,facing:'down',animation:'idle',renderMode:'procedural32',controlNpc:true,layer:1}
   ];
   return{id:ACTING_ID,actors,commands:[
@@ -55,6 +56,8 @@
  }
  function beforeDialogue(cmd){
   if(!running)return;
+  const messenger=maps.village.npcs.find(n=>n.id==='messenger')||{x:12,y:6};
+  const ox=messenger.x-12,oy=messenger.y-6;
   const cue=choreography[cmd.lineIndex]||{},speakerId=SPEAKERS[cmd.speaker]||null;
   for(const a of GC.Cinematic.getRenderActors()){
    if(a.renderMode==='procedural32'){a.animation=a.id===speakerId?'talk':'idle';continue}
@@ -72,7 +75,7 @@
   for(const [who,x,y,duration,animation] of cue.move||[]){
    const a=GC.Cinematic.actor(who);if(!a)continue;
    GC.Animation.setAnimation(a,animation);
-   GC.Cinematic.tweenActor(a,x,y,duration).then(ok=>{
+   GC.Cinematic.tweenActor(a,x+ox,y+oy,duration).then(ok=>{
     if(ok&&GC.Cinematic.isActive()&&a.animation===animation)GC.Animation.setAnimation(a,'idle');
    });
   }

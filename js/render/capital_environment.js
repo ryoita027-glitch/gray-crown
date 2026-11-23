@@ -678,9 +678,28 @@ const CapitalEnvironment=(()=>{
    }
   }
 
-  // 8. Draw Towering Aldina Royal Castle + All 3D Grounded Capital Buildings!
+  // 8. Draw Towering Aldina Royal Castle + All 3D Grounded Capital Buildings + Royal Promenade Urns & Bunting!
   drawRoyalCastle(c,wartime,wave);
   districtFacades(c);districtPaving(c);
+  // Sculpted white-marble floral urns flanking the central fountain plaza
+  for(const [ux,uy] of [[16,15],[24,15],[16,20],[24,20]]){
+   const px=ux*W+6,py=uy*W+8;
+   box(c,'rgba(14,18,24,.28)',px,py+15,20,5);
+   box(c,'#54524c',px+3,py+9,14,10);box(c,'#dcd8cc',px+4,py+10,12,8);box(c,'#f6f4ec',px+5,py+10,4,7);
+   box(c,'#2c5c32',px+2,py+3,16,8);box(c,'#4e8e48',px+4,py+2,12,6);
+   box(c,wartime?'#f2f4ee':'#e85a68',px+5,py+2,4,3);box(c,wartime?'#d8dce2':'#f6d668',px+11,py+3,4,3);
+  }
+  if(!wartime){
+   // Festive crimson-and-gold heraldic bunting along the royal promenade
+   const bc=['#9c323c','#e4c268','#f4eee0','#3e5c7c'];
+   for(const by of [12,24]){
+    box(c,'#5c4832',16*W+16,by*W+4,8*W,1);
+    for(let i=0;i<16;i++){
+     const fx=16*W+20+i*15,dip=Math.round(Math.sin((i/15)*Math.PI)*4);
+     box(c,bc[i%4],fx,by*W+5+dip,8,5);
+    }
+   }
+  }
 
   // 9. Crisp District & Highway Gate Signboards
   const sign=(sx,sy,label,sw=78)=>{
@@ -698,53 +717,55 @@ const CapitalEnvironment=(()=>{
   sign(19.6,5.05,'アルディナ王城',88);
   return true
  }
- // Ambient strolling residents across towns & final front camps (purely visual, zero collision blocking!)
- // Speeds are calm medieval strolling speeds in tiles/second (tps), with natural endpoint pauses.
+ // Ambient strolling residents across towns & final front camps — EVERY SINGLE PATH strictly audited on clear, wide open roads!
+ // ZERO overlap with clotheslines, wells, NPCs, props, or tree canopies!
  const regionWalkers=Object.freeze({
   capital:[
    {pts:[[19,11],[19,26]],tps:1.18,pause:2100,festive:'strollerFestive',after:'strollerScholar',wartime:'strollerSomber'},
-   {pts:[[4,16],[13,16]],tps:1.05,pause:2400,festive:'strollerMerchant',after:'strollerBaker',wartime:'strollerSomber'},
-   {pts:[[6,26],[15,26]],tps:1.34,pause:1700,festive:'capitalStreetKid',after:'strollerBard',wartime:'strollerPatrol'},
+   {pts:[[4,16],[11,16]],tps:1.05,pause:2400,festive:'strollerMerchant',after:'strollerBaker',wartime:'strollerSomber'},
+   {pts:[[8,26],[15,26]],tps:1.34,pause:1700,festive:'capitalStreetKid',after:'strollerBard',wartime:'strollerPatrol'},
    {pts:[[28,15],[37,15]],tps:1.02,pause:2200,festive:'strollerPatrol',after:'strollerPatrol',wartime:'strollerPatrol'},
-   {pts:[[27,25],[36,25]],tps:1.08,pause:2300,festive:'strollerScholar',after:'strollerFestive',wartime:'strollerSomber'}
+   {pts:[[27,25],[35,25]],tps:1.08,pause:2300,festive:'strollerScholar',after:'strollerFestive',wartime:'strollerSomber'}
   ],
   village:[
-   {pts:[[6,7],[16,7]],tps:1.32,pause:1900,festive:'strollerChild',after:'strollerChild',wartime:'strollerChild'},
-   {pts:[[8,13],[16,13]],tps:1.04,pause:2500,festive:'strollerBaker',after:'strollerMerchant',wartime:'strollerVillager'}
+   {pts:[[10,13],[16,13]],tps:1.28,pause:1900,festive:'strollerChild',after:'strollerChild',wartime:'strollerChild'},
+   {pts:[[13,20],[20,20]],tps:1.04,pause:2500,festive:'strollerBaker',after:'strollerMerchant',wartime:'strollerVillager'},
+   {pts:[[12,8],[22,8]],tps:1.06,pause:2300,festive:'strollerVillager',after:'strollerVillager',wartime:'strollerVillager'}
   ],
   northwaystation:[
-   {pts:[[3,7],[19,7]],tps:1.15,pause:2300,festive:'strollerMerchant',after:'strollerPatrol',wartime:'strollerSomber'},
-   {pts:[[6,11],[17,11]],tps:1.08,pause:2100,festive:'strollerBard',after:'strollerFestive',wartime:'strollerSomber'},
-   {pts:[[11,5],[11,10]],tps:1.28,pause:1800,festive:'strollerChild',after:'strollerChild',wartime:'strollerVillager'}
+   {pts:[[3,11],[12,11]],tps:1.15,pause:2300,festive:'strollerMerchant',after:'strollerPatrol',wartime:'strollerSomber'},
+   {pts:[[19,11],[27,11]],tps:1.10,pause:2100,festive:'strollerBard',after:'strollerFestive',wartime:'strollerSomber'},
+   {pts:[[9,16],[22,16]],tps:1.24,pause:1800,festive:'strollerChild',after:'strollerChild',wartime:'strollerVillager'}
   ],
   borderland:[
-   {pts:[[4,6],[19,6]],tps:1.10,pause:2400,festive:'strollerMerchant',after:'strollerMerchant',wartime:'strollerSomber'},
-   {pts:[[6,10],[16,10]],tps:1.02,pause:2200,festive:'strollerPatrol',after:'strollerPatrol',wartime:'strollerPatrol'}
+   {pts:[[6,9],[14,9]],tps:1.10,pause:2400,festive:'strollerMerchant',after:'strollerMerchant',wartime:'strollerSomber'},
+   {pts:[[18,9],[27,9]],tps:1.02,pause:2200,festive:'strollerPatrol',after:'strollerPatrol',wartime:'strollerPatrol'}
   ],
   empirevillage:[
-   {pts:[[11,3],[11,12]],tps:1.06,pause:2300,festive:'strollerBaker',after:'strollerVillager',wartime:'strollerVillager'},
-   {pts:[[8,7],[19,7]],tps:1.32,pause:1800,festive:'strollerChild',after:'strollerChild',wartime:'strollerChild'}
+   {pts:[[15,4],[15,15]],tps:1.06,pause:2300,festive:'strollerBaker',after:'strollerVillager',wartime:'strollerVillager'},
+   {pts:[[14,9],[26,9]],tps:1.24,pause:1800,festive:'strollerChild',after:'strollerChild',wartime:'strollerChild'}
   ],
   imperialcity:[
    {pts:[[17,3],[17,21]],tps:1.14,pause:2200,festive:'strollerScholar',after:'strollerMerchant',wartime:'strollerSomber'},
-   {pts:[[4,12],[31,12]],tps:1.12,pause:2100,festive:'strollerFestive',after:'strollerBard',wartime:'strollerSomber'},
-   {pts:[[5,17],[30,17]],tps:1.04,pause:2000,festive:'strollerImperialPatrol',after:'strollerImperialPatrol',wartime:'strollerImperialPatrol'}
+   {pts:[[4,12],[13,12]],tps:1.12,pause:2100,festive:'strollerFestive',after:'strollerBard',wartime:'strollerSomber'},
+   {pts:[[9,15],[26,15]],tps:1.04,pause:2000,festive:'strollerImperialPatrol',after:'strollerImperialPatrol',wartime:'strollerImperialPatrol'},
+   {pts:[[10,21],[25,21]],tps:1.08,pause:2200,festive:'strollerMerchant',after:'strollerScholar',wartime:'strollerSomber'}
   ],
   elsia:[
-   {pts:[[11,5],[11,12]],tps:1.02,pause:2600,festive:'strollerVillager',after:'strollerBaker',wartime:'strollerVillager'},
-   {pts:[[6,7],[17,7]],tps:1.05,pause:2400,festive:'strollerFestive',after:'strollerScholar',wartime:'strollerVillager'}
+   {pts:[[15,7],[15,18]],tps:1.02,pause:2600,festive:'strollerVillager',after:'strollerBaker',wartime:'strollerVillager'},
+   {pts:[[11,12],[21,12]],tps:1.05,pause:2400,festive:'strollerFestive',after:'strollerScholar',wartime:'strollerVillager'}
   ],
   finalfield:[
    {pts:[[3,7],[8,7]],tps:1.00,pause:2000,festive:'strollerPatrol',after:'strollerPatrol',wartime:'strollerPatrol'},
    {pts:[[15,7],[20,7]],tps:1.00,pause:2000,festive:'strollerImperialPatrol',after:'strollerImperialPatrol',wartime:'strollerImperialPatrol'}
   ],
   imperialcamp:[
-   {pts:[[4,6],[9,6]],tps:1.02,pause:2100,festive:'strollerImperialPatrol',after:'strollerImperialPatrol',wartime:'strollerImperialPatrol'},
-   {pts:[[14,6],[19,6]],tps:1.02,pause:2100,festive:'strollerImperialPatrol',after:'strollerImperialPatrol',wartime:'strollerImperialPatrol'}
+   {pts:[[6,6],[10,6]],tps:1.02,pause:2100,festive:'strollerImperialPatrol',after:'strollerImperialPatrol',wartime:'strollerImperialPatrol'},
+   {pts:[[13,6],[17,6]],tps:1.02,pause:2100,festive:'strollerImperialPatrol',after:'strollerImperialPatrol',wartime:'strollerImperialPatrol'}
   ],
   royalcamp:[
-   {pts:[[4,6],[9,6]],tps:1.02,pause:2100,festive:'strollerPatrol',after:'strollerPatrol',wartime:'strollerPatrol'},
-   {pts:[[14,6],[19,6]],tps:1.02,pause:2100,festive:'strollerPatrol',after:'strollerPatrol',wartime:'strollerPatrol'}
+   {pts:[[6,6],[10,6]],tps:1.02,pause:2100,festive:'strollerPatrol',after:'strollerPatrol',wartime:'strollerPatrol'},
+   {pts:[[13,6],[17,6]],tps:1.02,pause:2100,festive:'strollerPatrol',after:'strollerPatrol',wartime:'strollerPatrol'}
   ]
  });
  function hasWalkers(map){
@@ -758,10 +779,10 @@ const CapitalEnvironment=(()=>{
   if(u>1-edge){const s=(1-u)/edge;return 1-(edge*0.5)*s*s}
   return edge*0.5+(u-edge)*(1-edge)/(1-2*edge)
  }
- function drawWalkers(c,map,now=Date.now()){
+ function getWalkerPoses(map,now=Date.now()){
   const list=regionWalkers[map];
-  if(!on()||!list||typeof OpeningPixelAssets==='undefined'||!OpeningPixelAssets.drawWalker)return false;
-  if(typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches)return false;
+  if(!on()||!list||typeof OpeningPixelAssets==='undefined'||!OpeningPixelAssets.drawWalker)return[];
+  if(typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches)return[];
   const ceremonyDone=typeof isEventComplete==='function'&&isEventComplete('alpha.capital.ceremony');
   const wartime=typeof getWorldSwitch==='function'&&getWorldSwitch('returnedKingdom');
   const paceScale=wartime?0.78:ceremonyDone?0.92:1.0;
@@ -775,36 +796,31 @@ const CapitalEnvironment=(()=>{
    const pauseMs=wp.pause||2100;
    const totalCycle=2*(walkMs+pauseMs);
    const phase=(now+i*3740)%totalCycle;
-   let t=0,walking=false,forward=true,dir='down',walkedTiles=0;
+   let t=0,walking=false,dir='down',walkedTiles=0;
    const dxBase=b[0]-a[0],dyBase=b[1]-a[1];
    const forwardDir=Math.abs(dxBase)>=Math.abs(dyBase)?(dxBase>0?'right':'left'):(dyBase>0?'down':'up');
    const backDir=Math.abs(dxBase)>=Math.abs(dyBase)?(dxBase>0?'left':'right'):(dyBase>0?'up':'down');
    if(phase<walkMs){
-    walking=true;forward=true;
-    t=easeStroll(phase/walkMs);
-    walkedTiles=t*dist;
-    dir=forwardDir;
+    walking=true;t=easeStroll(phase/walkMs);walkedTiles=t*dist;dir=forwardDir;
    }else if(phase<walkMs+pauseMs){
-    walking=false;t=1;
-    const pFrac=(phase-walkMs)/pauseMs;
+    walking=false;t=1;const pFrac=(phase-walkMs)/pauseMs;
     dir=pFrac<0.18?forwardDir:pFrac>0.82?backDir:'down';
    }else if(phase<2*walkMs+pauseMs){
-    walking=true;forward=false;
-    const u=easeStroll((phase-walkMs-pauseMs)/walkMs);
-    t=1-u;
-    walkedTiles=u*dist;
-    dir=backDir;
+    walking=true;const u=easeStroll((phase-walkMs-pauseMs)/walkMs);t=1-u;walkedTiles=u*dist;dir=backDir;
    }else{
-    walking=false;t=0;
-    const pFrac=(phase-2*walkMs-pauseMs)/pauseMs;
+    walking=false;t=0;const pFrac=(phase-2*walkMs-pauseMs)/pauseMs;
     dir=pFrac<0.18?backDir:pFrac>0.82?forwardDir:'down';
    }
    const x=a[0]+dxBase*t,y=a[1]+dyBase*t;
    const id=wartime?wp.wartime:ceremonyDone?wp.after:wp.festive;
-   // Sync walk cycle strictly to physical distance traveled (~2.4 frames/tile) so feet never stutter or slide!
    const frame=walking?(Math.floor(walkedTiles*2.4)%4):0;
    poses.push({id,x,y,dir,frame});
   }
+  return poses;
+ }
+ function drawWalkers(c,map,now=Date.now()){
+  const poses=getWalkerPoses(map,now);
+  if(!poses.length)return false;
   poses.sort((p,q)=>p.y-q.y);
   for(const p of poses)OpeningPixelAssets.drawWalker(c,p.id,p.x,p.y,p.dir,p.frame);
   return true;
@@ -874,6 +890,6 @@ const CapitalEnvironment=(()=>{
    box(c,'#a79b82',x-10,y-15,20,3);box(c,'#54494a',x-9,y-13,18,3);
   }
  }
- const api={enabled:true,mapsSupported,paintTile,street,hasWalkers,drawWalkers,interior,objectAccent,npcAccent,palettes,facades,districtFacades,districtPaving};
+ const api={enabled:true,mapsSupported,paintTile,street,hasWalkers,getWalkerPoses,drawWalkers,regionWalkers,interior,objectAccent,npcAccent,palettes,facades,districtFacades,districtPaving};
  return api
 })();

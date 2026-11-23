@@ -5,7 +5,7 @@ function encounterSafeZone(map=state.map,x=state.x,y=state.y){
  if(map==='cave'&&Math.abs(x-5)+Math.abs(y-12)<=2)return true;
  if(map==='roadhollow'&&Math.abs(x-12)+Math.abs(y-10)<=3)return true;
  if(map==='northwatch'&&Math.abs(x-15)+Math.abs(y-11)<=3)return true;
- if(map==='borderland'&&y<=7)return true; // 宿場・焚き火周辺
+ if(map==='borderland'&&y<=10)return true; // 宿場・焚き火周辺
  if(map==='bordercanyon'&&Math.abs(x-10)+Math.abs(y-10)<=3)return true;
  if(map==='yukiridge'&&Math.abs(x-6)+Math.abs(y-11)<=3)return true;
  const m=maps[map];if(m){const hostile=new Set(['klein','zester','zenith','vanguardCaptain','imperialGuard']);for(const n of m.npcs){if(!npcVisible(n)||hostile.has(n.id))continue;if(Math.abs(x-n.x)+Math.abs(y-n.y)<=4)return true}}
@@ -15,7 +15,7 @@ function rollEncounterThreshold(map=state.map){const [min,max]=encounterRange(ma
 function resetEncounterCounter(map=state.map){state.encounterSteps=0;state.nextEncounterAt=rollEncounterThreshold(map)}
 function setMap(map,x,y,dir,trail){const from=state.map;state.map=map;state.x=x;state.y=y;state.dir=dir;state.trail=trail;state.worldStepsOnMap=0;markVisited(map,true);resetEncounterCounter(map);if(!state.battle)setMusic(mapMusicTheme(map));GC.Log?.info('Map Transition',{from,to:map,x,y,dir});renderHud();draw();GC.Dev?.refresh?.()}
 function enterInterior(mapId,doorX,doorY){const firstVisit=!state.world.visited?.[mapId];state.interiorReturn={map:state.map,x:doorX,y:Math.min(mapRows(state.map)-2,doorY+1),dir:'up'};setMap(mapId,11,11,'up',[[12,11],[13,11],[14,11]]);if(mapId==='capitalinn'&&isEventComplete('alpha.capital.ceremony')&&!isEventComplete('alpha.capital.whiteStagNight'))advanceStory(STORY_STAGES.WHITE_STAG,null,'白鹿亭で四人の夜を過ごす');if(firstVisit)say('ナレーション',`${maps[mapId].name}に入った。`)}
-function leaveInterior(){const r=state.interiorReturn||{map:'village',x:12,y:12,dir:'up'};state.interiorReturn=null;setMap(r.map,r.x,r.y,r.dir,[[r.x+1,r.y],[r.x+2,r.y],[r.x+3,r.y]])}
+function leaveInterior(){const r=state.interiorReturn||{map:'village',x:18,y:16,dir:'up'};state.interiorReturn=null;setMap(r.map,r.x,r.y,r.dir,[[r.x+1,r.y],[r.x+2,r.y],[r.x+3,r.y]])}
 function leaveVillage(){
  advanceStory(STORY_STAGES.ROAD,null,'街道を北へ進み、道を塞ぐ灰牙狼を越える');
  useMapTransition('villageToRoad');renderHud();
@@ -58,14 +58,14 @@ function enterAshRoad(){markVisited('ashroad',true);advanceStory(STORY_STAGES.AS
 function enterFrontier(){markVisited('frontier',true);advanceStory(STORY_STAGES.FRONTIER_ARRIVAL,null,'前線将校からセラドの戦況を聞く');travelScene('frontier',11,13,'up','第二章 — セラド前線','前線将校からセラドの戦況を聞く','灰の街道の先に王国前線拠点セラドが見えた。勇者到着を告げる声より早く、泥を跳ね上げる担架が四人の横を通り過ぎる。ここでは英雄譚より、負傷者と補給箱の数の方が戦況を語っていた。',()=>runTriggeredEvent('arrival','frontier',{map:'frontier'}))}
 function enterFrontierField(){markVisited('frontierfield',true);travelScene('frontierfield',11,13,'up','第二章 — セラド前線','戦闘跡で帝国軍の撤退痕跡を調べる','北防壁の外は、昨日までの戦闘が嘘のように静かだった。泥には北へ向かう轍と担架の跡が残り、壊れた装備だけが両軍の位置を示している。',()=>runTriggeredEvent('arrival','frontierfield',{map:'frontierfield'}))}
 function returnFrontierFromField(){setMap('frontier',11,1,'down',[[12,1],[13,1],[14,1]]);renderHud();say('ナレーション','北防壁をくぐり、セラド前線拠点へ戻った。')}
-function enterBorderland(){markVisited('borderland',true);travelScene('borderland',11,13,'up','第三章 — 第一の四天王','まず偵察兵から国境地帯の状況を聞く',null,()=>runTriggeredEvent('arrival','borderland',{map:'borderland'}))}
+function enterBorderland(){markVisited('borderland',true);travelScene('borderland',15,mapRows('borderland')-2,'up','第三章 — 第一の四天王','まず偵察兵から国境地帯の状況を聞く',null,()=>runTriggeredEvent('arrival','borderland',{map:'borderland'}))}
 function enterRelay(){enterBorderland()}
 function enterWatchfort(){markVisited('watchfort',true);travelScene('watchfort',11,13,'up','第三章 — 第一の四天王','監視砦長から国境橋の状況を聞く',null,()=>runTriggeredEvent('arrival','watchfort',{map:'watchfort'}))}
 function enterRavine(){enterWatchfort()}
-function enterEmpireVillage(){setWorldSwitch('strandedEmpire',true);markVisited('empirevillage',true);travelScene('empirevillage',11,13,'up','第四章 — 敵国','身分を隠して帝国領を北へ進む','渓谷橋の崩落で四人は帝国側へ取り残された。長い国境地帯を越えた先で、ようやく最初の帝国村が見えた。そこで目にしたのは「魔王軍の巣」ではなく、水車と果樹畑、そして青い喪章だった。')}
+function enterEmpireVillage(){setWorldSwitch('strandedEmpire',true);markVisited('empirevillage',true);travelScene('empirevillage',15,mapRows('empirevillage')-2,'up','第四章 — 敵国','身分を隠して帝国領を北へ進む','渓谷橋の崩落で四人は帝国側へ取り残された。長い国境地帯を越えた先で、ようやく最初の帝国村が見えた。そこで目にしたのは「魔王軍の巣」ではなく、水車と果樹畑、そして青い喪章だった。')}
 function enterImperialCity(){markVisited('imperialcity',true);travelScene('imperialcity',17,mapRows('imperialcity')-2,'up','第四章 — 敵国','帝国の町で情報を集める','辺境村で何度も目にした「ユウキ」という名を確かめるため、四人は地方都市の公文書館を目指す。市場も運河も役所もある。ここは敵の本拠地である前に、人が暮らす国だった。')}
 function enterYukiRoad(){travelScene('yukiroad',11,13,'up','第五章 — ユウキ','旧戦場でユウキの記録を探す','王都では「討伐された四天王」、クラインテッドは「ユウキを討った勇者」と口にし、帝国では「皆を逃がした将軍」と語られた。同じ女の話とは思えない。その死んだ場所へ、自分たちの目で確かめに行く。')}
-function enterElsia(){markVisited('elsia',true);travelScene('elsia',11,13,'up','第六章 — 千年前の国境','聖域の住民と古い記録を調べる','エルシア聖域。王国の祈りの起源であり、千年近く帝国の人々が暮らしてきた土地へ四人は足を踏み入れた。')}
+function enterElsia(){markVisited('elsia',true);travelScene('elsia',15,mapRows('elsia')-2,'up','第六章 — 千年前の国境','聖域の住民と古い記録を調べる','エルシア聖域。王国の祈りの起源であり、千年近く帝国の人々が暮らしてきた土地へ四人は足を踏み入れた。')}
 function enterReturnRoad(){markVisited('returnroad',true);travelScene('returnroad',11,13,'up','第七章 — 勇者の値段','王国へ戻り、王都を目指す','得た資料を抱え、四人は戦線の隙間を縫う帰還路へ入った。')}
 function enterFinalField(){markVisited('finalfield',true);travelScene('finalfield',11,13,'up','最終章 — 誰のための勇者か','中央の地点で、どちら側に立つか決める','王国の総攻撃と帝国の反攻が始まる。両軍の旗が見える前線で、四人は最後の選択を迫られる。')}
 function enterFinalBranch(){if(state.finalChoice==='kingdom')travelScene('imperialcamp',11,13,'up','最終章 — 王国側','帝国本陣でシオンと向き合う','故郷と王国民を守るため、四人は帝国本陣へ向かう。');else if(state.finalChoice==='ashcrown'){
@@ -342,22 +342,22 @@ function showWorldSkeletonEnding(route){
 
 function move(dir){if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started)return;if(isInputLocked()||state.battle)return;state.dir=dir;const now=Date.now();if(now<VISUAL.nextMoveAt){draw();return}VISUAL.nextMoveAt=now+(GC.Dev?.settings?.moveDelay??88);let nx=state.x,ny=state.y;if(dir==='up')ny--;if(dir==='down')ny++;if(dir==='left')nx--;if(dir==='right')nx++;
  // Optional Ryune outskirts. Border exits are checked before generic wall collision.
-  if(state.map==='village'&&ny===8&&nx===0){useMapTransition('villageToFields');return}
+  if(state.map==='village'&&ny===13&&nx===0){useMapTransition('villageToFields');return}
   if(state.map==='ryunefields'&&ny===6&&nx>=mapCols('ryunefields')-1){useMapTransition('fieldsToVillage');return}
-  if(state.map==='village'&&ny===8&&nx===23){useMapTransition('villageToBrook');return}
+  if(state.map==='village'&&ny===13&&nx>=mapCols('village')-1){useMapTransition('villageToBrook');return}
   if(state.map==='ryunebrook'&&ny===6&&nx<=0){useMapTransition('brookToVillage');return}
   if(state.map==='road'&&ny===11&&nx===23){useMapTransition('roadToHollow');return}
   if(state.map==='roadhollow'&&ny===11&&nx===0){useMapTransition('hollowToRoad');return}
   if(state.map==='northroad'&&ny===7&&nx===23){useMapTransition('northToWaystation');return}
-  if(state.map==='northwaystation'&&ny===7&&nx===0){useMapTransition('waystationToNorth');return}
+  if(state.map==='northwaystation'&&ny===10&&nx===0){useMapTransition('waystationToNorth');return}
   if(state.map==='northroad'&&ny===7&&nx===0){useMapTransition('northToWatch');return}
   if(state.map==='northwatch'&&ny===7&&nx===23){useMapTransition('watchToNorth');return}
-  if(state.map==='borderland'&&ny===6&&nx===23){useMapTransition('borderToCanyon');return}
+  if(state.map==='borderland'&&ny===9&&nx>=mapCols('borderland')-1){useMapTransition('borderToCanyon');return}
   if(state.map==='bordercanyon'&&ny===6&&nx===0){useMapTransition('canyonToBorder');return}
   if(state.map==='yukiroad'&&ny===9&&nx===23){useMapTransition('yukiToRidge');return}
   if(state.map==='yukiridge'&&ny===9&&nx===0){useMapTransition('ridgeToYuki');return}
   // 序盤の可逆マップ遷移
- if(state.map==='village'&&ny===0&&[11,12].includes(nx)){if(!isEventComplete('alpha.village.appointment')){say('北門','カレンたち4人の話し合いを終えるまでは、村を離れられない。');return}leaveVillage();return}
+ if(state.map==='village'&&ny===0&&[17,18].includes(nx)){if(!isEventComplete('alpha.village.appointment')){say('北門','カレンたち4人の話し合いを終えるまでは、村を離れられない。');return}leaveVillage();return}
  if(state.map==='road'&&ny>=15&&[11,12].includes(nx)){returnVillage();return}
  if(state.map==='road'&&nx===13&&ny===1){enterCave();return}
  if(state.map==='cave'&&ny===14&&[12,13].includes(nx)){leaveCave();return}
@@ -375,8 +375,8 @@ function move(dir){if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started
  if(state.map==='frontier'&&ny<0&&[11,12].includes(nx)){if(!isEventComplete('alpha2.frontier.complete')){say('セラド北防壁','追撃命令は出ていない。前線将校へ報告し、この区間の任務を終えよう。');return}if(!isEventComplete('alpha2.frontier2.order')){say('カレン','「先に前線将校から、戦後の次の指示を聞こう」');return}if(!isEventComplete('alpha2.frontier2.aftermath')){say('ソフィ','「北へ出る前に、野戦病院の状況を確認しましょう」');return}if(isEventComplete('alpha2.frontier2.complete')){enterBorderland();return}enterFrontierField();return}
  if(state.map==='frontierfield'&&ny>=15&&[11,12].includes(nx)){returnFrontierFromField();return}
  if(state.map==='frontierfield'&&ny<0&&[11,12].includes(nx)){say('マーガレット',isEventComplete('alpha2.frontier2.complete')?'「旧関所へはセラド北防壁から行ける。ここは調査済みよ。前線の道を使いましょう」':'「任務は戦闘跡の確認まで。これ以上北へ進む前に、残った痕跡を調べてセラドへ報告しましょう」');return}
- if(state.map==='borderland'&&ny>=15&&[11,12].includes(nx)){enterFrontier();return}
- if(state.map==='borderland'&&ny<0&&[11,12].includes(nx)){if(!(isEventComplete('borderBriefed')&&isEventComplete('borderMerchantHelped')&&isEventComplete('borderRested'))){say('カレン','「まだここでやることがある。偵察兵、足止めされた商人、それから今夜の休息……全部済ませてから進もう」');return}enterWatchfort();return}
+ if(state.map==='borderland'&&ny>=mapRows('borderland')&&[15,16].includes(nx)){enterFrontier();return}
+ if(state.map==='borderland'&&ny<0&&[15,16].includes(nx)){if(!(isEventComplete('borderBriefed')&&isEventComplete('borderMerchantHelped')&&isEventComplete('borderRested'))){say('カレン','「まだここでやることがある。偵察兵、足止めされた商人、それから今夜の休息……全部済ませてから進もう」');return}enterWatchfort();return}
  if(state.map==='relayvillage'&&ny>=15&&[11,12].includes(nx)){enterBorderland();return}
  if(state.map==='relayvillage'&&ny<0&&[11,12].includes(nx)){enterWatchfort();return}
  if(state.map==='watchfort'&&isEventComplete('metKlein')&&state.y<=3&&ny>=4&&[11,12].includes(nx)){say('崩れた石橋','崩落した橋脚の先は深い谷になっている。ベルド砦へはもう戻れない。北の帝国領へ進むしかない。');return}
@@ -384,14 +384,14 @@ function move(dir){if(typeof ALPHA_SESSION!=='undefined'&&!ALPHA_SESSION.started
  if(state.map==='watchfort'&&ny<0&&[11,12].includes(nx)){if(!isEventComplete('metKlein')){say('カレン','「橋の上にクラインテッドがいる。あの人と話さないまま帝国側へは行けない」');return}enterEmpireVillage();return}
  if(state.map==='ravine'&&ny>=15&&[11,12].includes(nx)){enterWatchfort();return}
  if(state.map==='ravine'&&ny<0&&[11,12].includes(nx)){if(!isEventComplete('metKlein')){enterWatchfort();return}enterEmpireVillage();return}
- if(state.map==='empirevillage'&&ny>=15&&[11,12].includes(nx)){say('崩れた渡河点','戦闘で橋が落ちている。今は王国側へ戻れない。帝国内で別の道を探すしかない。');return}
- if(state.map==='empirevillage'&&ny<0&&[11,12].includes(nx)){enterImperialCity();return}
- if(state.map==='imperialcity'&&ny>=mapRows('imperialcity')&&[17,18].includes(nx)){travelScene('empirevillage',11,1,'down','第四章 — 敵国','帝国領を調べる','辺境の村へ戻った。');return}
+ if(state.map==='empirevillage'&&ny>=mapRows('empirevillage')&&[15,16].includes(nx)){say('崩れた渡河点','戦闘で橋が落ちている。今は王国側へ戻れない。帝国内で別の道を探すしかない。');return}
+ if(state.map==='empirevillage'&&ny<0&&[15,16].includes(nx)){enterImperialCity();return}
+ if(state.map==='imperialcity'&&ny>=mapRows('imperialcity')&&[17,18].includes(nx)){travelScene('empirevillage',15,1,'down','第四章 — 敵国','帝国領を調べる','辺境の村へ戻った。');return}
  if(state.map==='imperialcity'&&ny<0&&[17,18].includes(nx)){if(!isEventComplete('heardYuki')){say('マーガレット','「ユウキについて、町の記録係から話を聞いておきたい」');return}enterYukiRoad();return}
  if(state.map==='yukiroad'&&ny>=15&&[11,12].includes(nx)){travelScene('imperialcity',17,1,'down','第四章 — 敵国','帝国の町で情報を集める','レグノア地方都市へ戻った。');return}
  if(state.map==='yukiroad'&&ny<0&&[11,12].includes(nx)){if(!isEventComplete('metZester')){say('ナレーション','聖域へ続く道には帝国軍が布陣している。ゼスターと話をつける必要がある。');return}enterElsia();return}
- if(state.map==='elsia'&&ny>=15&&[11,12].includes(nx)){enterYukiRoad();return}
- if(state.map==='elsia'&&ny<0&&[11,12].includes(nx)){if(!isEventComplete('metZenith')){say('ゼニス','「まだ見るべきものがある。住民と古い碑文、その両方を見てから来い」');return}enterReturnRoad();return}
+ if(state.map==='elsia'&&ny>=mapRows('elsia')&&[15,16].includes(nx)){enterYukiRoad();return}
+ if(state.map==='elsia'&&ny<0&&[15,16].includes(nx)){if(!isEventComplete('metZenith')){say('ゼニス','「まだ見るべきものがある。住民と古い碑文、その両方を見てから来い」');return}enterReturnRoad();return}
  if(state.map==='returnroad'&&ny>=15&&[11,12].includes(nx)){enterElsia();return}
  if(state.map==='returnroad'&&ny<0&&[11,12].includes(nx)){enterCapital(false);return}
  if(state.map==='finalfield'&&ny>=15&&[11,12].includes(nx)){if(state.finalChoice==='ashcrown'&&!!state.events?.choices?.['route.companions.ashcrown']){say('カレン','「三人と別れた。戻っても、あの頃の四人には戻れない」');return}travelScene('capital',6,1,'down','最終章 — 誰のための勇者か','最後の選択へ向かう','王都の北西門へ戻った。');return}
@@ -424,6 +424,6 @@ function handleStep(){
  if(state.map==='watchfort'&&getWorldSwitch('fortGateOpen')&&!isEventComplete('metKlein')&&state.y<=4){npcEvent('klein');return}
  maybeRandomEncounter()
 }
-function interact(){if(isInputLocked()||state.battle)return;const f=front(),m=maps[state.map];if(state.map==='village'&&f.y===0&&[11,12].includes(f.x))return objectEvent('gate');const npc=m.npcs.find(n=>npcVisible(n)&&n.x===f.x&&n.y===f.y);if(npc)return npcEvent(npc.id);const obj=m.objects.find(o=>o.x===f.x&&o.y===f.y&&visibleObject(o));if(obj)return objectEvent(obj.id);say('ナレーション','特に変わったものはない。')}
+function interact(){if(isInputLocked()||state.battle)return;const f=front(),m=maps[state.map];if(state.map==='village'&&f.y===0&&[17,18].includes(f.x))return objectEvent('gate');const npc=m.npcs.find(n=>npcVisible(n)&&n.x===f.x&&n.y===f.y);if(npc)return npcEvent(npc.id);const obj=m.objects.find(o=>o.x===f.x&&o.y===f.y&&visibleObject(o));if(obj)return objectEvent(obj.id);say('ナレーション','特に変わったものはない。')}
 
 GC.Movement={encounterRange,encounterSafeZone,rollEncounterThreshold,resetEncounterCounter,setMap,enterInterior,leaveInterior,leaveVillage,returnVillage,enterCave,leaveCave,enterNorthRoad,returnCaveNorth,travelScene,enterCapital,enterAshRoad,enterFrontier,enterFrontierField,returnFrontierFromField,buildJourneyEpilogueEchoes,buildJourneyAftermathDialogue,reviewJourneyMemories,playRouteAftermath,showWorldSkeletonEnding,move,interact};

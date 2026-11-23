@@ -123,7 +123,57 @@ const RyuneEnvironment=(()=>{
    }
    return true
   }
+  if(ch==='A'){
+   // Warm sunlit dressed-stone cobblestones for Ryune's Central Well Plaza (x=14..21, y=10..15)
+   if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(c,'cobble',x,y,'market')){
+    rect(c,'#b8aa8c',px,py,32,32);rect(c,'#948668',px,py+15,32,1);rect(c,'#948668',px,py+31,32,1);
+   }
+   const at=(xx,yy)=>definition?.tiles?.[yy]?.[xx]||'S';
+   if(at(x-1,y)!=='A'){rect(c,'#6e624c',px,py,2,32);rect(c,'#ded2b4',px+2,py,1,32)}
+   if(at(x+1,y)!=='A'){rect(c,'#6e624c',px+30,py,2,32)}
+   if(at(x,y-1)!=='A'){rect(c,'#6e624c',px,py,32,2);rect(c,'#ded2b4',px,py+2,32,1)}
+   if(at(x,y+1)!=='A'){rect(c,'#6e624c',px,py+30,32,2)}
+   return true;
+  }
+  if(ch==='R'){
+   // Sparkling crystal Eastern Village Brook (x=25..26, y=9..22) with mossy banks, river stones & lilypads!
+   const flow=Math.floor((typeof Date!=='undefined'?Date.now():0)/360)%4;
+   if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(c,'water',x,y,'river',flow)){
+    rect(c,'#2f708e',px,py,32,32);
+   }
+   const at=(xx,yy)=>definition?.tiles?.[yy]?.[xx]||'S';
+   if(at(x-1,y)!=='R'){
+    rect(c,'#463726',px,py,5,32);rect(c,'#6e593d',px+1,py,3,32);
+    for(let k=0;k<8;k++){const ow=2+((h+k*3)%3);rect(c,k%2?'#4c6e3f':'#688d50',px,py+k*4,ow,4)}
+    rect(c,'rgba(228,252,255,.46)',px+6,py+((h+flow*5)%22)+2,2,8);
+   }
+   if(at(x+1,y)!=='R'){
+    rect(c,'#3a2d20',px+27,py,5,32);rect(c,'#5e4b34',px+28,py,3,32);
+    for(let k=0;k<8;k++){const ow=2+((h+k*5)%3);rect(c,k%2?'#4c6e3f':'#688d50',px+32-ow,py+k*4,ow,4)}
+    rect(c,'rgba(228,252,255,.44)',px+24,py+((h+flow*6)%22)+2,2,7);
+   }
+   if(at(x,y-1)==='P'){rect(c,'rgba(12,26,38,.34)',px,py,32,7);rect(c,'rgba(12,26,38,.16)',px,py+7,32,5)}
+   if((h%5)===2&&at(x,y-1)==='R'){
+    const lx=px+10+(h%9),ly=py+9+((h>>>4)%10);
+    rect(c,'#234c34',lx,ly+1,8,6);rect(c,'#44824c',lx+1,ly,6,5);
+    if(h%2===0){rect(c,'#fff2d8',lx+3,ly+1,3,2);rect(c,'#f2c44c',lx+4,ly+1,1,1)}
+   }
+   return true;
+  }
   if(ch==='P'){
+   // Handcrafted wooden arched footbridge spanning the eastern village brook at (25..26, 13) & (25..26, 20)!
+   if((x===25||x===26)&&(y===13||y===20)){
+    rect(c,'#2b5566',px,py,32,32);rect(c,'#3a2a1c',px,py+1,32,30);
+    for(let k=0;k<4;k++){
+     rect(c,'#5e4630',px,py+2+k*7,32,6);rect(c,'#9c7a52',px+1,py+2+k*7,30,4);rect(c,'#c29f6e',px+2,py+2+k*7,28,2);
+     rect(c,'#3e2d1e',px+5+(k%2)*14,py+5+k*7,2,2);rect(c,'#3e2d1e',px+24-(k%2)*12,py+5+k*7,2,2);
+    }
+    rect(c,'#362418',px,py,32,4);rect(c,'#8c6844',px,py+1,32,2);
+    rect(c,'#362418',px,py+28,32,4);rect(c,'#8c6844',px,py+29,32,2);
+    if(x===25){rect(c,'#2e1e14',px,py-2,5,8);rect(c,'#b89262',px+1,py-1,3,4);rect(c,'#2e1e14',px,py+26,5,7);rect(c,'#b89262',px+1,py+27,3,4)}
+    if(x===26){rect(c,'#2e1e14',px+27,py-2,5,8);rect(c,'#b89262',px+28,py-1,3,4);rect(c,'#2e1e14',px+27,py+26,5,7);rect(c,'#b89262',px+28,py+27,3,4)}
+    return true;
+   }
    // Seamless warm sun-baked village dirt lane with packed wheel ruts, pebbles & rich mossy grass shoulders
    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(c,'path',x,y,'warm')){
     rect(c,'#c6ab80',px,py,32,32);
@@ -145,20 +195,76 @@ const RyuneEnvironment=(()=>{
   }
   return false
  }
+ const grandVillageBuildings=[
+  {x:4,y:3,w:6,h:4,tag:'ryune_karen',label:'カレンの家',roofDark:'#5c2c26',roofMain:'#8c443a',roofHi:'#b86252',roofRim:'#de8c78',wall:'#ebe2cd',shutter:'#446648',chimneyLeft:true,flowerBorder:true,doorOffsetPx:3*32+16},
+  {x:24,y:3,w:7,h:4,tag:'ryune_orphanage',label:'リュネ孤児院',roofDark:'#2c4a36',roofMain:'#487250',roofHi:'#6a9a6c',roofRim:'#96c28e',wall:'#efe7d2',shutter:'#7c4c38',canopyColor:'#56845a',bellGable:true,flowerBorder:true,doorOffsetPx:3*32+16},
+  {x:4,y:15,w:6,h:4,tag:'ryune_mayor',label:'村長宅',roofDark:'#2d3c52',roofMain:'#465c78',roofHi:'#6884a4',roofRim:'#92aecb',wall:'#e6dfd0',shutter:'#3c4c64',stonePortico:true,bannerColor:'#345480',doorOffsetPx:3*32+16},
+  {x:27,y:15,w:6,h:4,tag:'ryune_cottage',label:'東の民家',roofDark:'#4e3424',roofMain:'#7a523a',roofHi:'#a47252',roofRim:'#cc9a74',wall:'#e7dac0',shutter:'#4a644a',chimneyLeft:false,sideShed:true,flowerBorder:true,doorOffsetPx:3*32+16}
+ ];
+
  function lowProps(c){
-  // Rich sunlit village vegetable plots with sculpted soil furrows, cabbages, golden wheat & pumpkins
-  for(let y=7;y<=12;y++)for(let x=1;x<=2;x++){
+  // 1. Handcrafted Cobblestone Stepping-Stone Garden Walkways connecting all 4 house doors cleanly to village lanes!
+  for(const [wx,wy] of [[7,7],[27,7],[7,19],[30,19]]){
+   const px=wx*32,py=wy*32;
+   rect(c,'rgba(24,30,18,.22)',px+3,py+2,26,28);
+   rect(c,'#a69c84',px+4,py+1,24,10);rect(c,'#d8ceb4',px+5,py+2,22,4);
+   rect(c,'#9c927a',px+6,py+13,20,8);rect(c,'#d2c8ae',px+7,py+14,18,3);
+   rect(c,'#a69c84',px+5,py+23,22,8);rect(c,'#d8ceb4',px+6,py+24,20,3);
+  }
+  // 2. Central Plaza Sunburst Cobblestone Medallion centered around the Village Well (18,12) + Carved Stone Corner Bollards!
+  const cx=18*32+16,cy=12*32+16;
+  if(typeof c.beginPath==='function'){
+   c.save();
+   c.strokeStyle='rgba(76,66,48,.48)';c.lineWidth=3;c.beginPath();c.arc(cx,cy,66,0,Math.PI*2);c.stroke();
+   c.strokeStyle='rgba(236,226,198,.46)';c.lineWidth=2;c.beginPath();c.arc(cx,cy,62,0,Math.PI*2);c.stroke();
+   c.strokeStyle='rgba(76,66,48,.34)';c.lineWidth=2;c.beginPath();c.arc(cx,cy,42,0,Math.PI*2);c.stroke();
+   for(let a=0;a<8;a++){
+    const ang=a*Math.PI/4;
+    c.strokeStyle='rgba(92,80,58,.32)';c.lineWidth=2;
+    c.beginPath();c.moveTo(cx+Math.cos(ang)*42,cy+Math.sin(ang)*42);c.lineTo(cx+Math.cos(ang)*64,cy+Math.sin(ang)*64);c.stroke();
+   }
+   c.restore();
+  }
+  // Carved stepped stone curb corner bollards anchoring the Well Plaza
+  for(const [bx,by] of [[14,10],[21,10],[14,15],[21,15]]){
+   const px=bx*32,py=by*32;
+   rect(c,'rgba(18,22,14,.26)',px+2,py+2,28,28);
+   rect(c,'#9c9482',px+2,py+2,28,28);rect(c,'#cfc7b2',px+4,py+4,24,24);
+  }
+  // 3. Carved Mossy Stone Spring Culvert & Bubbling Waterfall Arch feeding the Eastern Brook at (25..26, 9)!
+  const bx0=25*32,by0=9*32,tNow=(typeof Date!=='undefined'?Date.now():0)/240;
+  rect(c,'#24201c',bx0-4,by0-10,72,18);
+  rect(c,'#7a7870',bx0-2,by0-8,68,14);rect(c,'#b8b4a6',bx0,by0-8,64,4);
+  for(let sx=bx0+6;sx<bx0+62;sx+=12)rect(c,'#4c4a44',sx,by0-7,2,12);
+  // Dark culvert arch opening & cascading white foam waterfall into brook
+  rect(c,'#1a2d38',bx0+10,by0-3,44,12);rect(c,'#387c96',bx0+13,by0,38,10);
+  const fOff=Math.floor(tNow)%3;
+  rect(c,'#d8f6fc',bx0+16,by0+2+fOff,10,8);rect(c,'#ffffff',bx0+18,by0+4+fOff,6,5);
+  rect(c,'#d8f6fc',bx0+36,by0+3+(2-fOff),12,8);rect(c,'#ffffff',bx0+39,by0+5+(2-fOff),6,4);
+  rect(c,'rgba(220,250,255,.68)',bx0+12,by0+10,40,4);
+  // Moss tufts draping over stone culvert arch
+  rect(c,'#3c6838',bx0+2,by0-8,12,5);rect(c,'#6e9e54',bx0+4,by0-8,7,3);
+  rect(c,'#3c6838',bx0+50,by0-7,12,5);rect(c,'#6e9e54',bx0+52,by0-7,7,3);
+  // Swaying green cattail reeds & mossy river stones lining both banks of the Eastern Brook + darting fish shadow!
+  for(const [rx,ry] of [[24,10],[27,11],[24,15],[27,17],[24,21],[27,21]]){
+   const px=rx*32+(rx===24?22:2),py=ry*32+6;
+   rect(c,'#2e5430',px+1,py+4,2,12);rect(c,'#4e8446',px+4,py+2,2,14);rect(c,'#3c6e3a',px+7,py+6,2,10);
+   rect(c,'#5e3e28',px+4,py,2,5);
+  }
+  const fishY=15*32+14+Math.round(Math.sin(tNow*0.6)*14);
+  rect(c,'rgba(18,52,66,.46)',25*32+22,fishY,10,4);rect(c,'rgba(18,52,66,.36)',25*32+19,fishY+1,3,2);
+
+  // Fenced Western Village Farmstead Plots (x=1..3, y=15..19 — cleanly off all roads & houses!)
+  for(let y=15;y<=19;y++)for(let x=1;x<=3;x++){
    const px=x*32,py=y*32;
-   rect(c,'rgba(22,30,18,.22)',px+4,py+5,27,26);
-   rect(c,'#5e4b34',px+2,py+2,28,28);
-   rect(c,'#786042',px+3,py+3,26,26);
+   rect(c,'rgba(22,30,18,.22)',px+3,py+4,27,26);
+   rect(c,'#5e4b34',px+2,py+2,28,28);rect(c,'#786042',px+3,py+3,26,26);
    for(let v=0;v<3;v++){
-    rect(c,'#584530',px+5,py+9+v*8,22,2);
-    rect(c,'#9a7c54',px+5,py+6+v*8,22,3);
-    if(y>=11){
+    rect(c,'#584530',px+5,py+9+v*8,22,2);rect(c,'#9a7c54',px+5,py+6+v*8,22,3);
+    if(y>=18){
      rect(c,'#3e6e3e',px+7,py+5+v*8,6,4);
      rect(c,'#d97a34',px+16,py+4+v*8,6,5);rect(c,'#f2a854',px+17,py+4+v*8,3,2);
-    }else if(y<=8){
+    }else if(y<=16){
      rect(c,'#b89444',px+7,py+4+v*8,18,4);rect(c,'#e4c468',px+8,py+3+v*8,16,2);
     }else{
      rect(c,'#3a6c40',px+8,py+4+v*8,6,5);rect(c,'#74a660',px+9,py+4+v*8,4,3);
@@ -166,205 +272,119 @@ const RyuneEnvironment=(()=>{
     }
    }
   }
-  // Border-side timber fence with grounded drop shadows on the blocked T row
-  for(let x=2;x<=8;x++){
-   const px=x*32,py=14*32;
-   rect(c,'rgba(16,22,14,.28)',px+4,py+24,30,4);
-   rect(c,'#463222',px+2,py+2,6,25);rect(c,'#7a583a',px+3,py+3,4,22);rect(c,'#a67c52',px+4,py+3,2,18);
-   rect(c,'#463222',px+1,py+12,32,6);rect(c,'#886240',px+1,py+13,32,3);rect(c,'#b0885c',px+1,py+13,32,1);
+  // Sturdy split-rail farmstead fence cleanly bordering the western garden plots
+  for(let x=1;x<=3;x++){
+   const px=x*32,py=14*32+18;
+   rect(c,'rgba(16,22,14,.28)',px+2,py+10,30,4);
+   rect(c,'#463222',px,py+4,32,4);rect(c,'#8c6642',px,py+4,32,2);
+   rect(c,'#3a281a',px+2,py,4,12);rect(c,'#a87e54',px+3,py+1,2,9);
   }
-  // Well-plaza carved cobblestones & stepping stones
-  for(const [x,y] of [[10,9],[13,9],[12,8],[12,10],[10,10],[14,10]]){
-   rect(c,'#6e6a54',x*32+9,y*32+18,14,6);rect(c,'#9c977c',x*32+10,y*32+17,12,5);rect(c,'#c2bc9e',x*32+11,y*32+17,9,2);
+  // Private Backyard Clothesline tucked safely behind Soldier Family Cottage at (32..33, 14) (solid-blocked, ZERO walker overlap!)
+  const clx=32*32,cly=14*32;
+  rect(c,'rgba(22,30,18,.24)',clx+4,cly+26,58,5);
+  rect(c,'#4c3624',clx+2,cly+4,4,25);rect(c,'#4c3624',clx+58,cly+4,4,25);
+  rect(c,'#c8b698',clx+4,cly+7,56,2);
+  rect(c,'#f4ecdc',clx+10,cly+9,14,16);rect(c,'#d4c8b2',clx+20,cly+9,4,16);
+  rect(c,'#6a8ea0',clx+27,cly+9,13,15);rect(c,'#4e7082',clx+36,cly+9,4,15);
+  rect(c,'#d47a74',clx+43,cly+9,11,14);rect(c,'#a6524e',clx+51,cly+9,3,14);
+  // Lush flowering village garden parterres framing the central plaza & cottages (solid-blocked!)
+  for(const [x,y] of [[14,10],[21,10],[14,15],[12,7],[23,7],[28,12],[31,12]]){
+   rect(c,'rgba(18,26,16,.24)',x*32+6,y*32+21,20,6);
+   rect(c,'#4e3a28',x*32+6,y*32+15,20,10);rect(c,'#7c5c3e',x*32+7,y*32+16,18,7);
+   rect(c,'#2c5c32',x*32+5,y*32+9,22,9);rect(c,'#548e48',x*32+7,y*32+8,18,7);
+   rect(c,'#f6d668',x*32+9,y*32+9,4,3);rect(c,'#ec7a84',x*32+17,y*32+10,4,3);rect(c,'#fff6e4',x*32+13,y*32+12,3,2);
   }
-  // Clothes drying close to a residence with natural folds & ground shadow
-  rect(c,'rgba(22,30,18,.20)',14*32+4,7*32+28,58,4);
-  rect(c,'#4c3624',14*32,7*32+8,3,22);rect(c,'#4c3624',16*32,7*32+8,3,22);
-  rect(c,'#c8b698',14*32+2,7*32+10,60,2);
-  rect(c,'#efe6d4',14*32+8,7*32+12,15,16);rect(c,'#d2c6b0',14*32+18,7*32+12,4,16);
-  rect(c,'#6a8ea0',15*32+8,7*32+12,13,15);rect(c,'#4e7082',15*32+16,7*32+12,4,15);
-  // Lush flowerbeds & ornamental shrubs
-  for(const [x,y] of [[13,12],[14,12],[16,5],[17,5]]){
-   rect(c,'rgba(18,26,16,.24)',x*32+8,y*32+21,16,6);
-   rect(c,'#365c36',x*32+9,y*32+14,14,10);rect(c,'#54864a',x*32+10,y*32+13,12,7);
-   rect(c,'#f2cc64',x*32+11,y*32+14,3,3);rect(c,'#e87a82',x*32+17,y*32+15,3,3);
-  }
-  // Detailed banded cargo crates beside stock point
-  for(const [x,y] of [[16,10],[17,10]]){
+  // Detailed banded cargo crates beside the General Store Pavilion (22, 15)
+  for(const [x,y] of [[22,15],[22,14]]){
    const px=x*32,py=y*32;
-   rect(c,'rgba(18,24,16,.28)',px+6,py+26,26,6);
-   rect(c,'#423022',px+4,py+11,26,18);rect(c,'#9e7648',px+6,py+13,22,14);
-   rect(c,'#60442c',px+16,py+13,2,14);rect(c,'#60442c',px+6,py+19,22,2);
-   rect(c,'#cfa46e',px+7,py+14,8,2);rect(c,'#cfa46e',px+19,py+14,8,2);
+   rect(c,'rgba(18,24,16,.28)',px+6,py+26,24,5);
+   rect(c,'#423022',px+4,py+11,24,17);rect(c,'#9e7648',px+6,py+13,20,13);
+   rect(c,'#60442c',px+15,py+13,2,13);rect(c,'#60442c',px+6,py+19,20,2);
+   rect(c,'#cfa46e',px+7,py+14,7,2);rect(c,'#cfa46e',px+18,py+14,7,2);
   }
  }
- function houseIdentity(c,kind,x,y){
-  // Each named residence gets one unmistakable silhouette rather than
-  // four palette swaps of the same prefab. Does not change collision.
-  if(kind==='orphanage'){
-   // A long, low communal canopy: caring interior visible from the village.
-   rect(c,'#566347',x+8,y+50,80,4);
-   rect(c,'#83966b',x+11,y+48,74,6);
-   for(let i=0;i<4;i++)rect(c,'#bac499',x+15+i*18,y+51,14,3);
-   // Bench under the front right window, away from doorway.
-   rect(c,'#625540',x+64,y+84,22,4);
-   rect(c,'#927a54',x+65,y+81,20,4);
-   rect(c,'#58452f',x+67,y+87,2,8);
-   rect(c,'#58452f',x+81,y+87,2,8);
-  }else if(kind==='mayorhouse'){
-   // Taller central dormer and formal stone step, not a sacred emblem.
-   rect(c,'#4e5561',x+30,y+9,36,23);
-   rect(c,'#8794a4',x+34,y+13,28,19);
-   rect(c,'#5c6b75',x+39,y+15,17,14);
-   rect(c,'#bfcbc5',x+42,y+15,8,5);
-   rect(c,'#524a47',x+47,y+15,2,14);
-   rect(c,'#55515a',x+28,y+8,40,5);
-   rect(c,'#a4a5a0',x+30,y+6,35,4);
-   rect(c,'#9c9486',x+34,y+94,28,4);
-   rect(c,'#bcb0a0',x+29,y+98,38,3);
-  }else if(kind==='cottage'){
-   // Low kitchen chimney, exposed repair timbers and a drying herb rack.
-   rect(c,'#5a4b40',x+69,y+7,12,26);
-   rect(c,'#a58e73',x+71,y+8,8,21);
-   rect(c,'#4b4241',x+67,y+6,16,5);
-   for(let k=0;k<3;k++){rect(c,'#62503c',x+74,y+54+k*11,2,7);rect(c,'#a99375',x+73,y+54+k*11,4,2)}
-   rect(c,'#66533c',x+14,y+94,29,3);
-   for(let k=0;k<4;k++)rect(c,k%2?'#8fa077':'#a6ae83',x+16+k*6,y+90,3,6);
-  }else{
-   // Family house: wood pile and a visible smoke vent, no invented weapon crest.
-   rect(c,'#514139',x+14,y+8,10,19);
-   rect(c,'#a38469',x+16,y+10,6,16);
-   rect(c,'#4d413a',x+12,y+6,14,4);
-   for(let k=0;k<3;k++){
-    rect(c,'#7a593f',x+9+k*6,y+84,6,8);
-    rect(c,'#b58e64',x+10+k*6,y+85,4,3)
-   }
-  }
- }
- function building(c,h){
-  const kind=h.x===3?(h.y===2?'village':'mayorhouse'):(h.y===2?'orphanage':'cottage');
-  const pal=palette[kind],x=h.x*32,y=h.y*32;
-  if(typeof OpeningPixelAssets!=='undefined'&&OpeningPixelAssets.drawHouse(c,kind,x,y))return;
-  rect(c,'#38403b',x+5,y+34,92,64);rect(c,'#796e58',x+3,y+41,90,54);
-  rect(c,pal.wall,x+6,y+43,84,50);
-  // 4px-chunk gable roof; no anti-aliased polygons or floating overhang.
-  for(let i=0;i<7;i++){
-   const w=100-i*12,left=x-2+i*6,yy=y+34-i*5;
-   rect(c,'#4f423b',left-2,yy+1,w+4,7);
-   rect(c,i%2?pal.roof:pal.roofLight,left,yy,w,5);
-  }
-  rect(c,pal.roof,x-2,y+34,100,9);rect(c,'#e0c59c',x+5,y+42,86,3);
-  // Consistent timber grid, individual usage from silhouette and windows.
-  rect(c,pal.trim,x+8,y+46,5,47);rect(c,pal.trim,x+84,y+46,4,47);
-  rect(c,'#816c50',x+5,y+91,86,5);
-  for(const ox of [16,65]){
-   rect(c,pal.trim,x+ox-3,y+55,22,23);
-   rect(c,'#8cabb0',x+ox,y+57,16,17);
-   rect(c,'#c7dad1',x+ox+2,y+58,6,5);
-   rect(c,'#6b817e',x+ox+7,y+57,2,17);
-   rect(c,'#6b817e',x+ox,y+65,16,2);
-  }
-  rect(c,'#4a3a32',x+39,y+64,23,32);
-  rect(c,'#76573d',x+42,y+66,17,27);
-  rect(c,'#c5ad78',x+55,y+79,3,3);
-  // Optional sign style distinguishes rooms; no heraldry/religious icons.
-  if(kind==='orphanage'){
-   rect(c,'#d2b781',x+29,y+44,38,9);
-   rect(c,'#5f6552',x+36,y+47,24,2);
-   rect(c,'#73936d',x+13,y+81,12,10);
-  }else if(kind==='mayorhouse'){
-   rect(c,'#69778a',x+29,y+47,38,9);
-   rect(c,'#c0c4ba',x+35,y+50,25,2);
-   rect(c,'#6a5948',x+18,y+79,9,12);
-  }else if(kind==='cottage'){
-   for(let j=0;j<3;j++)rect(c,'#806044',x+74,y+83+j*3,16,2);
-  }else{
-   rect(c,'#b38a61',x+10,y+81,15,10);
-   rect(c,'#987a53',x+67,y+81,13,6);
-  }
-  houseIdentity(c,kind,x,y)
- }
- // Curated village geometry, not random decoration. Each tiny object
- // is anchored beside an existing path/house and never alters walk collision.
  function districtDetails(c){
-  // South-west: packed documents and a small shaded waiting step at the mayor.
-  rect(c,'#635541',6*32+5,11*32+20,20,5);
-  rect(c,'#c2af84',6*32+7,11*32+17,17,4);
-  rect(c,'#7c6653',6*32+11,11*32+15,8,2);
-  // Family lane: split, faded shoe prints toward shared well.
-  for(const [x,y] of [[8,8],[9,8],[9,9],[14,9],[15,9]]){
-   rect(c,'#8b8669',x*32+13,y*32+24,5,2);
-   rect(c,'#b9ac85',x*32+20,y*32+19,4,2);
-  }
-  // North-east orphanage front: low wooden toy chest and chalk-play stones,
-  // not a false interactive prop nor an extra impassable building.
-  rect(c,'#72583c',20*32+4,6*32+20,23,7);
-  rect(c,'#b49364',20*32+5,6*32+19,21,4);
-  rect(c,'#d9c6a1',20*32+11,6*32+16,5,3);
-  for(const [x,y] of [[17,7],[19,7],[20,8]]){
-   rect(c,'#b3a888',x*32+11,y*32+25,10,2);
-   rect(c,'#d1c2a4',x*32+14,y*32+24,4,1);
-  }
-  // West side working plots connect visually to the existing 8th-row trail.
-  for(let x=1;x<=4;x++){
-   const xx=x*32+9,yy=8*32+26;
-   rect(c,'#927c59',xx,yy,11,2);
-   if(x%2===0)rect(c,'#6e815b',xx+3,yy-5,3,5);
-  }
-  // Eda's Outdoor 3D Domed Wood-Fired Brick Bakery Oven & 4-Post Sculpted Striped Bakery Pavilion on blocked H tiles (7,5)-(8,5)
-  const bx=7*32,by=5*32;
-  rect(c,'rgba(16,20,16,.36)',bx+2,by+25,66,9);
-  rect(c,'rgba(16,20,16,.20)',bx+62,by+6,8,24);
-  // Left (7,5): 3D Domed Brick Oven with Stone Plinth, Chimney Flue & Glowing Hearth Embers
-  rect(c,'#241a15',bx+1,by+3,29,26);
-  rect(c,'#6e5646',bx+3,by+17,25,11); // stone base plinth
-  rect(c,'#9c5844',bx+3,by+6,25,12);  // brick oven dome
-  rect(c,'#be765c',bx+5,by+5,21,4);   // sunlit upper brick arch
-  for(let ox=bx+6;ox<bx+24;ox+=6)rect(c,'#5e3428',ox,by+9,1,7);
-  rect(c,'#241a15',bx+19,by-6,8,11);rect(c,'#7a5444',bx+20,by-5,6,9);rect(c,'#a67862',bx+21,by-5,2,8); // brick chimney flue
-  rect(c,'#1a120e',bx+8,by+13,14,11); // arched oven mouth
-  rect(c,'#e4782e',bx+10,by+16,10,6);rect(c,'#ffd874',bx+12,by+18,6,3);rect(c,'#fff6c8',bx+13,by+19,3,2);
-  rect(c,'rgba(255,186,88,.22)',bx+2,by+16,28,16);
-  // Living village chimney & bakery oven smoke wisps (gentle animation!)
   const sm=(typeof Date!=='undefined'?Date.now():0)/420;
-  for(const [sx,sy] of [[bx+22,by-7],[4*32+18,2*32+2],[18*32+76,10*32-4]]){
-   for(let k=0;k<3;k++){
-    const phase=(sm+k*0.95)%3,oy=sy-phase*7,ox=sx+Math.sin(sm+k*2)*3;
-    rect(c,`rgba(246,244,238,${(0.42-phase*0.11).toFixed(2)})`,ox,oy,4+phase,3+phase*0.6);
+  // 1. Eda's Outdoor 3D Brick Bakery Workshop & Striped Bread Pavilion on blocked H tiles (5..8, 10..11) (4x2 = 128x64!)
+  const bx=5*32,by=10*32;
+  rect(c,'rgba(16,20,16,.38)',bx+4,by+58,132,12);
+  rect(c,'rgba(16,20,16,.20)',bx+126,by+8,10,54);
+  // Left (5..6, 10..11): Sculpted Stone-and-Brick Domed Bread Oven House with smoking chimney & glowing hearth mouth
+  rect(c,'#241a15',bx,by+12,62,50);
+  rect(c,'#766e64',bx+2,by+44,58,16);rect(c,'#a69e92',bx+3,by+44,56,3); // stone base
+  rect(c,'#a05642',bx+2,by+16,58,28);rect(c,'#c6785e',bx+4,by+16,54,8); // domed brick oven chamber
+  for(let ox=bx+8;ox<bx+54;ox+=10)rect(c,'#5e3226',ox,by+22,1,20);
+  rect(c,'#241a15',bx+40,by-18,14,34);rect(c,'#7a5444',bx+42,by-16,10,30);rect(c,'#a87c64',bx+43,by-16,4,28);
+  rect(c,'#1a120e',bx+16,by+28,28,22); // arched blazing oven mouth
+  rect(c,'#e4782e',bx+19,by+34,22,12);rect(c,'#ffd874',bx+22,by+37,16,7);rect(c,'#fff8d0',bx+26,by+39,8,4);
+  const bg=c.createRadialGradient?.(bx+30,by+44,4,bx+30,by+44,42);
+  if(bg&&typeof bg.addColorStop==='function'){bg.addColorStop(0,'rgba(255,180,82,.34)');bg.addColorStop(1,'rgba(255,150,60,0)');c.fillStyle=bg;c.beginPath();c.arc(bx+30,by+44,42,0,Math.PI*2);c.fill()}
+  // Right (7..8, 10..11): Spacious 64px-wide 4-Post Sculpted Crimson-and-Cream Striped Bakery Stall loaded with golden loaves!
+  const px=bx+62,py=by+2;
+  rect(c,'rgba(22,16,12,.52)',px+4,py+20,56,28);
+  for(const postX of [px+3,px+57]){rect(c,'#241a14',postX,py+14,5,44);rect(c,'#8c623e',postX+1,py+15,3,42)}
+  rect(c,'#241a14',px+2,py+38,60,22);rect(c,'#745236',px+4,py+43,56,15);
+  for(let sx=px+10;sx<px+56;sx+=8)rect(c,'#4a3220',sx,py+43,1,15);
+  rect(c,'#b68858',px+3,py+39,58,5);rect(c,'#e0b680',px+4,py+39,56,2);
+  for(const lx of [8,20,33,46]){
+   rect(c,'#4e3622',px+lx-1,py+34,9,6);rect(c,'#d28e42',px+lx,py+33,8,5);rect(c,'#f8ce78',px+lx+1,py+33,5,2);
+  }
+  // Sloped billowing striped awning + scalloped valance
+  rect(c,'#241a14',px-2,py+4,68,18);
+  for(let i=0;i<8;i++){
+   const sx=px+i*8,col=i%2?'#f6ebd2':'#a44246';
+   rect(c,col,sx,py+5,8,11);rect(c,'rgba(255,252,240,.22)',sx,py+5,8,3);
+   rect(c,i%2?'#d6c6a8':'#782a30',sx,py+16,8,5);rect(c,'#241a14',sx,py+21,8,1);
+  }
+  rect(c,'#5c3e26',px-2,py+2,68,3);
+  // Crisp bakery sign on eaves
+  rect(c,'rgba(24,18,14,.92)',bx+30,by-6,68,15);rect(c,'#e4c47a',bx+31,by-5,66,1);
+  if(typeof c.fillText==='function'){c.fillStyle='#faf0d8';c.font='bold 9px system-ui';c.textAlign='center';c.fillText('エダの石窯パン',bx+64,by+5);c.textAlign='start'}
+  // Bakery oven rising smoke puffs
+  for(let k=0;k<3;k++){
+   const phase=(sm+k*0.95)%3,oy=by-18-phase*8,ox=bx+45+Math.sin(sm+k*2)*4;
+   rect(c,`rgba(246,244,238,${(0.44-phase*0.12).toFixed(2)})`,ox,oy,5+phase,3+phase*0.7);
+  }
+
+  // 2. Carved Stone-and-Timber Village North Gate Archway spanning (16..19, 1)
+  if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawStoneArchGate){
+   HD2DAtlas.drawStoneArchGate(c,16,1,4,{label:'リュネ村・北門',roof:'#7a4238'});
+  }
+
+  // 3. Central Plaza Wooden Park Benches (at solid-blocked (15,14) & (20,11)) + Warm Wrought-Iron Streetlamps!
+  for(const [bx2,by2] of [[15,14],[20,11]]){
+   const x=bx2*32,y=by2*32;
+   rect(c,'rgba(16,20,14,.30)',x+2,y+23,28,5);
+   rect(c,'#362418',x+2,y+11,28,13);rect(c,'#8c6844',x+3,y+12,26,5);rect(c,'#b89062',x+4,y+12,24,2);
+   rect(c,'#6e4e32',x+3,y+18,26,4);rect(c,'#362418',x+5,y+22,4,4);rect(c,'#362418',x+23,y+22,4,4);
+  }
+  for(const [lx,ly] of [[14,12],[21,12],[24,12],[27,12]]){
+   const x=lx*32+14,y=ly*32+4;
+   const lg=c.createRadialGradient?.(x+2,y+2,2,x+2,y+2,28);
+   if(lg&&typeof lg.addColorStop==='function'){
+    lg.addColorStop(0,'rgba(255,218,128,.34)');lg.addColorStop(1,'rgba(255,180,80,0)');
+    c.fillStyle=lg;c.beginPath();c.arc(x+2,y+2,28,0,Math.PI*2);c.fill();
    }
+   rect(c,'rgba(14,18,14,.30)',x-2,y+21,8,4);
+   rect(c,'#24282e',x,y+4,4,19);rect(c,'#545e6a',x+1,y+5,2,17);
+   rect(c,'#24282e',x-2,y-1,8,7);rect(c,'#ffd674',x-1,y,6,5);rect(c,'#fffbe4',x+1,y+1,2,2);
   }
-  // Right (8,5): True 3D Sculpted Timber-and-Canvas Bakery Pavilion (4 oak posts, sloped striped awning, counter & golden loaves!)
-  const px=bx+31,py=by-6;
-  rect(c,'rgba(22,16,12,.52)',px+4,py+14,26,14); // recessed interior shade
-  rect(c,'#241a14',px+4,py+11,4,22);rect(c,'#583c26',px+5,py+12,2,20); // rear left post
-  rect(c,'#241a14',px+26,py+11,4,22);rect(c,'#583c26',px+27,py+12,2,20); // rear right post
-  rect(c,'#241a14',px+2,py+21,30,14);
-  rect(c,'#6e4e34',px+4,py+25,26,9); // planked counter front
-  for(let sx=px+10;sx<px+28;sx+=6)rect(c,'#4a3220',sx,py+25,1,9);
-  rect(c,'#ab8052',px+3,py+22,28,4);rect(c,'#d6ac78',px+4,py+22,26,2); // sunlit counter tabletop
-  for(const lx of [6,15,23]){
-   rect(c,'#4e3622',px+lx-1,py+18,7,5);rect(c,'#cc8a42',px+lx,py+17,6,4);rect(c,'#f4c474',px+lx+1,py+17,4,2);
+
+  // 4. Snoozing ginger tabby village cat curled up beside Eda's warm brick bread oven (5,12) + Pecking chickens (10..11, 21)
+  const catX=5*32+14,catY=12*32+8,purr=Math.floor(sm*0.8)%2;
+  rect(c,'rgba(18,22,14,.26)',catX-2,catY+7,14,4);
+  rect(c,'#3a2416',catX-1,catY+1,12,8);rect(c,'#d88844',catX,catY+2,10,6);rect(c,'#f2b46c',catX+2,catY+2,5,3);
+  rect(c,'#9c5626',catX+3,catY+4,2,3);rect(c,'#9c5626',catX+7,catY+4,2,3);
+  rect(c,'#d88844',catX-2,catY+3+purr,3,3);rect(c,'#f6d69c',catX+9,catY+1,3,2);
+  // Festive colorful village pennant bunting gently framing the north side of the Central Well Plaza
+  const buntColors=['#c84b44','#e6b84c','#48825a','#4b6e98'];
+  rect(c,'#5c4832',14*32+16,10*32+4,7*32,1);
+  for(let i=0;i<14;i++){
+   const fx=14*32+22+i*16,dip=Math.round(Math.sin((i/13)*Math.PI)*5);
+   rect(c,buntColors[i%4],fx,10*32+5+dip,8,5);rect(c,'rgba(255,252,238,.28)',fx+1,10*32+5+dip,6,2);
   }
-  // Front beveled oak corner posts
-  rect(c,'#241a14',px+1,py+10,5,25);rect(c,'#825a38',px+2,py+11,3,23);rect(c,'#b48658',px+2,py+11,1,21);
-  rect(c,'#241a14',px+28,py+10,5,25);rect(c,'#825a38',px+29,py+11,3,23);rect(c,'#b48658',px+29,py+11,1,21);
-  // Sloped 3/4 billowing crimson-and-cream striped awning + scalloped valance
-  rect(c,'#241a14',px-1,py+1,36,14);
-  for(let i=0;i<4;i++){
-   const sx=px+i*8,sw=(i===3)?10:8,col=i%2?'#f6ebd2':'#a44246';
-   rect(c,col,sx,py+2,sw,8);rect(c,'rgba(255,252,240,.22)',sx,py+2,sw,3);
-   rect(c,i%2?'#d6c6a8':'#782a30',sx,py+10,sw,4);
-   rect(c,'#241a14',sx,py+14,sw,1);
-  }
-  rect(c,'#5c3e26',px-1,py,36,2);
-  // Warm bread steam rising gently from Eda's counter
-  for(let k=0;k<2;k++){
-   const st=(sm*1.2+k*1.3)%2;
-   rect(c,'rgba(255,250,236,.38)',bx+40+k*12,by+6-st*4,2,3);
-  }
-  // Pecking white village chickens near the western fields
   const peck=Math.floor(sm)%2;
-  for(const [cx,cy,dir] of [[3*32+14,12*32+12,1],[4*32+8,12*32+18,-1],[3*32+22,11*32+18,1]]){
+  for(const [cx,cy,dir] of [[10*32+10,21*32+12,1],[11*32+8,21*32+18,-1],[10*32+22,22*32+6,1]]){
    rect(c,'rgba(18,24,14,.22)',cx-4,cy+5,9,3);
    rect(c,'#f6f2e8',cx-4,cy,8,6);rect(c,'#e2d8c6',cx-3,cy+3,6,3);
    rect(c,'#f6f2e8',cx+(dir>0?3:-5),cy-2+peck,3,3);
@@ -372,49 +392,28 @@ const RyuneEnvironment=(()=>{
    rect(c,'#e4a83e',cx+(dir>0?6:-6),cy-1+peck,2,1);
    rect(c,'#c89838',cx-2,cy+6,1,2);rect(c,'#c89838',cx+2,cy+6,1,2);
   }
-  // Circular cobblestone plaza ring, flower barrels & wooden benches around the central well (12,9)
-  for(const [wx,wy] of [[11,8],[13,8],[11,9],[13,9],[11,10],[13,10]]){
-   rect(c,'#989278',wx*32+6,wy*32+10,20,12);
-   rect(c,'#b5ae92',wx*32+8,wy*32+11,16,4);
+  // 5. Wildflower clusters gently accenting open grass borders (purely flat grass tufts!)
+  for(const [nx,ny] of [[12,4],[13,5],[22,5],[23,6],[13,17],[23,17],[28,11],[31,11]]){
+   const x=nx*32+6,y=ny*32+10;
+   rect(c,'#4c7244',x,y,16,8);rect(c,'#689458',x+2,y+1,12,5);
+   rect(c,nx%2?'#f4e08a':'#ec9aa0',x+4,y+2,3,3);rect(c,'#f8f4e4',x+10,y+3,3,2);
   }
-  rect(c,'#57412d',10*32+4,8*32+20,24,6);rect(c,'#9c7852',10*32+5,8*32+19,22,3);
-  rect(c,'#57412d',14*32+4,8*32+20,24,6);rect(c,'#9c7852',14*32+5,8*32+19,22,3);
-  for(const [fx,fy,col] of [[10,7,'#e28478'],[14,7,'#e8c868'],[10,11,'#d88898'],[14,11,'#e8c868']]){
-   const px=fx*32+8,py=fy*32+14;
-   rect(c,'#5e4531',px,py+6,14,8);rect(c,'#8a684a',px+2,py+7,10,5);
-   rect(c,'#4d7244',px+1,py+2,12,5);
-   rect(c,col,px+3,py+1,3,3);rect(c,col,px+9,py+2,3,3);
-  }
-  // South-central & South-east orchard / vegetable garden plots & split-rail fences
-  for(const [gx,gy] of [[8,10],[9,10],[8,11],[9,11],[14,11],[15,11]]){
-   const px=gx*32,py=gy*32;
-   rect(c,'#6e5d44',px+4,py+6,24,20);
-   for(let r=0;r<3;r++){
-    rect(c,'#8c7452',px+6,py+8+r*6,20,2);
-    rect(c,'#4a7648',px+8,py+6+r*6,5,4);rect(c,'#749e60',px+18,py+6+r*6,5,4);
-   }
-   if(gx===8&&gy===10){rect(c,'#d9843b',px+10,py+12,5,4);rect(c,'#f0a858',px+11,py+12,3,2)}
-  }
-  rect(c,'#6b5037',8*32+4,10*32+2,60,3);rect(c,'#8f6c4a',8*32+4,10*32+2,60,1);
-  for(const [nx,ny] of [[9,2],[10,3],[14,2],[15,3],[16,4],[14,5],[15,5]]){
-   const px=nx*32+6,py=ny*32+10;
-   rect(c,'#527348',px,py,16,8);rect(c,'#688c58',px+2,py+1,12,5);
-   rect(c,nx%2?'#f0df96':'#e69898',px+4,py+2,3,3);rect(c,'#f4efe0',px+10,py+3,3,2);
-  }
-  // North Gate timber lantern posts flanking (11..12, 0)
-  for(const gx of [10,13]){
-   const px=gx*32+10,py=1*32+2;
-   rect(c,'rgba(255,210,118,.18)',px-8,py-4,24,26);
-   rect(c,'#4a3626',px,py,6,22);rect(c,'#78593f',px+1,py+1,4,20);
-   rect(c,'#f5c868',px-1,py+2,8,6);rect(c,'#fff4c2',px+1,py+3,4,3);
-  }
-  // Warm HD-2D morning sunbeams slanting across Ryune Village
-  for(const [sx,sy,sw,sh] of [[3,2,110,70],[11,5,130,90],[17,3,110,80]]){
-   rect(c,'rgba(255,236,176,.06)',sx*32,sy*32,sw,sh);
-  }
-  // No made-up victory shrine or royal/heraldic emblem is added.
  }
- function outdoors(c){lowProps(c);districtDetails(c);for(const h of villageHouses)building(c,h)}
+ function outdoors(c){
+  lowProps(c);
+  districtDetails(c);
+  for(const b of grandVillageBuildings){
+   if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawGrandHouse(c,b.x,b.y,b.w,b.h,b)){
+    rect(c,'#3a2c22',b.x*32,b.y*32,b.w*32,b.h*32);
+    rect(c,b.wall||'#ebe2cd',b.x*32+4,b.y*32+20,b.w*32-8,b.h*32-24);
+    rect(c,b.roofMain||'#8c443a',b.x*32,b.y*32,b.w*32,24);
+   }
+  }
+ }
+ function drawVillageCanopy(c){
+  if(typeof HD2DAtlas==='undefined')return;
+  for(const b of grandVillageBuildings)HD2DAtlas.drawGrandHouseCanopy(c,b.x,b.y,b.w,b.h,b);
+ }
  function rug(c,map,x,y,w,h){
   const color=roomPalette[map].rug;
   // Woven fringed storybook rug with inner filigree border
@@ -688,26 +687,13 @@ const RyuneEnvironment=(()=>{
   const x=obj.x*32,y=obj.y*32;
   if(map==='village'){
    if(obj.id==='well'){
-    // Storybook stone well fitted cleanly inside (12,9) so actors on (12,8) never overlap its roof
+    if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawSculptedWell){
+     HD2DAtlas.drawSculptedWell(c,obj.x,obj.y,{roof:'#8c4a3e',roofHi:'#ba6a56'});
+     return true;
+    }
     rect(c,'rgba(20,28,22,.28)',x+1,y+24,30,7);
-    rect(c,'#9d9984',x+2,y+21,28,8);rect(c,'#b8b49e',x+4,y+21,24,2);
-    rect(c,'#342c28',x+3,y+13,26,16);
-    rect(c,'#8c897f',x+5,y+14,22,13);
-    rect(c,'#afa99c',x+5,y+14,22,3);
-    rect(c,'#6e6b63',x+5,y+23,22,4);
-    for(let bx=9;bx<=23;bx+=5){rect(c,'#54514b',x+bx,y+17,1,9);rect(c,'#c2bdb0',x+bx-3,y+18,3,2)}
-    // Shaded cool well water with subtle shimmer
-    rect(c,'#2b3c42',x+7,y+14,18,5);rect(c,'#4b7684',x+8,y+15,16,3);rect(c,'#8fc2cc',x+10,y+15,6,1);
-    // Twin oak support posts, windlass beam & bucket
-    rect(c,'#35231a',x+4,y+4,4,12);rect(c,'#7a573a',x+5,y+5,2,10);
-    rect(c,'#35231a',x+24,y+4,4,12);rect(c,'#7a573a',x+25,y+5,2,10);
-    rect(c,'#593f2b',x+7,y+7,18,2);
-    rect(c,'#c7b285',x+15,y+8,2,6);rect(c,'#8f6b47',x+13,y+12,6,4);
-    // Pitched mossy wooden well canopy (contained inside y+0..y+6)
-    rect(c,'#32231c',x+1,y+3,30,4);rect(c,'#8f5d42',x+2,y+4,28,2);
-    rect(c,'#32231c',x+4,y+1,24,3);rect(c,'#ab7352',x+5,y+2,22,2);
-    rect(c,'#32231c',x+8,y,16,2);rect(c,'#c78d66',x+9,y,14,1);
-    rect(c,'#5a7c4d',x+5,y+3,5,2);
+    rect(c,'#9d9984',x+2,y+21,28,8);rect(c,'#342c28',x+3,y+13,26,16);rect(c,'#8c897f',x+5,y+14,22,13);
+    rect(c,'#2b3c42',x+7,y+14,18,5);rect(c,'#4b7684',x+8,y+15,16,3);
     return true;
    }
    if(obj.id==='store'){
@@ -754,9 +740,8 @@ const RyuneEnvironment=(()=>{
     return true;
    }
    if(['home','doorOrphanage','doorMayor','doorCottage'].includes(obj.id)){
-    // Clearly visible stepping threshold on the exact original trigger tile.
-    rect(c,'#58493a',x+3,y+21,27,6);
-    rect(c,'#c5a87a',x+7,y+21,19,3);
+    // Warm woven welcome mat anchored neatly at the top of the cobblestone walkway
+    rect(c,'#3c2c1e',x+7,y+4,18,7);rect(c,'#9c7a52',x+8,y+5,16,5);rect(c,'#dfc894',x+10,y+6,12,2);
     return true
    }
    return false;
@@ -764,6 +749,6 @@ const RyuneEnvironment=(()=>{
   if(obj.id==='indoorExit')return true; // Mat is already drawn in indoor().
   return false
  }
- return{enabled:true,targets,rooms,palette,roomPalette,hash,paintTile:blockTile,
-        drawVillage:outdoors,drawInterior:indoor,drawObject:object}
+ return{enabled:true,targets,rooms,palette,roomPalette,grandVillageBuildings,hash,paintTile:blockTile,
+        drawVillage:outdoors,drawVillageCanopy,drawInterior:indoor,drawObject:object}
 })();
