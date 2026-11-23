@@ -154,21 +154,22 @@ const RyuneOutskirts=(()=>{
  }
  function drawAccents(c,map){
   if(map==='village'){
-   // Clear passable corridors without drawing obstacles over the actual path.
+   // Clear passable corridors without drawing obstacles over the actual path: 3D shadowed carved oak arrow signposts!
    for(const [x,side] of [[0,'west'],[35,'east']]){
     const px=x*W,py=12*W;
-    pixel(c,'#4d4939',px+8,py+8,3,24);
-    pixel(c,side==='west'?'#b99c69':'#95adb2',px+3,py+4,25,6);
-    pixel(c,'#e0c69a',px+5,py+5,15,2);
+    pixel(c,'rgba(16,22,14,0.34)',px+6,py+26,14,4);
+    pixel(c,'#241810',px+7,py+6,6,23);pixel(c,'#7c5634',px+8,py+7,4,21);pixel(c,'#a87a4e',px+8,py+7,2,20);
+    pixel(c,'#241810',px+1,py+3,28,10);pixel(c,side==='west'?'#b8925c':'#7e9ea8',px+2,py+4,26,8);
+    pixel(c,side==='west'?'#e4ca92':'#b4d4dc',px+3,py+4,24,2);
+    pixel(c,'#4a3420',px+5,py+8,16,1);
    }
    return
   }
   if(map==='ryunefields'){
-   // Expanded 26x18 Sunlit Pastoral Farmstead matching Ryune Village HD-2D Craftsmanship!
-   // 1. Grand Red-Roofed Timber Farmhouse Barn & Hayloft ('H' at 3..8, 2..5) + Stepping-Stone Walkway
+   // Expanded 26x18 Sunlit Pastoral Farmstead: Authentic Rural Weathered Red-Plank Hay Barn + Rustic Fieldstone Well!
    if(typeof HD2DAtlas!=='undefined'){
-    HD2DAtlas.drawGrandHouse(c,3,2,6,4,{tag:'rf_barn',label:'リュネ農園納屋',roofDark:'#5c2822',roofMain:'#8c3d32',roofHi:'#b85b4c',roofRim:'#dc8472',wall:'#eadfc6',shutter:'#466448',sideShed:true,flowerBorder:true,chimneyLeft:true,doorOffsetPx:3*32});
-    HD2DAtlas.drawSculptedWell(c,13,7,{roof:'#78523a',roofHi:'#a47252'});
+    HD2DAtlas.drawGrandHouse(c,3,2,6,4,{tag:'rf_barn',region:'rural',ruralStyle:'barn',label:'リュネ農園納屋',sideShed:true,doorOffsetPx:3*32});
+    HD2DAtlas.drawSculptedWell(c,13,7,{rustic:true,roof:'#6e4e2e',roofHi:'#9a7046'});
    }
    for(const [dx,dy] of [[6,6]]){
     const px=dx*W,py=dy*W;
@@ -225,7 +226,7 @@ const RyuneOutskirts=(()=>{
    const now=Date.now();
    if(typeof HD2DAtlas!=='undefined'){
     HD2DAtlas.drawWaterfallCulvert(c,11,2,3,{stone:'#6e7068',stoneHi:'#b8b6a8'});
-    HD2DAtlas.drawGrandHouse(c,18,3,5,3,{tag:'rb_cabin',label:'川辺の釣り小屋',roofDark:'#2c463c',roofMain:'#466e5e',roofHi:'#689680',roofRim:'#94beaa',wall:'#e6ddc8',shutter:'#6c4a34',flowerBorder:true,chimneyLeft:false,doorOffsetPx:2*32+16});
+    HD2DAtlas.drawGrandHouse(c,18,3,5,3,{tag:'rb_cabin',region:'rural',ruralStyle:'log_cabin',label:'川辺の釣り小屋',roofDark:'#283e36',roofMain:'#406054',roofHi:'#5e8474',chimneyLeft:false,doorOffsetPx:2*32+16});
    }
    // Cobblestone stepping stones leading cleanly to Angler's Cabin door
    for(const [dx,dy] of [[20,6]]){
@@ -272,21 +273,29 @@ const RyuneOutskirts=(()=>{
  }
  function drawObject(c,map,o,alreadyTaken=false){
   if(map==='village'&&(o.id==='westFieldPath'||o.id==='eastBrookPath')){
-   const x=o.x*W,y=o.y*W;
-   pixel(c,'#574536',x+14,y+6,4,26);
-   pixel(c,o.id==='westFieldPath'?'#c1a26f':'#89acb6',x+4,y+5,25,8);
-   pixel(c,'#e2d2a3',x+7,y+7,18,2);
-   pixel(c,'#483d35',x+15,y+22,7,3);
+   // 3D Carved Timber Arrow Signpost with diagonal cast shadow, mossy base stone & beveled plank arrow!
+   const x=o.x*W,y=o.y*W,west=o.id==='westFieldPath';
+   pixel(c,'rgba(16,22,14,0.34)',x+9,y+25,18,5);
+   pixel(c,'#241810',x+12,y+5,7,23);pixel(c,'#7a5434',x+13,y+6,5,21);pixel(c,'#a67a4e',x+13,y+6,2,20);
+   pixel(c,'#6e6c64',x+10,y+24,11,5);pixel(c,'#a4a094',x+11,y+24,8,2); // base rocks
+   pixel(c,'#241810',x+2,y+4,28,12);
+   pixel(c,west?'#b68e54':'#688e9c',x+3,y+5,26,10);
+   pixel(c,west?'#e2c68c':'#a4cad6',x+4,y+5,24,3);
+   pixel(c,west?'#8c6838':'#4a6c7a',x+4,y+12,24,2);
+   pixel(c,'#2e2014',x+6,y+9,18,2);
+   pixel(c,'#f2e6ca',west?x+4:x+24,y+8,4,3);
    return true
   }
   if(!maps.has(map))return false;
-  // Once collected, the supply spot is walkable again: do not leave a solid-looking crate.
   if(alreadyTaken&&(o.id==='fieldCache'||o.id==='brookCache'))return true;
   const x=o.x*W,y=o.y*W;
   if(o.id==='fieldFurrows'){
-   pixel(c,'#423e30',x+5,y+20,23,4);
-   pixel(c,'#c2a576',x+7,y+18,19,2);
-   for(let k=0;k<3;k++){pixel(c,'#48734d',x+8+k*7,y+12,3,8);pixel(c,'#a4b879',x+7+k*7,y+12,6,3)}
+   // Grounded HD-2D wooden farm planter & sprouting crops with cast shadow
+   pixel(c,'rgba(16,24,14,0.32)',x+3,y+23,27,5);
+   pixel(c,'#261c12',x+2,y+14,28,12);pixel(c,'#6e5236',x+4,y+16,24,8);pixel(c,'#9c7a52',x+5,y+16,22,2);
+   for(let k=0;k<3;k++){
+    pixel(c,'#26522c',x+6+k*7,y+10,6,8);pixel(c,'#549448',x+7+k*7,y+9,4,6);pixel(c,'#a8d874',x+8+k*7,y+9,2,3);
+   }
   }else if(o.id==='fieldCart'){
    if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawCoveredWagon){
     HD2DAtlas.drawCoveredWagon(c,o.x,o.y,{broken:false});
@@ -294,17 +303,23 @@ const RyuneOutskirts=(()=>{
     pixel(c,'#594b3a',x+2,y+13,28,10);pixel(c,'#c0a06d',x+5,y+8,22,11);
    }
   }else if(o.id==='fieldCache'||o.id==='brookCache'){
-   pixel(c,'#6a5340',x+4,y+18,24,12);
-   pixel(c,alreadyTaken?'#4b4e47':'#c9a879',x+6,y+14,20,6);
-   pixel(c,'#443b2e',x+13,y+21,6,2);
+   // HD-2D Iron-Banded Wooden Supply Chest with cast shadow & brass clasp
+   pixel(c,'rgba(14,20,14,0.36)',x+4,y+24,26,5);
+   pixel(c,'#241812',x+3,y+9,26,18);pixel(c,'#885e36',x+5,y+11,22,14);pixel(c,'#b88854',x+5,y+11,22,5);
+   pixel(c,'#464e56',x+4,y+16,24,2);pixel(c,'#464e56',x+8,y+11,2,14);pixel(c,'#464e56',x+22,y+11,2,14);
+   pixel(c,'#f2ce6e',x+14,y+15,4,5);pixel(c,'#3a2818',x+15,y+17,2,2);
   }else if(o.id==='brookWater'){
-   pixel(c,'#c0ae86',x+3,y+20,23,5);
-   pixel(c,'#d9c69b',x+10,y+15,10,4);
-   pixel(c,'#6b9b9a',x+23,y+26,6,2);
+   // Sculpted wooden water-testing bucket, gauge stake & sparkling water ripple
+   pixel(c,'rgba(14,28,34,0.34)',x+4,y+22,24,6);
+   pixel(c,'#241812',x+5,y+11,14,14);pixel(c,'#8a603c',x+6,y+12,12,12);pixel(c,'#b88a5c',x+7,y+12,4,10);
+   pixel(c,'#4a525c',x+6,y+16,12,2);pixel(c,'#4ea4bc',x+7,y+12,10,3);pixel(c,'#ccf4fc',x+9,y+13,5,1);
+   pixel(c,'#241812',x+22,y+8,5,18);pixel(c,'#a68052',x+23,y+9,3,16);pixel(c,'#f2e2b8',x+23,y+12,3,2);
   }else if(o.id==='brookStones'){
-   for(const [xx,yy] of [[3,15],[11,10],[20,17]]){
-    pixel(c,'#646e67',x+xx,y+yy,9,9);
-    pixel(c,'#b5afa0',x+xx+2,y+yy+1,5,2);
+   // Sculpted 3D Moss-Capped River Boulders with directional highlights & shadows
+   for(const [xx,yy,rw,rh] of [[2,14,12,11],[11,8,12,11],[18,16,11,10]]){
+    pixel(c,'rgba(14,26,20,0.32)',x+xx+1,y+yy+rh-2,rw,4);
+    pixel(c,'#262c28',x+xx,y+yy,rw,rh);pixel(c,'#767c74',x+xx+1,y+yy+1,rw-2,rh-2);
+    pixel(c,'#b4b8ac',x+xx+2,y+yy+1,rw-5,3);pixel(c,'#44723e',x+xx+2,y+yy+rh-4,5,3);
    }
   }else return false;
   return true

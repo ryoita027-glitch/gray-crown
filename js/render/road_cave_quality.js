@@ -245,12 +245,12 @@ const RoadCaveQuality=(()=>{
    }
    if(typeof HD2DAtlas!=='undefined'){
     HD2DAtlas.drawPlazaMedallion(c,15*32+16,13*32+16,58,'warm');
-    HD2DAtlas.drawStoneArchGate(c,14,7,4,{label:'白樺の宿場',roof:'#546e4c',stone:'#b8b4a6',stoneHi:'#eae6d8'});
+    HD2DAtlas.drawStoneArchGate(c,14,7,4,{style:'rural_wood',label:'白樺の宿場'});
    }
-   // Grand Square Enix HD-2D Alpine Inn & Carriage Barn with distinct Ryune-grade architectural ornaments!
+   // Authentic Alpine White-Birch Chalet Inn & Mountain Carriage Barn (steep A-frame roofs, log purlins & granite bases!)
    const wayBuildings=[
-    {x:4,y:3,w:7,h:4,tag:'way_inn',archStyle:'hall',label:'旅籠・白樺亭',roofDark:'#582e28',roofMain:'#88483c',roofHi:'#b46652',roofRim:'#dc8e76',wall:'#f2e6ce',wallShade:'#d8c8a8',wallDark:'#aa9876',shutter:'#7c3e36',canopyColor:'#9c3842',flowerBorder:true,chimneyLeft:false,doorOffsetPx:3*32+16},
-    {x:20,y:3,w:6,h:4,tag:'way_barn',archStyle:'workshop',timberWall:true,label:'荷馬車倉',roofDark:'#303e2e',roofMain:'#4c6046',roofHi:'#6e8664',roofRim:'#96b088',wall:'#d4b690',wallShade:'#bc9c74',wallDark:'#90724e',shutter:'#3e4e3a',bellGable:true,sideShed:true,chimneyLeft:true,doorOffsetPx:3*32+16}
+    {x:4,y:3,w:7,h:4,tag:'way_inn',region:'alpine',alpineStyle:'birch',label:'旅籠・白樺亭',roofDark:'#4e2a22',roofMain:'#7e4234',roofHi:'#a85e4a',canopyColor:'#9c3842',chimneyLeft:false,doorOffsetPx:3*32+16},
+    {x:20,y:3,w:6,h:4,tag:'way_barn',region:'alpine',alpineStyle:'birch',barnStyle:true,label:'荷馬車倉',roofDark:'#2c3c2a',roofMain:'#486044',roofHi:'#6a8662',chimneyLeft:true,doorOffsetPx:3*32+16}
    ];
    for(const b of wayBuildings){
     if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawGrandHouse(c,b.x,b.y,b.w,b.h,b)){
@@ -337,7 +337,7 @@ const RoadCaveQuality=(()=>{
    // Mossy Stone Waterfall Culvert feeding the crystal highland brook at (13..14, 1) + Bellkeeper's Stone Lodge!
    if(typeof HD2DAtlas!=='undefined'){
     HD2DAtlas.drawWaterfallCulvert(c,13,1,2,{stone:'#787a74',stoneHi:'#c2c0b2'});
-    HD2DAtlas.drawGrandHouse(c,19,3,5,3,{tag:'nw_lodge',label:'鐘楼守の小屋',roofDark:'#343c4c',roofMain:'#4e5c72',roofHi:'#70849c',roofRim:'#98aec4',wall:'#e2ded0',shutter:'#3e4c5c',bellGable:true,flowerBorder:true,chimneyLeft:true,doorOffsetPx:2*32+16});
+    HD2DAtlas.drawGrandHouse(c,19,3,5,3,{tag:'nw_lodge',region:'alpine',alpineStyle:'border',label:'鐘楼守の小屋',roofDark:'#2e3846',roofMain:'#48586e',roofHi:'#6a8098',chimneyLeft:true,doorOffsetPx:2*32+16});
    }
    // Cobblestone stepping stones to Bellkeeper Alto's lodge
    fill(c,'#a6a294',21*32+4,6*32+2,24,10);fill(c,'#dcd8ca',21*32+5,6*32+3,22,4);
@@ -376,7 +376,7 @@ const RoadCaveQuality=(()=>{
   if(map==='roadhollow'){
    // Expanded 28x18 Hidden Square Enix Sacred Pilgrim Spring Grotto + Herbalist Shizu's Sanctuary Cabin!
    if(typeof HD2DAtlas!=='undefined'){
-    HD2DAtlas.drawGrandHouse(c,3,3,5,3,{tag:'rh_hut',label:'薬草採りの庵',roofDark:'#2c4a38',roofMain:'#487454',roofHi:'#6c9c74',roofRim:'#96c49a',wall:'#e8e2cc',shutter:'#466448',flowerBorder:true,chimneyLeft:true,doorOffsetPx:2*32+16});
+    HD2DAtlas.drawGrandHouse(c,3,3,5,3,{tag:'rh_hut',region:'rural',ruralStyle:'thatch',label:'薬草採りの庵',chimneyLeft:true,doorOffsetPx:2*32+16});
    }
    // Carved marble pool coping border surrounding the wide Crystal Lotus Spring (11..17, 7..10)
    const sx=11*32,sy=7*32,sw=7*32,sh=4*32;
@@ -483,7 +483,7 @@ const RoadCaveQuality=(()=>{
   if(map==='road'){
    // Expanded 30x20 Sunlit Forest Trade Highway: Highway Timber Archway, Merchant's Covered Carriage, Forest Brook Bridge & Fort Entrance!
    if(typeof HD2DAtlas!=='undefined'){
-    HD2DAtlas.drawStoneArchGate(c,13,17,4,{label:'王都街道',roof:'#6e4634',stone:'#9c988c',stoneHi:'#d0ccc0'});
+    HD2DAtlas.drawStoneArchGate(c,13,17,4,{style:'rural_wood',label:'王都街道'});
    }
    const pebbles=[[14,16],[15,13],[13,10],[14,8],[13,6],[15,4]];
    for(const [tx,ty] of pebbles){const x=tx*32,y=ty*32;fill(c,'#8a806b',x+7,y+22,12,3);fill(c,'#d5bc8e',x+9,y+21,8,2)}
@@ -625,19 +625,26 @@ const RoadCaveQuality=(()=>{
    fill(c,'#aaa17c',x+5,y+27,22,2);
   }
   if(map==='road'&&o.id==='waysideShrine'){
-   fill(c,'rgba(18,24,18,0.28)',x+5,y+24,22,5);
-   fill(c,'#545852',x+7,y+8,18,18);fill(c,'#8c9086',x+9,y+10,14,14);
-   fill(c,'#3e3832',x+6,y+5,20,5);fill(c,'#c8b678',x+12,y+14,8,6);
+   fill(c,'rgba(14,20,14,0.34)',x+4,y+24,24,6);
+   fill(c,'#1e1a16',x+6,y+8,20,19);fill(c,'#8c9086',x+8,y+10,16,15);fill(c,'#c4c2b6',x+9,y+10,5,14);
+   fill(c,'#262420',x+11,y+14,10,9);fill(c,'#f4d478',x+14,y+16,4,5);fill(c,'#fffbe0',x+15,y+17,2,2);
+   fill(c,'#1e1a16',x+3,y+4,26,6);fill(c,'#586452',x+4,y+5,24,4);fill(c,'#889c78',x+6,y+2,20,3);
+   fill(c,'#f4f6ee',x+6,y+24,3,3);fill(c,'#f4d268',x+22,y+24,3,3);
   }
   if(map==='cave'&&o.id==='watchLogbook'){
-   fill(c,'#463526',x+5,y+12,22,14);fill(c,'#7d5e42',x+7,y+14,18,10);
-   fill(c,'#e6dabc',x+10,y+15,12,7);fill(c,'#6e5c4a',x+12,y+17,8,1);
+   fill(c,'rgba(10,12,16,0.36)',x+4,y+23,24,5);
+   fill(c,'#1e1814',x+4,y+10,24,16);fill(c,'#7d5e42',x+6,y+12,20,12);fill(c,'#aa8258',x+7,y+12,18,2);
+   fill(c,'#f2e8cc',x+9,y+13,14,8);fill(c,'#6e5c4a',x+15,y+13,1,8);fill(c,'#6e5c4a',x+10,y+16,4,1);fill(c,'#6e5c4a',x+17,y+16,4,1);
   }
   if(map==='northroad'&&o.id==='capitalOverlook'){
-   fill(c,'#6c706e',x+4,y+14,24,12);fill(c,'#b8bcb6',x+6,y+12,20,6);
+   fill(c,'rgba(14,18,16,0.34)',x+3,y+24,26,5);
+   fill(c,'#202426',x+3,y+11,26,15);fill(c,'#949892',x+5,y+13,22,11);fill(c,'#dcdad0',x+5,y+10,22,5);
+   fill(c,'#466e40',x+4,y+22,7,4);
   }
   if(map==='northroad'&&o.id==='ancientGuardpost'){
-   fill(c,'#545854',x+4,y+8,24,18);fill(c,'#8e928a',x+6,y+10,20,14);
+   fill(c,'rgba(14,18,16,0.36)',x+3,y+24,26,5);
+   fill(c,'#1e2022',x+4,y+6,24,21);fill(c,'#7c807a',x+6,y+8,20,17);fill(c,'#b8bab0',x+7,y+8,6,16);
+   fill(c,'#3a5e3c',x+15,y+14,9,5);fill(c,'#c8a862',x+9,y+12,5,4);
   }
  }
  const obj={enabled:true,active,paintTile,drawAccents,objectBackdrop};

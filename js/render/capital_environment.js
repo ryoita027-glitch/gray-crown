@@ -845,19 +845,44 @@ const CapitalEnvironment=(()=>{
   return true;
  }
  function objectAccent(c,map,o){
-  if(!on()||map!=='capital')return;
-  const x=o.x*W,y=o.y*W;
+  if(!on()||map!=='capital')return false;
+  const x=o.x*W,y=o.y*W,ink='#1c1816';
   if(['capitalInnDoor','capitalArmoryDoor','capitalHouseDoor','capitalChapelDoor'].includes(o.id)){
-   box(c,'#4d3c35',x+3,y+24,26,5);
-   box(c,'#e3c68a',x+5,y+24,22,2);
+   // Clean gilded Royal Capital stone threshold mat tucked neatly at the steps (no floating road boxes!)
+   const ch=o.id==='capitalChapelDoor';
+   box(c,'rgba(12,14,18,.28)',x+5,y+5,22,9);
+   box(c,ink,x+4,y+3,24,9);
+   box(c,ch?'#9c9688':'#7c2c34',x+5,y+4,22,7);
+   box(c,'#ebd078',x+7,y+5,18,2);box(c,ch?'#f6f2e6':'#a6424c',x+7,y+7,18,3);
+   return true;
   }else if(o.id==='victoryPoster'){
-   box(c,'#e0d7b9',x+6,y+5,20,23);box(c,'#9c5257',x+8,y+8,16,3);
-   box(c,'#656368',x+9,y+15,14,2);box(c,'#656368',x+9,y+20,11,2);
+   // Grounded 3D Royal Proclamation Board with crimson-tile roof hood & gilded crest!
+   box(c,'rgba(12,14,18,.34)',x+4,y+25,25,5);
+   box(c,ink,x+5,y+7,4,21);box(c,'#6e4e34',x+6,y+8,2,19);
+   box(c,ink,x+23,y+7,4,21);box(c,'#6e4e34',x+24,y+8,2,19);
+   box(c,ink,x+5,y+6,22,16);box(c,'#543826',x+6,y+7,20,14);
+   box(c,'#f6eed8',x+8,y+9,16,10);box(c,'#8e2c36',x+10,y+10,12,3);
+   box(c,'#5e5448',x+10,y+14,12,1);box(c,'#5e5448',x+10,y+16,9,1);
+   box(c,ink,x+2,y+2,28,6);box(c,'#7c2c34',x+3,y+3,26,4);box(c,'#b84a54',x+5,y+2,22,2);
+   box(c,'#ebd074',x+14,y+1,4,2);
+   return true;
   }else if(o.id==='heroLedger'){
-   box(c,'#6a6256',x+4,y+20,25,7);box(c,'#c5af85',x+7,y+17,20,3);
+   // Sculpted white-marble Royal Honor Lectern with crimson velvet runner & open gilded ledger!
+   box(c,'rgba(12,14,18,.34)',x+5,y+24,22,5);
+   box(c,ink,x+6,y+13,20,14);box(c,'#dcd6c6',x+8,y+15,16,10);box(c,'#faf6ec',x+9,y+15,6,9);
+   box(c,'#8e2c36',x+12,y+15,8,10);box(c,'#ebd074',x+14,y+16,4,8);
+   box(c,ink,x+4,y+6,24,10);box(c,'#6e4c2e',x+5,y+7,22,8);
+   box(c,'#f6eed4',x+7,y+8,18,6);box(c,'#8e2c36',x+9,y+9,5,2);box(c,'#5e5246',x+16,y+9,7,1);box(c,'#5e5246',x+16,y+12,6,1);
+   return true;
   }else if(o.id==='residentialWell'){
-   box(c,'#464a50',x+5,y+12,22,15);box(c,'#94928a',x+7,y+14,18,11);
-   box(c,'#4a7686',x+9,y+16,14,6);box(c,'#8fc2d0',x+11,y+17,6,2);
+   if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawSculptedWell){
+    HD2DAtlas.drawSculptedWell(c,o.x,o.y,{roof:'#7a323c',roofHi:'#b85460'});
+    return true;
+   }
+   box(c,'rgba(12,14,18,.32)',x+4,y+23,24,5);
+   box(c,ink,x+4,y+11,24,15);box(c,'#b8b4a6',x+6,y+13,20,11);
+   box(c,'#387c96',x+8,y+14,16,6);box(c,'#9ce2ec',x+10,y+15,7,2);
+   return true;
   }else if(o.id==='marketBazaar'||o.id==='capitalMarket'){
    // Grounded 3D wooden produce crate & oak barrel cluster (no flat 2D mini-stalls!)
    box(c,'rgba(14,18,22,.32)',x+3,y+23,28,6);
@@ -865,10 +890,19 @@ const CapitalEnvironment=(()=>{
    box(c,'#d84844',x+5,y+9,5,5);box(c,'#f0b848',x+10,y+10,5,4);box(c,'#649c4c',x+8,y+8,4,3);
    box(c,'#241a14',x+18,y+13,12,14);box(c,'#885e3a',x+19,y+14,10,12);box(c,'#545c64',x+19,y+17,10,2);box(c,'#545c64',x+19,y+22,10,2);
    box(c,'#c8a06e',x+20,y+14,8,2);
+   return true;
   }else if(o.id==='garrisonBoard'){
-   box(c,'#3a424c',x+5,y+6,22,21);box(c,'#687482',x+7,y+8,18,14);
-   box(c,'#e6dec8',x+9,y+10,6,7);box(c,'#dfd4ba',x+16,y+10,6,6);
+   // 3D Iron-Banded Military Dispatch Board with slate hood & crimson orders!
+   box(c,'rgba(12,14,18,.34)',x+4,y+25,25,5);
+   box(c,ink,x+5,y+7,4,21);box(c,'#46505a',x+6,y+8,2,19);
+   box(c,ink,x+23,y+7,4,21);box(c,'#46505a',x+24,y+8,2,19);
+   box(c,ink,x+5,y+6,22,16);box(c,'#525c66',x+7,y+8,18,12);
+   box(c,'#efe6cc',x+8,y+9,7,8);box(c,'#9c323c',x+10,y+10,3,2);
+   box(c,'#dfd4ba',x+16,y+10,7,7);box(c,'#4c5660',x+17,y+12,5,1);
+   box(c,ink,x+2,y+2,28,6);box(c,'#344252',x+3,y+3,26,4);box(c,'#5a6e84',x+5,y+2,22,2);
+   return true;
   }
+  return false;
  }
  function npcAccent(c,map,n){
   if(!on()||!mapsSupported.has(map))return;

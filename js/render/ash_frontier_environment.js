@@ -170,24 +170,16 @@ const AshFrontierEnvironment=(()=>{
   };
 
   if(map==='ashroad'){
-   // Expanded 28x18 Scorched War-Torn Ash Highway: 3D Charred Ruined Farmhouse, Ember Craters, Skeletal Trees & Burned Wagon!
-   // 1. 3D Charred Ruined Timber Farmhouse over 'H' (3..7, 3..5) with exposed blackened rafters, stone chimney & glowing hearth embers!
+   // Expanded 28x18 Scorched War-Torn Ash Highway: Genuinely Charred Half-Collapsed Farmhouse, Ember Craters, Skeletal Trees & Burned Wagon!
    const hx=3*32,hy=3*32,hw=5*32,hh=3*32;
-   pix(ctx,'rgba(10,10,12,0.44)',hx+6,hy+hh-2,hw+6,12);
-   pix(ctx,'#1c1816',hx-1,hy+10,hw+2,hh-10);
-   pix(ctx,'#4a443e',hx+2,hy+hh-16,hw-4,15);pix(ctx,'#6e6860',hx+3,hy+hh-16,hw-6,3); // scorched stone foundation
-   pix(ctx,'#5c524a',hx+2,hy+16,hw-4,hh-32);pix(ctx,'#3a322c',hx+6,hy+16,hw-12,26); // soot-blackened stucco walls
-   // Jagged charred timber beams & broken roof rafters open to the ash sky
-   for(let bx=hx+12;bx<hx+hw-10;bx+=24){
-    pix(ctx,'#1a1614',bx,hy-8,7,hh-8);pix(ctx,'#3e342e',bx+1,hy-6,4,hh-12);
+   if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawGrandHouse){
+    HD2DAtlas.drawGrandHouse(ctx,3,3,5,3,{tag:'ash_ruin',region:'military_tent',militaryType:'ruin',chimneyLeft:true});
+   }else{
+    pix(ctx,'#1c1816',hx-1,hy+10,hw+2,hh-10);
    }
-   pix(ctx,'#181412',hx-2,hy+8,hw+4,12);pix(ctx,'#362a24',hx,hy+10,hw,7);
-   pix(ctx,'#1c1816',hx+16,hy-28,16,42);pix(ctx,'#66605a',hx+18,hy-26,12,38);pix(ctx,'#8c867e',hx+19,hy-26,5,34); // standing stone chimney!
-   // Glowing smoldering ember coals inside the collapsed farmhouse doorway
-   const eg=ctx.createRadialGradient?.(hx+hw/2,hy+hh-22,4,hx+hw/2,hy+hh-22,42);
-   if(eg&&typeof eg.addColorStop==='function'){eg.addColorStop(0,'rgba(255,126,48,0.34)');eg.addColorStop(1,'rgba(220,80,30,0)');ctx.fillStyle=eg;ctx.beginPath();ctx.arc(hx+hw/2,hy+hh-22,42,0,Math.PI*2);ctx.fill()}
-   pix(ctx,'#14100e',hx+hw/2-14,hy+hh-34,28,32);
-   pix(ctx,'#c84c1e',hx+hw/2-9,hy+hh-14,18,6);pix(ctx,'#ffae46',hx+hw/2-5,hy+hh-13,10,3);
+   // Glowing smoldering ember radiance inside the burned-out farmhouse ruin
+   const eg=ctx.createRadialGradient?.(hx+hw/2,hy+hh-20,4,hx+hw/2,hy+hh-20,46);
+   if(eg&&typeof eg.addColorStop==='function'){eg.addColorStop(0,'rgba(255,126,48,0.36)');eg.addColorStop(1,'rgba(220,80,30,0)');ctx.fillStyle=eg;ctx.beginPath();ctx.arc(hx+hw/2,hy+hh-20,46,0,Math.PI*2);ctx.fill()}
    // 2. Smoldering artillery craters, charred skeletal trees & crumbled roadside stone walls
    for(const [cx,cy] of [[9,4],[17,4],[9,13],[22,14],[3,10],[24,7]])drawCrater(cx,cy,cx%2===0);
    for(const [tx,ty] of [[2,8],[8,14],[16,3],[23,3],[25,13],[19,15]])drawCharredTree(tx,ty);
@@ -206,7 +198,7 @@ const AshFrontierEnvironment=(()=>{
    // Expanded 28x18 Serad Kingdom Frontline Garrison Bastion: 3D Field Hospital, North Stone Rampart Archway & Ridged War Pavilions!
    if(typeof HD2DAtlas!=='undefined'){
     HD2DAtlas.drawStoneArchGate(ctx,12,1,4,{label:'セラド北防壁',roof:'#6c2a32',stone:'#787c82',stoneHi:'#a8acb2'});
-    HD2DAtlas.drawGrandHouse(ctx,3,10,5,3,{tag:'fr_hosp',label:'野戦病院',roofDark:'#364638',roofMain:'#526852',roofHi:'#748e70',roofRim:'#9cb696',wall:'#e4dec8',shutter:'#445244',canopyColor:'#9c3842',chimneyLeft:true,doorOffsetPx:2*32+16});
+    HD2DAtlas.drawGrandHouse(ctx,3,10,5,3,{tag:'fr_hosp',region:'military_tent',militaryType:'hospital',label:'野戦病院'});
    }
    drawWarTent(19,2,'#8c343e','#b4525a',false);
    drawWarTent(22,10,'#7c6c56','#a69478',false);

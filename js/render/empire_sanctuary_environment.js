@@ -598,10 +598,9 @@ const EmpireSanctuaryEnvironment=(()=>{
   const now=Date.now();
 
   if(map==='empirevillage'){
-   // Expanded 32x20 Imperial Canal & Orchard Village: Waterfall Culvert, Plaza Sunburst Medallion, Stepping Paths & 4 Distinct Cottages!
+   // Expanded 32x20 Imperial Canal & Orchard Village: Waterfall Culvert, Humble 1-Story Imperial River-Stone & Blue-Slate Cottages with Blue Mourning Ribbons!
    if(typeof HD2DAtlas!=='undefined'){
     HD2DAtlas.drawWaterfallCulvert(ctx,6,1,2,{stone:'#68727a',stoneHi:'#9ea8b0'});
-    HD2DAtlas.drawPlazaMedallion(ctx,16*32,10*32,54,'imperial');
    }
    for(const [dx,dy] of [[11,6],[23,6],[11,15],[23,15]]){
     const px=dx*32,py=dy*32;
@@ -610,10 +609,10 @@ const EmpireSanctuaryEnvironment=(()=>{
     pix(ctx,'#7c8892',px+6,py+15,20,9);pix(ctx,'#aeb8c0',px+7,py+16,18,3);
    }
    const empHouses=[
-    {x:9,y:2,w:5,h:4,tag:'emp_mill',archStyle:'hall',label:'水車番の集会所',roofDark:'#243a4e',roofMain:'#385a72',roofHi:'#587e9a',roofRim:'#84aac4',wall:'#e4dac6',wallShade:'#ccbca2',wallDark:'#9e8e74',shutter:'#2f4c64',bellGable:true,flowerBorder:true,chimneyLeft:true,doorOffsetPx:2*32+16},
-    {x:20,y:2,w:6,h:4,tag:'emp_ne',archStyle:'cottage',roofDark:'#264446',roofMain:'#3c686a',roofHi:'#5e8f90',roofRim:'#8cb8b8',wall:'#e6e2d6',wallShade:'#cecab8',wallDark:'#a09c8a',shutter:'#365a5e',flowerBorder:true,chimneyLeft:false,doorOffsetPx:3*32+16},
-    {x:9,y:11,w:5,h:4,tag:'emp_sw',archStyle:'manor',lowerStone:true,roofDark:'#283c52',roofMain:'#3c5c76',roofHi:'#5e829e',roofRim:'#88acc4',wall:'#dad4c4',wallShade:'#c2bcac',wallDark:'#948e7e',shutter:'#2d4862',stonePortico:true,bannerColor:'#2d5074',chimneyLeft:true,doorOffsetPx:2*32+16},
-    {x:20,y:11,w:6,h:4,tag:'emp_se',archStyle:'workshop',timberWall:true,roofDark:'#343a4a',roofMain:'#4c566c',roofHi:'#6e7b94',roofRim:'#96a4bc',wall:'#d2ba98',wallShade:'#ba9e7a',wallDark:'#8e7454',shutter:'#325068',sideShed:true,chimneyLeft:false,doorOffsetPx:3*32+16}
+    {x:9,y:2,w:5,h:4,tag:'emp_mill',region:'imperial',rural:true,wallTone:'slate',roofDark:'#1c2e42',roofMain:'#32506e',roofHi:'#54789c',label:'水車番の集会所',chimneyLeft:true,doorOffsetPx:2*32+16},
+    {x:20,y:2,w:6,h:4,tag:'emp_ne',region:'imperial',rural:true,wallTone:'limestone',roofDark:'#1f3c3e',roofMain:'#366264',roofHi:'#588a8c',chimneyLeft:false,doorOffsetPx:3*32+16},
+    {x:9,y:11,w:5,h:4,tag:'emp_sw',region:'imperial',rural:true,wallTone:'moss_stone',roofDark:'#223244',roofMain:'#38506a',roofHi:'#5c7896',chimneyLeft:true,doorOffsetPx:2*32+16},
+    {x:20,y:11,w:6,h:4,tag:'emp_se',region:'imperial',rural:true,wallTone:'river_brick',roofDark:'#2c3040',roofMain:'#444c62',roofHi:'#68728c',sideShed:true,chimneyLeft:false,doorOffsetPx:3*32+16}
    ];
    for(const b of empHouses){
     if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawGrandHouse(ctx,b.x,b.y,b.w,b.h,b)){
@@ -700,10 +699,10 @@ const EmpireSanctuaryEnvironment=(()=>{
     HD2DAtlas.drawDoves(ctx,[[15*32+18,11*32+12,1],[20*32+12,13*32+8,-1]],now);
    }
    const impCityBuildings=[
-    {x:3,y:2,w:7,h:4,tag:'imp_archive',archStyle:'manor',lowerStone:true,label:'地方公文書館',roofDark:'#1c2e40',roofMain:'#2e4c66',roofHi:'#507494',roofRim:'#7ea6c4',wall:'#d6dce2',wallShade:'#bcc6d0',wallDark:'#8c98a6',shutter:'#223a50',stonePortico:true,bannerColor:'#2c5076',chimneyLeft:true,doorOffsetPx:3*32+16},
-    {x:26,y:2,w:7,h:4,tag:'imp_guild',archStyle:'hall',label:'水運組合',roofDark:'#1e3644',roofMain:'#34586a',roofHi:'#568094',roofRim:'#84aec2',wall:'#e4dcd0',wallShade:'#ccc2b2',wallDark:'#9e9484',shutter:'#284858',bellGable:true,flowerBorder:true,chimneyLeft:false,doorOffsetPx:3*32+16},
-    {x:3,y:18,w:6,h:3,tag:'imp_inn',archStyle:'cottage',label:'水鳥亭',roofDark:'#22384a',roofMain:'#385a72',roofHi:'#5a809a',roofRim:'#86aac4',wall:'#ebd8bc',wallShade:'#d2be9e',wallDark:'#a49072',shutter:'#2b4860',canopyColor:'#36607a',flowerBorder:true,doorOffsetPx:3*32},
-    {x:27,y:18,w:6,h:3,tag:'imp_books',archStyle:'workshop',timberWall:true,label:'運河古書店',roofDark:'#2a3446',roofMain:'#42526a',roofHi:'#647692',roofRim:'#8ea0ba',wall:'#d0b494',wallShade:'#b89a78',wallDark:'#8c7050',shutter:'#34425a',sideShed:true,chimneyLeft:false,doorOffsetPx:3*32}
+    {x:3,y:2,w:7,h:4,tag:'imp_archive',region:'imperial',rural:false,label:'地方公文書館',stonePortico:true,chimneyLeft:true,doorOffsetPx:3*32+16},
+    {x:26,y:2,w:7,h:4,tag:'imp_guild',region:'imperial',rural:false,label:'水運組合',bellGable:true,chimneyLeft:false,doorOffsetPx:3*32+16},
+    {x:3,y:18,w:6,h:3,tag:'imp_inn',region:'imperial',rural:false,label:'水鳥亭',chimneyLeft:true,doorOffsetPx:3*32},
+    {x:27,y:18,w:6,h:3,tag:'imp_books',region:'imperial',rural:false,label:'運河古書店',chimneyLeft:false,doorOffsetPx:3*32}
    ];
    for(const b of impCityBuildings){
     if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawGrandHouse(ctx,b.x,b.y,b.w,b.h,b)){
@@ -1001,13 +1000,13 @@ const EmpireSanctuaryEnvironment=(()=>{
    pix(ctx,ink,rmid-5,ry-36,10,12);pix(ctx,'#ecc86c',rmid-4,ry-35,8,10);pix(ctx,'#fffbe0',rmid-2,ry-34,4,6);
    for(const ax of [rx-6,rx+rw-2]){pix(ctx,ink,ax,ry-4,8,9);pix(ctx,'#e6c46a',ax+1,ry-3,6,7)}
 
-   // Southeast: Grand 7x4 Storyteller's Stone Sanctuary Villa with Bell-Gable & Blooming Flower Garden + White-Marble Entrance Archway & Sanctuary Doves!
-   const elsiaVilla={x:22,y:13,w:7,h:4,tag:'elsia_villa',archStyle:'hall',label:'語り部の家',roofDark:'#30443a',roofMain:'#4c6858',roofHi:'#70907a',roofRim:'#9cc0a4',wall:'#eae4d0',wallShade:'#d0c8b0',wallDark:'#a29a82',shutter:'#3e6050',bellGable:true,flowerBorder:true,chimneyLeft:true,doorOffsetPx:3*32+16};
+   // Southeast: White-Marble & Sage-Verdigris Sanctuary Villa harmonizing 100% with the Ancient Elsia Pantheon!
+   const elsiaVilla={x:22,y:13,w:7,h:4,tag:'elsia_villa',region:'sanctuary',label:'語り部の家',doorOffsetPx:3*32+16};
    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawGrandHouse(ctx,elsiaVilla.x,elsiaVilla.y,elsiaVilla.w,elsiaVilla.h,elsiaVilla)){
     drawImperialHouse(ctx,22,13,7,4,{roofDark:'#4e584a',roofMain:'#687662',roofHi:'#889880',wall:'#d8d2be',bannerLabel:'語り部の家'});
    }
    if(typeof HD2DAtlas!=='undefined'){
-    HD2DAtlas.drawStoneArchGate(ctx,14,20,4,{label:'エルシア聖域',roof:'#5c7c72',stone:'#d8d6c8',stoneHi:'#faf8ee'});
+    HD2DAtlas.drawStoneArchGate(ctx,14,20,4,{style:'sanctuary',label:'エルシア聖域',roof:'#5c7c72',stone:'#d8d6c8',stoneHi:'#faf8ee'});
     HD2DAtlas.drawDoves(ctx,[[13*32+10,10*32+14,1],[18*32+16,12*32+10,-1],[9*32+8,16*32+14,1]],now);
    }
 
@@ -1229,8 +1228,9 @@ const EmpireSanctuaryEnvironment=(()=>{
   const x=o.x*32,y=o.y*32,now=Date.now();
   if(o.id==='waterMill')return true; // Rendered as full animated waterwheel in accents()
   if(o.id==='orchardSluice'){
-   pix(ctx,'#463424',x+4,y+12,24,16);pix(ctx,'#7d5e42',x+6,y+14,20,12);
-   pix(ctx,'#386d82',x+8,y+18,16,6);pix(ctx,'#a2dce8',x+10,y+19,8,2);
+   pix(ctx,'rgba(12,18,22,0.34)',x+3,y+25,26,5);
+   pix(ctx,'#1c1814',x+3,y+10,26,17);pix(ctx,'#7d5e42',x+5,y+12,22,13);pix(ctx,'#ab845c',x+6,y+12,20,2);
+   pix(ctx,'#2a6278',x+7,y+17,18,6);pix(ctx,'#a2dce8',x+9,y+18,9,2);pix(ctx,'#4e5862',x+14,y+8,4,10);
    return true;
   }
   if(o.id==='villageHearth'){
@@ -1253,23 +1253,29 @@ const EmpireSanctuaryEnvironment=(()=>{
   }
   if(o.id==='imperialArchive')return true; // Drawn as part of the 3D Regional Archive facade in accents()
   if(o.id==='readingBench'){
-   pix(ctx,'#4a545e',x+4,y+15,24,11);pix(ctx,'#8c98a2',x+6,y+16,20,6);
-   pix(ctx,'#ece4cc',x+10,y+16,7,4);
+   pix(ctx,'rgba(12,18,24,0.32)',x+3,y+23,26,5);
+   pix(ctx,'#1c2228',x+3,y+12,26,13);pix(ctx,'#8c98a2',x+5,y+14,22,7);pix(ctx,'#c4ced6',x+6,y+14,20,2);
+   pix(ctx,'#465058',x+5,y+21,4,4);pix(ctx,'#465058',x+23,y+21,4,4);
+   pix(ctx,'#1c2228',x+9,y+13,9,6);pix(ctx,'#f2ebd4',x+10,y+14,7,4);pix(ctx,'#2c5884',x+11,y+15,2,2);
    return true;
   }
   if(o.id==='retreatBreastwork'){
-   pix(ctx,'#3e352c',x+3,y+12,26,15);pix(ctx,'#6e5e4e',x+5,y+14,22,8);
-   pix(ctx,'#8a929a',x+12,y+7,3,14);
+   pix(ctx,'rgba(14,14,18,0.36)',x+2,y+24,28,5);
+   pix(ctx,'#1e1814',x+2,y+11,28,15);pix(ctx,'#6e5e4e',x+4,y+13,24,11);pix(ctx,'#a6967c',x+5,y+13,22,3);
+   pix(ctx,'#3c2c1e',x+12,y+4,3,16);pix(ctx,'#c4d0da',x+12,y+3,3,4);
    return true;
   }
   if(o.id==='colonnadeArch'){
-   pix(ctx,'#8c8a7c',x+6,y+4,20,24);pix(ctx,'#e2e0d2',x+8,y+6,16,20);
-   pix(ctx,'#5c7e54',x+8,y+14,12,5);
+   pix(ctx,'rgba(14,22,18,0.34)',x+4,y+25,24,5);
+   pix(ctx,'#1e2420',x+5,y+3,22,25);pix(ctx,'#dcd8ca',x+7,y+5,18,21);pix(ctx,'#faf8ee',x+8,y+5,5,20);
+   pix(ctx,'#e4c46e',x+6,y+4,20,3);pix(ctx,'#3c7448',x+7,y+14,12,6);pix(ctx,'#78b872',x+8,y+13,7,3);
    return true;
   }
   if(o.id==='oliveTerrace'){
-   pix(ctx,'#8e8c7e',x+3,y+12,26,15);pix(ctx,'#55724c',x+5,y+10,22,12);
-   pix(ctx,'#82a274',x+7,y+11,8,6);pix(ctx,'#82a274',x+17,y+11,8,6);
+   pix(ctx,'rgba(14,22,18,0.32)',x+2,y+24,28,5);
+   pix(ctx,'#1e2420',x+2,y+11,28,16);pix(ctx,'#c8c6b8',x+4,y+21,24,4);
+   pix(ctx,'#3e6844',x+4,y+9,24,13);pix(ctx,'#689864',x+6,y+10,20,8);pix(ctx,'#a2c896',x+8,y+10,8,4);
+   pix(ctx,'#f2e498',x+10,y+13,3,2);pix(ctx,'#f2e498',x+20,y+12,3,2);
    return true;
   }
   if(o.id==='yukiRibbon'){
@@ -1281,45 +1287,48 @@ const EmpireSanctuaryEnvironment=(()=>{
    return true;
   }
   if(o.id==='empireShrine'||o.id==='yukiMemorial'){
-   pix(ctx,'rgba(14,18,22,0.28)',x+5,y+24,22,5);
-   pix(ctx,'#4a5258',x+8,y+6,16,20);pix(ctx,'#8c969e',x+10,y+8,12,16);
-   pix(ctx,'#c2ccd2',x+11,y+9,10,3);
-   pix(ctx,'#385e88',x+12,y+15,8,3); // blue memorial ribbon
-   pix(ctx,'#eef2f0',x+7,y+23,4,3);pix(ctx,'#eef2f0',x+21,y+23,4,3);
+   pix(ctx,'rgba(12,16,20,0.34)',x+4,y+24,24,5);
+   pix(ctx,'#1c2228',x+5,y+21,22,6);pix(ctx,'#78828a',x+6,y+22,20,4);
+   pix(ctx,'#1c2228',x+7,y+5,18,18);pix(ctx,'#98a2aa',x+9,y+7,14,14);
+   pix(ctx,'#d2dce2',x+10,y+7,5,13);pix(ctx,'#d2dce2',x+10,y+7,12,3);
+   pix(ctx,'#2a5482',x+11,y+13,10,3);pix(ctx,'#689ed4',x+12,y+13,8,1);
+   pix(ctx,'#f4f8f2',x+6,y+22,4,3);pix(ctx,'#f4f8f2',x+22,y+22,4,3);pix(ctx,'#f2d26e',x+7,y+23,2,1);
    return true;
   }
   if(o.id==='brokenStandard'){
-   const sway=Math.round(Math.sin(now/360)*1);
-   pix(ctx,'rgba(16,14,12,0.26)',x+6,y+25,20,4);
-   pix(ctx,'#46382b',x+13,y+5,4,22);
-   pix(ctx,'#2c4868',x+17,y+7,11+sway,9);
-   pix(ctx,'#5c80a8',x+18,y+8,7+sway,3);
+   const sway=Math.round(Math.sin(now/360)*1.5);
+   pix(ctx,'rgba(14,14,16,0.32)',x+6,y+25,20,4);
+   pix(ctx,'#1e1814',x+12,y+4,4,24);pix(ctx,'#7a5a3a',x+13,y+5,2,22);
+   pix(ctx,'#182434',x+16,y+6,13+sway,11);pix(ctx,'#2c5078',x+17,y+7,11+sway,9);
+   pix(ctx,'#6492be',x+18,y+8,8+sway,3);pix(ctx,'#d8e6f2',x+20,y+12,5,2);
    return true;
   }
   if(o.id==='tornLetter'){
-   pix(ctx,'#4a4238',x+7,y+19,18,8);
-   pix(ctx,'#dfd4b8',x+9,y+17,14,8);
-   pix(ctx,'#786856',x+11,y+20,9,1);pix(ctx,'#786856',x+11,y+22,7,1);
+   pix(ctx,'rgba(12,14,18,0.30)',x+6,y+23,20,4);
+   pix(ctx,'#1e1a16',x+6,y+13,20,13);pix(ctx,'#efe5c8',x+8,y+15,16,9);
+   pix(ctx,'#6e5e4e',x+10,y+17,11,1);pix(ctx,'#6e5e4e',x+10,y+20,8,1);pix(ctx,'#325884',x+19,y+19,4,3);
    return true;
   }
   if(o.id==='sacredSpring'){
    return false;
   }
   if(o.id==='elsiaTablet'||o.id==='oldSanctum'||o.id==='canalMonument'){
-   pix(ctx,'rgba(18,22,24,0.28)',x+5,y+25,22,4);
-   pix(ctx,'#686c68',x+7,y+4,18,23);
-   pix(ctx,'#c4c2b4',x+9,y+6,14,19);
-   pix(ctx,'#e4e2d6',x+10,y+7,12,3);
-   for(let ry=12;ry<=20;ry+=3)pix(ctx,'#7c7a70',x+11,y+ry,10,1);
+   pix(ctx,'rgba(14,18,22,0.34)',x+4,y+24,24,5);
+   pix(ctx,'#1e2422',x+5,y+21,22,6);pix(ctx,'#8c8e86',x+6,y+22,20,4);
+   pix(ctx,'#1e2422',x+6,y+3,20,20);pix(ctx,'#c8c6b8',x+8,y+5,16,16);
+   pix(ctx,'#f2f0e4',x+9,y+5,14,3);pix(ctx,'#f2f0e4',x+9,y+5,4,15);
+   for(let ry=10;ry<=18;ry+=3)pix(ctx,'#6e726a',x+11,y+ry,10,1);
+   pix(ctx,'#467448',x+7,y+18,6,4);
    return true;
   }
   if(['empireCache','imperialCache','yukiCache','elsiaCache','returnCache','ridgeVault','finalSupplyCrate','finalImperialCrate'].includes(o.id)){
    const opened=!!state?.world?.treasures?.[o.id];
-   pix(ctx,'rgba(14,16,20,0.28)',x+5,y+24,22,4);
-   pix(ctx,'#36302a',x+6,y+13,20,13);
-   pix(ctx,opened?'#57524c':'#4a687e',x+8,y+15,16,9);
-   pix(ctx,opened?'#48443e':'#6c90aa',x+8,y+15,16,3);
-   if(!opened)pix(ctx,'#e6d28a',x+14,y+19,4,3);
+   pix(ctx,'rgba(12,16,20,0.34)',x+4,y+24,24,5);
+   pix(ctx,'#1a1e24',x+5,y+11,22,15);
+   pix(ctx,opened?'#4c4a46':'#3e6078',x+7,y+13,18,11);
+   pix(ctx,opened?'#3a3836':'#6894b2',x+7,y+13,18,4);
+   pix(ctx,'#2c3640',x+6,y+12,2,13);pix(ctx,'#2c3640',x+24,y+12,2,13);
+   if(!opened){pix(ctx,'#ebd078',x+14,y+17,4,5);pix(ctx,'#524024',x+15,y+19,2,2)}
    return true;
   }
   return false;

@@ -196,40 +196,32 @@ const RyuneEnvironment=(()=>{
   return false
  }
  const grandVillageBuildings=[
-  {x:4,y:3,w:6,h:4,tag:'ryune_karen',archStyle:'cottage',label:'カレンの家',roofDark:'#5c2c26',roofMain:'#8c443a',roofHi:'#b86252',roofRim:'#de8c78',wall:'#f2e4c6',wallShade:'#dccaa6',wallDark:'#b29e7c',shutter:'#446648',chimneyLeft:true,flowerBorder:true,doorOffsetPx:3*32+16},
-  {x:24,y:3,w:7,h:4,tag:'ryune_orphanage',archStyle:'hall',label:'リュネ孤児院',roofDark:'#264632',roofMain:'#3e6e4a',roofHi:'#629668',roofRim:'#90c08c',wall:'#ecd6b6',wallShade:'#d4bc98',wallDark:'#a8906e',shutter:'#7c4c38',canopyColor:'#4c7e54',bellGable:true,flowerBorder:true,doorOffsetPx:3*32+16},
-  {x:4,y:15,w:6,h:4,tag:'ryune_mayor',archStyle:'manor',lowerStone:true,label:'村長宅',roofDark:'#26364c',roofMain:'#3e5674',roofHi:'#627ea0',roofRim:'#8eaac8',wall:'#e4dfd2',wallShade:'#ccc6b6',wallDark:'#9e9888',shutter:'#364860',stonePortico:true,bannerColor:'#345480',doorOffsetPx:3*32+16},
-  {x:27,y:15,w:6,h:4,tag:'ryune_cottage',archStyle:'workshop',timberWall:true,label:'東の民家',roofDark:'#4a3020',roofMain:'#764e34',roofHi:'#a26e4c',roofRim:'#ca9670',wall:'#d8b892',wallShade:'#c09e78',wallDark:'#967856',shutter:'#425e44',chimneyLeft:false,sideShed:true,flowerBorder:true,doorOffsetPx:3*32+16}
+  {x:4,y:3,w:6,h:4,tag:'ryune_karen',region:'rural',ruralStyle:'thatch',label:'カレンの家',chimneyLeft:true,doorOffsetPx:3*32+16},
+  {x:24,y:3,w:7,h:4,tag:'ryune_orphanage',region:'rural',ruralStyle:'plank_hall',label:'リュネ孤児院',roofDark:'#2c3d2e',roofMain:'#486048',roofHi:'#668262',bellGable:true,chimneyLeft:false,doorOffsetPx:3*32+16},
+  {x:4,y:15,w:6,h:4,tag:'ryune_mayor',region:'rural',ruralStyle:'fieldstone',label:'村長宅',roofDark:'#2c323a',roofMain:'#48505c',roofHi:'#687280',chimneyLeft:false,doorOffsetPx:3*32+16},
+  {x:27,y:15,w:6,h:4,tag:'ryune_cottage',region:'rural',ruralStyle:'log_cabin',label:'東の民家',roofDark:'#3e281a',roofMain:'#64442c',roofHi:'#8c6240',chimneyLeft:false,sideShed:true,doorOffsetPx:3*32+16}
  ];
 
  function lowProps(c){
-  // 1. Handcrafted Cobblestone Stepping-Stone Garden Walkways connecting all 4 house doors cleanly to village lanes!
+  // 1. Worn Rustic Fieldstone Stepping-Stones connecting all 4 humble cottage doorways to the dirt village lanes!
   for(const [wx,wy] of [[7,7],[27,7],[7,19],[30,19]]){
    const px=wx*32,py=wy*32;
-   rect(c,'rgba(24,30,18,.22)',px+3,py+2,26,28);
-   rect(c,'#a69c84',px+4,py+1,24,10);rect(c,'#d8ceb4',px+5,py+2,22,4);
-   rect(c,'#9c927a',px+6,py+13,20,8);rect(c,'#d2c8ae',px+7,py+14,18,3);
-   rect(c,'#a69c84',px+5,py+23,22,8);rect(c,'#d8ceb4',px+6,py+24,20,3);
+   rect(c,'rgba(22,28,16,.20)',px+4,py+2,24,28);
+   rect(c,'#8c8676',px+5,py+2,21,9);rect(c,'#b8b29e',px+6,py+3,18,3);
+   rect(c,'#827c6c',px+7,py+14,18,7);rect(c,'#afa896',px+8,py+15,15,2);
+   rect(c,'#8a8474',px+5,py+23,20,7);rect(c,'#b6b09c',px+6,py+24,17,2);
   }
-  // 2. Central Plaza Sunburst Cobblestone Medallion centered around the Village Well (18,12) + Carved Stone Corner Bollards!
-  const cx=18*32+16,cy=12*32+16;
-  if(typeof c.beginPath==='function'){
-   c.save();
-   c.strokeStyle='rgba(76,66,48,.48)';c.lineWidth=3;c.beginPath();c.arc(cx,cy,66,0,Math.PI*2);c.stroke();
-   c.strokeStyle='rgba(236,226,198,.46)';c.lineWidth=2;c.beginPath();c.arc(cx,cy,62,0,Math.PI*2);c.stroke();
-   c.strokeStyle='rgba(76,66,48,.34)';c.lineWidth=2;c.beginPath();c.arc(cx,cy,42,0,Math.PI*2);c.stroke();
-   for(let a=0;a<8;a++){
-    const ang=a*Math.PI/4;
-    c.strokeStyle='rgba(92,80,58,.32)';c.lineWidth=2;
-    c.beginPath();c.moveTo(cx+Math.cos(ang)*42,cy+Math.sin(ang)*42);c.lineTo(cx+Math.cos(ang)*64,cy+Math.sin(ang)*64);c.stroke();
-   }
-   c.restore();
+  // 2. Humble Worn Village Well-Yard (mossy cracks & wild clover around the village well — NO opulent Royal Capital geometric medallion!)
+  for(const [gx,gy] of [[14,11],[16,10],[19,10],[21,13],[15,15],[19,15],[17,13]]){
+   const px=gx*32,py=gy*32;
+   rect(c,'#426a36',px+6,py+12,5,3);rect(c,'#6e9a52',px+7,py+12,3,2);
+   rect(c,'#3a5e30',px+19,py+22,4,3);rect(c,'#5e8a48',px+20,py+22,2,2);
   }
-  // Carved stepped stone curb corner bollards anchoring the Well Plaza
+  // Rough fieldstone corner wheel-guards marking the humble well yard
   for(const [bx,by] of [[14,10],[21,10],[14,15],[21,15]]){
    const px=bx*32,py=by*32;
-   rect(c,'rgba(18,22,14,.26)',px+2,py+2,28,28);
-   rect(c,'#9c9482',px+2,py+2,28,28);rect(c,'#cfc7b2',px+4,py+4,24,24);
+   rect(c,'rgba(18,22,14,.26)',px+5,py+8,22,20);
+   rect(c,'#58564e',px+5,py+6,22,20);rect(c,'#8c887c',px+7,py+8,18,16);rect(c,'#b8b2a2',px+8,py+8,14,4);
   }
   // 3. Carved Mossy Stone Spring Culvert & Bubbling Waterfall Arch feeding the Eastern Brook at (25..26, 9)!
   const bx0=25*32,by0=9*32,tNow=(typeof Date!=='undefined'?Date.now():0)/240;
@@ -379,28 +371,29 @@ const RyuneEnvironment=(()=>{
    rect(c,`rgba(246,244,238,${(0.44-phase*0.12).toFixed(2)})`,ox,oy,5+phase,3+phase*0.7);
   }
 
-  // 2. Carved Stone-and-Timber Village North Gate Archway spanning (16..19, 1)
+  // 2. Humble Bark-Peeled Oak Log Village North Gate spanning (16..19, 1) (NO urban stone city archway!)
   if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawStoneArchGate){
-   HD2DAtlas.drawStoneArchGate(c,16,1,4,{label:'リュネ村・北門',roof:'#7a4238'});
+   HD2DAtlas.drawStoneArchGate(c,16,1,4,{style:'rural_wood',label:'リュネ村・北門'});
   }
 
-  // 3. Central Plaza Wooden Park Benches (at solid-blocked (15,14) & (20,11)) + Warm Wrought-Iron Streetlamps!
+  // 3. Weathered Split-Log Village Benches (at solid-blocked (15,14) & (20,11)) + Humble Wooden Lantern Posts!
   for(const [bx2,by2] of [[15,14],[20,11]]){
    const x=bx2*32,y=by2*32;
-   rect(c,'rgba(16,20,14,.30)',x+2,y+23,28,5);
-   rect(c,'#362418',x+2,y+11,28,13);rect(c,'#8c6844',x+3,y+12,26,5);rect(c,'#b89062',x+4,y+12,24,2);
-   rect(c,'#6e4e32',x+3,y+18,26,4);rect(c,'#362418',x+5,y+22,4,4);rect(c,'#362418',x+23,y+22,4,4);
+   rect(c,'rgba(16,20,14,.32)',x+3,y+23,28,5);
+   rect(c,'#2c1e14',x+2,y+12,28,12);rect(c,'#7c5838',x+3,y+13,26,5);rect(c,'#a67c52',x+4,y+13,24,2);
+   rect(c,'#5e4028',x+3,y+19,26,3);rect(c,'#2c1e14',x+5,y+22,4,4);rect(c,'#2c1e14',x+23,y+22,4,4);
   }
   for(const [lx,ly] of [[14,12],[21,12],[24,12],[27,12]]){
    const x=lx*32+14,y=ly*32+4;
-   const lg=c.createRadialGradient?.(x+2,y+2,2,x+2,y+2,28);
+   const lg=c.createRadialGradient?.(x+2,y+2,2,x+2,y+2,24);
    if(lg&&typeof lg.addColorStop==='function'){
-    lg.addColorStop(0,'rgba(255,218,128,.34)');lg.addColorStop(1,'rgba(255,180,80,0)');
-    c.fillStyle=lg;c.beginPath();c.arc(x+2,y+2,28,0,Math.PI*2);c.fill();
+    lg.addColorStop(0,'rgba(255,212,118,.28)');lg.addColorStop(1,'rgba(255,176,72,0)');
+    c.fillStyle=lg;c.beginPath();c.arc(x+2,y+2,24,0,Math.PI*2);c.fill();
    }
-   rect(c,'rgba(14,18,14,.30)',x-2,y+21,8,4);
-   rect(c,'#24282e',x,y+4,4,19);rect(c,'#545e6a',x+1,y+5,2,17);
-   rect(c,'#24282e',x-2,y-1,8,7);rect(c,'#ffd674',x-1,y,6,5);rect(c,'#fffbe4',x+1,y+1,2,2);
+   // Humble timber oil-lantern post with wooden peg arm (NOT Capital wrought-iron streetlamp!)
+   rect(c,'rgba(14,18,14,.28)',x-1,y+22,7,4);
+   rect(c,'#2c1e14',x,y+2,5,21);rect(c,'#7a5434',x+1,y+3,3,19);rect(c,'#2c1e14',x-3,y+2,9,3);
+   rect(c,'#24201c',x-4,y+4,6,6);rect(c,'#f6cc64',x-3,y+5,4,4);rect(c,'#fffbe0',x-2,y+6,2,2);
   }
 
   // 4. Snoozing ginger tabby village cat curled up beside Eda's warm brick bread oven (5,12) + Pecking chickens (10..11, 21)
@@ -409,12 +402,11 @@ const RyuneEnvironment=(()=>{
   rect(c,'#3a2416',catX-1,catY+1,12,8);rect(c,'#d88844',catX,catY+2,10,6);rect(c,'#f2b46c',catX+2,catY+2,5,3);
   rect(c,'#9c5626',catX+3,catY+4,2,3);rect(c,'#9c5626',catX+7,catY+4,2,3);
   rect(c,'#d88844',catX-2,catY+3+purr,3,3);rect(c,'#f6d69c',catX+9,catY+1,3,2);
-  // Festive colorful village pennant bunting gently framing the north side of the Central Well Plaza
-  const buntColors=['#c84b44','#e6b84c','#48825a','#4b6e98'];
-  rect(c,'#5c4832',14*32+16,10*32+4,7*32,1);
-  for(let i=0;i<14;i++){
-   const fx=14*32+22+i*16,dip=Math.round(Math.sin((i/13)*Math.PI)*5);
-   rect(c,buntColors[i%4],fx,10*32+5+dip,8,5);rect(c,'rgba(255,252,238,.28)',fx+1,10*32+5+dip,6,2);
+  // Rustic split-rail wooden fence edging the north side of the well yard (replaces urban festival bunting!)
+  for(let fx=15;fx<=20;fx++){
+   const px2=fx*32,py2=10*32+2;
+   rect(c,'#2c1e14',px2,py2+3,32,3);rect(c,'#7c5a3a',px2,py2+3,32,2);
+   if(fx%2===1){rect(c,'#2c1e14',px2+2,py2,4,9);rect(c,'#9c744c',px2+3,py2+1,2,7)}
   }
   const peck=Math.floor(sm)%2;
   for(const [cx,cy,dir] of [[10*32+10,21*32+12,1],[11*32+8,21*32+18,-1],[10*32+22,22*32+6,1]]){
@@ -637,38 +629,56 @@ const RyuneEnvironment=(()=>{
    for(let fy=ry+4;fy<ry+rh-4;fy+=5){rect(c,'#ead8b0',rx-2,fy,2,3);rect(c,'#ead8b0',rx+rw,fy,2,3)}
   };
 
+  const ragRug=(rx,ry,rw,rh,c1,c2)=>{
+   // Humble handmade braided patchwork cottage rag-rug (authentic for a poor frontier village!)
+   rect(c,'rgba(16,12,10,.20)',rx+2,ry+3,rw,rh);
+   rect(c,'#4a3828',rx,ry,rw,rh);
+   for(let sy=ry+2;sy<ry+rh-2;sy+=5){
+    rect(c,((sy-ry)/5|0)%2?c1:c2,rx+2,sy,rw-4,4);
+   }
+   rect(c,'rgba(240,224,186,.32)',rx+6,ry+5,rw-12,rh-10);
+   for(let fy=ry+3;fy<ry+rh-3;fy+=5){rect(c,'#d8c8a2',rx-2,fy,2,2);rect(c,'#d8c8a2',rx+rw,fy,2,2)}
+  };
+  const herbWall=(hx,hy)=>{
+   // Hanging dried culinary herbs, wheat sheaves & braided garlic on timber wall rail
+   rect(c,'#3a281a',hx,hy+2,26,3);
+   for(let i=0;i<4;i++){
+    rect(c,i%2?'#4c7640':'#bfa052',hx+2+i*6,hy+5,4,12);
+    rect(c,i%2?'#7aa860':'#e6ca78',hx+3+i*6,hy+6,2,7);
+   }
+  };
+
   if(map==='karenhome'){
-   // Karen's Cozy Family Cottage: roaring stone hearth, family kitchen counter, grandfather clock, rose quilt & dinner table!
+   // Karen's Humble Warm Family Cottage: stone cooking hearth, dried herbs, patchwork rag-rug, grain sacks & honest oak dinner table!
    hearth(10*32+4,2*32+2,true);
-   tapestry(8*32+4,2*32+4,'#9a484c');tapestry(14*32+4,2*32+4,'#4e7464');
-   ornRug(8*32+4,6*32+2,8*32-8,4*32-10,'#98544e','#e8ca86');
-   bed(c,5*32+6,4*32,'#b8685c');
-   // Bedside nightstand with flickering candle
-   rect(c,'#3c2a1e',7*32+6,4*32+6,18,18);rect(c,'#8e6844',7*32+8,4*32+8,14,14);
+   herbWall(8*32+4,2*32+5);herbWall(14*32+4,2*32+5);
+   ragRug(8*32+4,6*32+2,8*32-8,4*32-10,'#9a6252','#c2986e');
+   bed(c,5*32+6,4*32,'#b06858');
+   rect(c,'#3c2a1e',7*32+6,4*32+6,18,18);rect(c,'#845e3c',7*32+8,4*32+8,14,14);
    rect(c,'#f2e6c8',7*32+13,4*32+2,4,6);rect(c,'#ffd868',7*32+14,4*32,2,3);
    kitchen(16*32+16,3*32+18);
    cabinet(c,18*32,5*32+8);
-   bookshelf(c,5*32+4,7*32+8,14);
-   clock(5*32+2,9*32+14);
-   // Dining chairs surrounding Karen's family oak table
+   bookshelf(c,5*32+4,7*32+8,12);
+   // Stacked burlap grain & potato sacks in corner (humble frontier pantry instead of luxury grandfather clock!)
+   rect(c,'rgba(16,12,10,.24)',5*32+4,10*32+14,24,6);
+   rect(c,'#3a281a',5*32+4,9*32+16,13,18);rect(c,'#b8a278',5*32+5,9*32+17,11,16);rect(c,'#7c6240',5*32+5,9*32+21,11,2);
+   rect(c,'#3a281a',5*32+15,9*32+20,13,14);rect(c,'#c8b48a',5*32+16,9*32+21,11,12);
    chair(10*32+2,6*32+8,'n');chair(12*32+2,6*32+8,'n');
    chair(10*32+2,8*32-2,'s');chair(12*32+2,8*32-2,'s');
    table(c,10*32+6,7*32+2,92);
    rect(c,'#e8dec4',11*32+4,7*32+7,12,6);rect(c,'#d4884a',11*32+6,7*32+8,8,3);
    rect(c,'#c2925a',12*32+10,7*32+7,10,5);
    plant(6*32+8,10*32+8,true);plant(17*32+14,10*32+8,true);
-   // Cozy storage barrels & woven laundry basket in southeast corner
    rect(c,'#3c2a1c',17*32+16,8*32+10,20,22);rect(c,'#88603c',17*32+18,8*32+12,16,18);rect(c,'#545a62',17*32+18,8*32+16,16,2);
   }else if(map==='orphanage'){
-   // Ryune Orphanage: communal hearth, 4 colorful patchwork children's beds, toy chest, jam pantry & long craft table!
+   // Ryune Orphanage: communal hearth, 4 patchwork children's cots, toy chest, jam pantry & long wooden table!
    hearth(11*32+4,2*32+2,true);
-   tapestry(9*32,2*32+4,'#5a825c');tapestry(14*32+6,2*32+4,'#c4864a');
-   ornRug(8*32+8,6*32+2,8*32-16,4*32-8,'#5e7a64','#e6d298');
+   herbWall(9*32,2*32+5);herbWall(14*32+6,2*32+5);
+   ragRug(8*32+8,6*32+2,8*32-16,4*32-8,'#5e7a64','#98a87e');
    bed(c,5*32+2,4*32,'#6e8c7a');bed(c,7*32+2,4*32,'#b87c68');
    bed(c,15*32+26,4*32,'#6c7ca0');bed(c,17*32+26,4*32,'#c29c5c');
    cabinet(c,17*32+8,5*32+4);
    bookshelf(c,5*32+2,6*32+12,16);
-   // Overflowing wooden toy chest with stuffed bear & painted blocks
    rect(c,'rgba(16,12,10,.24)',5*32+18,9*32+22,34,6);
    rect(c,'#3a281c',5*32+16,9*32+2,34,23);rect(c,'#9e764a',5*32+18,9*32+4,30,19);rect(c,'#caa06e',5*32+19,9*32+5,28,4);
    rect(c,'#d45a5a',5*32+22,9*32-2,6,6);rect(c,'#5690b8',5*32+30,9*32-1,6,5);rect(c,'#e8c45e',5*32+38,9*32-2,5,6);
@@ -677,30 +687,28 @@ const RyuneEnvironment=(()=>{
    table(c,9*32+20,7*32,132);
    plant(5*32+6,10*32+12,true);plant(18*32,10*32+12,true);
   }else if(map==='mayorhouse'){
-   // Mayor's Dignified Manor Study: grand library wall bookcases, stone hearth, portrait, map council desk & parlor palms!
+   // Village Elder's Study: oldest sturdy study in the village with tax ledgers, maps & modest wooden council desk
    hearth(11*32+4,2*32+2,false);
    tapestry(5*32+4,2*32+4,'#44567a');tapestry(18*32,2*32+4,'#44567a');
    bookshelf(c,5*32+2,3*32+22,18);bookshelf(c,6*32+6,3*32+22,18);
    bookshelf(c,16*32+22,3*32+22,18);bookshelf(c,17*32+26,3*32+22,18);
    bookshelf(c,5*32+2,8*32+12,18);
    clock(18*32,7*32+12);
-   ornRug(8*32+4,6*32,8*32-8,4*32-8,'#4f5e7a','#e8cc84');
+   ornRug(8*32+4,6*32,8*32-8,4*32-8,'#4f5e7a','#d8c28c');
    chair(10*32+4,6*32+8,'n');chair(12*32+24,6*32+8,'n');
    chair(10*32+4,8*32-2,'s');chair(12*32+24,8*32-2,'s');
    table(c,9*32+22,7*32,130);
-   // Detailed Frontier Map spread across the Mayor's council desk with brass compass & ledger
    rect(c,'#efe0bc',10*32+6,7*32+6,54,18);rect(c,'#7c9a68',10*32+12,7*32+9,16,8);
    rect(c,'#5c8ca6',10*32+32,7*32+8,8,12);rect(c,'#b04848',10*32+44,7*32+11,10,6);
    rect(c,'#d8b460',12*32+12,7*32+8,6,6);
    plant(6*32+10,10*32+10,false);plant(17*32+10,10*32+10,false);
   }else if(map==='cottage'){
-   // Soldier's Family Cottage: quiet hearth, empty made bed, letter writing desk, herb drying rack & woven rug!
+   // Soldier's Family Cottage: quiet hearth, empty made bed, letter writing desk, dried herbs & braided rag rug!
    hearth(11*32+4,2*32+2,true);
-   tapestry(9*32,2*32+4,'#6e5662');
-   ornRug(8*32+16,6*32+6,7*32-12,3*32+4,'#7a5e5a','#dfd0a8');
+   herbWall(9*32,2*32+5);
+   ragRug(8*32+16,6*32+6,7*32-12,3*32+4,'#7a5e5a','#b89e82');
    bed(c,5*32+16,4*32,'#627894');bed(c,7*32+24,4*32,'#b28478');
    cabinet(c,17*32+8,3*32+24);
-   // Letter-writing desk with wax-sealed parchment & candle at (16,4)
    rect(c,'#3a281c',15*32+24,4*32+2,36,20);rect(c,'#8c6844',15*32+26,4*32+4,32,14);
    rect(c,'#f4ead2',16*32+2,4*32+6,14,10);rect(c,'#b84248',16*32+10,4*32+11,4,4);
    bookshelf(c,5*32+4,8*32+10,12);
@@ -709,7 +717,7 @@ const RyuneEnvironment=(()=>{
    table(c,10*32+20,7*32,84);
    plant(6*32+10,10*32+10,true);
   }
-  // Ornate braided entrance welcome mat anchoring exit tiles (11..12, 12)
+  // Woven straw entrance mat anchoring exit tiles (11..12, 12)
   rect(c,'#3a2c22',11*32+1,12*32+12,62,15);
   rect(c,'#9e7c52',11*32+3,12*32+14,58,11);
   rect(c,'#dfc894',11*32+7,12*32+17,50,5);
@@ -721,7 +729,7 @@ const RyuneEnvironment=(()=>{
   if(map==='village'){
    if(obj.id==='well'){
     if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawSculptedWell){
-     HD2DAtlas.drawSculptedWell(c,obj.x,obj.y,{roof:'#8c4a3e',roofHi:'#ba6a56'});
+     HD2DAtlas.drawSculptedWell(c,obj.x,obj.y,{rustic:true,roof:'#6e4e2e',roofHi:'#9a7046'});
      return true;
     }
     rect(c,'rgba(20,28,22,.28)',x+1,y+24,30,7);

@@ -1046,134 +1046,396 @@ function drawRegionDecor(){if(RoadCaveQuality.enabled&&RoadCaveQuality.active.ha
  if(state.map==='ravine'&&!(typeof BorderWatchfortEnvironment!=='undefined'&&BorderWatchfortEnvironment.enabled)){ctx.fillStyle='#15191b';ctx.fillRect(5*TILE,2*TILE,14*TILE,10*TILE)}
 
 }
-function drawObject(o){if(RyuneOutskirts.drawObject(ctx,state.map,o,!!state.world?.treasures?.[o.id]))return;if(typeof EmpireSanctuaryEnvironment!=='undefined'&&EmpireSanctuaryEnvironment.enabled&&EmpireSanctuaryEnvironment.objectAccent(ctx,state.map,o))return;if(typeof BorderWatchfortEnvironment!=='undefined'&&BorderWatchfortEnvironment.enabled&&BorderWatchfortEnvironment.objectAccent(ctx,state.map,o))return;AshFrontierEnvironment.objectAccent(ctx,state.map,o);CapitalEnvironment.objectAccent(ctx,state.map,o);if(RoadCaveQuality.enabled&&RoadCaveQuality.active.has(state.map))RoadCaveQuality.objectBackdrop(ctx,state.map,o);if(RyuneEnvironment.enabled&&RyuneEnvironment.drawObject(ctx,state.map,o))return;const px=o.x*TILE,py=o.y*TILE;
- if(o.id==='store'){ctx.fillStyle='#916f45';ctx.fillRect(px+4,py+12,12,14);ctx.fillRect(px+16,py+8,12,18);ctx.strokeStyle='#5b4229';ctx.strokeRect(px+4.5,py+12.5,11,13);ctx.strokeRect(px+16.5,py+8.5,11,17);ctx.fillStyle='#d4c39d';ctx.beginPath();ctx.ellipse(px+10,py+9,6,5,0,0,Math.PI*2);ctx.ellipse(px+24,py+6,6,5,0,0,Math.PI*2);ctx.fill()}
- if(o.id==='well'){ctx.fillStyle='#676b70';ctx.beginPath();ctx.ellipse(px+16,py+17,13,8,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#252c31';ctx.beginPath();ctx.ellipse(px+16,py+16,8,4,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#7b5e3f';ctx.fillRect(px+5,py+2,3,17);ctx.fillRect(px+24,py+2,3,17);ctx.fillRect(px+5,py+2,22,3)}
- if(o.id==='home'){ctx.fillStyle='#72553c';ctx.fillRect(px+5,py+20,22,6);ctx.fillStyle='#c7aa72';ctx.fillRect(px+8,py+22,16,2);ctx.fillStyle='#efe1bc';ctx.font='bold 8px system-ui';ctx.textAlign='center';ctx.fillText('自宅',px+16,py+17);ctx.textAlign='start'}
- if(['doorOrphanage','doorMayor','doorCottage'].includes(o.id)){ctx.fillStyle='#6a5038';ctx.fillRect(px+4,py+21,24,5);ctx.fillStyle='#c9ac76';ctx.fillRect(px+7,py+22,18,2)}
- if(['capitalInnDoor','capitalArmoryDoor','capitalHouseDoor','capitalChapelDoor','waystationInnDoor','halmInnDoor','empireCottageDoor','imperialInnDoor','imperialBookDoor','imperialGuildDoor','elsiaHouseDoor'].includes(o.id)){const imperial=o.id.startsWith('imperial')||o.id==='empireCottageDoor',elsia=o.id==='elsiaHouseDoor',chapel=o.id==='capitalChapelDoor';ctx.fillStyle=chapel?'#6e6a60':elsia?'#5f705c':imperial?'#415e6d':'#76503d';ctx.fillRect(px+5,py+5,22,24);ctx.fillStyle=chapel?'#efe8d4':elsia?'#e4e0ce':imperial?'#b8c9ce':'#d8bf8d';ctx.fillRect(px+9,py+9,14,4);ctx.fillStyle='#f0ead6';ctx.font='bold 7px system-ui';ctx.textAlign='center';const label=o.id==='capitalHouseDoor'?'長屋':o.id==='capitalChapelDoor'?'礼拝堂':o.id==='waystationInnDoor'?'白樺亭':o.id==='halmInnDoor'?'風見亭':o.id==='empireCottageDoor'?'集会所':o.id==='imperialGuildDoor'?'組合':o.id==='elsiaHouseDoor'?'民家':o.id.includes('Inn')?'宿':o.id.includes('Armory')?'武具':'古書';ctx.fillText(label,px+16,py+20);ctx.textAlign='start'}
- if(o.id==='indoorExit'){ctx.fillStyle='#5b4330';ctx.fillRect(px+4,py+19,24,7);ctx.fillStyle='#c6a26a';ctx.fillRect(px+7,py+21,18,2)}
- if(['restBed','familyTable','orphanPantry','toyChest','mayorBooks','warMap','soldierLetter','emptyBed','quartermasterChest','tailorTable','halmHerbCounter','courierSatchel','preservedFruitShelf','millBlueprint','guildApothecary','guildLedger','elsiaLoom','elsiaBed','waystationCounter','waystationBoard','chapelAltar','chapelMemorialBook'].includes(o.id)){ctx.fillStyle='rgba(241,205,117,.9)';ctx.beginPath();ctx.arc(px+16,py+7,3,0,Math.PI*2);ctx.fill()}
- if(['innRest','imperialInnRest','waystationBed','halmInnBed','empireCottageRest','elsiaBed','fortRest','caveRest'].includes(o.id)){ctx.fillStyle='#526a60';ctx.fillRect(px+4,py+7,24,20);ctx.fillStyle='#d8eadc';ctx.fillRect(px+13,py+10,6,14);ctx.fillRect(px+9,py+14,14,6);ctx.strokeStyle='rgba(201,231,210,.55)';ctx.strokeRect(px+4,py+7,24,20)}
- if(['fieldHospital','borderCampfire','smugglerCamp','hollowSpring','watchCamp','canyonCamp','ridgeCamp','finalCampfire','imperialCampBrazier','royalCampBrazier','sacredSpring','innRest','imperialInnRest','waystationBed','halmInnBed','empireCottageRest','elsiaBed','fortRest','caveRest','restBed'].includes(o.id)){const limited=RECOVERY_LIMITS[o.id]!==undefined,remain=limited?recoveryRemaining(o.id):null;ctx.save();ctx.globalAlpha=remain===0?.42:.92;ctx.strokeStyle=remain===0?'#777b78':'#8fd1b2';ctx.lineWidth=2;ctx.beginPath();ctx.arc(px+16,py-2,7,0,Math.PI*2);ctx.stroke();ctx.fillStyle=remain===0?'#8b8e8c':'#d9f3df';ctx.font='bold 9px system-ui';ctx.textAlign='center';ctx.fillText('+',px+16,py+1);if(limited){ctx.fillStyle='#f3ead0';ctx.font='bold 7px system-ui';ctx.fillText(String(remain),px+25,py+1)}ctx.restore();ctx.textAlign='start'}
- if(o.id==='stretcherTracks'){ctx.strokeStyle='#5b4635';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(px+7,py+30);ctx.lineTo(px+11,py+3);ctx.moveTo(px+22,py+30);ctx.lineTo(px+19,py+3);ctx.stroke();ctx.fillStyle='#88745d';ctx.fillRect(px+13,py+9,5,4)}
- if(o.id==='imperialSatchel'){ctx.fillStyle='#344d66';ctx.fillRect(px+6,py+12,21,15);ctx.fillStyle='#a6b4bc';ctx.fillRect(px+8,py+10,17,5);ctx.fillStyle='#574638';ctx.fillRect(px+14,py+5,5,8)}
- if(o.id==='withdrawalOrders'){ctx.fillStyle='#d6cfb6';ctx.save();ctx.translate(px+16,py+16);ctx.rotate(-.16);ctx.fillRect(-10,-8,20,17);ctx.fillStyle='#44566a';ctx.fillRect(-7,-5,14,2);ctx.fillRect(-7,0,11,2);ctx.restore()}
- if(o.id==='fieldGraves'){ctx.fillStyle='#6e675e';ctx.fillRect(px+11,py+8,10,22);ctx.fillStyle='#8d8579';ctx.fillRect(px+7,py+11,18,4)}
- if(o.id==='brokenSignalPost'){ctx.strokeStyle='#5d4b37';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(px+6,py+27);ctx.lineTo(px+25,py+4);ctx.stroke();ctx.fillStyle='#5d4b37';ctx.fillRect(px+14,py+11,16,4)}
+const RECOVERY_OBJECT_IDS=new Set(['fieldHospital','borderCampfire','smugglerCamp','hollowSpring','watchCamp','canyonCamp','ridgeCamp','finalCampfire','imperialCampBrazier','royalCampBrazier','sacredSpring','innRest','imperialInnRest','waystationBed','halmInnBed','empireCottageRest','elsiaBed','fortRest','caveRest','restBed']);
+function drawRecoveryBadge(o){
+ if(!RECOVERY_OBJECT_IDS.has(o.id))return;
+ const px=o.x*TILE,py=o.y*TILE,now=Date.now(),bob=Math.round(Math.sin(now/360)*1.2);
+ const limited=RECOVERY_LIMITS[o.id]!==undefined,remain=limited?recoveryRemaining(o.id):null,empty=remain===0;
+ const cx=px+16,cy=py-3+bob;
+ ctx.save();
+ ctx.globalAlpha=empty?0.46:0.94;
+ // Crisp HD-2D dark crystal pill + glowing emerald recovery cross
+ ctx.fillStyle='rgba(14,22,20,.82)';ctx.beginPath();ctx.arc(cx,cy,7,0,Math.PI*2);ctx.fill();
+ ctx.strokeStyle=empty?'#7c8280':'#7be4b4';ctx.lineWidth=1.5;ctx.stroke();
+ ctx.fillStyle=empty?'#9ca2a0':'#d8ffea';
+ ctx.fillRect(cx-1,cy-4,2,8);ctx.fillRect(cx-4,cy-1,8,2);
+ if(limited){
+  ctx.fillStyle='rgba(16,20,24,.88)';ctx.fillRect(cx+6,cy-5,9,10);
+  ctx.fillStyle=empty?'#9ca2a0':'#f6e8b8';ctx.font='bold 8px system-ui';ctx.textAlign='center';
+  ctx.fillText(String(remain),cx+10.5,cy+3);ctx.textAlign='start';
+ }
+ ctx.restore();
+}
+function drawObject(o){
+ const P=(col,x,y,w,h)=>{ctx.fillStyle=col;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h))};
+ const px=o.x*TILE,py=o.y*TILE,now=Date.now(),ink='#1e1814';
+ if(RyuneOutskirts.drawObject(ctx,state.map,o,!!state.world?.treasures?.[o.id])){drawRecoveryBadge(o);return}
+ if(typeof EmpireSanctuaryEnvironment!=='undefined'&&EmpireSanctuaryEnvironment.enabled&&EmpireSanctuaryEnvironment.objectAccent(ctx,state.map,o)){drawRecoveryBadge(o);return}
+ if(typeof BorderWatchfortEnvironment!=='undefined'&&BorderWatchfortEnvironment.enabled&&BorderWatchfortEnvironment.objectAccent(ctx,state.map,o)){drawRecoveryBadge(o);return}
+ if(typeof CapitalEnvironment!=='undefined'&&CapitalEnvironment.enabled&&CapitalEnvironment.objectAccent(ctx,state.map,o)){drawRecoveryBadge(o);return}
+ AshFrontierEnvironment.objectAccent(ctx,state.map,o);
+ if(RoadCaveQuality.enabled&&RoadCaveQuality.active.has(state.map))RoadCaveQuality.objectBackdrop(ctx,state.map,o);
+ if(RyuneEnvironment.enabled&&RyuneEnvironment.drawObject(ctx,state.map,o)){drawRecoveryBadge(o);return}
+
+ // Shared HD-2D Micro-Prop Renderers (outlined, beveled, shadow-grounded pixel art across all 42 maps!)
+ const hdCampfire=(blue=false,brazier=false)=>{
+  const f=Math.round(Math.sin(now/130+px)*1.5),sp=(now/360+o.x*0.2)%1;
+  const g=ctx.createRadialGradient?.(px+16,py+15,3,px+16,py+15,34);
+  if(g&&typeof g.addColorStop==='function'){
+   g.addColorStop(0,blue?'rgba(130,214,255,.34)':'rgba(255,186,86,.34)');
+   g.addColorStop(1,'rgba(255,140,48,0)');
+   ctx.fillStyle=g;ctx.beginPath();ctx.arc(px+16,py+15,34,0,Math.PI*2);ctx.fill();
+  }
+  P('rgba(12,14,18,.34)',px+5,py+23,22,5);
+  if(brazier){
+   P(ink,px+9,py+17,14,11);P('#4a525c',px+11,py+18,10,9);P('#7a8490',px+12,py+18,3,8);
+   P(ink,px+5,py+12,22,8);P('#384048',px+7,py+13,18,6);P('#8c96a2',px+8,py+13,16,2);
+  }else{
+   P('#2c2622',px+5,py+18,22,10);
+   for(const [sx,sy] of [[5,19],[11,22],[18,22],[22,19],[8,17],[19,17]]){
+    P(ink,px+sx,py+sy,6,5);P('#8c887e',px+sx+1,py+sy+1,4,3);P('#c2beb2',px+sx+1,py+sy+1,2,1);
+   }
+   P('#4c301c',px+9,py+19,14,4);P('#7c5030',px+10,py+19,12,2);
+  }
+  P(blue?'#348ad6':'#dc6222',px+10,py+9+f,12,10-f);
+  P(blue?'#8ce0ff':'#f8c64e',px+12,py+11+f,8,7-f);
+  P('#fffbe0',px+14,py+14,4,4);
+  P(blue?'#d8f6ff':'#ffe488',px+15+Math.round(Math.sin(now/180)*3),py+7-sp*7,2,2);
+ };
+ const hdNoticeBoard=(roofCol='#6e4a2e',roofHi='#9a6e46')=>{
+  P('rgba(14,18,16,.34)',px+4,py+25,25,5);
+  P(ink,px+5,py+7,4,21);P('#6e4e34',px+6,py+8,2,19);
+  P(ink,px+23,py+7,4,21);P('#6e4e34',px+24,py+8,2,19);
+  P(ink,px+5,py+6,22,16);P('#8c6b48',px+7,py+8,18,12);
+  P('#f4ead0',px+8,py+9,7,7);P('#a83a42',px+10,py+10,3,2);P('#6c5e4e',px+9,py+13,5,1);
+  P('#e6d8b8',px+16,py+10,7,6);P('#5e5246',px+17,py+12,5,1);P('#c84e48',px+17,py+16,5,3);
+  P(ink,px+2,py+2,28,6);P(roofCol,px+3,py+3,26,4);P(roofHi,px+5,py+2,22,2);
+ };
+ const hdSignpost=(label,dir='right')=>{
+  P('rgba(14,18,14,.32)',px+9,py+26,15,4);
+  P(ink,px+10,py+23,12,6);P('#8a867c',px+11,py+24,10,4);P('#bab6aa',px+12,py+24,6,2);
+  P(ink,px+13,py+3,6,23);P('#6e4c2e',px+14,py+4,4,21);P('#9e724a',px+14,py+4,2,20);
+  const bx=dir==='left'?px:px+2;
+  P(ink,bx-1,py+4,30,13);P('#5c4028',bx,py+5,28,11);P('#c4a472',bx+1,py+6,26,9);P('#e2c896',bx+2,py+6,24,2);
+  ctx.fillStyle='#2c1e14';ctx.font='bold 7px system-ui';ctx.textAlign='center';
+  ctx.fillText(label,bx+14,py+13);ctx.textAlign='start';
+ };
+ const hdStele=(kind='tablet')=>{
+  P('rgba(14,18,20,.34)',px+5,py+25,22,5);
+  P(ink,px+5,py+22,22,7);P('#6c6e68',px+6,py+23,20,5);P('#a6a8a0',px+7,py+23,18,2);
+  if(kind==='grave'){
+   P(ink,px+10,py+6,12,18);P('#8c887e',px+11,py+7,10,16);P('#bab6aa',px+12,py+7,4,15);
+   P(ink,px+6,py+10,20,6);P('#9c988e',px+7,py+11,18,4);P('#ccc8bc',px+8,py+11,16,1);
+   P('#3e6836',px+5,py+24,6,4);P('#f4f6ee',px+7,py+23,3,2);P('#f4d268',px+21,py+24,3,2);
+  }else if(kind==='shrine'){
+   P(ink,px+7,py+9,18,15);P('#96948a',px+8,py+10,16,13);P('#c8c4b8',px+9,py+10,5,12);
+   P('#2c3034',px+12,py+14,8,8);P('#f4d478',px+14,py+16,4,4);
+   P(ink,px+3,py+5,26,6);P('#5e6664',px+4,py+6,24,4);P('#8e9692',px+6,py+3,20,3);
+  }else{
+   P(ink,px+7,py+4,18,20);P('#98968a',px+8,py+5,16,18);P('#d2cec0',px+9,py+5,14,4);P('#e8e4d6',px+9,py+5,5,16);
+   for(let gy=11;gy<=19;gy+=3)P('#5e6058',px+11,py+gy,10,1);
+   P('#467042',px+7,py+20,6,3);
+  }
+ };
+ const hdBanner=(col,hi,crest='#ebd282')=>{
+  const sway=Math.round(Math.sin(now/320+px*0.05)*1.5);
+  P('rgba(12,14,18,.32)',px+8,py+25,14,4);
+  P(ink,px+10,py+2,4,26);P('#7a5838',px+11,py+3,2,24);P('#ebd078',px+9,py,6,3);
+  P(ink,px+14,py+3,15+sway,15);P(col,px+15,py+4,13+sway,13);
+  P(hi,px+16,py+5,11+sway,3);P(crest,px+18,py+9,5,4);
+ };
+ const hdDesk=(accent='#3c5c78',kind='map')=>{
+  P('rgba(12,14,18,.32)',px+3,py+24,26,5);
+  P(ink,px+3,py+9,26,17);P('#5e422a',px+5,py+19,22,6);P('#8c6642',px+4,py+10,24,9);P('#b88c5c',px+5,py+10,22,2);
+  P('#3a2618',px+5,py+24,4,3);P('#3a2618',px+23,py+24,4,3);
+  if(kind==='map'){
+   P('#efe6c8',px+7,py+11,18,7);P(accent,px+9,py+13,6,2);P('#a83e46',px+17,py+14,5,2);P('#d8b658',px+21,py+11,3,3);
+  }else if(kind==='ledger'){
+   P('#462e1e',px+8,py+10,16,9);P('#f6eed4',px+9,py+11,14,7);P('#6a5e4e',px+15,py+11,1,7);
+   P(accent,px+10,py+13,4,2);P('#8a7e6e',px+17,py+13,4,1);P('#8a7e6e',px+17,py+15,4,1);
+  }else{
+   P(accent,px+7,py+11,6,6);P('#a8e0e8',px+8,py+12,2,2);
+   P('#d87842',px+15,py+11,5,6);P('#ffe098',px+16,py+12,2,2);
+   P('#589454',px+21,py+12,5,5);
+  }
+ };
+ const hdCrate=(opened=false,col='#8c643c',hi='#b88a56')=>{
+  P('rgba(12,14,18,.34)',px+4,py+24,24,5);
+  P(ink,px+4,py+10,24,16);P(opened?'#4a4036':col,px+6,py+12,20,12);
+  P(opened?'#2a221c':hi,px+6,py+12,20,4);
+  P('#3c3228',px+6,py+16,20,2);P('#4c545c',px+5,py+11,3,14);P('#4c545c',px+24,py+11,3,14);
+  if(!opened){P('#ebd072',px+14,py+15,4,5);P('#5a4224',px+15,py+17,2,2)}
+ };
+ const hdCart=(kind='salt')=>{
+  P('rgba(12,14,18,.34)',px+2,py+24,28,5);
+  P(ink,px+2,py+11,28,13);P('#7c5636',px+4,py+13,24,9);P('#a87e52',px+4,py+13,24,3);
+  for(let cx=8;cx<=22;cx+=6)P('#4a321e',px+cx,py+13,2,9);
+  if(kind==='salt'){P(ink,px+6,py+6,20,8);P('#eaeef0',px+7,py+7,18,6);P('#ffffff',px+9,py+7,10,3)}
+  else if(kind==='wreck'){P('#567c4c',px+8,py+8,10,6);P('#d8c8a2',px+16,py+9,8,5)}
+  else{P('#d8ceb6',px+7,py+8,18,6);P('#f2ebd8',px+9,py+8,12,3)}
+  for(const wx of [px+5,px+20]){P(ink,wx,py+20,8,8);P('#6e4a2c',wx+1,py+21,6,6);P('#b88856',wx+3,py+21,2,6);P('#b88856',wx+1,py+23,6,2)}
+ };
+ const hdBellFrame=(cracked=false)=>{
+  P('rgba(12,16,14,.34)',px+4,py+25,24,5);
+  P(ink,px+4,py+5,5,23);P('#6e4e34',px+5,py+6,3,21);
+  P(ink,px+23,py+5,5,23);P('#6e4e34',px+24,py+6,3,21);
+  P(ink,px+2,py+2,28,6);P('#5c6662',px+3,py+3,26,4);P('#8c9690',px+5,py+2,22,2);
+  P(ink,px+10,py+8,12,14);P('#587e70',px+11,py+9,10,11);P('#92baa8',px+12,py+9,4,10);
+  if(cracked){P('#222826',px+16,py+11,2,7);P('#222826',px+14,py+15,2,4)}
+  P('#e4c468',px+14,py+20,4,4);
+ };
+
+ if(o.id==='store'){hdCrate(false,'#8c623c','#b88856')}
+ if(o.id==='well'){
+  if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawSculptedWell)HD2DAtlas.drawSculptedWell(ctx,o.x,o.y,{rustic:true});
+  else hdStele('shrine');
+ }
+ // Clean grounded woven/stone doorway thresholds (ZERO ugly 22x24 floating road stickers — buildings already have carved doors & nameplates!)
+ if(['home','doorOrphanage','doorMayor','doorCottage','indoorExit','capitalInnDoor','capitalArmoryDoor','capitalHouseDoor','capitalChapelDoor','waystationInnDoor','halmInnDoor','empireCottageDoor','imperialInnDoor','imperialBookDoor','imperialGuildDoor','elsiaHouseDoor'].includes(o.id)){
+  const isExit=o.id==='indoorExit',imp=o.id.startsWith('imperial')||o.id==='empireCottageDoor',els=o.id==='elsiaHouseDoor',ch=o.id==='capitalChapelDoor';
+  const my=isExit?py+18:py+3;
+  P('rgba(12,14,16,.28)',px+6,my+2,20,9);
+  P(ink,px+5,my,22,9);
+  P(ch?'#9c9688':els?'#527864':imp?'#3a5870':'#8c6640',px+6,my+1,20,7);
+  P(ch?'#f0ece0':els?'#c8e4d4':imp?'#b8cedc':'#e4ca92',px+8,my+2,16,3);
+  P(ch?'#6e6a60':els?'#345242':imp?'#243c4e':'#5c4028',px+10,my+5,12,2);
+ }
+ if(['restBed','familyTable','orphanPantry','toyChest','mayorBooks','warMap','soldierLetter','emptyBed','quartermasterChest','tailorTable','halmHerbCounter','courierSatchel','preservedFruitShelf','millBlueprint','guildApothecary','guildLedger','elsiaLoom','elsiaBed','waystationCounter','waystationBoard','chapelAltar','chapelMemorialBook'].includes(o.id)){
+  // Subtle pulsing JRPG golden interaction glint
+  const gl=0.65+0.35*Math.sin(now/280+o.x);
+  ctx.save();ctx.globalAlpha=gl;
+  P('#fff8d6',px+15,py+4,2,6);P('#fff8d6',px+13,py+6,6,2);
+  P('#f4c85c',px+15,py+6,2,2);
+  ctx.restore();
+ }
+ if(['innRest','imperialInnRest','waystationBed','halmInnBed','empireCottageRest','elsiaBed','fortRest','caveRest'].includes(o.id)){
+  // Grounded 3D wooden cot / camp bedroll (replaces crude flat green medkit box!)
+  P('rgba(12,14,18,.34)',px+3,py+25,26,5);
+  if(o.id==='caveRest'){
+   P(ink,px+3,py+12,26,15);P('#6c5844',px+5,py+14,22,11);P('#9c8262',px+6,py+14,20,5);
+   P('#e4dac2',px+5,py+14,6,11);P('#2c241c',px+21,py+7,7,9);P('#ffd670',px+23,py+9,3,4);
+  }else{
+   const imp=o.id.startsWith('imperial')||o.id==='empireCottageRest',els=o.id==='elsiaBed';
+   P(ink,px+3,py+6,26,21);P('#5e3e24',px+4,py+7,24,19);P('#8c623c',px+5,py+7,22,3);
+   P('#f6f2e6',px+6,py+11,20,13);P('#fffdf6',px+7,py+11,18,5);
+   P(imp?'#365c7e':els?'#487e64':'#8c3e44',px+6,py+16,20,8);
+   P(imp?'#6492b8':els?'#78b496':'#b86268',px+7,py+16,18,2);
+  }
+ }
+ if(o.id==='stretcherTracks'){
+  P('rgba(36,28,20,.46)',px+6,py+4,4,25);P('rgba(36,28,20,.46)',px+21,py+4,4,25);
+  P('#8a745c',px+7,py+6,2,21);P('#8a745c',px+22,py+6,2,21);
+  P(ink,px+12,py+10,9,7);P('#e6dec8',px+13,py+11,7,5);P('#9c3c40',px+15,py+12,3,2);
+ }
+ if(o.id==='imperialSatchel'){
+  P('rgba(12,14,18,.34)',px+5,py+24,22,5);
+  P(ink,px+5,py+10,22,16);P('#2a4664',px+7,py+12,18,12);P('#4c769e',px+7,py+11,18,5);
+  P('#ebd074',px+14,py+15,4,4);P('#6e5238',px+12,py+5,8,6);P('#2a4664',px+14,py+7,4,4);
+ }
+ if(o.id==='withdrawalOrders'||o.id==='discardedEnlistment'||o.id==='scorchedOrders'||o.id==='tornLetter'){
+  P('rgba(12,14,18,.30)',px+6,py+22,20,5);
+  P(ink,px+6,py+8,20,16);P(o.id==='scorchedOrders'?'#cbb88e':'#efe5c8',px+7,py+9,18,14);
+  if(o.id==='scorchedOrders'){P('#2c241e',px+6,py+20,20,4);P('#4e4036',px+18,py+9,7,6)}
+  P('#5a5046',px+9,py+12,13,1);P('#5a5046',px+9,py+15,11,1);P('#5a5046',px+9,py+18,9,1);
+  P(o.id==='withdrawalOrders'?'#34567c':'#9c323c',px+18,py+17,5,4);
+ }
+ if(o.id==='fieldGraves'||o.id==='borderGrave'){hdStele('grave')}
+ if(o.id==='brokenSignalPost'){
+  P('rgba(12,14,18,.34)',px+4,py+24,24,5);
+  P(ink,px+7,py+18,18,8);P('#6e4e32',px+8,py+19,16,6);
+  P(ink,px+13,py+5,6,18);P('#8c6440',px+14,py+6,4,16);
+  P(ink,px+17,py+9,11,4);P('#4c545c',px+23,py+13,6,8);P('#98a2ac',px+24,py+14,4,6);
+ }
  if(o.id==='scavengerWolves'&&!isDefeated('scavengerWolves'))drawBeast(px,py,'wolf');
  if(['highlandWolves','ashHounds','battlefieldPack','ridgeWolves','hollowStagWolf','watchAlpha'].includes(o.id)&&!isDefeated(o.id)){drawBeast(px,py,'wolf');if(o.id==='watchAlpha'){ctx.fillStyle='rgba(232,240,248,.58)';ctx.fillRect(px+7,py+11,15,6);ctx.fillRect(px+4,py+8,8,4)}if(o.id==='hollowStagWolf'||o.id==='watchAlpha'){ctx.fillStyle='#f5cf6e';ctx.fillRect(px+13,py-1,6,3);ctx.fillRect(px+15,py-3,2,2)}}
  if(['hungryBoar','canyonBoar'].includes(o.id)&&!isDefeated(o.id))drawBeast(px,py,'boar');
  if(o.id==='canyonAlpha'&&!isDefeated('canyonAlpha'))drawBeast(px,py,'boss');
  if(o.id==='nestBeetles'&&!isDefeated('nestBeetles'))drawBeast(px,py,'crawler');
  if(o.id==='ridgeAlpha'&&!isDefeated('ridgeAlpha')){drawBeast(px,py,'crawler');ctx.fillStyle='#f5cf6e';ctx.fillRect(px+13,py-1,6,3);ctx.fillRect(px+15,py-3,2,2)}
- if(['eastHollowSign','eastCanyonSign','eastRidgeSign','westWatchSign','eastWaystationSign'].includes(o.id)){ctx.fillStyle='#5c452e';ctx.fillRect(px+14,py+7,4,22);ctx.fillStyle='#b89a6a';ctx.fillRect(px+1,py+4,30,12);ctx.fillStyle='#3b2e22';ctx.font='bold 7px system-ui';ctx.textAlign='center';const t=o.id==='eastHollowSign'?'泉へ→':o.id==='eastCanyonSign'?'塩峡谷→':o.id==='eastRidgeSign'?'尾根→':o.id==='westWatchSign'?'←鐘楼跡':'白樺宿→';ctx.fillText(t,px+16,py+13);ctx.textAlign='start'}
- if(o.id==='hollowSpring'){ctx.fillStyle='#687872';ctx.beginPath();ctx.arc(px+16,py+18,13,0,Math.PI*2);ctx.fill();ctx.fillStyle='#58b4b8';ctx.beginPath();ctx.arc(px+16,py+18,9,0,Math.PI*2);ctx.fill();ctx.fillStyle='#cef4f2';ctx.fillRect(px+12,py+15,7,3)}
- if(o.id==='pilgrimBell'){ctx.fillStyle='#5a5850';ctx.fillRect(px+5,py+5,4,24);ctx.fillRect(px+23,py+5,4,24);ctx.fillRect(px+4,py+4,24,4);ctx.fillStyle='#5f7d6e';ctx.fillRect(px+11,py+9,10,12);ctx.fillStyle='#96b8a2';ctx.fillRect(px+12,py+10,4,9);ctx.fillStyle='#c9b06e';ctx.fillRect(px+14,py+21,4,3)}
- if(o.id==='herbDryingRack'){ctx.fillStyle='#5e4630';ctx.fillRect(px+4,py+8,3,20);ctx.fillRect(px+25,py+8,3,20);ctx.fillRect(px+4,py+9,24,3);for(let hx=8;hx<=20;hx+=6){ctx.fillStyle='#4e7d4b';ctx.fillRect(px+hx,py+12,4,10);ctx.fillStyle='#8ac478';ctx.fillRect(px+hx+1,py+13,2,6)}}
- if(o.id==='saltTollLedger'){ctx.fillStyle='#686a66';ctx.fillRect(px+4,py+10,24,16);ctx.fillStyle='#a8a69a';ctx.fillRect(px+6,py+12,20,12);ctx.fillStyle='#ede4cc';ctx.fillRect(px+9,py+13,14,8);ctx.fillStyle='#52667a';ctx.fillRect(px+11,py+15,10,2);ctx.fillRect(px+11,py+18,8,2)}
- if(o.id==='chasmSaltCart'){ctx.fillStyle='#543c28';ctx.fillRect(px+3,py+14,26,10);ctx.fillStyle='#8c6a48';ctx.fillRect(px+5,py+12,22,7);ctx.fillStyle='#eef2f4';ctx.fillRect(px+8,py+9,16,6);ctx.fillStyle='#2a221c';ctx.fillRect(px+5,py+22,7,6);ctx.fillRect(px+20,py+22,7,6)}
- if(o.id==='canyonCamp'){ctx.fillStyle='rgba(255,172,72,.18)';ctx.beginPath();ctx.arc(px+16,py+18,22,0,Math.PI*2);ctx.fill();ctx.fillStyle='#46423c';ctx.fillRect(px+6,py+19,20,8);ctx.fillStyle='#7c5434';ctx.fillRect(px+9,py+19,14,4);ctx.fillStyle='#e28838';ctx.fillRect(px+12,py+11,8,9);ctx.fillStyle='#fff0b2';ctx.fillRect(px+14,py+14,4,4)}
- if(o.id==='foragerBasket'){ctx.fillStyle='#6e4f32';ctx.fillRect(px+6,py+14,20,12);ctx.fillStyle='#a88052';ctx.fillRect(px+8,py+16,16,8);ctx.fillStyle='#4d7c4a';ctx.fillRect(px+9,py+11,6,6);ctx.fillRect(px+16,py+12,7,5);ctx.fillStyle='#86b874';ctx.fillRect(px+11,py+12,3,3)}
- if(o.id==='collapsedWallNote'){ctx.fillStyle='#4a4e54';ctx.fillRect(px+5,py+8,22,19);ctx.fillStyle='#969aa0';ctx.fillRect(px+7,py+10,18,15);ctx.fillStyle='#5e6268';ctx.fillRect(px+9,py+13,14,2);ctx.fillRect(px+9,py+17,12,2)}
- if(o.id==='caravanWreck'){ctx.fillStyle='#4f3825';ctx.fillRect(px+3,py+14,26,10);ctx.fillStyle='#8c6846';ctx.fillRect(px+5,py+10,20,8);ctx.fillStyle='#2b221b';ctx.fillRect(px+5,py+22,7,6);ctx.fillRect(px+20,py+23,7,5);ctx.fillStyle='#628456';ctx.fillRect(px+12,py+12,6,4)}
- if(o.id==='refugeeBundle'){ctx.fillStyle='#5c483a';ctx.fillRect(px+7,py+15,18,11);ctx.fillStyle='#cdb892';ctx.fillRect(px+8,py+13,16,10);ctx.fillStyle='#9e4e48';ctx.fillRect(px+12,py+11,8,4)}
- if(o.id==='smugglerCrate'){ctx.fillStyle='#3c3024';ctx.fillRect(px+5,py+11,22,15);ctx.fillStyle='#786248';ctx.fillRect(px+7,py+13,18,11);ctx.fillStyle='#546c78';ctx.fillRect(px+6,py+9,20,5)}
- if(o.id==='oldCommandPost'){ctx.fillStyle='#48382a';ctx.fillRect(px+3,py+13,26,13);ctx.fillStyle='#7a6045';ctx.fillRect(px+5,py+11,22,7);ctx.fillStyle='#dfd5b8';ctx.fillRect(px+8,py+12,14,5);ctx.fillStyle='#355278';ctx.fillRect(px+10,py+14,5,2)}
- if(o.id==='whiteLilyHill'){ctx.fillStyle='#486446';ctx.fillRect(px+4,py+16,24,10);ctx.fillStyle='#62865a';ctx.fillRect(px+6,py+14,20,8);for(const lx of [8,14,20]){ctx.fillStyle='#f4f6f0';ctx.fillRect(px+lx,py+11,4,4);ctx.fillStyle='#ebd278';ctx.fillRect(px+lx+1,py+12,2,2)}}
- if(o.id==='discardedEnlistment'){ctx.fillStyle='#5a5248';ctx.fillRect(px+6,py+16,20,9);ctx.fillStyle='#e2d6b5';ctx.fillRect(px+8,py+11,16,11);ctx.fillStyle='#8d3d46';ctx.fillRect(px+11,py+13,10,3);ctx.fillStyle='#6c6052';ctx.fillRect(px+10,py+18,11,2)}
- if(o.id==='smugglerCamp'){ctx.fillStyle='rgba(255,172,72,.18)';ctx.beginPath();ctx.arc(px+16,py+18,22,0,Math.PI*2);ctx.fill();ctx.fillStyle='#46423c';ctx.fillRect(px+6,py+19,20,8);ctx.fillStyle='#7c5434';ctx.fillRect(px+9,py+19,14,4);ctx.fillStyle='#e28838';ctx.fillRect(px+12,py+11,8,9);ctx.fillStyle='#fff0b2';ctx.fillRect(px+14,py+14,4,4)}
- if(o.id==='quartermasterChest'||o.id==='halmHerbCounter'||o.id==='preservedFruitShelf'||o.id==='guildApothecary'){ctx.fillStyle='#4a3626';ctx.fillRect(px+4,py+8,24,18);ctx.fillStyle='#8c6a48';ctx.fillRect(px+6,py+10,20,14);ctx.fillStyle=o.id==='guildApothecary'?'#4f88a2':'#5c8a58';ctx.fillRect(px+8,py+12,6,5);ctx.fillStyle='#d88a4c';ctx.fillRect(px+17,py+12,6,5)}
- if(o.id==='tailorTable'||o.id==='courierSatchel'||o.id==='millBlueprint'||o.id==='guildLedger'){ctx.fillStyle='#523c2a';ctx.fillRect(px+4,py+10,24,15);ctx.fillStyle='#dfd3b4';ctx.fillRect(px+7,py+12,18,10);ctx.fillStyle=o.id==='tailorTable'?'#9c4347':'#3c5c78';ctx.fillRect(px+9,py+14,12,4)}
- if(o.id==='elsiaLoom'){ctx.fillStyle='#5e4530';ctx.fillRect(px+4,py+6,4,22);ctx.fillRect(px+24,py+6,4,22);ctx.fillRect(px+4,py+7,24,3);ctx.fillRect(px+4,py+22,24,3);ctx.fillStyle='#eae4d2';ctx.fillRect(px+8,py+10,16,12);ctx.fillStyle='#3d6082';ctx.fillRect(px+8,py+13,16,2);ctx.fillStyle='#b8944c';ctx.fillRect(px+8,py+17,16,2)}
- if(o.id==='yukiLantern'){ctx.fillStyle='rgba(255,204,116,.20)';ctx.beginPath();ctx.arc(px+16,py+12,18,0,Math.PI*2);ctx.fill();ctx.fillStyle='#595a56';ctx.fillRect(px+8,py+21,16,7);ctx.fillStyle='#8d8e86';ctx.fillRect(px+11,py+13,10,9);ctx.fillStyle='#6f726c';ctx.fillRect(px+7,py+5,18,4);ctx.fillStyle='#f6d482';ctx.fillRect(px+13,py+9,6,5);ctx.fillStyle='#3b6490';ctx.fillRect(px+19,py+14,4,8)}
- if(o.id==='evacCartAxle'){ctx.fillStyle='#4a3625';ctx.fillRect(px+3,py+15,26,9);ctx.fillStyle='#846444';ctx.fillRect(px+5,py+12,20,7);ctx.fillStyle='#d2cbb8';ctx.fillRect(px+9,py+10,12,5);ctx.fillStyle='#2a221c';ctx.fillRect(px+5,py+22,7,6);ctx.fillRect(px+19,py+21,7,6)}
- if(o.id==='ridgeCamp'||o.id==='watchCamp'||o.id==='finalCampfire'||o.id==='imperialCampBrazier'||o.id==='royalCampBrazier'){ctx.fillStyle=o.id==='imperialCampBrazier'?'rgba(148,208,248,.22)':'rgba(255,172,72,.22)';ctx.beginPath();ctx.arc(px+16,py+18,22,0,Math.PI*2);ctx.fill();ctx.fillStyle='#46423c';ctx.fillRect(px+6,py+19,20,8);ctx.fillStyle='#7c5434';ctx.fillRect(px+9,py+19,14,4);ctx.fillStyle=o.id==='imperialCampBrazier'?'#62b4e6':'#e28838';ctx.fillRect(px+12,py+11,8,9);ctx.fillStyle=o.id==='imperialCampBrazier'?'#e4f6ff':'#fff0b2';ctx.fillRect(px+14,py+14,4,4)}
- if(o.id==='finalTruceStone'){ctx.fillStyle='#5c5e5a';ctx.fillRect(px+7,py+6,18,22);ctx.fillStyle='#c4c2b4';ctx.fillRect(px+9,py+8,14,18);ctx.fillStyle='#e6e4d6';ctx.fillRect(px+10,py+9,12,3);ctx.fillStyle='#6e7268';ctx.fillRect(px+11,py+15,10,2);ctx.fillRect(px+11,py+19,8,2)}
- if(o.id==='imperialWarMap'||o.id==='royalOrderDesk'){ctx.fillStyle='#4a3828';ctx.fillRect(px+3,py+11,26,15);ctx.fillStyle='#e2d8be';ctx.fillRect(px+6,py+12,20,10);ctx.fillStyle=o.id==='imperialWarMap'?'#3b6288':'#8c3d46';ctx.fillRect(px+9,py+14,14,3);ctx.fillStyle='#786854';ctx.fillRect(px+9,py+19,10,2)}
- if(o.id==='imperialBanner'||o.id==='royalStandard'){ctx.fillStyle='#4a3a2c';ctx.fillRect(px+12,py+3,4,26);ctx.fillStyle=o.id==='imperialBanner'?'#2f5076':'#8d3d46';ctx.fillRect(px+16,py+5,13,13);ctx.fillStyle='#e2d4a6';ctx.fillRect(px+19,py+9,6,4)}
- if(o.id==='waystationWell'){if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawSculptedWell)HD2DAtlas.drawSculptedWell(ctx,o.x,o.y,{roof:'#587452',roofHi:'#7ea06c'});else{ctx.fillStyle='#676b70';ctx.beginPath();ctx.ellipse(px+16,py+18,13,8,0,0,Math.PI*2);ctx.fill()}}
- if(o.id==='waystationWagon'){if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawCoveredWagon)HD2DAtlas.drawCoveredWagon(ctx,o.x,o.y,{broken:false});else{ctx.fillStyle='#4f3825';ctx.fillRect(px+2,py+12,28,12)}}
- if(o.id==='waystationNotice'||o.id==='waystationBoard'){ctx.fillStyle='#5e452e';ctx.fillRect(px+5,py+5,22,19);ctx.fillRect(px+14,py+24,4,6);ctx.fillStyle='#dfd2b0';ctx.fillRect(px+8,py+8,16,12);ctx.fillStyle='#8c4347';ctx.fillRect(px+10,py+10,12,2);ctx.fillStyle='#5c5246';ctx.fillRect(px+10,py+14,10,2)}
- if(o.id==='waystationCounter'){ctx.fillStyle='#4a3626';ctx.fillRect(px+4,py+8,24,18);ctx.fillStyle='#96724c';ctx.fillRect(px+6,py+10,20,14);ctx.fillStyle='#e8d5a8';ctx.fillRect(px+9,py+12,6,5);ctx.fillStyle='#5a8a56';ctx.fillRect(px+17,py+12,6,5)}
- if(o.id==='pilgrimDiary'){ctx.fillStyle='#686a66';ctx.fillRect(px+5,py+10,22,16);ctx.fillStyle='#a8a69a';ctx.fillRect(px+7,py+12,18,12);ctx.fillStyle='#ece2c4';ctx.fillRect(px+10,py+13,12,8);ctx.fillStyle='#6e4a38';ctx.fillRect(px+11,py+15,9,2)}
- if(o.id==='brokenBell'){ctx.fillStyle='#686c68';ctx.fillRect(px+5,py+5,4,24);ctx.fillRect(px+23,py+5,4,24);ctx.fillRect(px+4,py+4,24,4);ctx.fillStyle='#668074';ctx.fillRect(px+10,py+9,12,13);ctx.fillStyle='#9ab8a8';ctx.fillRect(px+12,py+10,4,10);ctx.fillStyle='#d8be74';ctx.fillRect(px+14,py+22,4,3)}
- if(o.id==='chapelAltar'){ctx.fillStyle='rgba(255,232,168,.24)';ctx.beginPath();ctx.arc(px+16,py+14,22,0,Math.PI*2);ctx.fill();ctx.fillStyle='#78766e';ctx.fillRect(px+2,py+8,28,18);ctx.fillStyle='#e6e2d4';ctx.fillRect(px+4,py+10,24,14);ctx.fillStyle='#5eaeb8';ctx.fillRect(px+9,py+12,14,8);ctx.fillStyle='#cdf5f2';ctx.fillRect(px+12,py+14,8,3)}
- if(o.id==='chapelMemorialBook'){ctx.fillStyle='#543c2a';ctx.fillRect(px+5,py+10,22,16);ctx.fillStyle='#eee5cc';ctx.fillRect(px+8,py+11,16,10);ctx.fillStyle='#8c4048';ctx.fillRect(px+10,py+14,12,2);ctx.fillStyle='#6a6054';ctx.fillRect(px+10,py+18,10,2)}
- if(o.id==='gate'){const gx=px;ctx.fillStyle='#666b70';ctx.fillRect(gx+2,py,8,32);ctx.fillRect(gx+54,py,8,32);ctx.fillStyle='#8b704c';ctx.fillRect(gx+7,py+3,50,6);ctx.fillRect(gx+9,py+8,4,24);ctx.fillRect(gx+51,py+8,4,24);ctx.fillStyle='#d8c28e';ctx.fillRect(gx+19,py+10,27,13);ctx.fillStyle='#433729';ctx.font='bold 10px system-ui';ctx.textAlign='center';ctx.fillText('北門',gx+32,py+20);ctx.textAlign='start'}
- if(['exit','northExit','southExit'].includes(o.id)){ctx.fillStyle='#686c71';ctx.fillRect(px+2,py,8,32);ctx.fillRect(px+54,py,8,32);ctx.fillRect(px+2,py,60,6);ctx.fillStyle='#17191d';ctx.fillRect(px+10,py+7,44,25);if(o.id==='northExit'&&!isDefeated('boss')){ctx.fillStyle='#78634b';for(let i=0;i<6;i++)ctx.fillRect(px+11+i*7,py+6,3,25)}}
- if(o.id==='cave'){ctx.fillStyle='#59575c';ctx.beginPath();ctx.arc(px+16,py+18,15,Math.PI,0);ctx.fill();ctx.fillRect(px+1,py+18,30,12);ctx.fillStyle='#14151a';ctx.beginPath();ctx.arc(px+16,py+19,10,Math.PI,0);ctx.fill();ctx.fillRect(px+6,py+19,20,11);ctx.fillStyle='#81765c';ctx.fillRect(px+2,py+27,28,3)}
+ if(['eastHollowSign','eastCanyonSign','eastRidgeSign','westWatchSign','eastWaystationSign','roadSign','milestone'].includes(o.id)){
+  const t=o.id==='eastHollowSign'?'泉へ→':o.id==='eastCanyonSign'?'塩峡谷→':o.id==='eastRidgeSign'?'尾根→':o.id==='westWatchSign'?'←鐘楼跡':o.id==='eastWaystationSign'?'白樺宿→':o.id==='roadSign'?'古砦→':'王都近道';
+  hdSignpost(t,o.id==='westWatchSign'?'left':'right');
+ }
+ if(o.id==='hollowSpring'){
+  const gl=Math.sin(now/320)*1.4;
+  const g=ctx.createRadialGradient?.(px+16,py+17,3,px+16,py+17,28);
+  if(g&&typeof g.addColorStop==='function'){g.addColorStop(0,'rgba(128,248,236,.36)');g.addColorStop(1,'rgba(128,248,236,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(px+16,py+17,28,0,Math.PI*2);ctx.fill()}
+  P('rgba(12,24,22,.34)',px+3,py+22,26,7);
+  P(ink,px+2,py+8,28,19);P('#9c9a8e',px+3,py+9,26,17);P('#dcd8ca',px+4,py+9,24,4);
+  P('#206c76',px+6,py+12,20,11);P('#48b8c0',px+7,py+13,18,9);P('#b8f8f4',px+9+gl,py+15,9,3);
+  P('#3e7848',px+21,py+19,6,4);P('#fff6e4',px+23,py+18,3,3);
+ }
+ if(o.id==='pilgrimBell'||o.id==='brokenBell'){hdBellFrame(o.id==='brokenBell')}
+ if(o.id==='herbDryingRack'){
+  P('rgba(12,18,12,.30)',px+3,py+25,26,5);
+  P(ink,px+3,py+6,4,22);P('#6e4c2e',px+4,py+7,2,20);
+  P(ink,px+25,py+6,4,22);P('#6e4c2e',px+26,py+7,2,20);
+  P(ink,px+3,py+7,26,4);P('#9a7048',px+4,py+8,24,2);
+  for(const [hx,c1,c2] of [[7,'#3c7442','#7ec26e'],[13,'#6a4e8c','#b094d8'],[19,'#4a7c46','#f2d86c']]){
+   P(ink,px+hx,py+11,6,12);P(c1,px+hx+1,py+12,4,10);P(c2,px+hx+2,py+12,2,6);
+  }
+ }
+ if(o.id==='saltTollLedger'||o.id==='pilgrimDiary'||o.id==='chapelMemorialBook'||o.id==='heroLedger'){
+  hdDesk(o.id==='chapelMemorialBook'||o.id==='heroLedger'?'#9c3842':'#385e82','ledger');
+ }
+ if(o.id==='chasmSaltCart'||o.id==='caravanWreck'||o.id==='evacCartAxle'){
+  hdCart(o.id==='chasmSaltCart'?'salt':o.id==='caravanWreck'?'wreck':'evac');
+ }
+ if(o.id==='burnedCart'&&!(typeof AshFrontierEnvironment!=='undefined'&&AshFrontierEnvironment.enabled&&state.map==='ashroad')){
+  hdCart('wreck');
+ }
+ if(['canyonCamp','smugglerCamp','ridgeCamp','watchCamp','finalCampfire','borderCampfire'].includes(o.id)){hdCampfire(false,false)}
+ if(['imperialCampBrazier','royalCampBrazier','signalFire'].includes(o.id)){hdCampfire(o.id==='imperialCampBrazier',true)}
+ if(o.id==='foragerBasket'){
+  P('rgba(12,18,12,.30)',px+5,py+24,22,5);
+  P(ink,px+5,py+13,22,13);P('#9c7042',px+7,py+15,18,9);P('#c69862',px+8,py+15,16,3);
+  for(let bx=9;bx<23;bx+=4)P('#5e3e22',px+bx,py+18,1,6);
+  P('#3c7a44',px+8,py+10,7,6);P('#7ec46c',px+10,py+10,3,3);
+  P('#c84448',px+16,py+11,5,5);P('#f4d268',px+20,py+12,4,4);
+ }
+ if(o.id==='collapsedWallNote'){
+  P('rgba(14,16,20,.34)',px+4,py+24,24,5);
+  P(ink,px+4,py+7,24,20);P('#787c82',px+6,py+9,20,16);P('#acb0b6',px+7,py+9,18,4);
+  P('#42464c',px+14,py+9,2,16);P('#efe6c8',px+10,py+13,12,9);P('#6a5e4e',px+12,py+15,8,1);P('#6a5e4e',px+12,py+18,6,1);
+ }
+ if(o.id==='refugeeBundle'){
+  P('rgba(12,14,18,.32)',px+5,py+23,22,5);
+  P(ink,px+6,py+11,20,15);P('#cbb690',px+8,py+13,16,11);P('#e6d6b4',px+9,py+13,10,4);
+  P('#8c3c40',px+11,py+10,10,4);P('#6e4e32',px+8,py+18,16,2);
+ }
+ if(o.id==='smugglerCrate'||o.id==='rations'){hdCrate(false,'#785a3a','#a47c50')}
+ if(['ashCache','frontierCache','empireCache','imperialCache','yukiCache','elsiaCache'].includes(o.id)){
+  const opened=!!(state.world?.treasures?.[o.id]||state.treasures?.[o.id]);
+  hdCrate(opened,'#845e36','#b48652');
+ }
+ if(o.id==='oldCommandPost'||o.id==='imperialWarMap'||o.id==='royalOrderDesk'||o.id==='fortMap'){
+  hdDesk(o.id==='royalOrderDesk'||o.id==='fortMap'?'#8c3842':'#345c84','map');
+ }
+ if(o.id==='whiteLilyHill'){
+  const sw=Math.round(Math.sin(now/420)*1);
+  P('rgba(12,20,14,.28)',px+3,py+22,26,6);
+  P('#2c4e2e',px+3,py+15,26,11);P('#4c7c48',px+5,py+13,22,9);P('#72a460',px+8,py+13,14,4);
+  for(const [lx,ly] of [[7,11],[14,9],[21,12],[11,15],[18,16]]){
+   P('#2c5630',px+lx+1,py+ly+2,2,4);P('#f8faf4',px+lx+sw,py+ly,4,4);P('#f4d268',px+lx+1+sw,py+ly+1,2,2);
+  }
+ }
+ if(o.id==='quartermasterChest'||o.id==='halmHerbCounter'||o.id==='preservedFruitShelf'||o.id==='guildApothecary'||o.id==='waystationCounter'){
+  hdDesk(o.id==='guildApothecary'?'#488ca8':'#4e8c54','counter');
+ }
+ if(o.id==='tailorTable'||o.id==='courierSatchel'||o.id==='millBlueprint'||o.id==='guildLedger'){
+  hdDesk(o.id==='tailorTable'?'#9c3e44':'#345e84','map');
+ }
+ if(o.id==='elsiaLoom'){
+  P('rgba(12,18,14,.30)',px+3,py+25,26,5);
+  P(ink,px+3,py+5,5,23);P('#7c5636',px+4,py+6,3,21);
+  P(ink,px+24,py+5,5,23);P('#7c5636',px+25,py+6,3,21);
+  P(ink,px+3,py+6,26,4);P('#9c724c',px+4,py+7,24,2);
+  P(ink,px+3,py+21,26,4);P('#9c724c',px+4,py+22,24,2);
+  P('#f0ead6',px+8,py+10,16,11);P('#386e74',px+8,py+12,16,3);P('#e2c268',px+8,py+16,16,2);
+ }
+ if(o.id==='yukiLantern'){
+  const g=ctx.createRadialGradient?.(px+16,py+12,2,px+16,py+12,28);
+  if(g&&typeof g.addColorStop==='function'){g.addColorStop(0,'rgba(255,212,120,.38)');g.addColorStop(1,'rgba(255,176,72,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(px+16,py+12,28,0,Math.PI*2);ctx.fill()}
+  P('rgba(12,16,18,.32)',px+7,py+24,18,5);
+  P(ink,px+7,py+21,18,7);P('#848880',px+8,py+22,16,5);
+  P(ink,px+11,py+13,10,9);P('#a2a49c',px+12,py+14,8,7);
+  P(ink,px+10,py+7,12,7);P('#ffd670',px+12,py+8,8,5);P('#fffbe2',px+14,py+9,4,3);
+  P(ink,px+6,py+3,20,5);P('#8e9088',px+7,py+4,18,3);P('#c4c4ba',px+9,py+4,14,1);
+  P('#2c5888',px+20,py+13,5,10);P('#6aa0d6',px+21,py+14,3,7);
+ }
+ if(o.id==='finalTruceStone'||o.id==='yukiMemorial'||o.id==='elsiaTablet'||o.id==='canalMonument'||o.id==='ravineLookout'||o.id==='bridgeMarker'||o.id==='mountainOverlook'){hdStele('tablet')}
+ if(o.id==='empireShrine'||o.id==='ruinedShrine'||o.id==='oldSanctum'){hdStele('shrine')}
+ if(o.id==='imperialBanner'||o.id==='empireLine'){hdBanner('#2a5078','#5688ba','#dce8f2')}
+ if(o.id==='royalStandard'||o.id==='banner'||o.id==='kingdomLine'){hdBanner('#8e323c','#c45460','#f0d482')}
+ if(o.id==='yukiRibbon'||o.id==='brokenStandard'){hdBanner('#325c8a','#6a9ed2','#e4eef6')}
+ if(o.id==='waystationWell'){if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawSculptedWell)HD2DAtlas.drawSculptedWell(ctx,o.x,o.y,{rustic:true,roof:'#587452',roofHi:'#7ea06c'});else hdStele('shrine')}
+ if(o.id==='relayWell'){if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawSculptedWell)HD2DAtlas.drawSculptedWell(ctx,o.x,o.y,{rustic:true,roof:'#6e4e36',roofHi:'#986e4c'});else hdStele('shrine')}
+ if(o.id==='waystationWagon'||o.id==='brokenWagon'){if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawCoveredWagon)HD2DAtlas.drawCoveredWagon(ctx,o.x,o.y,{broken:o.id==='brokenWagon'});else hdCart('evac')}
+ if(o.id==='waystationNotice'||o.id==='waystationBoard'||o.id==='relayBoard'||o.id==='victoryPoster'){hdNoticeBoard()}
+ if(o.id==='chapelAltar'){
+  const g=ctx.createRadialGradient?.(px+16,py+14,3,px+16,py+14,32);
+  if(g&&typeof g.addColorStop==='function'){g.addColorStop(0,'rgba(255,236,172,.34)');g.addColorStop(1,'rgba(255,216,120,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(px+16,py+14,32,0,Math.PI*2);ctx.fill()}
+  P('rgba(12,14,18,.32)',px+2,py+24,28,5);
+  P(ink,px+1,py+7,30,19);P('#dfdace',px+3,py+9,26,15);P('#faf6ec',px+4,py+9,24,4);
+  P('#8e323c',px+9,py+10,14,14);P('#ebd074',px+10,py+10,12,2);P('#ebd074',px+14,py+13,4,8);
+  for(const cx of [px+5,px+24]){P('#ebd074',cx,py+6,3,5);P('#fffbe0',cx+1,py+3,1,3)}
+ }
+ if(o.id==='gate'){
+  P('rgba(12,14,18,.32)',px+2,py+26,60,5);
+  P(ink,px+1,py,10,31);P('#7c786e',px+3,py+2,6,27);P('#b4b0a2',px+3,py+2,2,26);
+  P(ink,px+53,py,10,31);P('#7c786e',px+55,py+2,6,27);P('#b4b0a2',px+55,py+2,2,26);
+  P(ink,px+8,py+2,48,8);P('#7c5636',px+9,py+3,46,6);P('#ab7d50',px+10,py+3,44,2);
+ }
+ if(['exit','northExit','southExit'].includes(o.id)){
+  P(ink,px+1,py,62,8);P('#848882',px+3,py+2,58,4);P('#b8bcb4',px+4,py+2,56,2);
+  P(ink,px+1,py,10,32);P('#747874',px+3,py+2,6,28);
+  P(ink,px+53,py,10,32);P('#747874',px+55,py+2,6,28);
+  P('#14161b',px+11,py+8,42,24);
+  if(o.id==='northExit'&&!isDefeated('boss')){
+   for(let i=0;i<6;i++){P('#262a32',px+12+i*7,py+7,4,24);P('#8c949c',px+13+i*7,py+7,2,23)}
+  }
+ }
+ if(o.id==='cave'){
+  P('rgba(12,16,14,.36)',px+1,py+25,30,6);
+  P(ink,px+1,py+6,30,23);P('#6a6860',px+3,py+8,26,19);P('#989488',px+5,py+8,22,5);
+  P('#121418',px+7,py+14,18,14);P('#2a2d34',px+9,py+16,14,12);P('#84785e',px+3,py+26,26,3);
+ }
  if(o.id==='wolf'&&!isDefeated('wolf')){drawBeast(px,py,'wolf')}
  if(o.id==='bandit'&&!isDefeated('bandit')){if(!(typeof OpeningPixelAssets!=='undefined'&&OpeningPixelAssets.drawNpc(ctx,{id:'banditEnemy',x:o.x,y:o.y},'down',0)))drawCharacterSprite(o.x,o.y,{body:'#665040',accent:'#b79a72',hair:'#4b3b34',weapon:'sword'},false,'down');ctx.fillStyle='#c9594f';ctx.beginPath();ctx.arc(px+26,py-6,4,0,Math.PI*2);ctx.fill()}
  if(o.id==='bats'&&!isDefeated('bats')){drawBeast(px,py,'bats')}
  if(o.id==='crawler'&&!isDefeated('crawler')){drawBeast(px,py,'crawler')}
  if((o.id==='chest1'&&!state.world.treasures.chest1)||(o.id==='chest2'&&!state.world.treasures.chest2)||(TREASURE_DEFS[o.id]&&!state.treasures[o.id])){
   // Ornate JRPG mahogany treasure chest with iron/gold clasps & cast shadow
-  ctx.fillStyle='rgba(12,14,18,.34)';ctx.fillRect(px+5,py+23,22,5);
-  ctx.fillStyle='#2a1d17';ctx.fillRect(px+4,py+7,24,18);
-  ctx.fillStyle='#8c5a33';ctx.fillRect(px+6,py+9,20,14);
-  ctx.fillStyle='#b87b48';ctx.fillRect(px+6,py+9,20,5);
-  ctx.fillStyle='#633d22';ctx.fillRect(px+6,py+15,20,2);
-  ctx.fillStyle='#d9b45a';ctx.fillRect(px+5,py+14,22,2);ctx.fillRect(px+8,py+9,2,14);ctx.fillRect(px+22,py+9,2,14);
-  ctx.fillStyle='#f7df94';ctx.fillRect(px+14,py+13,4,6);ctx.fillStyle='#4a3622';ctx.fillRect(px+15,py+15,2,2);
+  P('rgba(12,14,18,.34)',px+5,py+23,22,5);
+  P('#2a1d17',px+4,py+7,24,18);
+  P('#8c5a33',px+6,py+9,20,14);
+  P('#b87b48',px+6,py+9,20,5);
+  P('#633d22',px+6,py+15,20,2);
+  P('#d9b45a',px+5,py+14,22,2);P('#d9b45a',px+8,py+9,2,14);P('#d9b45a',px+22,py+9,2,14);
+  P('#f7df94',px+14,py+13,4,6);P('#4a3622',px+15,py+15,2,2);
  }
  if(o.id==='boss'&&!isDefeated('boss')){drawBeast(px,py,'boss')}
- if(o.id==='leverWest'||o.id==='leverEast'){ctx.fillStyle='#5d6066';ctx.fillRect(px+8,py+8,16,18);ctx.fillStyle='#2d3035';ctx.fillRect(px+11,py+11,10,12);ctx.strokeStyle=(o.id==='leverWest'?getWorldSwitch('leverWest'):getWorldSwitch('leverEast'))?'#d2b96b':'#9a7657';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(px+16,py+17);ctx.lineTo(px+((o.id==='leverWest'?getWorldSwitch('leverWest'):getWorldSwitch('leverEast'))?22:10),py+7);ctx.stroke();ctx.fillStyle='#d4c178';ctx.beginPath();ctx.arc(px+16,py+17,3,0,Math.PI*2);ctx.fill()}
- if(o.id==='innerGate'&&!(getWorldSwitch('leverWest')&&getWorldSwitch('leverEast'))){ctx.fillStyle='rgba(26,28,31,.7)';ctx.fillRect(px+1,py+2,30,28);ctx.fillStyle='#81745d';for(let i=0;i<5;i++)ctx.fillRect(px+4+i*6,py+3,3,27);ctx.fillRect(px+2,py+5,28,3);ctx.fillRect(px+2,py+24,28,3)}
+ if((o.id==='leverWest'||o.id==='leverEast')&&!(RoadCaveQuality.enabled&&RoadCaveQuality.active.has(state.map))){
+  const on=!!getWorldSwitch(o.id);
+  P('rgba(12,14,18,.34)',px+5,py+24,22,5);
+  P(ink,px+6,py+14,20,13);P('#7a7870',px+8,py+16,16,9);P('#b0aca0',px+9,py+16,14,3);
+  P(ink,px+13,py+5,6,14);P(on?'#68c488':'#d9aa54',px+14,py+6,4,12);P(on?'#ccf8d8':'#fff0b4',px+12,py+4,8,4);
+ }
+ if(o.id==='innerGate'&&!(getWorldSwitch('leverWest')&&getWorldSwitch('leverEast'))){
+  P('rgba(14,16,20,.72)',px+1,py+2,30,28);
+  for(let i=0;i<5;i++){P(ink,px+3+i*6,py+3,4,26);P('#8c929a',px+4+i*6,py+4,2,24)}
+  P(ink,px+1,py+4,30,5);P('#6e685c',px+2,py+5,28,3);P(ink,px+1,py+22,30,5);P('#6e685c',px+2,py+23,28,3);
+ }
  // One authored in-world clue, not a blinking HUD icon. Once investigated,
  // the shield has been turned over to expose the stitched old owner's mark.
  if(o.id==='fortShield'){
   const read=state.events.choices['early.fortShield']==='studied';
-  ctx.fillStyle='rgba(20,22,25,.42)';ctx.fillRect(px+3,py+27,27,3);
-  ctx.fillStyle='#5e5b50';ctx.fillRect(px+5,py+25,23,3);
+  P('rgba(20,22,25,.42)',px+3,py+27,27,3);
+  P('#5e5b50',px+5,py+25,23,3);
   if(!read){
-   // Broken shield leaned against the gouged fortress wall.
-   ctx.fillStyle='#756958';ctx.fillRect(px+4,py+3,3,15);
-   ctx.fillRect(px+8,py+5,3,14);ctx.fillRect(px+12,py+7,2,13);
-   ctx.fillStyle='#463a32';ctx.fillRect(px+12,py+15,17,11);
-   ctx.fillStyle='#a78761';ctx.fillRect(px+13,py+14,13,9);
-   ctx.fillStyle='#d1b485';ctx.fillRect(px+14,py+15,11,2);
-   ctx.fillStyle='#4b3430';ctx.fillRect(px+18,py+13,3,9);
-   ctx.fillRect(px+22,py+18,3,7);ctx.fillRect(px+14,py+20,3,5);
+   P('#756958',px+4,py+3,3,15);P('#756958',px+8,py+5,3,14);P('#756958',px+12,py+7,2,13);
+   P('#463a32',px+12,py+15,17,11);P('#a78761',px+13,py+14,13,9);P('#d1b485',px+14,py+15,11,2);
+   P('#4b3430',px+18,py+13,3,9);P('#4b3430',px+22,py+18,3,7);P('#4b3430',px+14,py+20,3,5);
   }else{
-   // Turning it over exposes straps and a few gold-thread stitch marks.
-   ctx.fillStyle='#775e43';ctx.fillRect(px+4,py+19,23,7);
-   ctx.fillStyle='#b5966c';ctx.fillRect(px+7,py+15,20,7);
-   ctx.fillStyle='#594a39';ctx.fillRect(px+7,py+16,3,9);
-   ctx.fillRect(px+22,py+15,3,9);
-   ctx.fillStyle='#d2b478';ctx.fillRect(px+12,py+18,2,2);
-   ctx.fillRect(px+16,py+17,2,3);ctx.fillRect(px+20,py+18,2,2);
-   ctx.fillStyle='#8f8776';ctx.fillRect(px+5,py+6,3,10);
-   ctx.fillRect(px+10,py+9,2,7);
+   P('#775e43',px+4,py+19,23,7);P('#b5966c',px+7,py+15,20,7);
+   P('#594a39',px+7,py+16,3,9);P('#594a39',px+22,py+15,3,9);
+   P('#d2b478',px+12,py+18,2,2);P('#d2b478',px+16,py+17,2,3);P('#d2b478',px+20,py+18,2,2);
+   P('#8f8776',px+5,py+6,3,10);P('#8f8776',px+10,py+9,2,7);
   }
  }
- if(o.id==='banner'){ctx.fillStyle='#80634d';ctx.fillRect(px+6,py+3,3,26);ctx.fillStyle='#7d3840';ctx.fillRect(px+9,py+5,17,15);ctx.fillStyle='#d0b26d';ctx.fillRect(px+15,py+8,4,8)}
- if(o.id==='rations'){ctx.fillStyle='#65513b';ctx.fillRect(px+4,py+12,24,14);ctx.strokeStyle='#92744f';ctx.strokeRect(px+5,py+13,22,12);ctx.fillStyle='#3c342b';ctx.fillRect(px+9,py+7,14,6)}
- if(o.id==='burnedCart'){ctx.fillStyle='#4b3729';ctx.fillRect(px+4,py+15,23,8);ctx.strokeStyle='#2e2823';ctx.lineWidth=3;ctx.beginPath();ctx.arc(px+8,py+26,5,0,Math.PI*2);ctx.arc(px+24,py+26,5,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#2c2723';ctx.fillRect(px+10,py+8,4,10)}
- if(o.id==='victoryPoster'){ctx.fillStyle='#e5dcc5';ctx.fillRect(px+4,py+5,24,23);ctx.strokeStyle='#8d3d46';ctx.lineWidth=2;ctx.strokeRect(px+4,py+5,24,23);ctx.fillStyle='#8d3d46';ctx.fillRect(px+8,py+9,16,4);ctx.fillStyle='#6d6255';ctx.fillRect(px+8,py+16,16,2);ctx.fillRect(px+8,py+21,12,2)}
- if(o.id==='heroLedger'){ctx.fillStyle='#514335';ctx.fillRect(px+5,py+7,22,20);ctx.fillStyle='#d7c8a4';ctx.fillRect(px+8,py+10,16,14);ctx.fillStyle='#7f3d43';ctx.fillRect(px+10,py+12,12,3);ctx.fillStyle='#645a4b';ctx.fillRect(px+10,py+18,10,2)}
- if(o.id==='scorchedOrders'){ctx.fillStyle='#c9b992';ctx.fillRect(px+6,py+8,20,16);ctx.fillStyle='#4b3f35';ctx.fillRect(px+9,py+12,14,2);ctx.fillRect(px+9,py+17,11,2);ctx.fillStyle='#3a3029';ctx.fillRect(px+5,py+22,22,5)}
- if(o.id==='imperialPatrol'&&!isDefeated('imperialPatrol')){if(!(typeof OpeningPixelAssets!=='undefined'&&OpeningPixelAssets.drawNpc(ctx,{id:'imperialPatrolEnemy',x:o.x,y:o.y},'down',0)))drawCharacterSprite(o.x,o.y,{body:'#2f4b69',accent:'#b6c5cf',hair:'#373a40',weapon:'sword'},false,'down');ctx.fillStyle='#354f78';ctx.fillRect(px+25,py-8,4,16);ctx.fillStyle='#c8d5de';ctx.fillRect(px+29,py-6,10,7)}
- if(o.id==='yukiRibbon'){ctx.fillStyle='#5c4a39';ctx.fillRect(px+14,py+4,4,24);ctx.fillStyle='#354f78';ctx.fillRect(px+6,py+7,20,10);ctx.fillStyle='#c7d1d7';ctx.fillRect(px+11,py+11,10,2)}
-
- if(o.id==='yukiMemorial'){ctx.fillStyle='#77746d';ctx.fillRect(px+7,py+5,18,25);ctx.fillStyle='#b9b29d';ctx.fillRect(px+11,py+10,10,3);ctx.fillRect(px+13,py+16,6,2)}
- if(o.id==='elsiaTablet'){ctx.fillStyle='#aaa38f';ctx.fillRect(px+5,py+6,22,24);ctx.fillStyle='#d0c7ab';for(let i=0;i<3;i++)ctx.fillRect(px+9,py+11+i*5,14,2)}
- if(['ashCache','frontierCache','empireCache','imperialCache','yukiCache','elsiaCache'].includes(o.id)){ctx.fillStyle='#6f5439';ctx.fillRect(px+5,py+11,22,16);ctx.fillStyle='#9b7b4d';ctx.fillRect(px+7,py+8,18,6);ctx.strokeStyle='#342a21';ctx.strokeRect(px+5,py+11,22,16)}
- if(o.id==='royalCastle'&&!(state.map==='capital'&&typeof CapitalEnvironment!=='undefined'&&CapitalEnvironment.enabled)){ctx.fillStyle='#c9b66e';ctx.fillRect(px+10,py+8,12,18);ctx.fillStyle='#7d3f48';ctx.fillRect(px+13,py+11,6,8)}
- if(o.id==='imperialMarket'||(o.id==='capitalMarket'&&!(state.map==='capital'&&typeof CapitalEnvironment!=='undefined'&&CapitalEnvironment.enabled))){ctx.fillStyle='#765037';ctx.fillRect(px+4,py+19,24,7);ctx.fillStyle=o.id==='capitalMarket'?'#a44d51':'#4e6e84';ctx.fillRect(px+3,py+7,26,9)}
+ if(o.id==='imperialPatrol'&&!isDefeated('imperialPatrol')){if(!(typeof OpeningPixelAssets!=='undefined'&&OpeningPixelAssets.drawNpc(ctx,{id:'imperialPatrolEnemy',x:o.x,y:o.y},'down',0)))drawCharacterSprite(o.x,o.y,{body:'#2f4b69',accent:'#b6c5cf',hair:'#373a40',weapon:'sword'},false,'down');P('#354f78',px+25,py-8,4,16);P('#c8d5de',px+29,py-6,10,7)}
+ if(o.id==='royalCastle'&&!(state.map==='capital'&&typeof CapitalEnvironment!=='undefined'&&CapitalEnvironment.enabled)){hdBanner('#8d3d46','#c45a64','#ebd078')}
+ if(o.id==='imperialMarket'||(o.id==='capitalMarket'&&!(state.map==='capital'&&typeof CapitalEnvironment!=='undefined'&&CapitalEnvironment.enabled))){hdCrate(false,'#845e3c','#b48a5c')}
  if(o.id==='capitalFountain'||o.id==='sacredSpring'){
   // Grand Multi-Tiered Carved White-Marble Square Enix Fountain Monument with Animated Sparkling Water Arcs!
-  const t=Date.now()/240,sp=Math.sin(t)*1.8,sacred=o.id==='sacredSpring';
+  const t=now/240,sp=Math.sin(t)*1.8,sacred=o.id==='sacredSpring';
   const cx=px+16,cy=py+16;
   ctx.save();
-  // Southeast architectural monument shadow
   ctx.fillStyle='rgba(12,18,28,.34)';ctx.beginPath();ctx.ellipse(cx+4,cy+9,32,22,0,0,Math.PI*2);ctx.fill();
-  // Outer carved stepped marble rim & coping wall
   ctx.fillStyle='#5c5a52';ctx.beginPath();ctx.ellipse(cx,cy+5,29,21,0,0,Math.PI*2);ctx.fill();
   ctx.fillStyle='#aba698';ctx.beginPath();ctx.ellipse(cx,cy+2,29,20,0,0,Math.PI*2);ctx.fill();
   ctx.fillStyle='#ebe6d8';ctx.beginPath();ctx.ellipse(cx,cy,28,19,0,0,Math.PI*2);ctx.fill();
   ctx.fillStyle='#ffffff';ctx.beginPath();ctx.ellipse(cx-2,cy-2,24,15,0,0,Math.PI*2);ctx.fill();
-  // Deep recessed crystal water basin with rich radial azure/jade depth gradient
   ctx.fillStyle=sacred?'#1d646b':'#235b78';ctx.beginPath();ctx.ellipse(cx,cy+1,23,15,0,0,Math.PI*2);ctx.fill();
   const wg=ctx.createRadialGradient?.(cx-3,cy-2,3,cx,cy+1,23);
   if(wg&&typeof wg.addColorStop==='function'){
@@ -1183,24 +1445,19 @@ function drawObject(o){if(RyuneOutskirts.drawObject(ctx,state.map,o,!!state.worl
    ctx.fillStyle=wg;
   }else{ctx.fillStyle=sacred?'#369ea0':'#3c8aae'}
   ctx.beginPath();ctx.ellipse(cx,cy+2,21,13,0,0,Math.PI*2);ctx.fill();
-  // Animated concentric foam ripples & sunlit caustic highlights on water surface
   ctx.strokeStyle='rgba(232,252,255,.55)';ctx.lineWidth=1;
   ctx.beginPath();ctx.ellipse(cx,cy+2,11+(t%3)*2.5,6.5+(t%3)*1.4,0,0,Math.PI*2);ctx.stroke();
   ctx.strokeStyle='rgba(255,255,255,.38)';
   ctx.beginPath();ctx.ellipse(cx,cy+2,16+((t+1.5)%3)*1.8,9.5+((t+1.5)%3),0,0,Math.PI*2);ctx.stroke();
-  // Central two-tiered sculpted marble chalice column & golden finial
   ctx.fillStyle='rgba(16,32,48,.34)';ctx.beginPath();ctx.ellipse(cx+1,cy+6,9,5,0,0,Math.PI*2);ctx.fill();
   ctx.fillStyle='#969284';ctx.fillRect(cx-4,cy-9,8,15);
   ctx.fillStyle='#e8e2d2';ctx.fillRect(cx-3,cy-10,6,14);
   ctx.fillStyle='#ffffff';ctx.fillRect(cx-2,cy-10,2,12);
-  // Upper overflowing marble bowl
   ctx.fillStyle='#78746a';ctx.beginPath();ctx.ellipse(cx,cy-6,12,5.5,0,0,Math.PI*2);ctx.fill();
   ctx.fillStyle='#f2ede0';ctx.beginPath();ctx.ellipse(cx,cy-8,12,5,0,0,Math.PI*2);ctx.fill();
   ctx.fillStyle=sacred?'#76ece0':'#7ad4ec';ctx.beginPath();ctx.ellipse(cx,cy-8,9,3.2,0,0,Math.PI*2);ctx.fill();
-  // Top spout spire & gilded crest
   ctx.fillStyle='#dfd8c6';ctx.fillRect(cx-2,cy-16,4,9);
   ctx.fillStyle='#eac872';ctx.fillRect(cx-2,cy-18,4,3);ctx.fillStyle='#fff8d2';ctx.fillRect(cx-1,cy-18,2,1);
-  // Animated sparkling cascading water arcs & white foam splashes
   ctx.strokeStyle='rgba(220,250,255,.82)';ctx.lineWidth=1.5;
   for(const dir of [-1,1]){
    ctx.beginPath();ctx.moveTo(cx,cy-17);ctx.quadraticCurveTo(cx+dir*9,cy-19-Math.abs(sp)*0.6,cx+dir*11,cy-7);ctx.stroke();
@@ -1213,37 +1470,37 @@ function drawObject(o){if(RyuneOutskirts.drawObject(ctx,state.map,o,!!state.worl
   ctx.fillRect(cx-3,cy-20+sp*0.4,2,2);ctx.fillRect(cx+2,cy-20-sp*0.4,2,2);
   ctx.restore();
  }
- if(o.id==='capitalBarracks'){ctx.fillStyle='#74685a';ctx.fillRect(px+5,py+8,22,19);ctx.fillStyle='#d6caa7';ctx.fillRect(px+9,py+12,14,5)}
- if(o.id==='watchTower'){
-  // True 3D Timber Military Lookout Tower with 4 corner legs, cross-bracing, railed deck, pitched roof & lantern!
-  ctx.fillStyle='rgba(12,14,18,.36)';ctx.fillRect(px+2,py+25,30,6);
-  ctx.fillStyle='#261c14';ctx.fillRect(px+5,py+8,4,21);ctx.fillRect(px+23,py+8,4,21);
-  ctx.fillStyle='#6e4e32';ctx.fillRect(px+6,py+9,2,19);ctx.fillRect(px+24,py+9,2,19);
-  ctx.fillStyle='#4a3422';ctx.fillRect(px+8,py+16,16,2);ctx.fillRect(px+8,py+22,16,2);
-  ctx.fillStyle='#261c14';ctx.fillRect(px+2,py+5,28,7);ctx.fillStyle='#8c6844';ctx.fillRect(px+4,py+6,24,4);
-  ctx.fillStyle='#261c14';ctx.fillRect(px+5,py-5,3,11);ctx.fillRect(px+24,py-5,3,11);
-  ctx.fillStyle='#261c14';ctx.fillRect(px+1,py-10,30,6);ctx.fillStyle='#784838';ctx.fillRect(px+3,py-9,26,4);
-  ctx.fillStyle='#9c624c';ctx.fillRect(px+6,py-12,20,3);
-  ctx.fillStyle='#ffd874';ctx.fillRect(px+14,py-2,4,5);ctx.fillStyle='#fffbe0';ctx.fillRect(px+15,py-1,2,2);
+ if(o.id==='capitalBarracks'){
+  // Grounded 3D garrison halberd & royal shield rack
+  P('rgba(12,14,18,.34)',px+3,py+24,26,5);
+  P(ink,px+3,py+13,26,13);P('#6e4e32',px+5,py+15,22,9);P('#9e744c',px+6,py+15,20,2);
+  for(const sx of [px+8,px+14,px+20]){P('#4e3824',sx,py+5,2,17);P('#c8d4dc',sx-1,py+3,4,4)}
+  P(ink,px+21,py+11,9,12);P('#8e323c',px+22,py+12,7,10);P('#ebd074',px+24,py+14,3,5);
  }
- if(o.id==='waterMill'){ctx.strokeStyle='#8e7755';ctx.lineWidth=3;ctx.beginPath();ctx.arc(px+16,py+17,12,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#66503b';ctx.fillRect(px+13,py+7,6,20)}
- if(o.id==='empireShrine'||o.id==='ruinedShrine'||o.id==='oldSanctum'){ctx.fillStyle='#8e8879';ctx.fillRect(px+8,py+10,16,18);ctx.fillStyle='#b0a993';ctx.fillRect(px+5,py+8,22,4);ctx.fillRect(px+11,py+4,10,5)}
- if(o.id==='canalMonument'){ctx.fillStyle='#92989a';ctx.fillRect(px+11,py+5,10,24);ctx.fillStyle='#c4c0aa';ctx.fillRect(px+8,py+4,16,5)}
- if(o.id==='tornLetter'){ctx.fillStyle='#d6c9a8';ctx.fillRect(px+7,py+9,18,14);ctx.strokeStyle='#776b59';ctx.strokeRect(px+7,py+9,18,14)}
- if(o.id==='brokenStandard'){ctx.fillStyle='#5a4534';ctx.fillRect(px+14,py+5,4,24);ctx.fillStyle='#405d80';ctx.fillRect(px+18,py+6,10,9)}
- if(o.id==='mountainOverlook'){ctx.fillStyle='#807a68';ctx.fillRect(px+3,py+20,26,7);ctx.fillStyle='#b6b199';ctx.fillRect(px+7,py+17,18,4)}
- if(['kingdomLine','empireLine'].includes(o.id)){ctx.fillStyle=o.id==='kingdomLine'?'#8d3d46':'#354f78';ctx.fillRect(px+5,py+8,22,13);ctx.fillStyle='#5d4b37';ctx.fillRect(px+14,py+4,4,25)}
- if(o.id==='borderGrave'){ctx.fillStyle='#807a70';ctx.fillRect(px+10,py+7,12,22);ctx.fillStyle='#a39b88';ctx.fillRect(px+7,py+10,18,4)}
- if(o.id==='oldCheckpoint'){ctx.fillStyle='#5e4937';ctx.fillRect(px+5,py+4,5,26);ctx.fillRect(px+23,py+4,5,26);ctx.fillRect(px+5,py+6,23,4)}
- if(o.id==='relayWell'){if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawSculptedWell)HD2DAtlas.drawSculptedWell(ctx,o.x,o.y,{roof:'#785040',roofHi:'#9c6c56'});else{ctx.fillStyle='#74787a';ctx.beginPath();ctx.ellipse(px+16,py+18,13,8,0,0,Math.PI*2);ctx.fill()}}
- if(o.id==='relayBoard'){ctx.fillStyle='#684e36';ctx.fillRect(px+7,py+4,18,20);ctx.fillRect(px+14,py+24,4,7);ctx.fillStyle='#cfbd92';ctx.fillRect(px+10,py+7,12,10)}
- if(o.id==='signalFire'){ctx.fillStyle='#5d4b3b';ctx.fillRect(px+4,py+22,24,5);ctx.fillStyle='#d27639';ctx.beginPath();ctx.moveTo(px+16,py+23);ctx.lineTo(px+10,py+11);ctx.lineTo(px+16,py+5);ctx.lineTo(px+23,py+14);ctx.closePath();ctx.fill()}
- if(o.id==='fortMap'){ctx.fillStyle='#604a36';ctx.fillRect(px+5,py+6,22,21);ctx.fillStyle='#d7c8a3';ctx.fillRect(px+8,py+9,16,14)}
- if(o.id==='brokenWagon'){if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawCoveredWagon)HD2DAtlas.drawCoveredWagon(ctx,o.x,o.y,{broken:true});else{ctx.fillStyle='#5f4734';ctx.fillRect(px+3,py+16,26,8)}}
- if(o.id==='borderCampfire'){ctx.fillStyle='rgba(255,172,72,.16)';ctx.beginPath();ctx.arc(px+16,py+18,24,0,Math.PI*2);ctx.fill();ctx.fillStyle='#3a2f29';ctx.beginPath();ctx.arc(px+16,py+22,12,0,Math.PI*2);ctx.fill();ctx.fillStyle='#8e5a32';ctx.fillRect(px+9,py+20,17,4);ctx.fillStyle='#e2943f';ctx.beginPath();ctx.moveTo(px+16,py+20);ctx.lineTo(px+10,py+12);ctx.lineTo(px+16,py+5);ctx.lineTo(px+23,py+13);ctx.closePath();ctx.fill();ctx.fillStyle='#fff0b0';ctx.fillRect(px+14,py+12,4,5)}
- if(['fortGate','fortGateRight'].includes(o.id)&&!getWorldSwitch('fortGateOpen')){ctx.fillStyle='#4e4640';ctx.fillRect(px-10,py+4,52,26);ctx.fillStyle='#866c50';for(let i=0;i<6;i++)ctx.fillRect(px-6+i*9,py+4,4,26);ctx.fillStyle='#c0a16d';ctx.fillRect(px-10,py+4,52,4)}
- if(o.id==='ravineLookout'||o.id==='bridgeMarker'){ctx.fillStyle='#70685d';ctx.fillRect(px+7,py+20,20,7);ctx.fillStyle='#c7b990';ctx.fillRect(px+10,py+8,14,12)}
- if(o.id==='roadSign'||o.id==='milestone'){ctx.fillStyle='#73583b';ctx.fillRect(px+14,py+7,4,22);ctx.fillStyle='#b09262';ctx.fillRect(px+3,py+4,26,12);ctx.fillStyle='#403329';ctx.font='bold 8px system-ui';ctx.textAlign='center';ctx.fillText(o.id==='roadSign'?'古砦→':'王都 近道',px+16,py+13);ctx.textAlign='start'}
+ if(o.id==='watchTower'){
+  P('rgba(12,14,18,.36)',px+2,py+25,30,6);
+  P('#261c14',px+5,py+8,4,21);P('#261c14',px+23,py+8,4,21);
+  P('#6e4e32',px+6,py+9,2,19);P('#6e4e32',px+24,py+9,2,19);
+  P('#4a3422',px+8,py+16,16,2);P('#4a3422',px+8,py+22,16,2);
+  P('#261c14',px+2,py+5,28,7);P('#8c6844',px+4,py+6,24,4);
+  P('#261c14',px+5,py-5,3,11);P('#261c14',px+24,py-5,3,11);
+  P('#261c14',px+1,py-10,30,6);P('#784838',px+3,py-9,26,4);
+  P('#9c624c',px+6,py-12,20,3);
+  P('#ffd874',px+14,py-2,4,5);P('#fffbe0',px+15,py-1,2,2);
+ }
+ if(o.id==='waterMill'){ctx.strokeStyle='#8e7755';ctx.lineWidth=3;ctx.beginPath();ctx.arc(px+16,py+17,12,0,Math.PI*2);ctx.stroke();P('#66503b',px+13,py+7,6,20)}
+ if(o.id==='oldCheckpoint'){
+  P('rgba(12,14,18,.32)',px+3,py+25,26,5);
+  P(ink,px+4,py+4,5,24);P('#7c5a38',px+5,py+5,3,22);
+  P(ink,px+23,py+4,5,24);P('#7c5a38',px+24,py+5,3,22);
+  P(ink,px+4,py+6,24,6);P('#a88256',px+5,py+7,22,4);P('#d8bc88',px+6,py+7,20,1);
+ }
+ if(['fortGate','fortGateRight'].includes(o.id)&&!getWorldSwitch('fortGateOpen')){
+  P(ink,px-10,py+3,52,27);P('#4a5058',px-8,py+5,48,23);
+  for(let i=0;i<6;i++){P('#262a30',px-6+i*9,py+5,5,23);P('#969ea6',px-5+i*9,py+5,2,22)}
+  P('#c8ad72',px-10,py+4,52,4);
+ }
+ drawRecoveryBadge(o);
 }
 function drawBeast(px,py,type){
  const r=(col,x,y,w,h)=>{ctx.fillStyle=col;ctx.fillRect(Math.round(px+x),Math.round(py+y),Math.round(w),Math.round(h))};
@@ -1676,13 +1933,13 @@ function pushOcclusionItems(queue,m){
 
  if(mapId==='village'&&RyuneEnvironment.enabled){
   for(const b of (RyuneEnvironment.grandVillageBuildings||[]))queue.push({kind:'houseCanopy',x:b.x,y:b.y+0.05,hx:b.x,hy:b.y,w:b.w,h:b.h,opts:b});
-  queue.push({kind:'gateArch',x:16,y:1.35,gx:16,gy:1,gw:4,opts:{label:'リュネ村・北門',roof:'#7a4238'}});
+  queue.push({kind:'gateArch',x:16,y:1.35,gx:16,gy:1,gw:4,opts:{style:'rural_wood',label:'リュネ村・北門'}});
  }else if(mapId==='ryunefields'){
   queue.push({kind:'houseCanopy',x:3,y:2.05,hx:3,hy:2,w:6,h:4,opts:{tag:'rf_barn'}});
  }else if(mapId==='ryunebrook'){
   queue.push({kind:'houseCanopy',x:18,y:3.05,hx:18,hy:3,w:5,h:3,opts:{tag:'rb_cabin'}});
  }else if(mapId==='road'){
-  queue.push({kind:'gateArch',x:13,y:17.35,gx:13,gy:17,gw:4,opts:{label:'王都街道',roof:'#6e4634'}});
+  queue.push({kind:'gateArch',x:13,y:17.35,gx:13,gy:17,gw:4,opts:{style:'rural_wood',label:'王都街道'}});
  }else if(mapId==='roadhollow'){
   queue.push({kind:'houseCanopy',x:3,y:3.05,hx:3,hy:3,w:5,h:3,opts:{tag:'rh_hut'}});
  }else if(mapId==='northroad'){
@@ -1692,7 +1949,9 @@ function pushOcclusionItems(queue,m){
  }else if(mapId==='northwaystation'){
   queue.push({kind:'houseCanopy',x:4,y:3.05,hx:4,hy:3,w:7,h:4,opts:{tag:'way_inn'}});
   queue.push({kind:'houseCanopy',x:20,y:3.05,hx:20,hy:3,w:6,h:4,opts:{tag:'way_barn'}});
-  queue.push({kind:'gateArch',x:14,y:7.35,gx:14,gy:7,gw:4,opts:{label:'白樺の宿場',roof:'#546e4c',roofHi:'#84a678'}});
+  queue.push({kind:'gateArch',x:14,y:7.35,gx:14,gy:7,gw:4,opts:{style:'rural_wood',label:'白樺の宿場'}});
+ }else if(mapId==='ashroad'){
+  queue.push({kind:'houseCanopy',x:3,y:3.05,hx:3,hy:3,w:5,h:3,opts:{tag:'ash_ruin'}});
  }else if(mapId==='capital'){
   queue.push({kind:'gateArch',x:5,y:1.35,gx:5,gy:1,gw:4,opts:{label:'北西門・灰の街道へ',roof:'#7a323c',roofHi:'#b85460'}});
   queue.push({kind:'houseCanopy',x:2,y:2.05,hx:2,hy:2,w:3,h:3,opts:{tag:'cap_gate_2'}});
@@ -1728,7 +1987,7 @@ function pushOcclusionItems(queue,m){
   queue.push({kind:'gateArch',x:16,y:22.35,gx:16,gy:22,gw:4,opts:{label:'レグノア南門',roof:'#2f4c66',roofHi:'#5e84a4'}});
  }else if(mapId==='elsia'){
   queue.push({kind:'houseCanopy',x:22,y:13.05,hx:22,hy:13,w:7,h:4,opts:{tag:'elsia_villa'}});
-  queue.push({kind:'gateArch',x:14,y:20.35,gx:14,gy:20,gw:4,opts:{label:'エルシア聖域',roof:'#5c7c72',roofHi:'#94b8ac'}});
+  queue.push({kind:'gateArch',x:14,y:20.35,gx:14,gy:20,gw:4,opts:{style:'sanctuary',label:'エルシア聖域',roof:'#5c7c72',roofHi:'#94b8ac'}});
  }
 }
 function drawOcclusionItem(item){

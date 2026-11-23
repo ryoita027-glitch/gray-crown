@@ -571,15 +571,12 @@ const BorderWatchfortEnvironment=(()=>{
    return true;
   }
   if(map==='relayvillage'){
-   // Halm Relay Settlement upgraded to full Ryune-grade HD2DAtlas grand timber architecture + plaza sunburst medallion!
-   if(typeof HD2DAtlas!=='undefined'){
-    HD2DAtlas.drawPlazaMedallion(ctx,13*32+16,8*32+16,44,'warm');
-   }
+   // Halm Relay Settlement: Frontier Alpine Relay Inn, Timber Cargo Barn & Humble Fieldstone/Log Cottages!
    const relayHouses=[
-    {x:3,y:3,w:5,h:3,tag:'rel_inn',archStyle:'hall',label:'ハルム中継宿',roofDark:'#583228',roofMain:'#84483a',roofHi:'#b06450',roofRim:'#d68a72',wall:'#eedcc0',wallShade:'#d4c0a0',wallDark:'#a69272',shutter:'#523f31',canopyColor:'#8c3a40',flowerBorder:true,doorOffsetPx:2*32+16},
-    {x:16,y:3,w:5,h:3,tag:'rel_store',archStyle:'workshop',timberWall:true,label:'交易荷倉',roofDark:'#2c3e32',roofMain:'#46624c',roofHi:'#66886c',roofRim:'#90b294',wall:'#d2b48e',wallShade:'#b89872',wallDark:'#8c6e4c',shutter:'#405042',sideShed:true,chimneyLeft:true,doorOffsetPx:2*32+16},
-    {x:3,y:10,w:4,h:2,tag:'rel_sw',archStyle:'manor',lowerStone:true,roofDark:'#2e384c',roofMain:'#465872',roofHi:'#687e9c',roofRim:'#8ea4c0',wall:'#ded8ca',wallShade:'#c6c0b0',wallDark:'#989282',shutter:'#36465c',dormer:false,doorOffsetPx:2*32},
-    {x:17,y:10,w:4,h:2,tag:'rel_se',archStyle:'cottage',roofDark:'#4e3626',roofMain:'#78523c',roofHi:'#a07254',roofRim:'#c69876',wall:'#ead8bc',wallShade:'#d0be9e',wallDark:'#a29070',shutter:'#4c5c46',dormer:false,doorOffsetPx:2*32}
+    {x:3,y:3,w:5,h:3,tag:'rel_inn',region:'alpine',alpineStyle:'border',label:'ハルム中継宿',roofDark:'#4e2c22',roofMain:'#7c4636',roofHi:'#a6644e',canopyColor:'#8c3a40',doorOffsetPx:2*32+16},
+    {x:16,y:3,w:5,h:3,tag:'rel_store',region:'rural',ruralStyle:'barn',label:'交易荷倉',roofDark:'#2c3e32',roofMain:'#46624c',roofHi:'#66886c',sideShed:true,chimneyLeft:true,doorOffsetPx:2*32+16},
+    {x:3,y:10,w:4,h:2,tag:'rel_sw',region:'rural',ruralStyle:'fieldstone',roofDark:'#2e384c',roofMain:'#465872',roofHi:'#687e9c',doorOffsetPx:2*32},
+    {x:17,y:10,w:4,h:2,tag:'rel_se',region:'rural',ruralStyle:'log_cabin',roofDark:'#4e3626',roofMain:'#78523c',roofHi:'#a07254',doorOffsetPx:2*32}
    ];
    for(const b of relayHouses){
     if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawGrandHouse(ctx,b.x,b.y,b.w,b.h,b)){
@@ -606,10 +603,10 @@ const BorderWatchfortEnvironment=(()=>{
    return true;
   }
   if(map==='borderland'){
-   // Expanded 32x22 Halm Borderland: Grand Square Enix Halm Inn & Border Trade Hall + Weathered Checkpoint Archway!
+   // Expanded 32x22 Halm Borderland: Frontier Alpine Granite-and-Log Halm Inn & Border Trade Outpost + Weathered Checkpoint Archway!
    const borderHouses=[
-    {x:4,y:2,w:7,h:4,tag:'halm_inn',archStyle:'hall',label:'旅籠・風見亭',roofDark:'#4e2e24',roofMain:'#7c4b3a',roofHi:'#a46850',roofRim:'#ca8e72',wall:'#f0debe',wallShade:'#d6c29e',wallDark:'#a89470',shutter:'#523f31',canopyColor:'#8c3a40',flowerBorder:true,chimneyLeft:true,doorOffsetPx:3*32+16},
-    {x:21,y:2,w:7,h:4,tag:'halm_trade',archStyle:'manor',lowerStone:true,label:'国境交易所',roofDark:'#283442',roofMain:'#405268',roofHi:'#607894',roofRim:'#88a0bc',wall:'#dcd6c8',wallShade:'#c4beb0',wallDark:'#969082',shutter:'#3e4a56',stonePortico:true,bannerColor:'#7a343c',chimneyLeft:false,doorOffsetPx:3*32+16}
+    {x:4,y:2,w:7,h:4,tag:'halm_inn',region:'alpine',alpineStyle:'border',label:'旅籠・風見亭',roofDark:'#4e2e24',roofMain:'#7c4b3a',roofHi:'#a46850',canopyColor:'#8c3a40',chimneyLeft:true,doorOffsetPx:3*32+16},
+    {x:21,y:2,w:7,h:4,tag:'halm_trade',region:'alpine',alpineStyle:'border',label:'国境交易所',roofDark:'#283442',roofMain:'#405268',roofHi:'#607894',chimneyLeft:false,doorOffsetPx:3*32+16}
    ];
    for(const b of borderHouses){
     if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawGrandHouse(ctx,b.x,b.y,b.w,b.h,b)){
@@ -889,20 +886,22 @@ const BorderWatchfortEnvironment=(()=>{
     return true;
    }
    if(o.id==='borderGrave'){
-    pix(ctx,'rgba(18,14,10,0.28)',x+7,y+25,18,4);
-    pix(ctx,'#524e47',x+10,y+7,12,21);pix(ctx,'#8c867a',x+11,y+8,10,18);
-    pix(ctx,'#b5afa0',x+12,y+8,8,3);
-    pix(ctx,'#615c53',x+13,y+13,6,1);pix(ctx,'#615c53',x+13,y+16,6,1);
-    drawGrassTuft(ctx,x+5,y+22,0);
-    pix(ctx,'#e3d398',x+21,y+24,3,3);
+    pix(ctx,'rgba(14,14,12,0.34)',x+6,y+25,20,5);
+    pix(ctx,'#1e1a16',x+9,y+5,14,23);pix(ctx,'#8c867a',x+11,y+7,10,19);
+    pix(ctx,'#c4beb0',x+12,y+7,4,17);
+    pix(ctx,'#1e1a16',x+6,y+10,20,6);pix(ctx,'#9e988c',x+7,y+11,18,4);pix(ctx,'#d2ccc0',x+8,y+11,16,1);
+    drawGrassTuft(ctx,x+4,y+22,0);
+    pix(ctx,'#f4f6ee',x+21,y+23,3,3);pix(ctx,'#f2d068',x+22,y+24,1,1);
     return true;
    }
    if(o.id==='relayBoard'){
-    pix(ctx,'rgba(18,14,10,0.26)',x+6,y+26,20,4);
-    pix(ctx,'#463424',x+7,y+6,18,22);pix(ctx,'#7d5d3e',x+9,y+8,14,15);
-    pix(ctx,'#5e4630',x+6,y+5,20,3);
-    pix(ctx,'#ece0c6',x+10,y+10,5,6);pix(ctx,'#dfd2b2',x+17,y+10,5,5);
-    pix(ctx,'#e6d9bc',x+11,y+17,8,4);
+    pix(ctx,'rgba(14,14,12,0.34)',x+4,y+25,24,5);
+    pix(ctx,'#1e1814',x+5,y+7,4,21);pix(ctx,'#6e4e34',x+6,y+8,2,19);
+    pix(ctx,'#1e1814',x+23,y+7,4,21);pix(ctx,'#6e4e34',x+24,y+8,2,19);
+    pix(ctx,'#1e1814',x+5,y+6,22,16);pix(ctx,'#8c6b48',x+7,y+8,18,12);
+    pix(ctx,'#f4ead0',x+8,y+9,7,7);pix(ctx,'#a83a42',x+10,y+10,3,2);
+    pix(ctx,'#e6d8b8',x+16,y+10,7,6);pix(ctx,'#d9786c',x+17,y+16,5,3);
+    pix(ctx,'#1e1814',x+2,y+2,28,6);pix(ctx,'#6c4630',x+3,y+3,26,4);pix(ctx,'#9e6e4e',x+5,y+2,22,2);
     return true;
    }
    if(o.id==='borderCache'){
@@ -927,16 +926,16 @@ const BorderWatchfortEnvironment=(()=>{
     return true;
    }
    if(o.id==='fortMap'){
-    pix(ctx,'rgba(14,16,20,0.28)',x+3,y+24,26,4);
-    pix(ctx,'#463525',x+4,y+7,24,19);pix(ctx,'#ded0ac',x+6,y+9,20,14);
-    pix(ctx,'#8c4246',x+8,y+14,5,3);pix(ctx,'#335378',x+19,y+12,5,3);
-    pix(ctx,'#574e42',x+14,y+10,2,12);
+    pix(ctx,'rgba(12,14,18,0.34)',x+3,y+24,26,5);
+    pix(ctx,'#1e1814',x+3,y+7,26,19);pix(ctx,'#5c4028',x+5,y+19,22,6);pix(ctx,'#8c6642',x+4,y+8,24,11);
+    pix(ctx,'#f0e6c8',x+6,y+10,20,8);pix(ctx,'#9c3842',x+8,y+14,5,3);pix(ctx,'#325884',x+19,y+12,5,3);
+    pix(ctx,'#5c5244',x+14,y+10,2,8);pix(ctx,'#ebd072',x+22,y+10,3,3);
     return true;
    }
    if(o.id==='fortRest'){
-    pix(ctx,'rgba(14,16,20,0.28)',x+3,y+24,26,4);
-    pix(ctx,'#4a3728',x+4,y+10,24,16);pix(ctx,'#cfc5ac',x+6,y+12,20,12);
-    pix(ctx,'#78634f',x+6,y+17,20,7);pix(ctx,'#f0e9d8',x+7,y+12,7,4);
+    pix(ctx,'rgba(12,14,18,0.34)',x+3,y+25,26,5);
+    pix(ctx,'#1e1814',x+3,y+8,26,18);pix(ctx,'#5e4228',x+5,y+10,22,14);
+    pix(ctx,'#f2ece0',x+6,y+11,20,12);pix(ctx,'#78604a',x+6,y+16,20,7);pix(ctx,'#fffdf4',x+7,y+11,7,4);
     return true;
    }
    if(o.id==='fortGate'||o.id==='fortGateRight'){
