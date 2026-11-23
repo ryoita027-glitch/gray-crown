@@ -637,13 +637,13 @@ const OpeningPixelAssets=(()=>{
     };
     check(x-1,y,'l');check(x+1,y,'r');check(x,y-1,'a');check(x,y+1,'b');
     if(cnt>0){
-     // Directional top-left lit organic selvedge outline (softer warm edge on sunlit top crowns, deeper cool-umber underside!)
+     // Warm Karen-matched mahogany/plum 1px selvedge outline (matches assets/characters/karen/*.png!)
      const topLit=(hasBelow&&!hasAbove)||(hasRight&&!hasAbove);
-     const kR=topLit?0.44:0.30,kG=topLit?0.36:0.24,kB=topLit?0.38:0.28;
-     const addR=topLit?20:14,addG=topLit?13:8,addB=topLit?16:12;
-     out[idx]=Math.max(22,Math.min(108,Math.round((nr/cnt)*kR+addR)));
-     out[idx+1]=Math.max(14,Math.min(86,Math.round((ng/cnt)*kG+addG)));
-     out[idx+2]=Math.max(18,Math.min(96,Math.round((nb/cnt)*kB+addB)));
+     const kR=topLit?0.46:0.34,kG=topLit?0.34:0.24,kB=topLit?0.34:0.26;
+     const addR=topLit?24:16,addG=topLit?12:8,addB=topLit?14:10;
+     out[idx]=Math.max(30,Math.min(114,Math.round((nr/cnt)*kR+addR)));
+     out[idx+1]=Math.max(16,Math.min(82,Math.round((ng/cnt)*kG+addG)));
+     out[idx+2]=Math.max(18,Math.min(86,Math.round((nb/cnt)*kB+addB)));
      out[idx+3]=255;
     }
    }
@@ -652,9 +652,9 @@ const OpeningPixelAssets=(()=>{
   ctx.putImageData(img,0,0);
  }
  function person(c,profile,dir,frame,id=''){
-  // Protagonist-Matched Curved 48x48 Square Enix HD-2D Character Engine:
-  // Every resident has an unmistakable silhouette (petite child vs stooped/bearded elder vs armored soldier vs wide-hat farmer/merchant vs toque baker vs twin-tail/spiky/long hair)
-  // AND bold primary costume colors (zero generic white-shirt clones!).
+  // Karen-Matched 48x48 Square Enix Anime-JRPG Character Sprite Engine:
+  // Voluminous layered hair with curving bangs & glossy crown arc, delicate tapered chin,
+  // forehead hair-shadow, expressive catchlight eyes, layered tailored medieval outfits & cuffed boots!
   const [hair,coat,skin,job,style]=profile;
   const left=dir===1,right=dir===2,side=left||right,back=dir===3,front=dir===0;
   const child=job==='child',old=job==='elder',armed=job==='fighter',
@@ -663,71 +663,71 @@ const OpeningPixelAssets=(()=>{
   let seed=0;for(const letter of id)seed=(seed*33+letter.charCodeAt(0))>>>0;
   const variation=seed%4,mood=expressions[id]||'focused',trait=charTraits[id]||{};
   const bob=(!working&&(frame===1||frame===3))?-1:0;
-  const cx=24,baseY=(child?6:old?1:0)+bob;
-  const headW=child?14:16,headX=cx-Math.floor(headW/2),headY=baseY+3;
+  const cx=24,baseY=(child?5:old?1:0)+bob;
+  const headY=baseY+2;
   const step=working?0:[0,1,0,-1][frame],
    armL=frame===1?-1:frame===3?1:0,armR=frame===1?1:frame===3?-1:0;
-  const ink='#321a22',seam='#44262e';
-  const hairDeep=tint(hair,-48),hairShade=tint(hair,-24),hairLight=tint(hair,26),hairGloss=tint(hair,52);
+  const ink='#3c1f24';
+  const hairDeep=tint(hair,-52),hairShade=tint(hair,-26),hairLight=tint(hair,28),hairGloss=tint(hair,58);
   const skinShadow=tint(skin,-22),skinDeep=tint(skin,-42),skinLight=tint(skin,16);
-  const coatLight=tint(coat,26),coatHi=tint(coat,42),coatShade=tint(coat,-24),coatDeep=tint(coat,-44);
-  const pants=armed?'#323640':tint(coat,-38),pantsLight=tint(pants,18),pantsShade=tint(pants,-18);
+  const coatLight=tint(coat,26),coatHi=tint(coat,46),coatShade=tint(coat,-24),coatDeep=tint(coat,-46);
+  const pants=armed?'#323642':tint(coat,-42),pantsLight=tint(pants,20),pantsShade=tint(pants,-18);
   const skirted=(!armed&&(['baker','caretaker','florist'].includes(job)||['bun','twin'].includes(style)))||id==='oldwoman'||id==='karenMother'||id==='mother'||id==='margaretMother'||id==='soldierMother'||id==='soldierSister'||id==='lulu'||id==='noa'||id==='chapelElder'||id==='strollerFestive'||id==='elsiaResident';
-  const blouse='#f5eee0',blouseShade='#d8cbb4',bootCol='#5e3e2a',bootLight='#8e6242',bootDark='#382216';
-  const bodyTop=baseY+(child?17:19),legTop=baseY+(child?25:29),bootTop=child?37:36,footBot=42;
+  // Warm cream under-sleeves / chemise ONLY for layered civilian/baker/caretaker outfits (keeps vibrant colored vests/dresses distinct!)
+  const hasBlousedSleeves=!armed&&!['farmer','smith'].includes(job)&&((seed%3===0)||['baker','caretaker','florist','innkeeper'].includes(job)||skirted);
+  const blouse='#f4ece0',blouseShade='#d6c5ad',blouseHi='#fffaf2';
+  const bootCol='#68422b',bootLight='#986846',bootDark='#3e2416';
+  const bodyTop=baseY+(child?18:20),legTop=baseY+(child?26:30),bootTop=child?37:36,footBot=42;
 
-  // 0. Full sweeping mantle / cape for trait.cape & commanders (frames the silhouette boldly!)
+  // 0. Sweeping layered cloak / mantle behind shoulders (commanders, veterans, elders, travelers)
   if(trait.cape||roleType==='commander'){
-   const cCol=trait.cape||(coat==='#263a62'?'#7c2430':tint(coat,-28)),cS=tint(cCol,-26),cH=tint(cCol,22);
+   const cCol=trait.cape||(coat==='#263a62'?'#7c2430':tint(coat,-28)),cS=tint(cCol,-28),cH=tint(cCol,24);
    if(side){
-    const bx=left?25:18;
-    P(c,cS,bx,bodyTop,4,13);P(c,cCol,bx+(left?0:1),bodyTop+1,3,11);
+    const bx=left?25:17;
+    P(c,cS,bx,bodyTop,5,14);P(c,cCol,bx+(left?0:1),bodyTop+1,4,12);P(c,cH,bx+(left?0:2),bodyTop+2,1,9);
    }else{
-    P(c,cS,16,bodyTop,4,13);P(c,cCol,17,bodyTop+1,3,11);P(c,cH,17,bodyTop+1,1,9);
-    P(c,cS,28,bodyTop,4,13);P(c,cCol,28,bodyTop+1,3,11);
-    if(back){P(c,cCol,18,bodyTop,12,12);P(c,trait.accent||'#ecc872',18,bodyTop+11,12,1)}
+    P(c,cS,15,bodyTop,5,14);P(c,cCol,16,bodyTop+1,4,12);P(c,cH,16,bodyTop+1,2,9);
+    P(c,cS,28,bodyTop,5,14);P(c,cCol,28,bodyTop+1,4,12);P(c,cH,30,bodyTop+1,1,9);
+    if(back){
+     P(c,cCol,17,bodyTop,14,13);P(c,cH,19,bodyTop+1,4,10);P(c,cS,26,bodyTop+1,4,11);
+     P(c,trait.accent||'#ecc872',17,bodyTop+12,14,1);
+    }
    }
   }
 
-  // 1. Distinct Outer Hairstyle Silhouettes: Wide Bouncy Twin-Tails, Waist-Length Flowing Locks, or Ponytail!
+  // 1. Back Hair Volume & Flowing Locks (Karen-style sweeping lower hair tufts behind neck/shoulders!)
   if(style==='twin'&&!side){
-   // Wide bouncy high twin-tails flaring outward on both sides of the head (x=12..15 & x=32..35)!
-   P(c,hairDeep,12,headY+4,4,9);P(c,hair,13,headY+3,3,8);P(c,hairLight,13,headY+3,2,4);
-   P(c,hairDeep,32,headY+4,4,9);P(c,hair,32,headY+3,3,8);P(c,hairLight,33,headY+3,2,4);
+   P(c,hairDeep,11,headY+4,5,10);P(c,hair,12,headY+3,4,9);P(c,hairLight,12,headY+4,2,5);P(c,hairDeep,11,headY+12,3,2);
+   P(c,hairDeep,32,headY+4,5,10);P(c,hair,32,headY+3,4,9);P(c,hairLight,34,headY+4,2,5);P(c,hairDeep,34,headY+12,3,2);
    const bc=trait.bowColor||'#f0627c';
-   P(c,bc,14,headY+2,3,3);P(c,'#fff4f6',15,headY+2,1,1);
-   P(c,bc,31,headY+2,3,3);P(c,'#fff4f6',32,headY+2,1,1);
+   P(c,bc,14,headY+2,3,3);P(c,'#fff6f8',15,headY+2,1,1);
+   P(c,bc,31,headY+2,3,3);P(c,'#fff6f8',32,headY+2,1,1);
   }else if(style==='long'&&!side){
-   // Long flowing hair cascades framing shoulders & chest down to waist!
-   P(c,hairDeep,14,headY+6,4,13);P(c,hair,15,headY+6,3,11);P(c,hairLight,15,headY+7,1,6);
-   P(c,hairDeep,30,headY+6,4,13);P(c,hair,30,headY+6,3,11);P(c,hairLight,32,headY+7,1,6);
-  }else if(variation===2&&!armed&&!old){
-   const px=left?29:15;
-   P(c,hairShade,px,headY+8,3,6);P(c,hair,px+1,headY+8,2,5);
+   P(c,hairDeep,13,headY+6,5,15);P(c,hair,14,headY+6,4,13);P(c,hairLight,14,headY+7,2,7);
+   P(c,hairDeep,30,headY+6,5,15);P(c,hair,30,headY+6,4,13);P(c,hairLight,32,headY+7,2,7);
+  }else if(style==='bun'&&side){
+   // Side ponytail/chignon silhouette clearly visible in profile!
+   const bx=left?30:13;
+   P(c,hairDeep,bx,headY+3,5,6);P(c,hair,bx+1,headY+3,3,5);P(c,hairLight,bx+1,headY+4,2,2);
+  }else if(!armed&&!old&&!side){
+   // Soft Karen-style wispy nape hair peeking out beside neck
+   const px=variation%2===0?14:30;
+   P(c,hairDeep,px,headY+10,4,5);P(c,hair,px+1,headY+10,2,4);
   }
 
-  // 2. Protagonist-Matched Parted A-Stance Legs (4px pre-outline gap x=22..25 => true 2px-4px transparent gap after outline!)
+  // 2. Tapered Karen-Matched Legs & Cuffed Leather Boots
   if(!side){
    const lOff=step>0?-1:0,rOff=step<0?-1:0;
    if(!skirted){
     const thH=Math.max(2,bootTop-legTop);
-    P(c,pantsLight,19,legTop,1,thH+lOff);
-    P(c,pants,20,legTop,1,thH+lOff);
-    P(c,pantsShade,21,legTop,1,thH+lOff);
-    P(c,pantsLight,26,legTop,1,thH+rOff);
-    P(c,pants,27,legTop,1,thH+rOff);
-    P(c,pantsShade,28,legTop,1,thH+rOff);
+    P(c,pantsLight,19,legTop,1,thH+lOff);P(c,pants,20,legTop,1,thH+lOff);P(c,pantsShade,21,legTop,1,thH+lOff);
+    P(c,pantsLight,26,legTop,1,thH+rOff);P(c,pants,27,legTop,1,thH+rOff);P(c,pantsShade,28,legTop,1,thH+rOff);
     const btH=Math.max(3,footBot-bootTop);
-    P(c,bootLight,18,bootTop+lOff,3,2);
-    P(c,bootLight,18,bootTop+2+lOff,1,btH-2);
-    P(c,bootCol,19,bootTop+2+lOff,1,btH-2);
-    P(c,bootDark,20,bootTop+2+lOff,1,btH-2);
-    P(c,bootLight,27,bootTop+rOff,3,2);
-    P(c,bootCol,27,bootTop+2+rOff,1,btH-2);
-    P(c,bootCol,28,bootTop+2+rOff,1,btH-2);
-    P(c,bootDark,29,bootTop+2+rOff,1,btH-2);
+    // Cuffed JRPG boots with warm leather fold & heel
+    P(c,bootLight,18,bootTop+lOff,4,2);P(c,bootLight,18,bootTop+2+lOff,1,btH-2);P(c,bootCol,19,bootTop+2+lOff,2,btH-2);P(c,bootDark,21,bootTop+2+lOff,1,btH-2);
+    P(c,bootLight,26,bootTop+rOff,4,2);P(c,bootCol,26,bootTop+2+rOff,2,btH-2);P(c,bootCol,28,bootTop+2+rOff,1,btH-2);P(c,bootDark,29,bootTop+2+rOff,1,btH-2);
    }else{
-    const skBot=bodyTop+(child?13:16);
+    const skBot=bodyTop+(child?12:15);
     const ankH=Math.max(2,footBot-skBot);
     P(c,skinShadow,19,skBot+lOff,1,2);P(c,skin,20,skBot+lOff,2,2);
     P(c,bootLight,19,skBot+1+lOff,1,ankH-1);P(c,bootCol,20,skBot+1+lOff,1,ankH-1);P(c,bootDark,21,skBot+1+lOff,1,ankH-1);
@@ -735,75 +735,63 @@ const OpeningPixelAssets=(()=>{
     P(c,bootLight,26,skBot+1+rOff,1,ankH-1);P(c,bootCol,27,skBot+1+rOff,1,ankH-1);P(c,bootDark,28,skBot+1+rOff,1,ankH-1);
    }
   }else{
-   const st=step;
-   const fx=left?21-st:23+st,bx=left?24+st:20-st;
+   const st=step,fx=left?21-st:23+st,bx=left?24+st:20-st;
    P(c,pantsShade,bx,legTop,2,bootTop-legTop);P(c,bootDark,bx,bootTop,2,footBot-bootTop-1);
    P(c,pantsLight,fx,legTop,1,bootTop-legTop);P(c,pants,fx+1,legTop,2,bootTop-legTop);
-   P(c,bootLight,fx,bootTop,3,2);
-   P(c,bootCol,fx,bootTop+2,3,footBot-bootTop-2);
+   P(c,bootLight,fx,bootTop,3,2);P(c,bootCol,fx,bootTop+2,3,footBot-bootTop-2);
   }
 
-  // 3. Pinched Neck, Sloped Shoulders, Rich Colored Sleeves & Torso (NO universal white shirt clone override!)
-  const sleeveCol=coat,sleeveShade=coatShade,sleeveHi=coatLight;
+  // 3. Layered Tailored Medieval JRPG Outfit (Corset-Vest/Tunic + Puffed/Cuffed Sleeves + Belt + Pleated Skirt/Coat Tails!)
+  const sleeveCol=hasBlousedSleeves?blouse:coat;
+  const sleeveShade=hasBlousedSleeves?blouseShade:coatShade;
+  const sleeveHi=hasBlousedSleeves?blouseHi:coatLight;
   const torsoH=child?6:7;
   if(!side){
-   P(c,skinShadow,22,bodyTop-2,4,1);
-   P(c,skin,22,bodyTop-1,3,2);P(c,skinShadow,25,bodyTop-1,1,2);
+   P(c,skinShadow,22,bodyTop-2,4,1);P(c,skin,22,bodyTop-1,3,2);P(c,skinShadow,25,bodyTop-1,1,2);
+   // Tapered natural shoulders
    P(c,coatLight,20,bodyTop,2,1);P(c,coatShade,26,bodyTop,2,1);
    if(!back){P(c,trait.accent||blouse,22,bodyTop,4,2);P(c,skin,23,bodyTop,2,1)}
    else{P(c,coat,22,bodyTop,4,1)}
-   // Primary colored torso (full vivid coat color instead of white square!)
+   // Layered colored tunic/vest with vertical drape shading & center V-lacing
    P(c,coat,20,bodyTop+1,8,torsoH-1);
    P(c,coatLight,20,bodyTop+1,2,torsoH-2);
    P(c,coatShade,26,bodyTop+1,2,torsoH-2);
    if(!back){
-    // Subtle collar V-notch & vertical placket line in signature color family
-    P(c,trait.accent||coatHi,23,bodyTop+1,2,3);
+    P(c,trait.accent||blouse,23,bodyTop+1,2,3);
     P(c,coatDeep,22,bodyTop+1,1,torsoH-2);P(c,coatDeep,25,bodyTop+1,1,torsoH-2);
    }
    if(trait.vest){
-    const vL=tint(trait.vest,22),vD=tint(trait.vest,-24);
+    const vL=tint(trait.vest,24),vD=tint(trait.vest,-24);
     P(c,trait.vest,20,bodyTop+1,2,torsoH-1);P(c,trait.vest,26,bodyTop+1,2,torsoH-1);
     P(c,vL,20,bodyTop+1,1,torsoH-2);P(c,vD,27,bodyTop+1,1,torsoH-2);
    }
    if(armed&&roleType!=='commander'){
-    // Contoured steel or imperial gunmetal cuirass over colored surcoat!
     const darkArmor=coat==='#1e4880'||coat==='#1c4476'||coat==='#1c467c';
     const aMid=darkArmor?'#586e88':'#98a6b4',aHi=darkArmor?'#88a4c4':'#e2ecf4',aLo=darkArmor?'#344458':'#5c6874';
-    P(c,aMid,20,bodyTop+1,8,5);P(c,aHi,21,bodyTop+1,3,3);
-    P(c,aLo,26,bodyTop+1,2,5);P(c,ink,20,bodyTop+5,8,1);
+    P(c,aMid,20,bodyTop+1,8,5);P(c,aHi,21,bodyTop+1,3,3);P(c,aLo,26,bodyTop+1,2,5);P(c,ink,20,bodyTop+5,8,1);
    }
-   // Cinched 8px waist belt + 2px gold buckle
+   // Cinched waist leather belt with brass buckle & side pouch
    const beltY=bodyTop+torsoH;
-   P(c,'#4e321e',20,beltY,8,2);
-   P(c,'#f2ce6e',23,beltY,2,2);
+   P(c,'#543620',20,beltY,8,2);P(c,'#f2d070',23,beltY,2,2);P(c,'#7c5434',27,beltY+1,2,2);
    if(skirted){
     const skRows=child?6:8;
-    P(c,coat,19,beltY+1,10,2);
-    P(c,coat,18,beltY+3,12,child?2:3);
-    if(!child){
-     P(c,coat,17,beltY+6,14,2);
-     P(c,trait.accent||coatHi,18,beltY+8,12,1);
-    }else{
-     P(c,trait.accent||coatHi,18,beltY+5,12,1);
-    }
-    P(c,coatLight,19,beltY+1,2,skRows-1);
-    P(c,coatLight,18,beltY+3,2,skRows-3);
-    P(c,coatShade,27,beltY+1,2,skRows-1);
-    P(c,coatShade,28,beltY+3,2,skRows-3);
-    P(c,coatDeep,21,beltY+2,1,skRows-2);
-    P(c,coatDeep,24,beltY+2,1,skRows-1);
-    P(c,coatDeep,27,beltY+2,1,skRows-2);
+    P(c,coat,19,beltY+1,10,2);P(c,coat,18,beltY+3,12,child?2:3);
+    if(!child){P(c,coat,17,beltY+6,14,2);P(c,trait.accent||coatHi,18,beltY+8,12,1)}
+    else{P(c,trait.accent||coatHi,18,beltY+5,12,1)}
+    P(c,coatLight,19,beltY+1,2,skRows-1);P(c,coatLight,18,beltY+3,2,skRows-3);
+    P(c,coatShade,27,beltY+1,2,skRows-1);P(c,coatShade,28,beltY+3,2,skRows-3);
+    P(c,coatDeep,21,beltY+2,1,skRows-2);P(c,coatDeep,24,beltY+2,1,skRows-1);P(c,coatDeep,27,beltY+2,1,skRows-2);
    }else{
-    P(c,coatLight,19,beltY+2,2,2);P(c,coat,21,beltY+2,1,2);
-    P(c,coat,26,beltY+2,1,2);P(c,coatShade,27,beltY+2,2,2);
+    // Flared coat-tails / tunic peplum like Karen's red vest!
+    P(c,coatLight,19,beltY+2,2,3);P(c,coat,21,beltY+2,2,2);
+    P(c,coat,25,beltY+2,2,2);P(c,coatShade,27,beltY+2,2,3);
    }
-   // Outward-Sloping Colored Sleeves & Hands
-   P(c,sleeveHi,17,bodyTop+1+armL,2,2);P(c,sleeveShade,18,bodyTop+2+armL,1,2);
+   // Softly curved puffed sleeves with wrist cuffs & delicate hands
+   P(c,sleeveHi,17,bodyTop+1+armL,2,2);P(c,sleeveCol,18,bodyTop+1+armL,1,3);
    P(c,sleeveCol,29,bodyTop+1+armR,2,2);P(c,sleeveShade,30,bodyTop+2+armR,1,2);
-   P(c,sleeveHi,15,bodyTop+3+armL,1,3);P(c,sleeveCol,16,bodyTop+3+armL,1,3);P(c,sleeveShade,17,bodyTop+3+armL,1,3);
+   P(c,sleeveHi,15,bodyTop+3+armL,1,3);P(c,sleeveCol,16,bodyTop+3+armL,2,3);P(c,coatShade,15,bodyTop+5+armL,3,1);
    P(c,skinLight,15,bodyTop+6+armL,1,2);P(c,skin,16,bodyTop+6+armL,1,2);
-   P(c,sleeveCol,30,bodyTop+3+armR,1,3);P(c,sleeveShade,31,bodyTop+3+armR,2,3);
+   P(c,sleeveCol,30,bodyTop+3+armR,1,3);P(c,sleeveShade,31,bodyTop+3+armR,2,3);P(c,coatShade,30,bodyTop+5+armR,3,1);
    P(c,skin,31,bodyTop+6+armR,1,2);P(c,skinShadow,32,bodyTop+6+armR,1,2);
   }else{
    const beltY=bodyTop+torsoH;
@@ -812,135 +800,134 @@ const OpeningPixelAssets=(()=>{
    P(c,left?coatLight:coatShade,21,bodyTop+1,2,torsoH-1);
    P(c,left?coatShade:coatLight,25,bodyTop+1,2,torsoH-1);
    if(armed&&roleType!=='commander'){P(c,'#98a4b0',21,bodyTop+1,6,5);P(c,'#dee6ec',left?21:24,bodyTop+1,2,3)}
-   P(c,'#4e321e',21,beltY,6,2);P(c,'#f2ce6e',left?21:26,beltY,1,2);
+   P(c,'#543620',21,beltY,6,2);P(c,'#f2d070',left?21:26,beltY,1,2);
    if(skirted){
     const skRows=child?6:8;
-    P(c,coat,20,beltY+1,8,2);
-    P(c,coat,19,beltY+3,10,skRows-3);
-    P(c,coatLight,left?19:27,beltY+2,2,skRows-2);
-    P(c,coatDeep,23,beltY+2,1,skRows-1);
-    P(c,coatShade,left?27:19,beltY+2,2,skRows-2);
-    P(c,trait.accent||coatHi,19,beltY+skRows,10,1);
+    P(c,coat,20,beltY+1,8,2);P(c,coat,19,beltY+3,10,skRows-3);
+    P(c,coatLight,left?19:27,beltY+2,2,skRows-2);P(c,coatDeep,23,beltY+2,1,skRows-1);
+    P(c,coatShade,left?27:19,beltY+2,2,skRows-2);P(c,trait.accent||coatHi,19,beltY+skRows,10,1);
    }else{
-    P(c,coat,21,beltY+2,6,2);
+    P(c,coat,21,beltY+2,6,3);
    }
-   P(c,ink,21,bodyTop+2+armL,1,5);P(c,ink,25,bodyTop+2+armL,1,5);
    P(c,sleeveHi,22,bodyTop+2+armL,1,4);P(c,sleeveCol,23,bodyTop+2+armL,1,4);P(c,sleeveShade,24,bodyTop+2+armL,1,4);
    P(c,skin,22,bodyTop+6+armL,2,2);
   }
   if(trait.scarf){
    const sx=side?21:19,sw=side?6:10;
-   P(c,trait.scarf,sx,bodyTop-1,sw,2);P(c,tint(trait.scarf,28),sx+1,bodyTop-1,sw-2,1);
+   P(c,trait.scarf,sx,bodyTop-1,sw,2);P(c,tint(trait.scarf,30),sx+1,bodyTop-1,sw-2,1);
   }
 
-  // 4. Rounded Oval Head, Expressive Anime Face & Distinct Hairstyle Silhouettes (y=headY..headY+14)
+  // 4. VOLUMINOUS KAREN-TIER ANIME HEAD, LAYERED SWEEPING HAIR & EXPRESSIVE CATCHLIGHT EYES!
   const hy=headY;
   const maleElder=old&&!['oldwoman','chapelElder'].includes(id);
+  const eyeIris=mood==='bright'?'#7c3e68':mood==='gentle'?'#3c6e88':mood==='curious'?'#3e7c52':'#564062';
+  const eyeHi=tint(eyeIris,38);
   if(back){
-   P(c,hairShade,21,hy,6,1);
-   P(c,hair,19,hy+1,10,1);
-   P(c,hair,17,hy+2,14,2);
-   P(c,hair,16,hy+4,16,6);
-   P(c,hairShade,17,hy+10,14,2);
-   P(c,hairDeep,19,hy+12,10,2);
-   P(c,hairLight,18,hy+3,12,2);P(c,hairGloss,21,hy+3,6,1);
-   P(c,hairDeep,20,hy+6,1,6);P(c,hairDeep,24,hy+5,1,7);P(c,hairDeep,27,hy+6,1,6);
+   // Lush layered 18px-wide back hair crown with curved gloss halo & individual strand shadows
+   P(c,hairShade,20,hy,8,1);
+   P(c,hair,18,hy+1,12,1);
+   P(c,hair,16,hy+2,16,2);
+   P(c,hair,15,hy+4,18,7);
+   P(c,hairShade,16,hy+11,16,2);
+   P(c,hairDeep,18,hy+13,12,2);
+   // Curved glossy anime crown arc
+   P(c,hairLight,17,hy+3,14,2);P(c,hairGloss,19,hy+3,4,1);P(c,hairGloss,25,hy+3,4,1);
+   P(c,hairDeep,19,hy+7,1,6);P(c,hairDeep,24,hy+6,1,8);P(c,hairDeep,28,hy+7,1,6);
   }else if(!side){
-   // 4a. Upper hair crown + Spiky hair tufts for 'messy' characters!
-   P(c,hairShade,21,hy,6,1);
-   P(c,hair,19,hy+1,10,1);
-   P(c,hair,17,hy+2,14,2);
-   P(c,hair,16,hy+4,16,5);
+   // 4a. Fluffy voluminous upper hair dome (18px wide, organically contoured like Karen!)
+   P(c,hairShade,20,hy,8,1);
+   P(c,hair,18,hy+1,12,1);
+   P(c,hair,16,hy+2,16,2);
+   P(c,hair,15,hy+4,18,6);
+   // Soft layered outer ear/cheek locks giving organic curved hair volume
+   P(c,hairShade,14,hy+6,2,5);P(c,hairShade,32,hy+6,2,5);
    if(style==='messy'){
-    // Wild spiky anime hair silhouette breaking outside the oval dome!
-    P(c,hair,17,hy-2,3,3);P(c,hairLight,18,hy-3,2,2);
+    P(c,hair,16,hy-2,3,3);P(c,hairLight,17,hy-3,2,2);
     P(c,hair,22,hy-3,3,3);P(c,hairGloss,23,hy-3,2,2);
-    P(c,hair,27,hy-2,3,3);P(c,hairLight,28,hy-2,2,2);
-    P(c,hair,14,hy+3,2,3);P(c,hair,32,hy+3,2,3);
-    P(c,hairShade,14,hy+7,2,2);P(c,hairShade,32,hy+7,2,2);
+    P(c,hair,28,hy-2,3,3);P(c,hairLight,28,hy-2,2,2);
+    P(c,hair,13,hy+4,2,4);P(c,hair,33,hy+4,2,4);
+    P(c,hairShade,14,hy+9,2,3);P(c,hairShade,32,hy+9,2,3);
    }else if(style==='bob'){
-    // Rounded flared bob-cut side curls at cheek level!
-    P(c,hair,15,hy+5,2,6);P(c,hairShade,15,hy+10,3,2);
-    P(c,hair,31,hy+5,2,6);P(c,hairShade,30,hy+10,3,2);
+    P(c,hair,14,hy+6,2,7);P(c,hairShade,15,hy+12,3,2);
+    P(c,hair,32,hy+6,2,7);P(c,hairShade,30,hy+12,3,2);
    }
-   P(c,hairDeep,23,hy+1,2,2);
-   P(c,hairLight,18,hy+2,5,2);P(c,hairLight,25,hy+2,5,2);
-   P(c,hairGloss,19,hy+2,3,1);P(c,hairGloss,26,hy+2,3,1);
-   // 4b. Smoothly tapered oval face skin
-   P(c,skin,19,hy+6,10,2);
-   P(c,skin,18,hy+8,12,3);
-   P(c,skin,19,hy+11,10,1);
-   P(c,skin,20,hy+12,8,1);
-   P(c,skinShadow,21,hy+13,6,1);
-   P(c,skinLight,22,hy+8,4,3);
-   // 4c. Cheek-framing side locks
-   P(c,hairShade,16,hy+7,2,4);P(c,hair,17,hy+7,1,3);P(c,hairDeep,17,hy+11,2,1);
-   P(c,hairShade,30,hy+7,2,4);P(c,hair,30,hy+7,1,3);P(c,hairDeep,29,hy+11,2,1);
-   // 4d. Parted Bangs (receding high forehead for male elders!)
+   // Curved glossy anime hair-crown highlight bands + natural part shadow
+   P(c,hairDeep,23,hy+1,2,3);
+   P(c,hairLight,17,hy+2,5,2);P(c,hairLight,26,hy+2,5,2);
+   P(c,hairGloss,18,hy+2,3,1);P(c,hairGloss,27,hy+2,3,1);
+   P(c,hairLight,16,hy+5,2,3);P(c,hairLight,30,hy+5,2,3);
+
+   // 4b. Soft tapered anime oval face with subtle hair-cast forehead shadow!
+   P(c,skinShadow,19,hy+6,10,2); // forehead shadow cast beneath bangs!
+   P(c,skin,18,hy+8,12,4);
+   P(c,skin,19,hy+12,10,1);
+   P(c,skin,20,hy+13,8,1);
+   P(c,skinShadow,21,hy+14,6,1);
+   P(c,skinLight,21,hy+9,6,3); // soft sunlit bridge of nose & cheeks
+
+   // 4c. Tapered cheek-framing side locks hugging face naturally
+   P(c,hairShade,16,hy+7,2,5);P(c,hair,17,hy+7,1,4);P(c,hairDeep,17,hy+12,2,2);
+   P(c,hairShade,30,hy+7,2,5);P(c,hair,30,hy+7,1,4);P(c,hairDeep,29,hy+12,2,2);
+
+   // 4d. Expressive layered sweeping anime bangs curving down toward eyes!
    if(maleElder){
-    P(c,skin,19,hy+4,10,3);P(c,skinShadow,20,hy+5,8,1); // dignified high forehead with wisdom line
-    P(c,'#ffffff',18,hy+7,4,1);P(c,'#ffffff',26,hy+7,4,1); // bushy white elder eyebrows!
+    P(c,skin,19,hy+5,10,3);P(c,skinShadow,20,hy+6,8,1);
+    P(c,'#f8f6f0',18,hy+8,4,1);P(c,'#f8f6f0',26,hy+8,4,1);
    }else{
-    P(c,hair,17,hy+5,14,1);
-    P(c,hair,17,hy+6,3,2);P(c,hairShade,18,hy+8,1,1);
-    P(c,hair,28,hy+6,3,2);P(c,hairShade,29,hy+8,1,1);
+    P(c,hair,17,hy+5,14,2);P(c,hairLight,19,hy+5,4,1);P(c,hairLight,25,hy+5,4,1);
+    P(c,hair,17,hy+7,3,2);P(c,hairShade,18,hy+9,1,1);
+    P(c,hair,28,hy+7,3,2);P(c,hairShade,29,hy+9,1,1);
     if(variation===0){
-     P(c,hair,22,hy+5,4,2);P(c,hairShade,23,hy+7,2,1);
+     P(c,hair,22,hy+6,4,3);P(c,hairShade,23,hy+9,2,1);
     }else if(variation===1){
-     P(c,hair,21,hy+5,3,2);P(c,hairShade,22,hy+7,1,1);
+     P(c,hair,20,hy+6,3,3);P(c,hairShade,21,hy+9,1,1);P(c,hair,25,hy+6,2,2);
     }else if(variation===2){
-     P(c,hair,24,hy+5,3,2);P(c,hairShade,25,hy+7,1,1);
+     P(c,hair,24,hy+6,3,3);P(c,hairShade,25,hy+9,1,1);P(c,hair,21,hy+6,2,2);
     }else{
-     P(c,hair,20,hy+6,2,1);P(c,hair,23,hy+5,2,2);P(c,hair,26,hy+6,2,1);
+     P(c,hair,20,hy+6,2,2);P(c,hair,23,hy+6,2,3);P(c,hair,26,hy+6,2,2);
     }
-    if(old){P(c,'#f4f2ec',19,hy+7,3,1);P(c,'#f4f2ec',26,hy+7,3,1)}
+    if(old){P(c,'#f4f2ec',19,hy+8,3,1);P(c,'#f4f2ec',26,hy+8,3,1)}
    }
-   // 4e. 3x3 Anime Eyes
-   const eyeIris=mood==='bright'?'#7e4884':mood==='gentle'?'#42748c':mood==='curious'?'#447c54':'#5c4868';
-   const eyeHi=tint(eyeIris,32);
-   P(c,ink,19,hy+8,3,1);P(c,ink,26,hy+8,3,1);
-   P(c,'#fff8ee',19,hy+9,1,1);P(c,ink,20,hy+9,1,1);P(c,eyeIris,21,hy+9,1,1);
-   P(c,'#fff8ee',26,hy+9,1,1);P(c,ink,27,hy+9,1,1);P(c,eyeIris,28,hy+9,1,1);
-   P(c,skinLight,19,hy+10,1,1);P(c,eyeIris,20,hy+10,1,1);P(c,eyeHi,21,hy+10,1,1);
-   P(c,skinLight,26,hy+10,1,1);P(c,eyeIris,27,hy+10,1,1);P(c,eyeHi,28,hy+10,1,1);
-   if(!old){P(c,'#ee9896',19,hy+11,2,1);P(c,'#ee9896',27,hy+11,2,1)}
-   P(c,skinDeep,23,hy+12,2,1);
+
+   // 4e. Expressive Karen-Matched Anime Eyes (curved dark upper lash + deep pupil + glowing iris + crisp white sparkle + warm rose blush!)
+   P(c,ink,19,hy+9,3,1);P(c,ink,26,hy+9,3,1);
+   P(c,'#fffaf2',19,hy+10,1,1);P(c,ink,20,hy+10,1,1);P(c,eyeIris,21,hy+10,1,1);
+   P(c,'#fffaf2',26,hy+10,1,1);P(c,ink,27,hy+10,1,1);P(c,eyeIris,28,hy+10,1,1);
+   P(c,eyeHi,19,hy+11,1,1);P(c,eyeIris,20,hy+11,2,1);
+   P(c,eyeHi,26,hy+11,1,1);P(c,eyeIris,27,hy+11,2,1);
+   if(!old){P(c,'#f29c98',18,hy+12,2,1);P(c,'#f29c98',28,hy+12,2,1)}
+   P(c,skinDeep,23,hy+13,2,1);
    if(maleElder){
-    // Magnificent full flowing white/silver elder beard!
-    P(c,hairShade,19,hy+11,10,4);P(c,'#faf8f2',20,hy+11,8,5);
-    P(c,hairShade,21,hy+15,6,3);P(c,'#ffffff',22,hy+12,4,5);
+    P(c,hairShade,19,hy+12,10,4);P(c,'#faf8f2',20,hy+12,8,5);
+    P(c,hairShade,21,hy+16,6,3);P(c,'#ffffff',22,hy+13,4,5);
    }else if(trait.beard){
-    P(c,hairDeep,19,hy+11,10,3);P(c,hairShade,20,hy+11,8,4);P(c,hair,21,hy+11,6,3);
+    P(c,hairDeep,19,hy+12,10,3);P(c,hairShade,20,hy+12,8,4);P(c,hair,21,hy+12,6,3);
    }
    if(trait.glasses){
-    P(c,'#f0d068',18,hy+8,4,3);P(c,'#f0d068',26,hy+8,4,3);P(c,'#f0d068',22,hy+9,4,1);
-    P(c,'#ffffff',19,hy+9,1,1);P(c,'#ffffff',26,hy+9,1,1);
+    P(c,'#f0d068',18,hy+9,4,3);P(c,'#f0d068',26,hy+9,4,3);P(c,'#f0d068',22,hy+10,4,1);
+    P(c,'#ffffff',19,hy+10,1,1);P(c,'#ffffff',26,hy+10,1,1);
    }
   }else{
-   P(c,hairShade,21,hy,6,1);
-   P(c,hair,19,hy+1,10,1);
-   P(c,hair,17,hy+2,14,3);
-   if(style==='messy'){
-    P(c,hair,18,hy-2,3,3);P(c,hair,23,hy-3,3,3);P(c,hair,27,hy-2,3,3);
-   }
-   P(c,hairLight,19,hy+2,10,2);P(c,hairGloss,22,hy+2,4,1);
-   const eyeIris=mood==='bright'?'#7e4884':mood==='gentle'?'#42748c':mood==='curious'?'#447c54':'#5c4868';
+   // Crisp Karen-style 3/4 profile head with layered voluminous back hair & sweeping front bang!
+   P(c,hairShade,20,hy,8,1);P(c,hair,18,hy+1,12,1);P(c,hair,16,hy+2,16,4);
+   if(style==='messy'){P(c,hair,17,hy-2,3,3);P(c,hair,23,hy-3,3,3);P(c,hair,28,hy-2,3,3)}
+   P(c,hairLight,18,hy+2,11,2);P(c,hairGloss,21,hy+2,5,1);
    if(left){
-    P(c,skin,18,hy+7,5,4);P(c,skin,19,hy+11,4,2);P(c,skinShadow,20,hy+13,3,1);
-    P(c,ink,19,hy+8,2,1);P(c,'#fff8ee',19,hy+9,1,1);P(c,eyeIris,20,hy+9,1,2);
-    if(!old)P(c,'#ee9896',20,hy+11,2,1);
-    P(c,hair,17,hy+5,5,2);P(c,hairShade,18,hy+7,2,1);
-    P(c,hair,23,hy+4,8,7);P(c,hairShade,23,hy+10,7,3);P(c,hairDeep,24,hy+12,5,2);
-    if(maleElder){P(c,'#faf8f2',17,hy+11,5,5);P(c,hairShade,18,hy+15,4,2)}
-    else if(trait.beard)P(c,hairShade,18,hy+11,4,4);
+    P(c,skinShadow,18,hy+7,5,1);P(c,skin,17,hy+8,6,4);P(c,skin,18,hy+12,5,2);P(c,skinShadow,19,hy+14,4,1);
+    P(c,ink,18,hy+9,3,1);P(c,'#fffaf2',18,hy+10,1,1);P(c,eyeIris,19,hy+10,2,2);
+    if(!old)P(c,'#f29c98',20,hy+12,2,1);
+    P(c,hair,16,hy+5,6,3);P(c,hairShade,17,hy+8,2,1);
+    P(c,hair,23,hy+4,9,8);P(c,hairShade,23,hy+11,8,3);P(c,hairDeep,24,hy+13,6,2);
+    if(maleElder){P(c,'#faf8f2',17,hy+12,5,5);P(c,hairShade,18,hy+16,4,2)}
+    else if(trait.beard)P(c,hairShade,18,hy+12,4,4);
    }else{
-    P(c,skin,25,hy+7,5,4);P(c,skin,25,hy+11,4,2);P(c,skinShadow,25,hy+13,3,1);
-    P(c,ink,27,hy+8,2,1);P(c,eyeIris,27,hy+9,1,2);P(c,'#fff8ee',28,hy+9,1,1);
-    if(!old)P(c,'#ee9896',26,hy+11,2,1);
-    P(c,hair,26,hy+5,5,2);P(c,hairShade,28,hy+7,2,1);
-    P(c,hair,17,hy+4,8,7);P(c,hairShade,18,hy+10,7,3);P(c,hairDeep,19,hy+12,5,2);
-    if(maleElder){P(c,'#faf8f2',26,hy+11,5,5);P(c,hairShade,26,hy+15,4,2)}
-    else if(trait.beard)P(c,hairShade,26,hy+11,4,4);
+    P(c,skinShadow,25,hy+7,5,1);P(c,skin,25,hy+8,6,4);P(c,skin,25,hy+12,5,2);P(c,skinShadow,25,hy+14,4,1);
+    P(c,ink,27,hy+9,3,1);P(c,eyeIris,27,hy+10,2,2);P(c,'#fffaf2',29,hy+10,1,1);
+    if(!old)P(c,'#f29c98',26,hy+12,2,1);
+    P(c,hair,26,hy+5,6,3);P(c,hairShade,29,hy+8,2,1);
+    P(c,hair,16,hy+4,9,8);P(c,hairShade,17,hy+11,8,3);P(c,hairDeep,18,hy+13,6,2);
+    if(maleElder){P(c,'#faf8f2',26,hy+12,5,5);P(c,hairShade,26,hy+16,4,2)}
+    else if(trait.beard)P(c,hairShade,26,hy+12,4,4);
    }
   }
   // Prominent High Sculpted Hair Bun or Deep Pointed Ranger/Monk Hood

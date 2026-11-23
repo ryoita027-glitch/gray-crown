@@ -1068,7 +1068,7 @@ function drawRecoveryBadge(o){
 }
 function drawObject(o){
  const P=(col,x,y,w,h)=>{ctx.fillStyle=col;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h))};
- const px=o.x*TILE,py=o.y*TILE,now=Date.now(),ink='#1e1814';
+ const px=o.x*TILE,py=o.y*TILE,now=Date.now(),ink='#463222';
  if(RyuneOutskirts.drawObject(ctx,state.map,o,!!state.world?.treasures?.[o.id])){drawRecoveryBadge(o);return}
  if(typeof EmpireSanctuaryEnvironment!=='undefined'&&EmpireSanctuaryEnvironment.enabled&&EmpireSanctuaryEnvironment.objectAccent(ctx,state.map,o)){drawRecoveryBadge(o);return}
  if(typeof BorderWatchfortEnvironment!=='undefined'&&BorderWatchfortEnvironment.enabled&&BorderWatchfortEnvironment.objectAccent(ctx,state.map,o)){drawRecoveryBadge(o);return}
@@ -1077,7 +1077,7 @@ function drawObject(o){
  if(RoadCaveQuality.enabled&&RoadCaveQuality.active.has(state.map))RoadCaveQuality.objectBackdrop(ctx,state.map,o);
  if(RyuneEnvironment.enabled&&RyuneEnvironment.drawObject(ctx,state.map,o)){drawRecoveryBadge(o);return}
 
- // Shared HD-2D Micro-Prop Renderers (outlined, beveled, shadow-grounded pixel art across all 42 maps!)
+ // Shared HD-2D Micro-Prop Renderers (warm-outlined, beveled, shadow-grounded pixel art across all 42 maps!)
  const hdCampfire=(blue=false,brazier=false)=>{
   const f=Math.round(Math.sin(now/130+px)*1.5),sp=(now/360+o.x*0.2)%1;
   const g=ctx.createRadialGradient?.(px+16,py+15,3,px+16,py+15,34);
@@ -1091,25 +1091,21 @@ function drawObject(o){
    P(ink,px+9,py+17,14,11);P('#4a525c',px+11,py+18,10,9);P('#7a8490',px+12,py+18,3,8);
    P(ink,px+5,py+12,22,8);P('#384048',px+7,py+13,18,6);P('#8c96a2',px+8,py+13,16,2);
   }else{
-   P('#2c2622',px+5,py+18,22,10);
+   P('#3a2e26',px+5,py+18,22,10);
    for(const [sx,sy] of [[5,19],[11,22],[18,22],[22,19],[8,17],[19,17]]){
     P(ink,px+sx,py+sy,6,5);P('#8c887e',px+sx+1,py+sy+1,4,3);P('#c2beb2',px+sx+1,py+sy+1,2,1);
    }
-   P('#4c301c',px+9,py+19,14,4);P('#7c5030',px+10,py+19,12,2);
+   P('#543620',px+9,py+19,14,4);P('#845634',px+10,py+19,12,2);
   }
   P(blue?'#348ad6':'#dc6222',px+10,py+9+f,12,10-f);
   P(blue?'#8ce0ff':'#f8c64e',px+12,py+11+f,8,7-f);
   P('#fffbe0',px+14,py+14,4,4);
   P(blue?'#d8f6ff':'#ffe488',px+15+Math.round(Math.sin(now/180)*3),py+7-sp*7,2,2);
  };
- const hdNoticeBoard=(roofCol='#6e4a2e',roofHi='#9a6e46')=>{
+ const hdNoticeBoard=(roofCol='#784e2e',roofHi='#aa764a')=>{
+  if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawNoticeBoard){HD2DAtlas.drawNoticeBoard(ctx,px,py,{roof:roofCol,roofHi});return}
   P('rgba(14,18,16,.34)',px+4,py+25,25,5);
-  P(ink,px+5,py+7,4,21);P('#6e4e34',px+6,py+8,2,19);
-  P(ink,px+23,py+7,4,21);P('#6e4e34',px+24,py+8,2,19);
   P(ink,px+5,py+6,22,16);P('#8c6b48',px+7,py+8,18,12);
-  P('#f4ead0',px+8,py+9,7,7);P('#a83a42',px+10,py+10,3,2);P('#6c5e4e',px+9,py+13,5,1);
-  P('#e6d8b8',px+16,py+10,7,6);P('#5e5246',px+17,py+12,5,1);P('#c84e48',px+17,py+16,5,3);
-  P(ink,px+2,py+2,28,6);P(roofCol,px+3,py+3,26,4);P(roofHi,px+5,py+2,22,2);
  };
  const hdSignpost=(label,dir='right')=>{
   P('rgba(14,18,14,.32)',px+9,py+26,15,4);
@@ -1575,72 +1571,54 @@ function drawHd2dEdgePolish(m){
   for(let x=0;x<mc;x++){
    const ch=m.tiles[y][x],px=x*TILE,py=y*TILE;
    if(ch==='R'){
-    if(y>0&&m.tiles[y-1][x]!=='R'){ctx.fillStyle='rgba(20,30,38,.42)';ctx.fillRect(px,py,TILE,4);ctx.fillStyle='rgba(196,226,236,.28)';ctx.fillRect(px,py+4,TILE,2)}
-    if(x>0&&m.tiles[y][x-1]!=='R'){ctx.fillStyle='rgba(20,30,38,.28)';ctx.fillRect(px,py,3,TILE)}
-    const gl=((x*13+y*7+shimmer)%18);
-    ctx.fillStyle='rgba(232,252,255,.42)';ctx.fillRect(px+4+gl%14,py+7+((x+y)%3)*6,5,1);
-    ctx.fillStyle='rgba(255,255,255,.55)';ctx.fillRect(px+10+((gl+5)%12),py+19,3,1);
+    // Village has its own custom meandering-bank brook renderer; avoid repeating horizontal dashes on ALL maps!
+    if(state.map!=='village'){
+     if(y>0&&m.tiles[y-1][x]!=='R'){ctx.fillStyle='rgba(16,32,42,.34)';ctx.fillRect(px,py,TILE,4);ctx.fillStyle='rgba(206,240,248,.22)';ctx.fillRect(px,py+4,TILE,2)}
+     if(x>0&&m.tiles[y][x-1]!=='R'){ctx.fillStyle='rgba(16,32,42,.22)';ctx.fillRect(px,py,3,TILE)}
+    }
+    const wh=((Math.imul(x+19,374761393)^Math.imul(y+7,668265263))>>>0);
+    if(((wh+shimmer)%5)===0){
+     const gx=px+5+((wh+shimmer*3)%16),gy=py+6+((wh>>>5)%18);
+     ctx.fillStyle='rgba(245,254,255,.52)';ctx.fillRect(gx,gy,3,1);
+     ctx.fillStyle='rgba(210,248,255,.28)';ctx.fillRect(gx+1,gy-1,1,3);
+    }
     continue;
    }
    if(!walk.has(ch))continue;
    const up=at(x,y-1),dn=at(x,y+1),left=at(x-1,y),right=at(x+1,y);
    // Soft cool-indigo southeast ambient occlusion from solid walls, cliffs, buildings & trees
    if(up&&solid.has(up)){
-    ctx.fillStyle='rgba(14,18,28,.24)';ctx.fillRect(px,py,TILE,5);
-    ctx.fillStyle='rgba(14,18,28,.10)';ctx.fillRect(px,py+5,TILE,5);
+    ctx.fillStyle='rgba(14,22,30,.20)';ctx.fillRect(px,py,TILE,5);
+    ctx.fillStyle='rgba(14,22,30,.08)';ctx.fillRect(px,py+5,TILE,5);
    }
    if(left&&solid.has(left)){
-    ctx.fillStyle='rgba(14,18,28,.15)';ctx.fillRect(px,py,4,TILE);
-    ctx.fillStyle='rgba(14,18,28,.06)';ctx.fillRect(px+4,py,3,TILE);
+    ctx.fillStyle='rgba(14,22,30,.13)';ctx.fillRect(px,py,4,TILE);
+    ctx.fillStyle='rgba(14,22,30,.05)';ctx.fillRect(px+4,py,3,TILE);
    }
    if(up&&solid.has(up)&&left&&solid.has(left)){
-    ctx.fillStyle='rgba(10,14,24,.14)';ctx.fillRect(px,py,7,7);
+    ctx.fillStyle='rgba(10,18,26,.12)';ctx.fillRect(px,py,7,7);
    }
-   // Organic scalloped grassy shoulders & softly rounded corners along EVERY dirt/path tile (eliminates boxy 90-deg Lego edges!)
+   // Smooth organic painterly grass-verge edges & rounded corners along EVERY dirt/path tile (ZERO bead bumps!)
    if((ch==='P'||ch==='D')&&!['village','capital','ravine','watchfort','ryunefields','ashroad','frontier','frontierfield'].includes(state.map)){
     const h=((Math.imul(x+17,374761393)^Math.imul(y+29,668265263))>>>0);
-    if(isGrass(left)){
-     for(let i=0;i<8;i++){
-      const w=2+(((h>>>i)+i)%3);
-      ctx.fillStyle=i%2?gMain:gHi;ctx.fillRect(px,py+i*4,w,4);
-      ctx.fillStyle=gEdge;ctx.fillRect(px+w,py+i*4,1,4);
-      ctx.fillStyle=dirtRim;ctx.fillRect(px+w+1,py+i*4,2,4);
-     }
-    }
-    if(isGrass(right)){
-     for(let i=0;i<8;i++){
-      const w=2+(((h>>>(i+3))+i)%3);
-      ctx.fillStyle=i%2?gMain:gHi;ctx.fillRect(px+TILE-w,py+i*4,w,4);
-      ctx.fillStyle=gEdge;ctx.fillRect(px+TILE-w-1,py+i*4,1,4);
-      ctx.fillStyle=dirtRim;ctx.fillRect(px+TILE-w-3,py+i*4,2,4);
-     }
-    }
-    if(isGrass(up)){
-     for(let i=0;i<8;i++){
-      const ht=2+(((h>>>(i+5))+i)%3);
-      ctx.fillStyle=i%2?gMain:gHi;ctx.fillRect(px+i*4,py,4,ht);
-      ctx.fillStyle=gEdge;ctx.fillRect(px+i*4,py+ht,4,1);
-      ctx.fillStyle=dirtRim;ctx.fillRect(px+i*4,py+ht+1,4,2);
-     }
-    }
-    if(isGrass(dn)){
-     for(let i=0;i<8;i++){
-      const ht=2+(((h>>>(i+7))+i)%3);
-      ctx.fillStyle=i%2?gMain:gHi;ctx.fillRect(px+i*4,py+TILE-ht,4,ht);
-      ctx.fillStyle=gEdge;ctx.fillRect(px+i*4,py+TILE-ht-1,4,1);
-      ctx.fillStyle=dirtRim;ctx.fillRect(px+i*4,py+TILE-ht-3,4,2);
-     }
-    }
-    // Rounded outer corner grass overhangs (softens every 90-degree T-junction & bend!)
-    if(isGrass(left)&&isGrass(up)){ctx.fillStyle=gMain;ctx.fillRect(px,py,7,5);ctx.fillRect(px,py+5,5,2);ctx.fillStyle=gEdge;ctx.fillRect(px+5,py+5,2,2)}
-    if(isGrass(right)&&isGrass(up)){ctx.fillStyle=gMain;ctx.fillRect(px+25,py,7,5);ctx.fillRect(px+27,py+5,5,2);ctx.fillStyle=gEdge;ctx.fillRect(px+25,py+5,2,2)}
-    if(isGrass(left)&&isGrass(dn)){ctx.fillStyle=gMain;ctx.fillRect(px,py+27,7,5);ctx.fillRect(px,py+25,5,2);ctx.fillStyle=gEdge;ctx.fillRect(px+5,py+25,2,2)}
-    if(isGrass(right)&&isGrass(dn)){ctx.fillStyle=gMain;ctx.fillRect(px+25,py+27,7,5);ctx.fillRect(px+27,py+25,5,2);ctx.fillStyle=gEdge;ctx.fillRect(px+25,py+25,2,2)}
-    // Rounded inner diagonal corner grass bevels
-    if(!isGrass(left)&&!isGrass(up)&&isGrass(at(x-1,y-1))){ctx.fillStyle=gMain;ctx.fillRect(px,py,5,4);ctx.fillStyle=gEdge;ctx.fillRect(px+5,py,1,4);ctx.fillRect(px,py+4,5,1)}
-    if(!isGrass(right)&&!isGrass(up)&&isGrass(at(x+1,y-1))){ctx.fillStyle=gMain;ctx.fillRect(px+27,py,5,4);ctx.fillStyle=gEdge;ctx.fillRect(px+26,py,1,4);ctx.fillRect(px+27,py+4,5,1)}
-    if(!isGrass(left)&&!isGrass(dn)&&isGrass(at(x-1,y+1))){ctx.fillStyle=gMain;ctx.fillRect(px,py+28,5,4);ctx.fillStyle=gEdge;ctx.fillRect(px+5,py+28,1,4);ctx.fillRect(px,py+27,5,1)}
-    if(!isGrass(right)&&!isGrass(dn)&&isGrass(at(x+1,y+1))){ctx.fillStyle=gMain;ctx.fillRect(px+27,py+28,5,4);ctx.fillStyle=gEdge;ctx.fillRect(px+26,py+28,1,4);ctx.fillRect(px+27,py+27,5,1)}
+    const tuft=(cx,cy,rx,ry,col)=>{
+     ctx.fillStyle=col;
+     if(typeof ctx.beginPath==='function'){ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);ctx.fill()}
+     else ctx.fillRect(Math.round(cx-rx),Math.round(cy-ry),Math.round(rx*2),Math.round(ry*2));
+    };
+    const w0=2.4+(Math.sin((x+y)*1.3)*0.9);
+    if(isGrass(left)){ctx.fillStyle=dirtRim;ctx.fillRect(px,py,w0+2.5,TILE);ctx.fillStyle=gMain;ctx.fillRect(px,py,w0,TILE);tuft(px+w0,py+9+(h%12),2.4,5.5,gMain);tuft(px+w0-0.5,py+22-(h%8),2,4.5,gHi)}
+    if(isGrass(right)){ctx.fillStyle=dirtRim;ctx.fillRect(px+TILE-w0-2.5,py,w0+2.5,TILE);ctx.fillStyle=gMain;ctx.fillRect(px+TILE-w0,py,w0,TILE);tuft(px+TILE-w0,py+9+((h>>>2)%12),2.4,5.5,gMain);tuft(px+TILE-w0+0.5,py+22-((h>>>4)%8),2,4.5,gHi)}
+    if(isGrass(up)){ctx.fillStyle=dirtRim;ctx.fillRect(px,py,TILE,w0+2.5);ctx.fillStyle=gMain;ctx.fillRect(px,py,TILE,w0);tuft(px+9+((h>>>3)%12),py+w0,5.5,2.4,gMain);tuft(px+22-((h>>>5)%8),py+w0-0.5,4.5,2,gHi)}
+    if(isGrass(dn)){ctx.fillStyle=dirtRim;ctx.fillRect(px,py+TILE-w0-2.5,TILE,w0+2.5);ctx.fillStyle=gMain;ctx.fillRect(px,py+TILE-w0,TILE,w0);tuft(px+9+((h>>>6)%12),py+TILE-w0,5.5,2.4,gMain);tuft(px+22-((h>>>8)%8),py+TILE-w0+0.5,4.5,2,gHi)}
+    if(isGrass(left)&&isGrass(up))tuft(px+2.5,py+2.5,6,5.5,gMain);
+    if(isGrass(right)&&isGrass(up))tuft(px+29.5,py+2.5,6,5.5,gMain);
+    if(isGrass(left)&&isGrass(dn))tuft(px+2.5,py+29.5,6,5.5,gMain);
+    if(isGrass(right)&&isGrass(dn))tuft(px+29.5,py+29.5,6,5.5,gMain);
+    if(!isGrass(left)&&!isGrass(up)&&isGrass(at(x-1,y-1)))tuft(px+1.5,py+1.5,4,3.8,gMain);
+    if(!isGrass(right)&&!isGrass(up)&&isGrass(at(x+1,y-1)))tuft(px+30.5,py+1.5,4,3.8,gMain);
+    if(!isGrass(left)&&!isGrass(dn)&&isGrass(at(x-1,y+1)))tuft(px+1.5,py+30.5,4,3.8,gMain);
+    if(!isGrass(right)&&!isGrass(dn)&&isGrass(at(x+1,y+1)))tuft(px+30.5,py+30.5,4,3.8,gMain);
    }
   }
  }

@@ -533,64 +533,19 @@ const EmpireSanctuaryEnvironment=(()=>{
  }
 
  function drawImperialBooth(ctx,tx,ty,color,kind){
-  // Solid 3D 64x52px Sculpted Timber-and-Canvas Imperial Canal Market Pavilion with 3D Right Side Depth & 3-Tier Pitched Awning!
-  const x=tx*32,y=ty*32-14,w=64,h=52,ink='#181e26',sideW=7;
-  // 1. Wide southeast cast shadow grounding all 4 timber posts, side panel & counter onto the canal quay
-  pix(ctx,'rgba(10,16,22,0.40)',x+6,y+h-6,w+sideW+5,13);
-  pix(ctx,'rgba(10,16,22,0.24)',x+w-1,y+14,sideW+8,h-14);
-  // 2. Back interior shade & recessed rear dark-oak posts
-  pix(ctx,'rgba(16,20,26,0.60)',x+5,y+18,w-8,18);
-  pix(ctx,ink,x+5,y+14,5,28);pix(ctx,'#423428',x+6,y+15,3,26);
-  pix(ctx,ink,x+w-9,y+14,5,28);pix(ctx,'#423428',x+w-8,y+15,3,26);
-  // 3. Solid 3D wooden counter base + 3D oblique shaded right side wall & recessed front panels
-  pix(ctx,ink,x+1,y+29,w+sideW-2,20);
-  pix(ctx,'#322418',x+w-2,y+27,sideW-1,20);
-  pix(ctx,'#5c4632',x+3,y+35,w-6,12);
-  for(const panX of [x+6,x+24,x+42]){pix(ctx,'#3c2c1e',panX,y+37,14,8);pix(ctx,'#785c42',panX+1,y+38,12,6)}
-  pix(ctx,'#9c7854',x+2,y+30,w-2,5);pix(ctx,'#c8a278',x+3,y+30,w-4,2);
-  // 4. Brimming 3D merchandise displays tailored by canal booth specialty
-  if(kind==='books'){
-   pix(ctx,'#8c3840',x+8,y+22,14,8);pix(ctx,'#f2e8ce',x+10,y+24,10,3);
-   pix(ctx,'#2e5474',x+25,y+21,14,9);pix(ctx,'#e6d8b4',x+27,y+23,10,3);
-   pix(ctx,'#d8b458',x+43,y+20,12,10);pix(ctx,'#fff6c8',x+45,y+22,6,4);
-  }else if(kind==='porcelain'){
-   for(const [bx,c1,c2] of [[x+9,'#e8eef2','#386890'],[x+26,'#d8e6ec','#2e5678'],[x+43,'#883c42','#f2d488']]){
-    pix(ctx,ink,bx,y+20,12,10);pix(ctx,c1,bx+1,y+21,10,8);pix(ctx,c2,bx+2,y+24,8,3);
-   }
-  }else if(kind==='cloth'){
-   pix(ctx,'#2e5c82',x+7,y+22,17,9);pix(ctx,'#6ca2c8',x+9,y+22,13,3);
-   pix(ctx,'#3a7264',x+26,y+22,16,9);pix(ctx,'#78b4a2',x+28,y+22,12,3);
-   pix(ctx,'#d8dce0',x+44,y+21,13,10);pix(ctx,'#ffffff',x+46,y+21,9,3);
-  }else{
-   for(const [bx,c1,c2] of [[x+7,'#d87442','#f6b868'],[x+24,'#c84444','#f48274'],[x+41,'#4e8854','#92c878']]){
-    pix(ctx,'#4e3622',bx,y+24,15,9);pix(ctx,'#a88454',bx+1,y+26,13,5);
-    pix(ctx,c1,bx+2,y+21,11,6);pix(ctx,c2,bx+4,y+20,6,3);
-   }
+  if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawMarketStall){
+   const itemMap={
+    books:[['#923a44','#f4e8ce'],['#32587c','#eadcb8'],['#dca648','#fff6c8']],
+    porcelain:[['#e8eef2','#42749e'],['#d8e6ec','#325c82'],['#924048','#f6da8e']],
+    cloth:[['#326088','#70a8ce'],['#3e786a','#7cb8a6'],['#dfe4e8','#ffffff']],
+    fruits:[['#dc7846','#f8be6e'],['#ce4848','#f6887a'],['#528e58','#98ce7e']]
+   };
+   HD2DAtlas.drawMarketStall(ctx,tx*32,ty*32-10,{
+    w:64,h:46,color,hi:'#d8e6f0',items:itemMap[kind]||itemMap.fruits
+   });
+   return;
   }
-  // 5. Sturdy front beveled dark-oak corner posts standing cleanly in front of counter
-  pix(ctx,ink,x+1,y+12,6,37);pix(ctx,'#684c34',x+2,y+13,4,35);pix(ctx,'#9e7854',x+2,y+13,2,33);
-  pix(ctx,ink,x+w-7,y+12,6,37);pix(ctx,'#684c34',x+w-6,y+13,4,35);pix(ctx,'#9e7854',x+w-6,y+13,2,33);
-  // 6. 3D Multi-Tier Sloped Billowing Striped Awning Roof + 3D Right Side Triangle & Scalloped Valance
-  pix(ctx,ink,x+w,y+1,sideW,17);pix(ctx,'#243240',x+w+1,y+3,sideW-2,13);
-  for(let az=0;az<3;az++){
-   const ay=y+8-az*4,aw=w+4-az*4,ax=x-2+az*2;
-   pix(ctx,ink,ax-1,ay-1,aw+2,7);
-   for(let s=0;s<6;s++){
-    const sx=ax+Math.round(s*aw/6),sw=Math.ceil(aw/6),stripe=s%2===0?color:'#e8f0f4';
-    pix(ctx,stripe,sx,ay,sw,5);
-    if(az===2)pix(ctx,'rgba(240,250,255,0.28)',sx,ay,sw,2);
-   }
-  }
-  pix(ctx,'rgba(10,16,22,0.40)',x+2,y+19,w-4,4);
-  for(let s=0;s<6;s++){
-   const sx=x-1+s*11,sw=11,stripe=s%2===0?color:'#e8f0f4';
-   pix(ctx,ink,sx,y+13,sw,8);
-   pix(ctx,stripe,sx+1,y+13,sw-2,6);
-   pix(ctx,'rgba(14,20,26,0.24)',sx+1,y+17,sw-2,2);
-  }
-  pix(ctx,'#46382c',x-1,y-4,w+2,3);pix(ctx,'#b0c0cc',x+1,y-4,w-2,1);
-  const lx=x+w-13,ly=y+20;
-  pix(ctx,'#202830',lx,ly,5,7);pix(ctx,'#ffd874',lx+1,ly+2,3,4);pix(ctx,'#fffbe0',lx+2,ly+2,1,2);
+  pix(ctx,color,tx*32,ty*32,64,42);
  }
 
  function accents(ctx,map){
@@ -676,16 +631,10 @@ const EmpireSanctuaryEnvironment=(()=>{
     pix(ctx,'#d84844',bx*32+11,by*32+15,4,4);pix(ctx,'#f2b262',bx*32+16,by*32+15,4,4);
    }
    // Wrought-iron Imperial village streetlamps with smooth radial warm light pools (clear of y=9 stroller lane!)
-   for(const [lx,ly] of [[8,8],[13,8],[19,8],[26,8],[8,15],[14,15],[18,15]]){
-    const px=lx*32+14,py=ly*32+5;
-    const lg=ctx.createRadialGradient?.(px+2,py+2,2,px+2,py+2,26);
-    if(lg&&typeof lg.addColorStop==='function'){
-     lg.addColorStop(0,'rgba(255,216,124,0.34)');lg.addColorStop(1,'rgba(248,188,88,0)');
-     ctx.fillStyle=lg;ctx.beginPath();ctx.arc(px+2,py+2,26,0,Math.PI*2);ctx.fill();
+   if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawLanternPost){
+    for(const [lx,ly] of [[8,8],[13,8],[19,8],[26,8],[8,15],[14,15],[18,15]]){
+     HD2DAtlas.drawLanternPost(ctx,lx*32,ly*32,{iron:true});
     }
-    pix(ctx,'rgba(12,18,24,0.30)',px-2,py+21,8,4);
-    pix(ctx,'#242e38',px,py+4,4,19);pix(ctx,'#4e5e6c',px+1,py+5,2,17);
-    pix(ctx,'#242e38',px-2,py-1,8,7);pix(ctx,'#f6d87e',px-1,py,6,5);pix(ctx,'#fffbe2',px+1,py+1,2,2);
    }
    return true;
   }
@@ -699,14 +648,14 @@ const EmpireSanctuaryEnvironment=(()=>{
     HD2DAtlas.drawDoves(ctx,[[15*32+18,11*32+12,1],[20*32+12,13*32+8,-1]],now);
    }
    const impCityBuildings=[
-    {x:3,y:2,w:7,h:4,tag:'imp_archive',region:'imperial',rural:false,label:'地方公文書館',stonePortico:true,chimneyLeft:true,doorOffsetPx:3*32+16},
-    {x:26,y:2,w:7,h:4,tag:'imp_guild',region:'imperial',rural:false,label:'水運組合',bellGable:true,chimneyLeft:false,doorOffsetPx:3*32+16},
-    {x:3,y:18,w:6,h:3,tag:'imp_inn',region:'imperial',rural:false,label:'水鳥亭',chimneyLeft:true,doorOffsetPx:3*32},
-    {x:27,y:18,w:6,h:3,tag:'imp_books',region:'imperial',rural:false,label:'運河古書店',chimneyLeft:false,doorOffsetPx:3*32}
+    {x:3,y:2,w:7,h:4,tag:'imp_archive',region:'imperial',rural:false,emblem:'book',wallTone:'limestone',roofDark:'#1e3248',roofMain:'#325070',roofHi:'#547aa0',stonePortico:true,chimneyLeft:true,doorOffsetPx:3*32+16},
+    {x:26,y:2,w:7,h:4,tag:'imp_guild',region:'imperial',rural:false,emblem:'anchor',wallTone:'river_brick',roofDark:'#1c4444',roofMain:'#2f6866',roofHi:'#509490',bellGable:true,chimneyLeft:false,doorOffsetPx:3*32+16},
+    {x:3,y:18,w:6,h:3,tag:'imp_inn',region:'imperial',rural:false,emblem:'inn',wallTone:'limestone',roofDark:'#462432',roofMain:'#6e3a4c',roofHi:'#98586c',chimneyLeft:true,doorOffsetPx:3*32},
+    {x:27,y:18,w:6,h:3,tag:'imp_books',region:'imperial',rural:false,emblem:'book',wallTone:'moss_stone',roofDark:'#2c3644',roofMain:'#445468',roofHi:'#667c94',chimneyLeft:false,doorOffsetPx:3*32}
    ];
    for(const b of impCityBuildings){
     if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawGrandHouse(ctx,b.x,b.y,b.w,b.h,b)){
-     drawImperialHouse(ctx,b.x,b.y,b.w,b.h,{roofMain:b.roofMain,roofHi:b.roofHi,wall:b.wall,bannerLabel:b.label});
+     drawImperialHouse(ctx,b.x,b.y,b.w,b.h,{roofMain:b.roofMain,roofHi:b.roofHi,wall:b.wall});
     }
    }
 
@@ -715,36 +664,29 @@ const EmpireSanctuaryEnvironment=(()=>{
    for(const [bx,by] of [[11,8],[24,8],[32,8],[10,16],[22,16]]){
     const x=bx*32,y=by*32+bob;
     pix(ctx,'rgba(10,20,28,0.40)',x+1,y+19,30,7);
-    pix(ctx,'#281c14',x+2,y+12,28,9);
-    pix(ctx,'#785940',x+4,y+13,24,6);
-    pix(ctx,'#a6805c',x+5,y+13,22,2);
-    pix(ctx,'#3a5c78',x+9,y+9,14,6);pix(ctx,'#d8e2e8',x+11,y+10,10,2);
+    pix(ctx,'#3a281c',x+2,y+12,28,9);
+    pix(ctx,'#846244',x+4,y+13,24,6);
+    pix(ctx,'#b08860',x+5,y+13,22,2);
+    pix(ctx,'#3e6482',x+9,y+9,14,6);pix(ctx,'#e0eaef',x+11,y+10,10,2);
     pix(ctx,'#ffd874',x+25,y+9,4,4);pix(ctx,'#fffbe4',x+26,y+10,2,2);
    }
    // Potted Mediterranean stone cypress urns flanking the central bridges (clear of y=15 quay promenade!)
    for(const [ux,uy] of [[15,9],[20,9],[15,17],[20,17]]){
     const px=ux*32+8,py=uy*32+4;
     pix(ctx,'rgba(12,18,24,0.32)',px+1,py+20,14,5);
-    pix(ctx,'#424c54',px+2,py+14,12,9);pix(ctx,'#a2aeb6',px+3,py+15,10,6);
-    pix(ctx,'#224a34',px+3,py+2,10,13);pix(ctx,'#427852',px+5,py,6,12);pix(ctx,'#76aa78',px+6,py+2,3,6);
+    pix(ctx,'#4a545e',px+2,py+14,12,9);pix(ctx,'#a8b4bc',px+3,py+15,10,6);
+    pix(ctx,'#265238',px+3,py+2,10,13);pix(ctx,'#468256',px+5,py,6,12);pix(ctx,'#7eb480',px+6,py+2,3,6);
    }
-   // True 3D Sculpted Wooden Canal Market Pavilions lining the east & west promenade squares (no flat 2D boxes!)
+   // Painterly Canal Market Pavilions & Wrought-Iron Streetlamps (HD2DAtlas v2!)
    drawImperialBooth(ctx,4,10,'#36607a','cloth');
    drawImperialBooth(ctx,10,14,'#466e60','fruits');
    drawImperialBooth(ctx,23,10,'#385874','porcelain');
    drawImperialBooth(ctx,30,10,'#546862','cloth');
    drawImperialBooth(ctx,30,14,'#4c546e','books');
-   // Imperial canal wrought-iron streetlamps with smooth radial golden reflections across the 36x24 quays
-   for(const [lx,ly] of [[12,9],[23,9],[12,15],[23,15],[15,6],[20,6],[15,18],[20,18]]){
-    const x=lx*32+14,y=ly*32+6;
-    const lg=ctx.createRadialGradient?.(x+2,y+2,2,x+2,y+2,26);
-    if(lg&&typeof lg.addColorStop==='function'){
-     lg.addColorStop(0,'rgba(255,222,138,0.30)');lg.addColorStop(1,'rgba(245,196,100,0)');
-     ctx.fillStyle=lg;ctx.beginPath();ctx.arc(x+2,y+2,26,0,Math.PI*2);ctx.fill();
+   if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawLanternPost){
+    for(const [lx,ly] of [[12,9],[23,9],[12,15],[23,15],[15,6],[20,6],[15,18],[20,18]]){
+     HD2DAtlas.drawLanternPost(ctx,lx*32,ly*32,{iron:true});
     }
-    pix(ctx,'rgba(12,18,24,0.30)',x-2,y+22,8,4);
-    pix(ctx,'#242e38',x,y+4,4,20);pix(ctx,'#4e5e6c',x+1,y+5,2,18);
-    pix(ctx,'#242e38',x-2,y-1,8,7);pix(ctx,'#f6d87e',x-1,y,6,5);pix(ctx,'#fffbe2',x+1,y+1,2,2);
    }
    return true;
   }
@@ -914,94 +856,72 @@ const EmpireSanctuaryEnvironment=(()=>{
   }
 
   if(map==='elsia'){
-   // Expanded 32x22 Ancient Elsia Sanctuary: Soaring 8x5 3D Classical White-Marble Corinthian Pantheon (x=3..10, y=2..6)!
-   const rx=3*32,ry=2*32,rw=8*32,rh=5*32,ink='#1e2420',rmid=rx+Math.floor(rw/2),sideW=14;
-   pix(ctx,'rgba(10,18,14,0.44)',rx+8,ry+rh-2,rw+sideW+8,16);
-   pix(ctx,'rgba(10,18,14,0.22)',rx+14,ry+rh+10,rw+sideW+6,8);
-   pix(ctx,'rgba(10,18,14,0.30)',rx+rw,ry+8,sideW+8,rh-2);
-   // 1. 3D Oblique Shaded Right Marble Side-Wall Return & Side Colonnade Depth!
-   for(let sx=0;sx<sideW;sx++){
-    const lift=Math.floor(sx*0.6);
-    pix(ctx,ink,rx+rw+sx,ry+6-lift,1,rh-4);
-    pix(ctx,sx<3?'#b4b2a2':'#8c8a7c',rx+rw+sx,ry+8-lift,1,rh-26);
-    pix(ctx,'#68665a',rx+rw+sx,ry+rh-20-lift,1,20);
-   }
-   // 2. Deeply Recessed Temple Cella Inner Sanctum with Chiseled Marble Ashlar Courses & Diagonal Column Cast Shadows
+   // Expanded 32x22 Ancient Elsia Sanctuary: Soaring Painterly Classical White-Marble Corinthian Pantheon (x=3..10, y=2..6)!
+   const rx=3*32,ry=2*32,rw=8*32,rh=5*32,ink='#4a5248',rmid=rx+Math.floor(rw/2),sideW=14;
+   const polyE=(pts,fill,stroke,lw=1.2)=>{
+    if(!ctx||typeof ctx.beginPath!=='function')return;
+    ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);
+    for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);
+    ctx.closePath();
+    if(fill){ctx.fillStyle=fill;ctx.fill()}
+    if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw;ctx.stroke()}
+   };
+   pix(ctx,'rgba(12,24,20,0.34)',rx+8,ry+rh-2,rw+sideW+8,15);
+   pix(ctx,'rgba(12,24,20,0.16)',rx+14,ry+rh+10,rw+sideW+6,8);
+   polyE([[rx+rw,ry+6],[rx+rw+sideW,ry-2],[rx+rw+sideW,ry+rh-8],[rx+rw,ry+rh]],'#969486',ink,1.1);
+   // 2. Deeply Recessed Temple Cella Inner Sanctum & Radiant Aquamarine Sanctuary Portal!
    pix(ctx,ink,rx+10,ry+22,rw-20,rh-40);
-   pix(ctx,'#788076',rx+12,ry+24,rw-24,rh-44);
+   pix(ctx,'#80887e',rx+12,ry+24,rw-24,rh-44);
    for(let sy=ry+34;sy<ry+rh-24;sy+=10){
-    pix(ctx,'rgba(24,30,26,0.24)',rx+12,sy,rw-24,1);
-    for(let sx=rx+22+((sy%20)?12:0);sx<rx+rw-20;sx+=24)pix(ctx,'rgba(24,30,26,0.20)',sx,sy-9,1,9);
+    pix(ctx,'rgba(32,40,34,0.18)',rx+12,sy,rw-24,1);
+    for(let sx=rx+22+((sy%20)?12:0);sx<rx+rw-20;sx+=24)pix(ctx,'rgba(32,40,34,0.14)',sx,sy-9,1,9);
    }
-   // Recessed flanking sacred relief niches inside the cella colonnade
    for(const nx of [rx+54,rx+rw-78]){
-    pix(ctx,ink,nx,ry+44,24,48);pix(ctx,'#264446',nx+2,ry+46,20,44);pix(ctx,'#62c2b8',nx+6,ry+52,12,32);pix(ctx,'#e2c672',nx+2,ry+44,20,3);
+    pix(ctx,ink,nx,ry+44,24,48);pix(ctx,'#2a4a4c',nx+2,ry+46,20,44);pix(ctx,'#68ccc2',nx+6,ry+52,12,32);pix(ctx,'#e6ca76',nx+2,ry+44,20,3);
    }
-   // Monumental Recessed Glowing Aquamarine-and-Gold Sacred Sanctuary Portal
-   pix(ctx,ink,rmid-34,ry+38,68,rh-58);
-   pix(ctx,'#c8c4b4',rmid-32,ry+40,64,rh-60);
-   pix(ctx,'#e6c870',rmid-34,ry+36,68,4);
-   pix(ctx,'#162e32',rmid-26,ry+46,52,rh-66);
-   pix(ctx,'#328e8a',rmid-22,ry+50,44,rh-70);
-   pix(ctx,'#5ec8c0',rmid-18,ry+54,36,rh-76);
-   pix(ctx,'#a8f2ea',rmid-12,ry+60,24,rh-84);
-   pix(ctx,'#eafffc',rmid-6,ry+66,12,28);
-   pix(ctx,'#d8b864',rmid-1,ry+50,2,rh-70);
-   // 3. 3D Stepped 3-Tier White-Marble Crepidoma Stylobate Plinth & Protruding Ceremonial Steps
-   pix(ctx,ink,rx-2,ry+rh-26,rw+4,26);
-   pix(ctx,'#9e9c8e',rx,ry+rh-24,rw,22);
-   pix(ctx,'#cac8ba',rx+2,ry+rh-22,rw-4,14);
-   pix(ctx,'#eae8dc',rx+4,ry+rh-22,rw-8,6);
-   pix(ctx,'#fcfaf0',rx+6,ry+rh-22,rw-12,2);
-   for(let sx=rx+16;sx<rx+rw-12;sx+=24)pix(ctx,'#6c6a5e',sx,ry+rh-16,2,14);
+   // Radiant Sanctuary Portal Glow
+   const pg=ctx.createRadialGradient?.(rmid,ry+84,6,rmid,ry+84,64);
+   if(pg&&typeof pg.addColorStop==='function'){pg.addColorStop(0,'rgba(128,252,238,0.36)');pg.addColorStop(1,'rgba(90,220,210,0)');ctx.fillStyle=pg;ctx.beginPath();ctx.arc(rmid,ry+84,64,0,Math.PI*2);ctx.fill()}
+   pix(ctx,ink,rmid-34,ry+38,68,rh-58);pix(ctx,'#d0ccc0',rmid-32,ry+40,64,rh-60);pix(ctx,'#ecd074',rmid-34,ry+36,68,4);
+   pix(ctx,'#1c383c',rmid-26,ry+46,52,rh-66);pix(ctx,'#389894',rmid-22,ry+50,44,rh-70);
+   pix(ctx,'#66d2ca',rmid-18,ry+54,36,rh-76);pix(ctx,'#b0f6ee',rmid-12,ry+60,24,rh-84);pix(ctx,'#eefffd',rmid-6,ry+66,12,28);
+   pix(ctx,'#e0c26a',rmid-1,ry+50,2,rh-70);
+   // 3. Stepped White-Marble Crepidoma Stylobate Plinth & Ceremonial Steps
+   pix(ctx,ink,rx-2,ry+rh-26,rw+4,26);pix(ctx,'#a6a496',rx,ry+rh-24,rw,22);
+   pix(ctx,'#d0cebf',rx+2,ry+rh-22,rw-4,14);pix(ctx,'#eeece0',rx+4,ry+rh-22,rw-8,6);pix(ctx,'#fcfaf0',rx+6,ry+rh-22,rw-12,2);
+   for(let sx=rx+16;sx<rx+rw-12;sx+=24)pix(ctx,'#767468',sx,ry+rh-16,2,14);
    for(let st=0;st<3;st++){
     pix(ctx,ink,rmid-42-st*6,ry+rh-6+st*4,84+st*12,6);
-    pix(ctx,'#e6e4d6',rmid-40-st*6,ry+rh-5+st*4,80+st*12,4);
-    pix(ctx,'#fcfaf0',rmid-38-st*6,ry+rh-5+st*4,76+st*12,1);
+    pix(ctx,'#eae8da',rmid-40-st*6,ry+rh-5+st*4,80+st*12,4);
+    pix(ctx,'#fcfaf2',rmid-38-st*6,ry+rh-5+st*4,76+st*12,1);
    }
-   // 4. Seven 3D Cylindrical Fluted Corinthian White-Marble Columns with Gilded Capitals & Deep Cast Shadows!
+   // 4. Seven Cylindrical Fluted Corinthian White-Marble Columns with Gilded Capitals
    for(let i=0;i<7;i++){
     const cx=rx+12+i*36;
-    // Diagonal column shadow cast onto the cella wall & stylobate floor behind it
-    pix(ctx,'rgba(14,20,16,0.42)',cx+15,ry+24,9,rh-48);
+    pix(ctx,'rgba(16,26,22,0.34)',cx+15,ry+24,9,rh-48);
     pix(ctx,ink,cx-1,ry+20,19,rh-44);
-    // 5-band cylindrical marble column shading + vertical fluting grooves
-    pix(ctx,'#dcdac8',cx+1,ry+22,3,rh-48);
-    pix(ctx,'#fcfaf2',cx+4,ry+22,5,rh-48);
-    pix(ctx,'#d6d4c4',cx+9,ry+22,4,rh-48);
-    pix(ctx,'#969486',cx+13,ry+22,4,rh-48);
-    pix(ctx,'#b6b4a4',cx+6,ry+26,1,rh-54);pix(ctx,'#828072',cx+11,ry+26,1,rh-54);
-    // Carved Corinthian Gilded Capital & Molded Attic Base
-    pix(ctx,ink,cx-4,ry+16,25,8);pix(ctx,'#f2f0e4',cx-2,ry+17,21,6);
-    pix(ctx,'#e4c46e',cx,ry+18,17,3);pix(ctx,'#fff8cc',cx+2,ry+18,8,1);
-    pix(ctx,ink,cx-3,ry+rh-28,23,7);pix(ctx,'#eae8dc',cx-1,ry+rh-27,19,5);pix(ctx,'#fcfaf0',cx,ry+rh-27,12,2);
-    if(i===1||i===5){pix(ctx,'#2e5e38',cx+1,ry+52,15,14);pix(ctx,'#5e9a58',cx+3,ry+50,11,7);pix(ctx,'#a2e4c8',cx+5,ry+52,4,3)}
+    pix(ctx,'#e0dece',cx+1,ry+22,3,rh-48);pix(ctx,'#fcfaf2',cx+4,ry+22,5,rh-48);
+    pix(ctx,'#dad8c8',cx+9,ry+22,4,rh-48);pix(ctx,'#9e9c8e',cx+13,ry+22,4,rh-48);
+    pix(ctx,'#bebcae',cx+6,ry+26,1,rh-54);pix(ctx,'#888678',cx+11,ry+26,1,rh-54);
+    pix(ctx,ink,cx-4,ry+16,25,8);pix(ctx,'#f4f2e6',cx-2,ry+17,21,6);
+    pix(ctx,'#e8c872',cx,ry+18,17,3);pix(ctx,'#fffbe0',cx+2,ry+18,8,1);
+    pix(ctx,ink,cx-3,ry+rh-28,23,7);pix(ctx,'#eeece0',cx-1,ry+rh-27,19,5);pix(ctx,'#fcfaf2',cx,ry+rh-27,12,2);
+    if(i===1||i===5){pix(ctx,'#32683e',cx+1,ry+52,15,14);pix(ctx,'#64a45e',cx+3,ry+50,11,7);pix(ctx,'#a8ead0',cx+5,ry+52,4,3)}
    }
-   // 5. Sculpted Marble Entablature Frieze + 3D Stepped Temple Roof Volume + Recessed Triangular Pediment with Golden Sunburst Relief!
-   pix(ctx,'rgba(12,18,14,0.44)',rx+2,ry+22,rw-4,6);
-   pix(ctx,ink,rx-4,ry+4,rw+8,18);pix(ctx,'#d8d6c8',rx-2,ry+6,rw+4,14);pix(ctx,'#fcfaf2',rx,ry+6,rw,4);
-   for(let tx=rx+8;tx<rx+rw-10;tx+=16){pix(ctx,'#8e8c7e',tx,ry+11,5,7);pix(ctx,'#e2c470',tx+7,ry+13,4,4)}
-   // 3D Stepped Sanctuary Marble Roof Volume receding behind the front pediment + 3D right roof slope!
-   for(let rz=0;rz<6;rz++){
-    const rins=rz*6;
-    pix(ctx,ink,rx+4+rins,ry-2-rz*5,rw-8-rins*2+10,6);
-    pix(ctx,'#547068',rx+rw-4-rins,ry-1-rz*5,8,4); // 3D right roof return
-    pix(ctx,rz%2?'#76988e':'#5c7c72',rx+6+rins,ry-1-rz*5,rw-12-rins*2,4);
-   }
-   // Protruding 3D Classical Triangular Marble Pediment with recessed dark-teal tympanum & Golden Sunburst Crest!
-   for(let z=0;z<8;z++){
-    const ins=z*14,pw=rw+12-ins*2;
-    pix(ctx,ink,rx-6+ins,ry+4-z*4,pw,7);
-    pix(ctx,z===7?'#fcfaf2':(z%2?'#eceade':'#d4d2c4'),rx-4+ins,ry+5-z*4,pw-4,5);
-    if(z<5&&pw>48)pix(ctx,'#365a58',rx+16+ins,ry+6-z*4,pw-32,3); // recessed carved tympanum field
-   }
-   pix(ctx,ink,rmid-18,ry-15,36,15);pix(ctx,'#e2c064',rmid-16,ry-13,32,12);pix(ctx,'#fff8cc',rmid-10,ry-10,20,6);
-   // Golden rooftop acroteria finials at apex & both corners
-   pix(ctx,ink,rmid-5,ry-36,10,12);pix(ctx,'#ecc86c',rmid-4,ry-35,8,10);pix(ctx,'#fffbe0',rmid-2,ry-34,4,6);
-   for(const ax of [rx-6,rx+rw-2]){pix(ctx,ink,ax,ry-4,8,9);pix(ctx,'#e6c46a',ax+1,ry-3,6,7)}
+   // 5. Smooth Continuous Classical Triangular Marble Pediment & Sage-Verdigris Sanctuary Roof (ZERO black stair-steps!)
+   pix(ctx,'rgba(14,22,18,0.34)',rx+2,ry+22,rw-4,6);
+   pix(ctx,ink,rx-4,ry+4,rw+8,18);pix(ctx,'#dedcd0',rx-2,ry+6,rw+4,14);pix(ctx,'#fcfaf2',rx,ry+6,rw,4);
+   for(let tx=rx+8;tx<rx+rw-10;tx+=16){pix(ctx,'#949284',tx,ry+11,5,7);pix(ctx,'#e6c874',tx+7,ry+13,4,4)}
+   polyE([[rx+4,ry+4],[rx+38,ry-30],[rx+rw-24,ry-30],[rx+rw+14,ry-2],[rx+rw+4,ry+4]],'#668c82','#3c564e',1.2);
+   polyE([[rx+rw-24,ry-30],[rx+rw+14,ry-2],[rx+rw+4,ry+4],[rx+rw-34,ry-24]],'#4a6860');
+   polyE([[rx-8,ry+6],[rmid,ry-28],[rx+rw+8,ry+6]],'#eeeade',ink,1.3);
+   polyE([[rx+12,ry+3],[rmid,ry-21],[rx+rw-12,ry+3]],'#3a6462','#6e7a70',1);
+   pix(ctx,ink,rmid-18,ry-15,36,15);pix(ctx,'#e8c668',rmid-16,ry-13,32,12);pix(ctx,'#fffbe0',rmid-10,ry-10,20,6);
+   pix(ctx,ink,rmid-5,ry-38,10,12);pix(ctx,'#f0ce70',rmid-4,ry-37,8,10);pix(ctx,'#fffbe4',rmid-2,ry-36,4,6);
+   for(const ax of [rx-6,rx+rw-2]){pix(ctx,ink,ax,ry-4,8,9);pix(ctx,'#e8c66c',ax+1,ry-3,6,7)}
 
    // Southeast: White-Marble & Sage-Verdigris Sanctuary Villa harmonizing 100% with the Ancient Elsia Pantheon!
-   const elsiaVilla={x:22,y:13,w:7,h:4,tag:'elsia_villa',region:'sanctuary',label:'語り部の家',doorOffsetPx:3*32+16};
+   const elsiaVilla={x:22,y:13,w:7,h:4,tag:'elsia_villa',region:'sanctuary',emblem:'wreath',doorOffsetPx:3*32+16};
    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawGrandHouse(ctx,elsiaVilla.x,elsiaVilla.y,elsiaVilla.w,elsiaVilla.h,elsiaVilla)){
     drawImperialHouse(ctx,22,13,7,4,{roofDark:'#4e584a',roofMain:'#687662',roofHi:'#889880',wall:'#d8d2be',bannerLabel:'語り部の家'});
    }
@@ -1024,16 +944,26 @@ const EmpireSanctuaryEnvironment=(()=>{
     }
     ctx.restore();
    }
-   // Northeast: Stepped White-Limestone Terraced Ancient Olive Groves with Silver-Green Olive Trees & Terracotta Amphorae!
-   for(const [gx,gy] of [[22,4],[23,4],[24,4],[25,4],[26,4],[22,5],[23,5],[24,5],[25,5],[26,5],[22,6],[24,6],[26,6]]){
-    const px=gx*32,py=gy*32;
-    pix(ctx,'#5e6e58',px+2,py+5,28,23);
-    pix(ctx,'#cfcdc0',px+2,py+4,28,3);pix(ctx,'#eceade',px+3,py+4,26,1);
-    pix(ctx,'#8c8e82',px+2,py+25,28,3);
-    // Silver-green twisted olive shrub & golden herb blossoms
-    pix(ctx,'#4c3e2c',px+13,py+17,5,7);
-    pix(ctx,'#3a5c44',px+5,py+8,22,12);pix(ctx,'#5c8462',px+7,py+7,18,9);pix(ctx,'#94b892',px+9,py+8,12,4);
-    pix(ctx,'#f4f0dc',px+10,py+11,2,2);pix(ctx,'#eed888',px+19,py+10,2,2);
+   // Northeast: Continuous White-Limestone Terraced Ancient Olive Groves with Lush Rounded Silver-Green Olive Trees & Amphorae!
+   for(const [ty,cols] of [[4,[22,23,24,25,26]],[5,[22,23,24,25,26]],[6,[22,24,26]]]){
+    const x0=cols[0]*32,w0=(cols[cols.length-1]-cols[0]+1)*32,y0=ty*32;
+    if(ty<6){
+     pix(ctx,'rgba(16,32,26,0.22)',x0+2,y0+26,w0-4,5);
+     pix(ctx,'#8c9284',x0+2,y0+23,w0-4,5);pix(ctx,'#dcdad0',x0+2,y0+22,w0-4,3);
+    }
+    for(const gx of cols){
+     const cx=gx*32+16,cy=y0+15;
+     if(typeof ctx.beginPath==='function'){
+      ctx.fillStyle='rgba(16,34,26,0.26)';ctx.beginPath();ctx.ellipse(cx+1,cy+7,12,4.5,0,0,Math.PI*2);ctx.fill();
+      pix(ctx,'#5c4a36',cx-2,cy+1,4,8);pix(ctx,'#826a4e',cx-1,cy+1,2,7);
+      ctx.fillStyle='#345d42';ctx.beginPath();ctx.ellipse(cx,cy-1,11,7.5,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#5c8e64';ctx.beginPath();ctx.ellipse(cx-1,cy-3,9,6,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#96c294';ctx.beginPath();ctx.ellipse(cx-2,cy-5,5.5,3.5,0,0,Math.PI*2);ctx.fill();
+      pix(ctx,'#f6f4e2',cx-4,cy-3,2,2);pix(ctx,'#efe090',cx+4,cy-2,2,2);
+     }else{
+      pix(ctx,'#5c8e64',cx-8,cy-6,16,12);
+     }
+    }
    }
    // Ancient Fluted Broken Marble Ruin Columns framing the Temple approach & Sacred Spring
    for(const [cx,cy] of [[3,9],[4,13],[10,14]]){

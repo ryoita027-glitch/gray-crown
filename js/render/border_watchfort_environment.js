@@ -404,39 +404,12 @@ const BorderWatchfortEnvironment=(()=>{
  }
 
  function drawBorderBooth(ctx,tx,ty,color,kind){
-  // Solid 3D 64x48px Sculpted Timber-and-Canvas Border Caravan Market Pavilion!
-  const x=tx*32,y=ty*32-10,w=64,h=48,ink='#221a16';
-  pix(ctx,'rgba(14,12,10,0.36)',x+5,y+h-5,w+4,11);
-  pix(ctx,'rgba(14,12,10,0.20)',x+w-2,y+16,9,h-16);
-  pix(ctx,'rgba(22,16,12,0.55)',x+5,y+18,w-10,16);
-  pix(ctx,ink,x+5,y+14,5,26);pix(ctx,'#543a26',x+6,y+15,3,24);
-  pix(ctx,ink,x+w-10,y+14,5,26);pix(ctx,'#543a26',x+w-9,y+15,3,24);
-  pix(ctx,ink,x+2,y+28,w-4,18);
-  pix(ctx,'#6e4e34',x+4,y+34,w-8,10);
-  for(let px=x+12;px<x+w-8;px+=10)pix(ctx,'#4c3422',px,y+34,2,10);
-  pix(ctx,'#a67c52',x+3,y+29,w-6,5);pix(ctx,'#cfa472',x+4,y+29,w-8,2);
-  // Brimming 3D caravan trade goods (medicinal herbs, salt amphorae & spice sacks)
-  if(kind==='herbs'){
-   for(const [bx,c1,c2] of [[x+8,'#487c44','#88c474'],[x+25,'#c88438','#f2c46c'],[x+42,'#466e88','#8ec2dc']]){
-    pix(ctx,'#4e3622',bx,y+24,14,7);pix(ctx,c1,bx+2,y+22,10,5);pix(ctx,c2,bx+3,y+22,5,2);
-   }
-  }else{
-   for(const [bx,c1,c2] of [[x+8,'#b46842','#e69a6c'],[x+25,'#d4c8b0','#f6f2e8'],[x+42,'#9c4248','#d87478']]){
-    pix(ctx,'#4e3622',bx,y+24,14,7);pix(ctx,c1,bx+2,y+22,10,5);pix(ctx,c2,bx+3,y+22,5,2);
-   }
+  if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawMarketStall){
+   const items=kind==='herbs'?[['#4a8248','#90cc7c'],['#ce8a3c','#f6ca72'],['#48728c','#94c8e2']]:[['#ba6c44','#eca072'],['#dcd0b8','#faf6ee'],['#a2464c','#de7c80']];
+   HD2DAtlas.drawMarketStall(ctx,tx*32,ty*32-8,{w:64,h:44,color,hi:'#e6d2b0',items});
+   return;
   }
-  pix(ctx,ink,x+1,y+12,6,34);pix(ctx,'#7c5636',x+2,y+13,4,32);pix(ctx,'#b08256',x+2,y+13,2,30);
-  pix(ctx,ink,x+w-7,y+12,6,34);pix(ctx,'#7c5636',x+w-6,y+13,4,32);pix(ctx,'#b08256',x+w-6,y+13,2,30);
-  pix(ctx,ink,x-2,y+2,w+4,18);
-  for(let s=0;s<6;s++){
-   const sx=x+s*10,sw=(s===5)?14:10,stripe=s%2===0?color:'#f4e8ce';
-   pix(ctx,stripe,sx,y+3,sw,10);pix(ctx,'rgba(255,252,238,0.22)',sx,y+3,sw,3);
-   pix(ctx,s%2===0?'rgba(20,14,12,0.34)':'rgba(40,34,26,0.18)',sx,y+13,sw,6);
-   pix(ctx,stripe,sx+1,y+13,sw-2,5);
-   pix(ctx,ink,sx,y+18,sw,2);
-  }
-  pix(ctx,'#5c3e26',x-2,y,w+4,3);pix(ctx,'#c89e68',x,y,w,1);
-  pix(ctx,'#2c241e',x+w-13,y+19,5,7);pix(ctx,'#ffd874',x+w-12,y+21,3,4);
+  pix(ctx,color,tx*32,ty*32,64,40);
  }
 
  function drawFortressWing(ctx,tx,ty,wTiles,hTiles,isEast){
@@ -496,11 +469,9 @@ const BorderWatchfortEnvironment=(()=>{
     pix(ctx,ink,x+w-14,sy,8,16);
     pix(ctx,'#f2c468',x+w-12,sy+2,4,12);pix(ctx,'#fff6c8',x+w-11,sy+3,2,5);
    }
-   // Crisp Garrison Barracks Signboard
-   pix(ctx,'rgba(20,24,30,0.94)',rx+Math.floor(rw/2)-36,ry+26,72,15);
-   pix(ctx,'#d8bc74',rx+Math.floor(rw/2)-35,ry+27,70,1);
-   ctx.fillStyle='#f4eed8';ctx.font='bold 9px system-ui';ctx.textAlign='center';
-   ctx.fillText('ベルド砦・兵舎',rx+Math.floor(rw/2),ry+37);ctx.textAlign='start';
+   // Carved Crimson-and-Gold Garrison Heraldic Crest over Barracks Entry (replaces dark floating text box!)
+   const gcx=rx+Math.floor(rw/2);
+   pix(ctx,'#483e36',gcx-12,ry+24,24,14);pix(ctx,'#94323c',gcx-10,ry+26,20,10);pix(ctx,'#ebd074',gcx-5,ry+28,10,6);
   }
   // Crenellated stone battlements along the north edge (facing Razel Chasm)
   pix(ctx,'#8c8e88',x,y,w,10);
@@ -584,20 +555,10 @@ const BorderWatchfortEnvironment=(()=>{
     }
    }
    drawBorderBooth(ctx,8,5,'#8e3c42','herbs');
-   // Ornate village well-square lantern posts, flower parterres & stacked firewood
-   for(const [lx,ly] of [[10,6],[13,6],[10,9],[13,9]]){
-    const x=lx*32+14,y=ly*32+4;
-    const lg=ctx.createRadialGradient?.(x+2,y+2,2,x+2,y+2,28);
-    if(lg&&typeof lg.addColorStop==='function'){lg.addColorStop(0,'rgba(255,216,120,0.34)');lg.addColorStop(1,'rgba(255,180,80,0)');ctx.fillStyle=lg;ctx.beginPath();ctx.arc(x+2,y+2,28,0,Math.PI*2);ctx.fill()}
-    pix(ctx,'#2a221c',x,y+4,4,21);pix(ctx,'#54483e',x+1,y+5,2,19);
-    pix(ctx,'#2a221c',x-2,y-1,8,7);pix(ctx,'#fad876',x-1,y,6,5);pix(ctx,'#fffbe2',x+1,y+1,2,2);
-   }
-   for(const [fx,fy] of [[8,9],[14,9],[14,6],[9,11]]){
-    pix(ctx,'rgba(16,20,14,0.24)',fx*32+5,fy*32+21,24,5);
-    pix(ctx,'#585248',fx*32+4,fy*32+15,24,10);pix(ctx,'#4a7a42',fx*32+6,fy*32+14,20,8);
-    pix(ctx,'#f4d872',fx*32+8,fy*32+15,4,3);pix(ctx,'#e87880',fx*32+17,fy*32+16,4,3);
-   }
+   // Painterly village well-square lantern posts & wildflower beds (HD2DAtlas v2!)
    if(typeof HD2DAtlas!=='undefined'){
+    for(const [lx,ly] of [[10,6],[13,6],[10,9],[13,9]])HD2DAtlas.drawLanternPost(ctx,lx*32,ly*32,{iron:false});
+    for(const [fx,fy] of [[8,9],[14,9],[14,6],[9,11]])HD2DAtlas.drawFlowerBed(ctx,fx*32,fy*32);
     for(const [tx,ty] of [[2,1],[21,1],[1,6],[22,6],[1,12],[22,12]])HD2DAtlas.drawTree(ctx,tx,ty,'birch');
    }
    return true;

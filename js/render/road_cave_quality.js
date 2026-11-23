@@ -193,6 +193,10 @@ const RoadCaveQuality=(()=>{
    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(c,'grass',x,y,gb))box(c,'#5b7550',x*32,y*32,32,32);
    return true;
   }
+  if(map==='northwaystation'&&ch==='P'&&x>=13&&x<=18&&y>=10&&y<=15){
+   // Unify the central 6x6 White Birch Waystation carriage square as continuous warm cobblestone!
+   if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawTile(c,'cobble',x,y,'market'))return true;
+  }
   if(map==='northwaystation'&&ch==='T'){
    // High-density HD2DAtlas Golden-Chartreuse White Birch Trees!
    if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawTile(c,'grass',x,y,'autumn')){
@@ -249,8 +253,8 @@ const RoadCaveQuality=(()=>{
    }
    // Authentic Alpine White-Birch Chalet Inn & Mountain Carriage Barn (steep A-frame roofs, log purlins & granite bases!)
    const wayBuildings=[
-    {x:4,y:3,w:7,h:4,tag:'way_inn',region:'alpine',alpineStyle:'birch',label:'旅籠・白樺亭',roofDark:'#4e2a22',roofMain:'#7e4234',roofHi:'#a85e4a',canopyColor:'#9c3842',chimneyLeft:false,doorOffsetPx:3*32+16},
-    {x:20,y:3,w:6,h:4,tag:'way_barn',region:'alpine',alpineStyle:'birch',barnStyle:true,label:'荷馬車倉',roofDark:'#2c3c2a',roofMain:'#486044',roofHi:'#6a8662',chimneyLeft:true,doorOffsetPx:3*32+16}
+    {x:4,y:3,w:7,h:4,tag:'way_inn',region:'alpine',alpineStyle:'birch',emblem:'inn',roofDark:'#4e2a22',roofMain:'#7e4234',roofHi:'#a85e4a',canopyColor:'#9c3842',chimneyLeft:false,doorOffsetPx:3*32+16},
+    {x:20,y:3,w:6,h:4,tag:'way_barn',region:'alpine',alpineStyle:'birch',barnStyle:true,emblem:'barn',roofDark:'#2c3c2a',roofMain:'#486044',roofHi:'#6a8662',chimneyLeft:true,doorOffsetPx:3*32+16}
    ];
    for(const b of wayBuildings){
     if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawGrandHouse(c,b.x,b.y,b.w,b.h,b)){
@@ -264,45 +268,15 @@ const RoadCaveQuality=(()=>{
     fill(c,'#f6f2e8',cx-4,cy,8,6);fill(c,'#e2d8c6',cx-3,cy+3,6,3);
     fill(c,'#f6f2e8',cx+(dir>0?3:-5),cy-2+wpeck,3,3);fill(c,'#d84c44',cx+(dir>0?4:-4),cy-3+wpeck,2,2);
    }
-   // True 3D Sculpted Wooden Waystation Merchant Pavilion beside waystationPeddler (22,9) at solid-blocked (24..25, 8..9)
-   {
-    const sx=24*32-2,sy=8*32-8,sw=56,sh=42,ink='#221a16';
-    fill(c,'rgba(14,18,16,0.36)',sx+4,sy+sh-5,sw+4,10);
-    fill(c,'rgba(22,16,12,0.52)',sx+4,sy+14,sw-8,16);
-    fill(c,ink,sx+4,sy+11,4,24);fill(c,'#543a24',sx+5,sy+12,2,22);
-    fill(c,ink,sx+sw-8,sy+11,4,24);fill(c,'#543a24',sx+sw-7,sy+12,2,22);
-    fill(c,ink,sx+2,sy+24,sw-4,15);fill(c,'#6e4e34',sx+4,sy+28,sw-8,9);
-    for(let px=sx+10;px<sx+sw-6;px+=8)fill(c,'#4a3220',px,sy+28,2,9);
-    fill(c,'#a67c52',sx+3,sy+25,sw-6,4);fill(c,'#cfa472',sx+4,sy+25,sw-8,2);
-    fill(c,'#d84844',sx+8,sy+20,10,5);fill(c,'#f48868',sx+9,sy+20,6,2);
-    fill(c,'#e8a838',sx+22,sy+19,10,6);fill(c,'#ffe28a',sx+23,sy+19,6,2);
-    fill(c,'#487854',sx+36,sy+20,10,5);fill(c,'#88c284',sx+37,sy+20,6,2);
-    fill(c,ink,sx+1,sy+10,5,30);fill(c,'#7c5636',sx+2,sy+11,3,28);
-    fill(c,ink,sx+sw-6,sy+10,5,30);fill(c,'#7c5636',sx+sw-5,sy+11,3,28);
-    fill(c,ink,sx-2,sy+1,sw+4,15);
-    for(let i=0;i<7;i++){
-     const ax=sx+i*8,col=i%2?'#f6ecd4':'#9c3842';
-     fill(c,col,ax,sy+2,8,8);fill(c,'rgba(255,252,240,0.22)',ax,sy+2,8,3);
-     fill(c,i%2?'#d6c8a8':'#72242c',ax,sy+10,8,5);fill(c,ink,ax,sy+15,8,1);
+   // Painterly Waystation Merchant Stall, Ornate Lantern Posts & Wildflower Beds (HD2DAtlas v2!)
+   if(typeof HD2DAtlas!=='undefined'){
+    HD2DAtlas.drawMarketStall(c,24*32-2,8*32-8,{w:56,h:42,color:'#9c3842',hi:'#c25a62'});
+    for(const [lx,ly] of [[13,10],[18,10],[13,15],[18,15],[8,10],[23,10]]){
+     HD2DAtlas.drawLanternPost(c,lx*32,ly*32,{iron:true});
     }
-    fill(c,'#5c3e26',sx-2,sy,sw+4,2);
-   }
-   // Ornate wrought-iron lantern posts framing the dressed-stone central plaza (13..18, 10..15)
-   for(const [lx,ly] of [[13,10],[18,10],[13,15],[18,15],[8,10],[23,10]]){
-    const x=lx*32+14,y=ly*32+4;
-    const lg=c.createRadialGradient?.(x+2,y+2,2,x+2,y+2,28);
-    if(lg&&typeof lg.addColorStop==='function'){
-     lg.addColorStop(0,'rgba(255,216,120,0.36)');lg.addColorStop(1,'rgba(255,190,80,0)');
-     c.fillStyle=lg;c.beginPath();c.arc(x+2,y+2,28,0,Math.PI*2);c.fill();
+    for(const [fx,fy] of [[5,9],[11,9],[19,9],[26,9],[12,14],[19,15]]){
+     HD2DAtlas.drawFlowerBed(c,fx*32,fy*32);
     }
-    fill(c,'#2c2620',x,y+4,4,21);fill(c,'#544a40',x+1,y+5,2,19);
-    fill(c,'#2c2620',x-2,y-1,8,7);fill(c,'#f8d876',x-1,y,6,5);fill(c,'#fffbe0',x+1,y+1,2,2);
-   }
-   // Wildflower stone planters, birch hitching rail & warm traveler soup-kettle campfire cleanly spaced off roads!
-   for(const [fx,fy] of [[5,9],[11,9],[19,9],[26,9],[12,14],[19,15]]){
-    fill(c,'rgba(16,22,14,0.24)',fx*32+6,fy*32+21,22,6);
-    fill(c,'#5a564c',fx*32+5,fy*32+15,22,10);fill(c,'#4a7a42',fx*32+7,fy*32+14,18,8);
-    fill(c,'#f4d872',fx*32+9,fy*32+15,4,3);fill(c,'#e87880',fx*32+17,fy*32+16,4,3);fill(c,'#fff4d8',fx*32+13,fy*32+18,3,2);
    }
    // Birch-timber horse hitching rail & water trough beside the Carriage Barn (20..22, 7)
    const hx=21*32,hy=7*32+14;
