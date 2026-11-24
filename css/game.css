@@ -1822,7 +1822,7 @@ canvas{filter:saturate(1.06) contrast(1.04)}
 }
 .portrait-hd-npc img{
   position:absolute;left:-20%;top:-4%;width:560%;height:auto;max-width:none;
-  image-rendering:auto;filter:drop-shadow(0 2px 4px rgba(0,0,0,.45));
+  image-rendering:pixelated;filter:drop-shadow(0 2px 4px rgba(0,0,0,.45));
 }
 .game-shell{
   position:relative;

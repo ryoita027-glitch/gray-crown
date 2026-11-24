@@ -204,7 +204,7 @@ const RyuneEnvironment=(()=>{
  }
 
  const grandVillageBuildings=[
-  {x:4,y:3,w:6,h:4,tag:'ryune_karen',hdSprite:'ryune_karen',region:'rural',ruralStyle:'thatch',emblem:'wreath',chimneyLeft:false,doorOffsetPx:3*32+16},
+  {x:4,y:3,w:6,h:4,tag:'ryune_karen',region:'rural',ruralStyle:'thatch',emblem:'wreath',chimneyLeft:false,doorOffsetPx:3*32+16},
   {x:24,y:3,w:7,h:4,tag:'ryune_orphanage',region:'rural',ruralStyle:'plank_hall',emblem:'bell',roofDark:'#2e4634',roofMain:'#4c6c50',roofHi:'#70946c',bellGable:true,chimneyLeft:false,doorOffsetPx:3*32+16},
   {x:4,y:15,w:6,h:4,tag:'ryune_mayor',region:'rural',ruralStyle:'fieldstone',emblem:'crest',roofDark:'#303a48',roofMain:'#4e5a6a',roofHi:'#707e92',chimneyLeft:false,doorOffsetPx:3*32+16},
   {x:27,y:15,w:6,h:4,tag:'ryune_cottage',region:'rural',ruralStyle:'log_cabin',emblem:'wheat',roofDark:'#4e321e',roofMain:'#785032',roofHi:'#a27248',chimneyLeft:false,sideShed:true,doorOffsetPx:3*32+16}

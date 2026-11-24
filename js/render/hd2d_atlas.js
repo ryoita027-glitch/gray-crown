@@ -30,9 +30,6 @@ const HD2DAtlas=(()=>{
  }
  if(typeof Image!=='undefined'){
   for(const rel of [
-   'assets/world/buildings/ryune_karen.png',
-   'assets/world/props/ryune_bakery.png',
-   'assets/world/props/prop_well.png',
    'assets/world/props/bush_lush.png',
    'assets/world/props/tree_oak_1.png',
    'assets/world/props/tree_oak_2.png',
@@ -1397,21 +1394,6 @@ const HD2DAtlas=(()=>{
  }
  function drawGrandHouse(c,tx,ty,wTiles,hTiles,opts={}){
   if(!c||typeof c.drawImage!=='function')return false;
-  if(opts&&opts.hdSprite){
-   const img=getWorldImg('assets/world/buildings/'+opts.hdSprite+'.png');
-   if(img){
-    const dw=Math.round(wTiles*32+22),dh=Math.round(dw*img.naturalHeight/Math.max(1,img.naturalWidth));
-    const dx=Math.round(tx*32-11),dy=Math.round((ty+hTiles)*32-dh+6);
-    c.save();
-    pOval(c,'rgba(12,26,24,0.34)',tx*32+(wTiles*32)/2+9,(ty+hTiles)*32+3,wTiles*17+10,13);
-    c.imageSmoothingEnabled=true;
-    if('imageSmoothingQuality' in c)c.imageSmoothingQuality='high';
-    c.drawImage(img,dx,dy,dw,dh);
-    c.restore();
-    if(opts.tag)tagCache.set(opts.tag,{hdImg:img,dw,dh,dx,dy});
-    return true;
-   }
-  }
   const h=getGrandHouse(wTiles,hTiles,opts);if(!h)return false;
   if(opts&&opts.tag)tagCache.set(opts.tag,h);
   c.drawImage(h.el,Math.round(tx*32-h.padL),Math.round(ty*32-h.padT));
@@ -1420,41 +1402,13 @@ const HD2DAtlas=(()=>{
  function drawGrandHouseCanopy(c,tx,ty,wTiles,hTiles,opts={}){
   if(!c||typeof c.drawImage!=='function')return false;
   const cached=(opts&&opts.tag&&tagCache.has(opts.tag))?tagCache.get(opts.tag):null;
-  if(cached&&cached.hdImg){
-   const img=cached.hdImg,cutRatio=0.46;
-   const srcH=Math.round(img.naturalHeight*cutRatio),dstH=Math.round(cached.dh*cutRatio);
-   c.save();c.imageSmoothingEnabled=true;
-   if('imageSmoothingQuality' in c)c.imageSmoothingQuality='high';
-   c.drawImage(img,0,0,img.naturalWidth,srcH,cached.dx,cached.dy,cached.dw,dstH);
-   c.restore();return true;
-  }
   const h=cached||getGrandHouse(wTiles,hTiles,opts);
   if(!h)return false;
   const cutH=h.padT+28;
   c.drawImage(h.el,0,0,h.w,cutH,Math.round(tx*32-h.padL),Math.round(ty*32-h.padT),h.w,cutH);
   return true;
  }
- function drawBakerySprite(c,tx,ty,sm=0){
-  if(!c||typeof c.drawImage!=='function')return false;
-  const img=getWorldImg('assets/world/props/ryune_bakery.png');
-  if(!img)return false;
-  const dw=134,dh=Math.round(dw*img.naturalHeight/Math.max(1,img.naturalWidth));
-  const dx=Math.round(tx*32-4),dy=Math.round((ty+2)*32-dh+6);
-  c.save();
-  pOval(c,'rgba(12,26,22,0.34)',dx+dw*0.52,dy+dh-7,dw*0.48,10);
-  c.imageSmoothingEnabled=true;
-  if('imageSmoothingQuality' in c)c.imageSmoothingQuality='high';
-  c.drawImage(img,dx,dy,dw,dh);
-  // Live warm pulsing firelight halo at oven hearth + curling woodsmoke from chimney!
-  const pulse=0.34+Math.sin(sm*2.4)*0.06;
-  pGlow(c,dx+46,dy+dh-34,42,`rgba(255,184,78,${pulse.toFixed(2)})`,'rgba(255,140,40,0)');
-  for(let k=0;k<4;k++){
-   const ph=(sm*0.65+k*0.85)%3.4,oy=Math.round(dy-2-ph*8.5),ox=Math.round(dx+33+Math.sin(sm*0.8+k*1.9)*5);
-   pCluster(c,`rgba(250,246,236,${Math.max(0,0.44-ph*0.12).toFixed(2)})`,ox,oy,3+ph*1.5,2.2+ph*0.9,k*7,2);
-  }
-  c.restore();
-  return true;
- }
+ function drawBakerySprite(){return false}
 
  // ============================================================================
  // 6. CHUNKY HERO-SCALE PIXEL-ART PROPS (ZERO skinny sticks / vector ovals!)
@@ -1506,19 +1460,6 @@ const HD2DAtlas=(()=>{
 
  function drawSculptedWell(c,tx,ty,opts={}){
   const x=tx*32,y=ty*32,rustic=opts.rustic!==false,out='#423020';
-  const hdWell=getWorldImg('assets/world/props/prop_well.png');
-  if(hdWell&&c&&typeof c.drawImage==='function'){
-   const dw=52,dh=Math.round(dw*hdWell.naturalHeight/Math.max(1,hdWell.naturalWidth));
-   const dx=Math.round(x+16-dw/2),dy=Math.round(y+30-dh+3);
-   c.save();
-   pOval(c,'rgba(14,28,26,0.34)',x+17,y+26,20,7.5);
-   pOval(c,'rgba(44,92,104,0.22)',x+14,y+28,12,4);
-   c.imageSmoothingEnabled=true;
-   if('imageSmoothingQuality' in c)c.imageSmoothingQuality='high';
-   c.drawImage(hdWell,dx,dy,dw,dh);
-   c.restore();
-   return;
-  }
   const roof=opts.roof||(rustic?'#7a502e':'#7c323e'),roofHi=opts.roofHi||(rustic?'#aa7646':'#b85460');
   // Damp splash stones & cast shadow
   pOval(c,'rgba(16,32,28,0.32)',x+17,y+26,18,7);
@@ -1622,20 +1563,19 @@ const HD2DAtlas=(()=>{
   }
  }
 
- // Crisp Illustrated Painterly-Pixel Woodland Bush (ZERO blurry ovals!)
+ // Crisp 1:1 Pixel-Art Woodland Bush (ZERO blurry ovals or bilinear smear!)
  function drawBush(c,x,y,opts={}){
   const cx=x+16,cy=y+18,bloom=opts.bloom;
   const hdBush=getWorldImg('assets/world/props/bush_lush.png');
   if(hdBush&&c&&typeof c.drawImage==='function'){
-   const dw=38,dh=Math.round(dw*hdBush.naturalHeight/Math.max(1,hdBush.naturalWidth));
+   const dw=hdBush.naturalWidth||38,dh=hdBush.naturalHeight||21;
    c.save();
-   pOval(c,'rgba(12,26,22,0.30)',cx+1,cy+6,15,5);
-   c.imageSmoothingEnabled=true;
-   if('imageSmoothingQuality' in c)c.imageSmoothingQuality='high';
+   pOval(c,'rgba(12,26,22,0.28)',cx+1,cy+6,15,5);
+   c.imageSmoothingEnabled=false;
    c.drawImage(hdBush,Math.round(cx-dw/2),Math.round(cy+7-dh),dw,dh);
    c.restore();
    if(bloom){
-    for(const [dx,dy] of [[-7,-2],[1,-5],[7,-1],[-2,2],[4,-3]]){px(c,bloom,cx+dx,cy+dy,2.5,2.5);px(c,'#fffef4',cx+dx,cy+dy,1,1)}
+    for(const [dx,dy] of [[-7,-2],[1,-5],[7,-1],[-2,2],[4,-3]]){px(c,bloom,cx+dx,cy+dy,2,2);px(c,'#fffef4',cx+dx,cy+dy,1,1)}
    }
    return;
   }
@@ -1910,13 +1850,12 @@ const HD2DAtlas=(()=>{
   if(hdImg){
    const sway=(h%9)-4,lift=((h>>>4)%7)-3;
    const plazaWillow=(biome==='willow'&&x===22&&y===16);
-   const sc=plazaWillow?0.80:((biome==='willow'?1.02:biome==='pine'?0.94:0.92)+(h%5)*0.032);
-   const dw=Math.round(92*sc),dh=Math.round(dw*hdImg.naturalHeight/Math.max(1,hdImg.naturalWidth));
+   const sc=plazaWillow?0.84:1.0;
+   const dw=Math.round((hdImg.naturalWidth||88)*sc),dh=Math.round((hdImg.naturalHeight||86)*sc);
    const footX=Math.round(x*32+16+sway+(plazaWillow?14:0)),footY=Math.round(y*32+30+lift);
    c.save();
-   pOval(c,'rgba(12,28,24,0.34)',footX+4,footY-1,Math.round(dw*0.36),10);
-   c.imageSmoothingEnabled=true;
-   if('imageSmoothingQuality' in c)c.imageSmoothingQuality='high';
+   pOval(c,'rgba(12,28,24,0.32)',footX+4,footY-1,Math.round(dw*0.36),10);
+   c.imageSmoothingEnabled=false;
    c.drawImage(hdImg,Math.round(footX-dw/2),Math.round(footY-dh+4),dw,dh);
    c.restore();
    return true;
@@ -1934,13 +1873,12 @@ const HD2DAtlas=(()=>{
   if(hdImg){
    const sway=(h%9)-4,lift=((h>>>4)%7)-3;
    const plazaWillow=(biome==='willow'&&x===22&&y===16);
-   const sc=plazaWillow?0.80:((biome==='willow'?1.02:biome==='pine'?0.94:0.92)+(h%5)*0.032);
-   const dw=Math.round(92*sc),dh=Math.round(dw*hdImg.naturalHeight/Math.max(1,hdImg.naturalWidth));
+   const sc=plazaWillow?0.84:1.0;
+   const dw=Math.round((hdImg.naturalWidth||88)*sc),dh=Math.round((hdImg.naturalHeight||86)*sc);
    const footX=Math.round(x*32+16+sway+(plazaWillow?14:0)),footY=Math.round(y*32+30+lift);
    const cut=biome==='willow'?0.72:0.62;
    const srcH=Math.round(hdImg.naturalHeight*cut),dstH=Math.round(dh*cut);
-   c.save();c.imageSmoothingEnabled=true;
-   if('imageSmoothingQuality' in c)c.imageSmoothingQuality='high';
+   c.save();c.imageSmoothingEnabled=false;
    c.drawImage(hdImg,0,0,hdImg.naturalWidth,srcH,Math.round(footX-dw/2),Math.round(footY-dh+4),dw,dstH);
    c.restore();
    return true;

@@ -1113,19 +1113,20 @@ const OpeningPixelAssets=(()=>{
   const hdImg=getHdSheet(n.id);
   if(hdImg){
    const dIdx=dirs[dir]??0;
+   const cellW=Math.round((hdImg.naturalWidth||384)/4),cellH=hdImg.naturalHeight||96;
    const centerX=n.x*32+16,footY=n.y*32+30,destSize=44;
    let seed=0;for(const ch of String(n.id||''))seed=(seed*31+ch.charCodeAt(0))&255;
    const breath=(now>0&&!(typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion:reduce)').matches))
     ?Math.sin(now/720+seed*0.37)*0.45:0;
-   const drawW=destSize,drawH=destSize+breath;
+   const drawW=destSize,drawH=Math.round(destSize+breath);
    c.save();
    if(c.beginPath&&c.ellipse&&c.fill){
     c.fillStyle='rgba(14,22,22,.30)';
     c.beginPath();c.ellipse(centerX,footY-1,9.5,3.5,0,0,Math.PI*2);c.fill();
    }
-   c.imageSmoothingEnabled=true;
-   if('imageSmoothingQuality' in c)c.imageSmoothingQuality='high';
-   c.drawImage(hdImg,dIdx*128,0,128,128,Math.round(centerX-drawW/2),Math.round(footY-drawH),drawW,drawH);
+   // Crisp pixel-art nearest rendering — 100% identical to Karen/Triton/Sophie/Margaret!
+   c.imageSmoothingEnabled=false;
+   c.drawImage(hdImg,dIdx*cellW,0,cellW,cellH,Math.round(centerX-drawW/2),Math.round(footY-drawH),drawW,drawH);
    c.restore();return true
   }
   if(tryFeatured(c,n,dir,now))return true;
@@ -1151,6 +1152,7 @@ const OpeningPixelAssets=(()=>{
   const hdImg=getHdSheet(id);
   if(hdImg){
    const dIdx=dirs[dir]??0,destSize=43,centerX=tx*32+16,footY=ty*32+30;
+   const cellW=Math.round((hdImg.naturalWidth||384)/4),cellH=hdImg.naturalHeight||96;
    const bob=Math.abs(Math.sin(((frame||0)%4)*Math.PI/2))*1.9;
    const drawX=Math.round((centerX-destSize/2)*2)/2,drawY=Math.round((footY-destSize-bob)*2)/2;
    c.save();
@@ -1158,9 +1160,8 @@ const OpeningPixelAssets=(()=>{
     c.fillStyle='rgba(14,22,22,.26)';
     c.beginPath();c.ellipse(centerX,footY-1,8.5,3.2,0,0,Math.PI*2);c.fill();
    }
-   c.imageSmoothingEnabled=true;
-   if('imageSmoothingQuality' in c)c.imageSmoothingQuality='high';
-   c.drawImage(hdImg,dIdx*128,0,128,128,drawX,drawY,destSize,destSize);
+   c.imageSmoothingEnabled=false;
+   c.drawImage(hdImg,dIdx*cellW,0,cellW,cellH,drawX,drawY,destSize,destSize);
    c.restore();return true
   }
   const profile=designs[id]||extendedDesigns[id];if(!profile)return false;
