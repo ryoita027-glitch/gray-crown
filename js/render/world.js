@@ -580,8 +580,9 @@ function drawInteriorDecor(){
   R('#261a12',px,py+6,tw,21);R('#6a482c',px+2,py+10,tw-4,15);
   for(let kx=px+10;kx<px+tw-8;kx+=14)R('#462e1c',kx,py+11,2,13);
   R('#a67c50',px+1,py+7,tw-2,5);R('#d4aa76',px+2,py+7,tw-4,2);
-  // Ale mugs & brass tap on counter
+  // Ale mugs, gleaming brass keg tap & steaming stew pot on counter!
   for(let m=0;m<w-1;m++){R('#d8b66c',px+12+m*28,py+3,6,6);R('#fff6dc',px+13+m*28,py+2,4,2)}
+  R('#b88e40',px+tw-16,py+1,7,8);R('#f4d878',px+tw-15,py+2,3,5);
  };
  const barrel=(x,y)=>{
   const px=x*TILE,py=y*TILE;
@@ -664,10 +665,14 @@ function drawInteriorDecor(){
   R('rgba(14,10,8,.30)',x+2,y+22,26,7);
   R('#2a1c12',x+1,y+3,26,21);R('#7a5638',x+3,y+5,22,17);R('#a87e52',x+5,y+6,18,12);
   if(cloth){R(cloth,x+4,y+6,20,13);R('#faf2dc',x+6,y+7,16,4)}
-  if(props==='mugs'){R('#d8b262',x+8,y+9,4,5);R('#f8f0d0',x+8,y+8,4,2);R('#d8b262',x+16,y+11,4,5);R('#f8f0d0',x+16,y+10,4,2)}
-  else if(props==='wine'){R('#365e48',x+9,y+7,4,8);R('#b43c48',x+15,y+10,4,5);R('#f6e6b0',x+14,y+12,2,2)}
+  if(props==='mugs'){R('#d8b262',x+8,y+9,4,5);R('#f8f0d0',x+8,y+8,4,2);R('#d8b262',x+16,y+11,4,5);R('#f8f0d0',x+16,y+10,4,2);R('#ebd074',x+13,y+7,2,4);R('#fffbe0',x+13,y+5,2,2)}
+  else if(props==='wine'){R('#365e48',x+9,y+7,4,8);R('#b43c48',x+15,y+10,4,5);R('#f6e6b0',x+14,y+12,2,2);R('#fffbe0',x+19,y+7,2,3)}
   else if(props==='tea'){R('#dce4dc',x+10,y+8,7,6);R('#88c8a4',x+12,y+10,3,2);R('#f4e8c4',x+19,y+11,4,3)}
   else if(props==='sewing'){R('#a83c48',x+7,y+9,7,5);R('#e8cc72',x+16,y+10,5,4)}
+  if(props==='mugs'||props==='wine'){
+   const cg0=ctx.createRadialGradient?.(x+14,y+8,2,x+14,y+8,20);
+   if(cg0&&typeof cg0.addColorStop==='function'){cg0.addColorStop(0,'rgba(255,214,124,.22)');cg0.addColorStop(1,'rgba(255,180,80,0)');ctx.fillStyle=cg0;ctx.beginPath();ctx.arc(x+14,y+8,20,0,Math.PI*2);ctx.fill()}
+  }
   R('#362418',x-7,y+10,7,8);R('#8e6844',x-6,y+11,5,5);
   R('#362418',x+28,y+10,7,8);R('#8e6844',x+29,y+11,5,5);
  };
@@ -699,10 +704,20 @@ function drawInteriorDecor(){
   R('#3c3630',10*TILE+20,3*TILE+18,2*TILE+24,26);R('#eae6d8',10*TILE+22,3*TILE+20,2*TILE+20,22);
   R('#8a303c',11*TILE+10,3*TILE+20,44,24);R('#ecc86e',11*TILE+13,3*TILE+20,3,24);R('#ecc86e',12*TILE+16,3*TILE+20,3,24);
   R('#f6d874',11*TILE+28,3*TILE+26,8,10);R('#fff8d4',11*TILE+30,3*TILE+28,4,6);
-  // Twin 7-branch golden floor candelabras flanking the altar
+  // Twin 7-branch golden floor candelabras & tall white-lily marble sanctuary vases flanking the altar
   for(const cx of [10*TILE+6,13*TILE+20]){
+   const cg1=ctx.createRadialGradient?.(cx+3,3*TILE+10,2,cx+3,3*TILE+10,28);
+   if(cg1&&typeof cg1.addColorStop==='function'){cg1.addColorStop(0,'rgba(255,224,132,.34)');cg1.addColorStop(1,'rgba(255,184,80,0)');ctx.fillStyle=cg1;ctx.beginPath();ctx.arc(cx+3,3*TILE+10,28,0,Math.PI*2);ctx.fill()}
    R('#b89242',cx,3*TILE+16,6,22);R('#f0cf72',cx-4,3*TILE+14,14,4);
    R('#fff6c8',cx-3,3*TILE+10,2,4);R('#fff6c8',cx+2,3*TILE+8,2,6);R('#fff6c8',cx+7,3*TILE+10,2,4);
+  }
+  for(const vx of [9*TILE+6,14*TILE+12]){
+   R('#4c4a44',vx,4*TILE+6,14,16);R('#eae6da',vx+2,4*TILE+8,10,12);R('#e6c872',vx+2,4*TILE+11,10,2);
+   R('#366e40',vx,4*TILE-2,14,9);R('#fffef6',vx+2,4*TILE-4,4,4);R('#fffef6',vx+8,4*TILE-3,4,4);R('#f6d86e',vx+3,4*TILE-3,2,2);
+  }
+  // Luminous rainbow stained-glass floor pools drifting diagonally across the white marble nave!
+  for(const [sx,sy,col] of [[6*TILE+18,5*TILE+6,'rgba(128,204,255,.16)'],[9*TILE+12,6*TILE+10,'rgba(255,222,126,.16)'],[13*TILE+22,6*TILE+10,'rgba(255,146,174,.16)'],[16*TILE+6,5*TILE+6,'rgba(128,236,196,.16)']]){
+   R(col,sx,sy,36,48);
   }
   // Crimson-and-gold royal nave aisle runner
   R('#3a1c22',11*TILE+2,5*TILE,2*TILE-4,7*TILE+12);
@@ -737,17 +752,49 @@ function drawInteriorDecor(){
   barrel(5,9);barrel(5,10);barrel(6,10);barrel(18,8);barrel(18,9);
   plant(7,10,true);plant(17,10,true);
  }else if(room==='capitalarmory'){
-  // Royal Blacksmith Forge & Armory: blazing brick forge furnace, iron anvil, quenching trough, FOUR full-plate armor stands & steel display racks!
+  // Royal Blacksmith Forge & Armory: roaring brick forge furnace, glowing iron anvil on oak stump, steaming quenching trough, 6 full-plate armor stands, wall shields & gleaming weapon racks!
   windowBeam(6);windowBeam(16);
+  // Dramatic roaring forge firelight glow illuminating the entire workshop!
+  const fg0=ctx.createRadialGradient?.(11*TILE+16,3*TILE+14,6,11*TILE+16,3*TILE+14,96);
+  if(fg0&&typeof fg0.addColorStop==='function'){
+   ctx.save();ctx.globalCompositeOperation='lighter';
+   fg0.addColorStop(0,'rgba(255,152,54,.36)');fg0.addColorStop(0.55,'rgba(235,96,32,.14)');fg0.addColorStop(1,'rgba(220,60,20,0)');
+   ctx.fillStyle=fg0;ctx.fillRect(7*TILE,1*TILE,8*TILE,7*TILE);ctx.restore();
+  }
   grandHearth(10,2,'#3c424c',true);
-  R('#2a2e36',10*TILE+6,3*TILE+2,52,20);R('#545a64',10*TILE+8,3*TILE+4,48,16);
-  R('#d85a20',10*TILE+16,3*TILE+7,32,9);R('#ffd464',10*TILE+22,3*TILE+9,20,5);
-  armorStand(5,3);armorStand(18,3);armorStand(5,8);armorStand(18,8);
-  weaponRack(14,3);weaponRack(15,3);weaponRack(16,3);weaponRack(17,4);
-  R('rgba(10,12,16,.34)',6*TILE+3,5*TILE+22,26,6);
-  R('#242830',6*TILE+4,5*TILE+10,24,14);R('#5c6672',6*TILE+6,5*TILE+11,20,6);R('#9aa6b4',6*TILE+8,5*TILE+11,14,2);
+  // Raised brick coal hearth bed with glowing embers & rising sparks!
+  R('#242830',10*TILE+4,3*TILE+1,56,22);R('#525862',10*TILE+6,3*TILE+3,52,18);
+  R('#b83814',10*TILE+12,3*TILE+6,40,12);R('#f68826',10*TILE+16,3*TILE+7,32,9);R('#ffe87a',10*TILE+22,3*TILE+9,20,5);
+  const fsp=(Date.now()/280)%1;
+  R('#ffd868',11*TILE+6+Math.round(Math.sin(Date.now()/160)*6),3*TILE+4-Math.round(fsp*14),2,2);
+  R('#ffae48',11*TILE+22-Math.round(Math.cos(Date.now()/190)*5),3*TILE+6-Math.round(((fsp+0.5)%1)*14),2,2);
+  // Decorative Royal wall shields & heraldic banners flanking the forge
+  banner(8,2,'#8a2e38');banner(13,2,'#8a2e38');
+  for(const sx of [7,15]){
+   R('#262c34',sx*TILE+7,2*TILE+6,18,18);R('#8e323c',sx*TILE+9,2*TILE+8,14,14);R('#ebd074',sx*TILE+14,2*TILE+10,4,10);
+  }
+  // Six gleaming full-plate knight armor stands + FIVE loaded sword/halberd weapon racks!
+  armorStand(5,3);armorStand(18,3);armorStand(5,8);armorStand(18,8);armorStand(8,10);armorStand(15,10);
+  weaponRack(6,3);weaponRack(14,3);weaponRack(15,3);weaponRack(16,3);weaponRack(17,4);
+  // Heavy Forged-Iron Blacksmith Anvil mounted on a ringed oak stump at (8, 5) with glowing red-hot blade!
+  {
+   const ax=8*TILE,ay=5*TILE;
+   R('rgba(10,12,16,.38)',ax+3,ay+24,26,6);
+   R('#2e1e12',ax+6,ay+15,20,13);R('#785234',ax+8,ay+16,16,11);R('#a6784e',ax+9,ay+16,6,10);
+   R('#1c2028',ax+2,ay+8,28,9);R('#4c5664',ax+4,ay+9,24,6);R('#9aa6b6',ax+5,ay+9,20,2);
+   R('#1c2028',ax-2,ay+10,6,4); // anvil horn!
+   // White-hot glowing sword blank & hammer resting atop anvil!
+   R('#ff7426',ax+8,ay+7,14,3);R('#fff2a6',ax+10,ay+7,9,2);
+   R('#6e4c2e',ax+20,ay+14,8,2);R('#3e4650',ax+24,ay+12,4,6);
+  }
+  // Steaming wooden iron-banded quenching water trough at (6, 5) & coal barrel at (5, 5)
+  R('rgba(10,12,16,.34)',6*TILE+2,5*TILE+22,28,6);
+  R('#241c16',6*TILE+3,5*TILE+10,26,14);R('#6a4c32',6*TILE+5,5*TILE+11,22,12);
+  R('#2c6c84',6*TILE+7,5*TILE+13,18,6);R('#a2e8f8',6*TILE+9,5*TILE+14,10,2);
+  R('rgba(232,244,252,.36)',6*TILE+10,5*TILE+4-Math.round(fsp*6),10,4);
   barrel(5,5);
-  R('#363c46',10*TILE,5*TILE+12,3*TILE,5*TILE+16);R('#525c68',10*TILE+3,5*TILE+15,3*TILE-6,5*TILE+10);
+  // Crimson-bordered heavy stone armory display carpet & weapon inspection counter
+  ornRug(9,5,6,6,'#525864','#b89654');
   diningTable(10,7,3,'weapons');
   cargoCrate(5,10,false);cargoCrate(6,10,false);cargoCrate(17,10,false);cargoCrate(18,10,false);
  }else if(room==='capitalhouse'){
@@ -979,13 +1026,12 @@ function drawRegionDecor(){if(RoadCaveQuality.enabled&&RoadCaveQuality.active.ha
  if(state.map==='frontier'){
   if(!(typeof AshFrontierEnvironment!=='undefined'&&AshFrontierEnvironment.enabled)){
    for(const p of [[3,3],[18,3],[3,10],[18,10]])tent(p[0],p[1],p[0]<10?'#7c4248':'#5c6c78');
+   ctx.fillStyle='#3b3229';for(const y of [7,15]){ctx.fillRect(TILE,y*TILE+18,11*TILE,7);ctx.fillRect(16*TILE,y*TILE+18,11*TILE,7)}
+   ctx.fillStyle='#735c44';for(const y of [7,15]){ctx.fillRect(TILE,y*TILE+19,11*TILE,3);ctx.fillRect(16*TILE,y*TILE+19,11*TILE,3)}
   }
-  // Timber-reinforced trench parapets & wooden duckboards aligned cleanly to expanded 28x18 Serad Bastion!
-  ctx.fillStyle='#3b3229';for(const y of [7,15]){ctx.fillRect(TILE,y*TILE+18,11*TILE,7);ctx.fillRect(16*TILE,y*TILE+18,11*TILE,7)}
-  ctx.fillStyle='#735c44';for(const y of [7,15]){ctx.fillRect(TILE,y*TILE+19,11*TILE,3);ctx.fillRect(16*TILE,y*TILE+19,11*TILE,3)}
   if(isEventComplete('alpha2.frontier.complete')){ctx.fillStyle='#5c4a39';for(const [x,y] of [[16,8],[17,8],[18,8]])ctx.fillRect(x*TILE+4,y*TILE+20,26,5);for(const [x,y] of [[8,12],[9,12]]){ctx.fillStyle='#d2c8ad';ctx.fillRect(x*TILE+3,y*TILE+16,26,7);ctx.fillStyle='#6b5b48';ctx.fillRect(x*TILE+5,y*TILE+23,22,3)}}
  }
- if(state.map==='frontierfield'){
+ if(state.map==='frontierfield'&&!(typeof AshFrontierEnvironment!=='undefined'&&AshFrontierEnvironment.enabled)){
   // churned battlefield: abandoned stakes, torn cloth and stretcher ruts; no active army occupies the map.
   ctx.strokeStyle='rgba(63,48,36,.45)';ctx.lineWidth=3;for(const off of [-5,5]){ctx.beginPath();ctx.moveTo(12*TILE+off,14*TILE);ctx.lineTo(12*TILE+off,2*TILE);ctx.stroke()}
   for(const [x,y] of [[3,3],[20,3],[4,11],[19,11]]){ctx.fillStyle='#4d443a';ctx.fillRect(x*TILE+4,y*TILE+20,26,5);ctx.fillStyle='#74634e';ctx.fillRect(x*TILE+9,y*TILE+8,4,18);ctx.fillRect(x*TILE+22,y*TILE+11,4,15)}
@@ -1029,9 +1075,9 @@ function drawRegionDecor(){if(RoadCaveQuality.enabled&&RoadCaveQuality.active.ha
  if(state.map==='returnroad'&&!(typeof EmpireSanctuaryEnvironment!=='undefined'&&EmpireSanctuaryEnvironment.enabled)){
   ctx.fillStyle='#79806e';ctx.beginPath();ctx.moveTo(3*TILE,8*TILE);ctx.lineTo(7*TILE,5*TILE);ctx.lineTo(7*TILE,9*TILE);ctx.closePath();ctx.fill();ctx.fillStyle='#9fa38e';ctx.fillRect(4*TILE,7*TILE+12,3*TILE,4)
  }
- if(state.map==='finalfield'){flag(5,4,'#8d3d46');flag(17,4,'#354f78');if(!(typeof EmpireSanctuaryEnvironment!=='undefined'&&EmpireSanctuaryEnvironment.enabled))for(const p of [[3,3],[18,3]])tent(p[0],p[1],p[0]<10?'#80675d':'#60717f')}
- if(state.map==='imperialcamp'){flag(10,2,'#354f78');flag(13,2,'#354f78')}
- if(state.map==='royalcamp'){flag(10,2,'#8d3d46');flag(13,2,'#8d3d46')}
+ if(state.map==='finalfield'&&!(typeof EmpireSanctuaryEnvironment!=='undefined'&&EmpireSanctuaryEnvironment.enabled)){flag(5,4,'#8d3d46');flag(17,4,'#354f78');for(const p of [[3,3],[18,3]])tent(p[0],p[1],p[0]<10?'#80675d':'#60717f')}
+ if(state.map==='imperialcamp'&&!(typeof EmpireSanctuaryEnvironment!=='undefined'&&EmpireSanctuaryEnvironment.enabled)){flag(10,2,'#354f78');flag(13,2,'#354f78')}
+ if(state.map==='royalcamp'&&!(typeof EmpireSanctuaryEnvironment!=='undefined'&&EmpireSanctuaryEnvironment.enabled)){flag(10,2,'#8d3d46');flag(13,2,'#8d3d46')}
  if(state.map==='borderland'&&!(typeof BorderWatchfortEnvironment!=='undefined'&&BorderWatchfortEnvironment.enabled)){
   ctx.fillStyle='#57514a';ctx.fillRect(2*TILE+5,10*TILE+3,5*TILE-10,18);ctx.fillStyle='#777069';for(const xx of [3,6]){ctx.fillRect(xx*TILE+5,9*TILE+10,18,48);ctx.fillStyle='#a29a8e';ctx.fillRect(xx*TILE+2,9*TILE+7,24,8);ctx.fillStyle='#777069'}
   ctx.fillStyle='#6b5741';ctx.fillRect(4*TILE+3,10*TILE+8,78,4);ctx.fillStyle='#9b7b55';for(let i=0;i<5;i++)ctx.fillRect(4*TILE+8+i*14,10*TILE+3,4,14);
@@ -1380,7 +1426,7 @@ function drawObject(o){
    for(let i=0;i<6;i++){P('#262a32',px+12+i*7,py+7,4,24);P('#8c949c',px+13+i*7,py+7,2,23)}
   }
  }
- if(o.id==='cave'){
+ if(o.id==='cave'&&!(RoadCaveQuality.enabled&&state.map==='road')){
   P('rgba(12,16,14,.36)',px+1,py+25,30,6);
   P(ink,px+1,py+6,30,23);P('#6a6860',px+3,py+8,26,19);P('#989488',px+5,py+8,22,5);
   P('#121418',px+7,py+14,18,14);P('#2a2d34',px+9,py+16,14,12);P('#84785e',px+3,py+26,26,3);
@@ -1508,56 +1554,100 @@ function drawObject(o){
  drawRecoveryBadge(o);
 }
 function drawBeast(px,py,type){
+ const now=Date.now(),bob=Math.round(Math.sin(now/260+px*0.05)*1);
  const r=(col,x,y,w,h)=>{ctx.fillStyle=col;ctx.fillRect(Math.round(px+x),Math.round(py+y),Math.round(w),Math.round(h))};
- ctx.fillStyle='rgba(12,14,18,.34)';ctx.beginPath();ctx.ellipse(px+16,py+28,type==='boss'?15:12,4,0,0,Math.PI*2);ctx.fill();
+ // Soft grounded shadow anchor (extra ominous glow under boss beasts!)
+ if(type==='boss'){
+  const bg=ctx.createRadialGradient?.(px+16,py+22,3,px+16,py+22,20);
+  if(bg&&typeof bg.addColorStop==='function'){bg.addColorStop(0,'rgba(220,76,42,.30)');bg.addColorStop(1,'rgba(180,40,20,0)');ctx.fillStyle=bg;ctx.beginPath();ctx.arc(px+16,py+22,20,0,Math.PI*2);ctx.fill()}
+ }
+ ctx.fillStyle='rgba(12,14,18,.38)';ctx.beginPath();ctx.ellipse(px+16,py+28,type==='boss'?16:13,4.5,0,0,Math.PI*2);ctx.fill();
  if(type==='wolf'){
-  // Pixel-art Ash-Fang Wolf matching battle sprite palette
-  r('#1d1c21',6,10,18,12);r('#1d1c21',3,7,11,9);r('#1d1c21',22,7,6,6);
-  r('#1d1c21',6,20,4,8);r('#1d1c21',18,20,4,8);
-  r('#5a676b',7,11,16,9);r('#869596',7,11,10,4);r('#c4d0cc',8,12,4,4);
-  r('#5a676b',4,8,9,7);r('#869596',5,9,6,3);
-  r('#394246',5,4,3,4);r('#394246',10,4,3,4);
-  r('#c4d0cc',23,8,4,4);r('#869596',22,10,3,3);
-  r('#4a5458',7,21,2,5);r('#4a5458',19,21,2,5);
-  r('#f5f1e4',6,26,3,2);r('#f5f1e4',18,26,3,2);
-  r('#ffd858',6,10,2,2);r('#f5f1e4',3,13,3,1);
+  // Crisp Square Enix Pixel-Art Ash-Fang Lupine Stalker (layered fur shading, plumed tail, fierce amber eyes & paws!)
+  const b=bob>0?1:0;
+  // Plumed curled wolf tail behind hindquarters
+  r('#1a1b20',22,6+b,7,8);r('#546268',23,7+b,5,6);r('#9cb0b4',24,7+b,3,3);r('#e4ece8',26,7+b,2,2);
+  // Hind & fore muscular legs with pale wolf paws
+  r('#1a1b20',17,19,5,9);r('#3c464c',18,20,3,6);r('#dce4e0',17,26,4,2);
+  r('#1a1b20',7,19,5,9);r('#4e5b62',8,20,3,6);r('#dce4e0',7,26,4,2);
+  r('#1a1b20',12,21,4,7);r('#30383e',13,22,2,4);r('#c4d0cc',12,26,3,2);
+  // Sculpted crouching lupine torso + shaggy silver-ash mane ruff!
+  r('#1a1b20',6,10+b,18,12);r('#4c585e',7,11+b,16,10);r('#74848a',8,11+b,12,5);r('#a8b8bc',9,12+b,8,3);
+  r('#30383e',8,18+b,13,3); // belly shadow
+  r('#b8c6c4',7,13+b,5,6);r('#e2ece8',8,13+b,3,4); // silver chest ruff!
+  // Pointed wolf ears + ferocious snarling lupine head & muzzle
+  r('#1a1b20',4,2+b,4,6);r('#58666c',5,3+b,2,4);r('#c4a498',6,5+b,1,2);
+  r('#1a1b20',10,2+b,4,6);r('#58666c',11,3+b,2,4);
+  r('#1a1b20',2,7+b,12,9);r('#5a686e',3,8+b,10,7);r('#889a9e',4,8+b,7,3);
+  r('#1a1b20',0,11+b,5,4);r('#707e84',1,11+b,4,3);r('#18181c',0,11+b,2,2); // black nose!
+  r('#ffda4e',5,10+b,2,2);r('#fffbe0',5,10+b,1,1); // fierce amber eye glint!
+  r('#ffffff',2,14+b,2,2); // sharp white fang!
  }else if(type==='bats'){
-  // Pixel-art Cave Bat duo with scalloped violet-indigo wings & glowing gold eyes
-  for(const [ox,oy] of [[3,7],[14,12]]){
-   r('#191621',ox,oy+3,14,7);r('#191621',ox+4,oy+1,6,9);
-   r('#4d4666',ox+1,oy+4,12,5);r('#776d94',ox+2,oy+4,4,2);r('#776d94',ox+8,oy+4,4,2);
-   r('#322d42',ox+5,oy+2,4,6);r('#ffd454',ox+5,oy+4,1,2);r('#ffd454',ox+8,oy+4,1,2);
+  // Animated Fluttering Cavern Bat Duo with Scalloped Indigo-Violet Wings & Glowing Gold Eyes!
+  const flap=Math.sin(now/140)>0;
+  for(const [ox,oy,inv] of [[2,6,false],[14,11,true]]){
+   const up=inv?!flap:flap,wy=oy+(up?0:4);
+   // Scalloped bat wings (flapping up or sweeping down!)
+   r('#161220',ox-1,wy+1,16,up?7:6);
+   r('#463a64',ox,wy+2,14,up?5:4);
+   r('#76669c',ox+1,wy+2,4,2);r('#76669c',ox+9,wy+2,4,2);
+   r('#261e36',ox+2,wy+(up?6:5),2,2);r('#261e36',ox+10,wy+(up?6:5),2,2);
+   // Furry dark body + pointed ears + piercing golden eyes
+   r('#161220',ox+4,oy+1,6,9);r('#342a48',ox+5,oy+2,4,7);r('#584a74',ox+6,oy+3,2,3);
+   r('#161220',ox+4,oy-1,2,3);r('#161220',ox+8,oy-1,2,3);
+   r('#ffe054',ox+5,oy+4,1,2);r('#ffe054',ox+8,oy+4,1,2);
   }
  }else if(type==='crawler'){
-  // Pixel-art Armored Stone-Shell Centipede with bright bone plates & mandibles
-  r('#1c1a18',4,12,24,11);r('#1c1a18',2,15,6,6);
+  // Crisp Pixel-Art Segmented Armored Stone-Carapace Beetle / Cavern Crawler with Mandibles!
+  const sc=bob>0?1:0;
+  // Articulated insectoid legs gripping ground
   for(let i=0;i<4;i++){
-   r('#6b604a',6+i*5,13+(i%2),6,8);r('#cbb98a',7+i*5,14+(i%2),4,3);
-   r('#423c31',7+i*5,22,2,4);
+   const lx=6+i*5;
+   r('#1a1816',lx,21+(i%2?sc:1-sc),3,6);r('#584c3a',lx+1,22+(i%2?sc:1-sc),1,4);
   }
-  r('#998a67',3,15,6,5);r('#9c4d3e',1,17,3,2);r('#ffd154',5,16,2,2);
+  // 4 overlapping glossy bone-and-chitin carapace segments
+  r('#1a1816',4,10,24,13);
+  for(let i=0;i<4;i++){
+   const sx=6+i*5,sy=11+(i%2);
+   r('#5c5240',sx,sy,6,10);r('#9a8c6c',sx+1,sy+1,4,6);r('#e2d4a8',sx+1,sy+1,3,2);
+   r('#383228',sx,sy+8,6,2);
+  }
+  // Heavy armored headplate, crimson-ivory pincer mandibles & amber eyes
+  r('#1a1816',1,13,8,9);r('#7e7054',2,14,6,7);r('#c4b48a',3,14,4,3);
+  r('#a83c2e',-1,16,4,2);r('#f0d8a8',-1,19,3,2);
+  r('#ffd84c',4,16,2,2);r('#fffbe0',4,16,1,1);
  }else if(type==='boss'){
-  // Imposing Boss Ash-Horned Beast with twin gleaming curved ivory horns & ember eyes
-  r('#1b181b',3,9,26,15);r('#1b181b',5,22,6,7);r('#1b181b',20,22,6,7);
-  r('#59524c',4,10,24,12);r('#837a6f',5,11,16,5);r('#b5aa98',6,11,10,3);
-  r('#383333',4,18,24,4);r('#59524c',6,23,4,4);r('#59524c',21,23,4,4);
-  r('#262326',5,27,5,2);r('#262326',20,27,5,2);
-  // Twin curved ivory horns jutting up & out
-  r('#1b181b',2,2,5,9);r('#1b181b',13,2,5,9);
-  r('#faf2dc',3,3,3,3);r('#dfd0ad',3,6,3,4);
-  r('#faf2dc',14,3,3,3);r('#dfd0ad',14,6,3,4);
-  // Glowing molten-amber boss eyes & snarling teeth
-  r('#ff9e36',6,14,3,2);r('#ff9e36',12,14,3,2);
-  r('#faf2dc',7,19,2,2);r('#faf2dc',11,19,2,2);
+  // Towering Imposing Square Enix Boss: Ash-Horned Dread Behemoth with Twin Sweeping Ivory Horns & Fiery Eyes!
+  const b=bob>0?1:0;
+  // Massive muscular hooves & legs
+  r('#161418',4,20,7,9);r('#4c4440',5,21,5,6);r('#242024',4,27,6,2);
+  r('#161418',20,20,7,9);r('#4c4440',21,21,5,6);r('#242024',20,27,6,2);
+  // Broad shaggy obsidian-slate back & spiked mane ridge
+  r('#161418',2,7+b,28,17);r('#48403c',3,8+b,26,15);
+  r('#746a60',4,9+b,18,7);r('#a89c8a',6,9+b,12,4);r('#d2c6b0',8,10+b,7,2);
+  r('#2c282a',4,18+b,24,5); // deep underbelly shading
+  // Twin sweeping curved ivory crown-horns jutting dramatically upward!
+  r('#161418',0,0+b,7,11);r('#d8c8a2',1,2+b,4,8);r('#fff8e6',1,1+b,3,4);
+  r('#161418',13,0+b,7,11);r('#d8c8a2',15,2+b,4,8);r('#fff8e6',16,1+b,3,4);
+  // Ferocious horned brow, molten-amber blazing eyes & snarling fangs!
+  r('#161418',3,11+b,14,10);r('#584e48',4,12+b,12,8);r('#887c70',5,12+b,8,3);
+  r('#ff5e1e',5,14+b,4,3);r('#ffe064',6,14+b,2,2);
+  r('#ff5e1e',11,14+b,4,3);r('#ffe064',12,14+b,2,2);
+  r('#faf4e2',6,19+b,2,3);r('#faf4e2',11,19+b,2,3);
  }else if(type==='boar'){
-  // Pixel-art Horned Wild Boar with bristle ridge & curved ivory tusks
-  r('#221814',5,10,21,12);r('#221814',2,13,6,8);
-  r('#221814',7,21,4,6);r('#221814',19,21,4,6);
-  r('#6b4832',6,11,19,10);r('#8c6244',8,11,14,4);
-  r('#472f20',9,9,12,2);
-  r('#593b28',3,14,6,6);
-  r('#f5efe0',1,16,3,2);r('#f5efe0',2,14,2,2);
-  r('#ffb848',5,15,2,2);
+  // Crisp Pixel-Art Bristled Wild Tusker Boar with Dorsal Ridge, Curved Ivory Tusks & Cloven Hooves!
+  const b=bob>0?1:0;
+  r('#1e1612',7,20,5,8);r('#543826',8,21,3,5);r('#261e1a',7,26,4,2);
+  r('#1e1612',19,20,5,8);r('#543826',20,21,3,5);r('#261e1a',19,26,4,2);
+  // Stocky dark-mahogany body with bristly dark spine ridge & curly tail
+  r('#1e1612',5,9+b,22,13);r('#684630',6,10+b,20,11);r('#966848',8,10+b,14,5);r('#be8c64',10,11+b,8,2);
+  r('#3a2418',7,7+b,14,3);r('#4e3222',9,8+b,10,2); // spiked bristle crest
+  r('#3a2418',26,12+b,3,4); // little tail
+  // Snout, floppy ear, fierce glowing orange eye & twin curved ivory tusks!
+  r('#1e1612',1,12+b,8,9);r('#583a26',2,13+b,6,7);r('#82583c',3,13+b,4,3);
+  r('#1e1612',0,15+b,3,4);r('#9e6e58',0,16+b,2,2); // snout disc
+  r('#fff6e2',-1,14+b,3,3);r('#e4d6b4',1,16+b,2,2); // gleaming curved tusk!
+  r('#ffbe44',5,14+b,2,2);r('#fffbe0',5,14+b,1,1);
  }
 }
 const ORGANIC_TERRAIN_CONFIGS={
@@ -1569,10 +1659,20 @@ const ORGANIC_TERRAIN_CONFIGS={
  northroad:{biome:'autumn'},
  northwaystation:{biome:'autumn',wellCenter:[15*32+16,13*32+16,56],cobbleFn:(tx,ty,ch)=>(tx>=13&&tx<=18&&ty>=10&&ty<=15&&(ch==='A'||ch==='P'))},
  northwatch:{biome:'lush',bridges:[[13,9],[14,9],[13,10],[14,10]]},
+ ashroad:{biome:'ash',noFlowers:true},
+ frontier:{biome:'mud',noFlowers:true,mGround:true},
+ frontierfield:{biome:'mud',noFlowers:true,mGround:true},
  borderland:{biome:'autumn'},
+ bordercanyon:{biome:'steppe'},
  relayvillage:{biome:'autumn',wellCenter:[13*32+16,8*32+18,48]},
  empirevillage:{biome:'empire',bridges:[[6,9],[7,9],[6,16],[7,16]]},
- elsia:{biome:'sanctuary',wellCenter:[16*32,11*32,62]}
+ yukiroad:{biome:'steppe'},
+ yukiridge:{biome:'steppe'},
+ elsia:{biome:'sanctuary',wellCenter:[16*32,11*32,62]},
+ returnroad:{biome:'autumn'},
+ finalfield:{biome:'battle',noFlowers:true,mGround:true,noCobbleE:true},
+ imperialcamp:{biome:'battle',noFlowers:true,mGround:true,cobbleFn:(tx,ty,ch)=>ch==='P'},
+ royalcamp:{biome:'battle',noFlowers:true,mGround:true,cobbleFn:(tx,ty,ch)=>ch==='P'}
 };
 function drawHd2dEdgePolish(m){
  // Global Square Enix HD-2D Diorama grounding pass across ALL 42 maps:
@@ -1934,9 +2034,11 @@ function cameraForMap(){
 }
 // Decorative accent trees rendered outside 'T' tiles so EVERY single tree across ALL 42 maps gets true 2.5D canopy occlusion!
 const DECOR_TREES={
+ ryunebrook:{biome:'willow',pts:[[9,5],[15,4],[9,14],[15,15]]},
  borderland:{biome:'pine',pts:[[2,2],[2,7],[29,2],[29,15],[2,17],[29,19]]},
  bordercanyon:{biome:'oak',pts:[[2,5],[2,12],[21,4],[17,12]]},
  relayvillage:{biome:'birch',pts:[[2,1],[21,1],[1,6],[22,6],[1,12],[22,12]]},
+ elsia:{biome:'sanctuary',pts:[[22,4],[26,4],[24,6]]},
  yukiroad:{biome:'birch',pts:[[2,3],[21,3],[2,12],[21,12],[14,7],[17,4]]},
  yukiridge:{biome:'birch',pts:[[2,7],[15,12],[7,12]]},
  returnroad:{biome:'pine',pts:[[3,8],[6,8],[17,4],[20,4],[20,7],[17,3],[2,5],[21,5],[16,9]]}
@@ -2083,15 +2185,25 @@ function drawScene(){
   for(let y=0;y<mr;y++)for(let x=0;x<mc;x++){
    const ch=m.tiles[y][x];
    if(ch==='T'){
-    const b2=(state.map==='village'&&((x>=28&&y>=19)||(x===22&&y===16)))?'willow':tBiome;
-    HD2DAtlas.drawTree(ctx,x,y,b2);
-    // Lush overlapping forest understory bridging adjacent border tree trunks along top/bottom woods
-    if((y===0||y===mr-1)&&x+1<mc&&m.tiles[y][x+1]==='T'&&HD2DAtlas.drawBush){
-     const bh=((x*73+y*19)>>>0)%7;
-     const bloom=bh===0?'#fff4dc':bh===3?'#f6e684':bh===5?'#f4a4aa':null;
-     HD2DAtlas.drawBush(ctx,x*32+14+(bh%5)-2,y*32+(y===0?8:10),{bloom});
+    if(state.map==='ashroad'&&HD2DAtlas.drawCharredTree){
+     // Scorched volcanic deadwood border + dark cinder rubble directly over organic ash terrain!
+     const ah=((x*37+y*17)>>>0);
+     if((ah%3)===0&&HD2DAtlas.pCluster){
+      HD2DAtlas.pCluster(ctx,'#2a2624',x*32+16,y*32+22,13,6,ah,2);
+      HD2DAtlas.pCluster(ctx,'#4a443e',x*32+15,y*32+20,8,4,ah+3,1);
+     }
+     HD2DAtlas.drawCharredTree(ctx,x,y,{ember:(ah%5)===0});
+    }else{
+     const b2=(state.map==='village'&&((x>=28&&y>=19)||(x===22&&y===16)))?'willow':tBiome;
+     HD2DAtlas.drawTree(ctx,x,y,b2);
+     // Lush overlapping forest understory bridging adjacent border tree trunks along top/bottom woods
+     if((y===0||y===mr-1)&&x+1<mc&&m.tiles[y][x+1]==='T'&&HD2DAtlas.drawBush){
+      const bh=((x*73+y*19)>>>0)%7;
+      const bloom=bh===0?'#fff4dc':bh===3?'#f6e684':bh===5?'#f4a4aa':null;
+      HD2DAtlas.drawBush(ctx,x*32+14+(bh%5)-2,y*32+(y===0?8:10),{bloom});
+     }
     }
-   }else if(ch==='K'||ch==='M'||ch==='S'||(ch==='Z'&&!orgCfg.zWater)||(state.map==='ryunefields'&&ch==='D')||(state.map==='northwatch'&&ch==='P'&&(x===13||x===14)&&(y===9||y===10))||(state.map==='empirevillage'&&ch==='E'&&(x===6||x===7)&&(y===9||y===16))){
+   }else if(ch==='K'||(ch==='M'&&!orgCfg.mGround)||ch==='S'||(ch==='Z'&&!orgCfg.zWater)||(state.map==='ryunefields'&&ch==='D')){
     drawTile(ch,x,y);
    }
   }

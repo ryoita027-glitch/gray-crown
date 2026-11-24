@@ -293,6 +293,12 @@ const CapitalEnvironment=(()=>{
     box(c,ink,fx-8,wy,16,26);box(c,'#a6a092',fx-6,wy+2,12,22);
     box(c,'#3e6a8c',fx-4,wy+4,8,18);box(c,'#f6d474',fx-3,wy+10,6,10);
    }
+   // Draped Royal Crimson-and-Gold Heraldic Tower Tapestries cascading down both watchtowers!
+   const tapCol=wartime?'#5a3a40':'#942c3a',tapHi=wartime?'#785258':'#c84c5c';
+   box(c,'rgba(16,12,18,0.30)',fx-10,y+36,22,52);
+   box(c,'#2c181c',fx-11,y+34,22,52);box(c,tapCol,fx-9,y+35,18,48);
+   box(c,tapHi,fx-8,y+36,6,44);box(c,'#ebd074',fx-7,y+38,14,2);box(c,'#ebd074',fx-7,y+78,14,2);
+   box(c,'#ebd074',fx-3,y+48,6,16);box(c,'#fff8d4',fx-1,y+51,2,10);
   }
 
   // 5. Protruding Royal Barbican Gatehouse & Balustraded Marble Staircase
@@ -582,10 +588,17 @@ const CapitalEnvironment=(()=>{
   }
   drawRoyalCastle(c,wartime,wave);
   districtFacades(c);districtPaving(c);
-  // Sculpted rounded white-marble floral basins flanking the central fountain terrace
-  if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawFlowerBed){
-   for(const [ux,uy] of [[16,15],[24,15],[16,20],[24,20]]){
-    HD2DAtlas.drawFlowerBed(c,ux*W,uy*W,{cols:wartime?['#f2f4ee','#d8dce2','#f6e29c']:['#e85a68','#f6d668','#fff6e4']});
+  // Sculpted rounded white-marble floral basins & manicured palace topiary bushes flanking the royal forecourt, fountain & chapel!
+  if(typeof HD2DAtlas!=='undefined'){
+   if(HD2DAtlas.drawFlowerBed){
+    for(const [ux,uy] of [[16,15],[24,15],[16,20],[24,20],[16,8],[25,8],[32,10],[38,10]]){
+     HD2DAtlas.drawFlowerBed(c,ux*W,uy*W,{cols:wartime?['#f2f4ee','#d8dce2','#f6e29c']:['#e85a68','#f6d668','#fff6e4']});
+    }
+   }
+   if(HD2DAtlas.drawBush){
+    for(const [bx0,by0,bl] of [[15,7,'#f4d468'],[26,7,'#f4d468'],[32,8,'#fff8e6'],[38,8,'#fff8e6'],[15,24,'#e85a68'],[26,24,'#e85a68']]){
+     HD2DAtlas.drawBush(c,bx0*W,by0*W,{bloom:wartime?'#f2f4ee':bl});
+    }
    }
   }
   if(!wartime){

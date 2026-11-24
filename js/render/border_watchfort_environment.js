@@ -142,16 +142,27 @@ const BorderWatchfortEnvironment=(()=>{
    // High-density painterly HD-2D autumn steppe moorland base
    const steppeBase=map==='bordercanyon'?'#877558':'#7e7859';
    if(ch==='B'||ch==='M'){
-    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(ctx,'grass',x,y,'autumn')){
-     pix(ctx,steppeBase,a,b,32,32);
-     if((r%3)===0)pix(ctx,'#8c8664',a+(r%14)+2,b+((r>>>4)%14)+3,13,6);
-     if((r%4)===1)pix(ctx,'#6d684c',a+((r>>>6)%14)+4,b+((r>>>10)%14)+4,11,5);
+    const organicOn=typeof ORGANIC_TERRAIN_CONFIGS!=='undefined'&&!!ORGANIC_TERRAIN_CONFIGS[map]&&typeof HD2DAtlas!=='undefined'&&!!HD2DAtlas.drawOrganicTerrain;
+    if(!organicOn){
+     if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(ctx,'grass',x,y,'autumn')){
+      pix(ctx,steppeBase,a,b,32,32);
+      if((r%3)===0)pix(ctx,'#8c8664',a+(r%14)+2,b+((r>>>4)%14)+3,13,6);
+      if((r%4)===1)pix(ctx,'#6d684c',a+((r>>>6)%14)+4,b+((r>>>10)%14)+4,11,5);
+     }
     }
     if(ch==='M'){
-     drawSteppeBoulder(ctx,a,b,r);
+     if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawMossyBoulder){
+      HD2DAtlas.drawMossyBoulder(ctx,a,b);
+      if(map==='bordercanyon'&&(r%2)===0){
+       // Glistening white mineral salt-crust veins across salt-canyon boulders!
+       pix(ctx,'#eef4f6',a+10+(r%6),b+15,6,2);pix(ctx,'#dce6ea',a+14+(r%4),b+18,5,1);
+      }
+     }else{
+      drawSteppeBoulder(ctx,a,b,r);
+     }
     }
     // Cast ambient shadow from cliff/buildings immediately north
-    if(up==='K'||up==='H')pix(ctx,'rgba(24,20,14,0.22)',a,b,32,7);
+    if(!organicOn&&(up==='K'||up==='H'))pix(ctx,'rgba(24,20,14,0.22)',a,b,32,7);
     return true;
    }
    if(ch==='D'||ch==='P'){
@@ -192,6 +203,11 @@ const BorderWatchfortEnvironment=(()=>{
    }
    if(ch==='K'){
     drawCliffTile(ctx,m,x,y,r,'border');
+    if(map==='bordercanyon'&&(r%3)===0){
+     // Natural pale white salt-crystal mineral veins glinting in the canyon strata!
+     pix(ctx,'rgba(232,240,244,0.68)',a+4+(r%12),b+8+((r>>>4)%10),12,2);
+     pix(ctx,'rgba(255,255,255,0.82)',a+7+(r%10),b+9+((r>>>4)%10),6,1);
+    }
     return true;
    }
    if(ch==='H'){
@@ -511,30 +527,39 @@ const BorderWatchfortEnvironment=(()=>{
   if(!inScope(map))return false;
   const now=Date.now();
   if(map==='bordercanyon'){
-   // Dramatic Old Salt-Road Canyon Ruins: weathered joint-trade stone archway, mossy canyon boulders, salt barrels, timber rails & campfire!
-   // Carved stone tollhouse arch lintel bridging x=11..15, y=3
-   pix(ctx,'rgba(16,12,10,0.34)',11*32+2,3*32+24,5*32-4,10);
+   // Dramatic Old Salt-Road Canyon Ruins: weathered joint-trade stone archway, mossy salt-vein boulders, salt barrels, timber rails & campfire!
+   // Carved stone tollhouse arch lintel bridging x=11..15, y=3 with keystone & hanging brass lantern
+   pix(ctx,'rgba(16,12,10,0.38)',11*32+2,3*32+24,5*32-4,11);
    for(const px of [11,15]){
-    pix(ctx,'#2e2a24',px*32+4,2*32+18,24,44);pix(ctx,'#8c8578',px*32+6,2*32+20,20,38);
-    pix(ctx,'#b8b1a0',px*32+7,2*32+20,6,36);pix(ctx,'#586e46',px*32+8,3*32+14,9,5);
+    pix(ctx,'#2a2620',px*32+4,2*32+16,24,46);pix(ctx,'#8c8578',px*32+6,2*32+18,20,40);
+    pix(ctx,'#bab4a2',px*32+7,2*32+18,6,38);pix(ctx,'#466e3e',px*32+8,3*32+14,10,6);pix(ctx,'#7ab45c',px*32+9,3*32+13,6,3);
    }
-   pix(ctx,'#2e2a24',11*32+2,2*32+12,5*32-4,12);pix(ctx,'#a29a8a',11*32+4,2*32+14,5*32-8,8);pix(ctx,'#cfc8b6',11*32+6,2*32+14,5*32-12,3);
-   // Crumbled salt-trade stone terrace wall & stacked white salt barrels
+   pix(ctx,'#2a2620',11*32+2,2*32+10,5*32-4,14);pix(ctx,'#a29a8a',11*32+4,2*32+12,5*32-8,10);pix(ctx,'#d6d0be',11*32+6,2*32+12,5*32-12,3);
+   pix(ctx,'#c8c2b0',13*32+10,2*32+8,12,16);pix(ctx,'#ebe6d8',13*32+12,2*32+9,8,4);
+   // Hanging warm brass tollhouse archway lantern
+   const alg=ctx.createRadialGradient?.(13*32+16,2*32+28,2,13*32+16,2*32+28,28);
+   if(alg&&typeof alg.addColorStop==='function'){alg.addColorStop(0,'rgba(255,212,118,0.38)');alg.addColorStop(1,'rgba(255,176,72,0)');ctx.fillStyle=alg;ctx.beginPath();ctx.arc(13*32+16,2*32+28,28,0,Math.PI*2);ctx.fill()}
+   pix(ctx,'#2c241c',13*32+13,2*32+23,6,8);pix(ctx,'#ffd670',13*32+14,2*32+24,4,6);pix(ctx,'#fffbe4',13*32+15,2*32+25,2,3);
+   // Crumbled salt-trade stone terrace wall & stacked white salt-crystal barrels
    for(const bx of [3,4,12,14,18,19]){
-    pix(ctx,'rgba(14,12,10,0.28)',bx*32+7,3*32+24,18,4);
+    pix(ctx,'rgba(14,12,10,0.30)',bx*32+7,3*32+24,18,4);
     pix(ctx,'#3a2b1e',bx*32+7,3*32+11,18,15);pix(ctx,'#8c6c4a',bx*32+9,3*32+12,14,12);
-    pix(ctx,'#eef2f4',bx*32+10,3*32+10,12,4);
+    pix(ctx,'#4a525c',bx*32+8,3*32+16,16,2);pix(ctx,'#eef4f6',bx*32+10,3*32+9,12,5);pix(ctx,'#ffffff',bx*32+12,3*32+9,7,2);
    }
-   // Weathered steppe boulder outcrops & gnarled highland pines framing the canyon walls
-   for(const [rx,ry] of [[3,7],[4,11],[7,12],[14,9],[16,12],[18,7],[21,11]])drawSteppeBoulder(ctx,rx*32,ry*32,hash(rx,ry,9));
+   // Sculpted mossy salt-canyon boulder outcrops, bushes & gnarled highland oaks framing the canyon!
    if(typeof HD2DAtlas!=='undefined'){
+    for(const [rx,ry] of [[3,7],[4,11],[7,12],[14,9],[16,12],[18,7],[21,11]]){
+     HD2DAtlas.drawMossyBoulder(ctx,rx*32,ry*32);
+     pix(ctx,'#eef4f6',rx*32+11,ry*32+16,6,2);
+    }
+    for(const [bx0,by0] of [[5,6],[17,6],[6,11],[19,10]])HD2DAtlas.drawBush(ctx,bx0*32,by0*32,{bloom:'#fae078'});
     for(const [tx,ty] of [[2,5],[2,12],[21,4],[17,12]])HD2DAtlas.drawTree(ctx,tx,ty,'oak');
    }
    // Warm canyon campfire glow & timber pack-bench at (10,10)
    const pulse=Math.sin(now/220)*3;
-   const cg=ctx.createRadialGradient(10*32+16,10*32+18,4,10*32+16,10*32+18,52+pulse);
-   cg.addColorStop(0,'rgba(255,196,92,0.36)');cg.addColorStop(1,'rgba(240,140,50,0)');
-   ctx.fillStyle=cg;ctx.beginPath();ctx.arc(10*32+16,10*32+18,52+pulse,0,Math.PI*2);ctx.fill();
+   const cg=ctx.createRadialGradient(10*32+16,10*32+18,4,10*32+16,10*32+18,56+pulse);
+   cg.addColorStop(0,'rgba(255,196,92,0.40)');cg.addColorStop(1,'rgba(240,140,50,0)');
+   ctx.fillStyle=cg;ctx.beginPath();ctx.arc(10*32+16,10*32+18,56+pulse,0,Math.PI*2);ctx.fill();
    pix(ctx,'#463222',8*32+12,10*32+14,24,10);pix(ctx,'#8a6844',8*32+14,10*32+15,20,6);
    const sun=ctx.createLinearGradient(0,0,768,480);
    sun.addColorStop(0,'rgba(255,204,132,0.12)');sun.addColorStop(1,'rgba(30,24,34,0.14)');
@@ -543,6 +568,12 @@ const BorderWatchfortEnvironment=(()=>{
   }
   if(map==='relayvillage'){
    // Halm Relay Settlement: Frontier Alpine Relay Inn, Timber Cargo Barn & Humble Fieldstone/Log Cottages!
+   for(const [dx,dy] of [[5,6],[18,6],[5,12],[19,12]]){
+    const px=dx*32,py=dy*32;
+    pix(ctx,'rgba(16,20,14,0.22)',px+4,py+2,24,24);
+    pix(ctx,'#a69c84',px+5,py+2,22,9);pix(ctx,'#dcd2b8',px+6,py+3,20,3);
+    pix(ctx,'#9c927a',px+6,py+14,20,8);pix(ctx,'#d2c8ae',px+7,py+15,18,3);
+   }
    const relayHouses=[
     {x:3,y:3,w:5,h:3,tag:'rel_inn',region:'alpine',alpineStyle:'border',label:'ハルム中継宿',roofDark:'#4e2c22',roofMain:'#7c4636',roofHi:'#a6644e',canopyColor:'#8c3a40',doorOffsetPx:2*32+16},
     {x:16,y:3,w:5,h:3,tag:'rel_store',region:'rural',ruralStyle:'barn',label:'交易荷倉',roofDark:'#2c3e32',roofMain:'#46624c',roofHi:'#66886c',sideShed:true,chimneyLeft:true,doorOffsetPx:2*32+16},
@@ -555,16 +586,19 @@ const BorderWatchfortEnvironment=(()=>{
     }
    }
    drawBorderBooth(ctx,8,5,'#8e3c42','herbs');
-   // Painterly village well-square lantern posts & wildflower beds (HD2DAtlas v2!)
+   // Painterly village well-square lantern posts, lush flowering shrubs & wildflower beds!
    if(typeof HD2DAtlas!=='undefined'){
     for(const [lx,ly] of [[10,6],[13,6],[10,9],[13,9]])HD2DAtlas.drawLanternPost(ctx,lx*32,ly*32,{iron:false});
-    for(const [fx,fy] of [[8,9],[14,9],[14,6],[9,11]])HD2DAtlas.drawFlowerBed(ctx,fx*32,fy*32);
+    for(const [fx,fy] of [[8,9],[14,9],[14,6],[9,11],[7,10],[16,10]])HD2DAtlas.drawFlowerBed(ctx,fx*32,fy*32);
+    for(const [bx0,by0,bl] of [[2,8,'#fae078'],[21,8,'#fff4dc'],[9,3,'#f6d674'],[15,3,'#f4a4aa']]){
+     HD2DAtlas.drawBush(ctx,bx0*32,by0*32,{bloom:bl});
+    }
     for(const [tx,ty] of [[2,1],[21,1],[1,6],[22,6],[1,12],[22,12]])HD2DAtlas.drawTree(ctx,tx,ty,'birch');
    }
    return true;
   }
   if(map==='borderland'){
-   // Expanded 32x22 Halm Borderland: Frontier Alpine Granite-and-Log Halm Inn & Border Trade Outpost + Weathered Checkpoint Archway!
+   // Expanded 32x22 Halm Borderland: Frontier Alpine Granite-and-Log Halm Inn & Border Trade Outpost + Crenellated South Watch-Bastions!
    const borderHouses=[
     {x:4,y:2,w:7,h:4,tag:'halm_inn',region:'alpine',alpineStyle:'border',label:'旅籠・風見亭',roofDark:'#4e2e24',roofMain:'#7c4b3a',roofHi:'#a46850',canopyColor:'#8c3a40',chimneyLeft:true,doorOffsetPx:3*32+16},
     {x:21,y:2,w:7,h:4,tag:'halm_trade',region:'alpine',alpineStyle:'border',label:'国境交易所',roofDark:'#283442',roofMain:'#405268',roofHi:'#607894',chimneyLeft:false,doorOffsetPx:3*32+16}
@@ -585,23 +619,44 @@ const BorderWatchfortEnvironment=(()=>{
    pix(ctx,'#e2d7be',1*32+14,5*32+7,16,13+wind);pix(ctx,'#c9bca0',1*32+14,5*32+16,16,3);
    pix(ctx,'#7892a8',2*32+6,5*32+7,17,12-wind);pix(ctx,'#b6806e',2*32+26,5*32+7,14,11+wind);
 
-   // Fortified South Old Border Checkpoint Stone Gatehouse Bastions + Twin Iron Watch-Braziers + Raised Striped Toll Barrier!
+   // Fortified Crenellated South Old Border Checkpoint Stone Watch-Bastions with Arrow-Slits, Roof Beacons & Waving Kingdom Banners!
    const flk=Math.round(Math.sin(now/160));
    for(const [gx1,gx2] of [[4,9],[22,27]]){
-    pix(ctx,'rgba(18,15,12,0.36)',gx1*32+2,18*32+16,(gx2-gx1+1)*32-4,24);
-    for(const cx of [gx1,gx2]){
-     pix(ctx,'#2e2d2a',cx*32+4,16*32+14,24,62);
-     pix(ctx,'#747065',cx*32+6,16*32+16,20,56);
-     pix(ctx,'#9a9586',cx*32+6,16*32+16,8,54);
-     pix(ctx,'#aba594',cx*32+3,16*32+12,26,6);
-     pix(ctx,'#596e46',cx*32+8,16*32+22,7,4);
+    const bx=gx1*32,by=16*32+14,bw=(gx2-gx1+1)*32,bh=62;
+    pix(ctx,'rgba(14,14,16,0.40)',bx+4,by+bh-4,bw+6,14);
+    // Main ashlar stone curtain rampart connecting the twin corner watchtowers
+    pix(ctx,'#222428',bx+14,by+12,bw-28,bh-12);
+    pix(ctx,'#6e6b62',bx+16,by+16,bw-32,bh-18);
+    for(let sy=by+24;sy<by+bh-6;sy+=10)pix(ctx,'rgba(24,22,20,0.28)',bx+16,sy,bw-32,1);
+    // Bevel-shaded battlement merlons crowning the rampart wall!
+    for(let mx=bx+18;mx<bx+bw-26;mx+=18){
+     pix(ctx,'#222428',mx,by+4,12,12);pix(ctx,'#9a9588',mx+1,by+5,10,9);pix(ctx,'#ccc6b6',mx+2,by+5,8,3);
     }
+    // Recessed defensive arrow-slits & mossy stone base plinth
+    for(let ax=bx+36;ax<bx+bw-36;ax+=36){
+     pix(ctx,'#1c1e22',ax,by+24,5,16);pix(ctx,'#4c4e50',ax+1,by+25,1,14);
+    }
+    pix(ctx,'#46443e',bx+16,by+bh-8,bw-32,7);pix(ctx,'#446e3c',bx+28,by+bh-11,16,5);
+    // Twin protruding corner bastion turrets with battlements & flickering beacon braziers!
+    for(const cx of [gx1,gx2]){
+     const tx=cx*32+2;
+     pix(ctx,'#202226',tx,by-2,28,bh+4);
+     pix(ctx,'#78746a',tx+2,by,24,bh);
+     pix(ctx,'#a6a092',tx+3,by,8,bh-2);
+     pix(ctx,'#54524a',tx+20,by,6,bh-2);
+     pix(ctx,'#202226',tx-2,by-6,32,9);pix(ctx,'#bab4a4',tx,by-5,28,6);pix(ctx,'#e2dcd0',tx+1,by-5,26,2);
+     pix(ctx,'#1c1e22',tx+11,by+16,6,14);pix(ctx,'#f0c464',tx+13,by+19,2,8);
+     pix(ctx,'#48703e',tx+4,by+36,9,5);
+    }
+    // Waving crimson Kingdom standard atop inner bastion tower!
+    const innerX=gx1<15?gx2*32+14:gx1*32+14;
+    drawBanner(ctx,innerX,by-28,'#9a3440','#ca5a66','#ebd078');
    }
    // Twin flickering iron watch-braziers framing the South Checkpoint roadway at (13,17) & (18,17)
    for(const bx of [13,18]){
     const x=bx*32+8,y=17*32+8;
-    const bg=ctx.createRadialGradient?.(x+8,y+4,2,x+8,y+4,38);
-    if(bg&&typeof bg.addColorStop==='function'){bg.addColorStop(0,'rgba(255,192,88,0.34)');bg.addColorStop(1,'rgba(240,140,48,0)');ctx.fillStyle=bg;ctx.beginPath();ctx.arc(x+8,y+4,38,0,Math.PI*2);ctx.fill()}
+    const bg=ctx.createRadialGradient?.(x+8,y+4,2,x+8,y+4,42);
+    if(bg&&typeof bg.addColorStop==='function'){bg.addColorStop(0,'rgba(255,192,88,0.40)');bg.addColorStop(1,'rgba(240,140,48,0)');ctx.fillStyle=bg;ctx.beginPath();ctx.arc(x+8,y+4,42,0,Math.PI*2);ctx.fill()}
     pix(ctx,'#24282e',x+2,y+10,12,12);pix(ctx,'#4a525c',x+4,y+11,8,10);
     pix(ctx,'#1c2026',x,y+5,16,7);pix(ctx,'#e66824',x+3,y+flk,10,6);pix(ctx,'#ffd868',x+5,y+2+flk,6,4);
    }
@@ -611,9 +666,14 @@ const BorderWatchfortEnvironment=(()=>{
     const sx=10*32+12+s*11,sy=17*32+14-s*4;
     pix(ctx,'#241c18',sx,sy,12,6);pix(ctx,s%2?'#e6dec8':'#9c3c42',sx+1,sy+1,10,4);
    }
-   // Weathered highland pines framing the frontier steppe margins (solid-blocked!)
+   // Weathered highland pines, lush shrubs, lantern posts & wildflower beds framing Halm settlement!
    if(typeof HD2DAtlas!=='undefined'){
     for(const [tx,ty] of [[2,2],[2,7],[29,2],[29,15],[2,17],[29,19]])HD2DAtlas.drawTree(ctx,tx,ty,'pine');
+    for(const [bx0,by0,bl] of [[3,6,'#fae078'],[13,5,'#fff4dc'],[20,6,'#f6d674'],[28,6,'#fae078'],[11,15,'#fff4dc'],[20,15,'#fae078']]){
+     HD2DAtlas.drawBush(ctx,bx0*32,by0*32,{bloom:bl});
+    }
+    for(const [fx,fy] of [[5,6],[10,6],[22,6],[26,6]])HD2DAtlas.drawFlowerBed(ctx,fx*32,fy*32);
+    for(const [lx,ly] of [[13,7],[18,7],[13,13],[18,13]])HD2DAtlas.drawLanternPost(ctx,lx*32,ly*32,{iron:true});
    }
 
    // Wooden crossroads signpost pointing north to Beld Watchfort (17, 12)
@@ -629,11 +689,11 @@ const BorderWatchfortEnvironment=(()=>{
    }
    // Warm late-afternoon hearth light pool around Halm campfire (17, 8)
    const pulse=Math.sin(now/220)*3;
-   const grad=ctx.createRadialGradient(17*32+16,8*32+18,4,17*32+16,8*32+18,52+pulse);
-   grad.addColorStop(0,'rgba(255,198,96,0.32)');
-   grad.addColorStop(0.55,'rgba(240,148,58,0.14)');
+   const grad=ctx.createRadialGradient(17*32+16,8*32+18,4,17*32+16,8*32+18,56+pulse);
+   grad.addColorStop(0,'rgba(255,198,96,0.38)');
+   grad.addColorStop(0.55,'rgba(240,148,58,0.16)');
    grad.addColorStop(1,'rgba(240,148,58,0)');
-   ctx.fillStyle=grad;ctx.beginPath();ctx.arc(17*32+16,8*32+18,52+pulse,0,Math.PI*2);ctx.fill();
+   ctx.fillStyle=grad;ctx.beginPath();ctx.arc(17*32+16,8*32+18,56+pulse,0,Math.PI*2);ctx.fill();
 
    const sun=ctx.createLinearGradient(0,0,1024,704);
    sun.addColorStop(0,'rgba(255,224,160,0.08)');sun.addColorStop(0.55,'rgba(255,224,160,0)');sun.addColorStop(1,'rgba(26,28,36,0.09)');
@@ -642,54 +702,77 @@ const BorderWatchfortEnvironment=(()=>{
   }
 
   if(map==='ravine'){
-   // Vertigo-Inducing Razel Canyon Gorge Bridge: rugged layered chasm cliff walls, diagonal waterfalls, glistening river rapids, drifting mist clouds & glowing lanterns!
-   const drift=Math.round(Math.sin(now/520)*6);
-   const flow=Math.floor(now/280)%16;
-   for(const [ax,aw] of [[2,5],[17,5]]){
-    const x=ax*32,w=aw*32;
-    // Jagged craggy cliff walls descending smoothly into the abyss (cleanly framing both gorge basins without touching lookout balconies!)
-    pix(ctx,'#1b2534',x,3*32,w,8*32);
-    pix(ctx,'#131c28',x+10,3*32+12,w-20,8*32-24);
+   // Vertigo-Inducing Razel Canyon Gorge Bridge: Dramatic Multi-Tiered Rocky Canyon Chasm, Cascading Twin Waterfalls, Swirling Mist Banks & Opposing Faction Bridge Braziers!
+   const drift=Math.round(Math.sin(now/520)*7);
+   const flow=Math.floor(now/240)%16;
+   const flk=Math.round(Math.sin(now/150)*1.5);
+   for(const [ax,aw,isRight] of [[2,5,false],[17,5,true]]){
+    const x=ax*32,w=aw*32,y0=3*32,h0=8*32;
+    // Deep atmospheric azure-indigo mountain abyss gradient (ZERO flat blue rectangle!)
+    const ag=ctx.createLinearGradient?.(x,y0,x,y0+h0);
+    if(ag&&typeof ag.addColorStop==='function'){
+     ag.addColorStop(0,'#24364a');ag.addColorStop(0.45,'#152334');ag.addColorStop(1,'#0d1724');
+     ctx.fillStyle=ag;ctx.fillRect(x,y0,w,h0);
+    }else{
+     pix(ctx,'#182636',x,y0,w,h0);
+    }
+    // Layered stepped craggy canyon cliff shelves descending into the gorge from north, south & outer canyon walls!
     for(let i=0;i<5;i++){
-     const ox=x+i*32,oh=14+((i*7)%12);
-     pix(ctx,'#2a323c',ox,3*32,32,oh);pix(ctx,'#464e56',ox+2,3*32,28,Math.floor(oh*0.5));
-     const bh=12+(((i+3)*9)%10);
-     pix(ctx,'#242b34',ox,11*32-bh,32,bh);pix(ctx,'#3c444d',ox+2,11*32-bh+2,28,4);
+     const ox=x+i*32,oh=18+((i*11)%16);
+     pix(ctx,'#2a323c',ox,y0,32,oh);pix(ctx,'#4a545e',ox+1,y0,30,Math.floor(oh*0.62));pix(ctx,'#78828a',ox+2,y0,28,4);
+     pix(ctx,'#3a5c3c',ox+4+(i%3)*4,y0+2,12,3); // cliff-rim moss!
+     const bh=16+(((i+3)*9)%14);
+     pix(ctx,'#222a34',ox,y0+h0-bh,32,bh);pix(ctx,'#3e4854',ox+1,y0+h0-bh+2,30,Math.floor(bh*0.45));
     }
-    // Glistening distant silver-azure gorge river far below!
-    pix(ctx,'#1b4562',x+18,3*32+14,w-36,8*32-28);
-    pix(ctx,'#286286',x+32,3*32+18,w-64,8*32-36);
-    for(let ry=3*32+22;ry<11*32-20;ry+=16){
-     pix(ctx,'rgba(176,228,248,0.44)',x+36+((ry+flow*3)%24),ry,24,2);
-     pix(ctx,'rgba(232,250,255,0.62)',x+42+((ry+flow*3)%24),ry,10,1);
+    // Side canyon cliff buttresses framing inner/outer walls organically
+    for(let sy=y0+16;sy<y0+h0-20;sy+=24){
+     const sw0=14+((sy*7)%14);
+     const sx=isRight?(x+w-sw0):x;
+     pix(ctx,'#26303c',sx,sy,sw0,22);pix(ctx,'#46525e',sx+2,sy+2,sw0-4,12);pix(ctx,'#6c7882',sx+3,sy+2,sw0-7,3);
     }
-    // Sparkling thin waterfall cascade pouring off the northern canyon cliff into the gorge river!
-    const wfx=x+Math.floor(w/2)-8;
-    pix(ctx,'rgba(182,232,252,0.52)',wfx,3*32+6,16,30);
-    pix(ctx,'rgba(240,252,255,0.72)',wfx+4,3*32+8+((flow*2)%10),6,16);
-    pix(ctx,'rgba(218,244,255,0.45)',wfx-8,3*32+32,32,8);
-    // Layered drifting white-blue mountain chasm mist clouds overlapping cliff rims
-    pix(ctx,'rgba(182,214,238,0.18)',x-4+drift,4*32+10,w+8,16);
-    pix(ctx,'rgba(208,232,250,0.14)',x-2-drift,8*32+6,w+4,18);
-    pix(ctx,'rgba(172,204,232,0.16)',x+drift*0.7,9*32+20,w,12);
+    // Glistening turbulent silver-cyan gorge river roaring far below at chasm floor!
+    pix(ctx,'#173e5a',x+16,y0+24,w-32,h0-42);
+    pix(ctx,'#246086',x+28,y0+28,w-56,h0-50);
+    pix(ctx,'#3a88b0',x+40,y0+32,w-80,h0-58);
+    for(let ry=y0+30;ry<y0+h0-26;ry+=14){
+     const wx=x+36+((ry*3+flow*4)%26);
+     pix(ctx,'rgba(184,234,252,0.52)',wx,ry,26,2);
+     pix(ctx,'rgba(240,252,255,0.78)',wx+6,ry,10,1);
+    }
+    // Twin Dramatic Cascading Mountain Waterfalls plunging off the northern cliffs into foaming mist clouds!
+    const wfx=x+Math.floor(w/2)-12;
+    pix(ctx,'rgba(116,198,234,0.44)',wfx-2,y0+8,24,62);
+    pix(ctx,'rgba(188,236,255,0.68)',wfx+2,y0+8,16,58);
+    pix(ctx,'rgba(244,254,255,0.88)',wfx+5,y0+10+((flow*3)%14),6,28);
+    pix(ctx,'rgba(244,254,255,0.78)',wfx+13,y0+18+((flow*2+8)%14),4,22);
+    // Swirling plunge-pool spray foam & layered billowing chasm mist clouds!
+    if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.pCluster){
+     HD2DAtlas.pCluster(ctx,'rgba(226,246,255,0.48)',wfx+10,y0+66,24,9,flow,2);
+     HD2DAtlas.pCluster(ctx,'rgba(196,226,248,0.22)',x+w*0.38+drift,y0+92,42,14,11,3);
+     HD2DAtlas.pCluster(ctx,'rgba(216,238,252,0.18)',x+w*0.62-drift,y0+168,48,16,23,3);
+    }
    }
    // Carved stone lookout balcony piers anchoring (7,7) and (16,7) cleanly over the abyss!
    for(const lx of [7,16]){
     pix(ctx,'#2e353d',lx*32,7*32,32,32);pix(ctx,'#9ca098',lx*32+2,7*32+2,28,28);
     pix(ctx,'#d2d0c4',lx*32+3,7*32+3,26,4);pix(ctx,'#525860',lx*32+3,7*32+26,26,3);
    }
-   // Monumental stone bridge parapet buttresses & glowing iron bridge lanterns spanning the chasm!
+   // Monumental stone bridge parapet buttresses & opposing Kingdom (warm gold-red) vs Imperial (cool blue-white) Bridge Braziers!
    for(const by of [2,4,6,8,10,12]){
     pix(ctx,'rgba(8,12,18,0.45)',11*32-10,by*32+4,10,24);
     pix(ctx,'#3a424c',11*32-8,by*32+2,8,24);pix(ctx,'#8c9298',11*32-7,by*32+3,6,18);pix(ctx,'#c8ccc6',11*32-6,by*32+3,4,4);
     pix(ctx,'rgba(8,12,18,0.45)',13*32,by*32+4,10,24);
     pix(ctx,'#3a424c',13*32,by*32+2,8,24);pix(ctx,'#8c9298',13*32+1,by*32+3,6,18);pix(ctx,'#c8ccc6',13*32+2,by*32+3,4,4);
     if(by===4||by===8||by===12){
+     const isImpSide=by<=4;
      for(const lx of [11*32-4,13*32+4]){
-      const lg=ctx.createRadialGradient(lx,by*32+10,2,lx,by*32+10,28);
-      lg.addColorStop(0,'rgba(255,216,120,0.38)');lg.addColorStop(1,'rgba(255,176,72,0)');
-      ctx.fillStyle=lg;ctx.beginPath();ctx.arc(lx,by*32+10,28,0,Math.PI*2);ctx.fill();
-      pix(ctx,'#ffd874',lx-2,by*32+8,4,4);pix(ctx,'#fffbe2',lx-1,by*32+9,2,2);
+      const lg=ctx.createRadialGradient(lx,by*32+8,2,lx,by*32+8,34);
+      lg.addColorStop(0,isImpSide?'rgba(140,214,255,0.44)':'rgba(255,198,96,0.44)');
+      lg.addColorStop(1,'rgba(255,160,60,0)');
+      ctx.fillStyle=lg;ctx.beginPath();ctx.arc(lx,by*32+8,34,0,Math.PI*2);ctx.fill();
+      pix(ctx,'#22262e',lx-4,by*32+6,8,8);
+      pix(ctx,isImpSide?'#4aa6e8':'#e66824',lx-3,by*32+2+flk,6,6-flk);
+      pix(ctx,isImpSide?'#dff8ff':'#fff8cc',lx-1,by*32+4,2,3);
      }
     }
    }
@@ -773,10 +856,25 @@ const BorderWatchfortEnvironment=(()=>{
     for(let i=0;i<8;i++)pix(ctx,'#545960',11*32+4+i*8,6*32+3,3,6);
    }
 
-   // Kingdom crimson banners on fortress battlements & Imperial slate-blue standard on bridge
+   // Kingdom crimson banners on fortress battlements & Imperial slate-blue standard on bridge + swirling chasm mist!
    drawBanner(ctx,9*32+12,7*32+2,'#8d3d46','#be616b','#dfc48a');
    drawBanner(ctx,14*32+12,7*32+2,'#8d3d46','#be616b','#dfc48a');
+   drawBanner(ctx,2*32+12,6*32+18,'#8d3d46','#be616b','#dfc48a');
+   drawBanner(ctx,21*32+4,6*32+18,'#8d3d46','#be616b','#dfc48a');
    drawBanner(ctx,13*32+10,2*32+2,'#2f4c70','#5e83ad','#c8d6e0');
+   const cdrift=Math.round(Math.sin(now/560)*6);
+   if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.pCluster){
+    HD2DAtlas.pCluster(ctx,'rgba(176,208,236,0.16)',5*32+cdrift,3*32+16,64,14,7,3);
+    HD2DAtlas.pCluster(ctx,'rgba(176,208,236,0.16)',18*32-cdrift,3*32+24,64,14,13,3);
+   }
+   // Garrison iron weapon racks & banded ration barrels lining inner watchfort courtyard
+   for(const [rx,ry] of [[8,12],[15,12]]){
+    const x=rx*32,y=ry*32;
+    pix(ctx,'rgba(10,14,20,0.34)',x+3,y+23,26,5);
+    pix(ctx,'#2a1e16',x+3,y+11,14,14);pix(ctx,'#845e3c',x+4,y+12,12,12);pix(ctx,'#4a525c',x+4,y+16,12,2);
+    pix(ctx,'#2a1e16',x+18,y+10,11,15);pix(ctx,'#6e4e32',x+19,y+12,9,4);
+    for(const sx of [20,24])pix(ctx,'#c8d4de',x+sx,y+5,2,16);
+   }
 
    // If Klein's bridge collapse scene has occurred, render dramatic jagged shattered bridge ruins!
    if(collapsed){

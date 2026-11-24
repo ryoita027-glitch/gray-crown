@@ -233,13 +233,43 @@ const RoadCaveQuality=(()=>{
    fill(c,'#c9a66b',x+14,y+10,12,6);fill(c,'#f2d896',x+18,y+12,4,2);
   }
  }
+ function drawDistantCapitalSkyline(c,xStart,xEnd){
+  // Panoramic distant Aldina Royal Citadel skyline with layered misty hills, battlements, conical crimson spires & fluttering standards!
+  const x0=xStart*32,w=(xEnd-xStart)*32,mid=x0+Math.floor(w/2),wave=Math.round(Math.sin(Date.now()/340)*1.5);
+  const hz=c.createLinearGradient?.(0,0,0,28);
+  if(hz&&typeof hz.addColorStop==='function'){
+   hz.addColorStop(0,'rgba(232,240,248,0.44)');hz.addColorStop(0.7,'rgba(198,214,228,0.22)');hz.addColorStop(1,'rgba(198,214,228,0)');
+   c.fillStyle=hz;c.fillRect(x0-32,0,w+64,28);
+  }
+  // Distant hazy blue-slate highland hills cradling the white citadel
+  for(let hx=x0-16;hx<x0+w+16;hx+=24){
+   const hh=8+((mix(hx,3,9)%7));
+   fill(c,'rgba(98,118,136,0.52)',hx,20-hh,28,hh+4);
+  }
+  // Sunlit distant white-marble city curtain wall + crenelated battlements
+  const cw=Math.min(w-48,380),cx0=mid-Math.floor(cw/2);
+  fill(c,'#6e7882',cx0,10,cw,13);fill(c,'#c2c8c6',cx0+2,11,cw-4,9);fill(c,'#eceee8',cx0+4,11,cw-8,3);
+  for(let bx=cx0+4;bx<cx0+cw-8;bx+=12)fill(c,'#dde2dc',bx,8,6,3);
+  // Flanking conical-spired palace turrets + grand central Royal Keep spire!
+  const towers=[[mid-124,18,12],[mid-68,22,16],[mid,28,22],[mid+68,22,16],[mid+124,18,12]];
+  for(const [tx,tw,th] of towers){
+   if(tx-tw/2<x0||tx+tw/2>x0+w)continue;
+   const lx=Math.round(tx-tw/2),ty=Math.max(4,22-th);
+   fill(c,'#5e6872',lx,ty,tw,23-ty);fill(c,'#cfd4ce',lx+2,ty+1,tw-4,21-ty);fill(c,'#f2f4ee',lx+3,ty+1,Math.max(3,Math.floor(tw*0.35)),18-ty);
+   // Conical crimson spire + golden finial + waving tiny crimson royal banner
+   for(let s=0;s<6;s++){
+    const sw=Math.max(2,tw+2-s*Math.ceil(tw/5));
+    fill(c,s<2?'#782a34':'#a63e4a',Math.round(tx-sw/2),Math.max(0,ty-s-1),sw,2);
+   }
+   fill(c,'#ebd074',Math.round(tx)-1,Math.max(0,ty-8),2,4);
+   fill(c,'#c83c48',Math.round(tx)+1,Math.max(0,ty-7),5+wave,2);
+  }
+ }
  function drawAccents(c,map){
   if(!obj.enabled||!active.has(map))return;
   if(map==='northwaystation'){
    // Panoramic distant Aldina Royal Capital skyline across the 32-tile northern highland horizon
-   fill(c,'rgba(218,228,236,0.22)',8*32,0,16*32,16);
-   fill(c,'#949a9e',9*32,4,14*32,12);fill(c,'#c8cdc8',9*32+4,5,14*32-8,4);
-   for(const tx of [10,13,16,19]){fill(c,'#787e84',tx*32+6,1,18,15);fill(c,'#d8ddd8',tx*32+8,2,14,5);fill(c,'#8d3d46',tx*32+13,0,4,4)}
+   drawDistantCapitalSkyline(c,7,25);
    // Cobblestone stepping-stone walkways, inlaid stone plaza medallion & Birch-Timber Welcome Archway!
    for(const [dx,dy] of [[7,7],[23,7]]){
     const px=dx*32,py=dy*32;
@@ -304,46 +334,81 @@ const RoadCaveQuality=(()=>{
   }
   if(map==='northwatch'){
    // Expanded 28x18 Highland Ruined Belltower Overlook & Bellkeeper Alto's Stone Lodge!
-   fill(c,'rgba(218,228,236,0.28)',5*32,0,18*32,20);
-   fill(c,'#8d969e',6*32,4,16*32,16);fill(c,'#cfd6d8',6*32+4,5,16*32-8,6);
-   for(const tx of [7,10,13,16,19,21]){fill(c,'#707a84',tx*32+6,1,20,19);fill(c,'#e0e6e4',tx*32+8,2,16,7);fill(c,'#9c3844',tx*32+14,0,5,5)}
+   drawDistantCapitalSkyline(c,5,23);
    // Mossy Stone Waterfall Culvert feeding the crystal highland brook at (13..14, 1) + Bellkeeper's Stone Lodge!
    if(typeof HD2DAtlas!=='undefined'){
     HD2DAtlas.drawWaterfallCulvert(c,13,1,2,{stone:'#787a74',stoneHi:'#c2c0b2'});
     HD2DAtlas.drawGrandHouse(c,19,3,5,3,{tag:'nw_lodge',region:'alpine',alpineStyle:'border',label:'鐘楼守の小屋',roofDark:'#2e3846',roofMain:'#48586e',roofHi:'#6a8098',chimneyLeft:true,doorOffsetPx:2*32+16});
+    if(HD2DAtlas.drawArchedBridge)HD2DAtlas.drawArchedBridge(c,13,9,2,{stone:'marble',hTiles:2});
    }
    // Cobblestone stepping stones to Bellkeeper Alto's lodge
    fill(c,'#a6a294',21*32+4,6*32+2,24,10);fill(c,'#dcd8ca',21*32+5,6*32+3,22,4);
    fill(c,'#9c988a',21*32+6,6*32+15,20,9);fill(c,'#d2cec0',21*32+7,6*32+16,18,3);
-   // Expanded White-Stone Belltower Courtyard (x=4..10, y=4..10) with weathered ashlar flagstones & moss
+   // Weathered Moss-Overgrown White-Marble Belltower Sanctuary Terrace (x=4..10, y=4..10) with stepped stone curb & crumbling moss seams!
+   const tx0=4*32,ty0=4*32,tw0=7*32,th0=7*32;
+   fill(c,'rgba(14,22,18,0.30)',tx0-2,ty0+th0,tw0+6,7);
+   fill(c,'#545852',tx0-3,ty0-3,tw0+6,th0+6);
    for(let rx=4;rx<=10;rx++)for(let ry=4;ry<=10;ry++){
-    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(c,'cobble',rx,ry,'capital')){
+    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(c,'cobble',rx,ry,'marble')){
      fill(c,'#a6a496',rx*32+1,ry*32+1,30,30);
     }
-    if((rx+ry)%3===0){fill(c,'#466c40',rx*32+4,ry*32+22,9,4);fill(c,'#78a65a',rx*32+5,ry*32+22,6,2)}
+    if((rx+ry)%3===0){fill(c,'#3a6638',rx*32+4,ry*32+22,9,4);fill(c,'#78b05c',rx*32+5,ry*32+22,6,2)}
+    if((rx*7+ry*3)%11===0){fill(c,'#f6f4dc',rx*32+18,ry*32+10,3,2);fill(c,'#f2ce68',rx*32+19,ry*32+10,1,1)}
    }
-   // Towering 3D Weathered White-Stone Belltower Archway & Hanging Bronze Bell crowning north edge (x=6..8, y=2..3)
-   const bx=6*32+4,by=2*32-4,bw=3*32-8;
-   fill(c,'rgba(14,20,18,0.34)',bx+4,by+58,bw+4,10);
-   fill(c,'#2e3236',bx,by+12,22,52);fill(c,'#b8b5a6',bx+2,by+14,18,48);fill(c,'#e2ded0',bx+3,by+14,6,46);
-   fill(c,'#2e3236',bx+bw-22,by+12,22,52);fill(c,'#b8b5a6',bx+bw-20,by+14,18,48);fill(c,'#e2ded0',bx+bw-19,by+14,6,46);
-   fill(c,'#2e3236',bx-4,by+4,bw+8,15);fill(c,'#cac6b6',bx-2,by+6,bw+4,11);fill(c,'#ece8dc',bx,by+6,bw,3);
-   fill(c,'#2e3236',bx+10,by-6,bw-20,12);fill(c,'#b4b0a0',bx+12,by-4,bw-24,8);fill(c,'#e4e0d2',bx+14,by-4,bw-28,2);
-   fill(c,'#4e3824',bx+20,by+17,bw-40,4);
-   fill(c,'#3a4842',bx+34,by+20,20,18);fill(c,'#6e8c7a',bx+36,by+22,16,14);fill(c,'#a6c6b0',bx+38,by+23,5,10);
-   fill(c,'#d8b86a',bx+42,by+36,4,4);
+   // Beveled white-marble parapet trim & carved ceremonial south steps into courtyard
+   fill(c,'#e8e4d8',tx0-2,ty0-2,tw0+4,3);fill(c,'#b8b4a6',tx0-2,ty0+th0,tw0+4,3);
+   fill(c,'#dcd8cc',tx0-2,ty0,3,th0);fill(c,'#b2aea0',tx0+tw0-1,ty0,3,th0);
+   fill(c,'#767870',6*32+6,11*32,2*32-12,9);fill(c,'#dcd8cc',6*32+8,11*32+1,2*32-16,4);fill(c,'#c4c0b2',6*32+10,11*32+5,2*32-20,3);
+   // Monumental Weathered Gothic White-Stone Belfry Archway & Detailed Verdigris Hanging Bronze Bell (x=6..8, y=2..3)!
+   const bx=6*32+2,by=2*32-8,bw=3*32-4,bmid=bx+Math.floor(bw/2);
+   fill(c,'rgba(12,18,16,0.38)',bx+4,by+62,bw+6,11);
+   // Twin sculpted stone belfry piers with quoins, cornices & draping emerald ivy
+   for(const sx of [bx,bx+bw-24]){
+    fill(c,'#2c3034',sx,by+12,24,56);fill(c,'#bab6a8',sx+2,by+14,20,52);
+    fill(c,'#eae6da',sx+3,by+14,7,50);fill(c,'#8a887c',sx+16,by+14,6,50);
+    for(let qy=by+22;qy<by+60;qy+=10)fill(c,'#5e6058',sx+2,qy,20,1);
+    fill(c,'#2c3034',sx-2,by+60,28,8);fill(c,'#d4d0c2',sx,by+61,24,5);fill(c,'#f4f0e4',sx+1,by+61,22,2);
+    fill(c,'#2e5c34',sx+3,by+34,14,10);fill(c,'#609e54',sx+5,by+33,9,6);
+   }
+   // Layered Gothic stone pediment & carved keystone arch
+   fill(c,'#2c3034',bx-6,by+4,bw+12,14);fill(c,'#cbc8ba',bx-4,by+6,bw+8,10);fill(c,'#f2eee2',bx-2,by+6,bw+4,3);
+   for(let dy=0;dy<12;dy++){
+    const hw=Math.round((bw/2+4)-dy*3.2);
+    if(hw<=6)break;
+    fill(c,'#2c3034',bmid-hw,by+4-dy,hw*2,2);
+    fill(c,dy>7?'#f0ece0':'#c4c0b2',bmid-hw+2,by+4-dy,hw*2-4,1);
+   }
+   fill(c,'#e6c670',bmid-3,by-12,6,6);
+   // Heavy oak belfry crossbeam & sculpted verdigris-patina bronze sanctuary bell!
+   fill(c,'#3a2818',bx+20,by+17,bw-40,5);fill(c,'#7c5838',bx+22,by+18,bw-44,2);
+   fill(c,'#263430',bmid-11,by+21,22,7);fill(c,'#263430',bmid-14,by+27,28,13);fill(c,'#263430',bmid-16,by+38,32,5);
+   fill(c,'#4e7464',bmid-9,by+22,18,6);fill(c,'#68927e',bmid-12,by+27,24,12);fill(c,'#80ac96',bmid-14,by+38,28,3);
+   fill(c,'#b8dec8',bmid-8,by+24,5,15); // specular patina sheen on bell curve
+   fill(c,'#e6c46c',bmid-3,by+41,6,5);fill(c,'#fff4b8',bmid-1,by+42,2,2); // golden clapper!
+   // Five fluted moss-draped stone courtyard pillars + glowing bronze vigil lanterns
    for(const [px,py] of [[4,4],[10,4],[4,7],[10,7],[4,10]]){
     const x=px*32,y=py*32;
-    fill(c,'rgba(16,22,18,0.34)',x+6,y+24,22,6);
-    fill(c,'#3c4240',x+7,y+4,18,23);fill(c,'#b8b6a8',x+9,y+6,14,19);
-    fill(c,'#e2ded0',x+10,y+6,4,18);fill(c,'#8a8a7e',x+16,y+6,4,18);
-    fill(c,'#3c4240',x+5,y+2,22,5);fill(c,'#ebe7da',x+6,y+3,20,3);
-    fill(c,'#385e38',x+8,y+14,10,6);fill(c,'#689854',x+9,y+13,7,4);
+    fill(c,'rgba(14,20,18,0.36)',x+5,y+24,24,6);
+    fill(c,'#363c3a',x+7,y+3,18,24);fill(c,'#bcbab0',x+9,y+5,14,20);
+    fill(c,'#ece8dc',x+10,y+5,4,19);fill(c,'#8c8c80',x+17,y+5,4,19);
+    fill(c,'#363c3a',x+5,y+1,22,5);fill(c,'#f2eee2',x+6,y+2,20,3);
+    fill(c,'#326036',x+8,y+14,11,6);fill(c,'#6ca65a',x+9,y+13,7,4);
+    if(py===4){
+     const lg=c.createRadialGradient?.(x+16,y+1,2,x+16,y+1,24);
+     if(lg&&typeof lg.addColorStop==='function'){lg.addColorStop(0,'rgba(255,214,124,0.34)');lg.addColorStop(1,'rgba(255,176,72,0)');c.fillStyle=lg;c.beginPath();c.arc(x+16,y+1,24,0,Math.PI*2);c.fill()}
+     fill(c,'#ffd674',x+13,y-2,6,4);fill(c,'#fffbe4',x+14,y-1,4,2);
+    }
    }
-   fill(c,'#464a4c',13*32-2,9*32,68,4);fill(c,'#dcd8cc',13*32,9*32+1,64,2);
-   fill(c,'#464a4c',13*32-2,9*32+28,68,4);fill(c,'#dcd8cc',13*32,9*32+29,64,2);
-   const cg=c.createRadialGradient?.(18*32+16,13*32+16,6,18*32+16,13*32+16,62);
-   if(cg&&typeof cg.addColorStop==='function'){cg.addColorStop(0,'rgba(255,196,102,0.36)');cg.addColorStop(1,'rgba(255,156,64,0)');c.fillStyle=cg;c.beginPath();c.arc(18*32+16,13*32+16,62,0,Math.PI*2);c.fill()}
+   // Lush highland bushes, mossy brook boulders, cattails & wildflowers framing the valley!
+   if(typeof HD2DAtlas!=='undefined'){
+    for(const [bx0,by0,bl] of [[12,4,'#fae078'],[15,5,'#fff4dc'],[12,12,'#f6d674'],[15,12,'#fff4dc'],[18,6,'#f4a4aa'],[24,7,'#fae078']]){
+     HD2DAtlas.drawBush(c,bx0*32,by0*32,{bloom:bl});
+    }
+    for(const [rx,ry] of [[12,7],[15,7],[12,14],[15,14],[24,11],[3,13]])HD2DAtlas.drawMossyBoulder(c,rx*32,ry*32);
+    for(const [fx,fy] of [[18,5],[23,7],[5,12],[9,12]])HD2DAtlas.drawFlowerBed(c,fx*32,fy*32);
+   }
+   const cg=c.createRadialGradient?.(18*32+16,13*32+16,6,18*32+16,13*32+16,66);
+   if(cg&&typeof cg.addColorStop==='function'){cg.addColorStop(0,'rgba(255,196,102,0.38)');cg.addColorStop(1,'rgba(255,156,64,0)');c.fillStyle=cg;c.beginPath();c.arc(18*32+16,13*32+16,66,0,Math.PI*2);c.fill()}
    return;
   }
   if(map==='roadhollow'){
@@ -351,91 +416,126 @@ const RoadCaveQuality=(()=>{
    if(typeof HD2DAtlas!=='undefined'){
     HD2DAtlas.drawGrandHouse(c,3,3,5,3,{tag:'rh_hut',region:'rural',ruralStyle:'thatch',label:'薬草採りの庵',chimneyLeft:true,doorOffsetPx:2*32+16});
    }
-   // Carved marble pool coping border surrounding the wide Crystal Lotus Spring (11..17, 7..10)
-   const sx=11*32,sy=7*32,sw=7*32,sh=4*32;
-   fill(c,'rgba(14,26,22,0.34)',sx-6,sy-4,sw+14,sh+12);
-   fill(c,'#545c56',sx-6,sy-6,sw+12,8);fill(c,'#dcdad0',sx-4,sy-5,sw+8,5);
-   fill(c,'#545c56',sx-6,sy+sh-2,sw+12,8);fill(c,'#c8c6ba',sx-4,sy+sh-1,sw+8,5);
-   fill(c,'#545c56',sx-6,sy,8,sh);fill(c,'#d4d2c6',sx-5,sy,5,sh);
-   fill(c,'#545c56',sx+sw-2,sy,8,sh);fill(c,'#bcbab0',sx+sw-1,sy,5,sh);
-   const wave=Math.sin(Date.now()/340)*1.6;
-   fill(c,'rgba(176,248,242,0.28)',sx+6,sy+4,sw-12,6);
-   for(const [lx,ly] of [[sx+24,sy+24],[sx+148,sy+30],[sx+56,sy+86],[sx+168,sy+92],[sx+112,sy+54]]){
-    fill(c,'rgba(14,38,44,0.32)',lx+1,ly+2,11,7);
-    fill(c,'#2a5e3c',lx,ly+1,10,6);fill(c,'#4c9258',lx+1,ly,8,5);
-    fill(c,'#fff4e4',lx+3,ly-1,4,3);fill(c,'#f6d468',lx+4,ly,2,1);
+   // Sculpted Stepped White-Marble & Emerald-Moss Lotus Basin (11..17, 7..10) — ZERO rigid grey box or neon stripe!
+   const sx=11*32,sy=7*32,sw=7*32,sh=4*32,now=Date.now(),wave=Math.sin(now/340)*1.6;
+   fill(c,'rgba(12,26,22,0.36)',sx-7,sy-4,sw+16,sh+14);
+   // Layered chiseled marble coping with beveled joints & hanging emerald moss pads
+   fill(c,'#46524c',sx-7,sy-7,sw+14,9);fill(c,'#dcdad0',sx-5,sy-6,sw+10,6);fill(c,'#faf8ee',sx-3,sy-6,sw+6,2);
+   fill(c,'#46524c',sx-7,sy+sh-2,sw+14,9);fill(c,'#c6c4b8',sx-5,sy+sh-1,sw+10,6);fill(c,'#eae8dc',sx-3,sy+sh-1,sw+6,2);
+   fill(c,'#46524c',sx-7,sy,9,sh);fill(c,'#d4d2c6',sx-6,sy,6,sh);fill(c,'#f2f0e4',sx-5,sy,2,sh);
+   fill(c,'#46524c',sx+sw-2,sy,9,sh);fill(c,'#bcbab0',sx+sw-1,sy,6,sh);
+   for(let jx=sx+16;jx<sx+sw-8;jx+=24){fill(c,'#7c7e74',jx,sy-6,1,6);fill(c,'#7c7e74',jx,sy+sh-1,1,6)}
+   for(const [mx,my] of [[sx+10,sy-6],[sx+sw-26,sy-5],[sx+26,sy+sh-1],[sx+sw-42,sy+sh-2]]){
+    fill(c,'#2e663a',mx,my,14,5);fill(c,'#68b262',mx+2,my,9,3);
    }
-   // North Springhead Cascading Waterfall Shrine Arch (13..15, 4..5)
+   // Animated concentric luminous turquoise water ripples & floating sacred pink/ivory lotus blossoms!
+   if(typeof c.beginPath==='function'&&typeof c.ellipse==='function'){
+    c.save();c.strokeStyle='rgba(208,255,248,0.42)';c.lineWidth=1.2;
+    const r0=((now/120)%24);
+    c.beginPath();c.ellipse(sx+sw/2,sy+24,18+r0,7+r0*0.35,0,0,Math.PI*2);c.stroke();
+    c.beginPath();c.ellipse(sx+sw/2,sy+24,34+((r0+12)%24),13+((r0+12)%24)*0.35,0,0,Math.PI*2);c.stroke();
+    c.restore();
+   }
+   for(const [lx,ly,pink] of [[sx+24,sy+24,false],[sx+154,sy+30,true],[sx+54,sy+86,true],[sx+170,sy+92,false],[sx+112,sy+62,false],[sx+34,sy+66,true]]){
+    fill(c,'rgba(12,38,44,0.34)',lx+1,ly+2,13,8);
+    fill(c,'#225836',lx,ly+1,12,7);fill(c,'#489456',lx+1,ly,10,5);fill(c,'#82ca78',lx+2,ly,5,2);
+    fill(c,pink?'#f8b8c8':'#fff8e8',lx+3,ly-2,6,4);fill(c,'#f8d868',lx+5,ly-1,2,2);
+   }
+   // Sculpted Ancient Stone Springhead Waterfall Shrine Arch (13..15, 4..6) with fluted side pilasters, gilded emblem & mossy pediment!
    const ax=13*32,ay=4*32;
-   fill(c,'rgba(14,24,20,0.32)',ax,ay+24,3*32,12);
-   fill(c,'#545c56',ax-2,ay+4,3*32+4,26);fill(c,'#cbc8ba',ax+2,ay+6,3*32-4,20);fill(c,'#ece8dc',ax+4,ay+6,3*32-8,4);
-   fill(c,'#5ad0d8',ax+42,ay+22,12,76);fill(c,'#d8fcff',ax+45+wave*0.4,ay+24,5,72);
-   fill(c,'rgba(240,254,255,0.84)',ax+36,sy+2,24,5);
-   // Six Moss-Draped Fluted Sanctuary Columns with Glowing Turquoise Lanterns framing the wide spring!
+   fill(c,'rgba(12,24,20,0.36)',ax-4,ay+24,3*32+8,14);
+   fill(c,'#36423e',ax-4,ay+2,3*32+8,28);fill(c,'#c8c6b8',ax-2,ay+5,3*32+4,22);fill(c,'#f4f0e4',ax,ay+5,3*32,4);
+   // Sculpted fluted stone pilasters + recessed aquamarine spring alcove + gilded crest
+   for(const px0 of [ax+2,ax+3*32-16]){
+    fill(c,'#464e4a',px0,ay+4,14,24);fill(c,'#e6e4d8',px0+2,ay+6,10,20);fill(c,'#ffffff',px0+3,ay+6,3,18);
+    fill(c,'#346e3e',px0+1,ay+17,11,6);fill(c,'#6cb664',px0+2,ay+16,7,3);
+   }
+   fill(c,'#245c68',ax+28,ay+9,40,18);fill(c,'#4ebec8',ax+32,ay+12,32,14);fill(c,'#d8fcff',ax+40,ay+14,16,8);
+   // Classical stepped mossy sanctuary pediment + gilded sun finial!
+   fill(c,'#36423e',ax+6,ay-8,3*32-12,12);fill(c,'#dcd8ca',ax+8,ay-6,3*32-16,8);fill(c,'#faf8ee',ax+10,ay-6,3*32-20,3);
+   fill(c,'#2e6638',ax+14,ay-7,16,5);fill(c,'#6cb664',ax+16,ay-8,10,3);
+   fill(c,'#ebd074',ax+42,ay-12,12,8);fill(c,'#fffbe4',ax+45,ay-10,6,4);
+   if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawWaterfallCulvert){
+    HD2DAtlas.drawWaterfallCulvert(c,13,6,3,{stone:'#90948a',stoneHi:'#e6e2d6'});
+   }
+   // Soft natural crystal spring spout connecting shrine down into the culvert
+   fill(c,'#2c7e8c',ax+39,ay+22,18,46);fill(c,'#68d4de',ax+42,ay+23,12,44);
+   fill(c,'rgba(232,254,255,0.82)',ax+45+wave*0.35,ay+24,5,42);
+   fill(c,'rgba(240,254,255,0.88)',ax+34,sy+4,28,6);
+   // Six Tall Fluted Corinthian Marble Sanctuary Columns with Spiraling Ivy & Luminous Turquoise Orbs!
    for(const [px,py] of [[10,6],[18,6],[10,11],[18,11],[14,2],[20,2]]){
     const x=px*32,y=py*32;
-    fill(c,'rgba(16,26,22,0.34)',x+4,y+24,24,6);
-    fill(c,'#464e4a',x+6,y+1,20,25);fill(c,'#c2c4b8',x+8,y+3,16,21);
-    fill(c,'#eaeae0',x+9,y+3,5,20);fill(c,'#8e9288',x+18,y+3,4,20);
-    fill(c,'#464e4a',x+4,y-2,24,5);fill(c,'#e8e6da',x+5,y-1,22,3);
-    fill(c,'#3a6e44',x+7,y+14,12,6);fill(c,'#6ca660',x+8,y+13,8,3);
+    fill(c,'rgba(14,26,22,0.36)',x+4,y+24,24,6);
+    fill(c,'#3c4642',x+6,y-2,20,28);fill(c,'#c6c8bc',x+8,y,16,24);
+    fill(c,'#f2f2e8',x+9,y,5,23);fill(c,'#90948a',x+18,y,4,23);
+    fill(c,'#787e76',x+14,y+2,1,19);
+    fill(c,'#3c4642',x+4,y-5,24,5);fill(c,'#f0eee2',x+5,y-4,22,3);fill(c,'#e6c872',x+7,y-2,18,2);
+    fill(c,'#326a40',x+7,y+12,13,7);fill(c,'#6cb264',x+8,y+11,8,4);
     if(py>=6){
-     const lg=c.createRadialGradient?.(x+16,y+2,2,x+16,y+2,26);
-     if(lg&&typeof lg.addColorStop==='function'){lg.addColorStop(0,'rgba(176,252,232,0.42)');lg.addColorStop(1,'rgba(140,236,220,0)');c.fillStyle=lg;c.beginPath();c.arc(x+16,y+2,26,0,Math.PI*2);c.fill()}
-     fill(c,'#80f0dc',x+13,y-1,6,4);fill(c,'#f2fffc',x+14,y,4,2);
+     const lg=c.createRadialGradient?.(x+16,y-3,2,x+16,y-3,30);
+     if(lg&&typeof lg.addColorStop==='function'){lg.addColorStop(0,'rgba(148,255,236,0.46)');lg.addColorStop(1,'rgba(120,236,220,0)');c.fillStyle=lg;c.beginPath();c.arc(x+16,y-3,30,0,Math.PI*2);c.fill()}
+     fill(c,'#68ece0',x+12,y-7,8,5);fill(c,'#eefffc',x+14,y-6,4,3);
     }
    }
-   // Northeast Mossy Ruin Courtyard flagstones around hollowStagWolf (22,6) & hollowCache (24,4)
+   // Northeast Mossy Sanctuary Ruin Courtyard (21..25, 3..6) with stepped marble trim & broken columns!
+   fill(c,'rgba(14,24,20,0.28)',21*32-2,7*32,5*32+4,6);
+   fill(c,'#545c54',21*32-2,3*32-2,5*32+4,4*32+4);
    for(let rx=21;rx<=25;rx++)for(let ry=3;ry<=6;ry++){
     if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(c,'cobble',rx,ry,'marble')){
      fill(c,'rgba(140,144,132,0.45)',rx*32+3,ry*32+3,26,26);
     }
+    if((rx+ry)%3===0){fill(c,'#3a6e42',rx*32+5,ry*32+21,8,4);fill(c,'#74b464',rx*32+6,ry*32+21,5,2)}
    }
-   for(const [fx,fy] of [[8,11],[10,14],[17,14],[20,10],[22,8],[7,12]]){
-    fill(c,'#325e38',fx*32+6,fy*32+14,18,10);fill(c,'#529254',fx*32+8,fy*32+13,14,7);
-    fill(c,'#fff8e6',fx*32+10,fy*32+12,4,3);fill(c,'#fff8e6',fx*32+18,fy*32+14,4,3);fill(c,'#f6d468',fx*32+11,fy*32+13,2,1);
+   fill(c,'#e6e4d8',21*32-1,3*32-1,5*32+2,2);fill(c,'#bab8ac',21*32-1,7*32,5*32+2,2);
+   if(typeof HD2DAtlas!=='undefined'){
+    for(const [bx0,by0,bl] of [[9,4,'#98f4e4'],[19,4,'#fff4dc'],[9,12,'#f6d674'],[19,12,'#98f4e4'],[20,8,'#fff4dc'],[7,9,'#f4a4aa']]){
+     HD2DAtlas.drawBush(c,bx0*32,by0*32,{bloom:bl});
+    }
+    for(const [rx,ry] of [[21,2],[25,7],[8,6],[19,14]])HD2DAtlas.drawMossyBoulder(c,rx*32,ry*32);
+    for(const [fx,fy] of [[8,11],[10,14],[17,14],[20,10],[22,8],[7,12]]){
+     HD2DAtlas.drawFlowerBed(c,fx*32,fy*32,{cols:['#f6fff2','#fae892','#98f4e4','#f8b8c8']});
+    }
    }
-   const sg=c.createRadialGradient?.(14*32+16,9*32,18,14*32+16,9*32,126);
-   if(sg&&typeof sg.addColorStop==='function'){sg.addColorStop(0,'rgba(162,252,238,0.28)');sg.addColorStop(1,'rgba(162,242,232,0)');c.fillStyle=sg;c.fillRect(10*32,5*32,9*32,8*32)}
+   const sg=c.createRadialGradient?.(14*32+16,9*32,18,14*32+16,9*32,134);
+   if(sg&&typeof sg.addColorStop==='function'){sg.addColorStop(0,'rgba(162,252,238,0.32)');sg.addColorStop(1,'rgba(162,242,232,0)');c.fillStyle=sg;c.fillRect(10*32,5*32,9*32,8*32)}
    return;
   }
   if(map==='northroad'){
-   // Expanded 28x18 Old Royal Highway: Panoramic Aldina Skyline, White-Stone Archway, Peddler Covered Wagon & Arched Brook Bridge!
-   fill(c,'rgba(214,224,232,0.26)',5*32,0,18*32,20);
-   fill(c,'#8d969e',6*32,4,16*32,16);fill(c,'#ced5d6',6*32+4,5,16*32-8,6);
-   for(const tx of [7,9,11,15,17,19,21]){
-    fill(c,'#707a84',tx*32+6,1,20,19);fill(c,'#dde4e2',tx*32+8,2,16,7);fill(c,'#9c3844',tx*32+14,0,5,5);
-   }
+   // Expanded 28x18 Old Royal Highway: Panoramic Aldina Skyline, White-Stone Archway, Peddler Covered Wagon & Arched Marble Brook Bridge!
+   drawDistantCapitalSkyline(c,5,23);
    if(typeof HD2DAtlas!=='undefined'){
     HD2DAtlas.drawStoneArchGate(c,12,2,4,{label:'王都アルディナへ',roof:'#7a323c',stone:'#c2beb0',stoneHi:'#f2eee0'});
     HD2DAtlas.drawCoveredWagon(c,20,6,{broken:false});
    }
-   // Sparkling Highland Brook crossing row 14 with carved white-stone arched culvert bridge at (13..14, 14)
+   // Natural Mossy Pebble-Bedded Highland Brook crossing row 14 + Sculpted Arched Marble Bridge at (13..14, 14)!
    const wave=Math.floor(Date.now()/400)%4;
    for(let bx=1;bx<=26;bx++){
     const x=bx*32,y=14*32;
-    if(bx===13||bx===14){
-     fill(c,'rgba(14,22,26,0.34)',x-2,y+24,36,6);
-     fill(c,'#4c5256',x-2,y+3,36,26);fill(c,'#c2bfb2',x,y+5,32,22);
-     fill(c,'#ebe7dc',x,y+4,32,4);fill(c,'#78766c',x,y+24,32,4);
-     fill(c,'#848276',x+10,y+8,1,15);fill(c,'#848276',x+22,y+8,1,15);
-    }else{
-     fill(c,'#3a5438',x,y+7,32,18);
-     fill(c,'#245872',x,y+10,32,12);fill(c,'#3a84a2',x,y+12,32,8);
-     fill(c,'#7cd2e4',x+((4+wave*5+bx*7)%18),y+14,9,2);
-     fill(c,'#e8fcff',x+((7+wave*5+bx*7)%18),y+14,4,1);
-    }
+    fill(c,'#3c4e36',x,y+5,32,22);
+    fill(c,'#66543c',x,y+7,32,18);
+    fill(c,'#20546e',x,y+9,32,14);fill(c,'#3682a0',x,y+11,32,10);
+    fill(c,'#78d2e4',x+((4+wave*5+bx*7)%18),y+13,10,2);
+    fill(c,'#e8fcff',x+((7+wave*5+bx*7)%18),y+13,4,1);
+    // Overhanging grass tufts & river stones breaking straight edges!
+    const h=mix(bx,14,3);
+    fill(c,'#547440',x+(h%8),y+4,12,4);fill(c,'#769650',x+14+(h%6),y+5,10,3);
+    fill(c,'#466436',x+4+(h%10),y+23,14,4);
+    if(bx%3===0){fill(c,'#7e7e72',x+6,y+6,7,4);fill(c,'#c2beb0',x+7,y+6,4,2)}
    }
-   // Western Pilgrim Ruin Courtyard (x=4..11, y=10) laid in weathered marble flagstones + fluted columns
+   if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawArchedBridge){
+    HD2DAtlas.drawArchedBridge(c,13,14,2,{stone:'marble'});
+   }
+   // Western Pilgrim Ruin Courtyard (x=4..11, y=10) laid in weathered marble flagstones + fluted columns & moss
+   fill(c,'#545852',4*32-2,10*32-1,8*32+4,34);
    for(let rx=4;rx<=11;rx++){
     if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(c,'cobble',rx,10,'marble'))fill(c,'#b4aa94',rx*32+2,10*32+4,28,24);
    }
    for(const [px,py] of [[4,8],[6,8],[8,8],[4,11],[6,11],[8,11]]){
     const x=px*32,y=py*32;
-    fill(c,'rgba(18,24,18,0.32)',x+5,y+23,22,5);
-    fill(c,'#4c524e',x+7,y+4,18,21);fill(c,'#c2bfb0',x+9,y+6,14,17);
-    fill(c,'#e6e2d4',x+10,y+6,4,16);fill(c,'#ece8dc',x+7,y+3,18,4);
-    fill(c,'#467242',x+8,y+16,8,5);
+    fill(c,'rgba(18,24,18,0.34)',x+5,y+23,22,5);
+    fill(c,'#424844',x+7,y+3,18,22);fill(c,'#c4c1b2',x+9,y+5,14,18);
+    fill(c,'#eeeae0',x+10,y+5,4,17);fill(c,'#f2eee2',x+6,y+2,20,4);
+    fill(c,'#3e6e3e',x+8,y+16,9,5);fill(c,'#72aa5c',x+9,y+15,6,3);
    }
    for(let gx=15;gx<=20;gx++){
     if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(c,'cobble',gx,10,'capital'))fill(c,'#b8a684',gx*32+2,10*32+6,28,20);
@@ -443,61 +543,94 @@ const RoadCaveQuality=(()=>{
    // Ornate White-Stone Royal Highway Balustrade Pillars with warm glowing highway lanterns!
    for(const [bx,by] of [[11,5],[16,5],[11,11],[16,11],[11,16],[16,16]]){
     const x=bx*32,y=by*32;
-    fill(c,'rgba(16,22,18,0.30)',x+5,y+24,22,5);
-    fill(c,'#4c5250',x+7,y+8,18,18);fill(c,'#c4c1b4',x+9,y+9,14,15);fill(c,'#eae6da',x+8,y+6,16,4);
-    if(by===5||by===11){
-     const lg=c.createRadialGradient?.(x+16,y+4,2,x+16,y+4,24);
-     if(lg&&typeof lg.addColorStop==='function'){lg.addColorStop(0,'rgba(255,216,120,0.34)');lg.addColorStop(1,'rgba(255,180,80,0)');c.fillStyle=lg;c.beginPath();c.arc(x+16,y+4,24,0,Math.PI*2);c.fill()}
-     fill(c,'#ffd874',x+13,y+2,6,4);fill(c,'#fffbe0',x+14,y+3,4,2);
+    fill(c,'rgba(16,22,18,0.32)',x+5,y+24,22,5);
+    fill(c,'#464c4a',x+7,y+7,18,19);fill(c,'#c8c5b8',x+9,y+8,14,16);fill(c,'#f0ece0',x+8,y+5,16,4);
+    if(by===5||by===11||by===16){
+     const lg=c.createRadialGradient?.(x+16,y+3,2,x+16,y+3,26);
+     if(lg&&typeof lg.addColorStop==='function'){lg.addColorStop(0,'rgba(255,216,120,0.36)');lg.addColorStop(1,'rgba(255,180,80,0)');c.fillStyle=lg;c.beginPath();c.arc(x+16,y+3,26,0,Math.PI*2);c.fill()}
+     fill(c,'#ffd874',x+13,y+1,6,4);fill(c,'#fffbe0',x+14,y+2,4,2);
     }
+   }
+   if(typeof HD2DAtlas!=='undefined'){
+    for(const [bx0,by0,bl] of [[10,13,'#fae078'],[17,13,'#fff4dc'],[10,4,'#f6d674'],[17,4,'#fae078'],[23,9,'#fff4dc']]){
+     HD2DAtlas.drawBush(c,bx0*32,by0*32,{bloom:bl});
+    }
+    for(const [rx,ry] of [[9,15],[18,15],[3,12],[24,12]])HD2DAtlas.drawMossyBoulder(c,rx*32,ry*32);
+    for(const [fx,fy] of [[10,6],[17,6],[10,15],[17,15]])HD2DAtlas.drawFlowerBed(c,fx*32,fy*32);
    }
    return;
   }
   if(map==='road'){
-   // Expanded 30x20 Sunlit Forest Trade Highway: Highway Timber Archway, Merchant's Covered Carriage, Forest Brook Bridge & Fort Entrance!
+   // Expanded 30x20 Sunlit Forest Trade Highway: Highway Timber Archway, Merchant's Covered Carriage, Arched Brook Bridge & Sculpted Fort Cavern Arch!
    if(typeof HD2DAtlas!=='undefined'){
     HD2DAtlas.drawStoneArchGate(c,13,17,4,{style:'rural_wood',label:'王都街道'});
    }
    const pebbles=[[14,16],[15,13],[13,10],[14,8],[13,6],[15,4]];
    for(const [tx,ty] of pebbles){const x=tx*32,y=ty*32;fill(c,'#8a806b',x+7,y+22,12,3);fill(c,'#d5bc8e',x+9,y+21,8,2)}
-   // Sparkling forest brook crossing row 15 with mossy stone banks & arched timber bridge (13..15, 15)!
+   // Natural Mossy Woodland Brook crossing row 15 + Sculpted Arched Oak Bridge (13..15, 15)!
    const wave=Math.floor(Date.now()/440)%4;
    for(const bx of [8,9,10,11,12,16,17,18,19,20,21]){
-    const x=bx*32,y=15*32;
-    fill(c,'#365236',x,y+6,32,20);
-    fill(c,'#24566a',x,y+9,32,14);fill(c,'#387e96',x,y+11,32,10);
-    fill(c,'#6cb6c8',x+((4+wave*5+bx*7)%20),y+13,10,2);
-    fill(c,'#d4f4f8',x+((7+wave*5+bx*7)%20),y+13,4,1);
-    fill(c,'#54784a',x,y+7,32,3);fill(c,'#46663e',x,y+22,32,3);
-    if(bx%2===0){fill(c,'#7c7c6e',x+6,y+6,7,4);fill(c,'#b8b4a0',x+7,y+6,4,2)}
+    const x=bx*32,y=15*32,h=mix(bx,15,5);
+    fill(c,'#365236',x,y+5,32,22);
+    fill(c,'#5e4a32',x,y+7,32,18);
+    fill(c,'#20566c',x,y+9,32,14);fill(c,'#36829c',x,y+11,32,10);
+    fill(c,'#74c8da',x+((4+wave*5+bx*7)%20),y+13,10,2);
+    fill(c,'#e0f8fc',x+((7+wave*5+bx*7)%20),y+13,4,1);
+    fill(c,'#4e7a44',x+(h%8),y+5,14,4);fill(c,'#6e9a54',x+16+(h%5),y+6,10,3);
+    fill(c,'#426a3c',x+3+(h%9),y+23,14,4);
+    if(bx%2===0){fill(c,'#7c7c6e',x+6,y+6,7,4);fill(c,'#bebaa8',x+7,y+6,4,2)}
+    if(bx%3===1){
+     // Floating woodland lilypad + shoreline cattails
+     fill(c,'#285e38',x+18,y+15,7,4);fill(c,'#529858',x+19,y+15,5,3);
+     fill(c,'#326036',x+4,y+2,2,8);fill(c,'#6e4a2e',x+4,y,2,3);
+    }
    }
-   for(const bx of [13,14,15]){
-    const x=bx*32,y=15*32;
-    fill(c,'#322216',x,y+5,32,22);
-    for(let p=0;p<4;p++){fill(c,'#8c6b46',x+1,y+6+p*5,30,4);fill(c,'#b69262',x+2,y+6+p*5,28,1)}
-    fill(c,'#4a3220',x,y+4,32,3);fill(c,'#4a3220',x,y+25,32,3);
+   if(typeof HD2DAtlas!=='undefined'){
+    if(HD2DAtlas.drawArchedBridge)HD2DAtlas.drawArchedBridge(c,13,15,3);
+    // Tuck both woodland brook endpoints organically under mossy boulders & blooming ferns!
+    HD2DAtlas.drawMossyBoulder(c,8*32-12,15*32-2);HD2DAtlas.drawBush(c,8*32-16,15*32-12,{bloom:'#fff4dc'});
+    HD2DAtlas.drawMossyBoulder(c,21*32+14,15*32-2);HD2DAtlas.drawBush(c,21*32+18,15*32-12,{bloom:'#fae078'});
    }
-   // Mossy stone archway framing the Ancient Fort ('cave') entrance at (17, 2)
-   const cx=17*32,cy=2*32;
-   fill(c,'#2a2e32',cx-12,cy-10,56,16);fill(c,'#8c8a80',cx-10,cy-8,52,12);fill(c,'#c2beb0',cx-8,cy-8,48,3);
-   fill(c,'#3c6c3c',cx-8,cy-8,12,5);fill(c,'#6c9c56',cx+22,cy-7,10,4);
-   // Wildflower clusters framing the east wayside shrine & herb glade
-   for(const [fx,fy] of [[21,7],[22,8],[24,8],[22,10],[24,11],[10,13]]){
-    const x=fx*32,y=fy*32;
-    fill(c,'#3a663c',x+6,y+16,14,7);fill(c,'#f6e078',x+8,y+15,3,3);fill(c,'#fff4dc',x+15,y+17,3,3);
+   // Sculpted 3D Mossy Stone Fortress Cavern Archway framing 'cave' entrance at (17, 2)!
+   {
+    const cx=17*32,cy=2*32;
+    fill(c,'rgba(12,18,16,0.42)',cx-14,cy+22,60,8);
+    // Craggy mossy rock hillside shoulder mound flanking the ancient fort stone arch
+    fill(c,'#2c3032',cx-16,cy-14,64,40);
+    fill(c,'#6c706a',cx-14,cy-12,60,36);fill(c,'#989a90',cx-12,cy-12,56,8);fill(c,'#c6c4b6',cx-10,cy-12,52,3);
+    // Chiseled stone arch voussoirs & heavy timber mine-frame lintel
+    fill(c,'#24262a',cx-6,cy-4,44,32);
+    fill(c,'#88867c',cx-4,cy-2,40,7);fill(c,'#c2beb0',cx-2,cy-2,36,3);
+    fill(c,'#7c7a70',cx-4,cy+5,7,23);fill(c,'#7c7a70',cx+29,cy+5,7,23);
+    fill(c,'#4c3420',cx+2,cy+3,28,5);fill(c,'#845c38',cx+3,cy+4,26,2);
+    // Deep receding shadowy dungeon cavern opening with subtle cool blue draft
+    fill(c,'#101318',cx+4,cy+8,24,20);fill(c,'#1a222c',cx+7,cy+11,18,17);
+    // Overhanging emerald moss cushions & hanging flickering brass entrance lantern!
+    fill(c,'#2e5e32',cx-12,cy-12,18,6);fill(c,'#629e52',cx-10,cy-13,12,4);
+    fill(c,'#2e5e32',cx+22,cy-11,16,6);fill(c,'#629e52',cx+24,cy-12,11,4);
+    const clg=c.createRadialGradient?.(cx+30,cy+11,2,cx+30,cy+11,22);
+    if(clg&&typeof clg.addColorStop==='function'){clg.addColorStop(0,'rgba(255,204,104,0.40)');clg.addColorStop(1,'rgba(255,160,60,0)');c.fillStyle=clg;c.beginPath();c.arc(cx+30,cy+11,22,0,Math.PI*2);c.fill()}
+    fill(c,'#28201a',cx+28,cy+7,5,7);fill(c,'#ffd670',cx+29,cy+8,3,5);fill(c,'#fffbe4',cx+30,cy+9,1,2);
    }
    // Merchant wayside camp clearing around (6..8, 10..12): covered carriage + glowing campfire!
    if(typeof HD2DAtlas!=='undefined'){
     const cartRepaired=typeof state!=='undefined'&&state?.events?.choices?.['early.merchantCart']==='repair';
     HD2DAtlas.drawCoveredWagon(c,6,10,{broken:!cartRepaired});
    }
-   const campG=c.createRadialGradient?.(9*32+16,12*32+4,3,9*32+16,12*32+4,36);
+   const campG=c.createRadialGradient?.(9*32+16,12*32+4,3,9*32+16,12*32+4,38);
    if(campG&&typeof campG.addColorStop==='function'){
-    campG.addColorStop(0,'rgba(255,196,96,0.34)');campG.addColorStop(1,'rgba(255,150,50,0)');
-    c.fillStyle=campG;c.beginPath();c.arc(9*32+16,12*32+4,36,0,Math.PI*2);c.fill();
+    campG.addColorStop(0,'rgba(255,196,96,0.36)');campG.addColorStop(1,'rgba(255,150,50,0)');
+    c.fillStyle=campG;c.beginPath();c.arc(9*32+16,12*32+4,38,0,Math.PI*2);c.fill();
    }
    fill(c,'#4e3a28',9*32+10,12*32+4,12,8);fill(c,'#e67e2e',9*32+13,12*32+1,6,5);fill(c,'#fff0b5',9*32+15,12*32+2,2,3);
-   // Dense woodland ferns, red-cap mushrooms & wildflowers framing the forest highway
+   // Lush HD-2D woodland bushes, mossy boulders, flower beds, ferns & red-cap mushrooms framing the forest highway!
+   if(typeof HD2DAtlas!=='undefined'){
+    for(const [bx0,by0,bl] of [[11,14,'#fae078'],[17,14,'#fff4dc'],[10,5,'#f4a4aa'],[19,6,'#fae078'],[23,7,'#fff4dc'],[5,13,'#f6d674'],[24,13,'#f4a4aa']]){
+     HD2DAtlas.drawBush(c,bx0*32,by0*32,{bloom:bl});
+    }
+    for(const [rx,ry] of [[12,14],[16,14],[11,7],[20,4],[25,9],[5,8]])HD2DAtlas.drawMossyBoulder(c,rx*32,ry*32);
+    for(const [fx,fy] of [[21,7],[22,8],[24,10],[10,13],[18,16]])HD2DAtlas.drawFlowerBed(c,fx*32,fy*32);
+   }
    for(const [tx,ty] of [[9,6],[6,9],[18,12],[21,6],[24,5],[4,11],[17,8],[25,11],[8,16],[22,16]]){
     const x=tx*32,y=ty*32;
     fill(c,'#345632',x+4,y+18,14,8);fill(c,'#547e48',x+6,y+16,10,6);
@@ -506,15 +639,18 @@ const RoadCaveQuality=(()=>{
    }
    return;
   }else{
-   // Ancient Stone Fortress Dungeon ('cave'): glowing cyan crystal clusters & tattered crimson garrison banners!
-   for(const [cx,cy] of [[2,3],[21,3],[2,12],[21,11],[14,11]]){
+   // Ancient Stone Fortress Dungeon ('cave'): Faceted Luminous Cyan Crystal Veins, Flickering Wall Torches, Seepage Puddles & Boss Dais!
+   for(const [cx,cy] of [[2,3],[21,3],[2,12],[21,11],[14,11],[5,4],[19,4],[9,12]]){
     const x=cx*32,y=cy*32;
-    const cg=c.createRadialGradient?.(x+16,y+14,2,x+16,y+14,28);
-    if(cg&&typeof cg.addColorStop==='function'){cg.addColorStop(0,'rgba(116,228,248,0.28)');cg.addColorStop(1,'rgba(80,180,220,0)');c.fillStyle=cg;c.beginPath();c.arc(x+16,y+14,28,0,Math.PI*2);c.fill()}
-    fill(c,'#244c66',x+10,y+12,5,12);fill(c,'#5ec4e2',x+11,y+10,3,12);fill(c,'#d8fcff',x+12,y+11,1,6);
-    fill(c,'#244c66',x+16,y+15,6,9);fill(c,'#78daf2',x+17,y+14,4,8);fill(c,'#ffffff',x+18,y+15,2,3);
+    const cg=c.createRadialGradient?.(x+16,y+14,2,x+16,y+14,34);
+    if(cg&&typeof cg.addColorStop==='function'){cg.addColorStop(0,'rgba(116,240,255,0.34)');cg.addColorStop(0.55,'rgba(70,196,232,0.12)');cg.addColorStop(1,'rgba(60,160,210,0)');c.fillStyle=cg;c.beginPath();c.arc(x+16,y+14,34,0,Math.PI*2);c.fill()}
+    // Multi-crystal faceted mineral cluster bursting out of mossy stone bed!
+    fill(c,'#2c343c',x+6,y+20,20,6);
+    fill(c,'#183a52',x+9,y+9,7,15);fill(c,'#44b4d8',x+10,y+8,5,14);fill(c,'#c8fcff',x+11,y+9,2,8);
+    fill(c,'#183a52',x+16,y+12,7,12);fill(c,'#64d2ec',x+17,y+11,5,11);fill(c,'#ffffff',x+18,y+12,2,5);
+    fill(c,'#183a52',x+5,y+15,5,9);fill(c,'#54c4e2',x+6,y+14,3,8);fill(c,'#e0feff',x+7,y+15,1,4);
    }
-   for(const [bx,by] of [[9,0],[15,0],[7,4],[16,4]]){
+   for(const [bx,by] of [[9,0],[15,0],[7,4],[16,4],[11,0],[13,0]]){
     const x=bx*32+8,y=by*32+6;
     fill(c,'#241c1a',x,y,14,22);fill(c,'#7a2c34',x+2,y+2,10,18);fill(c,'#e0be6c',x+5,y+5,4,8);
    }
@@ -524,14 +660,14 @@ const RoadCaveQuality=(()=>{
    }
    const open=typeof structuredCondition==='function'&&structuredCondition('leverWest')&&structuredCondition('leverEast');
    gate(c,12*32-5,4*32+5,!!open);
-   // Warm flickering stone wall torches with smooth radial light blooms (zero square halos!)
+   // Warm flickering stone wall torches with smooth radial light blooms & wall-bounce glow!
    const flick=Math.sin(Date.now()/180)*1.5;
-   for(const [tx,ty] of [[9,5],[13,5],[17,5],[6,9],[18,9]]){
+   for(const [tx,ty] of [[9,5],[13,5],[17,5],[6,9],[18,9],[9,1],[15,1]]){
     const x=tx*32,y=ty*32;
-    const tg=c.createRadialGradient?.(x+16,y+12,4,x+16,y+16,44+flick*2);
+    const tg=c.createRadialGradient?.(x+16,y+12,4,x+16,y+16,52+flick*2);
     if(tg&&typeof tg.addColorStop==='function'){
-     tg.addColorStop(0,'rgba(255,214,116,0.34)');tg.addColorStop(0.5,'rgba(240,156,64,0.14)');tg.addColorStop(1,'rgba(240,120,40,0)');
-     c.fillStyle=tg;c.beginPath();c.arc(x+16,y+16,44+flick*2,0,Math.PI*2);c.fill();
+     tg.addColorStop(0,'rgba(255,214,116,0.38)');tg.addColorStop(0.5,'rgba(240,156,64,0.16)');tg.addColorStop(1,'rgba(240,120,40,0)');
+     c.fillStyle=tg;c.beginPath();c.arc(x+16,y+16,52+flick*2,0,Math.PI*2);c.fill();
     }
     fill(c,'#242020',x+11,y+11,10,16);fill(c,'#6e5d52',x+13,y+14,6,11);
     fill(c,'#d97e34',x+12,y+7,8,6);fill(c,'#f7c963',x+13,y+8,6,4);fill(c,'#fff6cc',x+15,y+9,2,2);
@@ -561,12 +697,13 @@ const RoadCaveQuality=(()=>{
     fill(c,'#262a32',x+4,y+1,24,6);fill(c,'#9ea2ac',x+5,y+2,22,4);fill(c,'#c2c6ce',x+7,y+2,16,1);
     fill(c,'#385846',x+7,y+20,7,4);
    }
-   // Underground water seepage puddles & glowing cyan cave-moss clusters
-   for(const [wx,wy] of [[2,7],[21,7],[11,11],[14,9]]){
+   // Underground water seepage puddles with cyan shimmer & glowing cave-moss clusters
+   const drip=Math.floor(Date.now()/360)%3;
+   for(const [wx,wy] of [[2,7],[21,7],[11,11],[14,9],[4,9],[19,8]]){
     const x=wx*32,y=wy*32;
-    fill(c,'#1e323c',x+6,y+14,18,9);fill(c,'#3c6678',x+8,y+15,14,6);
-    fill(c,'#8cc4d0',x+10,y+16,5,2);
-    fill(c,'#386c58',x+4,y+12,5,3);fill(c,'#78d4a8',x+5,y+12,3,2);
+    fill(c,'#1a2e3a',x+5,y+13,20,10);fill(c,'#34687c',x+7,y+14,16,7);
+    fill(c,'#90dce8',x+9+drip,y+15,6,2);fill(c,'#e0fcff',x+11+drip,y+15,2,1);
+    fill(c,'#34705a',x+4,y+11,5,3);fill(c,'#78e0b4',x+5,y+11,3,2);
    }
    // Abandoned garrison weapon racks & supply crates along barracks walls
    for(const [rx,ry] of [[2,12],[7,12],[18,12]]){

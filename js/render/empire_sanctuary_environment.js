@@ -245,16 +245,18 @@ const EmpireSanctuaryEnvironment=(()=>{
     return true;
    }
    if(ch==='M'){
-    // Organic varied craggy highland rock outcrop over painterly steppe grass (no uniform block grid!)
-    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(ctx,'grass',x,y,'steppe'))pix(ctx,'#585148',a,b,32,32);
-    const ox=a+2+(r%5),oy=b+4+((r>>>3)%6),rw=22+((r>>>6)%6),rh=16+((r>>>9)%6);
-    pix(ctx,'rgba(14,16,20,0.34)',ox-1,oy+rh-2,rw+4,5);
-    pix(ctx,'#322f2b',ox+2,oy,rw-4,rh);pix(ctx,'#322f2b',ox,oy+3,rw,rh-5);
-    pix(ctx,'#686258',ox+2,oy+2,rw-4,rh-4);
-    pix(ctx,'#8c8476',ox+4,oy+2,rw-8,Math.max(4,Math.floor(rh*0.45)));
-    pix(ctx,'#b8b0a0',ox+6,oy+3,Math.max(5,rw-14),3);
-    if(r%2===0){pix(ctx,'#4a6842',ox+3,oy+rh-6,8,4);pix(ctx,'#729460',ox+5,oy+rh-7,5,2)}
-    if(right==='M'){pix(ctx,'#58524a',a+24,b+10+(r%6),10,12);pix(ctx,'#847c70',a+25,b+11+(r%6),8,4)}
+    // Organic varied craggy highland rock outcrop over seamless organic steppe terrain (no square grass patch!)
+    const organicOn=typeof ORGANIC_TERRAIN_CONFIGS!=='undefined'&&!!ORGANIC_TERRAIN_CONFIGS[map]&&typeof HD2DAtlas!=='undefined'&&!!HD2DAtlas.drawOrganicTerrain;
+    if(!organicOn){
+     if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(ctx,'grass',x,y,'steppe'))pix(ctx,'#585148',a,b,32,32);
+    }
+    if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawMossyBoulder){
+     HD2DAtlas.drawMossyBoulder(ctx,a,b);
+    }else{
+     const ox=a+2+(r%5),oy=b+4+((r>>>3)%6),rw=22+((r>>>6)%6),rh=16+((r>>>9)%6);
+     pix(ctx,'rgba(14,16,20,0.34)',ox-1,oy+rh-2,rw+4,5);
+     pix(ctx,'#322f2b',ox+2,oy,rw-4,rh);pix(ctx,'#686258',ox+2,oy+2,rw-4,rh-4);
+    }
     return true;
    }
    if(ch==='B'){
@@ -335,7 +337,8 @@ const EmpireSanctuaryEnvironment=(()=>{
     }
     // Interior 'S' tiles on imperialcamp / royalcamp: 3D timber-and-sandbag military breastworks with sharpened pikes
     const imp=map==='imperialcamp';
-    if(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(ctx,'grass',x,y,imp?'empire':'steppe')){
+    const organicOn=typeof ORGANIC_TERRAIN_CONFIGS!=='undefined'&&!!ORGANIC_TERRAIN_CONFIGS[map]&&typeof HD2DAtlas!=='undefined'&&!!HD2DAtlas.drawOrganicTerrain;
+    if(!organicOn&&(typeof HD2DAtlas==='undefined'||!HD2DAtlas.drawTile(ctx,'grass',x,y,imp?'empire':'steppe'))){
      pix(ctx,imp?'#546258':'#5e6452',a,b,32,32);
     }
     pix(ctx,'rgba(12,16,22,0.40)',a+2,b+24,28,7);
@@ -553,9 +556,13 @@ const EmpireSanctuaryEnvironment=(()=>{
   const now=Date.now();
 
   if(map==='empirevillage'){
-   // Expanded 32x20 Imperial Canal & Orchard Village: Waterfall Culvert, Humble 1-Story Imperial River-Stone & Blue-Slate Cottages with Blue Mourning Ribbons!
+   // Expanded 32x20 Imperial Canal & Orchard Village: Waterfall Culvert, Sculpted Arched Granite Bridges & Detailed Imperial Slate Cottages!
    if(typeof HD2DAtlas!=='undefined'){
     HD2DAtlas.drawWaterfallCulvert(ctx,6,1,2,{stone:'#68727a',stoneHi:'#9ea8b0'});
+    if(HD2DAtlas.drawArchedBridge){
+     HD2DAtlas.drawArchedBridge(ctx,6,9,2,{stone:'granite'});
+     HD2DAtlas.drawArchedBridge(ctx,6,16,2,{stone:'granite'});
+    }
    }
    for(const [dx,dy] of [[11,6],[23,6],[11,15],[23,15]]){
     const px=dx*32,py=dy*32;
@@ -574,8 +581,8 @@ const EmpireSanctuaryEnvironment=(()=>{
      drawImperialHouse(ctx,b.x,b.y,b.w,b.h,{roofMain:b.roofMain,roofHi:b.roofHi,wall:b.wall,ribbon:true,bannerLabel:b.label});
     }
    }
-   // Swaying canal reeds & darting fish shadow along the Imperial mill stream
-   for(const [rx,ry] of [[5,3],[8,4],[5,12],[8,13]]){
+   // Swaying canal reeds, water lilypads & darting fish shadow along the Imperial mill stream
+   for(const [rx,ry] of [[5,3],[8,4],[5,12],[8,13],[5,15],[8,14]]){
     const px=rx*32+(rx===5?22:2),py=ry*32+6;
     pix(ctx,'#2e5430',px+1,py+4,2,12);pix(ctx,'#4e8446',px+4,py+2,2,14);pix(ctx,'#5e3e28',px+4,py,2,5);
    }
@@ -584,9 +591,9 @@ const EmpireSanctuaryEnvironment=(()=>{
    // 3D Orchard Harvest Booth cleanly framed beside the village square at solid-blocked (17..18, 12) (zero overlap with SE house!)
    drawImperialBooth(ctx,17,12,'#3c6278','fruits');
 
-   // Rotating 3D timber waterwheel & 3D Pitched-Roof Stone Mill Sluice House at (4..5, 7..8) over the irrigation canal (x=6..7)
+   // Rotating 3D timber waterwheel with animated sparkling splash spray & 3D Pitched-Roof Stone Mill Sluice House at (4..5, 7..8)!
    const wx=6*32+12,wy=8*32+16,angle=(now/900)%(Math.PI*2),mx=4*32+4,my=7*32+2;
-   pix(ctx,'rgba(12,18,24,0.36)',mx+2,my+46,32,8);
+   pix(ctx,'rgba(12,18,24,0.38)',mx+2,my+46,32,8);
    pix(ctx,'#201a16',mx,my+10,30,40);
    pix(ctx,'#9e9a8e',mx+2,my+36,26,12);
    pix(ctx,'#785a3e',mx+2,my+14,26,22);pix(ctx,'#c8c0ae',mx+5,my+16,20,16);
@@ -604,7 +611,9 @@ const EmpireSanctuaryEnvironment=(()=>{
     ctx.beginPath();ctx.moveTo(wx,wy);ctx.lineTo(wx+Math.cos(a)*19,wy+Math.sin(a)*19);ctx.stroke();
    }
    ctx.restore();
-   pix(ctx,'#a2dce8',wx-10,wy+15,22,4);pix(ctx,'#e6fbff',wx-6,wy+16,14,2);
+   const spOff=Math.floor(now/180)%4;
+   pix(ctx,'rgba(162,226,240,0.82)',wx-14,wy+14,28,5);pix(ctx,'#ffffff',wx-8+spOff,wy+15,14,2);
+   pix(ctx,'#dff8ff',wx-12+(spOff*2),wy+10,3,2);pix(ctx,'#dff8ff',wx+10-(spOff*2),wy+11,3,2);
 
    // Wooden irrigation flume carrying sparkling canal water east into village orchards along y=7 (passes cleanly under main road x=15..16!)
    for(let tx=8;tx<=19;tx++){
@@ -620,7 +629,6 @@ const EmpireSanctuaryEnvironment=(()=>{
     const px=gx*32,py=gy*32;
     pix(ctx,'#465842',px+2,py+4,28,24);pix(ctx,'#6c8658',px+4,py+6,24,20);
     pix(ctx,'#9ca69a',px+2,py+4,28,2);pix(ctx,'#9ca69a',px+2,py+26,28,2);
-    // Dwarf espalier fruit tree canopy loaded with crimson apples & golden pears!
     pix(ctx,'#4e3624',px+14,py+17,4,9);
     pix(ctx,'#224a2e',px+6,py+6,20,14);pix(ctx,'#3c7644',px+8,py+5,16,12);pix(ctx,'#68a45c',px+10,py+6,10,6);
     pix(ctx,'#dc4c48',px+10,py+10,3,3);pix(ctx,'#f2b84c',px+18,py+9,3,3);pix(ctx,'#dc4c48',px+14,py+14,3,3);
@@ -630,22 +638,39 @@ const EmpireSanctuaryEnvironment=(()=>{
     pix(ctx,'#4e3824',bx*32+8,by*32+18,16,10);pix(ctx,'#9c7650',bx*32+9,by*32+19,14,7);
     pix(ctx,'#d84844',bx*32+11,by*32+15,4,4);pix(ctx,'#f2b262',bx*32+16,by*32+15,4,4);
    }
-   // Wrought-iron Imperial village streetlamps with smooth radial warm light pools (clear of y=9 stroller lane!)
-   if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawLanternPost){
+   // Wrought-iron Imperial village streetlamps, blooming flower beds & orchard bushes!
+   if(typeof HD2DAtlas!=='undefined'){
     for(const [lx,ly] of [[8,8],[13,8],[19,8],[26,8],[8,15],[14,15],[18,15]]){
      HD2DAtlas.drawLanternPost(ctx,lx*32,ly*32,{iron:true});
+    }
+    for(const [fx,fy] of [[10,6],[13,6],[20,6],[26,6],[10,15],[26,15]]){
+     HD2DAtlas.drawFlowerBed(ctx,fx*32,fy*32,{cols:['#98c4f4','#fff8e6','#f6e278','#82c8b0']});
+    }
+    for(const [bx0,by0,bl] of [[8,5,'#98c4f4'],[27,5,'#fff4dc'],[8,12,'#f6e278'],[27,12,'#98c4f4']]){
+     HD2DAtlas.drawBush(ctx,bx0*32,by0*32,{bloom:bl});
     }
    }
    return true;
   }
 
   if(map==='imperialcity'){
-   // Grand 36x24 Legnoa Imperial Canal City upgraded to full HD2DAtlas grand architecture + North/South Gate Archways + Canal Plaza Medallion & Doves!
+   // Grand 36x24 Legnoa Imperial Canal City: Wrought-Iron Canal Railings, Striped Canopy Gondolas, Azure Civic Banners, Gate Archways & Doves!
    if(typeof HD2DAtlas!=='undefined'){
     HD2DAtlas.drawPlazaMedallion(ctx,18*32,12*32+16,66,'imperial');
     HD2DAtlas.drawStoneArchGate(ctx,16,1,4,{label:'レグノア北門',roof:'#2f4c66',stone:'#8a96a0',stoneHi:'#c4ced4'});
     HD2DAtlas.drawStoneArchGate(ctx,16,22,4,{label:'レグノア南門',roof:'#2f4c66',stone:'#8a96a0',stoneHi:'#c4ced4'});
     HD2DAtlas.drawDoves(ctx,[[15*32+18,11*32+12,1],[20*32+12,13*32+8,-1]],now);
+   }
+   // Ornate Wrought-Iron Canal Quay Balustrade Railings bordering both grand canals (y=8 & y=16, leaving all 6 bridges open!)
+   for(const cy of [8,16]){
+    for(let tx=2;tx<=33;tx++){
+     if(tx===6||tx===7||tx===17||tx===18||tx===28||tx===29)continue;
+     const x=tx*32,yTop=cy*32-3,yBot=cy*32+30;
+     pix(ctx,'#222c36',x,yTop,32,3);pix(ctx,'#788896',x,yTop,32,1);
+     pix(ctx,'#222c36',x,yBot,32,3);pix(ctx,'#788896',x,yBot,32,1);
+     for(let sx=x+4;sx<x+30;sx+=8){pix(ctx,'#303c48',sx,yTop+1,2,4);pix(ctx,'#303c48',sx,yBot-1,2,4)}
+     if(tx%4===0){pix(ctx,'#222c36',x+13,yTop-3,6,6);pix(ctx,'#a8b6c2',x+14,yTop-2,4,4)}
+    }
    }
    const impCityBuildings=[
     {x:3,y:2,w:7,h:4,tag:'imp_archive',region:'imperial',rural:false,emblem:'book',wallTone:'limestone',roofDark:'#1e3248',roofMain:'#325070',roofHi:'#547aa0',stonePortico:true,chimneyLeft:true,doorOffsetPx:3*32+16},
@@ -659,16 +684,28 @@ const EmpireSanctuaryEnvironment=(()=>{
     }
    }
 
-   // Moored 3D wooden canal cargo boats with warm stern lanterns gently bobbing on the two canals (y=8 & y=16)
-   const bob=Math.round(Math.sin(now/450)*1);
-   for(const [bx,by] of [[11,8],[24,8],[32,8],[10,16],[22,16]]){
+   // Detailed Moored Venetian-Style Canal Gondolas with Striped Azure/Cream Canopies, Oar & Glowing Brass Stern Lanterns!
+   const bob=Math.round(Math.sin(now/450)*1),sway=Math.round(Math.sin(now/340)*1);
+   for(const [bx,by] of [[11,8],[24,8],[32,8],[10,16],[22,16],[3,16]]){
     const x=bx*32,y=by*32+bob;
-    pix(ctx,'rgba(10,20,28,0.40)',x+1,y+19,30,7);
-    pix(ctx,'#3a281c',x+2,y+12,28,9);
-    pix(ctx,'#846244',x+4,y+13,24,6);
-    pix(ctx,'#b08860',x+5,y+13,22,2);
-    pix(ctx,'#3e6482',x+9,y+9,14,6);pix(ctx,'#e0eaef',x+11,y+10,10,2);
-    pix(ctx,'#ffd874',x+25,y+9,4,4);pix(ctx,'#fffbe4',x+26,y+10,2,2);
+    pix(ctx,'rgba(196,238,252,0.44)',x-2,y+21,36,2);
+    pix(ctx,'rgba(10,20,28,0.44)',x+1,y+19,32,7);
+    pix(ctx,'#2a1c14',x,y+12,32,9);pix(ctx,'#866042',x+2,y+13,28,6);pix(ctx,'#b89066',x+4,y+13,24,2);
+    // Striped Imperial canopy hood + brass lantern glow
+    pix(ctx,'#1c2a3a',x+7,y+6,16,8);
+    for(let s=0;s<4;s++)pix(ctx,s%2?'#f2ece0':'#2c5884',x+8+s*4,y+7,4,6);
+    pix(ctx,'#ebd074',x+7,y+6,16,1);
+    const gl=ctx.createRadialGradient?.(x+27,y+10,1,x+27,y+10,16);
+    if(gl&&typeof gl.addColorStop==='function'){gl.addColorStop(0,'rgba(255,216,120,0.42)');gl.addColorStop(1,'rgba(255,180,70,0)');ctx.fillStyle=gl;ctx.beginPath();ctx.arc(x+27,y+10,16,0,Math.PI*2);ctx.fill()}
+    pix(ctx,'#ffd874',x+25,y+8,4,4);pix(ctx,'#fffbe4',x+26,y+9,2,2);
+   }
+   // Waving Azure-and-Silver Imperial Boulevard Standard Banners flanking the North & South Main Promenade!
+   for(const [bx,by] of [[15,3],[20,3],[15,20],[20,20]]){
+    const x=bx*32+14,y=by*32+2;
+    pix(ctx,'rgba(12,18,24,0.34)',x-3,y+24,10,4);
+    pix(ctx,'#26303a',x,y,3,26);pix(ctx,'#c8d6e2',x-1,y-2,5,3);
+    pix(ctx,'#1c324a',x+3,y+2,15+sway,13);pix(ctx,'#2c5888',x+4,y+3,13+sway,11);
+    pix(ctx,'#68a0d4',x+5,y+4,10+sway,3);pix(ctx,'#e8f0f6',x+7,y+8,6,3);
    }
    // Potted Mediterranean stone cypress urns flanking the central bridges (clear of y=15 quay promenade!)
    for(const [ux,uy] of [[15,9],[20,9],[15,17],[20,17]]){
@@ -677,15 +714,18 @@ const EmpireSanctuaryEnvironment=(()=>{
     pix(ctx,'#4a545e',px+2,py+14,12,9);pix(ctx,'#a8b4bc',px+3,py+15,10,6);
     pix(ctx,'#265238',px+3,py+2,10,13);pix(ctx,'#468256',px+5,py,6,12);pix(ctx,'#7eb480',px+6,py+2,3,6);
    }
-   // Painterly Canal Market Pavilions & Wrought-Iron Streetlamps (HD2DAtlas v2!)
+   // Painterly Canal Market Pavilions, Marble Flower Planters & Wrought-Iron Gaslamps!
    drawImperialBooth(ctx,4,10,'#36607a','cloth');
    drawImperialBooth(ctx,10,14,'#466e60','fruits');
    drawImperialBooth(ctx,23,10,'#385874','porcelain');
    drawImperialBooth(ctx,30,10,'#546862','cloth');
    drawImperialBooth(ctx,30,14,'#4c546e','books');
-   if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawLanternPost){
+   if(typeof HD2DAtlas!=='undefined'){
     for(const [lx,ly] of [[12,9],[23,9],[12,15],[23,15],[15,6],[20,6],[15,18],[20,18]]){
      HD2DAtlas.drawLanternPost(ctx,lx*32,ly*32,{iron:true});
+    }
+    for(const [fx,fy] of [[14,11],[21,11],[14,13],[21,13]]){
+     HD2DAtlas.drawFlowerBed(ctx,fx*32,fy*32,{cols:['#98c6f8','#fff8e6','#f4d670','#74c2be']});
     }
    }
    return true;
@@ -828,14 +868,15 @@ const EmpireSanctuaryEnvironment=(()=>{
     pix(ctx,'rgba(216,232,244,0.14)',mx*32+drift,my*32+8,mw*32,14);
     pix(ctx,'rgba(236,244,252,0.10)',mx*32+12-drift,my*32+14,mw*32-20,8);
    }
-   // 2. Handcrafted Timber Plank Mountain Bridges & Rope Guardposts along the narrow ridge pass (y=7)
-   for(const bx of [7,8,15,16]){
-    const x=bx*32,y=7*32;
-    pix(ctx,'rgba(12,16,20,0.36)',x,y+26,32,6);
-    pix(ctx,'#2e2016',x,y+3,32,26);
-    for(let p=2;p<30;p+=6){pix(ctx,'#7e6042',x+p,y+5,5,22);pix(ctx,'#b08a60',x+p,y+5,5,3)}
-    pix(ctx,'#463222',x,y+2,32,3);pix(ctx,'#c4a272',x,y+3,32,1);
-    pix(ctx,'#463222',x,y+27,32,3);pix(ctx,'#c4a272',x,y+28,32,1);
+   // 2. Sculpted Arched Timber Mountain Bridges spanning the misty gorge ledges along row 7!
+   if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawArchedBridge){
+    HD2DAtlas.drawArchedBridge(ctx,7,7,2);
+    HD2DAtlas.drawArchedBridge(ctx,15,7,2);
+   }else{
+    for(const bx of [7,8,15,16]){
+     const x=bx*32,y=7*32;
+     pix(ctx,'#2e2016',x,y+3,32,26);
+    }
    }
    // 3. Carved Stone Overlook Balustrade & Smuggler's Canvas Lean-To Shelter at West Overlook (3..6, 6..8)
    pix(ctx,'#3a3e42',3*32+2,8*32+18,4*32-4,10);pix(ctx,'#8c908c',3*32+4,8*32+19,4*32-8,6);pix(ctx,'#ccd0c8',3*32+6,8*32+19,4*32-12,2);
@@ -934,26 +975,23 @@ const EmpireSanctuaryEnvironment=(()=>{
    if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.drawPlazaMedallion){
     HD2DAtlas.drawPlazaMedallion(ctx,16*32,11*32,54,'sanctuary');
    }
-   // Northeast: Continuous White-Limestone Terraced Ancient Olive Groves with Crisp Pixel-Cluster Silver-Green Olive Trees!
-   for(const [ty,cols] of [[4,[22,23,24,25,26]],[5,[22,23,24,25,26]],[6,[22,24,26]]]){
-    const x0=cols[0]*32,w0=(cols[cols.length-1]-cols[0]+1)*32,y0=ty*32;
-    if(ty<6){
-     pix(ctx,'rgba(16,32,26,0.22)',x0+2,y0+26,w0-4,5);
-     pix(ctx,'#8c9284',x0+2,y0+23,w0-4,5);pix(ctx,'#dcdad0',x0+2,y0+22,w0-4,3);
+   // Northeast: Sculpted Stepped White-Marble Sanctuary Olive & White-Blossom Terraced Gardens (ZERO identical green dot rows!)
+   if(typeof HD2DAtlas!=='undefined'){
+    for(const ty of [4,5]){
+     const x0=22*32,w0=5*32,y0=ty*32;
+     pix(ctx,'rgba(14,28,24,0.24)',x0+2,y0+26,w0-4,5);
+     pix(ctx,'#768074',x0+2,y0+22,w0-4,6);pix(ctx,'#dcdad0',x0+2,y0+22,w0-4,3);pix(ctx,'#faf8ee',x0+4,y0+22,w0-8,1);
     }
-    for(const gx of cols){
-     const cx=gx*32+16,cy=y0+15;
-     if(typeof HD2DAtlas!=='undefined'&&HD2DAtlas.pCluster){
-      HD2DAtlas.pOval(ctx,'rgba(16,34,26,0.28)',cx+1,cy+7,12,4.5);
-      pix(ctx,'#463424',cx-3,cy+1,6,9);pix(ctx,'#785e42',cx-2,cy+1,4,8);pix(ctx,'#a28460',cx-2,cy+1,2,7);
-      HD2DAtlas.pCluster(ctx,'#264c38',cx,cy,11,7.5,gx*7+ty,1);
-      HD2DAtlas.pCluster(ctx,'#4e845c',cx-1,cy-2,9,6,gx*11+ty,1);
-      HD2DAtlas.pCluster(ctx,'#8ec08e',cx-2,cy-4,5.5,3.5,gx*13+ty,1);
-      pix(ctx,'#f6f4e2',cx-4,cy-3,2,2);pix(ctx,'#efe090',cx+4,cy-2,2,2);
-     }else{
-      pix(ctx,'#5c8e64',cx-8,cy-6,16,12);
-     }
+    // Staggered ancient silver-olive trees, lush sanctuary bushes, blooming white-lily flowerbeds & marble sanctuary benches!
+    for(const [tx,ty] of [[22,4],[26,4],[24,6]])HD2DAtlas.drawTree(ctx,tx,ty,'sanctuary');
+    for(const [fx,fy] of [[23,4],[25,4],[22,5],[24,5],[26,5],[12,9],[19,9],[12,13],[19,13]]){
+     HD2DAtlas.drawFlowerBed(ctx,fx*32,fy*32,{cols:['#f8fff4','#f6e288','#98f4e4','#ffffff']});
     }
+    for(const [bx0,by0,bl] of [[23,5,'#fff8e6'],[25,5,'#98f4e4'],[22,6,'#f6e288'],[26,6,'#fff8e6'],[10,7,'#98f4e4'],[20,7,'#fff8e6'],[11,16,'#f6e288']]){
+     HD2DAtlas.drawBush(ctx,bx0*32,by0*32,{bloom:bl});
+    }
+    HD2DAtlas.drawParkBench(ctx,13*32,12*32);
+    HD2DAtlas.drawParkBench(ctx,18*32,12*32);
    }
    // Ancient Fluted Broken Marble Ruin Columns framing the Temple approach & Sacred Spring
    for(const [cx,cy] of [[3,9],[4,13],[10,14]]){
@@ -1233,12 +1271,18 @@ const EmpireSanctuaryEnvironment=(()=>{
    return false;
   }
   if(o.id==='elsiaTablet'||o.id==='oldSanctum'||o.id==='canalMonument'){
-   pix(ctx,'rgba(14,18,22,0.34)',x+4,y+24,24,5);
-   pix(ctx,'#1e2422',x+5,y+21,22,6);pix(ctx,'#8c8e86',x+6,y+22,20,4);
-   pix(ctx,'#1e2422',x+6,y+3,20,20);pix(ctx,'#c8c6b8',x+8,y+5,16,16);
-   pix(ctx,'#f2f0e4',x+9,y+5,14,3);pix(ctx,'#f2f0e4',x+9,y+5,4,15);
-   for(let ry=10;ry<=18;ry+=3)pix(ctx,'#6e726a',x+11,y+ry,10,1);
-   pix(ctx,'#467448',x+7,y+18,6,4);
+   // Ornate Rune-Carved White-Marble Sanctuary Obelisk with Luminous Aquamarine Glyph Inlay!
+   const og=ctx.createRadialGradient?.(x+16,y+12,2,x+16,y+12,24);
+   if(og&&typeof og.addColorStop==='function'){og.addColorStop(0,'rgba(128,250,236,0.32)');og.addColorStop(1,'rgba(100,220,210,0)');ctx.fillStyle=og;ctx.beginPath();ctx.arc(x+16,y+12,24,0,Math.PI*2);ctx.fill()}
+   pix(ctx,'rgba(12,22,20,0.38)',x+3,y+24,26,6);
+   pix(ctx,'#242c28',x+4,y+21,24,7);pix(ctx,'#94988e',x+5,y+22,22,5);pix(ctx,'#e6e4d8',x+6,y+22,20,2);
+   pix(ctx,'#242c28',x+8,y+1,16,22);pix(ctx,'#d2d0c2',x+10,y+3,12,18);
+   pix(ctx,'#faf8ee',x+11,y+3,4,17);pix(ctx,'#9e9e92',x+18,y+3,4,17);
+   pix(ctx,'#242c28',x+11,y-3,10,5);pix(ctx,'#ebd074',x+12,y-2,8,3);pix(ctx,'#fffbe4',x+14,y-2,4,2);
+   // Luminous carved aquamarine ancient sanctuary runes down center face
+   for(const ry of [7,11,15])pix(ctx,'#44d8cc',x+13,y+ry,6,2);
+   pix(ctx,'#d6fffc',x+15,y+7,2,10);
+   pix(ctx,'#3a6e42',x+6,y+18,7,4);pix(ctx,'#72b462',x+7,y+17,4,2);
    return true;
   }
   if(['empireCache','imperialCache','yukiCache','elsiaCache','returnCache','ridgeVault','finalSupplyCrate','finalImperialCrate'].includes(o.id)){

@@ -195,6 +195,30 @@ const HD2DAtlas=(()=>{
    cMortar:hexRgb('#585248'),cMoss:hexRgb('#5b6a46'),cDark:hexRgb('#8a8478'),cMid:hexRgb('#a29c8e'),cLight:hexRgb('#b8b2a2'),cRim:hexRgb('#d4cec0'),
    wDeep:hexRgb('#244e64'),wMid:hexRgb('#367086'),wShal:hexRgb('#588c94'),wSand:hexRgb('#888c74'),wBank:hexRgb('#4e4234'),wShadow:hexRgb('#182e3a'),
    flowers:['#f6f2e2','#ebd482','#d8c8a2','#ffffff']
+  },
+  ash:{
+   gDeep:hexRgb('#34302c'),gShade:hexRgb('#49433d'),gMid:hexRgb('#60584f'),gSun:hexRgb('#756b5e'),gBright:hexRgb('#8c8070'),
+   gBlade:hexRgb('#a49682'),
+   pDeep:hexRgb('#6a5844'),pEdge:hexRgb('#867158'),pMid:hexRgb('#a48d70'),pSun:hexRgb('#baa384'),pHi:hexRgb('#d2bc9c'),
+   cMortar:hexRgb('#3c3936'),cMoss:hexRgb('#505442'),cDark:hexRgb('#66625c'),cMid:hexRgb('#7e7971'),cLight:hexRgb('#969086'),cRim:hexRgb('#b4ada0'),
+   wDeep:hexRgb('#20343e'),wMid:hexRgb('#304a56'),wShal:hexRgb('#48646e'),wSand:hexRgb('#68645a'),wBank:hexRgb('#3a322c'),wShadow:hexRgb('#162026'),
+   flowers:['#8a8074','#a69682','#c4783e','#746c62']
+  },
+  mud:{
+   gDeep:hexRgb('#32362d'),gShade:hexRgb('#454a3d'),gMid:hexRgb('#5a5f4e'),gSun:hexRgb('#6f745e'),gBright:hexRgb('#84886f'),
+   gBlade:hexRgb('#9ca082'),
+   pDeep:hexRgb('#5e5446'),pEdge:hexRgb('#7a6e5c'),pMid:hexRgb('#968872'),pSun:hexRgb('#ac9d84'),pHi:hexRgb('#c4b69c'),
+   cMortar:hexRgb('#464844'),cMoss:hexRgb('#4b5c3e'),cDark:hexRgb('#6e706c'),cMid:hexRgb('#868882'),cLight:hexRgb('#9ea098'),cRim:hexRgb('#bcbeb4'),
+   wDeep:hexRgb('#203e4a'),wMid:hexRgb('#305866'),wShal:hexRgb('#4c7682'),wSand:hexRgb('#6e7464'),wBank:hexRgb('#423a30'),wShadow:hexRgb('#16262e'),
+   flowers:['#8e8c7a','#6c7c58','#a8a28c','#7a8468']
+  },
+  battle:{
+   gDeep:hexRgb('#2d362c'),gShade:hexRgb('#414c3c'),gMid:hexRgb('#56634c'),gSun:hexRgb('#6c795c'),gBright:hexRgb('#83906e'),
+   gBlade:hexRgb('#9ea882'),
+   pDeep:hexRgb('#645440'),pEdge:hexRgb('#826d54'),pMid:hexRgb('#9f886a'),pSun:hexRgb('#b69e7e'),pHi:hexRgb('#ceb898'),
+   cMortar:hexRgb('#424c56'),cMoss:hexRgb('#466044'),cDark:hexRgb('#6e7a84'),cMid:hexRgb('#86929c'),cLight:hexRgb('#a0acb4'),cRim:hexRgb('#c2ccd2'),
+   wDeep:hexRgb('#1c4258'),wMid:hexRgb('#2c5e78'),wShal:hexRgb('#487e92'),wSand:hexRgb('#707c6e'),wBank:hexRgb('#443a2e'),wShadow:hexRgb('#142834'),
+   flowers:['#d8d2b6','#b8a878','#8ea078','#ece6d0']
   }
  };
 
@@ -212,6 +236,7 @@ const HD2DAtlas=(()=>{
   const well=opts.wellCenter||null; // [cxPx, cyPx, radiusPx]
   const isCobbleTile=(tx,ty,ch)=>{
    if(opts.cobbleFn&&opts.cobbleFn(tx,ty,ch))return true;
+   if(opts.noCobbleE&&ch==='E')return false;
    return ch==='A'||ch==='E';
   };
   const isRoadTile=(tx,ty,ch)=>{
@@ -389,9 +414,21 @@ const HD2DAtlas=(()=>{
    const gx=12+(hx%(W-24)),gy=12+(hy%(H-24));
    const tx=gx>>5,ty=gy>>5;
    const ch=m.tiles[ty]?.[tx];
-   if(ch!=='G'&&ch!=='Q'&&ch!=='B')continue;
+   if(ch!=='G'&&ch!=='Q'&&ch!=='B'&&!(opts.mGround&&ch==='M')&&!(opts.noCobbleE&&ch==='E'))continue;
    if(sample(rw,(gx-16)/32,(gy-16)/32)>0.32||sample(cw,(gx-16)/32,(gy-16)/32)>0.32||sample(ww,(gx-16)/32,(gy-16)/32)>0.32)continue;
-   if(i%5===0){
+   if(opts.noFlowers){
+    if(i%6===0){
+     // Subtle damp puddle glint or charred cinder pebble on battlefields/ash roads
+     if(opts.biome==='mud'){
+      px(c,'#344852',gx-2,gy,7,3);px(c,'#6a8896',gx-1,gy,4,1);
+     }else{
+      px(c,'#2c2724',gx-1,gy+1,4,2);px(c,'#7c7266',gx-1,gy,3,1);
+      if(opts.biome==='ash'&&(i%18===0))px(c,'#e0742c',gx,gy,2,1);
+     }
+    }else if(i%2===0){
+     grassTuft(c,gx,gy,gD,gM,gB);
+    }
+   }else if(i%5===0){
     // Wildflower cluster (3-5 tiny pixel-art blossoms grouped naturally in meadow!)
     const col=fCols[hx%fCols.length];
     const sub=2+(hy%3);
@@ -1157,41 +1194,130 @@ const HD2DAtlas=(()=>{
 
  // 5C. MILITARY FIELD HOSPITAL PAVILION & CHARRED BURNED FARMHOUSE RUIN
  function buildMilitaryFieldCanvas(wTiles,hTiles,opts={}){
-  const padL=20,padR=28,padT=52,padB=20;
+  const padL=24,padR=32,padT=58,padB=24;
   const w=wTiles*32,h=hTiles*32;
   const cv=mkCanvas(w+padL+padR,h+padT+padB);if(!cv)return null;
-  const c=cv.ctx,ox=padL,oy=padT,mid=ox+Math.floor(w/2),sideW=14,outline='#302822';
+  const c=cv.ctx,ox=padL,oy=padT,mid=ox+Math.floor(w/2),sideW=16,outline='#2a221d';
   if(opts.militaryType==='ruin'){
-   pOval(c,'rgba(12,12,16,0.36)',ox+w/2+8,oy+h+2,w*0.56,12);
-   for(let s=0;s<12;s++)px(c,s===11?outline:'#423c36',ox+w+s,Math.round(oy+h-36-s*0.55),1,36);
-   px(c,outline,ox-1,oy+h-51,Math.floor(w*0.62)+2,52);
-   px(c,'#6a5e52',ox,oy+h-50,Math.floor(w*0.60),36);
-   px(c,'#5c564e',ox,oy+h-15,w,15);px(c,'#888278',ox+1,oy+h-15,w-2,3);
-   px(c,'#5e544a',ox+Math.floor(w*0.60),oy+h-34,Math.floor(w*0.40),20);
-   px(c,'#1a1614',ox+14,oy+h-38,18,14);px(c,'#4a3e34',ox+22,oy+h-38,2,9);
-   px(c,'#1a1614',ox+w-24,oy+h-32,12,11);
-   // Half-collapsed charred shingle roof + exposed diagonal rafters
-   drawPixelRoof(c,ox,oy+h-50,Math.floor(w*0.58),34,8,{tex:'shingle',main:'#3e342e',hi:'#544840',dark:'#28221e',rim:'#6a5e54',outline});
-   for(let r=0;r<4;r++)pLine(c,'#3a3028',ox+Math.floor(w*0.52)+r*11,oy+h-66+r*5,ox+Math.floor(w*0.52)+r*11+15,oy+h-58+r*5,3);
-   px(c,outline,ox+14,oy-22,20,42);px(c,'#706a62',ox+15,oy-21,18,40);px(c,'#9c968c',ox+16,oy-21,6,38);
-   pGlow(c,mid,oy+h-16,38,'rgba(255,120,40,0.42)','rgba(255,90,20,0)');
-   px(c,'#1a1412',mid-15,oy+h-36,30,34);
-   pOval(c,'#c83c18',mid,oy+h-11,11,5);pOval(c,'#f89234',mid,oy+h-11,7,3);pOval(c,'#ffe47c',mid,oy+h-11,4,2);
+   // Dramatic charred half-collapsed storybook timber-and-fieldstone farmhouse ruin!
+   const wallY=oy+18,wallH=h-18,leftW=Math.floor(w*0.64),rightW=w-leftW;
+   pOval(c,'rgba(12,10,12,0.40)',ox+w/2+10,oy+h+4,w*0.58,14);
+   // 3D oblique charred side return wall (broken lower on east side)
+   for(let s=0;s<sideW;s++){
+    const sy=Math.round(oy+h-44-s*0.50);
+    px(c,s===sideW-1?outline:'#3a342e',ox+w+s,sy,1,44);
+    px(c,'rgba(14,12,10,0.34)',ox+w+s,sy,1,9);
+   }
+   // Cracked fieldstone foundation plinth + scorched plaster & blackened timber walls
+   px(c,outline,ox-1,wallY-1,leftW+2,wallH+2);
+   px(c,'#6e6256',ox,wallY,leftW,wallH-18);
+   px(c,'#887b6c',ox+2,wallY+2,Math.floor(leftW*0.36),wallH-22);
+   // Soot scorch streaks & charred half-timber beams
+   for(let bx=ox+4;bx<ox+leftW-8;bx+=26){
+    px(c,'#2c241e',bx,wallY,5,wallH-18);px(c,'#4c4036',bx+1,wallY,2,wallH-18);
+   }
+   px(c,'rgba(16,14,14,0.42)',ox+2,wallY,leftW-4,16);
+   // Collapsed jagged east masonry wall (stepped down to rubble!)
+   px(c,outline,ox+leftW-1,oy+h-52,rightW+2,53);
+   px(c,'#645a50',ox+leftW,oy+h-50,rightW,34);
+   for(let sx=ox+leftW+4;sx<ox+w-6;sx+=14){
+    const bh=10+((hash(sx,3,7)%16));
+    px(c,'#2a2420',sx-1,oy+h-50,12,bh);px(c,'#7c7266',sx,oy+h-49,10,bh-2);px(c,'#a69c8e',sx+1,oy+h-49,6,2);
+   }
+   // Irregular fieldstone plinth across entire base
+   px(c,'#46423c',ox,oy+h-18,w,18);
+   for(let sx=ox+2;sx<ox+w-8;sx+=14){
+    px(c,'#6e685e',sx,oy+h-16,12,7);px(c,'#989286',sx+1,oy+h-16,8,2);
+    px(c,'#5a544c',sx+4,oy+h-8,10,6);
+   }
+   // Shattered charred window frames with dark burnt interiors
+   for(const [wx,wy] of [[ox+16,wallY+24],[ox+leftW+18,oy+h-40]]){
+    px(c,outline,wx-2,wy-2,20,18);px(c,'#181312',wx,wy,16,14);
+    px(c,'#54463a',wx+7,wy,2,10);px(c,'#54463a',wx,wy+6,10,2);
+    px(c,'rgba(16,12,10,0.45)',wx-2,wy-10,20,9); // smoke soot above window!
+   }
+   // Half-collapsed charred shingle roof on the west wing + snapped blackened rafters on the east!
+   drawPixelRoof(c,ox,wallY,leftW+6,42,10,{tex:'shingle',main:'#382f2a',hi:'#52463e',dark:'#221c19',rim:'#6a5c52',outline,eaveDark:'#241e1a',eaveHi:'#685c52'});
+   // Jagged broken roof edge & exposed charred diagonal rafters spilling into the ruin
+   for(let r=0;r<5;r++){
+    const rx0=ox+leftW-4+r*11,ry0=wallY-30+r*6;
+    pLine(c,outline,rx0-1,ry0-1,rx0+17,ry0+13,4);
+    pLine(c,'#4e3e32',rx0,ry0,rx0+15,ry0+11,2);
+   }
+   // Towering cracked stone chimney stack crowning left roof with curling grey ash smoke
+   px(c,outline,ox+16,oy-32,22,56);px(c,'#6e6860',ox+18,oy-30,18,52);px(c,'#9e988e',ox+19,oy-30,6,50);
+   px(c,'#3a3632',ox+24,oy-18,2,18);px(c,outline,ox+14,oy-35,26,5);px(c,'#aba498',ox+16,oy-34,22,3);
+   pCluster(c,'rgba(184,178,172,0.34)',ox+28,oy-42,9,5,11,2);
+   pCluster(c,'rgba(156,152,148,0.24)',ox+35,oy-50,11,5,19,2);
+   // Smoldering ember hearth glowing deeply inside the ruined doorway + charred rubble pile!
+   pGlow(c,mid-6,oy+h-16,46,'rgba(255,118,38,0.44)','rgba(255,80,18,0)');
+   px(c,outline,mid-22,oy+h-42,36,42);px(c,'#181210',mid-20,oy+h-40,32,40);
+   px(c,'#4e3c2e',mid-20,oy+h-40,32,5);
+   pOval(c,'#b83014',mid-4,oy+h-12,13,6);pOval(c,'#f27c24',mid-4,oy+h-12,9,4);pOval(c,'#ffe276',mid-4,oy+h-12,5,2);
+   // Fallen roof shingles, snapped beam & scorched masonry rubble at base
+   for(const [rx,ry,rw,rh] of [[ox-6,oy+h-7,14,7],[ox+w-14,oy+h-6,18,8],[mid+14,oy+h-5,14,6]]){
+    px(c,outline,rx,ry,rw,rh);px(c,'#6c665c',rx+1,ry+1,rw-2,rh-2);px(c,'#9a9488',rx+2,ry+1,rw-5,2);
+   }
+   pLine(c,'#362a20',ox+w-22,oy+h-2,ox+w+6,oy+h-10,3);
    return{el:cv.el,padL,padT,w:w+padL+padR,h:h+padT+padB};
   }
-  const wallY=oy+26,wallH=h-26;
-  pOval(c,'rgba(12,16,18,0.34)',ox+w/2+8,oy+h+3,w*0.56+sideW/2,12);
-  for(let s=0;s<sideW;s++)px(c,s===sideW-1?outline:'#86806c',ox+w+s,Math.round(wallY-s*0.52),1,wallH);
+  // True 3/4 Square Enix Heavy Canvas Field Hospital Command Pavilion!
+  const wallY=oy+30,wallH=h-30;
+  pOval(c,'rgba(12,16,18,0.36)',ox+w/2+10,oy+h+4,w*0.58+sideW/2,14);
+  // Pegged guy-ropes anchoring canvas pavilion corners into ground stakes
+  pLine(c,'#9e8e70',ox-2,wallY+4,ox-14,oy+h-6,1);px(c,'#4e3824',ox-16,oy+h-9,4,7);
+  pLine(c,'#9e8e70',ox+w+sideW-2,wallY-2,ox+w+sideW+10,oy+h-10,1);px(c,'#4e3824',ox+w+sideW+9,oy+h-13,4,7);
+  // 3D oblique canvas side wall with vertical timber stakes & sandbag apron
+  for(let s=0;s<sideW;s++){
+   const sy=Math.round(wallY-s*0.52);
+   px(c,s===sideW-1?outline:'#8e8670',ox+w+s,sy,1,wallH);
+   px(c,'rgba(18,16,14,0.28)',ox+w+s,sy,1,10);
+  }
   px(c,outline,ox-1,wallY-1,w+2,wallH+2);
-  px(c,'#d2c9ae',ox,wallY,w,wallH);
-  for(let fx=ox+16;fx<ox+w-14;fx+=20){px(c,'#bdb49a',fx,wallY+2,3,wallH-12);px(c,'#e6dec6',fx+3,wallY+2,2,wallH-12)}
-  for(let sx=ox+1;sx<ox+w-8;sx+=14){pOval(c,'#8e846e',sx+7,oy+h-9,7,3.5);pOval(c,'#b0a68e',sx+6,oy+h-10,5,2);pOval(c,'#746c58',sx+7,oy+h-4,7,3.5)}
-  for(const tx of [ox+1,ox+36,ox+w-40,ox+w-6]){px(c,'#6e4e32',tx,wallY,5,wallH);px(c,'#98704c',tx+1,wallY,2,wallH)}
-  drawPixelRoof(c,ox,wallY,w,42,sideW,{tex:'none',main:'#b8b096',hi:'#ded6bc',dark:'#827c66',rim:'#f0e8d0',outline:'#4a4436',eaveDark:'#6e6854',eaveHi:'#dfd8be'});
-  px(c,'#4a4236',mid-20,wallY-28,40,24);px(c,'#faf6ea',mid-19,wallY-27,38,22);
-  px(c,'#c22c36',mid-4,wallY-24,8,16);px(c,'#c22c36',mid-10,wallY-19,20,6);
-  pGlow(c,mid,oy+h-20,38,'rgba(255,204,104,0.34)','rgba(255,180,70,0)');
-  px(c,'#2c2218',mid-20,oy+h-42,40,42);px(c,'#ecc05e',mid-14,oy+h-34,28,24);px(c,'#fff6cc',mid-8,oy+h-30,16,14);
+  px(c,'#cfc6aa',ox,wallY,w,wallH);
+  px(c,'#e6dec6',ox+2,wallY+2,Math.floor(w*0.35),wallH-14);
+  px(c,'rgba(18,16,14,0.30)',ox,wallY,w,7); // eave drop shadow
+  // Draping canvas wall pleats & heavy oak upright poles
+  for(let fx=ox+14;fx<ox+w-12;fx+=18){px(c,'#b4ab90',fx,wallY+6,3,wallH-18);px(c,'#ece4cc',fx+3,wallY+6,2,wallH-18)}
+  for(const tx of [ox+1,ox+38,ox+w-43,ox+w-6]){
+   px(c,outline,tx,wallY-1,6,wallH+1);px(c,'#785436',tx+1,wallY,4,wallH-1);px(c,'#aa7e54',tx+1,wallY,2,wallH-2);
+  }
+  // Double-tiered stacked sandbag berm fortifying the entire hospital base
+  for(let sx=ox-2;sx<ox+w-6;sx+=14){
+   pOval(c,'#5e5646',sx+7,oy+h-11,7.5,4);pOval(c,'#9c9278',sx+7,oy+h-12,6.5,3);pOval(c,'#c2b89c',sx+6,oy+h-13,4.5,1.5);
+   pOval(c,'#4e483a',sx+9,oy+h-5,7.5,4);pOval(c,'#867e68',sx+9,oy+h-6,6.5,3);pOval(c,'#b0a68c',sx+8,oy+h-7,4.5,1.5);
+  }
+  // Vaulted ribbed olive-cream canvas roof + timber ridge beam + brass pole finials & medical pennant!
+  drawPixelRoof(c,ox,wallY,w,44,sideW,{tex:'none',main:'#b8af94',hi:'#ded6bc',dark:'#7e7660',rim:'#f4ecd4',outline:'#464034',ridge:'#7c5a38',eaveDark:'#68624e',eaveHi:'#e8e0c6'});
+  for(let rx=ox+22;rx<ox+w-20;rx+=24)pLine(c,'rgba(76,70,56,0.34)',rx,wallY-36,rx-6,wallY-2,2);
+  // Scalloped canvas valance edging along eaves
+  for(let vx=ox;vx<ox+w;vx+=10){
+   px(c,outline,vx,wallY-1,10,5);px(c,((vx/10)|0)%2?'#e6dec4':'#8a363e',vx+1,wallY,8,3);
+  }
+  // Brass finial masts & fluttering white/crimson medical pennant atop ridge
+  for(const fx of [ox+20,ox+w-24]){
+   px(c,'#584028',fx,wallY-54,3,14);px(c,'#ebd074',fx-1,wallY-57,5,4);
+  }
+  px(c,'#f8f4e8',ox+23,wallY-54,18,8);px(c,'#c4323c',ox+29,wallY-53,3,6);px(c,'#c4323c',ox+27,wallY-51,7,2);
+  // Protruding Gabled Hospital Entrance Portico with Crisp Heraldic Red-Cross Emblem!
+  const pTop=wallY-24;
+  for(let dy=0;dy<=26;dy++){
+   const hw=Math.round(4+dy*1.15);
+   px(c,'#464034',mid-hw,pTop+dy,hw*2,1);
+   if(hw>4)px(c,dy<10?'#f0e8d0':'#dfd6bc',mid-hw+2,pTop+dy,hw*2-4,1);
+  }
+  px(c,'#4a4236',mid-15,wallY-17,30,19);px(c,'#faf6ea',mid-14,wallY-16,28,17);
+  px(c,'#c22c36',mid-3,wallY-14,6,13);px(c,'#c22c36',mid-9,wallY-10,18,5);
+  // Parted canvas doorway flaps revealing warm glowing interior lanterns & medical cot
+  pGlow(c,mid,oy+h-20,42,'rgba(255,204,104,0.38)','rgba(255,176,68,0)');
+  px(c,outline,mid-22,oy+h-44,44,44);px(c,'#241c16',mid-20,oy+h-42,40,42);
+  px(c,'#e4b452',mid-14,oy+h-36,28,28);px(c,'#fff6cc',mid-8,oy+h-32,16,16);
+  // Folded tie-back canvas doorway drapes on left & right
+  px(c,'#ded6be',mid-20,oy+h-42,8,38);px(c,'#8a363e',mid-20,oy+h-24,8,3);
+  px(c,'#ded6be',mid+12,oy+h-42,8,38);px(c,'#8a363e',mid+12,oy+h-24,8,3);
+  // Wooden medical supply crate & rolled stretcher propped outside the hospital
+  px(c,outline,ox+8,oy+h-22,16,14);px(c,'#8c6640',ox+9,oy+h-21,14,12);px(c,'#c4323c',ox+14,oy+h-18,4,6);px(c,'#c4323c',ox+13,oy+h-17,6,4);
+  px(c,'#5e4228',ox+w-26,oy+h-16,20,3);px(c,'#e6dec4',ox+w-23,oy+h-19,14,4);
   return{el:cv.el,padL,padT,w:w+padL+padR,h:h+padT+padB};
  }
 
@@ -1236,9 +1362,25 @@ const HD2DAtlas=(()=>{
   px(c,'#4c5864',ox,oy+h-12,w,12);px(c,'#909ea8',ox+1,oy+h-12,w-2,2);
   px(c,'rgba(12,18,28,0.38)',ox,wallY,w,8);
 
-  const roofH=rural?40:48;
+  const roofH=rural?46:48;
+  // Stone-and-slate Imperial chimney stack rising cleanly behind the roof ridge
+  const chX=opts.chimneyLeft?ox+18:ox+w-32,chY=wallY-roofH-14;
+  px(c,outline,chX-1,chY-1,15,30);px(c,stDark,chX,chY,13,28);px(c,stHi,chX+1,chY,5,26);
+  px(c,outline,chX-3,chY-3,19,4);px(c,'#54a896',chX-2,chY-2,17,2);
   drawPixelRoof(c,ox,wallY,w,roofH,sideW,impRoof);
 
+  // Rural Imperial Cottage Protruding Attic Dormer Gable + Glowing Mullioned Window!
+  if(rural){
+   const dmy=wallY-24;
+   px(c,outline,doorX-16,dmy-2,32,21);px(c,stHi,doorX-15,dmy-1,30,19);
+   drawPixelWindow(c,doorX-6,dmy+2,12,11,{frame:outline,frameHi:'#eef4f8'});
+   for(let dy=0;dy<14;dy++){
+    const hw=20-dy*1.3;
+    px(c,outline,doorX-hw,dmy-1-dy,hw*2,1);
+    if(hw>3)px(c,dy%3===0?slateHi:slateMain,doorX-hw+2,dmy-1-dy,hw*2-4,1);
+   }
+   px(c,'#5ab2a0',doorX-2,dmy-15,4,3);
+  }
   // Oxidized Copper Cupola Lantern / Ocular Dormer Windows
   if(!rural&&hTiles>=4){
    const cy0=wallY-roofH-16;
@@ -1264,16 +1406,27 @@ const HD2DAtlas=(()=>{
   for(let i=0;i<winCols;i++){
    const wx=ox+12+Math.round(i*(w-36)/Math.max(1,winCols-1));
    if(Math.abs(wx+7-doorX)<26)continue;
-   drawPixelWindow(c,wx,rural?wallY+12:midY+10,14,13,{frame:outline,frameHi:stHi,shutter:'#2c4660',flower:rural});
+   drawPixelWindow(c,wx,rural?wallY+12:midY+10,14,13,{frame:outline,frameHi:stHi,shutter:'#2c4a66',flower:rural});
   }
-  // Stone-Portico Entrance
+  // Stone-Portico Entrance (rural cottages get a pitched slate porch hood & warm lantern!)
   px(c,outline,doorX-17,oy+h-38,34,38);px(c,stHi,doorX-16,oy+h-37,32,37);
-  px(c,outline,doorX-20,oy+h-41,40,4);px(c,'#f2efe4',doorX-19,oy+h-40,38,2);
+  if(rural){
+   for(let dy=0;dy<10;dy++){
+    const hw=22-dy*1.8;
+    px(c,outline,doorX-hw,oy+h-38-dy,hw*2,2);
+    if(hw>3)px(c,dy>5?slateHi:slateMain,doorX-hw+2,oy+h-38-dy,hw*2-4,1);
+   }
+   pGlow(c,doorX+17,oy+h-26,18,'rgba(255,214,120,0.34)','rgba(255,180,70,0)');
+   px(c,outline,doorX+15,oy+h-29,5,7);px(c,'#fad668',doorX+16,oy+h-28,3,5);px(c,'#fffbe4',doorX+17,oy+h-27,1,2);
+  }else{
+   px(c,outline,doorX-20,oy+h-41,40,4);px(c,'#f2efe4',doorX-19,oy+h-40,38,2);
+  }
   px(c,'#3a5a78',doorX-9,oy+h-32,18,31);px(c,'#5e86aa',doorX-7,oy+h-30,14,28);px(c,'#f6dc7a',doorX+3,oy+h-16,3,3);
   px(c,'#e8ecee',doorX-14,oy+h-1,28,4);
   if(rural){
-   px(c,'#2c527a',doorX-19,wallY+10,4,14);px(c,'#76a6d0',doorX-18,wallY+11,2,11);
-   drawFoundationClutter(c,ox,oy,w,h,wallY,{ivy:true,woodpile:false});
+   // Blue mourning ribbon (青い喪章) at eaves + lush stone foundation ivy & harvest barrel!
+   px(c,'#2c527a',doorX-20,wallY+10,4,15);px(c,'#76a6d0',doorX-19,wallY+11,2,12);
+   drawFoundationClutter(c,ox,oy,w,h,wallY,{ivy:true,woodpile:true});
   }
   if(opts.emblem)drawShopEmblem(c,doorX,rural?wallY-14:midY-10,opts.emblem);
   return{el:cv.el,padL,padT,w:w+padL+padR,h:h+padT+padB};
@@ -1589,16 +1742,20 @@ const HD2DAtlas=(()=>{
   }
  }
 
- // Crisp Pixel-Art Craggy Mossy Woodland Boulder
+ // Crisp Pixel-Art Craggy Mossy Woodland Boulder (or scorched dark basalt boulder with opts.charred)
  function drawMossyBoulder(c,x,y,opts={}){
-  const cx=x+16,cy=y+19;
-  pCluster(c,'rgba(14,24,22,0.30)',cx+2,cy+6,13,5,x+y,2);
-  pCluster(c,'#464844',cx,cy+1,12,8,x+y,1);
-  pCluster(c,'#787a72',cx-1,cy-1,10,6,x+3,1);
-  pCluster(c,'#a6a89e',cx-2,cy-3,7,4,x+7,1);
-  pCluster(c,'#d4d2c6',cx-4,cy-4,4,2,x+11,1);
-  pCluster(c,'#3a6e38',cx+4,cy+1,5,3,y+5,1);pCluster(c,'#74b054',cx+3,cy,3,2,y+9,1);
-  grassTuft(c,cx-12,cy+2,'#2a4e30','#4e8444','#8aba60');
+  const cx=x+16,cy=y+19,ch=!!opts.charred;
+  pCluster(c,'rgba(14,20,20,0.34)',cx+2,cy+6,13,5,x+y,2);
+  pCluster(c,ch?'#282625':'#464844',cx,cy+1,12,8,x+y,1);
+  pCluster(c,ch?'#4a4642':'#787a72',cx-1,cy-1,10,6,x+3,1);
+  pCluster(c,ch?'#6e6860':'#a6a89e',cx-2,cy-3,7,4,x+7,1);
+  pCluster(c,ch?'#928a7e':'#d4d2c6',cx-4,cy-4,4,2,x+11,1);
+  if(!ch){
+   pCluster(c,'#3a6e38',cx+4,cy+1,5,3,y+5,1);pCluster(c,'#74b054',cx+3,cy,3,2,y+9,1);
+   grassTuft(c,cx-12,cy+2,'#2a4e30','#4e8444','#8aba60');
+  }else{
+   pCluster(c,'#201c1a',cx+3,cy+2,4,2,y+5,1);
+  }
  }
 
  // Chunky Sculpted Timber-Roofed Village Notice Board
@@ -1655,39 +1812,97 @@ const HD2DAtlas=(()=>{
   px(c,out,x+w-11,y+15,5,6);px(c,'#fad668',x+w-10,y+16,3,4);px(c,'#fffbe4',x+w-9,y+17,1,2);
  }
 
- // Sculpted Arched Timber Footbridge spanning a 2-tile brook with reflection & corner lanterns!
+ // Sculpted Arched Timber or Carved Stone Footbridge spanning a brook/canal with reflection & corner lanterns!
  function drawArchedBridge(c,tx,ty,wTiles=2,opts={}){
-  const x=tx*32,y=ty*32,w=wTiles*32,out='#422c1a';
+  const x=tx*32,y=ty*32,w=wTiles*32,hTiles=opts.hTiles||1,bh=hTiles*32,stone=opts.stone||null;
+  const out=stone==='granite'?'#2c3640':stone==='marble'?'#424644':'#422c1a';
+  const deckM=stone==='granite'?'#8a96a0':stone==='marble'?'#cbc7b8':'#a67c4e';
+  const deckH=stone==='granite'?'#bac6d0':stone==='marble'?'#f0ece0':'#cfa46e';
+  const deckD=stone==='granite'?'#5c6872':stone==='marble'?'#969284':'#7c5634';
+  const railH=stone==='granite'?'#b2bec8':stone==='marble'?'#eae6da':'#c69a62';
+  const railM=stone==='granite'?'#7c8892':stone==='marble'?'#b8b4a6':'#b08250';
   // Cool blue reflection & shadow cast onto the flowing water south of the bridge
-  px(c,'rgba(12,32,46,0.44)',x+2,y+28,w-4,6);
-  px(c,'rgba(14,38,54,0.22)',x+4,y+34,w-8,5);
+  px(c,'rgba(12,32,46,0.44)',x+2,y+bh-4,w-4,6);
+  px(c,'rgba(14,38,54,0.22)',x+4,y+bh+2,w-8,5);
   // Mossy stone bridge abutments gripping both banks
-  px(c,out,x-3,y+2,7,28);px(c,'#8c887c',x-2,y+3,5,26);px(c,'#c2beb0',x-1,y+3,3,24);
-  px(c,out,x+w-4,y+2,7,28);px(c,'#8c887c',x+w-3,y+3,5,26);px(c,'#c2beb0',x+w-2,y+3,3,24);
-  // Arched deck planks crowned smoothly in the center
-  const plankCount=Math.floor(w/5);
+  px(c,out,x-3,y+2,7,bh-4);px(c,'#8c887c',x-2,y+3,5,bh-6);px(c,'#c2beb0',x-1,y+3,3,bh-8);
+  px(c,out,x+w-4,y+2,7,bh-4);px(c,'#8c887c',x+w-3,y+3,5,bh-6);px(c,'#c2beb0',x+w-2,y+3,3,bh-8);
+  // Arched deck planks / cut-stone paving slabs crowned smoothly in the center
+  const stepW=stone?8:5,plankCount=Math.floor(w/stepW);
   for(let i=0;i<plankCount;i++){
-   const bx=x+2+i*5,u=(i+0.5)/plankCount;
+   const bx=x+2+i*stepW,u=(i+0.5)/plankCount;
    const arch=Math.round(Math.sin(u*Math.PI)*3);
-   px(c,out,bx,y+3-arch,5,25);
-   px(c,'#a67c4e',bx+1,y+4-arch,3,23);
-   px(c,'#cfa46e',bx+1,y+4-arch,3,6);
-   px(c,'#7c5634',bx+1,y+22-arch,3,5);
-   px(c,out,bx+2,y+6-arch,1,1);px(c,out,bx+2,y+23-arch,1,1);
+   px(c,out,bx,y+3-arch,stepW,bh-7);
+   px(c,deckM,bx+1,y+4-arch,stepW-2,bh-9);
+   px(c,deckH,bx+1,y+4-arch,stepW-2,6);
+   px(c,deckD,bx+1,y+bh-10-arch,stepW-2,5);
+   if(!stone){px(c,out,bx+2,y+6-arch,1,1);px(c,out,bx+2,y+bh-9-arch,1,1)}
+   else if(hTiles>1){px(c,out,bx+1,y+31-arch,stepW-2,1);px(c,deckH,bx+1,y+32-arch,stepW-2,2)}
   }
-  // Curved carved top & bottom oak guardrails + intermediate spindles
+  // Curved carved top & bottom guardrails + intermediate spindles/balusters
   for(let sx=0;sx<w;sx++){
    const arch=Math.round(Math.sin((sx/w)*Math.PI)*3);
-   px(c,out,x+sx,y-1-arch,1,4);px(c,'#c69a62',x+sx,y-arch,1,2);
-   px(c,out,x+sx,y+25-arch,1,4);px(c,'#b08250',x+sx,y+26-arch,1,2);
-   if(sx>6&&sx<w-6&&sx%10===0){px(c,out,x+sx,y+2-arch,2,4);px(c,out,x+sx,y+22-arch,2,4)}
+   px(c,out,x+sx,y-1-arch,1,4);px(c,railH,x+sx,y-arch,1,2);
+   px(c,out,x+sx,y+bh-7-arch,1,4);px(c,railM,x+sx,y+bh-6-arch,1,2);
+   if(sx>6&&sx<w-6&&sx%10===0){
+    px(c,out,x+sx,y+2-arch,3,4);px(c,railH,x+sx+1,y+2-arch,1,3);
+    px(c,out,x+sx,y+bh-10-arch,3,4);px(c,railH,x+sx+1,y+bh-10-arch,1,3);
+   }
   }
-  // Corner chamfered timber newel posts with glowing brass lantern caps!
+  // Corner chamfered newel posts / stone lantern piers with glowing brass lantern caps!
   for(const px0 of [x-1,x+w-5]){
-   px(c,out,px0,y-5,6,11);px(c,'#9c7044',px0+1,y-4,4,9);px(c,'#cfa46e',px0+1,y-4,2,8);
-   px(c,out,px0,y+22,6,10);px(c,'#9c7044',px0+1,y+23,4,8);px(c,'#cfa46e',px0+1,y+23,2,7);
-   pGlow(c,px0+3,y-4,15,'rgba(255,216,120,0.34)','rgba(255,180,70,0)');
+   px(c,out,px0,y-5,6,11);px(c,railM,px0+1,y-4,4,9);px(c,railH,px0+1,y-4,2,8);
+   px(c,out,px0,y+bh-10,6,10);px(c,railM,px0+1,y+bh-9,4,8);px(c,railH,px0+1,y+bh-9,2,7);
+   pGlow(c,px0+3,y-4,16,'rgba(255,216,120,0.36)','rgba(255,180,70,0)');
    px(c,'#ffd874',px0+2,y-5,2,2);
+  }
+ }
+
+ // Crisp Hand-Pixelled Gnarled Charred Dead Oak/Pine (for Ash Road & Scorched Battlefields — ZERO stick '+' crosses!)
+ function drawCharredTree(c,tx,ty,opts={}){
+  const h=hash(tx,ty,91),sway=(h%5)-2,x=tx*32+16+sway,y=ty*32+27;
+  const ember=opts.ember!==undefined?opts.ember:(h%3===0);
+  // Grounded soot shadow + cinder mound
+  pOval(c,'rgba(10,10,12,0.44)',x+2,y+1,16,5.5);
+  pOval(c,'#2c2724',x,y,11,4);
+  // Gnarled flared roots gripping scorched earth
+  pLine(c,'#181514',x-10,y+2,x-2,y-5,3);pLine(c,'#3a322c',x-8,y+1,x-2,y-5,1);
+  pLine(c,'#181514',x+9,y+2,x+2,y-5,3);pLine(c,'#3a322c',x+7,y+1,x+2,y-5,1);
+  pLine(c,'#181514',x-1,y+3,x,y-4,3);
+  // Twisted sculpted charred trunk (thick base tapering organically upward)
+  const lean=((h>>3)%3)-1;
+  for(let dy=0;dy<34;dy++){
+   const t=dy/34,tw=Math.max(4,Math.round(12-t*7));
+   const cx0=Math.round(x+Math.sin(t*3.1+h)*2.2+lean*t*3-tw/2);
+   px(c,'#181514',cx0-1,y-4-dy,tw+2,2);
+   px(c,'#342c26',cx0,y-4-dy,tw,1);
+   if(tw>4)px(c,'#544940',cx0+1,y-4-dy,Math.max(2,Math.floor(tw*0.42)),1);
+   if(dy%4===0&&tw>5)px(c,'#706358',cx0+1,y-4-dy,2,1);
+  }
+  // Dramatic asymmetric crooked skeletal dead boughs & forked twigs reaching skyward!
+  const topX=x+lean*3,topY=y-36;
+  const boughs=[
+   [x-3,y-20,x-16,y-30,x-21,y-38],
+   [x+3,y-24,x+15,y-34,x+19,y-43],
+   [topX,topY+4,topX-9,topY-9,topX-13,topY-15],
+   [topX+1,topY+3,topX+10,topY-8,topX+14,topY-12],
+   [x-2,y-14,x-12,y-19,x-16,y-23]
+  ];
+  for(let i=0;i<boughs.length;i++){
+   if((h+i)%5===4&&i>1)continue;
+   const [x0,y0,x1,y1,x2,y2]=boughs[i];
+   pLine(c,'#181514',x0,y0,x1,y1,3);pLine(c,'#4a4038',x0,y0-1,x1,y1-1,1);
+   pLine(c,'#181514',x1,y1,x2,y2,2);pLine(c,'#60544a',x1,y1-1,x2,y2-1,1);
+  }
+  // Sparse singed ember-russet dead twig foliage tufts (breaks harsh silhouette!)
+  if((h&1)===0){
+   pCluster(c,'#2c2420',x-14,y-31,5,3,h,1);pCluster(c,'#56463a',x-15,y-32,3,2,h+3,1);
+   pCluster(c,'#2c2420',x+14,y-35,5,3,h+5,1);pCluster(c,'#5c483a',x+13,y-36,3,2,h+7,1);
+  }
+  // Optional smoldering ember hollow glowing softly in the charred trunk base!
+  if(ember){
+   pGlow(c,x,y-8,18,'rgba(255,118,36,0.28)','rgba(255,80,20,0)');
+   px(c,'#c84218',x-2,y-10,4,5);px(c,'#ff9e36',x-1,y-9,2,3);px(c,'#ffe888',x-1,y-8,1,1);
   }
  }
 
@@ -1891,7 +2106,7 @@ const HD2DAtlas=(()=>{
  }
 
  return{
-  drawOrganicTerrain,drawTile,drawTree,drawTreeCanopy,drawGrandHouse,drawGrandHouseCanopy,drawBakerySprite,
+  drawOrganicTerrain,drawTile,drawTree,drawTreeCanopy,drawCharredTree,drawGrandHouse,drawGrandHouseCanopy,drawBakerySprite,
   drawStoneArchGate,drawArchwayLintel,drawSculptedWell,drawCoveredWagon,drawArchedBridge,
   drawPlazaMedallion,drawWaterfallCulvert,drawDoves,
   drawParkBench,drawLanternPost,drawFlowerBed,drawBush,drawMossyBoulder,drawNoticeBoard,drawMarketStall,
