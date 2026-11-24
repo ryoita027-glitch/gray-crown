@@ -1015,13 +1015,14 @@ const OpeningPixelAssets=(()=>{
   }
   return img
  }
- // ---- HD-2D HERO-PARITY ILLUSTRATED NPC SPRITE SHEETS (assets/npc/hd/*.png) ----
- // 30 bespoke 4-direction 512x128 illustrated chibi sheets matching Karen/Triton/Sophie/Margaret!
+ // ---- HD-2D HERO-PARITY CRISP PIXEL-ART NPC SPRITE SHEETS (assets/npc/hd/*.png) ----
+ // 46 bespoke 4-direction 384x96 crisp pixel-art sheets (star-power royal/enemy cast + zero-clone regional cast!)
  const HD_NPC_MAP=Object.freeze({
   baker:'baker',capitalBakerWife:'baker',strollerBaker:'baker',
   mayor:'mayor',bellKeeper:'mayor',
   farmer:'farmer',empireFarmer:'farmer',
-  fieldWorker:'fieldWorker',oldAngler:'fieldWorker',brookKeeper:'fieldWorker',waystationDriver:'fieldWorker',
+  fieldWorker:'fieldWorker',oldAngler:'fieldWorker',brookKeeper:'fieldWorker',
+  karenFather:'karenFather',waystationDriver:'karenFather',
   oldwoman:'oldwoman',chapelElder:'oldwoman',
   ren:'ren',capitalStreetKid:'ren',
   mika:'mika',soldierSister:'mika',
@@ -1031,29 +1032,42 @@ const OpeningPixelAssets=(()=>{
   messenger:'messenger',capitalCrier:'messenger',
   veteran:'veteran',capitalOldGuard:'veteran',oldImperialSoldier:'veteran',royalSergeant:'veteran',
   father:'father',
-  caretaker:'caretaker',frontierMedic:'caretaker',royalMedicCaptain:'caretaker',waystationMonk:'caretaker',
+  caretaker:'caretaker',frontierMedic:'caretaker',royalMedicCaptain:'caretaker',finalEmpireScout:'caretaker',
   karenMother:'karenMother',mother:'karenMother',soldierMother:'karenMother',rationMother:'karenMother',strollerVillager:'karenMother',refugee:'karenMother',
-  elsiaResident:'elsiaResident',finalEmpireScout:'elsiaResident',
+  elsiaResident:'elsiaResident',
+  elsiaElder:'elsiaElder',
   orphan:'boyVillage',theo:'boyVillage',karenBrother:'boyVillage',waystationChild:'boyVillage',relayChild:'boyVillage',
-  margaretMother:'ladyNoble',strollerFestive:'ladyNoble',capitalShopper:'ladyNoble',
+  margaretMother:'ladyNoble',strollerFestive:'ladyNoble',
+  capitalShopper:'capitalShopper',
   capitalFlowerGirl:'flowerGirl',
   merchant:'merchant',northPeddler:'merchant',waystationPeddler:'merchant',lostMerchant:'merchant',
-  capitalVendor:'merchant',roadTraveler:'merchant',strollerMerchant:'merchant',canalVendor:'merchant',imperialQuartermaster:'merchant',
+  roadTraveler:'merchant',strollerMerchant:'merchant',
+  capitalVendor:'capitalVendor',canalVendor:'capitalVendor',imperialQuartermaster:'capitalVendor',
   kingdomGuard:'kingdomGuard',capitalRecruit:'kingdomGuard',waystationGuard:'kingdomGuard',
-  strollerPatrol:'kingdomGuard',finalKingdomSoldier:'kingdomGuard',frontierOfficer:'kingdomGuard',
-  fortCommander:'kingdomGuard',offDutySoldier:'kingdomGuard',tiredGuard:'kingdomGuard',
-  imperialGuard:'imperialGuard',strollerImperialPatrol:'imperialGuard',vanguardCaptain:'imperialGuard',
+  strollerPatrol:'kingdomGuard',finalKingdomSoldier:'kingdomGuard',offDutySoldier:'kingdomGuard',tiredGuard:'kingdomGuard',
+  fortCommander:'fortCommander',frontierOfficer:'fortCommander',
+  imperialGuard:'imperialGuard',strollerImperialPatrol:'imperialGuard',
   imperialVeteranGuard:'imperialGuard',woundedImperial:'imperialGuard',imperialPatrolEnemy:'imperialGuard',
+  vanguardCaptain:'vanguardCaptain',
   granz:'granz',granzFinal:'granz',
-  zester:'zester',zenith:'zester',
+  zester:'zester',
+  zenith:'zenith',
   klein:'klein',
   shion:'shion',
-  chapelPriest:'priest',fieldPriest:'priest',elsiaElder:'priest',bookSeller:'priest',
-  capitalScholar:'priest',studentReader:'priest',recordKeeper:'priest',strollerScholar:'priest',decisionGuide:'priest',clerk:'priest',
-  capitalSmith:'smith',karenFather:'smith',armoryApprentice:'smith',canalBoatman:'smith',banditEnemy:'smith',
-  scout:'scout',frontierScout:'scout',borderScout:'scout',returnScout:'scout',waystationBard:'scout',strollerBard:'scout',
-  imperialCitizen:'imperialCitizen',capitalCitizen:'imperialCitizen',capitalOfficial:'imperialCitizen',strollerSomber:'imperialCitizen',
-  capitalInnHost:'innHost',waystationHost:'innHost',relayHost:'innHost',empireInnkeeper:'innHost',imperialInnHost:'innHost'
+  chapelPriest:'chapelPriest',
+  fieldPriest:'priest',waystationMonk:'priest',
+  capitalScholar:'capitalScholar',clerk:'capitalScholar',bookSeller:'capitalScholar',strollerScholar:'capitalScholar',decisionGuide:'capitalScholar',
+  studentReader:'studentReader',recordKeeper:'studentReader',
+  capitalSmith:'smith',armoryApprentice:'smith',
+  canalBoatman:'canalBoatman',
+  imperialInnHost:'capitalVendor',
+  banditEnemy:'banditEnemy',
+  scout:'scout',frontierScout:'scout',borderScout:'scout',returnScout:'scout',
+  waystationBard:'waystationBard',strollerBard:'waystationBard',
+  capitalOfficial:'capitalOfficial',
+  capitalCitizen:'capitalCitizen',
+  imperialCitizen:'imperialCitizen',strollerSomber:'imperialCitizen',
+  capitalInnHost:'innHost',waystationHost:'innHost',relayHost:'innHost',empireInnkeeper:'innHost'
  });
  const hdSheetCache=new Map();
  function resolveHdSrc(key){
@@ -1074,31 +1088,64 @@ const OpeningPixelAssets=(()=>{
   return rec.ready?rec.img:null;
  }
  if(typeof Image!=='undefined'){
-  for(const k of ['baker','mayor','farmer','fieldWorker','oldwoman','ren','mika','lulu','messenger','veteran','father','caretaker','karenMother','boyVillage','ladyNoble','merchant','smith','kingdomGuard','imperialGuard','granz','klein','priest','flowerGirl','innHost','scout','imperialCitizen','elsiaResident','shion','zester','emi','noa']){
+  for(const k of [
+   'baker','banditEnemy','boyVillage','canalBoatman','capitalCitizen','capitalOfficial','capitalScholar',
+   'capitalShopper','capitalVendor','caretaker','chapelPriest','elsiaElder','elsiaResident','emi','farmer',
+   'father','fieldWorker','flowerGirl','fortCommander','granz','imperialCitizen','imperialGuard','innHost',
+   'karenFather','karenMother','kingdomGuard','klein','ladyNoble','lulu','mayor','merchant','messenger',
+   'mika','noa','oldwoman','priest','ren','scout','shion','smith','studentReader','vanguardCaptain',
+   'veteran','waystationBard','zenith','zester'
+  ]){
    getHdSheet(k);
   }
  }
  const SPEAKER_HD_MAP=[
-  ['エダ','baker'],['パン屋','baker'],
-  ['村長','mayor'],
-  ['農夫','farmer'],['畑','fieldWorker'],['釣り','fieldWorker'],['川守','fieldWorker'],
-  ['老婆','oldwoman'],['おばあ','oldwoman'],['長老','priest'],
-  ['レン','ren'],['ミカ','mika'],['ルル','lulu'],['エミ','emi'],['ノア','noa'],['テオ','boyVillage'],
-  ['孤児','boyVillage'],['弟','boyVillage'],['子ども','boyVillage'],['少年','boyVillage'],['少女','lulu'],
-  ['伝令','messenger'],['触れ役','messenger'],
-  ['古参兵','veteran'],['剣の師','veteran'],['老兵','veteran'],['軍曹','veteran'],
-  ['カレンの母','karenMother'],['母','karenMother'],['世話役','caretaker'],['衛生','caretaker'],['看護','caretaker'],
-  ['カレンの父','smith'],['鍛冶','smith'],['船頭','smith'],
-  ['マーガレットの母','ladyNoble'],['花売り','flowerGirl'],
-  ['グランツ','granz'],['ゼスター','zester'],['ゼニス','zester'],
-  ['クライン','klein'],['シオン','shion'],
-  ['帝国兵','imperialGuard'],['帝国騎士','imperialGuard'],['前衛隊長','imperialGuard'],
-  ['王国兵','kingdomGuard'],['兵士','kingdomGuard'],['衛兵','kingdomGuard'],['隊長','kingdomGuard'],['司令','kingdomGuard'],['新兵','kingdomGuard'],
-  ['神父','priest'],['司祭','priest'],['学者','priest'],['書記','priest'],['本屋','priest'],['案内','priest'],
-  ['宿','innHost'],['女将','innHost'],
+  ['皇帝シオン','shion'],['シオン','shion'],
+  ['グランツ','granz'],
+  ['クライン','klein'],
+  ['ゼニス','zenith'],
+  ['ゼスター','zester'],
+  ['ヴァルク','vanguardCaptain'],['前衛隊長','vanguardCaptain'],
+  ['監視砦長','fortCommander'],['前線将校','fortCommander'],
+  ['王都係官','capitalOfficial'],['係官','capitalOfficial'],
+  ['ユリア','chapelPriest'],['白石礼拝堂','chapelPriest'],
+  ['セリア','elsiaElder'],['語り部','elsiaElder'],['聖域の老人','elsiaElder'],
+  ['エルシア','elsiaResident'],['聖域の','elsiaResident'],
+  ['フェリクス','capitalScholar'],['地図学者','capitalScholar'],['学者','capitalScholar'],['書記','capitalScholar'],['古書','capitalScholar'],['決断','capitalScholar'],
+  ['学生','studentReader'],['記録係','studentReader'],
+  ['アンナ','capitalShopper'],['買い物客','capitalShopper'],
+  ['マーガレットの母','ladyNoble'],
+  ['花売り','flowerGirl'],
+  ['ルカ','waystationBard'],['吟遊','waystationBard'],
+  ['マロ','capitalVendor'],['市場商人','capitalVendor'],['運河商人','capitalVendor'],['補給官','capitalVendor'],
+  ['水鳥亭','capitalVendor'],['船頭','canalBoatman'],
+  ['ならず者','banditEnemy'],
+  ['エダ','baker'],['パン屋','baker'],['パン売り','baker'],['保存食','baker'],
+  ['村長','mayor'],['鐘楼守','mayor'],
+  ['カレンの父','karenFather'],['御者','karenFather'],
+  ['農夫','farmer'],['果樹農家','farmer'],
+  ['畑','fieldWorker'],['釣り','fieldWorker'],['川辺','fieldWorker'],['川守','fieldWorker'],
+  ['老婆','oldwoman'],['老婦人','oldwoman'],['おばあ','oldwoman'],
+  ['レン','ren'],['トマ','ren'],
+  ['ミカ','mika'],['ユナ','mika'],
+  ['ルル','lulu'],
+  ['エミ','emi'],['薬草摘み','emi'],
+  ['ノア','noa'],['帝国の子ども','noa'],
+  ['テオ','boyVillage'],['リオ','boyVillage'],['孤児','boyVillage'],['弟','boyVillage'],['子ども','boyVillage'],['少年','boyVillage'],['ピート','boyVillage'],
+  ['使者','messenger'],['伝令','messenger'],['瓦版','messenger'],
+  ['ガルド','veteran'],['帰還兵','veteran'],['古参','veteran'],['老兵','veteran'],['曹長','veteran'],['退役','veteran'],
+  ['トリトンの父','father'],
+  ['マルタ','caretaker'],['世話役','caretaker'],['衛生','caretaker'],['救護','caretaker'],['エルナ','caretaker'],
+  ['カレンの母','karenMother'],['母','karenMother'],['仕立て','karenMother'],['避難民','karenMother'],
+  ['鍛冶','smith'],
+  ['帝国兵','imperialGuard'],['近衛兵','imperialGuard'],['帝国騎士','imperialGuard'],
+  ['王国兵','kingdomGuard'],['兵士','kingdomGuard'],['衛兵','kingdomGuard'],['新兵','kingdomGuard'],['番人','kingdomGuard'],
+  ['司祭','priest'],['従軍僧','priest'],['修道士','priest'],['神父','priest'],
+  ['女将','innHost'],['宿主','innHost'],['白鹿亭','innHost'],['白樺亭','innHost'],
   ['商人','merchant'],['行商','merchant'],['旅人','merchant'],
-  ['斥候','scout'],['吟遊','scout'],
-  ['エルシア','elsiaResident'],['帝国市民','imperialCitizen'],['市民','imperialCitizen'],['役人','imperialCitizen']
+  ['斥候','scout'],['偵察','scout'],['飛脚','scout'],
+  ['王都市民','capitalCitizen'],
+  ['帝国市民','imperialCitizen'],['市民','imperialCitizen']
  ];
  function hdPortraitMarkup(speaker){
   if(!speaker||['カレン','トリトン','ソフィ','マーガレット','ナレーション','システム'].includes(speaker))return '';
